@@ -133,8 +133,8 @@ After completing any development task, the AI agent (Claude Code) automatically 
 
 ### Functional Requirements
 
-- **FR-001**: Project MUST use locked core framework versions (Constitution v1.2.0):
-  - Next.js 1%+, React 18+, React DOM 18+, TypeScript 5.x+ (strict mode), Node.js 20+ (.nvmrc)
+- **FR-001**: Project MUST use locked core framework versions (Constitution v1.3.1):
+  - Next.js 15+, React 19+, React DOM 19+, TypeScript 5.x+ (strict mode), Node.js 20+ (.nvmrc)
 - **FR-002**: Project MUST include all constitutional tech stack dependencies with locked versions (Constitution v1.2.0):
   - Web3: `wagmi@2+`, `viem@2+`, `@rainbow-me/rainbowkit@2.2.9+`
   - State: `zustand@5+`, `@tanstack/react-query@5+`

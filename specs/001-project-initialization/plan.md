@@ -7,7 +7,7 @@
 
 ## Summary
 
-Initialize the VoidPay cryptocurrency invoicing platform with Next.js 14+ App Router, TypeScript, Web3 stack (Wagmi v2, Viem, RainbowKit), and Feature-Sliced Design architecture. Establish development environment with all constitutional dependencies, routing structure (`/`, `/create`, `/pay`), dual RPC provider configuration (Alchemy + Infura) for 4 networks (Ethereum, Arbitrum, Optimism, Polygon PoS), and automated quality gates for agent-driven development workflow.
+Initialize the VoidPay cryptocurrency invoicing platform with Next.js 15+ App Router, TypeScript, Web3 stack (Wagmi v2, Viem, RainbowKit), and Feature-Sliced Design architecture. Establish development environment with all constitutional dependencies, routing structure (`/`, `/create`, `/pay`), dual RPC provider configuration (Alchemy + Infura) for 4 networks (Ethereum, Arbitrum, Optimism, Polygon PoS), and automated quality gates for agent-driven development workflow.
 
 ## Technical Context
 
