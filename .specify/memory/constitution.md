@@ -1,50 +1,342 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+  SYNC IMPACT REPORT
+
+  Version Change: [CONSTITUTION_VERSION] → 1.0.0
+
+  Modified Principles:
+  - All principles newly defined (first constitution version)
+
+  Added Sections:
+  - Core Principles (7 principles)
+  - Architectural Constraints
+  - Security & Risk Management
+  - Governance
+
+  Removed Sections: N/A (initial version)
+
+  Templates Requiring Updates:
+  ✅ .specify/templates/plan-template.md - Reviewed (Constitution Check section compatible)
+  ✅ .specify/templates/spec-template.md - Reviewed (Requirements align with principles)
+  ✅ .specify/templates/tasks-template.md - Reviewed (Task organization compatible)
+
+  Follow-up TODOs: None
+
+  Ratification: Initial constitution for VoidPay project
+  Date: 2025-11-19
+-->
+
+# VoidPay Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Zero-Backend Architecture (Stateless First)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+**Principle**: The application MUST operate without a backend database or persistent server-side state. All invoice data is encoded in URLs or stored client-side.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**Rules**:
+- NO server-side database for storing invoice data
+- NO user authentication or session management
+- Invoice state MUST be self-contained in compressed URL parameters
+- Client-side storage (LocalStorage) is permitted for user preferences and history only
+- Server-side components are limited to: static hosting, RPC proxying, and OG image generation
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Rationale**: This ensures永久可用性 (永续性 - perpetual availability). Even if hosting is discontinued, the service can be instantly redeployed anywhere, including IPFS or local deployment. Users retain full control and ownership of their invoice data through self-contained URLs.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Privacy-First & Self-Custody
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**Principle**: User financial data MUST remain private and under user control at all times.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+**Rules**:
+- NO collection of analytics or telemetry about invoice creation or payments
+- NO tracking of user behavior or payment patterns
+- History MUST be stored exclusively in browser LocalStorage (never server-side)
+- NO third-party analytics services (no Sentry, no Google Analytics)
+- URL parameters MUST NOT leak through server logs (use client-side URL parsing)
+- Export/import functionality MUST be provided for user data portability
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**Rationale**: Financial privacy is a fundamental right. Centralized storage of transaction history creates honeypots for data breaches and enables surveillance. Users must have complete autonomy over their financial records.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### III. Trustless & Permissionless
+
+**Principle**: The system MUST NOT require permission, registration, or trust in any centralized authority.
+
+**Rules**:
+- NO user registration or account creation
+- NO KYC (Know Your Customer) requirements
+- NO approval workflows or administrative gates
+- Users MUST be able to create invoices without providing any personal information
+- Payments MUST occur directly between parties (peer-to-peer) without intermediaries
+- NO custody of user funds at any time
+
+**Rationale**: Permissionless access is core to the crypto ethos. Any gating mechanism creates censorship opportunities and excludes users. True decentralization requires removing all trusted intermediaries.
+
+### IV. Backward Compatibility & Schema Versioning
+
+**Principle**: Once an invoice URL is generated, it MUST remain functional indefinitely regardless of future application changes.
+
+**Rules**:
+- Schema version (`v` field) MUST be embedded in every invoice URL
+- Parsing logic for schema version N MUST NEVER be modified or removed
+- New schema versions MUST be additive only (new versions = new parsers)
+- Migration adapters MUST convert old schemas to new formats at runtime for display
+- Reserved fields (`meta`, `_future`) MUST be included in schema v1 for extensibility
+- URL compression format MUST remain stable (lz-string algorithm locked)
+- Breaking changes require new schema version with migration adapter
+
+**Rationale**: Following the Excalidraw model, breaking old URLs destroys user trust and creates data loss. Invoice URLs may be stored in emails, contracts, or bookmarks for years. Immutability of old versions is non-negotiable.
+
+### V. Security & Abuse Prevention
+
+**Principle**: The system MUST implement defense mechanisms against abuse while preserving privacy and permissionlessness.
+
+**Rules**:
+- Static blocklist MUST be maintained via public GitHub repository
+- Blocklist MUST hash full URL parameters (SHA-256 of `?d=...`) to preserve privacy
+- Blocklist updates MUST be transparent (public Pull Requests)
+- "Report Abuse" functionality MUST be prominently displayed
+- OFAC sanctions checking is explicitly prohibited in MVP (preserving permissionless philosophy)
+- Disclaimers MUST clarify non-custodial nature and liability limits
+- SEO indexing MUST be blocked on `/pay` and `/create` routes (X-Robots-Tag: noindex)
+- Only landing page (`/`) should be indexed by search engines
+
+**Rationale**: Abuse (phishing, scams) poses reputational and legal risks that could lead to domain blacklisting. However, mitigation MUST NOT compromise core principles. Blocklist via GitHub provides transparency, community moderation, and privacy preservation. OFAC screening would violate the Trustless principle and is deferred post-MVP.
+
+### VI. RPC Key Protection & Rate Limit Management
+
+**Principle**: RPC provider API keys MUST be protected from exposure and abuse while maintaining decentralization.
+
+**Rules**:
+- RPC keys MUST be stored server-side in environment variables (never in client code)
+- Edge Functions/API Routes MUST act as proxy between client and RPC providers
+- Multiple RPC providers MUST be configured with automatic failover (Wagmi config)
+- Primary provider: Alchemy (speed, Transfers API integration)
+- Fallback provider: Infura (reliability, SLA guarantees)
+- Static data (decimals, token symbols) MUST be cached aggressively (React Query `staleTime: Infinity`)
+- Rate limiting MUST be implemented at proxy level to prevent abuse
+- NO telemetry from proxy layer (privacy-first)
+
+**Rationale**: Exposing RPC keys in client code leads to inevitable abuse and service disruption. Serverless proxy balances security with stateless architecture. Multi-provider failover ensures reliability. Aggressive caching minimizes RPC costs while maintaining decentralization.
+
+### VII. Web3 Safety & Transaction Validation
+
+**Principle**: All blockchain interactions MUST be validated for correctness and safety before execution.
+
+**Rules**:
+- Token decimals MUST be "baked" into URL at creation time (snapshot approach)
+- Token addresses MUST be validated against Uniswap Token List
+- Unknown tokens MUST display warning: "Unknown Token. Verify contract address carefully"
+- Blue chip tokens (USDC, USDT, DAI, WETH) MUST show verified status (green checkmark)
+- Network switching MUST be user-initiated ("Switch to Arbitrum" button), not automatic
+- Transaction confirmation MUST wait for `finalized` status:
+  - Ethereum: ~15 minutes (2 epochs)
+  - Arbitrum/Optimism: ~10-15 minutes
+  - Polygon PoS: ~30-45 minutes
+- Payment verification MUST use exact amount matching (Magic Dust ensures uniqueness)
+- NO reliance on fuzzy matching or tolerance thresholds
+- Disclaimers MUST clarify direct peer-to-peer nature and irreversibility
+
+**Rationale**: Cryptocurrency transactions are irreversible. Any error in decimals, addresses, or amounts results in permanent loss. Baking decimals into URLs eliminates RPC dependency and prevents decimal mismatch attacks. Finalized confirmations protect recipients from chain reorganizations. Magic Dust provides deterministic payment verification without backend.
+
+## Architectural Constraints
+
+### Technology Stack (Locked for MVP)
+
+The following technology choices are locked for MVP to ensure consistency and maintainability:
+
+**Core Framework**:
+- Next.js 14+ (App Router + Edge Runtime)
+- TypeScript (strict mode)
+- Tailwind CSS
+- shadcn/ui (Radix UI components)
+
+**Web3 Stack**:
+- Wagmi v2 + Viem (Web3 core)
+- RainbowKit v2 (wallet UI)
+- Alchemy + Infura (RPC providers)
+- Uniswap Token List (token validation)
+
+**State & Data**:
+- Zustand + persist middleware (client state)
+- TanStack Query (async data, caching)
+- lz-string (URL compression)
+
+**Typography**:
+- Geist Sans (UI/headings)
+- Geist Mono (data/addresses/amounts)
+
+**Supported Networks (MVP)**:
+- Ethereum Mainnet (Chain ID: 1)
+- Arbitrum (Chain ID: 42161)
+- Optimism (Chain ID: 10)
+- Polygon PoS (Chain ID: 137)
+
+### Project Structure (Feature-Sliced Design)
+
+The application MUST follow Feature-Sliced Design (FSD) architecture:
+
+**Layers** (from highest to lowest):
+- `app/` - Routing and application initialization
+- `pages/` - Page composition
+- `widgets/` - Large UI blocks
+- `features/` - User interactions and actions
+- `entities/` - Business logic and domain models
+- `shared/` - Utilities and UI primitives
+
+**Routing**:
+- `/` - Marketing landing page (SEO optimized, indexed)
+- `/create` - Invoice editor (client-heavy, noindex)
+- `/pay` - Payment view (dynamic, noindex)
+
+### Data Model Constraints
+
+**Invoice Schema (v1)** - The following fields are locked:
+
+```typescript
+interface InvoiceSchemaV1 {
+  v: number;        // Version (always 1 for v1)
+  id: string;       // Invoice ID
+  iss: string;      // Issue Date (ISO 8601)
+  due: string;      // Due Date (ISO 8601)
+  nt?: string;      // Notes (max 280 chars - HARD LIMIT)
+  net: number;      // Chain ID
+  cur: string;      // Currency Symbol
+  t?: string;       // Token Address (undefined = native)
+  dec: number;      // Token decimals (MANDATORY - baked in)
+  f: {...};         // Sender info (name, wallet, optional address/email)
+  c: {...};         // Client info (name, optional wallet/address/email)
+  it: [...];        // Line items (description, quantity, rate)
+  tax: number;      // Tax rate (%)
+  dsc: number;      // Discount amount
+}
+```
+
+**URL Constraints**:
+- Maximum compressed URL length: 2000 bytes
+- Compression algorithm: lz-string (LZW)
+- Generation MUST be blocked if URL exceeds limit
+- Notes field MUST be limited to 280 characters (enforced in UI)
+
+**Magic Dust Verification**:
+- Random micro-amount added to each invoice: 0.000001 - 0.000999 (6 decimals) or equivalent
+- Provides unique identifier for exact payment matching
+- Displayed as "Pretty Print" (rounded) + "Exact Amount" (with dust) for transparency
+- NO fuzzy matching or tolerance - exact amount match required
+
+## Security & Risk Management
+
+### Abuse Management
+
+**Static Blocklist Implementation**:
+- Source: `https://raw.githubusercontent.com/voidpay/blocklist/main/blocked-hashes.json`
+- Format: `{ "hashes": ["sha256_1", ...], "updated": "ISO8601_timestamp" }`
+- Hash target: Full URL parameter `?d=...` (not invoice contents)
+- Update mechanism: Public Pull Request to blocklist repository
+- UI behavior: Red blocking screen for flagged URLs
+- Reporting: "Report Abuse" button generates GitHub issue/PR
+
+**Privacy Preservation**:
+- Hashes prevent exposure of invoice contents
+- Public blocklist ensures transparency
+- Community moderation via GitHub
+
+### Risk Mitigation Matrix
+
+**Technical Risks**:
+- RPC key leak → Serverless proxy with env variables
+- RPC rate limits → Multi-provider failover + aggressive caching
+- Browser storage wipe → Export/import JSON functionality
+- URL length overflow → Hard limits + validation + short JSON keys
+- Schema breaking → Strict versioning + migration adapters
+
+**UX Risks**:
+- Partial payments → Display "Partially Paid" status with progress bar
+- Fee-on-transfer tokens → Warning labels, consider tolerance post-MVP
+- In-app browsers → Detect and show "Open in system browser" prompt
+
+**Legal/Compliance Risks**:
+- OFAC sanctions → NOT implemented in MVP (permissionless philosophy)
+- Domain blacklisting → Static blocklist + noindex meta tags
+- Support liability → Explicit disclaimers ("non-custodial interface")
+- Privacy leaks → Warnings when generating shareable links
+
+### Non-Negotiable Security Requirements
+
+- All transaction amounts MUST use exact precision (no floating point)
+- Wallet addresses MUST be validated (checksum + visual confirmation via avatar)
+- Network IDs MUST be validated against supported list
+- Token contracts MUST be validated against token list or show warnings
+- All user-facing errors MUST NOT expose internal system details
+- All external links MUST open in new tab with `rel="noopener noreferrer"`
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+### Amendment Process
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**This Constitution supersedes all other project practices and guidelines.**
+
+Changes to this Constitution require:
+
+1. **Documentation**: Proposed amendment in GitHub issue with rationale
+2. **Impact Analysis**: Review of affected templates, code, and user experience
+3. **Version Bump Decision**:
+   - MAJOR: Backward incompatible changes (principle removal/redefinition)
+   - MINOR: New principles or materially expanded guidance
+   - PATCH: Clarifications, typo fixes, non-semantic refinements
+4. **Template Updates**: All dependent templates (.specify/templates/) updated
+5. **Sync Report**: HTML comment at top of constitution documenting changes
+6. **Approval**: Project maintainer approval required
+
+### Compliance Review
+
+**All feature specifications and implementation plans MUST verify compliance with:**
+
+- Zero-Backend Architecture (Principle I)
+- Privacy-First requirements (Principle II)
+- Permissionless access (Principle III)
+- Schema versioning rules (Principle IV)
+- Security mechanisms (Principle V)
+- RPC protection (Principle VI)
+- Transaction validation (Principle VII)
+
+**Constitution Check Gate** in plan-template.md MUST verify:
+- No backend database introduced
+- No user authentication/registration added
+- Schema changes follow versioning rules
+- New features preserve privacy-first approach
+- Security mechanisms not bypassed
+
+### Complexity Justification
+
+Any violation of Constitutional principles MUST be explicitly justified in the "Complexity Tracking" section of plan.md with:
+
+- Which principle is violated
+- Why the violation is necessary
+- What simpler alternatives were rejected and why
+
+**Examples requiring justification**:
+- Introducing server-side session storage (violates Principle I)
+- Adding Google Analytics (violates Principle II)
+- Requiring email verification (violates Principle III)
+- Changing URL compression algorithm without migration (violates Principle IV)
+
+### Development Philosophy
+
+**Start Simple, Stay Simple**:
+- YAGNI (You Aren't Gonna Need It) - No speculative features
+- Every feature must have clear user value from brainstorm/spec
+- Prefer boring, proven technologies over cutting-edge
+- Optimize for maintainability over cleverness
+
+**Testing Discipline**:
+- Schema versioning MUST have integration tests (old URLs must work)
+- Payment verification logic MUST have unit tests
+- URL compression/decompression MUST have round-trip tests
+- Multi-network support MUST have integration tests per network
+
+**Observability Without Telemetry**:
+- Text I/O ensures debuggability (console logs in dev)
+- Error messages must be actionable for users
+- NO error tracking services (violates Privacy principle)
+- Debug mode via URL parameter for troubleshooting
+
+**Version**: 1.0.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-19
