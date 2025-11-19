@@ -3,6 +3,43 @@
 **Feature**: 001-project-initialization
 **Status**: Completed
 **Total Tasks**: 31
+**Completed**: 2025-11-19
+
+## Implementation Deviations
+
+> **Note**: This section tracks differences between the original plan and actual implementation.
+
+### Version Adjustments
+- **Next.js**: Used v15.5.6 instead of v16.0.3+ (user preference for stability)
+- **Node.js**: Used v22.19.0 instead of v20+ (latest LTS)
+- **React**: Used v19.2.0 (latest stable)
+
+### Early Additions
+- **shadcn/ui**: Initialized in Phase 4 (originally planned for later)
+  - Added `button` and `card` components
+  - Created `components.json` and `src/lib/utils.ts`
+- **Geist Fonts**: Configured in Phase 4 (originally planned for P0.8)
+  - Added to `src/app/layout.tsx`
+
+### Additional Files Created
+- `.nvmrc`: Node version enforcement (v22.19.0)
+- `src/shared/config/env.ts`: Environment config with Zod validation
+- `src/entities/network/model/networks.ts`: Network configuration entity
+- `src/app/api/rpc/route.ts`: Basic RPC proxy (enhanced version planned for P0.4)
+- `walkthrough.md`: Implementation walkthrough documentation
+- `PROGRESS.md`: Roadmap progress tracker
+
+### Dependency Additions
+- `zod@^4.0.0`: For environment variable validation
+- All dependencies use caret ranges (`^Major.0.0`) per user request
+
+### Technical Decisions
+- **Next.js 15 async params**: Updated `src/app/pay/[invoiceId]/page.tsx` to handle Promise-based params
+- **Tailwind v4**: Used `@tailwindcss/postcss` plugin instead of direct `tailwindcss`
+- **TypeScript**: Enabled strict mode with additional checks (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`)
+
+### Skipped Tasks
+- None - all planned tasks completed
 
 ## Dependencies
 
