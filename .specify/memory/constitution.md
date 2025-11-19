@@ -1,28 +1,26 @@
 <!--
   SYNC IMPACT REPORT
 
-  Version Change: 1.1.0 → 1.2.0
+  Version Change: 1.3.0 → 1.3.1
 
   Modified Principles:
-  - None (existing principles unchanged)
+  - Principle IX: Expanded to include PROGRESS.md tracking requirement
 
   Added Sections:
-  - New Principle VIII: Documentation Context Efficiency
-  - Expanded Governance section to include documentation standards
+  - PROGRESS.md update requirement in Principle IX rules
 
   Removed Sections: None
 
   Templates Requiring Updates:
-  ✅ .specify/templates/plan-template.md - Reviewed (compatible with new documentation principle)
-  ✅ .specify/templates/spec-template.md - Reviewed (compatible with new documentation principle)
-  ✅ .specify/templates/tasks-template.md - Reviewed (compatible with new documentation principle)
-  ⚠ /Users/ignat/Documents/Repository/stateless-invoicing-platform/CLAUDE.md - Should reference new documentation principle
+  ✅ .specify/templates/plan-template.md - Reviewed (compatible with progress tracking)
+  ✅ .specify/templates/spec-template.md - Reviewed (compatible with progress tracking)
+  ✅ .specify/templates/tasks-template.md - Updated to include PROGRESS.md update instructions
 
   Follow-up TODOs:
-  - Review existing .md files in specs/ and .specify/memory/brainstorm/ for compliance
-  - Update CLAUDE.md to reference documentation context efficiency principle
+  - Update /speckit.implement command to enforce PROGRESS.md updates on feature completion
+  - Ensure PROGRESS.md template exists in .specify/templates/ if needed
 
-  Ratification: Documentation context efficiency principle addition
+  Ratification: Clarification of Principle IX to include PROGRESS.md tracking
   Date: 2025-11-19
 -->
 
@@ -166,6 +164,37 @@
 - Templates MUST be concise with inline guidance, not separate documentation sections
 
 **Rationale**: AI agents have context windows that fill quickly. Verbose documentation wastes tokens, slows processing, and reduces the amount of relevant code/context that can be loaded. Information-dense documentation enables agents to understand the project faster and make better decisions. Concise docs also benefit human developers by reducing cognitive load.
+
+### IX. Implementation Deviation Tracking & Feedback Loop
+
+**Principle**: Implementation reality MUST be systematically tracked and fed back into planning artifacts to maintain alignment between design and code.
+
+**Rules**:
+
+- When marking tasks as complete, agents MUST record any deviations from the planned implementation
+- Deviations MUST be documented with:
+  - What was planned (reference to plan.md, spec.md, or data-model.md)
+  - What was actually implemented
+  - Rationale for the deviation (technical constraints, better approach discovered, requirements changed)
+  - Impact assessment (breaking changes, performance implications, security considerations)
+- Deviation notes MUST be recorded in tasks.md adjacent to the completed task checkbox
+- Upon completing a feature or significant milestone, agents MUST update `.specify/memory/PROGRESS.md` with:
+  - Feature completion status (✅ Completed with date)
+  - Brief implementation summary (what was built)
+  - Key deviations from original plan (if any)
+  - Feature folder reference (e.g., `specs/001-feature-name/` for reverse lookup)
+  - Any notes about technical decisions or constraints encountered
+- PROGRESS.md updates MUST follow the existing format and structure
+- After feature completion, accumulated deviations MUST be reviewed to determine:
+  - Whether spec.md needs updating (requirements changed)
+  - Whether plan.md needs updating (approach changed)
+  - Whether data-model.md needs updating (schema evolved)
+  - Whether constitution.md needs updating (new constraints discovered)
+- Major deviations (breaking changes, architectural shifts) MUST trigger immediate artifact updates
+- Minor deviations (implementation details, optimizations) MAY be batched for end-of-feature review
+- Task completion format MUST include deviation field: `- [x] T001 [Description] | Deviation: [None | <deviation description>]`
+
+**Rationale**: Plans are hypotheses that collide with reality during implementation. Without systematic tracking of what actually happened versus what was planned, design artifacts become stale and misleading. This creates a negative feedback loop where future work relies on outdated assumptions. By capturing deviations at task completion time, we create a continuous improvement cycle that keeps specifications, plans, and reality aligned. This principle embodies the "documentation as living artifact" philosophy and ensures that project knowledge compounds rather than decays over time.
 
 ## Architectural Constraints
 
@@ -360,6 +389,7 @@ Changes to this Constitution require:
 - RPC protection (Principle VI)
 - Transaction validation (Principle VII)
 - Documentation context efficiency (Principle VIII)
+- Implementation deviation tracking (Principle IX)
 
 **Constitution Check Gate** in plan-template.md MUST verify:
 
@@ -417,4 +447,4 @@ Any violation of Constitutional principles MUST be explicitly justified in the "
 - Keep specs focused on requirements, plans focused on approach
 - Link to external resources rather than duplicating content
 
-**Version**: 1.2.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-19
+**Version**: 1.3.1 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-19
