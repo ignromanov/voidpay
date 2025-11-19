@@ -1,13 +1,206 @@
-# Project Progress Tracker
+# 🚀 VoidPay - Progress Tracker
 
-- [x] **Phase 1: Setup** – Project initialized, dependencies installed, FSD structure created.
-- [x] **Phase 2: Foundational** – TypeScript, ESLint, Prettier, Tailwind configured.
-- [x] **Phase 3: US1 – Landing Page** – Basic landing page with wallet connect.
-- [x] **Phase 4: US2 – Core Tech Stack** – Wagmi, Viem, RainbowKit, Zustand integrated.
-- [x] **Phase 5: US3 – Routing & FSD** – `/`, `/create`, `/pay/[invoiceId]` routes functional.
-- [x] **Phase 6: US4 – RPC Proxy** – Edge function `src/app/api/rpc/route.ts` implemented and verified.
-- [ ] **Phase 7: US5 – Development Tooling** – Scripts, lint, format, type‑check verified.
-- [ ] **Phase 8: US6 – Automated Quality Gates** – Agent workflow verification pending.
-- [ ] **Current Feature: URL State Codec (P0.2)** – Schema defined, compression with `lz-string` pending implementation.
+> **Last Updated**: 2025-11-19  
+> **Current Phase**: Phase 0 - Project Foundation
 
-*Comments*: The implementation largely follows the tasks in `tasks.md`. Minor deviations include using caret ranges for dependencies and consolidating some config files for simplicity.
+---
+
+## ✅ Completed Features
+
+### Phase 0: Project Foundation
+
+#### P0.1 - Repository Setup & Tooling
+**Status**: 🟢 **Completed**: 2025-11-19
+
+**Implemented**:
+- ✅ Next.js 15.5.6 (downgraded from 16 per user request)
+- ✅ React 19.2.0
+- ✅ TypeScript 5.7 strict mode
+- ✅ Tailwind CSS 4.1.17
+- ✅ ESLint + Prettier configured
+- ✅ .nvmrc with Node 22.19.0 (upgraded from 20)
+- ✅ shadcn/ui initialized with button & card components
+- ✅ Git hooks setup (via pnpm scripts)
+
+**Differences from Plan**:
+- Used Next.js 15 instead of 16 (user preference for stability)
+- Node 22 instead of 20 (latest LTS)
+- Added shadcn/ui early (originally planned for P0.5)
+- Configured Geist fonts in layout (originally P0.8)
+
+**Notes**:
+- All quality gates passing (lint, type-check, format)
+- Development server verified working
+- Basic routing structure in place (/, /create, /pay/[invoiceId])
+
+---
+
+## 🔄 In Progress
+
+_No features currently in progress_
+
+---
+
+## 📋 Planned Features
+
+### Phase 1: Core Infrastructure (Week 1-2)
+
+#### P0.2 - URL State Codec & Schema Validation
+**Status**: 🔴 **Priority**: P0 **Next Up**
+
+**Planned**:
+- InvoiceSchemaV1 TypeScript interfaces
+- lz-string compression/decompression
+- URL length validation (2000 bytes)
+- Schema versioning support
+- Reserved fields for extensibility
+
+---
+
+#### P0.3 - Client-Side Storage (Zustand Stores)
+**Status**: 🔴 **Priority**: P0
+
+**Planned**:
+- useCreatorStore (drafts, preferences, history)
+- usePayerStore (payment receipts)
+- LocalStorage persistence
+- Export/Import functionality
+
+---
+
+#### P0.4 - RPC Proxy & Multi-Provider Failover
+**Status**: 🔴 **Priority**: P0
+
+**Planned**:
+- Next.js Edge API route `/api/rpc`
+- Alchemy + Infura failover
+- Rate limiting
+- Environment variable management
+
+**Notes**:
+- Basic RPC proxy already created in P0.1
+- Needs enhancement with failover logic
+
+---
+
+#### P0.5 - Wagmi + Viem + RainbowKit Setup
+**Status**: 🟡 **Priority**: P0 **Partially Complete**
+
+**Completed**:
+- ✅ Wagmi v2.19.5 configured
+- ✅ Viem v2.23.2 integrated
+- ✅ RainbowKit v2.2.0 with Electric Violet theme
+- ✅ Web3Provider wrapper created
+- ✅ ConnectButton on landing page
+
+**Remaining**:
+- Multi-network configuration refinement
+- Progressive wallet connection logic
+
+---
+
+#### P0.6 - Feature-Sliced Design (FSD) Structure
+**Status**: 🟡 **Priority**: P0 **Partially Complete**
+
+**Completed**:
+- ✅ FSD directory structure created
+- ✅ Entity models: network, user
+- ✅ Basic routing: /, /create, /pay/[invoiceId]
+
+**Remaining**:
+- Invoice entity model
+- Token entity model
+- Shared UI primitives
+
+---
+
+### Phase 2: MVP Core Features (Week 2-3)
+
+#### P0.7 - Landing Page
+**Status**: 🔴 **Priority**: P0
+
+#### P0.8 - Invoice Editor
+**Status**: 🔴 **Priority**: P1
+
+#### P0.9 - Invoice Preview Component
+**Status**: 🔴 **Priority**: P1
+
+#### P0.10 - Link Generation & QR Code
+**Status**: 🔴 **Priority**: P1
+
+#### P0.11 - Payment View (/pay)
+**Status**: 🔴 **Priority**: P1
+
+#### P0.12 - Payment Terminal Widget
+**Status**: 🔴 **Priority**: P0
+
+#### P0.13 - Magic Dust Payment Verification
+**Status**: 🔴 **Priority**: P0
+
+#### P0.14 - Payment Status Polling
+**Status**: 🔴 **Priority**: P0
+
+---
+
+### Phase 3: MVP Polish (Week 3-4)
+
+#### P1.1 - PDF Generation
+**Status**: 🔴 **Priority**: P1
+
+#### P1.2 - History Drawer
+**Status**: 🔴 **Priority**: P1
+
+#### P1.3 - Payment Receipt
+**Status**: 🔴 **Priority**: P1
+
+#### P1.4 - Network Theme System
+**Status**: 🔴 **Priority**: P1
+
+#### P1.5 - Token Validation
+**Status**: 🔴 **Priority**: P1
+
+#### P1.6 - OG Image Generation
+**Status**: 🔴 **Priority**: P1
+
+#### P1.7 - Abuse Blocklist
+**Status**: 🔴 **Priority**: P1
+
+#### P1.8 - SEO Optimization
+**Status**: 🔴 **Priority**: P1
+
+---
+
+## 📊 Progress Summary
+
+- **Total Features**: 22 (P0-P1 only)
+- **Completed**: 1 (P0.1)
+- **In Progress**: 0
+- **Remaining**: 21
+
+**Phase 0 Progress**: 100% (1/1)  
+**Phase 1 Progress**: ~40% (partial P0.5, P0.6)  
+**Overall MVP Progress**: ~10%
+
+---
+
+## 🎯 Next Steps
+
+1. **P0.2** - Implement URL State Codec (critical path blocker)
+2. **P0.3** - Set up Zustand stores
+3. **P0.4** - Enhance RPC proxy with failover
+4. Complete P0.5 & P0.6 remaining tasks
+5. Begin Phase 2 (MVP Core Features)
+
+---
+
+## 📝 Notes
+
+- Constitution compliance verified for all completed features
+- All dependencies using caret ranges (^Major.0.0)
+- Zero telemetry/analytics (privacy-first)
+- No backend/database (stateless architecture)
+
+---
+
+**Document Version**: 1.0.0  
+**Created**: 2025-11-19
