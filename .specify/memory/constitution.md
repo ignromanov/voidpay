@@ -1,27 +1,28 @@
 <!--
   SYNC IMPACT REPORT
 
-  Version Change: [CONSTITUTION_VERSION] → 1.0.0
+  Version Change: 1.1.0 → 1.2.0
 
   Modified Principles:
-  - All principles newly defined (first constitution version)
+  - None (existing principles unchanged)
 
   Added Sections:
-  - Core Principles (7 principles)
-  - Architectural Constraints
-  - Security & Risk Management
-  - Governance
+  - New Principle VIII: Documentation Context Efficiency
+  - Expanded Governance section to include documentation standards
 
-  Removed Sections: N/A (initial version)
+  Removed Sections: None
 
   Templates Requiring Updates:
-  ✅ .specify/templates/plan-template.md - Reviewed (Constitution Check section compatible)
-  ✅ .specify/templates/spec-template.md - Reviewed (Requirements align with principles)
-  ✅ .specify/templates/tasks-template.md - Reviewed (Task organization compatible)
+  ✅ .specify/templates/plan-template.md - Reviewed (compatible with new documentation principle)
+  ✅ .specify/templates/spec-template.md - Reviewed (compatible with new documentation principle)
+  ✅ .specify/templates/tasks-template.md - Reviewed (compatible with new documentation principle)
+  ⚠ /Users/ignat/Documents/Repository/stateless-invoicing-platform/CLAUDE.md - Should reference new documentation principle
 
-  Follow-up TODOs: None
+  Follow-up TODOs:
+  - Review existing .md files in specs/ and .specify/memory/brainstorm/ for compliance
+  - Update CLAUDE.md to reference documentation context efficiency principle
 
-  Ratification: Initial constitution for VoidPay project
+  Ratification: Documentation context efficiency principle addition
   Date: 2025-11-19
 -->
 
@@ -34,19 +35,21 @@
 **Principle**: The application MUST operate without a backend database or persistent server-side state. All invoice data is encoded in URLs or stored client-side.
 
 **Rules**:
+
 - NO server-side database for storing invoice data
 - NO user authentication or session management
 - Invoice state MUST be self-contained in compressed URL parameters
 - Client-side storage (LocalStorage) is permitted for user preferences and history only
 - Server-side components are limited to: static hosting, RPC proxying, and OG image generation
 
-**Rationale**: This ensures永久可用性 (永续性 - perpetual availability). Even if hosting is discontinued, the service can be instantly redeployed anywhere, including IPFS or local deployment. Users retain full control and ownership of their invoice data through self-contained URLs.
+**Rationale**: This ensures 永久可用性 (永续性 - perpetual availability). Even if hosting is discontinued, the service can be instantly redeployed anywhere, including IPFS or local deployment. Users retain full control and ownership of their invoice data through self-contained URLs.
 
 ### II. Privacy-First & Self-Custody
 
 **Principle**: User financial data MUST remain private and under user control at all times.
 
 **Rules**:
+
 - NO collection of analytics or telemetry about invoice creation or payments
 - NO tracking of user behavior or payment patterns
 - History MUST be stored exclusively in browser LocalStorage (never server-side)
@@ -61,6 +64,7 @@
 **Principle**: The system MUST NOT require permission, registration, or trust in any centralized authority.
 
 **Rules**:
+
 - NO user registration or account creation
 - NO KYC (Know Your Customer) requirements
 - NO approval workflows or administrative gates
@@ -75,6 +79,7 @@
 **Principle**: Once an invoice URL is generated, it MUST remain functional indefinitely regardless of future application changes.
 
 **Rules**:
+
 - Schema version (`v` field) MUST be embedded in every invoice URL
 - Parsing logic for schema version N MUST NEVER be modified or removed
 - New schema versions MUST be additive only (new versions = new parsers)
@@ -90,6 +95,7 @@
 **Principle**: The system MUST implement defense mechanisms against abuse while preserving privacy and permissionlessness.
 
 **Rules**:
+
 - Static blocklist MUST be maintained via public GitHub repository
 - Blocklist MUST hash full URL parameters (SHA-256 of `?d=...`) to preserve privacy
 - Blocklist updates MUST be transparent (public Pull Requests)
@@ -106,6 +112,7 @@
 **Principle**: RPC provider API keys MUST be protected from exposure and abuse while maintaining decentralization.
 
 **Rules**:
+
 - RPC keys MUST be stored server-side in environment variables (never in client code)
 - Edge Functions/API Routes MUST act as proxy between client and RPC providers
 - Multiple RPC providers MUST be configured with automatic failover (Wagmi config)
@@ -122,6 +129,7 @@
 **Principle**: All blockchain interactions MUST be validated for correctness and safety before execution.
 
 **Rules**:
+
 - Token decimals MUST be "baked" into URL at creation time (snapshot approach)
 - Token addresses MUST be validated against Uniswap Token List
 - Unknown tokens MUST display warning: "Unknown Token. Verify contract address carefully"
@@ -137,44 +145,90 @@
 
 **Rationale**: Cryptocurrency transactions are irreversible. Any error in decimals, addresses, or amounts results in permanent loss. Baking decimals into URLs eliminates RPC dependency and prevents decimal mismatch attacks. Finalized confirmations protect recipients from chain reorganizations. Magic Dust provides deterministic payment verification without backend.
 
+### VIII. Documentation Context Efficiency
+
+**Principle**: All project documentation MUST prioritize information density and context efficiency for AI agent consumption.
+
+**Rules**:
+
+- Markdown files loaded into agent context MUST be concise and information-dense
+- Eliminate redundancy, filler language, and verbose explanations
+- Use structured formats (lists, tables, code blocks) over prose paragraphs where appropriate
+- Specification documents MUST focus on requirements, not implementation details
+- Technical decisions MUST be documented with "Why" not "How" (code shows "how")
+- Maximum file length targets (soft limits):
+  - spec.md: <400 lines (focus on user stories and requirements)
+  - plan.md: <300 lines (technical approach, not implementation steps)
+  - tasks.md: Task list only, minimal prose
+  - research.md: <200 lines (key findings, links to external resources)
+- Use abbreviated keys in JSON schemas (e.g., `iss` not `issueDate`) to reduce URL payload
+- Cross-reference external documentation via links rather than duplicating content
+- Templates MUST be concise with inline guidance, not separate documentation sections
+
+**Rationale**: AI agents have context windows that fill quickly. Verbose documentation wastes tokens, slows processing, and reduces the amount of relevant code/context that can be loaded. Information-dense documentation enables agents to understand the project faster and make better decisions. Concise docs also benefit human developers by reducing cognitive load.
+
 ## Architectural Constraints
 
 ### Technology Stack (Locked for MVP)
 
-The following technology choices are locked for MVP to ensure consistency and maintainability:
+The following technology choices are locked for MVP to ensure consistency and maintainability. These versions represent the latest stable releases as of 2025-11-19.
 
 **Core Framework**:
-- Next.js 14+ (App Router + Edge Runtime)
-- TypeScript (strict mode)
-- Tailwind CSS
-- shadcn/ui (Radix UI components)
+
+- Next.js 15+ (App Router + Edge Runtime)
+- React 18+
+- React DOM 18+
+- TypeScript 5.x+ (strict mode)
+- Node.js 20+ (specified in .nvmrc)
 
 **Web3 Stack**:
-- Wagmi v2 + Viem (Web3 core)
-- RainbowKit v2 (wallet UI)
+
+- Wagmi v2+ (Web3 core)
+- Viem v2+ (Ethereum interactions)
+- RainbowKit v2+ (wallet UI)
 - Alchemy + Infura (RPC providers)
 - Uniswap Token List (token validation)
 
 **State & Data**:
-- Zustand + persist middleware (client state)
-- TanStack Query (async data, caching)
-- lz-string (URL compression)
+
+- Zustand 5+ (client state)
+- Zustand persist middleware (LocalStorage integration)
+- TanStack Query v5+ (async data, caching)
+- lz-string 1.5.0+ (URL compression)
+
+**UI & Styling**:
+
+- Tailwind CSS 4+
+- shadcn/ui (Radix UI components)
+- Lucide React (latest - icons)
+- clsx 2.1.1+ (conditional classes)
+- tailwind-merge 2.5.4+ (class merging)
 
 **Typography**:
+
 - Geist Sans (UI/headings)
 - Geist Mono (data/addresses/amounts)
 
 **Supported Networks (MVP)**:
+
 - Ethereum Mainnet (Chain ID: 1)
 - Arbitrum (Chain ID: 42161)
 - Optimism (Chain ID: 10)
 - Polygon PoS (Chain ID: 137)
+
+**Version Update Policy**:
+
+- Minor and patch updates are permitted for all dependencies
+- Major version updates require constitutional amendment and migration plan
+- Security patches should be applied immediately
+- Use code execution to verify latest compatible versions when uncertain
 
 ### Project Structure (Feature-Sliced Design)
 
 The application MUST follow Feature-Sliced Design (FSD) architecture:
 
 **Layers** (from highest to lowest):
+
 - `app/` - Routing and application initialization
 - `pages/` - Page composition
 - `widgets/` - Large UI blocks
@@ -183,6 +237,7 @@ The application MUST follow Feature-Sliced Design (FSD) architecture:
 - `shared/` - Utilities and UI primitives
 
 **Routing**:
+
 - `/` - Marketing landing page (SEO optimized, indexed)
 - `/create` - Invoice editor (client-heavy, noindex)
 - `/pay` - Payment view (dynamic, noindex)
@@ -204,19 +259,21 @@ interface InvoiceSchemaV1 {
   dec: number;      // Token decimals (MANDATORY - baked in)
   f: {...};         // Sender info (name, wallet, optional address/email)
   c: {...};         // Client info (name, optional wallet/address/email)
-  it: [...];        // Line items (description, quantity, rate)
+  it: [...];        // Line items (description, qty, rate)
   tax: number;      // Tax rate (%)
   dsc: number;      // Discount amount
 }
 ```
 
 **URL Constraints**:
+
 - Maximum compressed URL length: 2000 bytes
 - Compression algorithm: lz-string (LZW)
 - Generation MUST be blocked if URL exceeds limit
 - Notes field MUST be limited to 280 characters (enforced in UI)
 
 **Magic Dust Verification**:
+
 - Random micro-amount added to each invoice: 0.000001 - 0.000999 (6 decimals) or equivalent
 - Provides unique identifier for exact payment matching
 - Displayed as "Pretty Print" (rounded) + "Exact Amount" (with dust) for transparency
@@ -227,6 +284,7 @@ interface InvoiceSchemaV1 {
 ### Abuse Management
 
 **Static Blocklist Implementation**:
+
 - Source: `https://raw.githubusercontent.com/voidpay/blocklist/main/blocked-hashes.json`
 - Format: `{ "hashes": ["sha256_1", ...], "updated": "ISO8601_timestamp" }`
 - Hash target: Full URL parameter `?d=...` (not invoice contents)
@@ -235,6 +293,7 @@ interface InvoiceSchemaV1 {
 - Reporting: "Report Abuse" button generates GitHub issue/PR
 
 **Privacy Preservation**:
+
 - Hashes prevent exposure of invoice contents
 - Public blocklist ensures transparency
 - Community moderation via GitHub
@@ -242,6 +301,7 @@ interface InvoiceSchemaV1 {
 ### Risk Mitigation Matrix
 
 **Technical Risks**:
+
 - RPC key leak → Serverless proxy with env variables
 - RPC rate limits → Multi-provider failover + aggressive caching
 - Browser storage wipe → Export/import JSON functionality
@@ -249,11 +309,13 @@ interface InvoiceSchemaV1 {
 - Schema breaking → Strict versioning + migration adapters
 
 **UX Risks**:
+
 - Partial payments → Display "Partially Paid" status with progress bar
 - Fee-on-transfer tokens → Warning labels, consider tolerance post-MVP
 - In-app browsers → Detect and show "Open in system browser" prompt
 
 **Legal/Compliance Risks**:
+
 - OFAC sanctions → NOT implemented in MVP (permissionless philosophy)
 - Domain blacklisting → Static blocklist + noindex meta tags
 - Support liability → Explicit disclaimers ("non-custodial interface")
@@ -297,13 +359,16 @@ Changes to this Constitution require:
 - Security mechanisms (Principle V)
 - RPC protection (Principle VI)
 - Transaction validation (Principle VII)
+- Documentation context efficiency (Principle VIII)
 
 **Constitution Check Gate** in plan-template.md MUST verify:
+
 - No backend database introduced
 - No user authentication/registration added
 - Schema changes follow versioning rules
 - New features preserve privacy-first approach
 - Security mechanisms not bypassed
+- Documentation follows context efficiency guidelines
 
 ### Complexity Justification
 
@@ -314,29 +379,42 @@ Any violation of Constitutional principles MUST be explicitly justified in the "
 - What simpler alternatives were rejected and why
 
 **Examples requiring justification**:
+
 - Introducing server-side session storage (violates Principle I)
 - Adding Google Analytics (violates Principle II)
 - Requiring email verification (violates Principle III)
 - Changing URL compression algorithm without migration (violates Principle IV)
+- Writing verbose 800-line specification documents (violates Principle VIII)
 
 ### Development Philosophy
 
 **Start Simple, Stay Simple**:
+
 - YAGNI (You Aren't Gonna Need It) - No speculative features
 - Every feature must have clear user value from brainstorm/spec
 - Prefer boring, proven technologies over cutting-edge
 - Optimize for maintainability over cleverness
 
 **Testing Discipline**:
+
 - Schema versioning MUST have integration tests (old URLs must work)
 - Payment verification logic MUST have unit tests
 - URL compression/decompression MUST have round-trip tests
 - Multi-network support MUST have integration tests per network
 
 **Observability Without Telemetry**:
+
 - Text I/O ensures debuggability (console logs in dev)
 - Error messages must be actionable for users
 - NO error tracking services (violates Privacy principle)
 - Debug mode via URL parameter for troubleshooting
 
-**Version**: 1.0.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-19
+**Documentation Standards** (Principle VIII):
+
+- Prefer information density over exhaustive explanation
+- Use structured formats (tables, lists) over narrative prose
+- Document decisions and rationale, not implementation steps
+- Keep specs focused on requirements, plans focused on approach
+- Link to external resources rather than duplicating content
+
+**Version**: 1.2.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-19
