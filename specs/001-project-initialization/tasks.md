@@ -38,6 +38,22 @@
 - **Tailwind v4**: Used `@tailwindcss/postcss` plugin instead of direct `tailwindcss`
 - **TypeScript**: Enabled strict mode with additional checks (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`)
 
+### Post-Launch Fixes (2025-11-19)
+- **Tailwind CSS Import**: Removed invalid `@import "tw-animate-css"` from `globals.css` (line 2)
+  - Issue: Module resolution error during build
+  - Fix: Already had correct `@plugin "tailwindcss-animate"` syntax
+- **Web3 SSR Hydration**: Resolved `indexedDB is not defined` errors
+  - Issue: WalletConnect/RainbowKit dependencies accessing browser APIs during SSR
+  - Fix: Implemented SSR-safe storage using wagmi's `noopStorage` for server-side
+  - Added webpack fallbacks for Node.js modules (fs, net, tls) in `next.config.mjs`
+- **ESLint Migration**: Migrated from legacy to flat config
+  - Issue: Next.js 15.5.6 deprecated `next lint` command
+  - Fix: Created `eslint.config.mjs` using `@eslint/eslintrc` compatibility layer
+  - Removed: `.eslintrc.json`, `.eslintignore`
+  - Updated: `package.json` lint script to `eslint .`
+  - Added: `next-env.d.ts` to ignores list
+  - Dependencies: Added `@eslint/eslintrc@^3.3.1`
+
 ### Skipped Tasks
 - None - all planned tasks completed
 
