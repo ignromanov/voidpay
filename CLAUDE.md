@@ -77,6 +77,7 @@ src/
 ```
 
 **Routing**:
+
 - `/` - Landing (indexed)
 - `/create` - Editor (noindex)
 - `/pay?d=...` - Payment (noindex)
@@ -111,6 +112,7 @@ interface InvoiceSchemaV1 {
 ## 🔐 Security Model
 
 ### RPC Proxy (REQUIRED)
+
 ```
 Client → Edge Function (/api/rpc) → Alchemy/Infura
          (adds API key from env)
@@ -119,6 +121,7 @@ Client → Edge Function (/api/rpc) → Alchemy/Infura
 Keys in Vercel env vars, never in client.
 
 ### Magic Dust Verification
+
 ```typescript
 // Creation: Add unique micro-amount
 const dust = crypto.getRandomValues(...)[0] % 1000 / 1000000;
@@ -136,6 +139,7 @@ Display: "Pretty Print" (1,000.00) + "Exact" (1,000.000042)
 ## 🚨 Common Mistakes
 
 ### ❌ DON'T
+
 ```typescript
 // Server-side storage
 await db.invoices.create({...}); // VIOLATES Principle I
@@ -151,6 +155,7 @@ const provider = new JsonRpcProvider(`...${ALCHEMY_KEY}`); // VIOLATES Principle
 ```
 
 ### ✅ DO
+
 ```typescript
 // URL state
 const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(invoice));
@@ -190,6 +195,7 @@ export async function POST(req: Request) {
 ## 📚 Documentation
 
 **Read First**:
+
 1. `.specify/memory/constitution.md` - GOVERNANCE 🔴
 2. `.specify/memory/brainstorm/DECISIONS.md` - Tech stack
 3. `.specify/memory/brainstorm/BRAINSTORM_SUMMARY.md` - Overview
@@ -220,6 +226,7 @@ export async function POST(req: Request) {
 **Philosophy**: Privacy > Features. Simplicity > Cleverness. YAGNI always.
 
 ## Active Technologies
+
 - Next.js 16.0.3+, React 19.0.0+, TypeScript 5.x+ (strict mode), Node.js 20+ (specified in .nvmrc)
 - Wagmi 2.19.4+, Viem 2.39.3+, RainbowKit 2.2.9+
 - Zustand 5.0.8+, TanStack Query 5.90.10+
@@ -228,5 +235,6 @@ export async function POST(req: Request) {
 - Client-side only (LocalStorage via Zustand persist), no backend database (Constitutional Principle I)
 
 ## Recent Changes
+
 - 2025-11-19: Constitution v1.1.0 - Locked library versions with latest stable releases
 - 001-project-initialization: Initial project setup with core technology stack

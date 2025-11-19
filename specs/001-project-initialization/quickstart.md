@@ -50,6 +50,7 @@ nvm use  # If using nvm
 ```
 
 **Verify**:
+
 ```bash
 ls -la
 # Should see: package.json, src/, .nvmrc, etc.
@@ -68,12 +69,14 @@ pnpm install
 ```
 
 **Verify**:
+
 ```bash
 pnpm list --depth=0
 # Should see: next, react, wagmi, viem, @rainbow-me/rainbowkit, etc.
 ```
 
 **Troubleshooting**:
+
 - **Error: "pnpm: command not found"**
   - Solution: Install pnpm globally: `npm install -g pnpm`
 
@@ -129,6 +132,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
    - Copy Project ID and replace `YOUR_INFURA_PROJECT_ID` in `.env.local`
 
 **Verify**:
+
 ```bash
 # Check that .env.local exists and is ignored by git
 cat .env.local | head -n 5
@@ -139,6 +143,7 @@ git status
 ```
 
 **Security Warning**:
+
 - ⚠️ **NEVER commit `.env.local`** to git (it contains secrets!)
 - ⚠️ **DO commit `.env.example`** (it's the template with no secrets)
 - ✅ `.gitignore` already includes `.env.local` (you're protected)
@@ -159,11 +164,13 @@ pnpm dev
 ```
 
 **Verify**:
+
 1. Open browser: [http://localhost:3000](http://localhost:3000)
 2. You should see: **VoidPay landing page** (basic layout with "Connect Wallet" button)
 3. Open browser console (F12): **No errors** (Success Criteria SC-002)
 
 **Troubleshooting**:
+
 - **Error: "Port 3000 is already in use"**
   - Solution: `pnpm dev -- -p 3001` (use different port)
   - OR: Kill process using port 3000: `lsof -ti:3000 | xargs kill`
@@ -300,6 +307,7 @@ touch src/features/connect-wallet/ConnectWalletButton.tsx
 ```
 
 Follow FSD layer rules:
+
 - `features/` can import from `entities/` and `shared/`
 - `entities/` can import from `shared/` only
 - `shared/` cannot import from other layers
@@ -322,6 +330,7 @@ pnpm type-check && pnpm lint
 
 **Agent Workflow** (FR-020, FR-021):
 When working with Claude Code or similar AI agents:
+
 1. Agent completes task
 2. Agent **automatically** runs `pnpm type-check` and `pnpm lint`
 3. If errors: Agent attempts auto-fix and re-runs
@@ -337,18 +346,21 @@ When working with Claude Code or similar AI agents:
 ## Environment Differences
 
 ### Development (`pnpm dev`)
+
 - Hot reload enabled (changes appear instantly)
 - Source maps enabled (easier debugging)
 - Console logs visible
 - `NEXT_PUBLIC_VERCEL_ENV=development`
 
 ### Production Build (`pnpm build && pnpm start`)
+
 - Optimized bundles (minified, tree-shaken)
 - No source maps (smaller bundle)
 - Console logs removed (except warnings/errors)
 - `NEXT_PUBLIC_VERCEL_ENV=production`
 
 ### Preview (Vercel Deployments)
+
 - Deployed on Vercel preview URL (e.g., `voidpay-git-feature-branch.vercel.app`)
 - Uses preview environment variables
 - `NEXT_PUBLIC_VERCEL_ENV=preview`
@@ -360,34 +372,41 @@ When working with Claude Code or similar AI agents:
 ### Development Server Issues
 
 **Problem**: "Error: Cannot find module '@/shared/ui/button'"
+
 - **Cause**: TypeScript path aliases not resolved
 - **Solution**: Restart TS server in VS Code (`Cmd+Shift+P` → "TypeScript: Restart TS Server")
 
 **Problem**: "Hydration error" in browser console
+
 - **Cause**: Server-rendered HTML doesn't match client
 - **Solution**: Ensure no browser-only code runs during SSR (use `useEffect` or `'use client'`)
 
 **Problem**: Slow hot reload (>10s)
+
 - **Cause**: Large node_modules or many files
 - **Solution**: Exclude `node_modules` from IDE indexing, close unused files
 
 ### RPC Provider Issues
 
 **Problem**: "Failed to fetch" on wallet connection
+
 - **Cause**: Invalid or missing RPC URLs in `.env.local`
 - **Solution**: Verify all 8 `NEXT_PUBLIC_*_URL` variables are set correctly
 
 **Problem**: "Rate limit exceeded"
+
 - **Cause**: Free tier limits on Alchemy/Infura
 - **Solution**: Upgrade to paid tier or reduce request frequency
 
 ### Build Issues
 
 **Problem**: "Type error: Property 'x' does not exist"
+
 - **Cause**: TypeScript strict mode catching type errors
 - **Solution**: Fix type annotations (don't use `any`, use proper types)
 
 **Problem**: "Build failed: Out of memory"
+
 - **Cause**: Insufficient Node.js heap size
 - **Solution**: `NODE_OPTIONS="--max-old-space-size=4096" pnpm build`
 
@@ -408,6 +427,7 @@ After completing this quickstart:
 ## Additional Resources
 
 ### Documentation
+
 - **Next.js 15**: [https://nextjs.org/docs](https://nextjs.org/docs)
 - **Wagmi v2**: [https://wagmi.sh/](https://wagmi.sh/)
 - **RainbowKit**: [https://www.rainbowkit.com/](https://www.rainbowkit.com/)
@@ -415,10 +435,12 @@ After completing this quickstart:
 - **Feature-Sliced Design**: [https://feature-sliced.design/](https://feature-sliced.design/)
 
 ### Community
+
 - **GitHub Issues**: [https://github.com/voidpay/voidpay/issues](https://github.com/voidpay/voidpay/issues)
 - **Discussions**: [https://github.com/voidpay/voidpay/discussions](https://github.com/voidpay/voidpay/discussions)
 
 ### Tools
+
 - **TypeScript Playground**: [https://www.typescriptlang.org/play](https://www.typescriptlang.org/play)
 - **Tailwind Play**: [https://play.tailwindcss.com/](https://play.tailwindcss.com/)
 - **Ethereum Unit Converter**: [https://eth-converter.com/](https://eth-converter.com/)

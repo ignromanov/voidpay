@@ -28,21 +28,21 @@ export interface NetworkConfig {
 
   /** Native currency details */
   nativeCurrency: {
-    name: string      // e.g., "Ether", "MATIC"
-    symbol: string    // e.g., "ETH", "MATIC"
-    decimals: number  // Always 18 for MVP networks
+    name: string // e.g., "Ether", "MATIC"
+    symbol: string // e.g., "ETH", "MATIC"
+    decimals: number // Always 18 for MVP networks
   }
 
   /** Block explorer configuration */
   blockExplorer: {
-    name: string      // e.g., "Etherscan", "Arbiscan"
-    url: string       // Base URL (e.g., "https://etherscan.io")
+    name: string // e.g., "Etherscan", "Arbiscan"
+    url: string // Base URL (e.g., "https://etherscan.io")
   }
 
   /** Visual theme for network display */
   theme: {
-    color: string     // Hex color (e.g., "#627EEA" for Ethereum)
-    icon?: string     // Optional network logo URL or path
+    color: string // Hex color (e.g., "#627EEA" for Ethereum)
+    icon?: string // Optional network logo URL or path
   }
 }
 
@@ -69,9 +69,9 @@ export interface UserPreferences {
 
   /** Currency formatting preferences */
   currencyFormat: {
-    decimals: number           // Decimal places (0-18)
+    decimals: number // Decimal places (0-18)
     thousandsSeparator: string // "," or "."
-    decimalSeparator: string   // "." or ","
+    decimalSeparator: string // "." or ","
   }
 }
 
@@ -109,7 +109,7 @@ export interface EnvironmentConfig {
   NEXT_PUBLIC_ALCHEMY_POLY_URL: string
 
   // RPC Endpoints - Infura (Fallback, server-only)
-  ALCHEMY_ETH_URL?: string  // Server-only (no NEXT_PUBLIC prefix)
+  ALCHEMY_ETH_URL?: string // Server-only (no NEXT_PUBLIC prefix)
   ALCHEMY_ARB_URL?: string
   ALCHEMY_OPT_URL?: string
   ALCHEMY_POLY_URL?: string
@@ -120,8 +120,8 @@ export interface EnvironmentConfig {
   INFURA_POLY_URL?: string
 
   // App Configuration
-  NEXT_PUBLIC_APP_URL?: string      // Base URL (defaults to localhost in dev)
-  NEXT_PUBLIC_VERCEL_ENV?: string   // Vercel environment (production, preview, development)
+  NEXT_PUBLIC_APP_URL?: string // Base URL (defaults to localhost in dev)
+  NEXT_PUBLIC_VERCEL_ENV?: string // Vercel environment (production, preview, development)
 }
 
 /**
@@ -132,7 +132,7 @@ export interface ValidatedEnv {
   rpcUrls: {
     [chainId: number]: {
       alchemy: string
-      infura?: string  // Optional fallback
+      infura?: string // Optional fallback
     }
   }
   appUrl: string
@@ -155,12 +155,12 @@ export interface ValidatedEnv {
 export interface FontConfig {
   /** Geist Sans (UI text, headings) */
   sans: {
-    variable: string  // CSS variable name (e.g., "--font-geist-sans")
+    variable: string // CSS variable name (e.g., "--font-geist-sans")
   }
 
   /** Geist Mono (addresses, amounts, code) */
   mono: {
-    variable: string  // CSS variable name (e.g., "--font-geist-mono")
+    variable: string // CSS variable name (e.g., "--font-geist-mono")
   }
 }
 
@@ -173,7 +173,7 @@ export interface FontConfig {
  * Location: tsconfig.json
  */
 export interface TypeScriptConfig {
-  strict: true  // Constitutional requirement
+  strict: true // Constitutional requirement
   noUncheckedIndexedAccess: true
   exactOptionalPropertyTypes: true
   noImplicitReturns: true
@@ -189,10 +189,10 @@ export interface TypeScriptConfig {
  */
 export interface NextConfig {
   experimental?: {
-    typedRoutes?: boolean  // Type-safe routing
+    typedRoutes?: boolean // Type-safe routing
   }
   compiler?: {
-    removeConsole?: boolean  // Remove console.* in production
+    removeConsole?: boolean // Remove console.* in production
   }
 }
 
@@ -231,7 +231,7 @@ export interface TailwindConfig {
  * Supported chain IDs (constitutional lock)
  */
 export const SUPPORTED_CHAIN_IDS = [1, 42161, 10, 137] as const
-export type SupportedChainId = typeof SUPPORTED_CHAIN_IDS[number]
+export type SupportedChainId = (typeof SUPPORTED_CHAIN_IDS)[number]
 
 /**
  * Type guard for chain ID validation
@@ -305,9 +305,7 @@ export interface JsonRpcErrorResponse {
 /**
  * Union type for all possible RPC responses
  */
-export type JsonRpcResponse<T = unknown> =
-  | JsonRpcSuccessResponse<T>
-  | JsonRpcErrorResponse
+export type JsonRpcResponse<T = unknown> = JsonRpcSuccessResponse<T> | JsonRpcErrorResponse
 
 /**
  * Proxy-level error (validation, missing env vars, etc.)
@@ -327,8 +325,8 @@ export interface RpcProxyError {
  */
 export interface WagmiNetworkConfig extends NetworkConfig {
   rpcUrls: {
-    alchemy: string  // From environment variables
-    infura?: string  // Optional fallback
+    alchemy: string // From environment variables
+    infura?: string // Optional fallback
   }
 }
 

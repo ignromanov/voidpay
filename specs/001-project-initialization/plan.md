@@ -160,11 +160,12 @@ components.json                   # shadcn/ui configuration
 
 ## Post-Design Constitution Re-Check
 
-*Re-evaluated after completing Phase 0 (Research) and Phase 1 (Design & Contracts)*
+_Re-evaluated after completing Phase 0 (Research) and Phase 1 (Design & Contracts)_
 
 ### Design Artifacts Review
 
 **Generated Artifacts**:
+
 - ✅ `research.md`: Technology stack best practices and configuration patterns
 - ✅ `data-model.md`: Configuration entities (NetworkConfig, UserPreferences, EnvironmentConfig, etc.)
 - ✅ `contracts/rpc-proxy-api.md`: RPC proxy endpoint specification
@@ -174,36 +175,42 @@ components.json                   # shadcn/ui configuration
 **Constitutional Compliance Verification**:
 
 ### Principle I: Zero-Backend Architecture ✅ PASS
+
 - **Evidence**: `data-model.md` explicitly states "No server-side state storage"
 - **RPC Proxy**: Edge Function is stateless (no database, no caching at proxy level)
 - **User Data**: All persistence via LocalStorage (UserPreferences entity)
 - **No Violations**: Confirmed
 
 ### Principle II: Privacy-First & Self-Custody ✅ PASS
+
 - **Evidence**: `contracts/rpc-proxy-api.md` specifies "NO logging of request/response bodies"
 - **No Tracking**: Research confirms no analytics dependencies (Sentry, GA explicitly excluded)
 - **LocalStorage Only**: `data-model.md` confirms user preferences stored client-side only
 - **No Violations**: Confirmed
 
 ### Principle III: Trustless & Permissionless ✅ PASS
+
 - **Evidence**: No authentication entities in data model
 - **No Registration**: No user account schema defined
 - **Direct Payments**: RPC proxy is read-only (no custody of funds)
 - **No Violations**: Confirmed
 
 ### Principle IV: Backward Compatibility & Schema Versioning ✅ PASS (Deferred)
+
 - **Evidence**: `config-schema.ts` includes `SUPPORTED_CHAIN_IDS` as const (immutable)
 - **Future-Ready**: Schema versioning pattern established via TypeScript types
 - **Invoice Schema**: Deferred to future feature (as planned)
 - **No Violations**: Confirmed
 
 ### Principle V: Security & Abuse Prevention ✅ PASS (Partial Implementation)
+
 - **Evidence**: `quickstart.md` warns against committing `.env.local` (secrets protection)
 - **SEO Noindex**: Mentioned in research (FR-015 compliance)
 - **Blocklist**: Deferred to future feature (as planned)
 - **No Violations**: Confirmed (appropriate deferral)
 
 ### Principle VI: RPC Key Protection & Rate Limit Management ✅ PASS
+
 - **Evidence**: `contracts/rpc-proxy-api.md` specifies server-side key injection
 - **Env Vars**: `data-model.md` defines EnvironmentConfig with all RPC URLs
 - **No Client Exposure**: Research confirms keys in env vars only
@@ -211,12 +218,14 @@ components.json                   # shadcn/ui configuration
 - **No Violations**: Confirmed
 
 ### Principle VII: Web3 Safety & Transaction Validation ✅ PASS (Foundation Only)
+
 - **Evidence**: `data-model.md` includes NetworkConfig with validation rules
 - **Chain ID Validation**: `config-schema.ts` includes `isSupportedChainId()` type guard
 - **Transaction Safety**: Deferred to payment feature (as planned)
 - **No Violations**: Confirmed
 
 ### Technology Stack Compliance ✅ PASS
+
 - **Evidence**: `research.md` documents all constitutional dependencies:
   - Next.js 15+ (App Router, Edge Runtime) ✅
   - TypeScript (strict mode + additional safety flags) ✅
@@ -231,6 +240,7 @@ components.json                   # shadcn/ui configuration
 - **No Violations**: Confirmed
 
 ### Feature-Sliced Design Compliance ✅ PASS
+
 - **Evidence**: Project structure in `plan.md` shows full FSD hierarchy
 - **Layer Separation**: `config-schema.ts` comments indicate proper entity placement
 - **Path Aliases**: Research confirms `@/*` TypeScript paths configured
@@ -241,6 +251,7 @@ components.json                   # shadcn/ui configuration
 **Decision**: All constitutional principles satisfied or appropriately deferred. Design phase (research, data model, contracts) introduces **zero violations**. Implementation can proceed to Phase 2 (task breakdown via `/speckit.tasks`).
 
 **Key Findings**:
+
 1. **No Server-Side State**: Confirmed across all artifacts (RPC proxy is stateless, LocalStorage for preferences)
 2. **Privacy Preserved**: No analytics, no logging, no tracking mechanisms
 3. **RPC Keys Protected**: Environment variables + server-side injection pattern

@@ -10,6 +10,7 @@
 ## ⚡ Quick Start
 
 **Для немедленного старта разработки см.:**
+
 - **[DECISIONS.md](./DECISIONS.md)** — Финальные решения по всем ключевым вопросам (tech stack, design, parameters)
 
 ---
