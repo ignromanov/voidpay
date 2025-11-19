@@ -5,6 +5,15 @@ import {
   optimism,
   polygon,
 } from "wagmi/chains";
+import { createStorage, noopStorage } from "wagmi";
+
+// SSR-safe storage that only uses localStorage in the browser
+const storage = createStorage({
+  storage:
+    typeof window !== "undefined" && window.localStorage
+      ? window.localStorage
+      : noopStorage,
+});
 
 export const config = getDefaultConfig({
   appName: "VoidPay",
@@ -16,4 +25,5 @@ export const config = getDefaultConfig({
     arbitrum,
   ],
   ssr: true,
+  storage,
 });
