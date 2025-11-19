@@ -57,19 +57,34 @@ Given that feature description, do this:
       - Pass `--number N+1` and `--short-name "your-short-name"` along with the feature description
       - Bash example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" --json --number 5 --short-name "user-auth" "Add user authentication"`
       - PowerShell example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" -Json -Number 5 -ShortName "user-auth" "Add user authentication"`
-   
+
    **IMPORTANT**:
    - Check all three sources (remote branches, local branches, specs directories) to find the highest number
    - Only match branches/directories with the exact short-name pattern
    - If no existing branches/directories found with this short-name, start with number 1
    - You must only ever run this script once per feature
    - The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for
-   - The JSON output will contain BRANCH_NAME and SPEC_FILE paths
+   - The JSON output will contain BRANCH_NAME, SPEC_FILE, WORKTREE_DIR paths
    - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot")
 
-3. Load `.specify/templates/spec-template.md` to understand required sections.
+3. **Git Worktree Creation (Constitution Principle X)**:
 
-4. Follow this execution flow:
+   The create-new-feature.sh script will automatically:
+   - Create the feature branch: `git branch ###-feature-name`
+   - Create an isolated worktree: `git worktree add worktrees/###-feature-name ###-feature-name`
+   - Switch your working directory to the worktree
+   - All subsequent work MUST happen in the worktree directory
+
+   **Worktree Isolation Rules**:
+   - Each feature develops in its own `worktrees/###-feature-name/` directory
+   - NEVER modify files in the main repository root during feature development
+   - The worktree shares the same Git repository but has an isolated filesystem
+   - This prevents conflicts when multiple agents work on different features concurrently
+   - After feature completion and merge, the worktree MUST be removed: `git worktree remove worktrees/###-feature-name && git worktree prune`
+
+4. Load `.specify/templates/spec-template.md` to understand required sections.
+
+5. Follow this execution flow:
 
     1. Parse user description from Input
        If empty: ERROR "No feature description provided"
@@ -95,9 +110,9 @@ Given that feature description, do this:
     7. Identify Key Entities (if data involved)
     8. Return: SUCCESS (spec ready for planning)
 
-5. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
+6. Write the specification to SPEC_FILE (in the worktree) using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
 
-6. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
+7. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
 
    a. **Create Spec Quality Checklist**: Generate a checklist file at `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with these validation items:
 
@@ -189,9 +204,14 @@ Given that feature description, do this:
 
    d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
 
-7. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/speckit.clarify` or `/speckit.plan`).
+8. Report completion with:
+   - Branch name
+   - Worktree directory path
+   - Spec file path (within worktree)
+   - Checklist results
+   - Readiness for the next phase (`/speckit.clarify` or `/speckit.plan`)
 
-**NOTE:** The script creates and checks out the new branch and initializes the spec file before writing.
+**NOTE:** The script creates the feature branch, creates and switches to the worktree, and initializes the spec file before writing.
 
 ## General Guidelines
 

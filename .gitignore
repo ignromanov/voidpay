@@ -44,3 +44,6 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Git Worktrees (Constitution Principle X)
+worktrees/

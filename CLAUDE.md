@@ -1,7 +1,7 @@
 # CLAUDE.md - VoidPay Development Guide
 
 > **VoidPay** - Stateless Crypto Invoice Platform
-> **Constitution**: `.specify/memory/constitution.md` (v1.1.0) 🔴 **READ FIRST**
+> **Constitution**: `.specify/memory/constitution.md` (v1.4.0) 🔴 **READ FIRST**
 
 ---
 
@@ -17,7 +17,7 @@ Privacy-first crypto invoicing platform. Invoice data encoded in **URLs** (no ba
 
 **Read `.specify/memory/constitution.md` before ANY architectural decisions.**
 
-### The Seven Laws
+### The Ten Principles
 
 1. **Zero-Backend** - No server-side database or persistent state
 2. **Privacy-First** - No analytics, no tracking, LocalStorage only
@@ -26,6 +26,9 @@ Privacy-first crypto invoicing platform. Invoice data encoded in **URLs** (no ba
 5. **Security & Abuse Prevention** - GitHub blocklist, no OFAC in MVP
 6. **RPC Key Protection** - Serverless proxy only, never expose in client
 7. **Web3 Safety** - Baked decimals, finalized confirmations, exact matching
+8. **Documentation Context Efficiency** - Information-dense docs for AI agents
+9. **Implementation Deviation Tracking** - Track reality vs. plan, update artifacts
+10. **Git Worktree Isolation** - Each feature in isolated worktree (parallel development)
 
 ### ❌ NEVER
 
@@ -217,9 +220,39 @@ export async function POST(req: Request) {
 
 ## 🔄 Workflow
 
+### Feature Development (with Git Worktrees)
+
+Each feature is developed in an **isolated Git worktree** to enable parallel development without conflicts:
+
+```bash
+# 1. Create feature (automatically creates worktree)
+/speckit.specify "Add user authentication"
+# Creates: worktrees/001-user-auth/
+# All work happens in worktree
+
+# 2. Plan → Tasks → Implement (all in worktree)
+/speckit.plan
+/speckit.tasks
+/speckit.implement
+
+# 3. After completion: integrate and cleanup
+git checkout main
+git merge 001-user-auth
+git worktree remove worktrees/001-user-auth
+git worktree prune
+```
+
+**Benefits**:
+- Multiple agents can work on different features simultaneously
+- No filesystem conflicts between concurrent features
+- Clean separation: `worktrees/001-feature-a/` vs `worktrees/002-feature-b/`
+
+### Process
+
 1. Read constitution before starting
 2. `/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement`
 3. Verify no principle violations
+4. All work happens in feature worktree (Constitution Principle X)
 
 ---
 
@@ -236,5 +269,6 @@ export async function POST(req: Request) {
 
 ## Recent Changes
 
+- 2025-11-19: Constitution v1.4.0 - Added Git Worktree isolation principle for concurrent development
 - 2025-11-19: Constitution v1.1.0 - Locked library versions with latest stable releases
 - 001-project-initialization: Initial project setup with core technology stack

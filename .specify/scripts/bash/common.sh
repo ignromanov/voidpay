@@ -83,6 +83,48 @@ check_feature_branch() {
 
 get_feature_dir() { echo "$1/specs/$2"; }
 
+# Determine current worktree directory (Constitution Principle X)
+# Returns the worktree path if in a feature worktree, or REPO_ROOT if in main worktree
+get_worktree_dir() {
+    local repo_root="$1"
+    local current_branch="$2"
+
+    # If not a git repo, return repo root
+    if ! has_git; then
+        echo "$repo_root"
+        return
+    fi
+
+    # Get list of all worktrees
+    local worktrees_list=$(git worktree list --porcelain 2>/dev/null || echo "")
+
+    if [[ -z "$worktrees_list" ]]; then
+        # No worktrees or git worktree not available
+        echo "$repo_root"
+        return
+    fi
+
+    # Parse worktree list to find current branch's worktree
+    local current_path=""
+    local in_worktree=false
+
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^worktree\ (.+)$ ]]; then
+            current_path="${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ ^branch\ refs/heads/(.+)$ ]]; then
+            local branch="${BASH_REMATCH[1]}"
+            if [[ "$branch" == "$current_branch" && -n "$current_path" ]]; then
+                # Found our branch's worktree
+                echo "$current_path"
+                return
+            fi
+        fi
+    done <<< "$worktrees_list"
+
+    # If not found in worktrees, we're in the main worktree
+    echo "$repo_root"
+}
+
 # Find feature directory by numeric prefix instead of exact branch match
 # This allows multiple branches to work on the same spec (e.g., 004-fix-bug, 004-add-feature)
 find_feature_dir_by_prefix() {
@@ -133,13 +175,18 @@ get_feature_paths() {
         has_git_repo="true"
     fi
 
+    # Determine current worktree directory (Constitution Principle X)
+    local worktree_dir=$(get_worktree_dir "$repo_root" "$current_branch")
+
     # Use prefix-based lookup to support multiple branches per spec
-    local feature_dir=$(find_feature_dir_by_prefix "$repo_root" "$current_branch")
+    # Feature dir is relative to worktree, not repo root
+    local feature_dir=$(find_feature_dir_by_prefix "$worktree_dir" "$current_branch")
 
     cat <<EOF
 REPO_ROOT='$repo_root'
 CURRENT_BRANCH='$current_branch'
 HAS_GIT='$has_git_repo'
+WORKTREE_DIR='$worktree_dir'
 FEATURE_DIR='$feature_dir'
 FEATURE_SPEC='$feature_dir/spec.md'
 IMPL_PLAN='$feature_dir/plan.md'

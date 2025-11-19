@@ -1,26 +1,27 @@
 <!--
   SYNC IMPACT REPORT
 
-  Version Change: 1.3.0 → 1.3.1
+  Version Change: 1.3.1 → 1.4.0
 
-  Modified Principles:
-  - Principle IX: Expanded to include PROGRESS.md tracking requirement
+  Modified Principles: None
 
   Added Sections:
-  - PROGRESS.md update requirement in Principle IX rules
+  - Principle X: Git Worktree Isolation for Concurrent Development
 
   Removed Sections: None
 
   Templates Requiring Updates:
-  ✅ .specify/templates/plan-template.md - Reviewed (compatible with progress tracking)
-  ✅ .specify/templates/spec-template.md - Reviewed (compatible with progress tracking)
-  ✅ .specify/templates/tasks-template.md - Updated to include PROGRESS.md update instructions
+  ✅ .specify/templates/plan-template.md - Reviewed (compatible with worktree workflow)
+  ✅ .specify/templates/spec-template.md - Reviewed (compatible with worktree workflow)
+  ✅ .specify/templates/tasks-template.md - Reviewed (compatible with worktree workflow)
 
   Follow-up TODOs:
-  - Update /speckit.implement command to enforce PROGRESS.md updates on feature completion
-  - Ensure PROGRESS.md template exists in .specify/templates/ if needed
+  - Update /speckit.specify command to create worktree before feature work
+  - Update /speckit.plan command to verify worktree exists
+  - Update /speckit.implement command to enforce worktree usage
+  - Consider creating workflow documentation for worktree management
 
-  Ratification: Clarification of Principle IX to include PROGRESS.md tracking
+  Ratification: Addition of Git Worktree principle to prevent agent conflicts
   Date: 2025-11-19
 -->
 
@@ -195,6 +196,27 @@
 - Task completion format MUST include deviation field: `- [x] T001 [Description] | Deviation: [None | <deviation description>]`
 
 **Rationale**: Plans are hypotheses that collide with reality during implementation. Without systematic tracking of what actually happened versus what was planned, design artifacts become stale and misleading. This creates a negative feedback loop where future work relies on outdated assumptions. By capturing deviations at task completion time, we create a continuous improvement cycle that keeps specifications, plans, and reality aligned. This principle embodies the "documentation as living artifact" philosophy and ensures that project knowledge compounds rather than decays over time.
+
+### X. Git Worktree Isolation for Concurrent Development
+
+**Principle**: Each feature MUST be developed in an isolated Git worktree to prevent conflicts between concurrent agents and enable parallel development.
+
+**Rules**:
+
+- Every feature specification MUST be developed in a dedicated Git worktree
+- Worktree naming convention: `worktrees/###-feature-name` (matching feature branch name)
+- Feature branch MUST be created before worktree: `git branch ###-feature-name`
+- Worktree creation: `git worktree add worktrees/###-feature-name ###-feature-name`
+- Agents MUST work exclusively within their assigned worktree directory
+- NO cross-worktree file modifications (each agent owns one worktree)
+- Main worktree (repository root) is reserved for integration and release work only
+- Feature worktrees MUST be removed after feature completion and branch merge: `git worktree remove worktrees/###-feature-name`
+- Worktree cleanup MUST be verified: `git worktree prune`
+- Specification artifacts (specs/###-feature-name/) MUST be committed in feature worktree before integration
+- Integration to main branch MUST happen via rebase or merge from feature worktree
+- Concurrent features (e.g., 001-feature-a, 002-feature-b) MUST use separate worktrees to avoid conflicts
+
+**Rationale**: Git worktrees enable true parallel development by creating separate working directories for each feature branch while sharing the same Git repository. This prevents file-level conflicts when multiple agents work on different features simultaneously. Without worktrees, concurrent agents would compete for the same working directory, causing constant context switching, merge conflicts, and lost work. Worktrees provide filesystem-level isolation while maintaining Git's branching model, enabling each agent to work independently without blocking others. This is essential for efficient multi-agent collaboration and rapid feature iteration.
 
 ## Architectural Constraints
 
@@ -390,6 +412,7 @@ Changes to this Constitution require:
 - Transaction validation (Principle VII)
 - Documentation context efficiency (Principle VIII)
 - Implementation deviation tracking (Principle IX)
+- Git Worktree isolation (Principle X)
 
 **Constitution Check Gate** in plan-template.md MUST verify:
 
@@ -447,4 +470,4 @@ Any violation of Constitutional principles MUST be explicitly justified in the "
 - Keep specs focused on requirements, plans focused on approach
 - Link to external resources rather than duplicating content
 
-**Version**: 1.3.1 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-19
+**Version**: 1.4.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-19
