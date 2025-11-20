@@ -211,8 +211,9 @@
 - Invoice data hydration
 - Read-only mode (no wallet required)
 - Display invoice details using InvoicePaper component
-- Network-specific ambient background (Ethereum: gray, Arbitrum: blue, Optimism: red, Polygon: purple)
-- "Report Abuse" footer button
+- Wrapped in App Shell (Header/Footer separation)
+- Network-specific "Network Vibes" (Ambient animated shapes)
+- "Report Abuse" footer button (in App Shell)
 - Disclaimer text: "You are sending funds directly to [address]. VoidPay is not an intermediary."
 
 ---
@@ -323,11 +324,12 @@
 
 **Features**:
 
-- Dynamic background gradients per network:
-  - Ethereum: Monochrome gray/slate
-  - Arbitrum: Deep blue with glow
-  - Optimism: Red tint with glow
-  - Polygon: Purple haze
+- Dynamic background animations per network ("Network Vibes"):
+  - Ethereum: Rhombuses/Diamonds (Vertical hovering)
+  - Arbitrum: Triangles (Diagonal movement)
+  - Optimism: Circles/Spheres (Floating bubbles)
+  - Polygon: Hexagons (Rotation)
+- Technical: "Blur Wrapper" pattern (Matryoshka) for performance
 - Apply on `/pay`, `/create` page based on invoice `net` field
 - Subtle accent color changes on primary buttons
 - Helper function: `getNetworkTheme(chainId)`

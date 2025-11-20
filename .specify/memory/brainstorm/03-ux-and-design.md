@@ -37,27 +37,48 @@
 - Меньше font loading overhead.
 - Лучшая совместимость с Next.js font optimization.
 
-### 3.1.3. Визуализация сетей (Ambient Context)
+### 3.1.3. Визуализация сетей (Network Vibes)
 
-Интерфейс адаптируется под выбранную сеть, чтобы дать подсознательный контекст пользователю.
+Интерфейс адаптируется под выбранную сеть, используя **Animated Geometric Shapes** вместо простых градиентов. Центр экрана остается чистым (читабельность), визуальный интерес смещен к краям.
 
-- **Механика:** На странице `/pay` и в превью `/create` меняется глобальный фон и акцентные цвета.
+- **Концепция:** Каждая сеть имеет свой "характер" и форму.
 - **Темы:**
-  - _Arbitrum:_ Глубокий синий градиент (`bg-slate-950` + blue glow).
-  - _Optimism:_ Красноватое свечение (`bg-slate-950` + red glow).
-  - _Polygon:_ Фиолетовая дымка.
-  - _Ethereum:_ Строгий серый/монохром.
+  - **Optimism:** Теплые, округлые формы (Circles/Spheres). Движение: Floating upward (Bubbles).
+  - **Arbitrum:** Динамичные, острые формы (Triangles). Движение: Diagonal/Cross movement.
+  - **Polygon:** Структурные, технологичные формы (Hexagons). Движение: Slow rotation.
+  - **Ethereum:** Стабильные, кристаллические формы (Rhombuses/Diamonds). Движение: Vertical hovering.
+  - **VoidPay (Default):** Органические, загадочные формы (Morphing Blobs). Движение: Fluid shape changing.
+
+**Technical Pattern: The "Blur Wrapper" (Matryoshka Pattern)**
+Чтобы избежать проблем с обрезкой `backdrop-filter` или `blur` при использовании `clip-path`:
+
+1.  **Parent Element (`motion.div`):** Отвечает за Позицию, Движение (`x`, `y`, `rotate`, `scale`), Размытие (`blur-[100px]+`) и Смешивание (`mix-blend-screen`).
+2.  **Child Element (`div`):** Отвечает за Цвет (`bg-...`) и Форму (`clip-path` или `border-radius`).
+
+*Rule:* Никогда не применять `clip-path` и `blur` к одному элементу. Blur — на родителя, Clip-path — на ребенка.
 
 ## 3.2. Сценарий Создателя (Route: `/create`)
 
 **Цель:** Создать инвойс максимально быстро, с возможностью предпросмотра.
 
-### 3.2.1. Интерфейс (Split Screen)
+### 3.2.1. Layout: App Shell & Split Screen
 
-- **Desktop:** Экран разделен на две части.
+**The App Shell (The Desk):**
+Обертка приложения, отделяющая "Платформу" от "Документа".
+
+- **Header (Top):**
+  - _Top-Left:_ **VoidPay Logo** (Branding & Home Link).
+  - _Top-Right:_ **Action Triggers** (History/Menu).
+  - _Style:_ Minimal, transparent/glassmorphism over dark background.
+- **Footer (Bottom):**
+  - _Content:_ **Trust & Safety** elements ("Report Abuse", "Legal Disclaimer").
+  - _Purpose:_ Визуально отделяет ответственность платформы от контента пользователя.
+
+**Content Area (The Paper):**
+- **Desktop:** Split View.
   - _Left (Editor):_ Скроллящаяся форма ввода данных.
-  - _Right (Preview):_ Закрепленная ("Sticky") область, отображающая инвойс так, как его увидит клиент (HTML-версия будущего PDF). Обновляется в реальном времени (Reactive).
-- **Mobile:** Использование табов `[Edit]` и `[Preview]`.
+  - _Right (Preview):_ Закрепленный Invoice Card. Строго содержит только данные инвойса и watermark "Powered by VoidPay". Никаких кнопок "Report Abuse" внутри карты.
+- **Mobile:** Tabs `[Edit]` | `[Preview]`.
 
 ### 3.2.2. Ключевые взаимодействия
 
@@ -71,16 +92,20 @@
 
 **Цель:** Оплатить без лишних кликов и сомнений.
 
-### 3.3.1. Интерфейс (The Receipt Card)
+### 3.3.1. Интерфейс (App Shell + Receipt Card)
 
-Страница выглядит как цифровой чек. Никаких лишних меню.
+Страница использует ту же структуру App Shell, что и Creator flow.
 
-- **Header:** Название компании отправителя (text-only, без логотипа).
-- **Hero Section:** Огромная сумма к оплате и статус.
-  - **Pretty Print Display:** Основная сумма отображается красиво округленной: `1,000.00 USDC` (крупным шрифтом).
-  - **Exact Amount:** Мелким шрифтом ниже подписано: _"Payment amount: 1,000.000042"_ — точная сумма с Magic Dust для честности и прозрачности.
-- **Details:** Таблица услуг (свернутая по умолчанию на мобильных).
-- **Footer:** "Powered by VoidPay" (обязательный watermark).
+- **Header:** VoidPay Logo (Home) + Wallet Status (optional).
+- **Main Content (The Receipt Card):**
+  - Визуально имитирует бумажный чек (Invoice Paper).
+  - **Header:** Название компании отправителя (text-only).
+  - **Hero:** Огромная сумма (Pretty Print) + точная сумма (Magic Dust).
+  - **Details:** Таблица услуг.
+  - **Watermark:** "Powered by VoidPay" (внутри карты).
+- **Footer (Platform):**
+  - **Report Abuse:** Кнопка "Report Abuse" (вне карты, в футере App Shell).
+  - **Disclaimer:** _"You are sending funds directly to [Address]. VoidPay is not an intermediary."_
 
 ### 3.3.2. Web3 Взаимодействие (The "Pay" Button)
 

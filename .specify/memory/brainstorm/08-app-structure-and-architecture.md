@@ -29,7 +29,8 @@ src/
 │   ├── invoice-editor/   # Complex form with validation
 │   ├── invoice-paper/    # Visual representation (HTML/CSS)
 │   ├── payment-terminal/ # Web3 interaction card (Connect/Pay)
-│   └── history-drawer/   # Slide-over panel with local history
+│   ├── history-drawer/   # Slide-over panel with local history
+│   └── app-shell/        # Global Layout (Header, Footer, Background)
 │
 ├── features/             # Layer: Features (User Actions)
 │   ├── generate-link/    # Logic: Form -> LZ-String -> URL
@@ -64,7 +65,7 @@ src/
 
 - **Цель:** Инструмент для создания инвойса.
 - **State:** Использует `useCreatorStore` (Zustand Persist). При загрузке проверяет наличие черновика в LocalStorage и восстанавливает его.
-- **Layout:** Full-screen application (100vh).
+- **Layout:** Wrapped in `AppShell`.
   - **Desktop:** Split View (50% Form / 50% Preview).
   - **Mobile:** Tabs (`Edit` | `Preview`).
 - **Action:** Кнопка "Generate Link" не меняет URL страницы. Она открывает **Success Modal** с готовой ссылкой и QR-кодом.
@@ -76,7 +77,7 @@ src/
 - **Visuals:** Использует концепцию **Ambient Background**.
   - Фон страницы меняется в зависимости от `chainId` в инвойсе.
   - _Arbitrum:_ Синий градиент. _Optimism:_ Красный. _Polygon:_ Фиолетовый.
-- **Layout:**
+- **Layout:** Wrapped in `AppShell`.
   - Слой 1: `InvoicePaper` (Визуализация документа).
   - Слой 2: `PaymentTerminal` (Плавающая панель управления оплатой).
 

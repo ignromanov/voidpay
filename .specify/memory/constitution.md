@@ -1,29 +1,22 @@
 <!--
   SYNC IMPACT REPORT
 
-  Version Change: 1.4.1 → 1.5.0
+  Version Change: 1.5.0 → 1.5.1
 
-  Modified Principles: None
+  Modified Principles:
+  - XI. UI/UX Design Principles: Added "App Shell Architecture" rule
 
   Added Sections:
-  - UI/UX Design Principles (NEW SECTION)
-    - 3.1 Theme: Hybrid Theme Strategy (Dark Desk + Light Paper)
-    - 3.2 Visual Physics: ISO 216 A4 aspect ratio constraint
-    - 3.1.1 Palette: White Paper on Dark Desk contrast specification
-    - 3.2.1 Editor UI: Layout max-width and preview component specifications
-    - 3.1.3 Ambient Glow Spec: Network-specific ambient glow implementation
+  - 3.3 App Shell Architecture (The Desk vs. The Paper)
 
   Removed Sections: None
 
-  Templates Requiring Updates:
-  ✅ plan-template.md: Updated Constitution Check section with UI/UX Design Principles gates
-  ⚠ spec-template.md: May benefit from UI/UX requirements guidance in comments
+  Templates Requiring Updates: None
 
   Follow-up TODOs:
-  - Consider adding UI/UX compliance checks to Constitution Check gate in plan-template.md
-  - Update any existing feature specs to align with new Theme and Visual Physics constraints
+  - Ensure implementation tasks reflect the App Shell structure
 
-  Ratification: Addition of comprehensive UI/UX Design Principles to ensure consistent visual identity
+  Ratification: Formalizing App Shell architecture to ensure branding visibility and platform liability separation.
   Date: 2025-11-20
 -->
 
@@ -276,6 +269,20 @@
   - Optional: Subtle border (`border border-zinc-200`) for definition
 - Preview MUST scale proportionally on smaller viewports while maintaining 1:1.414 ratio
 - Preview MUST NOT exceed container width minus appropriate padding
+
+#### 3.3 App Shell Architecture (The Desk vs. The Paper)
+
+- **Structure**: Application MUST use an "App Shell" wrapper for `/create` and `/pay` routes
+- **Header (The Desk)**:
+  - MUST contain VoidPay Logo (Branding)
+  - MUST contain Action Triggers (Menu, Wallet)
+  - MUST be visually distinct from the invoice content
+- **Footer (The Desk)**:
+  - MUST contain Trust & Safety elements (Report Abuse, Legal Disclaimer)
+  - MUST be visually distinct to imply platform responsibility
+- **Invoice Card (The Paper)**:
+  - MUST contain ONLY invoice data and "Powered by VoidPay" watermark
+  - MUST NOT contain platform-level actions (Report Abuse) inside the card boundary
 
 #### 3.1.3 Ambient Glow Spec: Network-Specific Lighting
 
@@ -555,4 +562,4 @@ Any violation of Constitutional principles MUST be explicitly justified in the "
 - Keep specs focused on requirements, plans focused on approach
 - Link to external resources rather than duplicating content
 
-**Version**: 1.5.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-20
+**Version**: 1.5.1 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-20

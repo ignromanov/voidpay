@@ -35,6 +35,22 @@
 
 ---
 
+#### P0.X - Design System Refinement (App Shell & Vibes)
+**Status**: 🟢 **Completed**: 2025-11-20
+
+**Implemented**:
+- ✅ App Shell Architecture formalized (Header/Footer separation)
+- ✅ "Network Vibes" visual language defined (Geometric shapes per network)
+- ✅ "Blur Wrapper" technical pattern specified
+- ✅ Constitution updated with App Shell rules (Principle XI)
+- ✅ FSD structure updated with `widgets/app-shell`
+
+**Notes**:
+- Ensures clear separation between Platform (Desk) and Content (Paper)
+- Prepares for implementation of P0.11 and P1.4
+
+---
+
 #### P0.2 - URL State Codec & Schema Validation
 **Status**: 🟢 **Completed**: 2025-11-20
 

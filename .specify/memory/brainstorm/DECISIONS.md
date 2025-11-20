@@ -43,6 +43,17 @@
 
 **Файл:** [Part 3: User Experience & Design](./03-ux-and-design.md#31-визуальный-стиль-visual-identity)
 
+### 2.3 App Shell Separation
+
+- **Decision:** Explicit separation between "Platform" (App Shell) and "Document" (Invoice Card).
+- **Rationale:**
+  - **Branding:** VoidPay logo always visible in Header ("The Desk").
+  - **Liability:** Disclaimer and Report Abuse moved to Footer ("The Desk"), implying platform responsibility.
+  - **Content:** Invoice Card ("The Paper") contains ONLY user data and watermark.
+- **Metaphor:** "Paper on a Desk". The desk (Shell) provides the tools and context. The paper (Card) is the artifact.
+
+**Файл:** [Part 3: User Experience & Design](./03-ux-and-design.md#321-layout-app-shell--split-screen)
+
 ---
 
 ## 3. Technology Stack
