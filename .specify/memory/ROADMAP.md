@@ -297,7 +297,7 @@
 - Slide-over panel from right
 - List of created invoices (from LocalStorage)
 - Display: Invoice ID, Client Name, Amount, Date, Status preview
-- Actions per item: Copy Link, Delete
+- Actions per item: Copy Link, Delete, Payed
 - Search/filter by client name or ID
 - Sort by date (newest first)
 
@@ -328,7 +328,7 @@
   - Arbitrum: Deep blue with glow
   - Optimism: Red tint with glow
   - Polygon: Purple haze
-- Apply on `/pay` page based on invoice `net` field
+- Apply on `/pay`, `/create` page based on invoice `net` field
 - Subtle accent color changes on primary buttons
 - Helper function: `getNetworkTheme(chainId)`
 - Tailwind CSS integration
