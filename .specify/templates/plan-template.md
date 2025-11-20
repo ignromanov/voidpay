@@ -31,7 +31,14 @@
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-[Gates determined based on constitution file]
+- [ ] No backend database introduced (Principle I)
+- [ ] No user authentication/registration added (Principle III)
+- [ ] Schema changes follow versioning rules (Principle IV)
+- [ ] New features preserve privacy-first approach (Principle II)
+- [ ] Security mechanisms not bypassed (Principle V)
+- [ ] Documentation follows context efficiency guidelines (Principle VIII)
+- [ ] UI follows Hybrid Theme Strategy: dark desk (`zinc-950`), light paper (`white`) (Principle XI)
+- [ ] Document representations maintain ISO 216 (A4) aspect ratio `1:1.414` (Principle XI)
 
 ## Project Structure
 

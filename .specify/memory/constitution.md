@@ -1,21 +1,29 @@
 <!--
   SYNC IMPACT REPORT
 
-  Version Change: 1.4.0 → 1.4.1
+  Version Change: 1.4.1 → 1.5.0
 
-  Modified Principles:
-  - Data Model Constraints: Updated InvoiceSchemaV1 tax/dsc types to string for flexibility
+  Modified Principles: None
 
-  Added Sections: None
+  Added Sections:
+  - UI/UX Design Principles (NEW SECTION)
+    - 3.1 Theme: Hybrid Theme Strategy (Dark Desk + Light Paper)
+    - 3.2 Visual Physics: ISO 216 A4 aspect ratio constraint
+    - 3.1.1 Palette: White Paper on Dark Desk contrast specification
+    - 3.2.1 Editor UI: Layout max-width and preview component specifications
+    - 3.1.3 Ambient Glow Spec: Network-specific ambient glow implementation
 
   Removed Sections: None
 
   Templates Requiring Updates:
-  ✅ None
+  ✅ plan-template.md: Updated Constitution Check section with UI/UX Design Principles gates
+  ⚠ spec-template.md: May benefit from UI/UX requirements guidance in comments
 
-  Follow-up TODOs: None
+  Follow-up TODOs:
+  - Consider adding UI/UX compliance checks to Constitution Check gate in plan-template.md
+  - Update any existing feature specs to align with new Theme and Visual Physics constraints
 
-  Ratification: Correction of schema types to match flexible string requirement (e.g. "10%" vs "50")
+  Ratification: Addition of comprehensive UI/UX Design Principles to ensure consistent visual identity
   Date: 2025-11-20
 -->
 
@@ -212,6 +220,86 @@
 
 **Rationale**: Git worktrees enable true parallel development by creating separate working directories for each feature branch while sharing the same Git repository. This prevents file-level conflicts when multiple agents work on different features simultaneously. Without worktrees, concurrent agents would compete for the same working directory, causing constant context switching, merge conflicts, and lost work. Worktrees provide filesystem-level isolation while maintaining Git's branching model, enabling each agent to work independently without blocking others. This is essential for efficient multi-agent collaboration and rapid feature iteration.
 
+### XI. UI/UX Design Principles
+
+**Principle**: The application MUST maintain a consistent visual identity that reinforces the metaphor of "paper on a desk" while ensuring print/PDF fidelity.
+
+**Rules**:
+
+#### 3.1 Theme: Hybrid Theme Strategy
+
+- **App UI (Controls/Layout)**: Deep Dark Mode using `zinc-950` background ("The Desk")
+- **Document Surface (Invoice)**: Light Mode using `white` background ("The Paper")
+- This dual-theme approach MUST be maintained consistently across all views
+- Navigation, toolbars, sidebars, and controls MUST use dark theme colors
+- Invoice preview/display components MUST use light theme colors
+- NO full-app light mode or full-app dark mode toggle (hybrid is mandatory)
+
+#### 3.2 Visual Physics: ISO 216 Compliance
+
+- All document representations MUST strictly follow ISO 216 (A4) aspect ratio: `1:1.414`
+- This applies to:
+  - Invoice preview components
+  - PDF generation output
+  - Print layouts
+  - Any visual representation of the invoice document
+- Aspect ratio MUST be enforced in CSS/layout calculations
+- Deviations from 1:1.414 ratio are NOT permitted (ensures print/PDF consistency)
+
+#### 3.1.1 Palette: White Paper on Dark Desk
+
+- **Primary Contrast**: White invoice card (`#FFFFFF` or `white`) on dark background (`zinc-950`)
+- **Invoice Card Styling**:
+  - Background: `white`
+  - Text/Content: Black ink (`#000000` or equivalent dark text color)
+  - Border/Shadow: Subtle shadow to create depth against dark background
+- **Dark Desk Styling**:
+  - Background: `zinc-950` (or equivalent deep dark color from Tailwind palette)
+  - UI Controls: Light text on dark background (standard dark mode contrast)
+- **Accessibility**: MUST maintain WCAG AA contrast ratios:
+  - Invoice content (black on white): ≥4.5:1
+  - UI controls (light on dark): ≥4.5:1
+
+#### 3.2.1 Editor UI: Layout Constraints
+
+**Layout**:
+- Application container MUST enforce `max-w-[1600px]` to prevent ultrawide stretching
+- Container MUST be centered on viewport
+- Responsive breakpoints MUST maintain aspect ratio integrity for invoice preview
+- NO full-width layouts that distort the "desk" metaphor
+
+**Preview Component**:
+- MUST simulate an A4 sheet with shadow effect
+- MUST be centered on the dark background
+- Shadow specification:
+  - Use `shadow-2xl` or equivalent for depth
+  - Optional: Subtle border (`border border-zinc-200`) for definition
+- Preview MUST scale proportionally on smaller viewports while maintaining 1:1.414 ratio
+- Preview MUST NOT exceed container width minus appropriate padding
+
+#### 3.1.3 Ambient Glow Spec: Network-Specific Lighting
+
+**Technique**:
+- Absolute positioned elements behind the invoice paper
+- High blur radius: `blur-3xl` (or equivalent ~64px blur)
+- Low opacity: `opacity-20` to `opacity-30` range
+- Z-index MUST place glow behind paper but above desk background
+
+**Colors by Network**:
+- **Arbitrum**: Blue/Cyan gradient (`from-blue-500 to-cyan-500`)
+- **Optimism**: Red/Orange gradient (`from-red-500 to-orange-500`)
+- **Polygon**: Purple gradient (`from-purple-500 to-purple-600`)
+- **Default/Ethereum**: Violet gradient (`from-violet-500 to-violet-600`)
+
+**Implementation Requirements**:
+- Glow MUST be subtle and not distract from invoice content
+- Glow MUST NOT affect text readability on the white paper
+- Glow color MUST update dynamically based on selected network
+- Glow MUST be visible on dark desk background but invisible on white paper
+- Use CSS `mix-blend-mode` if needed to enhance effect without overwhelming
+
+**Rationale**: The Hybrid Theme Strategy creates a strong visual metaphor that distinguishes the application chrome from the invoice document, reinforcing the stateless nature of the system (the "paper" exists independently of the "desk"). ISO 216 compliance ensures that what users see on screen matches what they'll get when printing or exporting to PDF, eliminating layout surprises. The ambient glow provides subtle network identification without cluttering the UI, while maintaining the premium aesthetic. This design system creates a memorable, professional experience that differentiates VoidPay from generic invoice tools.
+
 ## Architectural Constraints
 
 ### Technology Stack (Locked for MVP)
@@ -407,6 +495,7 @@ Changes to this Constitution require:
 - Documentation context efficiency (Principle VIII)
 - Implementation deviation tracking (Principle IX)
 - Git Worktree isolation (Principle X)
+- UI/UX Design Principles (Principle XI)
 
 **Constitution Check Gate** in plan-template.md MUST verify:
 
@@ -416,6 +505,8 @@ Changes to this Constitution require:
 - New features preserve privacy-first approach
 - Security mechanisms not bypassed
 - Documentation follows context efficiency guidelines
+- UI follows Hybrid Theme Strategy (dark desk, light paper)
+- Document representations maintain ISO 216 (A4) aspect ratio
 
 ### Complexity Justification
 
@@ -464,4 +555,4 @@ Any violation of Constitutional principles MUST be explicitly justified in the "
 - Keep specs focused on requirements, plans focused on approach
 - Link to external resources rather than duplicating content
 
-**Version**: 1.4.1 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-20
+**Version**: 1.5.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-20
