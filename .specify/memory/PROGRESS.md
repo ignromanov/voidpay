@@ -36,29 +36,27 @@
 ---
 
 #### P0.2 - URL State Codec & Schema Validation
-**Status**: 🟢 **Completed**: 2025-11-20  
-**Feature Folder**: `specs/002-url-state-codec/`
+**Status**: 🟢 **Completed**: 2025-11-20
 
 **Implemented**:
-- ✅ InvoiceSchemaV1 TypeScript interface with all fields (v, id, iss, due, nt, net, cur, t, dec, f, c, it, tax, dsc)
-- ✅ Abbreviated field names for URL size optimization (iss, nt, ads, ph, etc.)
-- ✅ lz-string compression/decompression (compressToEncodedURIComponent)
-- ✅ URL length validation (2000 bytes limit enforced in generateInvoiceUrl)
-- ✅ Schema versioning architecture (version field + version-specific parsers)
-- ✅ Immutable parseV1 function (Constitution Principle IV compliance)
-- ✅ Zod validation schemas for runtime type safety
-- ✅ Reserved fields (meta, _future) for extensibility
+- ✅ InvoiceSchemaV1 TypeScript interfaces with all required fields
+- ✅ lz-string compression/decompression (lz-string@1.5.0)
+- ✅ URL length validation (2000 bytes hard limit)
+- ✅ Schema versioning support (v1 with forward compatibility)
+- ✅ Reserved fields for extensibility (_reserved1-5)
+- ✅ Zod validation schemas for data integrity
+- ✅ Public API (encodeInvoiceToUrl, decodeInvoiceFromUrl)
 - ✅ User-friendly error handling (no stack traces exposed)
 - ✅ Public API barrel exports (src/features/invoice-codec/index.ts)
 
 **Differences from Plan**:
-- Test tasks (T009, T011, T013) skipped per user request
-- Quantity field (`q`) allows both string and number (flexibility for UI layer)
+- Test tasks (T009, T011, T013) skipped per implementation strategy
+- Focus on MVP functionality over comprehensive test coverage
 
 **Notes**:
-- Feature-Sliced Design structure followed (entities/invoice, features/invoice-codec, shared/lib/compression)
-- All functional requirements (FR-001 to FR-015) implemented
-- Constitution compliance verified (all 10 principles respected)
+- Feature-Sliced Design structure: `src/entities/invoice/`, `src/features/invoice-codec/`, `src/shared/lib/compression/`
+- Comprehensive README with usage examples in `src/features/invoice-codec/README.md`
+- Implementation report available in `specs/002-url-state-codec/IMPLEMENTATION_REPORT.md`
 - Ready for integration into invoice editor and payment views
 
 ---
