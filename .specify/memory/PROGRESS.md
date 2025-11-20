@@ -1,7 +1,7 @@
 # 🚀 VoidPay - Progress Tracker
 
-> **Last Updated**: 2025-11-19  
-> **Current Phase**: Phase 0 - Project Foundation
+> **Last Updated**: 2025-11-20  
+> **Current Phase**: Phase 1 - Core Infrastructure
 
 ---
 
@@ -35,6 +35,34 @@
 
 ---
 
+#### P0.2 - URL State Codec & Schema Validation
+**Status**: 🟢 **Completed**: 2025-11-20  
+**Feature Folder**: `specs/002-url-state-codec/`
+
+**Implemented**:
+- ✅ InvoiceSchemaV1 TypeScript interface with all fields (v, id, iss, due, nt, net, cur, t, dec, f, c, it, tax, dsc)
+- ✅ Abbreviated field names for URL size optimization (iss, nt, ads, ph, etc.)
+- ✅ lz-string compression/decompression (compressToEncodedURIComponent)
+- ✅ URL length validation (2000 bytes limit enforced in generateInvoiceUrl)
+- ✅ Schema versioning architecture (version field + version-specific parsers)
+- ✅ Immutable parseV1 function (Constitution Principle IV compliance)
+- ✅ Zod validation schemas for runtime type safety
+- ✅ Reserved fields (meta, _future) for extensibility
+- ✅ User-friendly error handling (no stack traces exposed)
+- ✅ Public API barrel exports (src/features/invoice-codec/index.ts)
+
+**Differences from Plan**:
+- Test tasks (T009, T011, T013) skipped per user request
+- Quantity field (`q`) allows both string and number (flexibility for UI layer)
+
+**Notes**:
+- Feature-Sliced Design structure followed (entities/invoice, features/invoice-codec, shared/lib/compression)
+- All functional requirements (FR-001 to FR-015) implemented
+- Constitution compliance verified (all 10 principles respected)
+- Ready for integration into invoice editor and payment views
+
+---
+
 ## 🔄 In Progress
 
 _No features currently in progress_
@@ -44,16 +72,6 @@ _No features currently in progress_
 ## 📋 Planned Features
 
 ### Phase 1: Core Infrastructure (Week 1-2)
-
-#### P0.2 - URL State Codec & Schema Validation
-**Status**: 🔴 **Priority**: P0 **Next Up**
-
-**Planned**:
-- InvoiceSchemaV1 TypeScript interfaces
-- lz-string compression/decompression
-- URL length validation (2000 bytes)
-- Schema versioning support
-- Reserved fields for extensibility
 
 ---
 
@@ -173,23 +191,23 @@ _No features currently in progress_
 ## 📊 Progress Summary
 
 - **Total Features**: 22 (P0-P1 only)
-- **Completed**: 1 (P0.1)
+- **Completed**: 2 (P0.1, P0.2)
 - **In Progress**: 0
-- **Remaining**: 21
+- **Remaining**: 20
 
-**Phase 0 Progress**: 100% (1/1)  
+**Phase 0 Progress**: 100% (2/2)  
 **Phase 1 Progress**: ~40% (partial P0.5, P0.6)  
-**Overall MVP Progress**: ~10%
+**Overall MVP Progress**: ~15%
 
 ---
 
 ## 🎯 Next Steps
 
-1. **P0.2** - Implement URL State Codec (critical path blocker)
-2. **P0.3** - Set up Zustand stores
-3. **P0.4** - Enhance RPC proxy with failover
-4. Complete P0.5 & P0.6 remaining tasks
-5. Begin Phase 2 (MVP Core Features)
+1. **P0.3** - Set up Zustand stores (client-side storage)
+2. **P0.4** - Enhance RPC proxy with failover
+3. Complete P0.5 & P0.6 remaining tasks
+4. Begin Phase 2 (MVP Core Features)
+5. Integrate URL codec into invoice editor and payment views
 
 ---
 
