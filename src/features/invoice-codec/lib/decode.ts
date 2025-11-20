@@ -1,4 +1,5 @@
 import { InvoiceSchemaV1 } from '@/entities/invoice/model/schema';
+import { invoiceSchema } from '@/entities/invoice/lib/validation';
 import { decompress } from '@/shared/lib/compression';
 
 /**
@@ -48,8 +49,6 @@ export const decodeInvoice = (compressed: string): InvoiceSchemaV1 => {
  * @throws Error if validation fails
  */
 function parseV1(data: unknown): InvoiceSchemaV1 {
-  const { invoiceSchema } = require('@/entities/invoice/lib/validation');
-  
   const result = invoiceSchema.safeParse(data);
   
   if (!result.success) {

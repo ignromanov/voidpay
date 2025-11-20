@@ -43,4 +43,5 @@ export const invoiceSchema = z.object({
 
 // Verify that the Zod schema matches the TypeScript interface
 // This is a type-level check
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type InvoiceSchemaCheck = z.infer<typeof invoiceSchema> extends InvoiceSchemaV1 ? true : false;
