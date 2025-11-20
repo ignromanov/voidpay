@@ -1,28 +1,22 @@
 <!--
   SYNC IMPACT REPORT
 
-  Version Change: 1.3.1 → 1.4.0
+  Version Change: 1.4.0 → 1.4.1
 
-  Modified Principles: None
+  Modified Principles:
+  - Data Model Constraints: Updated InvoiceSchemaV1 tax/dsc types to string for flexibility
 
-  Added Sections:
-  - Principle X: Git Worktree Isolation for Concurrent Development
+  Added Sections: None
 
   Removed Sections: None
 
   Templates Requiring Updates:
-  ✅ .specify/templates/plan-template.md - Reviewed (compatible with worktree workflow)
-  ✅ .specify/templates/spec-template.md - Reviewed (compatible with worktree workflow)
-  ✅ .specify/templates/tasks-template.md - Reviewed (compatible with worktree workflow)
+  ✅ None
 
-  Follow-up TODOs:
-  - Update /speckit.specify command to create worktree before feature work
-  - Update /speckit.plan command to verify worktree exists
-  - Update /speckit.implement command to enforce worktree usage
-  - Consider creating workflow documentation for worktree management
+  Follow-up TODOs: None
 
-  Ratification: Addition of Git Worktree principle to prevent agent conflicts
-  Date: 2025-11-19
+  Ratification: Correction of schema types to match flexible string requirement (e.g. "10%" vs "50")
+  Date: 2025-11-20
 -->
 
 # VoidPay Constitution
@@ -311,8 +305,8 @@ interface InvoiceSchemaV1 {
   f: {...};         // Sender info (name, wallet, optional address/email)
   c: {...};         // Client info (name, optional wallet/address/email)
   it: [...];        // Line items (description, qty, rate)
-  tax: number;      // Tax rate (%)
-  dsc: number;      // Discount amount
+  tax: string;      // Tax rate (e.g. "10%" or "50")
+  dsc: string;      // Discount amount (e.g. "10%" or "50")
 }
 ```
 
@@ -470,4 +464,4 @@ Any violation of Constitutional principles MUST be explicitly justified in the "
 - Keep specs focused on requirements, plans focused on approach
 - Link to external resources rather than duplicating content
 
-**Version**: 1.4.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-19
+**Version**: 1.4.1 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-20
