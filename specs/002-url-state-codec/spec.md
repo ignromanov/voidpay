@@ -1,9 +1,18 @@
 # Feature Specification: URL State Codec System
 
-**Feature Branch**: `002-url-state-codec`  
-**Created**: 2025-11-19  
-**Status**: Draft  
+**Feature Branch**: `002-url-state-codec`
+**Created**: 2025-11-19
+**Status**: Draft
 **Input**: User description: "Implement URL state codec system for invoice data. Create TypeScript interfaces for InvoiceSchemaV1 with all fields (v, id, iss, due, nt, net, cur, t, dec, f, c, it, tax, dsc). Implement compression using lz-string library with validation for 2000 byte limit. Include schema versioning support for future migrations. CRITICAL: Follow Constitution Principle IV - schema v1 must be immutable once deployed. Include reserved fields for extensibility."
+
+## Clarifications
+
+### Session 2025-11-19
+- Q: Nested Field Keys Strategy → A: Abbreviated Keys (Option A) - Use short keys for nested objects (e.g., `f.n`, `it.q`) to maximize URL capacity.
+- Q: Amount Representation → A: BigInt + Decimals (Option A) - Store amounts as BigInts (serialized as strings) combined with `dec` field to ensure precision.
+- Q: Tax & Discount Logic → A: Flexible Strings (Option A) - Use suffixes (e.g., `"10%"` vs `"50"`) to distinguish between percentage and fixed amounts.
+- Q: Date Format → A: Unix Timestamp (Option A) - Use seconds (integer) for dates (e.g., `1732070000`) to save space.
+- Q: Network ID Format → A: Numeric Chain ID (Option A) - Use integer chain IDs (e.g., `1`, `137`) for compact network identification.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -72,7 +81,7 @@ When an invoice URL is opened, the system must validate that the data is well-fo
 
 ### Functional Requirements
 
-- **FR-001**: System MUST define a TypeScript interface `InvoiceSchemaV1` with all specified fields: `v` (version), `id` (invoice ID), `iss` (issue date), `due` (due date), `nt` (notes), `net` (network/chain ID), `cur` (currency symbol), `t` (token address), `dec` (decimals), `f` (sender info), `c` (client info), `it` (line items), `tax` (tax rate), `dsc` (discount)
+- **FR-001**: System MUST define a TypeScript interface `InvoiceSchemaV1` with all specified fields: `v` (version), `id` (invoice ID), `iss` (issue date), `due` (due date), `nt` (notes), `net` (network/chain ID), `cur` (currency symbol), `t` (token address), `dec` (decimals), `f` (sender info), `c` (client info), `it` (line items), `tax` (tax rate), `dsc` (discount). Amounts MUST be stored as strings representing BigInts.
 - **FR-002**: System MUST include a version field (`v: number`) in every encoded invoice URL to enable schema versioning
 - **FR-003**: System MUST implement URL encoding using the lz-string library (LZW compression algorithm)
 - **FR-004**: System MUST validate that compressed URL payload does not exceed 2000 bytes before allowing URL generation
@@ -84,13 +93,16 @@ When an invoice URL is opened, the system must validate that the data is well-fo
 - **FR-010**: System MUST enforce notes field (`nt`) maximum length of 280 characters during encoding
 - **FR-011**: System MUST handle decoding errors gracefully with user-friendly error messages (no stack traces or technical details exposed)
 - **FR-012**: System MUST use abbreviated field names (e.g., `iss` not `issueDate`) to minimize URL payload size
+- **FR-013**: System MUST support flexible tax/discount values using string suffixes (e.g., `"10%"` for percentage, `"50"` for fixed amount).
+- **FR-014**: System MUST use Unix timestamp (seconds) for all date fields (`iss`, `due`).
+- **FR-015**: System MUST use numeric Chain ID (integer) for the `net` field (e.g., `1` for Mainnet, `137` for Polygon).
 
 ### Key Entities _(include if feature involves data)_
 
 - **InvoiceSchemaV1**: The immutable v1 invoice data structure containing all invoice fields (sender, client, line items, amounts, dates, payment details). Includes version field for routing to correct parser and reserved fields for future extensibility.
-- **Sender Info (`f`)**: Contains sender name, wallet address, and optional physical address/email
-- **Client Info (`c`)**: Contains client name and optional wallet address/physical address/email
-- **Line Items (`it`)**: Array of items with description, quantity, and rate
+- **Sender Info (`f`)**: `n` (name), `a` (wallet address), `e` (email), `ads` (physical address), `ph` (phone)
+- **Client Info (`c`)**: `n` (name), `a` (wallet address), `e` (email), `ads` (physical address), `ph` (phone)
+- **Line Items (`it`)**: Array of items with `d` (desc), `q` (qty), `r` (rate/price)
 - **Compression Metadata**: Tracks compressed payload size to enforce 2000 byte limit
 
 ## Success Criteria _(mandatory)_

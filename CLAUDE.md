@@ -259,6 +259,8 @@ git worktree prune
 **Philosophy**: Privacy > Features. Simplicity > Cleverness. YAGNI always.
 
 ## Active Technologies
+- TypeScript 5.x+ (Strict Mode) + `lz-string` (v1.5.0+), `zod` (for runtime validation), `big.js` or native `BigInt` (for amounts) (002-url-state-codec)
+- None (Stateless URL-based state) (002-url-state-codec)
 
 - Next.js 16.0.3+, React 19.0.0+, TypeScript 5.x+ (strict mode), Node.js 20+ (specified in .nvmrc)
 - Wagmi 2.19.4+, Viem 2.39.3+, RainbowKit 2.2.9+
