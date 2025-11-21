@@ -1,7 +1,7 @@
 # CLAUDE.md - VoidPay Development Guide
 
 > **VoidPay** - Stateless Crypto Invoice Platform
-> **Constitution**: `.specify/memory/constitution.md` (v1.4.0) 🔴 **READ FIRST**
+> **Constitution**: `.specify/memory/constitution.md` (v1.6.0) 🔴 **READ FIRST**
 
 ---
 
@@ -27,7 +27,7 @@ Privacy-first crypto invoicing platform. Invoice data encoded in **URLs** (no ba
 6. **RPC Key Protection** - Serverless proxy only, never expose in client
 7. **Web3 Safety** - Baked decimals, finalized confirmations, exact matching
 8. **Documentation Context Efficiency** - Information-dense docs for AI agents
-9. **Implementation Deviation Tracking** - Track reality vs. plan, update artifacts
+9. **Implementation Deviation Tracking** - Track reality vs. plan in `ROADMAP_P*.md`
 10. **Git Worktree Isolation** - Each feature in isolated worktree (parallel development)
 
 ### ❌ NEVER
@@ -74,6 +74,10 @@ src/
 
 .specify/memory/
 ├── constitution.md       # 🔴 GOVERNANCE
+├── ROADMAP.md            # Project Status & Index
+├── ROADMAP_P0.md         # Critical / MVP Blocker
+├── ROADMAP_P1.md         # High / MVP Core
+├── ROADMAP_FUTURE.md     # Future / Post-MVP
 └── brainstorm/
     ├── DECISIONS.md      # Tech choices
     └── *.md              # Design rationale
@@ -200,8 +204,8 @@ export async function POST(req: Request) {
 **Read First**:
 
 1. `.specify/memory/constitution.md` - GOVERNANCE 🔴
-2. `.specify/memory/brainstorm/DECISIONS.md` - Tech stack
-3. `.specify/memory/brainstorm/BRAINSTORM_SUMMARY.md` - Overview
+2. `.specify/memory/ROADMAP.md` - Project Status & Index
+3. `.specify/memory/brainstorm/DECISIONS.md` - Tech stack
 
 **Architecture**: `brainstorm/02-architectural-hypotheses.md`
 **UX Design**: `brainstorm/03-ux-and-design.md`
@@ -254,6 +258,7 @@ git worktree prune
 2. `/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement`
 3. Verify no principle violations
 4. All work happens in feature worktree (Constitution Principle X)
+5. **Update Roadmap**: Mark item completed in `ROADMAP_P*.md` with Feature Folder, Implemented, Deviations, and Notes.
 
 ---
 

@@ -276,43 +276,35 @@ When marking tasks complete, **MUST** record any implementation deviations:
 
 **After feature completion**: Review all deviations to update spec.md, plan.md, or data-model.md accordingly.
 
-### PROGRESS.md Updates (Principle IX)
+### ROADMAP Updates (Principle IX)
 
-Upon completing a feature or significant milestone, **MUST** update `.specify/memory/PROGRESS.md`:
+Upon completing a feature or significant milestone, **MUST** update the relevant `ROADMAP_P*.md` file (P0, P1, or FUTURE):
 
 **Required Information**:
 
 - Feature completion status: `🟢 **Completed**: YYYY-MM-DD`
-- Brief implementation summary (what was built)
-- Key deviations from original plan (if any)
-- Feature folder reference for reverse lookup (e.g., `specs/001-url-codec/`)
-- Technical decisions or constraints encountered
+- **Feature Folder**: Path to the spec folder (e.g., `specs/002-url-state-codec/`)
+- **Implemented**: Brief implementation summary (what was built)
+- **Deviations**: Key deviations from original plan (if any)
+- **Notes**: Technical decisions or constraints encountered
 
 **Example**:
 
 ```markdown
-#### P0.2 - URL State Codec & Schema Validation
-
-**Status**: 🟢 **Completed**: 2025-11-19
-
+### P0.2 - URL State Codec & Schema Validation
+**Status**: 🟢 **Completed**: 2025-11-19 **Compliance**: ✅
+**Feature Folder**: `specs/002-url-state-codec/`
 **Implemented**:
-
 - ✅ InvoiceSchemaV1 TypeScript interfaces
 - ✅ lz-string compression/decompression
 - ✅ URL length validation (2000 bytes)
 - ✅ Schema versioning with migration adapters
-
-**Differences from Plan**:
-
+**Deviations**:
 - Used Zod for runtime validation instead of manual checks (better type safety)
 - Added URL preview component not in original plan (UX improvement)
-
 **Notes**:
-
 - All URLs under 1800 bytes in testing
 - Migration adapter pattern tested with v0→v1 mock
-
-**Feature Folder**: `specs/002-url-codec/`
 ```
 
-**Update Location**: Move feature from "📋 Planned Features" to "✅ Completed Features" section.
+**Update Location**: Find the feature in the relevant `ROADMAP_P*.md` file and update its status block.

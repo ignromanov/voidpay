@@ -183,13 +183,13 @@
   - Rationale for the deviation (technical constraints, better approach discovered, requirements changed)
   - Impact assessment (breaking changes, performance implications, security considerations)
 - Deviation notes MUST be recorded in tasks.md adjacent to the completed task checkbox
-- Upon completing a feature or significant milestone, agents MUST update `.specify/memory/PROGRESS.md` with:
-  - Feature completion status (✅ Completed with date)
-  - Brief implementation summary (what was built)
-  - Key deviations from original plan (if any)
-  - Feature folder reference (e.g., `specs/001-feature-name/` for reverse lookup)
-  - Any notes about technical decisions or constraints encountered
-- PROGRESS.md updates MUST follow the existing format and structure
+- Upon completing a feature or significant milestone, agents MUST update the relevant `ROADMAP_P*.md` file (P0, P1, or FUTURE) with:
+  - Feature completion status (🟢 **Completed**: YYYY-MM-DD)
+  - **Feature Folder**: Path to the spec folder (e.g., `specs/002-url-state-codec/`)
+  - **Implemented**: Brief implementation summary (what was built)
+  - **Deviations**: Key deviations from original plan (if any)
+  - **Notes**: Technical decisions or constraints encountered
+- ROADMAP updates MUST follow the "How to Log Progress" instructions in `ROADMAP.md`
 - After feature completion, accumulated deviations MUST be reviewed to determine:
   - Whether spec.md needs updating (requirements changed)
   - Whether plan.md needs updating (approach changed)
