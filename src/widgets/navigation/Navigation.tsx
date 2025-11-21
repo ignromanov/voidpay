@@ -33,6 +33,7 @@ export function Navigation() {
               return (
                 <Link
                   key={link.href}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   href={link.href as any}
                   className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive
                     ? 'bg-gray-800 text-white'
