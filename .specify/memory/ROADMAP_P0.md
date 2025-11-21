@@ -97,27 +97,55 @@
 - Integrate with UI components
 
 ### P0.4 - RPC Proxy & Multi-Provider Failover
-**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle VI
-- Next.js Edge API route `/api/rpc`
-- Alchemy (primary) + Infura (fallback) configuration
-- Automatic failover via Wagmi config
-- Rate limiting at proxy level
-- Environment variable management (Vercel)
-- NO telemetry or logging of requests
+**Status**: 🟢 **Completed**: 2025-11-21 **Compliance**: ✅ **Constitutional**: Principle VI
+**Feature Folder**: `specs/004-rpc-proxy-failover/`
+**Implemented**:
+- ✅ Edge API route at `/api/rpc` with Next.js Edge Runtime
+- ✅ Alchemy (primary) + Infura (fallback) automatic failover
+- ✅ 2-second timeout for primary, 5-second for fallback
+- ✅ Error classification (retryable vs non-retryable)
+- ✅ Per-IP rate limiting (100 req/min) via Vercel KV
+- ✅ HTTP 503 responses for complete provider failure
+- ✅ User-friendly error messages with Retry-After headers
+- ✅ Zero logging/telemetry (privacy-preserving)
+- ✅ Server-side only API key validation
+**Deviations**:
+- Used Vercel KV for rate limiting (justified exception to Principle I - transient operational data only)
+- Added anonymous request IDs for operational metrics (privacy-preserving monitoring)
+- Wagmi integration (T045) deferred to main app integration phase
+**Notes**:
+- Edge Runtime constraints required Web API-only implementation
+- All RPC methods explicitly allowlisted for security (9 methods)
+- Fail-open rate limiting prevents blocking users during KV outages
+- Build successful with all linting and type checks passed
 
 ### P0.4.5 - Mock RPC & Simulation Mode
-**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Development Philosophy
-- `MockChainProvider` implementation.
-- Activation via `?debug=1` or `localhost`.
-- Simulation: "Success", "Error", "Long Finalization".
-- Fake TxHash generation for UI testing.
+**Status**: 🟢 **Completed**: 2025-11-21 **Compliance**: ✅ **Constitutional**: Development Philosophy
+**Feature Folder**: `specs/004-rpc-proxy-failover/` (integrated)
+**Implemented**:
+- ✅ Mock provider with automatic activation (localhost or `?debug=1`)
+- ✅ Three simulation modes: `success` (1-3s), `error`, `slow` (10-30s)
+- ✅ All 9 RPC methods implemented with realistic responses
+- ✅ Transaction state tracking (pending → success)
+- ✅ Fake transaction hash generation using Web Crypto API
+- ✅ Mock mode automatically disabled in production builds
+**Notes**:
+- Mock mode bypasses rate limiting for development workflow
+- X-Mock-Mode header added to responses for debugging
 
 ### P0.4.6 - API Security Hardening (CORS & Headers)
-**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle VI
-- **Strict CORS Policy**: Allow ONLY app domain.
-- **Method Restriction**: POST only for RPC.
-- **Payload Validation**: JSON-RPC method allowlist.
-- **Origin Check**: Verify Origin/Referer headers.
+**Status**: 🟢 **Completed**: 2025-11-21 **Compliance**: ✅ **Constitutional**: Principle VI
+**Feature Folder**: `specs/004-rpc-proxy-failover/` (integrated)
+**Implemented**:
+- ✅ Strict CORS policy (application domain only)
+- ✅ HTTP method restriction (POST only, rejects GET/PUT/DELETE/PATCH)
+- ✅ JSON-RPC method allowlist validation (9 permitted methods)
+- ✅ Origin and Referer header verification
+- ✅ Security headers (Cache-Control: no-cache, no-store)
+- ✅ CORS preflight handler (OPTIONS)
+**Notes**:
+- Security controls enforced in production only (relaxed for localhost)
+- All security validations happen before rate limiting check
 
 ### P0.5 - Wagmi + Viem + RainbowKit Setup
 **Status**: 🔴 **Priority**: P0 **Compliance**: ✅
