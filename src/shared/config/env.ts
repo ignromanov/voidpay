@@ -10,6 +10,16 @@ export const envSchema = z.object({
   NEXT_PUBLIC_INFURA_OPT_URL: z.string().url(),
   NEXT_PUBLIC_INFURA_POLY_URL: z.string().url(),
   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: z.string(),
+  
+  // RPC Proxy (Server-side only - NOT prefixed with NEXT_PUBLIC_)
+  ALCHEMY_API_KEY: z.string().optional(),
+  ALCHEMY_RPC_URL: z.string().url().optional(),
+  INFURA_API_KEY: z.string().optional(),
+  INFURA_RPC_URL: z.string().url().optional(),
+  
+  // Rate Limiting (Vercel KV)
+  KV_REST_API_URL: z.string().url().optional(),
+  KV_REST_API_TOKEN: z.string().optional(),
 })
 
 export type EnvConfig = z.infer<typeof envSchema>
