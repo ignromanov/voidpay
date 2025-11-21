@@ -1,4 +1,4 @@
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 export default function Home() {
   return (
@@ -6,7 +6,7 @@ export default function Home() {
       <main className="row-start-2 flex flex-col items-center gap-8 sm:items-start">
         <h1 className="text-electric-violet text-4xl font-bold">VoidPay</h1>
         <p className="text-lg">Stateless Invoicing Platform</p>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
+        <div className="flex flex-col items-center gap-4 sm:flex-row">
           <ConnectButton />
         </div>
       </main>

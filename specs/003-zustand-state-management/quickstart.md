@@ -31,15 +31,15 @@ function InvoiceEditor() {
   // Select specific state (optimized re-renders)
   const activeDraft = useCreatorStore((s) => s.activeDraft)
   const updateDraft = useCreatorStore((s) => s.updateDraft)
-  
+
   // Update draft (auto-saved with 500ms debounce)
   const handleFieldChange = (field: string, value: any) => {
     updateDraft({ [field]: value })
   }
-  
+
   return (
-    <input 
-      value={activeDraft?.invoiceId || ''} 
+    <input
+      value={activeDraft?.invoiceId || ''}
       onChange={(e) => handleFieldChange('invoiceId', e.target.value)}
     />
   )
@@ -53,7 +53,7 @@ import { usePayerStore } from '@/entities/payer/model/usePayerStore'
 
 function PaymentConfirmation({ txHash, invoiceData }) {
   const addReceipt = usePayerStore((s) => s.addReceipt)
-  
+
   useEffect(() => {
     // After transaction confirmation
     addReceipt({
@@ -78,7 +78,7 @@ function DataManagement() {
     // Downloads voidpay-backup-2025-11-20.json
     downloadExport()
   }
-  
+
   const handleImport = async (file: File) => {
     const result = await importFromFile(file)
     if (result.success) {
@@ -99,7 +99,7 @@ import { useDebouncedCallback } from 'use-debounce'
 
 function useAutoSave() {
   const updateDraft = useCreatorStore((s) => s.updateDraft)
-  
+
   const debouncedSave = useDebouncedCallback(
     (draft: Partial<InvoiceDraft>) => {
       updateDraft(draft)
@@ -107,7 +107,7 @@ function useAutoSave() {
     500, // 500ms delay
     { trailing: true }
   )
-  
+
   return debouncedSave
 }
 ```
@@ -118,14 +118,14 @@ function useAutoSave() {
 function InvoiceHistory() {
   const [query, setQuery] = useState('')
   const searchHistory = useCreatorStore((s) => s.searchHistory)
-  
+
   // Memoized in store, no need for useMemo here
   const filtered = searchHistory(query)
-  
+
   return (
     <>
-      <input 
-        value={query} 
+      <input
+        value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search by ID, recipient, or amount"
       />
@@ -147,12 +147,12 @@ function TemplateManager() {
     loadTemplate: s.loadTemplate,
     deleteTemplate: s.deleteTemplate,
   }))
-  
+
   const handleSave = () => {
     const templateId = saveAsTemplate('My Template')
     console.log('Saved template:', templateId)
   }
-  
+
   const handleLoad = (templateId: string) => {
     loadTemplate(templateId) // Prompts if active draft exists
   }
@@ -165,7 +165,7 @@ function TemplateManager() {
 function NewInvoiceButton() {
   const generateNextInvoiceId = useCreatorStore((s) => s.generateNextInvoiceId)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
-  
+
   const handleNewInvoice = () => {
     const draftId = createNewDraft()
     const invoiceId = generateNextInvoiceId() // "INV-001", "INV-002", etc.
@@ -181,7 +181,7 @@ function NewInvoiceButton() {
 ```typescript
 function StorageWarning() {
   const isNearLimit = useCreatorStore((s) => s.isStorageNearLimit())
-  
+
   if (isNearLimit) {
     return (
       <Alert>
@@ -199,7 +199,7 @@ function StorageWarning() {
 function SettingsPage() {
   const pruneHistory = useCreatorStore((s) => s.pruneHistory)
   const pruneReceipts = usePayerStore((s) => s.pruneReceipts)
-  
+
   const handleCleanup = () => {
     pruneHistory() // Removes oldest entries if > 100
     pruneReceipts()
@@ -220,24 +220,24 @@ describe('useCreatorStore', () => {
     // Clear store before each test
     useCreatorStore.getState().clearAllData()
   })
-  
+
   it('should update draft', () => {
     const { result } = renderHook(() => useCreatorStore())
-    
+
     act(() => {
       result.current.createNewDraft()
       result.current.updateDraft({ invoiceId: 'TEST-001' })
     })
-    
+
     expect(result.current.activeDraft?.invoiceId).toBe('TEST-001')
   })
-  
+
   it('should auto-increment invoice IDs', () => {
     const { result } = renderHook(() => useCreatorStore())
-    
+
     const id1 = result.current.generateNextInvoiceId()
     const id2 = result.current.generateNextInvoiceId()
-    
+
     expect(id1).toBe('INV-001')
     expect(id2).toBe('INV-002')
   })
@@ -252,7 +252,9 @@ When schema changes are needed in the future:
 // In useCreatorStore.ts
 const useCreatorStore = create(
   persist(
-    (set, get) => ({ /* ... */ }),
+    (set, get) => ({
+      /* ... */
+    }),
     {
       name: 'voidpay:creator',
       version: 2, // Increment version

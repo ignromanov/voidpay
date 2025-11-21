@@ -262,6 +262,23 @@ interface InvoiceSchema {
 
 ---
 
+## 12. Donation Strategy
+
+### 12.1 Post-Payment Widget (Fast Lane)
+
+- **Decision:** Donations via the post-payment widget must use the **Native Currency** of the current chain (ETH, MATIC, etc.).
+- **Rationale:**
+  - **Frictionless:** Eliminates the need for an ERC20 `approve` transaction.
+  - **Speed:** Enables a single-click `sendTransaction` experience.
+  - **Conversion:** Lower friction leads to higher conversion rates for impulse donations.
+
+### 12.2 Footer Link (Slow Lane)
+
+- **Decision:** The "Support VoidPay" footer link opens a modal supporting both Native and ERC20 tokens.
+- **Rationale:** Users deliberately seeking to donate are more likely to tolerate the approval flow for specific tokens.
+
+---
+
 ## 📚 Cross-Reference Index
 
 | Topic                | Primary File                                     | Section                        |

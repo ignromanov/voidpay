@@ -63,7 +63,7 @@
 
 1.  **Smart Address Input:** При вводе адреса кошелька или ENS, справа появляется сгенерированный аватар (Blockies/Jazzicon). Это визуальный "Checksum" — если аватарка знакомая, значит адрес верный.
 2.  **Token Selector:** Выпадающий список с поиском. Поддержка "Paste Address" для кастомных токенов с автоматической подтяжкой символа и decimals через RPC.
-3.  **Developer Tip Checkbox:** Чекбокс "Support Devs (Add 1% Tip)" позволяет добавить 1% к сумме платежа в пользу разработчиков. Опция доступна при создании инвойса.
+3.  **Developer Tip Checkbox:** _(Removed from MVP)_ The 1% tip checkbox is excluded from the initial release in favor of a post-payment donation flow.
 4.  **Branding Field:** Только текстовое название компании (text-only input). Нет возможности загрузки логотипа, чтобы избежать битых картинок и проблем с хостингом изображений.
 5.  **Generation:** Кнопка "Create Link" копирует URL в буфер и показывает модальное окно с QR-кодом и кнопками шаринга (Telegram, Twitter, Copy).
 
@@ -80,7 +80,11 @@
   - **Pretty Print Display:** Основная сумма отображается красиво округленной: `1,000.00 USDC` (крупным шрифтом).
   - **Exact Amount:** Мелким шрифтом ниже подписано: _"Payment amount: 1,000.000042"_ — точная сумма с Magic Dust для честности и прозрачности.
 - **Details:** Таблица услуг (свернутая по умолчанию на мобильных).
-- **Footer:** "Powered by VoidPay" (обязательный watermark).
+- **Footer:**
+  - "Powered by VoidPay" (обязательный watermark).
+  - "Support VoidPay" link: Opens a **Donation Modal** with token selector (Native/Stablecoins), custom amount input, and generic presets.
+- **Actions:**
+  - **Pending State:** Secondary action "Download Invoice" generates a "Pro-forma" PDF (watermarked "UNPAID").
 
 ### 3.3.2. Web3 Взаимодействие (The "Pay" Button)
 
@@ -92,7 +96,13 @@
 4.  **State: Ready** -> Кнопка "Pay 1,000.00 USDC" (отображается Pretty Print сумма, точная сумма с Magic Dust видна в мелком тексте выше).
     - _Логика:_ Если это ETH — вызывается `sendTransaction`. Если токен — `writeContract (transfer)`. Appove не нужен (так как P2P).
 5.  **State: Processing** -> Спиннер, ссылка на Explorer.
-6.  **State: Success** -> Конфетти, кнопка меняется на "Download Receipt".
+6.  **State: Success (Receipt Mode)** ->
+    - **Visual Transformation:** Status Badge changes to **PAID** (Emerald).
+    - **Payment Proof:** A new section appears displaying TxHash, Date, and Network.
+    - **Primary Action:** Changes to "Download Receipt" (Generates PDF with "PAID" stamp and Tx details).
+    - **Donation Upsell:** A "Donation Upsell Widget" appears below the receipt card.
+      - **Smart Tiers:** Preset amounts based on invoice total (e.g., Small, Medium, Large).
+      - **Currency:** Requests donations in the **Native Currency** of the current chain to ensure a single-transaction flow (no ERC20 approval).
 
 ### 3.3.3. Элементы доверия и безопасности
 

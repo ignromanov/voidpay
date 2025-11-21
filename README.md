@@ -12,23 +12,27 @@ Stateless Invoicing Platform built with Next.js, Wagmi, and Feature-Sliced Desig
 ### Installation
 
 1.  Clone the repository:
+
     ```bash
     git clone <repository-url>
     cd stateless-invoicing-platform
     ```
 
 2.  Install dependencies:
+
     ```bash
     pnpm install
     ```
 
 3.  Configure environment variables:
     Copy `.env.example` to `.env.local` and fill in your RPC keys.
+
     ```bash
     cp .env.example .env.local
     ```
 
 4.  Start the development server:
+
     ```bash
     pnpm dev
     ```
@@ -65,6 +69,7 @@ This project uses **Git Worktrees** for isolated feature development, enabling m
 ```
 
 This creates:
+
 - Feature branch: `001-user-auth`
 - Isolated worktree: `worktrees/001-user-auth/`
 - Feature specification: `worktrees/001-user-auth/specs/001-user-auth/spec.md`

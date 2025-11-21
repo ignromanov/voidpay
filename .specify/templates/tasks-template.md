@@ -256,18 +256,21 @@ When marking tasks complete, **MUST** record any implementation deviations:
 **Format**: `- [x] T001 [Description] | Deviation: [None | <deviation description>]`
 
 **Record if**:
+
 - Actual implementation differs from plan.md, spec.md, or data-model.md
 - Different approach was used due to technical constraints
 - Better solution discovered during implementation
 - Requirements evolved during development
 
 **Include**:
+
 - What was planned (with artifact reference)
 - What was actually done
 - Why the change was made
 - Impact (breaking changes, performance, security)
 
 **Examples**:
+
 - `- [x] T015 [US1] Implement invoice validation | Deviation: None`
 - `- [x] T022 [US2] Add user settings storage | Deviation: Used Zustand persist instead of LocalStorage directly (plan.md assumed direct LocalStorage). Reason: Better persistence API + automatic serialization. Impact: None, still client-only storage per Principle I.`
 
@@ -278,6 +281,7 @@ When marking tasks complete, **MUST** record any implementation deviations:
 Upon completing a feature or significant milestone, **MUST** update `.specify/memory/PROGRESS.md`:
 
 **Required Information**:
+
 - Feature completion status: `🟢 **Completed**: YYYY-MM-DD`
 - Brief implementation summary (what was built)
 - Key deviations from original plan (if any)
@@ -285,21 +289,26 @@ Upon completing a feature or significant milestone, **MUST** update `.specify/me
 - Technical decisions or constraints encountered
 
 **Example**:
+
 ```markdown
 #### P0.2 - URL State Codec & Schema Validation
+
 **Status**: 🟢 **Completed**: 2025-11-19
 
 **Implemented**:
+
 - ✅ InvoiceSchemaV1 TypeScript interfaces
 - ✅ lz-string compression/decompression
 - ✅ URL length validation (2000 bytes)
 - ✅ Schema versioning with migration adapters
 
 **Differences from Plan**:
+
 - Used Zod for runtime validation instead of manual checks (better type safety)
 - Added URL preview component not in original plan (UX improvement)
 
 **Notes**:
+
 - All URLs under 1800 bytes in testing
 - Migration adapter pattern tested with v0→v1 mock
 

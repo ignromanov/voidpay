@@ -19,9 +19,9 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Install Zustand 5+ and use-debounce dependencies via npm
-- [ ] T002 [P] Create shared storage utilities directory at src/shared/lib/storage/
-- [ ] T003 [P] Create shared config directory at src/shared/config/
+- [x] T001 Install Zustand 5+ and use-debounce dependencies via npm | Deviation: Dependencies were already installed in package.json
+- [x] T002 [P] Create shared storage utilities directory at src/shared/lib/storage/ | Deviation: None
+- [x] T003 [P] Create shared config directory at src/shared/config/ | Deviation: None
 
 ---
 
@@ -31,12 +31,12 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 [P] Create storage key constants in src/shared/config/storage-keys.ts
-- [ ] T005 [P] Implement LocalStorage quota check utility in src/shared/lib/storage/quota-check.ts
-- [ ] T006 [P] Implement key namespacing utility in src/shared/lib/storage/namespace.ts
-- [ ] T007 [P] Create base TypeScript types for InvoiceDraft in src/entities/invoice/model/types.ts
-- [ ] T008 [P] Create LineItem interface in src/entities/invoice/model/types.ts
-- [ ] T009 Create debounce utility wrapper in src/shared/lib/debounce.ts
+- [x] T004 [P] Create storage key constants in src/shared/config/storage-keys.ts | Deviation: None
+- [x] T005 [P] Implement LocalStorage quota check utility in src/shared/lib/storage/quota-check.ts | Deviation: None
+- [x] T006 [P] Implement key namespacing utility in src/shared/lib/storage/namespace.ts | Deviation: None
+- [x] T007 [P] Create base TypeScript types for InvoiceDraft in src/entities/invoice/model/types.ts | Deviation: User added InvoiceTemplate and CreationHistoryEntry types to same file (good consolidation)
+- [x] T008 [P] Create LineItem interface in src/entities/invoice/model/types.ts | Deviation: Combined with T007 in same file
+- [x] T009 Create debounce utility wrapper in src/shared/lib/debounce.ts | Deviation: None
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -50,21 +50,21 @@
 
 ### Implementation for User Story 1
 
-- [ ] T010 [P] [US1] Create InvoiceDraft interface in src/entities/creator/model/types.ts
-- [ ] T011 [P] [US1] Create InvoiceTemplate interface in src/entities/creator/model/types.ts
-- [ ] T012 [P] [US1] Create CreatorStoreV1 interface in src/entities/creator/model/types.ts
-- [ ] T013 [US1] Implement useCreatorStore with Zustand persist middleware in src/entities/creator/model/useCreatorStore.ts
-- [ ] T014 [US1] Implement updateDraft action with debouncing in src/entities/creator/model/useCreatorStore.ts
-- [ ] T015 [US1] Implement clearDraft action in src/entities/creator/model/useCreatorStore.ts
-- [ ] T016 [US1] Implement saveAsTemplate action in src/entities/creator/model/useCreatorStore.ts
-- [ ] T017 [US1] Implement loadTemplate action with confirmation dialog in src/entities/creator/model/useCreatorStore.ts
-- [ ] T018 [US1] Implement deleteTemplate action in src/entities/creator/model/useCreatorStore.ts
-- [ ] T019 [US1] Create auto-save hook using useDebouncedCallback in src/features/invoice-draft/lib/auto-save.ts
-- [ ] T020 [US1] Integrate auto-save hook into invoice editor component at src/app/create/page.tsx
-- [ ] T021 [US1] Add draft restoration logic on page load in src/app/create/page.tsx
-- [ ] T022 [US1] Add "New Invoice" confirmation dialog when active draft exists in src/features/invoice-draft/ui/NewInvoiceDialog.tsx
-- [ ] T023 [US1] Add template list UI component in src/features/invoice-draft/ui/
-- [ ] T024 [US1] Implement schema versioning and migration logic in src/entities/creator/model/migrations.ts
+- [x] T010 [P] [US1] Create InvoiceDraft interface in src/entities/creator/model/types.ts | Deviation: Interface already existed in src/entities/invoice/model/types.ts (from Phase 2), re-exported in creator types for convenience
+- [x] T011 [P] [US1] Create InvoiceTemplate interface in src/entities/creator/model/types.ts | Deviation: Interface already existed in src/entities/invoice/model/types.ts (from Phase 2), re-exported in creator types for convenience
+- [x] T012 [P] [US1] Create CreatorStoreV1 interface in src/entities/creator/model/types.ts | Deviation: None
+- [x] T013 [US1] Implement useCreatorStore with Zustand persist middleware in src/entities/creator/model/useCreatorStore.ts | Deviation: Used partialize option to exclude only persisted state fields (optimization not in plan.md). Added createNewDraft helper action for better UX.
+- [x] T014 [US1] Implement updateDraft action with debouncing in src/entities/creator/model/useCreatorStore.ts | Deviation: Debouncing implemented in UI layer (auto-save hook) instead of store action for better separation of concerns
+- [x] T015 [US1] Implement clearDraft action in src/entities/creator/model/useCreatorStore.ts | Deviation: None
+- [x] T016 [US1] Implement saveAsTemplate action in src/entities/creator/model/useCreatorStore.ts | Deviation: None
+- [x] T017 [US1] Implement loadTemplate action with confirmation dialog in src/entities/creator/model/useCreatorStore.ts | Deviation: Confirmation dialog handled in UI layer (NewInvoiceDialog), store action only loads template
+- [x] T018 [US1] Implement deleteTemplate action in src/entities/creator/model/useCreatorStore.ts | Deviation: None
+- [x] T019 [US1] Create auto-save hook using useDebouncedCallback in src/features/invoice-draft/lib/auto-save.ts | Deviation: Added useAutoSaveWithManual variant for manual flush capability
+- [x] T020 [US1] Integrate auto-save hook into invoice editor component at src/app/create/page.tsx | Deviation: Integrated into simplified demo form (full invoice editor to be built later)
+- [x] T021 [US1] Add draft restoration logic on page load in src/app/create/page.tsx | Deviation: None
+- [x] T022 [US1] Add "New Invoice" confirmation dialog when active draft exists in src/features/invoice-draft/ui/NewInvoiceDialog.tsx | Deviation: None
+- [x] T023 [US1] Add template list UI component in src/features/invoice-draft/ui/ | Deviation: Created TemplateList.tsx with delete confirmation and empty state
+- [x] T024 [US1] Implement schema versioning and migration logic in src/entities/creator/model/migrations.ts | Deviation: Added validation function for migrated state (not in plan.md, improves robustness)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - drafts auto-save, templates work, and data persists across sessions
 
@@ -344,18 +344,21 @@ When marking tasks complete, **MUST** record any implementation deviations:
 **Format**: `- [x] T001 [Description] | Deviation: [None | <deviation description>]`
 
 **Record if**:
+
 - Actual implementation differs from plan.md, spec.md, or data-model.md
 - Different approach was used due to technical constraints
 - Better solution discovered during implementation
 - Requirements evolved during development
 
 **Include**:
+
 - What was planned (with artifact reference)
 - What was actually done
 - Why the change was made
 - Impact (breaking changes, performance, security)
 
 **Examples**:
+
 - `- [x] T015 [US1] Implement clearDraft action | Deviation: None`
 - `- [x] T013 [US1] Implement useCreatorStore | Deviation: Used partialize option to exclude computed fields from persistence (not mentioned in plan.md). Reason: Reduces storage size and prevents stale computed values. Impact: None, improves performance.`
 
@@ -366,6 +369,7 @@ When marking tasks complete, **MUST** record any implementation deviations:
 Upon completing this feature, **MUST** update `.specify/memory/PROGRESS.md`:
 
 **Required Information**:
+
 - Feature completion status: `🟢 **Completed**: YYYY-MM-DD`
 - Brief implementation summary (what was built)
 - Key deviations from original plan (if any)
@@ -373,11 +377,14 @@ Upon completing this feature, **MUST** update `.specify/memory/PROGRESS.md`:
 - Technical decisions or constraints encountered
 
 **Example**:
+
 ```markdown
 #### P0.3 - Client-Side State Management with Zustand
+
 **Status**: 🟢 **Completed**: 2025-11-20
 
 **Implemented**:
+
 - ✅ useCreatorStore with draft persistence, templates, history, preferences, ID counter
 - ✅ usePayerStore with payment receipt storage
 - ✅ Auto-save with 500ms debouncing
@@ -386,10 +393,12 @@ Upon completing this feature, **MUST** update `.specify/memory/PROGRESS.md`:
 - ✅ LocalStorage quota handling
 
 **Differences from Plan**:
+
 - Used partialize option in Zustand persist to optimize storage size
 - Added storage quota warning banner (not in original spec, UX improvement)
 
 **Notes**:
+
 - All data stored client-side only (Constitution Principle I & II)
 - Schema versioning implemented for future migrations (Constitution Principle IV)
 - Auto-pruning at 100 entries prevents quota issues
@@ -408,6 +417,7 @@ Upon completing this feature, **MUST** update `.specify/memory/PROGRESS.md`:
 **Full Feature Tasks**: 90 tasks
 
 **Task Breakdown by User Story**:
+
 - Setup: 3 tasks
 - Foundational: 6 tasks
 - US1 (Draft Persistence): 15 tasks
@@ -420,6 +430,7 @@ Upon completing this feature, **MUST** update `.specify/memory/PROGRESS.md`:
 - Polish: 12 tasks
 
 **Parallel Opportunities**:
+
 - Setup phase: 2 parallel tasks
 - Foundational phase: 5 parallel tasks
 - User stories: US1, US3, US4, US5 can all start in parallel after Foundational
@@ -429,6 +440,7 @@ Upon completing this feature, **MUST** update `.specify/memory/PROGRESS.md`:
 **Suggested MVP Scope**: User Stories 1 & 2 (34 tasks) - Provides core value of draft persistence and creation history
 
 **Independent Test Criteria**:
+
 - US1: Create draft, close browser, reopen, verify restoration
 - US2: Create invoices, verify history list with details
 - US3: Create multiple invoices, verify sequential IDs

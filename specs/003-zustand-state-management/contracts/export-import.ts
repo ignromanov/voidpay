@@ -1,11 +1,10 @@
 /**
  * Export/Import API Contract
- * 
+ *
  * This file defines the public API for data export/import functionality.
  */
 
-import type { ExportDataV1 } from "./data-model"
-
+import type { ExportDataV1 } from './data-model'
 
 export interface ExportOptions {
   /**
@@ -13,13 +12,13 @@ export interface ExportOptions {
    * @default true
    */
   includeCreator?: boolean
-  
+
   /**
    * Include payer store data (receipts)
    * @default true
    */
   includePayer?: boolean
-  
+
   /**
    * Pretty-print JSON output
    * @default false
@@ -33,7 +32,7 @@ export interface ImportOptions {
    * @default false (replace)
    */
   merge?: boolean
-  
+
   /**
    * Skip confirmation prompts (use with caution)
    * @default false
@@ -45,7 +44,7 @@ export interface ImportResult {
   success: boolean
   message: string
   errors?: string[]
-  
+
   // Statistics
   stats?: {
     draftsImported: number
@@ -62,14 +61,14 @@ export interface ExportImportAPI {
    * @returns JSON string
    */
   exportData: (options?: ExportOptions) => string
-  
+
   /**
    * Download export data as JSON file
    * @param options - Export options
    * @param filename - Custom filename (optional, auto-generated if not provided)
    */
   downloadExport: (options?: ExportOptions, filename?: string) => void
-  
+
   /**
    * Import data from JSON string
    * @param jsonData - JSON string to import
@@ -77,7 +76,7 @@ export interface ExportImportAPI {
    * @returns Import result
    */
   importData: (jsonData: string, options?: ImportOptions) => Promise<ImportResult>
-  
+
   /**
    * Import data from file
    * @param file - File object to import
@@ -85,7 +84,7 @@ export interface ExportImportAPI {
    * @returns Import result
    */
   importFromFile: (file: File, options?: ImportOptions) => Promise<ImportResult>
-  
+
   /**
    * Validate export data structure
    * @param jsonData - JSON string to validate
@@ -96,7 +95,7 @@ export interface ExportImportAPI {
     version?: number
     errors?: string[]
   }
-  
+
   /**
    * Get export file size estimate
    * @param options - Export options
@@ -126,10 +125,12 @@ export function isSupportedVersion(data: unknown): data is ExportDataV1 {
   if (!data || typeof data !== 'object') {
     return false
   }
-  
+
   const exportData = data as Record<string, unknown>
-  return exportData.version === 1 && 
-         'exportedAt' in exportData &&
-         'creator' in exportData &&
-         'payer' in exportData
+  return (
+    exportData.version === 1 &&
+    'exportedAt' in exportData &&
+    'creator' in exportData &&
+    'payer' in exportData
+  )
 }

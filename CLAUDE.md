@@ -243,6 +243,7 @@ git worktree prune
 ```
 
 **Benefits**:
+
 - Multiple agents can work on different features simultaneously
 - No filesystem conflicts between concurrent features
 - Clean separation: `worktrees/001-feature-a/` vs `worktrees/002-feature-b/`
@@ -259,6 +260,7 @@ git worktree prune
 **Philosophy**: Privacy > Features. Simplicity > Cleverness. YAGNI always.
 
 ## Active Technologies
+
 - TypeScript 5.x+ (strict mode) + Zustand 5+, Zustand persist middleware, Next.js 15+ (App Router), React 18+ (003-zustand-state-management)
 - Browser LocalStorage (client-side only, no server-side database) (003-zustand-state-management)
 

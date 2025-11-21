@@ -1,17 +1,17 @@
-import type { Metadata } from "next";
-import { Web3Provider } from "./providers";
-import "@rainbow-me/rainbowkit/styles.css";
-import "./globals.css";
+import type { Metadata } from 'next'
+import { Web3Provider } from './providers'
+import '@rainbow-me/rainbowkit/styles.css'
+import './globals.css'
 
 export const metadata: Metadata = {
-  title: "VoidPay",
-  description: "Stateless Invoicing Platform",
-};
+  title: 'VoidPay',
+  description: 'Stateless Invoicing Platform',
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="en">
@@ -19,5 +19,5 @@ export default function RootLayout({
         <Web3Provider>{children}</Web3Provider>
       </body>
     </html>
-  );
+  )
 }
