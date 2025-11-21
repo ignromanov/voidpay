@@ -1,26 +1,26 @@
-import { mainnet, arbitrum, optimism, polygon } from "wagmi/chains";
+import { mainnet, arbitrum, optimism, polygon } from 'wagmi/chains'
 
 export const NETWORKS = {
   [mainnet.id]: {
-    name: "Ethereum",
+    name: 'Ethereum',
     chain: mainnet,
-    currency: "ETH",
+    currency: 'ETH',
   },
   [arbitrum.id]: {
-    name: "Arbitrum",
+    name: 'Arbitrum',
     chain: arbitrum,
-    currency: "ETH",
+    currency: 'ETH',
   },
   [optimism.id]: {
-    name: "Optimism",
+    name: 'Optimism',
     chain: optimism,
-    currency: "ETH",
+    currency: 'ETH',
   },
   [polygon.id]: {
-    name: "Polygon",
+    name: 'Polygon',
     chain: polygon,
-    currency: "MATIC",
+    currency: 'MATIC',
   },
-} as const;
+} as const
 
-export type NetworkId = keyof typeof NETWORKS;
+export type NetworkId = keyof typeof NETWORKS

@@ -243,6 +243,7 @@ git worktree prune
 ```
 
 **Benefits**:
+
 - Multiple agents can work on different features simultaneously
 - No filesystem conflicts between concurrent features
 - Clean separation: `worktrees/001-feature-a/` vs `worktrees/002-feature-b/`
@@ -261,6 +262,9 @@ git worktree prune
 ## Active Technologies
 - TypeScript 5.x+ (Strict Mode) + `lz-string` (v1.5.0+), `zod` (for runtime validation), `big.js` or native `BigInt` (for amounts) (002-url-state-codec)
 - None (Stateless URL-based state) (002-url-state-codec)
+
+- TypeScript 5.x+ (strict mode) + Zustand 5+, Zustand persist middleware, Next.js 15+ (App Router), React 18+ (003-zustand-state-management)
+- Browser LocalStorage (client-side only, no server-side database) (003-zustand-state-management)
 
 - Next.js 16.0.3+, React 19.0.0+, TypeScript 5.x+ (strict mode), Node.js 20+ (specified in .nvmrc)
 - Wagmi 2.19.4+, Viem 2.39.3+, RainbowKit 2.2.9+

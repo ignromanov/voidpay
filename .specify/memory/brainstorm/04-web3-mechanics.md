@@ -102,6 +102,10 @@
     - Если найдено **точное совпадение** -> UI переходит в состояние **"Confirming..."** (ждем финализации).
     - Если не найдено -> статус остается **"Pending"** (продолжаем polling).
     - После финализации -> статус **"Paid ✓"**.
+    - **TxHash Discovery:**
+      - **Payer:** Stores the `txHash` in `usePayerStore` (LocalStorage) immediately after signing.
+      - **Creator:** Discovers the `txHash` via Alchemy Transfers API polling (matching the Magic Dust amount) and stores it in `useCreatorStore` (LocalStorage).
+      - **Note:** The `txHash` is **NOT** stored in the Invoice URL to keep the URL static and shareable.
 
 **Преимущества Magic Dust:**
 
@@ -115,6 +119,26 @@
 - **Polling interval:** 10 секунд (быстрое обновление статуса).
 - **Dust Range:** 0.000001 - 0.000999 (для 6 decimals) или аналогично для других decimals.
 - **Max Dust Value:** ~$0.01 (незначительная сумма для пользователя, но достаточная для уникальности).
+
+---
+
+## 4.4. Механика Донатов (Donation Mechanics)
+
+Мы отказались от чекбокса "1% Developer Tip" в MVP в пользу пост-оплатного флоу.
+
+### 4.4.1. Fast Lane (Widget)
+
+- **Context:** Появляется сразу после успешной оплаты инвойса.
+- **Currency:** **Native Currency Only** (ETH, MATIC, etc.).
+- **Reasoning:** Исключает необходимость `approve` для ERC20 токенов. Это позволяет сделать донат в **один клик** (одна транзакция `sendTransaction`).
+- **UX:** Кнопки с фиксированными суммами (Smart Tiers), конвертированными в нативный токен.
+
+### 4.4.2. Slow Lane (Modal)
+
+- **Context:** Вызывается через футер ("Support VoidPay").
+- **Currency:** Любой токен (Native или ERC20).
+- **Flow:** Стандартный Web3 флоу (Approve -> Transfer для ERC20).
+- **Treasury:** Адрес получателя донатов (Dev Treasury) **захардкожен** в приложении.
 
 ---
 
