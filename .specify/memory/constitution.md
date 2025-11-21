@@ -1,25 +1,23 @@
 <!--
   SYNC IMPACT REPORT
 
-  Version Change: 1.5.1 → 1.6.0
+  Version Change: 1.6.0 → 1.7.0
 
   Modified Principles:
-  - VII. Web3 Safety & Transaction Validation: Added Donation Strategy and Tx Discovery rules
-  - XI. UI/UX Design Principles: Updated Invoice Card and added PDF Generation rules
+  - I. Zero-Backend Architecture (Stateless First): Added exception for transient operational storage (infrastructure state only)
 
-  Added Sections:
-  - Donation Strategy (Native vs ERC20)
-  - Receipt Mode & PDF Logic
+  Added Sections: None
 
   Removed Sections: None
 
-  Templates Requiring Updates: None
+  Templates Requiring Updates:
+  - .specify/templates/plan-template.md (✅ Updated)
 
   Follow-up TODOs:
-  - Ensure implementation tasks reflect the new donation and receipt logic
+  - Ensure future feature plans reference this exception in Complexity Tracking if using KV/Redis
 
-  Ratification: Refining payment success state, donation mechanics, and transaction discovery for MVP.
-  Date: 2025-11-20
+  Ratification: Formalizing exception for transient operational storage (e.g., rate limiting) to support RPC Proxy feature while maintaining zero-backend philosophy for user data.
+  Date: 2025-11-21
 -->
 
 # VoidPay Constitution
@@ -28,7 +26,7 @@
 
 ### I. Zero-Backend Architecture (Stateless First)
 
-**Principle**: The application MUST operate without a backend database or persistent server-side state. All invoice data is encoded in URLs or stored client-side.
+**Principle**: The application MUST operate without a backend database or persistent server-side state for user data. All invoice data is encoded in URLs or stored client-side.
 
 **Rules**:
 
@@ -37,8 +35,15 @@
 - Invoice state MUST be self-contained in compressed URL parameters
 - Client-side storage (LocalStorage) is permitted for user preferences and history only
 - Server-side components are limited to: static hosting, RPC proxying, and OG image generation
+- **Exception**: Transient operational storage (e.g., Redis/KV) is permitted for infrastructure state only:
+  - Rate limiting counters (short TTL, no user data)
+  - RPC response caching (ephemeral, no PII)
+  - Operational metrics (anonymous, aggregated)
+  - MUST NOT store user-identifiable data or invoice contents
+  - MUST have explicit TTL and automatic expiration
+  - MUST be justified in feature plan's Complexity Tracking table
 
-**Rationale**: This ensures 永久可用性 (永续性 - perpetual availability). Even if hosting is discontinued, the service can be instantly redeployed anywhere, including IPFS or local deployment. Users retain full control and ownership of their invoice data through self-contained URLs.
+**Rationale**: This ensures 永久可用性 (永续性 - perpetual availability). Even if hosting is discontinued, the service can be instantly redeployed anywhere, including IPFS or local deployment. Users retain full control and ownership of their invoice data through self-contained URLs. Transient operational storage for infrastructure concerns (rate limiting, caching) does not compromise this principle as it contains no user data and expires automatically.
 
 ### II. Privacy-First & Self-Custody
 
@@ -575,4 +580,4 @@ Any violation of Constitutional principles MUST be explicitly justified in the "
 - Keep specs focused on requirements, plans focused on approach
 - Link to external resources rather than duplicating content
 
-**Version**: 1.6.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-20
+**Version**: 1.7.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-21

@@ -31,7 +31,7 @@
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-- [ ] No backend database introduced (Principle I)
+- [ ] No backend database introduced (Principle I) - *Exception: Transient operational storage permitted*
 - [ ] No user authentication/registration added (Principle III)
 - [ ] Schema changes follow versioning rules (Principle IV)
 - [ ] New features preserve privacy-first approach (Principle II)

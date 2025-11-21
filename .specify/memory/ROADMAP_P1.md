@@ -363,5 +363,36 @@
 
 ---
 
-**Document Version**: 1.1.0
+## 🔧 Post-MVP Hardening
+
+### P1.41 - RPC Proxy Edge Cases & Error Resilience
+**Status**: 🔴 **Priority**: P1 **Compliance**: ✅ **Constitutional**: Principle VI
+**Feature Folder**: `specs/004-rpc-proxy-failover/`
+**Depends On**: P0.4 (RPC Proxy & Multi-Provider Failover)
+
+**Edge Cases to Handle**:
+- **Partial Provider Failures**: Some RPC methods work, others fail on same provider
+- **Invalid/Malformed Data**: Provider returns invalid or malformed JSON-RPC responses
+- **Mock-to-Production Transitions**: Behavior when switching from debug mode to production
+- **Simultaneous Rate Limits**: All configured providers hit rate limits at the same time
+- **Network Timeouts**: Extremely slow provider responses or network timeouts
+- **Missing Environment Variables**: Graceful degradation when API keys are missing/invalid
+- **Environment Detection**: Consistent behavior across localhost vs. deployed environments
+
+**Implementation Requirements**:
+- Comprehensive error classification and recovery strategies
+- Graceful degradation for each edge case
+- User-facing error messages with actionable guidance
+- Monitoring and alerting for edge case occurrences
+- Fallback behaviors that maintain service availability
+
+**Success Criteria**:
+- All 7 edge cases have documented handling strategies
+- Error messages provide clear user guidance
+- System maintains availability during edge case scenarios
+- Edge case handling is tested and validated
+
+---
+
+**Document Version**: 1.2.0
 **Last Updated**: 2025-11-21
