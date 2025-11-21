@@ -1,6 +1,9 @@
 # Local settings
 .claude/settings.local.json
 
+# Assets
+assets/
+
 # IDE
 .vscode/
 .idea/

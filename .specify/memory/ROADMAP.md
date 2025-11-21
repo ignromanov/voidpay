@@ -1,7 +1,7 @@
 # 🗺️ VoidPay Development Roadmap
 
 > **Project**: VoidPay - Stateless Crypto Invoice Platform
-> **Constitution**: v1.2.0 (MUST READ: `.specify/memory/constitution.md`)
+> **Constitution**: v1.6.0 (MUST READ: `.specify/memory/constitution.md`)
 > **Last Updated**: 2025-11-19
 > **Status**: Active Development
 
@@ -44,7 +44,7 @@
 - ✅ Next.js 16.0.3+ boilerplate
 - ✅ TypeScript strict mode config
 - ✅ Tailwind CSS 4.1.17+ setup
-- ✅ Constitution v1.2.0 documented
+- ✅ Constitution v1.6.0 documented
 - ✅ Brainstorm artifacts finalized
 
 **Remaining**:
@@ -74,7 +74,7 @@
 
 ### P0.3 - Client-Side Storage (Zustand Stores)
 
-**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle II
+**Status**: 🟡 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle II
 
 **Features**:
 
@@ -234,6 +234,7 @@
 - Magic Dust integration (exact amount calculation)
 - Network switching (user-initiated, not automatic)
 - Transaction submission (native vs ERC20)
+- **Donation Widget**: Native Currency only (Fast Lane)
 - Error handling with actionable messages
 
 ---
@@ -312,6 +313,7 @@
 
 - Save payment receipt to usePayerStore on successful payment
 - Receipt data: invoice details, tx hash, paid timestamp, network
+- **Receipt Mode**: Visual transformation of Invoice Card (PAID badge, Tx details)
 - View receipts from menu (payer-side history)
 - Download PDF receipt
 - Transaction explorer link

@@ -79,7 +79,21 @@
 
 ## 🔄 In Progress
 
-_No features currently in progress_
+#### P0.3 - Client-Side Storage (Zustand Stores)
+**Status**: 🟡 **In Progress**
+
+**Completed**:
+- ✅ Defined storage keys and namespace (`voidpay:`)
+- ✅ Implemented `useCreatorStore` schema and types
+- ✅ Implemented `usePayerStore` schema and types
+- ✅ Added LocalStorage quota management utilities
+- ✅ Defined `InvoiceDraft` and `LineItem` data models
+- ✅ Implemented `useCreatorStore` actions and persistence
+- ✅ Implemented `usePayerStore` actions and persistence
+- ✅ Implemented export/import functionality with validation
+
+**Remaining**:
+- Integrate with UI components
 
 ---
 
@@ -90,7 +104,7 @@ _No features currently in progress_
 ---
 
 #### P0.3 - Client-Side Storage (Zustand Stores)
-**Status**: 🔴 **Priority**: P0
+**Status**: 🟡 **Priority**: P0
 
 **Planned**:
 - useCreatorStore (drafts, preferences, history)
@@ -206,8 +220,8 @@ _No features currently in progress_
 
 - **Total Features**: 22 (P0-P1 only)
 - **Completed**: 2 (P0.1, P0.2)
-- **In Progress**: 0
-- **Remaining**: 20
+- **In Progress**: 1 (P0.3)
+- **Remaining**: 19
 
 **Phase 0 Progress**: 100% (2/2)  
 **Phase 1 Progress**: ~40% (partial P0.5, P0.6)  

@@ -1,22 +1,24 @@
 <!--
   SYNC IMPACT REPORT
 
-  Version Change: 1.5.0 → 1.5.1
+  Version Change: 1.5.1 → 1.6.0
 
   Modified Principles:
-  - XI. UI/UX Design Principles: Added "App Shell Architecture" rule
+  - VII. Web3 Safety & Transaction Validation: Added Donation Strategy and Tx Discovery rules
+  - XI. UI/UX Design Principles: Updated Invoice Card and added PDF Generation rules
 
   Added Sections:
-  - 3.3 App Shell Architecture (The Desk vs. The Paper)
+  - Donation Strategy (Native vs ERC20)
+  - Receipt Mode & PDF Logic
 
   Removed Sections: None
 
   Templates Requiring Updates: None
 
   Follow-up TODOs:
-  - Ensure implementation tasks reflect the App Shell structure
+  - Ensure implementation tasks reflect the new donation and receipt logic
 
-  Ratification: Formalizing App Shell architecture to ensure branding visibility and platform liability separation.
+  Ratification: Refining payment success state, donation mechanics, and transaction discovery for MVP.
   Date: 2025-11-20
 -->
 
@@ -136,6 +138,13 @@
 - Payment verification MUST use exact amount matching (Magic Dust ensures uniqueness)
 - NO reliance on fuzzy matching or tolerance thresholds
 - Disclaimers MUST clarify direct peer-to-peer nature and irreversibility
+- **Donation Strategy**:
+  - Post-payment widget MUST use **Native Currency** only (single-click, no approval)
+  - Footer "Support" modal MAY support ERC20 tokens (standard approval flow)
+- **Transaction Discovery**:
+  - Payer MUST store `txHash` in LocalStorage immediately upon signing
+  - Creator MUST discover `txHash` via background polling (Alchemy Transfers API)
+  - `txHash` MUST NOT be stored in the Invoice URL (keeps URL static)
 
 **Rationale**: Cryptocurrency transactions are irreversible. Any error in decimals, addresses, or amounts results in permanent loss. Baking decimals into URLs eliminates RPC dependency and prevents decimal mismatch attacks. Finalized confirmations protect recipients from chain reorganizations. Magic Dust provides deterministic payment verification without backend.
 
@@ -283,6 +292,10 @@
 - **Invoice Card (The Paper)**:
   - MUST contain ONLY invoice data and "Powered by VoidPay" watermark
   - MUST NOT contain platform-level actions (Report Abuse) inside the card boundary
+  - **Receipt Mode**: Upon payment confirmation, MUST visually transform (PAID badge, Tx details)
+- **PDF Generation**:
+  - **Pending State**: "Download Invoice" generates a "Pro-forma" PDF (watermarked "UNPAID")
+  - **Success State**: "Download Receipt" generates a Receipt PDF (watermarked "PAID", includes TxHash)
 
 #### 3.1.3 Ambient Glow Spec: Network-Specific Lighting
 
@@ -562,4 +575,4 @@ Any violation of Constitutional principles MUST be explicitly justified in the "
 - Keep specs focused on requirements, plans focused on approach
 - Link to external resources rather than duplicating content
 
-**Version**: 1.5.1 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-20
+**Version**: 1.6.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-20
