@@ -267,6 +267,7 @@ git worktree prune
 ## Active Technologies
 - TypeScript 5.x+ (Strict Mode) + `lz-string` (v1.5.0+), `zod` (for runtime validation), `big.js` or native `BigInt` (for amounts) (002-url-state-codec)
 - None (Stateless URL-based state) (002-url-state-codec)
+- TypeScript 5.x+ + Next.js 15+ (App Router + Edge Runtime), Wagmi v2+, Viem v2+ (004-rpc-proxy-failover)
 
 - TypeScript 5.x+ (strict mode) + Zustand 5+, Zustand persist middleware, Next.js 15+ (App Router), React 18+ (003-zustand-state-management)
 - Browser LocalStorage (client-side only, no server-side database) (003-zustand-state-management)
