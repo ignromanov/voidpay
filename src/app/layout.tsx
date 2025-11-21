@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Web3Provider } from './providers'
+import { Navigation } from '@/widgets/navigation/Navigation'
 import '@rainbow-me/rainbowkit/styles.css'
 import './globals.css'
 
@@ -16,7 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <Web3Provider>{children}</Web3Provider>
+        <Web3Provider>
+          <Navigation />
+          {children}
+        </Web3Provider>
       </body>
     </html>
   )

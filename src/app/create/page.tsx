@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useCreatorStore } from '@/entities/creator/model/useCreatorStore'
 import { useAutoSave } from '@/features/invoice-draft/lib/auto-save'
 import { NewInvoiceDialog } from '@/features/invoice-draft/ui/NewInvoiceDialog'
+import { generateAndTrackInvoice } from '@/entities/invoice/lib/invoice-helpers'
 
 export default function CreateInvoicePage() {
   const activeDraft = useCreatorStore((s) => s.activeDraft)
@@ -45,6 +46,22 @@ export default function CreateInvoicePage() {
       autoSave({ invoiceId: value })
     } else if (field === 'recipientName') {
       autoSave({ recipient: { name: value } })
+    }
+  }
+
+  const handleGenerateInvoice = async () => {
+    if (!activeDraft) {
+      alert('Please create a draft first')
+      return
+    }
+
+    try {
+      const url = await generateAndTrackInvoice(activeDraft)
+      alert(`Invoice generated! URL: ${url}\n\nCheck the History page to see the entry.`)
+      clearDraft()
+    } catch (error) {
+      console.error('Failed to generate invoice:', error)
+      alert('Failed to generate invoice')
     }
   }
 
@@ -120,6 +137,13 @@ export default function CreateInvoicePage() {
               className="rounded-md border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               Clear Draft
+            </button>
+            <button
+              onClick={handleGenerateInvoice}
+              disabled={!activeDraft}
+              className="rounded-md bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Generate Invoice
             </button>
           </div>
         </div>

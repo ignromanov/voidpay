@@ -78,16 +78,16 @@
 
 ### Implementation for User Story 2
 
-- [ ] T025 [P] [US2] Create CreationHistoryEntry interface in src/entities/creator/model/types.ts
-- [ ] T026 [US2] Implement addHistoryEntry action in src/entities/creator/model/useCreatorStore.ts
-- [ ] T027 [US2] Implement deleteHistoryEntry action in src/entities/creator/model/useCreatorStore.ts
-- [ ] T028 [US2] Implement duplicateHistoryEntry action in src/entities/creator/model/useCreatorStore.ts
-- [ ] T029 [US2] Implement pruneHistory action (auto-prune when > 100 entries) in src/entities/creator/model/useCreatorStore.ts
-- [ ] T030 [US2] Create history list UI component in src/features/invoice-history/ui/
-- [ ] T031 [US2] Add "Duplicate" button functionality to history entries
-- [ ] T032 [US2] Add "View" button functionality to navigate to invoice URL
-- [ ] T033 [US2] Integrate addHistoryEntry call after invoice URL generation
-- [ ] T034 [US2] Add auto-pruning trigger when history exceeds 100 entries
+- [x] T025 [P] [US2] Create CreationHistoryEntry interface in src/entities/creator/model/types.ts | Deviation: Interface already existed in src/entities/invoice/model/types.ts (from Phase 2), re-exported in creator types for convenience
+- [x] T026 [US2] Implement addHistoryEntry action in src/entities/creator/model/useCreatorStore.ts | Deviation: None
+- [x] T027 [US2] Implement deleteHistoryEntry action in src/entities/creator/model/useCreatorStore.ts | Deviation: None
+- [x] T028 [US2] Implement duplicateHistoryEntry action in src/entities/creator/model/useCreatorStore.ts | Deviation: None
+- [x] T029 [US2] Implement pruneHistory action (auto-prune when > 100 entries) in src/entities/creator/model/useCreatorStore.ts | Deviation: Auto-pruning implemented inline in addHistoryEntry action for efficiency
+- [x] T030 [US2] Create history list UI component in src/features/invoice-history/ui/ | Deviation: Created HistoryList.tsx with delete confirmation, empty state, and payment status indicator
+- [x] T031 [US2] Add "Duplicate" button functionality to history entries | Deviation: Integrated into HistoryList component
+- [x] T032 [US2] Add "View" button functionality to navigate to invoice URL | Deviation: Integrated into HistoryList component, opens in new tab
+- [x] T033 [US2] Integrate addHistoryEntry call after invoice URL generation | Deviation: Created invoice-helpers.ts with generateAndTrackInvoice function, integrated into create page with demo button
+- [x] T034 [US2] Add auto-pruning trigger when history exceeds 100 entries | Deviation: Auto-pruning implemented inline in addHistoryEntry action (same as T029)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - drafts persist and history is tracked
 
