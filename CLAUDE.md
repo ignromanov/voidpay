@@ -190,12 +190,60 @@ export async function POST(req: Request) {
 
 ---
 
-## 🧪 Testing (MUST)
+## 🧪 Testing (Constitutional Principle XVI)
 
-1. **Schema versioning** - Old URLs parse correctly
-2. **URL compression** - Round-trip without data loss
-3. **Magic Dust** - Unique, within range, exact match
-4. **Multi-network** - Each network confirmation flow
+**TDD Cycle**: Red → Green → Refactor (Classic Detroit style)
+
+### Requirements
+
+| Requirement            | Value                               |
+| ---------------------- | ----------------------------------- |
+| **Coverage threshold** | 80%+ for merge                      |
+| **Framework**          | Vitest                              |
+| **Test location**      | `__tests__/` co-located with source |
+| **Web3 tests**         | Mocked RPC only (no testnet in CI)  |
+| **Snapshots**          | MANDATORY for schema/URL encoding   |
+
+### Commands
+
+```bash
+pnpm test           # Run all tests
+pnpm test:coverage  # Run with coverage (80% threshold enforced)
+pnpm test:watch     # Watch mode for TDD development
+pnpm test:ui        # Vitest UI for visual debugging
+pnpm typecheck      # TypeScript type checking
+```
+
+### Test Utilities
+
+Located in `src/shared/test-utils/`:
+
+- **render.tsx** - Custom React render with Wagmi + QueryClient providers
+- **wagmi-mock.ts** - Mock Wagmi configuration using `mock` connector
+- **rpc-mocks.ts** - RPC mock utilities for Web3 testing without network calls
+
+```typescript
+// Example: Testing with mocked Web3
+import { render, setupRpcMocks, MOCK_WALLETS } from '@/shared/test-utils'
+
+const cleanup = setupRpcMocks({
+  eth_getBalance: () => '0xde0b6b3a7640000', // 1 ETH
+})
+// ... your tests ...
+cleanup()
+```
+
+### Mandatory Test Coverage
+
+1. **Schema versioning** - Old URLs parse correctly (snapshot tests)
+2. **URL compression** - Round-trip without data loss (snapshot tests)
+3. **Magic Dust** - Unique, within range, exact match (unit tests)
+4. **Multi-network** - Each network confirmation flow (mocked RPC tests)
+
+### Git Hooks
+
+- **Pre-commit**: `pnpm lint-staged && pnpm typecheck`
+- **Pre-push**: `pnpm test:coverage` (blocks if <80%)
 
 ---
 
@@ -268,6 +316,7 @@ git worktree prune
 ## 🧰 Serena MCP Usage Guidelines
 
 **⚠️ CONSTITUTIONAL REQUIREMENTS**:
+
 - **Principle XIII**: Serena symbolic tools MANDATORY for TypeScript/Markdown navigation
 - **Principle XIV**: Serena memories (`.serena/memories/`) MANDATORY as project knowledge source of truth
 
@@ -313,6 +362,7 @@ git worktree prune
 ### Workflow
 
 **Before Any Code Changes (REQUIRED):**
+
 ```
 1. get_symbols_overview (file) → see top-level structure
 2. find_symbol (specific symbol) → get details without body
@@ -321,12 +371,14 @@ git worktree prune
 ```
 
 **For Code Search:**
+
 - `search_for_pattern` (Serena) - REQUIRED for TypeScript/Markdown content search
 - `find_symbol` - Symbolic search when you know name
 - `find_referencing_symbols` - Track dependencies
 - `Grep` - ONLY for non-indexed files (CSS, HTML, YAML)
 
 **For Editing:**
+
 - `replace_symbol_body` - Replace entire function/class (REQUIRED for full symbol changes)
 - `insert_after_symbol` - Add new code after symbol
 - `insert_before_symbol` - Add imports or prepend code
@@ -335,30 +387,35 @@ git worktree prune
 ### ⚠️ Anti-Patterns (Constitutional Violations)
 
 **VIOLATION #1**: Reading TypeScript without symbols
+
 ```
 ❌ Read("src/features/invoice/create.tsx")  // PROHIBITED
 ✅ get_symbols_overview("src/features/invoice/create.tsx")  // CORRECT
 ```
 
 **VIOLATION #2**: Using Grep for code symbols
+
 ```
 ❌ Grep(pattern="function createInvoice", type="ts")  // PROHIBITED
 ✅ find_symbol("createInvoice")  // CORRECT
 ```
 
 **VIOLATION #3**: Reading full file then using symbolic tools (wasteful)
+
 ```
 ❌ Read("file.ts") → find_symbol("Foo")  // PROHIBITED (duplication)
 ✅ find_symbol("Foo", include_body=true)  // CORRECT (efficient)
 ```
 
 **VIOLATION #4**: Editing without checking references
+
 ```
 ❌ replace_symbol_body() without find_referencing_symbols  // PROHIBITED (unsafe)
 ✅ find_referencing_symbols() → review → replace_symbol_body()  // CORRECT
 ```
 
 **VIOLATION #5**: Grep in Markdown documentation
+
 ```
 ❌ Grep(pattern="Constitutional Principle", glob="**/*.md")  // PROHIBITED
 ✅ search_for_pattern("Constitutional Principle", paths_include_glob="**/*.md")  // CORRECT
@@ -378,9 +435,11 @@ git worktree prune
 **Philosophy**: Privacy > Features. Simplicity > Cleverness. YAGNI always.
 
 ## Active Technologies
+
 - TypeScript 5.x+ (Strict Mode) + `lz-string` (v1.5.0+), `zod` (for runtime validation), `big.js` or native `BigInt` (for amounts) (002-url-state-codec)
 - None (Stateless URL-based state) (002-url-state-codec)
 - TypeScript 5.x+ + Next.js 15+ (App Router + Edge Runtime), Wagmi v2+, Viem v2+ (004-rpc-proxy-failover)
+- N/A (testing infrastructure only) (005-testing-environment)
 
 - TypeScript 5.x+ (strict mode) + Zustand 5+, Zustand persist middleware, Next.js 15+ (App Router), React 18+ (003-zustand-state-management)
 - Browser LocalStorage (client-side only, no server-side database) (003-zustand-state-management)

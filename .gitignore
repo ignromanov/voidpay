@@ -7,6 +7,10 @@ assets/
 # IDE
 .vscode/
 .idea/
+.serena/
+
+# MCP config (contains absolute paths, generated per worktree)
+.mcp.json
 
 # OS
 .DS_Store
@@ -50,3 +54,4 @@ next-env.d.ts
 
 # Git Worktrees (Constitution Principle X)
 worktrees/
+coverage/

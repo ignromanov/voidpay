@@ -1,0 +1,54 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode full invoice to stable compressed format > full-invoice-v1-encoded 1`] = `"N4IgbiBcCMA0IEsAmUQEkByA1AtAJgAY8AWHAg6EeBAZxqmgHYDiCA2Rwg+JAVwFMGzDsQCsbcvAB2AF1QAFAIYBPALb9ZAAgBmAewBOmgO78ARpqT8w-ADa6ADuq01++sAgDG-etP5yY8B68+qgAqgDKACIAwlQg-iAEAB4AggSmABxsAJzZ0B5seNAZpgDMbB7QSNDZkcSKePzZAKKmBB7N5ez8AELEGXGWHlBs8NpQoFKoKR7qmpFWtg5OMpoAMmux8IqoydB4pWIcGdkUB0eMJ2eH4pen+zfHp3GCkCCmCDY2CFIA5gACilm-AAdJYINskPQ3g9NAAVfgeAAWmnCMn0-D8AB0pOFFFJNAAxfT4jy0Dy6WCaaIpTTZYjQAiiOL2JGoADU0Bwoh5OAeOAuIAAvoEJiApm9ot8NKtogZ7AZFDIELopttdklFKYPJZtFqdfw9drdfqTcbDaaLcaXqggRTeLIaP8PNLZCCKao4oooagjpoerwaD9vDRNClrDiMPwjJoAJoGADWVIwsc0jPIlHgrI5XJ5ohw2QyjBwbFExFKwuo-gA2qAUG9iaqZBokPNFnZHDK4gBHKCseAhGGicgj8iVuuoHpAhMtsPyNBt6wdlY9kbcECDkBMYejgjjkD1kByyyaABKVgQ0c0ADJNABFFKrmDrzf7Hej4UAXXgMkUSVQGQgqIACkgw0MMbwgcKQA"`;
+
+exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode minimal invoice to stable compressed format > minimal-invoice-v1-encoded 1`] = `"N4IgbiBcCMA0IEsAmUQEkByA1AtAWUxwAYjoR4EBnSqaAdiIBYiA2OgJhPiQFcBTWgzaMArCy4gAdnwAutAMx14AYx4AnVHgCCAFTQBhciCR9ltABzwAZlFCTUAMTV8+AGwCGk5Xw3x3qIgAPaBDQsPCIyKiwkABfFVspVH1XBD5JOXjEOUgAbVAUSBB9AHtJSh5XGQRJAHMjAEdaeA0i6BIOzq7OuIBdWKA"`;
+
+exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should preserve exact JSON structure in encoding > full-invoice-v1-structure 1`] = `
+{
+  "c": {
+    "a": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+    "ads": "456 Business Ave
+New York, NY 10001",
+    "e": "accounts@client.com",
+    "n": "Client Corporation",
+    "ph": "+1-555-987-6543",
+  },
+  "cur": "USDC",
+  "dec": 6,
+  "dsc": "5%",
+  "due": 1706745600,
+  "f": {
+    "a": "0x1234567890123456789012345678901234567890",
+    "ads": "123 Tech Street
+San Francisco, CA 94105",
+    "e": "billing@acme.dev",
+    "n": "Acme Development LLC",
+    "ph": "+1-555-123-4567",
+  },
+  "id": "INV-2024-001",
+  "iss": 1704067200,
+  "it": [
+    {
+      "d": "Frontend Development",
+      "q": 40,
+      "r": "150000000",
+    },
+    {
+      "d": "Backend API Development",
+      "q": 60,
+      "r": "175000000",
+    },
+    {
+      "d": "Code Review & QA",
+      "q": 10,
+      "r": "125000000",
+    },
+  ],
+  "net": 1,
+  "nt": "Payment for web development services",
+  "t": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  "tax": "8.5%",
+  "v": 1,
+}
+`;
