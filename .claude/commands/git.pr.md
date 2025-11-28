@@ -1,31 +1,26 @@
 ---
-description: Push current branch and create a Pull Request.
+description: Push branch and create Pull Request via GitHub CLI.
 ---
 
-1. Run build to ensure the project builds successfully before creating a PR.
-   ```bash
-   npm run build > /dev/null
-   ```
-   **Error Handling**: If this fails, stop and report the build error.
-
-2. Push the current branch to the remote repository (quietly).
+1. **Push branch** (husky pre-push runs test:coverage):
    ```bash
    git push -u origin HEAD --quiet
    ```
 
-2. Generate PR content.
-   - **Instruction**: Analyze the commits on this branch relative to `master` (concise log).
-     ```bash
-     git log master..HEAD --oneline
-     ```
-   - **Instruction**: Generate a descriptive **Title** and **Body** for the PR.
-     - **Title**: Concise summary of the feature or fix.
-     - **Body**: Detailed description of changes, motivation, and any breaking changes. Use markdown.
-
-3. Create a Pull Request using the GitHub CLI.
+2. **Get commit log for PR body**:
    ```bash
-   gh pr create --title "<generated_title>" --body "<generated_body>"
+   git log master..HEAD --oneline
    ```
-   **Fallback**: If `gh` is not installed or configured:
-   - Print the generated Title and Body for the user.
-   - Print the URL to create the PR manually (from the `git push` output).
+
+3. **Generate PR content**:
+   - **Title**: Concise summary (Conventional Commit style)
+   - **Body**:
+     - What changed and why
+     - Breaking changes (if any)
+     - Link to related issues
+
+4. **Create PR**:
+   ```bash
+   gh pr create --title "<title>" --body "<body>"
+   ```
+   If `gh` not available, print title/body for manual creation.

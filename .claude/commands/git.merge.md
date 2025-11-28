@@ -1,67 +1,44 @@
 ---
-description: Merge the current feature branch into master.
+description: Merge current feature branch into master with worktree cleanup.
 ---
 
-1. Ensure the working directory is clean.
+1. **Ensure clean working directory**:
    ```bash
    git status --porcelain
    ```
-   If there are changes, stop and ask the user to commit or stash them.
+   If not empty, ask user to commit or stash.
 
-2. Get the current branch name.
+2. **Get feature branch name**:
    ```bash
    git branch --show-current
    ```
+   Store as `<feature-branch>`.
 
-3. Checkout the `master` branch.
+3. **Switch to master and update**:
    ```bash
-   git checkout master
+   git checkout master && git pull origin master --quiet
    ```
 
-4. Pull the latest changes for `master` (quietly).
+4. **Merge feature branch**:
    ```bash
-   git pull origin master --quiet
+   git merge <feature-branch>
    ```
+   - On conflict: STOP, notify user, offer `git merge --abort`
+   - Do NOT auto-resolve complex conflicts
 
-5. Merge the feature branch into `master`.
-   ```bash
-   git merge <feature-branch-name>
-   ```
-   **Conflict Handling**:
-   - If the merge fails with conflicts (`CONFLICT (content): Merge conflict in ...`), **STOP**.
-   - Do **NOT** attempt to auto-resolve complex conflicts.
-   - Notify the user: "Merge conflict detected in [files]. Please resolve conflicts manually or guide me through the resolution."
-   - Abort the merge if the user requests it: `git merge --abort`.
-
-6. **Post-Merge Verification**:
-   - Run the build to ensure the merge didn't break anything (suppress success output).
-   ```bash
-   npm run build > /dev/null
-   ```
-   - If the build fails, **STOP**. Do not push broken code to master. Notify the user.
-
-7. Push the updated `master` branch (quietly).
+5. **Push master** (husky pre-push runs test:coverage):
    ```bash
    git push origin master --quiet
    ```
 
-8. **Worktree Cleanup (Constitution Principle X)**:
-   - Check if a worktree exists for the feature branch:
+6. **Worktree cleanup** (Constitution Principle X):
    ```bash
-   git worktree list | grep "<feature-branch-name>"
-   ```
-   - If worktree exists, remove it:
-   ```bash
-   git worktree remove worktrees/<feature-branch-name> --force
+   git worktree list | grep -q "<feature-branch>" && git worktree remove worktrees/<feature-branch> --force
    git worktree prune
    ```
-   - Verify cleanup:
-   ```bash
-   git worktree list
-   ```
 
-9. Offer to delete the feature branch locally and remotely.
+7. **Delete feature branch** (offer to user):
    ```bash
-   git branch -d <feature-branch-name>
-   git push origin --delete <feature-branch-name>
+   git branch -d <feature-branch>
+   git push origin --delete <feature-branch> 2>/dev/null || true
    ```
