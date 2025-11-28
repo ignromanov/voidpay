@@ -126,34 +126,57 @@ get_highest_from_branches() {
     echo "$highest"
 }
 
-# Function to check existing branches (local and remote) and return next available number
-check_existing_branches() {
-    local short_name="$1"
-    local specs_dir="$2"
-    
+# Function to get next available feature number (global across ALL branches and specs)
+# This ensures unique sequential numbering regardless of short-name
+get_next_feature_number() {
+    local specs_dir="$1"
+
     # Fetch all remotes to get latest branch info (suppress errors if no remotes)
     git fetch --all --prune 2>/dev/null || true
-    
-    # Find all branches matching the pattern using git ls-remote (more reliable)
-    local remote_branches=$(git ls-remote --heads origin 2>/dev/null | grep -E "refs/heads/[0-9]+-${short_name}$" | sed 's/.*\/\([0-9]*\)-.*/\1/' | sort -n)
-    
-    # Also check local branches
-    local local_branches=$(git branch 2>/dev/null | grep -E "^[* ]*[0-9]+-${short_name}$" | sed 's/^[* ]*//' | sed 's/-.*//' | sort -n)
-    
-    # Check specs directory as well
-    local spec_dirs=""
-    if [ -d "$specs_dir" ]; then
-        spec_dirs=$(find "$specs_dir" -maxdepth 1 -type d -name "[0-9]*-${short_name}" 2>/dev/null | xargs -n1 basename 2>/dev/null | sed 's/-.*//' | sort -n)
-    fi
-    
-    # Combine all sources and get the highest number
+
     local max_num=0
-    for num in $remote_branches $local_branches $spec_dirs; do
-        if [ "$num" -gt "$max_num" ]; then
-            max_num=$num
+
+    # Get highest number from ALL local branches matching ###-* pattern
+    local local_max=$(git branch 2>/dev/null | grep -oE '[0-9]{3}-' | sed 's/-//' | sort -rn | head -1)
+    if [ -n "$local_max" ]; then
+        local_max=$((10#$local_max))
+        if [ "$local_max" -gt "$max_num" ]; then
+            max_num=$local_max
         fi
-    done
-    
+    fi
+
+    # Get highest number from ALL remote branches matching ###-* pattern
+    local remote_max=$(git ls-remote --heads origin 2>/dev/null | grep -oE '/[0-9]{3}-' | sed 's/\///' | sed 's/-//' | sort -rn | head -1)
+    if [ -n "$remote_max" ]; then
+        remote_max=$((10#$remote_max))
+        if [ "$remote_max" -gt "$max_num" ]; then
+            max_num=$remote_max
+        fi
+    fi
+
+    # Get highest number from ALL specs directories matching ###-* pattern
+    if [ -d "$specs_dir" ]; then
+        local specs_max=$(ls -1 "$specs_dir" 2>/dev/null | grep -oE '^[0-9]{3}' | sort -rn | head -1)
+        if [ -n "$specs_max" ]; then
+            specs_max=$((10#$specs_max))
+            if [ "$specs_max" -gt "$max_num" ]; then
+                max_num=$specs_max
+            fi
+        fi
+    fi
+
+    # Also check worktrees directory
+    local worktrees_dir="$(dirname "$specs_dir")/worktrees"
+    if [ -d "$worktrees_dir" ]; then
+        local worktrees_max=$(ls -1 "$worktrees_dir" 2>/dev/null | grep -oE '^[0-9]{3}' | sort -rn | head -1)
+        if [ -n "$worktrees_max" ]; then
+            worktrees_max=$((10#$worktrees_max))
+            if [ "$worktrees_max" -gt "$max_num" ]; then
+                max_num=$worktrees_max
+            fi
+        fi
+    fi
+
     # Return next number
     echo $((max_num + 1))
 }
@@ -246,8 +269,8 @@ fi
 # Determine branch number
 if [ -z "$BRANCH_NUMBER" ]; then
     if [ "$HAS_GIT" = true ]; then
-        # Check existing branches on remotes
-        BRANCH_NUMBER=$(check_existing_branches "$BRANCH_SUFFIX" "$SPECS_DIR")
+        # Get next available number globally (across ALL branches, specs, worktrees)
+        BRANCH_NUMBER=$(get_next_feature_number "$SPECS_DIR")
     else
         # Fall back to local directory check
         HIGHEST=$(get_highest_from_specs "$SPECS_DIR")
@@ -357,13 +380,13 @@ MCPEOF
         >&2 echo "[specify] Created .mcp.json with worktree path: $WORKTREE_DIR"
     fi
 
-    # Copy Claude Code settings to worktree
+    # Setup Claude Code settings for worktree
     if [ -d "$REPO_ROOT/.claude" ] && [ ! -e "$WORKTREE_DIR/.claude" ]; then
         mkdir -p "$WORKTREE_DIR/.claude"
 
-        # Copy settings.local.json if exists
+        # Symlink settings.local.json to share across worktrees
         if [ -f "$REPO_ROOT/.claude/settings.local.json" ]; then
-            cp "$REPO_ROOT/.claude/settings.local.json" "$WORKTREE_DIR/.claude/"
+            ln -s "$REPO_ROOT/.claude/settings.local.json" "$WORKTREE_DIR/.claude/settings.local.json"
         fi
 
         # Symlink commands to share across worktrees
