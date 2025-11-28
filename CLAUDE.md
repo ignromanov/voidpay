@@ -1,7 +1,7 @@
 # CLAUDE.md - VoidPay Development Guide
 
 > **VoidPay** - Stateless Crypto Invoice Platform
-> **Constitution**: `.specify/memory/constitution.md` (v1.10.0) 🔴 **READ FIRST**
+> **Constitution**: `.specify/memory/constitution.md` (v1.11.0) 🔴 **READ FIRST**
 
 ---
 
@@ -32,7 +32,7 @@ Privacy-first crypto invoicing platform. Invoice data encoded in **URLs** (no ba
 11. **Design Fidelity** - V0 assets are source of truth, pixel-perfect implementation
 12. **UI/UX Principles** - Hybrid Theme (dark desk + light paper), ISO 216 A4 ratio
 13. **Serena-First Navigation** - Symbolic tools mandatory for TypeScript/Markdown
-14. **Serena Memory Repository** - `.serena/memories/` as project knowledge source
+14. **Serena Memory Repository** - Read AND Write/Update memories (keep fresh!)
 15. **SpecKit Workflow** - Mandatory specify → plan → tasks → implement
 16. **TDD Discipline** - Red → Green → Refactor, 80%+ coverage, Vitest
 
@@ -46,6 +46,8 @@ Privacy-first crypto invoicing platform. Invoice data encoded in **URLs** (no ba
 - Fuzzy payment matching
 - Merge without 80%+ test coverage (XVI)
 - Write implementation before tests (XVI)
+- Complete feature without updating memories (XIV)
+- Write verbose prose in memories (XIV)
 
 ### ✅ ALWAYS
 
@@ -58,6 +60,8 @@ Privacy-first crypto invoicing platform. Invoice data encoded in **URLs** (no ba
 - Feature-Sliced Design (FSD)
 - TDD: Red → Green → Refactor cycle (XVI)
 - Snapshot tests for schema/URL encoding (XVI)
+- Update `development-status` memory after feature completion (XIV)
+- Concise, information-dense memory content (XIV)
 
 ---
 
@@ -324,11 +328,26 @@ git worktree prune
 **⚠️ CONSTITUTIONAL REQUIREMENTS**:
 
 - **Principle XIII**: Serena symbolic tools MANDATORY for TypeScript/Markdown navigation
-- **Principle XIV**: Serena memories (`.serena/memories/`) MANDATORY as project knowledge source of truth
+- **Principle XIV**: Serena memories MANDATORY — both READ and WRITE/UPDATE (keep fresh!)
 
 **Access**: All Serena operations via `mcp__serena__*` tools. Direct file access to `.serena/` is PROHIBITED.
 
 **Indexed Files**: 67+ Markdown + All TypeScript (see `.serena/cache/`)
+
+### Memory Freshness Protocol (v1.11.0)
+
+**Core Rule**: Memories MUST be kept current. Stale info is WORSE than no info.
+
+**Mandatory Update Triggers** — agent MUST update memory when:
+1. Feature completion → update `development-status`
+2. New pattern discovered → write new pattern memory
+3. Tech stack change → update `tech-stack-locked`
+4. Architecture decision → update `architecture-summary`
+5. Stale detection → immediate fix
+
+**Write-First Principle**: If discovered knowledge ISN'T in memory → STOP, write it, THEN continue.
+
+**Content Quality**: Concise, information-dense, NO verbose prose (saves tokens)
 
 ### 🚫 PROHIBITED (Constitutional Violations)
 
@@ -348,6 +367,8 @@ git worktree prune
 4. ✅ **MANDATORY** - Use `search_for_pattern` (Serena) instead of Grep for .ts/.md files
 5. ✅ **MANDATORY** - Use `replace_symbol_body` for replacing entire functions/classes
 6. ✅ **MANDATORY** - Consult Serena memories via `mcp__serena__read_memory` before starting features
+7. ✅ **MANDATORY** - Update memories via `mcp__serena__edit_memory` / `write_memory` after feature completion
+8. ✅ **MANDATORY** - Update `development-status` memory after EVERY feature completion
 
 ### Core Principles
 
@@ -467,6 +488,7 @@ git worktree prune
 
 ## Recent Changes
 
+- 2025-11-28: Constitution v1.11.0 - Enhanced Principle XIV with Memory Freshness Protocol (mandatory updates)
 - 2025-11-28: Constitution v1.10.0 - Added TDD Discipline principle (XVI) with 80%+ coverage requirement
 - 2025-11-28: Constitution v1.9.0 - Added Serena Memory (XIV) and SpecKit Workflow (XV) principles
 - 2025-11-19: Constitution v1.4.0 - Added Git Worktree isolation principle for concurrent development

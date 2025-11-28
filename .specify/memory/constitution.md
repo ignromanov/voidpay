@@ -1,37 +1,38 @@
 <!--
   SYNC IMPACT REPORT
 
-  Version Change: 1.9.0 → 1.10.0
+  Version Change: 1.10.0 → 1.11.0
 
   Modified Principles:
-  - Testing Discipline (Governance section) → Expanded to Principle XVI
+  - XIV. Serena Memory as Project Knowledge Repository → Enhanced with Memory Freshness Protocol
+    - Added 14.4 Memory Freshness Protocol (mandatory update triggers, staleness detection)
+    - Added 14.5 Write-First Principle (capture knowledge immediately)
+    - Renumbered existing sections 14.4-14.11 → 14.6-14.13
+    - Enhanced 14.8 (was 14.6) Standard Memory Categories with update frequency requirements
+    - Added explicit update workflow after feature completion
 
   Added Sections:
-  - XVI. Test-Driven Development (TDD) Discipline - comprehensive TDD principle with:
-    - Classic (Detroit) Red-Green-Refactor cycle
-    - 80%+ coverage threshold for merge
-    - Vitest framework requirement
-    - Spec-level acceptance tests in spec.md
-    - Snapshot tests mandatory for schema/URL encoding
-    - RPC mocking for Web3 tests
+  - 14.4 Memory Freshness Protocol - comprehensive requirements for keeping memories up-to-date:
+    - Mandatory Update Triggers (8 specific situations)
+    - Staleness Detection criteria
+    - Update workflow with checklist
+  - 14.5 Write-First Principle - immediate capture of discovered knowledge
 
   Removed Sections:
-  - Testing Discipline from Governance (migrated to Principle XVI)
+  - None
 
   Templates Requiring Updates:
-  - .specify/templates/plan-template.md (✅ updated - add Principle XVI to Constitution Check)
-  - .specify/templates/spec-template.md (✅ updated - add TDD acceptance test format)
-  - .specify/templates/tasks-template.md (✅ updated - add TDD task format: T###-test before T###-impl)
-  - CLAUDE.md (⚠ pending - reference Principle XVI in Testing section)
+  - .specify/templates/plan-template.md (✅ updated - add memory freshness check to Constitution Check)
+  - .specify/templates/tasks-template.md (✅ updated - add memory update task in final phase)
+  - CLAUDE.md (⚠ pending - reference Memory Freshness in Serena Memory section)
 
   Follow-up TODOs:
-  - Update CLAUDE.md Testing section: Reference Principle XVI
-  - Setup Vitest configuration in project root
-  - Add coverage threshold to CI pipeline
+  - Update CLAUDE.md Serena MCP section: Reference Memory Freshness requirements
+  - Verify all existing memories have "Last Updated" timestamps
 
-  Ratification: Adding Principle XVI to establish TDD as constitutional requirement.
-  Classic (Detroit) style enforces test-first development with 80%+ coverage gate.
-  Spec-level acceptance tests ensure requirements are testable before implementation.
+  Ratification: Strengthening Principle XIV to emphasize memory WRITE/UPDATE operations.
+  Memory Freshness Protocol ensures agents actively maintain knowledge, not just read.
+  Write-First Principle prevents knowledge loss from discovered patterns.
   Date: 2025-11-28
 -->
 
@@ -434,23 +435,24 @@ These cases require user approval before violating Serena-first:
 
 ### XIV. Serena Memory as Project Knowledge Repository
 
-**Principle**: Serena memory files (`.serena/memories/`) MUST serve as the PRIMARY source of truth for project-wide knowledge, architecture, and decisions. Agents MUST consult and update these memories to maintain project context efficiently.
+**Principle**: Serena memory files (`.serena/memories/`) MUST serve as the PRIMARY source of truth for project-wide knowledge, architecture, and decisions. Agents MUST actively **consult, update, and maintain** these memories to keep project knowledge current and accurate.
 
 **Rules**:
 
-#### 14.1 Memory Consultation Requirements
+#### 14.1 Memory Consultation Requirements (READ)
 
 - Agents MUST read relevant Serena memories BEFORE starting any feature work
 - Agents MUST consult memories before reading extensive documentation or source code
 - Memory reads MUST take priority over full file reads for understanding project architecture
 - Memories provide the "what" and "why"; symbolic tools (Principle XIII) provide the "how"
 
-#### 14.2 Memory Update Requirements
+#### 14.2 Memory Update Requirements (WRITE)
 
 - Agents MUST update Serena memories when discovering new architectural patterns or decisions
 - Agents MUST write new memories for major architectural decisions not yet documented
 - Memory updates MUST happen at feature completion (alongside ROADMAP updates per Principle IX)
 - Memories MUST be updated when existing documentation becomes stale or incomplete
+- **Updates are NOT optional** — failing to update stale memory is a Constitutional violation
 
 #### 14.3 Memory Access (MCP Server Commands)
 
@@ -463,19 +465,121 @@ These cases require user approval before violating Serena-first:
 
 **REQUIRED**:
 
-- ✅ Use `mcp__serena__*` tools for all memory operations
-- ✅ List available memories before reading
-- ✅ Write/update memories at feature completion
+- ✅ `mcp__serena__list_memories` - List available memories before reading
+- ✅ `mcp__serena__read_memory` - Read memory content
+- ✅ `mcp__serena__write_memory` - Create new memory
+- ✅ `mcp__serena__edit_memory` - Update existing memory content
 
-#### 14.4 Memory Content Guidelines
+#### 14.4 Memory Freshness Protocol
+
+**Principle**: Memories MUST remain **accurate and current**. Stale information is worse than no information—it misleads agents and causes incorrect decisions.
+
+**Mandatory Update Triggers** (agent MUST update memory when):
+
+1. **Feature Completion**: After `/speckit.implement` completes, update relevant architecture/pattern memories
+2. **New Pattern Discovered**: Any reusable pattern not documented → write new pattern memory
+3. **Tech Stack Change**: Dependency added/removed/upgraded → update `tech-stack-locked` memory
+4. **Architecture Decision**: Major design decision made → write decision memory or update `architecture-summary`
+5. **Deviation Documented**: Task deviation reveals architectural change → update affected memory
+6. **Roadmap Milestone**: ROADMAP item completed → update `development-status` memory
+7. **Constitution Amendment**: Principle added/modified → update `constitutional-principles-summary` memory
+8. **Stale Detection**: Agent finds memory content contradicts current reality → immediate update
+
+**Staleness Detection Criteria**:
+
+- Memory references non-existent files or functions
+- Memory describes patterns not used in current code
+- Memory lists outdated dependency versions
+- Memory contradicts other memories or Constitution
+- Memory timestamp >30 days old without feature activity
+
+**Update Workflow**:
+
+```
+After Feature Completion:
+1. Review memories consulted during feature work
+2. Check: Does current memory reflect implemented reality?
+3. If stale → use mcp__serena__edit_memory to update
+4. If new pattern → use mcp__serena__write_memory to document
+5. Update development-status memory with feature completion
+```
+
+#### 14.5 Write-First Principle
+
+**Principle**: When agents discover knowledge that SHOULD be in memory but ISN'T, they MUST write it **immediately** rather than continuing work without documentation.
+
+**Rules**:
+
+- Discovered pattern not documented → STOP, write memory, THEN continue
+- Found major decision not recorded → STOP, write decision memory, THEN continue
+- Knowledge gap found during work → STOP, fill gap, THEN continue
+
+**Rationale**: Knowledge discovered during work is often forgotten after task completion. Immediate capture prevents knowledge loss and compounds project intelligence over time.
+
+**Anti-Pattern (VIOLATION)**:
+
+```
+❌ Agent discovers new state management pattern during implementation
+   → Continues to feature completion
+   → Forgets to document pattern
+   → Next agent re-discovers same pattern from scratch  // KNOWLEDGE LOST
+
+✅ Agent discovers new state management pattern during implementation
+   → STOPS and writes `state-management-pattern` memory
+   → Continues implementation
+   → Next agent reads memory and builds on existing knowledge  // KNOWLEDGE PRESERVED
+```
+
+#### 14.6 Memory Content Guidelines
+
+**Core Principle**: Memories MUST be **concise and information-dense** to optimize AI context window usage and minimize token consumption.
+
+**MANDATORY Content Rules**:
 
 - Memory files MUST be information-dense following Principle VIII guidelines
 - Memories MUST NOT duplicate content from SpecKit artifacts (`specs/###-feature/`)
 - Memories capture project-level knowledge; SpecKit captures feature-level design
 - Use structured formats (lists, tables, code blocks) over narrative prose
 - Maximum memory length target: <300 lines (exceptions for complex architecture docs)
+- **Include "Last Updated" date** at top of memory for staleness detection
 
-#### 14.5 Source of Truth Hierarchy
+**Token Efficiency Requirements**:
+
+- **NO verbose prose** — use bullet points, tables, code blocks
+- **NO redundant information** — each fact stated ONCE, cross-reference elsewhere
+- **NO obvious/inferable information** — only document non-trivial decisions
+- **NO full file contents** — document WHAT and WHY, not entire code blocks
+- **YES abbreviated keys** — use `iss` not `issueDate`, `net` not `networkId`
+- **YES structured data** — JSON/YAML schema snippets over paragraph descriptions
+- **YES external links** — reference external docs, don't duplicate content
+
+**Anti-Pattern Examples**:
+
+```
+❌ VERBOSE (wastes tokens):
+"The project uses TypeScript 5.x which is a strongly typed superset of JavaScript
+that compiles to plain JavaScript and provides excellent tooling support and
+type safety for large codebases."
+
+✅ CONCISE (saves tokens):
+"TypeScript 5.x+ (strict mode) - locked for MVP"
+```
+
+```
+❌ REDUNDANT (wastes tokens):
+"Use Zustand for state management. Zustand is configured in the store.
+The Zustand store uses persist middleware. The persist middleware uses LocalStorage."
+
+✅ CONCISE (saves tokens):
+"State: Zustand 5+ with persist middleware (LocalStorage)"
+```
+
+**Memory Quality Gate**: Before writing/updating memory, ask:
+1. Is this information non-obvious? (If obvious → don't write)
+2. Is this documented elsewhere? (If yes → reference, don't duplicate)
+3. Is this the most concise form? (If not → compress further)
+
+#### 14.7 Source of Truth Hierarchy
 
 1. **Constitution** (`.specify/memory/constitution.md`) - Governance & non-negotiable principles
 2. **Serena Memories** (`.serena/memories/`) - Architecture, patterns, tech stack, decisions
@@ -484,50 +588,63 @@ These cases require user approval before violating Serena-first:
 
 When conflicts arise, higher levels override lower levels (Constitution > Memories > SpecKit > Code implies code should change).
 
-#### 14.6 Standard Memory Categories
+#### 14.8 Standard Memory Categories
 
 **Required Memories** (MUST exist for all projects):
 
-- `project-overview` - High-level project description, philosophy, core value proposition
-- `tech-stack-locked` - Locked technology versions and update policy
-- `architecture-summary` - Project structure (e.g., FSD layers), routing, data flow
-- `constitutional-principles-summary` - Quick reference to all principles (this file distilled)
-- `development-status` - Current roadmap progress, active features, blockers
+| Memory Name | Purpose | Update Frequency |
+|-------------|---------|------------------|
+| `project-overview` | High-level description, philosophy, value proposition | On major pivot/refocus |
+| `tech-stack-locked` | Locked versions, update policy | On any dependency change |
+| `architecture-summary` | Project structure, routing, data flow | On architectural change |
+| `constitutional-principles-summary` | Quick reference to all principles | On Constitution amendment |
+| `development-status` | Roadmap progress, active features, blockers | On every feature completion |
 
 **Optional Memories** (create as needed):
 
-- `<feature-area>-architecture` - Deep dive on specific architectural domain (e.g., `payment-verification-architecture`)
-- `<decision-name>-decision` - Major architectural decisions with rationale (e.g., `rpc-proxy-decision`)
+- `<feature-area>-architecture` - Deep dive on specific domain (e.g., `payment-verification-architecture`)
+- `<decision-name>-decision` - Major decisions with rationale (e.g., `rpc-proxy-decision`)
 - `<pattern-name>-pattern` - Reusable patterns (e.g., `state-management-pattern`)
 
-#### 14.7 Integration with Other Principles
+#### 14.9 Integration with Other Principles
 
 - **Principle VIII (Context Efficiency)**: Memories prevent re-reading verbose documentation
 - **Principle XIII (Serena-First)**: Memories provide architecture context; symbolic tools provide code context
 - **Principle IX (Deviation Tracking)**: Memories updated when deviations reveal architectural changes
 - **Principle XV (SpecKit)**: Memories provide project context before creating specs/plans
 
-#### 14.8 Workflow Integration
+#### 14.10 Workflow Integration
 
-**Feature Start Workflow (REQUIRED)**:
-
-```
-1. Read relevant Serena memories (architecture, tech stack, principles)
-2. Launch /speckit.specify with context from memories
-3. During /speckit.plan: Reference memories for architectural constraints
-4. During /speckit.implement: Update memories if new patterns discovered
-```
-
-**Memory Update Workflow**:
+**Feature Start Workflow (READ memories FIRST)**:
 
 ```
-1. Feature completion triggers memory review
-2. If new architectural patterns emerged → write new memory or update existing
-3. If tech stack changed → update tech-stack-locked memory
-4. If roadmap milestone reached → update development-status memory
+1. mcp__serena__list_memories → identify relevant memories
+2. mcp__serena__read_memory for architecture, tech-stack, principles
+3. /speckit.specify with context from memories
+4. /speckit.plan → reference memories for architectural constraints
+5. /speckit.implement → WATCH for new patterns to document
 ```
 
-#### 14.9 Anti-Patterns (VIOLATIONS)
+**Feature Completion Workflow (UPDATE memories ALWAYS)**:
+
+```
+1. Review all memories consulted during feature work
+2. For EACH memory consulted:
+   - Does it still accurately reflect reality? If not → mcp__serena__edit_memory
+3. Check: Did I discover new patterns/decisions? If yes → mcp__serena__write_memory
+4. ALWAYS update development-status with feature completion
+5. If Constitution amended → update constitutional-principles-summary
+```
+
+**Memory Update Workflow Checklist** (MANDATORY after feature completion):
+
+- [ ] `development-status` updated with completed feature
+- [ ] Any stale memory content corrected
+- [ ] New patterns documented in new memory
+- [ ] Tech stack changes reflected in `tech-stack-locked`
+- [ ] Architecture changes reflected in `architecture-summary`
+
+#### 14.11 Anti-Patterns (VIOLATIONS)
 
 **VIOLATION #1: Starting feature without reading memories**
 
@@ -550,7 +667,28 @@ When conflicts arise, higher levels override lower levels (Constitution > Memori
 ✅ Implement pattern → write state-management-pattern memory → update architecture-summary  // CORRECT
 ```
 
-#### 14.10 Rationale
+**VIOLATION #4: Completing feature without updating development-status**
+
+```
+❌ Feature done → ROADMAP updated → forget to update development-status memory  // WRONG
+✅ Feature done → ROADMAP updated → mcp__serena__edit_memory("development-status")  // CORRECT
+```
+
+**VIOLATION #5: Finding stale memory and ignoring it**
+
+```
+❌ Read memory → notice it references non-existent file → continue work anyway  // WRONG
+✅ Read memory → notice staleness → mcp__serena__edit_memory to fix → continue  // CORRECT
+```
+
+**VIOLATION #6: Relying on memory without verifying freshness**
+
+```
+❌ Read tech-stack-locked → assume versions are current → use outdated version  // WRONG
+✅ Read tech-stack-locked → check Last Updated date → verify if >30 days old  // CORRECT
+```
+
+#### 14.12 Rationale
 
 **Token Efficiency**: Without memories, agents waste thousands of tokens re-reading the same architectural documentation for every feature. A 200-line memory prevents reading 2000+ lines of scattered documentation.
 
@@ -560,11 +698,15 @@ When conflicts arise, higher levels override lower levels (Constitution > Memori
 
 **Layered Knowledge System**: Constitution (principles) → Memories (architecture) → Symbols (code navigation) → Files (implementation details). Each layer filters and concentrates knowledge for the next.
 
-#### 14.11 Enforcement
+**Living Documentation**: Memories are not write-once artifacts. They are living documents that evolve with the codebase. Stale memories are worse than no memories—they actively mislead agents.
+
+#### 14.13 Enforcement
 
 - Agents MUST justify NOT consulting memories when starting features
+- Agents MUST update `development-status` memory after EVERY feature completion (no exceptions)
 - Code reviews SHOULD verify memory updates for features introducing new patterns
 - Constitutional compliance checks MUST verify memories exist and are up-to-date
+- **Memory Update Audit**: If feature completion lacks memory updates, reviewer MUST block merge
 
 ### XV. SpecKit Workflow Compliance
 
@@ -1361,4 +1503,4 @@ Any violation of Constitutional principles MUST be explicitly justified in the "
 - Track deviations in tasks.md during implementation
 - Update ROADMAP and memories upon feature completion
 
-**Version**: 1.10.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-28
+**Version**: 1.11.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-28

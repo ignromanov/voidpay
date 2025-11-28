@@ -162,6 +162,23 @@ Examples of foundational tasks (adjust based on your project):
 
 ---
 
+## Phase FINAL: Memory Updates (MANDATORY - Constitutional Principle XIV)
+
+**Purpose**: Update Serena memories to keep project knowledge current
+
+**⚠️ CRITICAL**: This phase is NON-OPTIONAL. Feature completion without memory updates is a Constitutional violation.
+
+- [ ] TMEM-1 Update `development-status` memory with completed feature
+- [ ] TMEM-2 Review memories consulted during feature work for staleness
+- [ ] TMEM-3 [P] Update `architecture-summary` if new patterns introduced
+- [ ] TMEM-4 [P] Update `tech-stack-locked` if dependencies changed
+- [ ] TMEM-5 Write new `<pattern-name>-pattern` memory if reusable pattern discovered
+- [ ] TMEM-6 Verify all memory "Last Updated" dates are current
+
+**Checkpoint**: All relevant memories updated. Feature ready for merge.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
