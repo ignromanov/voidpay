@@ -165,35 +165,86 @@
 - **Keys**: Separate Mainnet/Testnet keys.
 
 ### P0.6 - Feature-Sliced Design (FSD) Structure
-**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Architectural Constraints
-- Implement FSD layers: `app/`, `pages/`, `widgets/`, `features/`, `entities/`, `shared/`
-- Define entity models: `invoice`, `token`, `network`
-- Create shared utilities and UI primitives
-- Set up routing structure: `/`, `/create`, `/pay`
+**Status**: 🟢 **Completed**: 2025-11-22 **Compliance**: ✅ **Constitutional**: Architectural Constraints
+**Feature Folder**: `specs/005-fsd-design-system/`
+**Implemented**:
+- ✅ FSD layers: `app/`, `page-compositions/`, `widgets/`, `features/`, `entities/`, `shared/`
+- ✅ Entity models: `network` (types + themes), `invoice` (existing), `token` (types)
+- ✅ Shared utilities: `cn` utility, constants, env config
+- ✅ Routing structure: `/`, `/create`, `/pay`
+- ✅ App Router integration with FSD page compositions
+**Deviations**:
+- Renamed `pages/` to `page-compositions/` to avoid Next.js Pages Router conflict
+**Notes**:
+- Strict layer separation enforced through directory structure
+- FSD import boundaries verified manually
+- Next.js config updated to prevent Pages Router activation
+- Build successful with all linting and type checks passed
 
 ### P0.6.5 - Design System Implementation (Shared UI)
-**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI
-- **Tailwind Config**: `bg-background` (Zinc-950), `primary` (Violet-600).
-- **Typography**: Geist Sans & Geist Mono.
-- **Animations**: Ambient Glow keyframes.
-- **Shadcn/ui**: Base components (Button, Input, Card, Sheet, Dialog) with "VoidPay Look".
-- **Base Widgets**: `AppShell`, `AmbientBackground`, `InvoicePaper`.
+**Status**: 🟢 **Completed**: 2025-11-22 **Compliance**: ✅ **Constitutional**: Principle XI, XII
+**Feature Folder**: `specs/005-fsd-design-system/`
+**Implemented**:
+- ✅ Tailwind CSS v4 with design tokens: `bg-background` (Zinc-950), `primary` (Violet-600), `paper` (White)
+- ✅ Geist Sans & Geist Mono fonts via `next/font` (self-hosted, zero layout shift)
+- ✅ Hybrid Theme: Dark Desk (#09090b) + Light Paper (#ffffff)
+- ✅ Shadcn/ui components: Button, Input, Card, Sheet, Dialog (New York/Zinc style)
+- ✅ Base widgets: `InvoicePaper` (ISO 216 aspect ratio 1:1.414 with watermark)
+- ✅ Network theme configuration with official brand colors
+**Notes**:
+- All UI components use design tokens (no arbitrary values)
+- WCAG 2.1 AA accessibility compliance targeted
+- Framer Motion added for ambient animations
+- **Design Fidelity**: Verified against V0 assets (Principle XII)
 
 ### P0.6.6 - App Shell & Global Layouts (UI Assembly)
-**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI
-- **Widget `app-shell`**: Global layout.
-- **Header**: Floating, glassmorphism. Logo + Wallet Connect only.
-- **Footer**: Trust & Safety slot.
-- **Widget `ambient-background`**: Network Vibes (blobs).
-- **Page Wrapper**: `max-w-[1600px]` centered.
+**Status**: 🟢 **Completed**: 2025-11-22 **Compliance**: ✅ **Constitutional**: Principle XI, XII
+**Feature Folder**: `specs/005-fsd-design-system/`
+**Implemented**:
+- ✅ `AppShell` widget: Global layout with Header, Footer, and content wrapper
+- ✅ Header: Floating glassmorphism with Logo + Wallet Connect placeholder
+- ✅ Footer: Trust & Safety information display
+- ✅ `AmbientBackground` widget: Network-themed animated blobs with Framer Motion
+- ✅ Page wrapper: `max-w-[1600px]` centered container
+- ✅ Integrated into Root Layout (`src/app/layout.tsx`)
+**Notes**:
+- Ambient effects use network-specific colors (Arbitrum blue, Optimism red, Polygon purple)
+- Smooth 20-30s animations with easeInOut transitions
+- Performance-optimized with CSS will-change and blur effects
+- Dark theme application verified (globals.css populated)
+- **Design Fidelity**: Verified `AmbientBackground` matches V0 asset fidelity (Principle XII)
 
-### P0.6.7 - Global Notification System (Sonner)
+### P0.6.7 - Testing Environment Setup (Vitest + TDD)
+**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XVI
+**Depends On**: P0.1 (Repository Setup)
+**Memory**: `tdd-testing-configuration` (full config details)
+
+- Vitest 3.x+ with 80%+ coverage threshold
+- @testing-library/react for components
+- RPC mocks (no testnet in CI)
+- Snapshot tests for schema/URL encoding
+
+**Success Criteria**: `pnpm test` runs, coverage ≥80%, CI blocks on failure
+
+### P0.6.7.1 - Git Hooks Setup (Husky + lint-staged)
+**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XVI
+**Depends On**: P0.6.7 (Testing Environment)
+**Memory**: `tdd-testing-configuration` (full config details)
+
+- Husky for git hooks (pre-commit, pre-push)
+- lint-staged for staged file processing
+- Pre-commit: lint + type-check on staged files
+- Pre-push: full test suite with coverage check
+
+**Success Criteria**: Commits blocked on lint errors, pushes blocked on test failures
+
+### P0.6.8 - Global Notification System (Sonner)
 **Status**: 🔴 **Priority**: P0 **Compliance**: ✅
 - **Library**: `sonner`.
 - **Styles**: Void theme (black bg, colored border).
 - **Types**: Loading, Success, Web3 (Tx Sent), Error.
 
-### P0.6.8 - App Hydration Loader (The Void)
+### P0.6.9 - App Hydration Loader (The Void)
 **Status**: 🔴 **Priority**: P0 **Compliance**: ✅
 - **Component**: Fullscreen loader blocking render until hydration.
 - **Visual**: Pulsing Void logo.
@@ -210,6 +261,40 @@
 - Feature grid & Trust signals.
 - CTA "Start Invoicing".
 - SEO optimization & Dark mode theme.
+
+### P0.8 - Page Compositions & UI Components (V0 Implementation)
+**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI, XII
+**Feature Folder**: `specs/006-ui-components/` (to be created)
+**V0 Design Reference**: `assets/v0/v16/`
+
+**Scope**:
+- Landing Page (`/`) - Marketing hero, feature grid, CTA
+- Create Page (`/create`) - Invoice editor with form + preview
+- Pay Page (`/pay`) - Payment terminal with invoice display
+- Invoice Form Component - Line items, metadata, calculations
+- Invoice Preview Component - Print-ready paper representation
+- Payment View Component - Web3 payment controls
+- Network Background Component - Ambient network-themed effects
+
+**Implementation Requirements**:
+- ✅ MUST use V0 assets from `assets/v0/v16/` as pixel-perfect reference (Principle XII)
+- ✅ MUST use `@radix-ui/react-*` components via shadcn/ui (Principle XII)
+- ✅ MUST follow App Shell Architecture (Header/Footer separation) (Principle XI)
+- ✅ MUST maintain Hybrid Theme (Dark Desk + Light Paper) (Principle XI)
+- ✅ MUST enforce ISO 216 (A4) aspect ratio 1:1.414 for invoice components (Principle XI)
+- ✅ MUST use network-specific ambient colors (Arbitrum blue, Optimism red, Polygon purple)
+- ✅ MUST integrate with existing FSD structure (`page-compositions/`, `widgets/`, `features/`)
+
+**Dependencies**:
+- P0.6 (FSD Structure) ✅ Completed
+- P0.6.5 (Design System) ✅ Completed
+- P0.6.6 (App Shell) ✅ Completed
+
+**Notes**:
+- V0 designs provide complete reference implementations
+- Components must be adapted to FSD layer structure
+- Focus on pixel-perfect fidelity to V0 designs
+- Integration with Zustand stores (P0.3) for state management
 
 ### P0.12.1 - Payment Terminal UI (The Interaction Layer)
 **Status**: 🔴 **Priority**: P0 **Compliance**: ✅
@@ -274,12 +359,10 @@
 
 ## 🎯 Critical Path (MVP Only)
 1. P0.2 → P0.3 → P0.4 → P0.5 (Infrastructure in parallel)
-2. P0.8 (P1) → P0.9 (P1) → P0.10 (P1) (Create flow - *Note: P1 items required for flow*)
-3. P0.11 (P1) → P0.12 → P0.13 → P0.14 (Pay flow)
-4. P1.1 (P1) + P1.7 (P1) + P1.8 (P1) (Essential polish)
-5. Testing + Launch
+2. P0.8 (Page Compositions & UI) → P0.12 (Payment Terminal) → P0.13 → P0.14 (Core flows)
+3. P0.7 (Landing Page) + Testing + Launch
 
 ---
 
-**Document Version**: 1.1.0
-**Last Updated**: 2025-11-21
+**Document Version**: 1.2.0
+**Last Updated**: 2025-11-22

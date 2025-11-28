@@ -348,12 +348,24 @@
 
 ## 🛠️ Infrastructure & Audits
 
-### Testing Infrastructure
-**Status**: 🔴 **Priority**: P1 **Compliance**: ✅ **Constitutional**: Development Philosophy
-- Schema versioning tests.
-- Payment verification tests.
-- URL compression tests.
-- Vitest + Playwright.
+### Testing Infrastructure (Extended Coverage)
+**Status**: 🔴 **Priority**: P1 **Compliance**: ✅ **Constitutional**: Principle XVI (TDD Discipline)
+**Depends On**: P0.6.7 (Testing Environment Setup)
+
+**Note**: Base TDD infrastructure (Vitest, coverage, mocks) is in P0.6.7. This P1 item covers extended test coverage.
+
+**Extended Tests**:
+- **Playwright E2E**: Full user flows (create → pay → verify)
+- **Visual Regression**: Percy or Chromatic for UI consistency
+- **Performance Tests**: Lighthouse CI for core metrics
+- **Contract Tests**: Pact for API contracts (if needed)
+
+**Feature-Specific Test Requirements**:
+- Payment verification: 100% unit coverage (critical path)
+- Magic Dust generation: Uniqueness + range tests
+- Schema migration: Old URL compatibility tests
+- Multi-network: Per-network confirmation flow tests
+- LocalStorage: Quota management + export/import tests
 
 ### Security Audit
 **Status**: 🔴 **Priority**: P1 **Compliance**: ✅ **Constitutional**: Principle V, VII
@@ -364,6 +376,17 @@
 ---
 
 ## 🔧 Post-MVP Hardening
+
+### P1.42 - Binary Codec URL Compression (Advanced Optimization)
+**Status**: 🔴 **Priority**: P1 **Compliance**: ✅ **Constitutional**: Principle IV (Backward Compatibility)
+**Research**: `.specify/memory/brainstorm/09-binary-codec-optimization.md`
+**Depends On**: P0.2 (URL State Codec)
+
+**Problem**: LZ-String limits invoices to 2-3 line items (URL constraint).
+**Solution**: Custom binary codec (V3 Hybrid) → 45-50% smaller URLs.
+**Result**: 5-7 line items capacity (2-3x improvement).
+**Implementation**: `src/shared/lib/binary-codec/` (experimental, untracked).
+**Key**: Preserves `?d=` URLs forever, adds `?b=` parameter for binary.
 
 ### P1.41 - RPC Proxy Edge Cases & Error Resilience
 **Status**: 🔴 **Priority**: P1 **Compliance**: ✅ **Constitutional**: Principle VI
@@ -394,5 +417,5 @@
 
 ---
 
-**Document Version**: 1.2.0
-**Last Updated**: 2025-11-21
+**Document Version**: 1.3.0
+**Last Updated**: 2025-11-27

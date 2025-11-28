@@ -27,6 +27,18 @@ Contains Phase 4 (Post-MVP Enhancements), Phase 5 (Future Possibilities), Techni
 
 ## 📝 Notes
 
+### Roadmap Formatting Rules
+**Roadmap items MUST be concise.** Details belong in Serena memories.
+
+| In Roadmap | In Serena Memory |
+|------------|------------------|
+| Feature name + status | Full configuration |
+| 3-5 bullet points max | Code examples |
+| Dependencies | Implementation guide |
+| Success criteria (brief) | Rationale & alternatives |
+
+**Rule**: If a roadmap item exceeds 15 lines, move details to a memory file and reference it.
+
 ### Using This Roadmap
 1. Copy the feature section from the relevant file.
 2. Run `/speckit.specify <prompt>` to generate detailed spec.

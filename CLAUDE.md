@@ -1,7 +1,7 @@
 # CLAUDE.md - VoidPay Development Guide
 
 > **VoidPay** - Stateless Crypto Invoice Platform
-> **Constitution**: `.specify/memory/constitution.md` (v1.6.0) 🔴 **READ FIRST**
+> **Constitution**: `.specify/memory/constitution.md` (v1.10.0) 🔴 **READ FIRST**
 
 ---
 
@@ -17,7 +17,7 @@ Privacy-first crypto invoicing platform. Invoice data encoded in **URLs** (no ba
 
 **Read `.specify/memory/constitution.md` before ANY architectural decisions.**
 
-### The Ten Principles
+### The Sixteen Principles
 
 1. **Zero-Backend** - No server-side database or persistent state
 2. **Privacy-First** - No analytics, no tracking, LocalStorage only
@@ -29,6 +29,12 @@ Privacy-first crypto invoicing platform. Invoice data encoded in **URLs** (no ba
 8. **Documentation Context Efficiency** - Information-dense docs for AI agents
 9. **Implementation Deviation Tracking** - Track reality vs. plan in `ROADMAP_P*.md`
 10. **Git Worktree Isolation** - Each feature in isolated worktree (parallel development)
+11. **Design Fidelity** - V0 assets are source of truth, pixel-perfect implementation
+12. **UI/UX Principles** - Hybrid Theme (dark desk + light paper), ISO 216 A4 ratio
+13. **Serena-First Navigation** - Symbolic tools mandatory for TypeScript/Markdown
+14. **Serena Memory Repository** - `.serena/memories/` as project knowledge source
+15. **SpecKit Workflow** - Mandatory specify → plan → tasks → implement
+16. **TDD Discipline** - Red → Green → Refactor, 80%+ coverage, Vitest
 
 ### ❌ NEVER
 
@@ -38,6 +44,8 @@ Privacy-first crypto invoicing platform. Invoice data encoded in **URLs** (no ba
 - RPC keys in client code
 - Modify existing schema parsers
 - Fuzzy payment matching
+- Merge without 80%+ test coverage (XVI)
+- Write implementation before tests (XVI)
 
 ### ✅ ALWAYS
 
@@ -48,6 +56,8 @@ Privacy-first crypto invoicing platform. Invoice data encoded in **URLs** (no ba
 - Finalized confirmations (15-45 min)
 - Magic Dust exact matching
 - Feature-Sliced Design (FSD)
+- TDD: Red → Green → Refactor cycle (XVI)
+- Snapshot tests for schema/URL encoding (XVI)
 
 ---
 
@@ -58,6 +68,7 @@ Privacy-first crypto invoicing platform. Invoice data encoded in **URLs** (no ba
 **RPC**: Alchemy (primary), Infura (fallback)
 **State**: Zustand 5.0.8+ + persist, TanStack Query 5.90.10+, lz-string 1.5.0+
 **UI**: Lucide React (latest), clsx 2.1.1+, tailwind-merge 2.5.4+
+**Testing**: Vitest 3.x+ (unit), @testing-library/react (components), mocked RPC
 **Networks**: Ethereum, Arbitrum, Optimism, Polygon PoS
 
 ---
@@ -190,12 +201,52 @@ export async function POST(req: Request) {
 
 ---
 
-## 🧪 Testing (MUST)
+## 🧪 Testing (Constitutional Principle XVI)
 
-1. **Schema versioning** - Old URLs parse correctly
-2. **URL compression** - Round-trip without data loss
-3. **Magic Dust** - Unique, within range, exact match
-4. **Multi-network** - Each network confirmation flow
+**TDD Cycle**: Red → Green → Refactor (Classic Detroit style)
+
+### Requirements
+
+| Requirement | Value |
+|-------------|-------|
+| **Coverage threshold** | 80%+ for merge |
+| **Framework** | Vitest |
+| **Test location** | `__tests__/` co-located with source |
+| **Web3 tests** | Mocked RPC only (no testnet in CI) |
+| **Snapshots** | MANDATORY for schema/URL encoding |
+
+### Mandatory Test Coverage
+
+1. **Schema versioning** - Old URLs parse correctly (snapshot)
+2. **URL compression** - Round-trip without data loss (snapshot)
+3. **Magic Dust** - Unique, within range, exact match (unit)
+4. **Multi-network** - Each network confirmation flow (mocked RPC)
+
+### TDD Task Format
+
+```markdown
+## Tests (write FIRST - must FAIL) 🔴
+- [ ] T010-test Unit test for invoice validation
+- [ ] T011-test Snapshot test for schema encoding
+
+## Implementation (make tests PASS) 🟢
+- [ ] T010-impl Implement invoice validation
+- [ ] T011-impl Implement schema encoding
+```
+
+### WIP Exception
+
+- `[WIP]` commits allowed in feature branches
+- Merge to main requires ALL tests green + 80%+ coverage
+
+### Commands
+
+```bash
+pnpm test           # Run all tests
+pnpm test:coverage  # Run with coverage report
+pnpm test:watch     # Watch mode for development
+vitest -u           # Update snapshots (review carefully!)
+```
 
 ---
 
@@ -256,12 +307,13 @@ git worktree prune
 
 ### Process
 
-1. Read constitution before starting
-2. **Consult Serena memories** via `mcp__serena__*` tools (Principle XIV)
-3. `/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement`
-4. Verify Constitution Check (all 15 principles)
-5. All work happens in feature worktree (Principle X)
-6. **Update Roadmap & Memories**: Mark item completed in `ROADMAP_P*.md`, update Serena memories if new patterns discovered
+1. **Read constitution before starting** (via `mcp__serena__read_memory` or `search_for_pattern`)
+2. **Consult Serena memories** via `mcp__serena__list_memories` and `read_memory` (Principle XIV)
+3. **Search roadmap items** via `search_for_pattern("P0.X", paths_include_glob="**/*ROADMAP*.md")` if implementing roadmap features
+4. `/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement`
+5. Verify Constitution Check (all 16 principles)
+6. All work happens in feature worktree (Principle X)
+7. **Update Roadmap & Memories**: Mark item completed in `ROADMAP_P*.md`, update Serena memories if new patterns discovered
 
 ---
 
@@ -280,9 +332,10 @@ git worktree prune
 1. ❌ **PROHIBITED** - Reading .ts/.tsx/.md files via Read without prior `get_symbols_overview`
 2. ❌ **PROHIBITED** - Using Grep to find TypeScript functions/classes/types/interfaces
 3. ❌ **PROHIBITED** - Using Grep to search Markdown documentation files
-4. ❌ **PROHIBITED** - Editing symbols without `find_referencing_symbols` check
-5. ❌ **PROHIBITED** - Using Read + Edit for entire symbol replacement (use `replace_symbol_body`)
-6. ❌ **PROHIBITED** - Direct file access to `.serena/memories/` (use `mcp__serena__*` tools)
+4. ❌ **PROHIBITED** - Reading ROADMAP*.md, constitution.md, or brainstorm/*.md via Read (use `search_for_pattern`)
+5. ❌ **PROHIBITED** - Editing symbols without `find_referencing_symbols` check
+6. ❌ **PROHIBITED** - Using Read + Edit for entire symbol replacement (use `replace_symbol_body`)
+7. ❌ **PROHIBITED** - Direct file access to `.serena/memories/` (use `mcp__serena__*` tools)
 
 ### ✅ MANDATORY (Constitutional Requirements)
 
@@ -364,6 +417,12 @@ git worktree prune
 ✅ search_for_pattern("Constitutional Principle", paths_include_glob="**/*.md")  // CORRECT
 ```
 
+**VIOLATION #6**: Reading roadmap/documentation via Read instead of Serena
+```
+❌ Read(".specify/memory/ROADMAP_P0.md")  // PROHIBITED (reads entire 369-line file)
+✅ search_for_pattern("P0.6.7", paths_include_glob="**/*ROADMAP*.md")  // CORRECT (extracts only relevant section)
+```
+
 ### Rationale
 
 - **Token Efficiency**: Symbolic reads save 10-100x tokens vs full file reads
@@ -394,6 +453,8 @@ git worktree prune
 
 ## Recent Changes
 
+- 2025-11-28: Constitution v1.10.0 - Added TDD Discipline principle (XVI) with 80%+ coverage requirement
+- 2025-11-28: Constitution v1.9.0 - Added Serena Memory (XIV) and SpecKit Workflow (XV) principles
 - 2025-11-19: Constitution v1.4.0 - Added Git Worktree isolation principle for concurrent development
 - 2025-11-19: Constitution v1.1.0 - Locked library versions with latest stable releases
 - 001-project-initialization: Initial project setup with core technology stack
