@@ -30,7 +30,9 @@ description: Stage and commit changes. Husky runs lint-staged + typecheck automa
    - If lint-staged auto-fixes files, husky handles re-staging
    - If typecheck fails, commit aborts — fix errors first
 
+<!-- NOTE: Remote 'origin' not configured for this repository
 6. **Push** (husky pre-push runs test:coverage):
    ```bash
    git push origin HEAD --quiet 2>/dev/null || git push -u origin HEAD --quiet
    ```
+-->

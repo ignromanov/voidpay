@@ -14,10 +14,13 @@ description: Merge current feature branch into master with worktree cleanup.
    ```
    Store as `<feature-branch>`.
 
-3. **Switch to master and update**:
+3. **Switch to master**:
    ```bash
-   git checkout master && git pull origin master --quiet
+   git checkout master
    ```
+   <!-- NOTE: Remote 'origin' not configured - skip pull
+   git pull origin master --quiet
+   -->
 
 4. **Merge feature branch**:
    ```bash
@@ -26,19 +29,23 @@ description: Merge current feature branch into master with worktree cleanup.
    - On conflict: STOP, notify user, offer `git merge --abort`
    - Do NOT auto-resolve complex conflicts
 
+<!-- NOTE: Remote 'origin' not configured - skip push
 5. **Push master** (husky pre-push runs test:coverage):
    ```bash
    git push origin master --quiet
    ```
+-->
 
-6. **Worktree cleanup** (Constitution Principle X):
+4. **Worktree cleanup** (Constitution Principle X):
    ```bash
    git worktree list | grep -q "<feature-branch>" && git worktree remove worktrees/<feature-branch> --force
    git worktree prune
    ```
 
-7. **Delete feature branch** (offer to user):
+5. **Delete feature branch** (offer to user):
    ```bash
    git branch -d <feature-branch>
-   git push origin --delete <feature-branch> 2>/dev/null || true
    ```
+   <!-- NOTE: Remote 'origin' not configured - skip remote branch deletion
+   git push origin --delete <feature-branch> 2>/dev/null || true
+   -->
