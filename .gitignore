@@ -7,7 +7,11 @@ assets/
 # IDE
 .vscode/
 .idea/
-.serena/
+
+# Serena (cache/logs ignored, memories tracked)
+.serena/cache/
+.serena/logs/
+# .serena/memories/ is NOT ignored - it's part of codebase
 
 # MCP config (contains absolute paths, generated per worktree)
 .mcp.json

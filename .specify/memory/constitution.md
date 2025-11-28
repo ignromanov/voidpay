@@ -1,38 +1,34 @@
 <!--
   SYNC IMPACT REPORT
 
-  Version Change: 1.10.0 → 1.11.0
+  Version Change: 1.11.0 → 1.12.0
 
   Modified Principles:
-  - XIV. Serena Memory as Project Knowledge Repository → Enhanced with Memory Freshness Protocol
-    - Added 14.4 Memory Freshness Protocol (mandatory update triggers, staleness detection)
-    - Added 14.5 Write-First Principle (capture knowledge immediately)
-    - Renumbered existing sections 14.4-14.11 → 14.6-14.13
-    - Enhanced 14.8 (was 14.6) Standard Memory Categories with update frequency requirements
-    - Added explicit update workflow after feature completion
+  - XIV. Serena Memory as Project Knowledge Repository → Added Memory Commit Protocol
+    - Added 14.3.1 Memory Commit Protocol - memories are tracked in git
+    - Memories are part of codebase (NOT gitignored, NOT symlinked)
+    - Each worktree has its own copy of memories
+    - Memory changes must be committed after write/edit operations
 
   Added Sections:
-  - 14.4 Memory Freshness Protocol - comprehensive requirements for keeping memories up-to-date:
-    - Mandatory Update Triggers (8 specific situations)
-    - Staleness Detection criteria
-    - Update workflow with checklist
-  - 14.5 Write-First Principle - immediate capture of discovered knowledge
+  - 14.3.1 Memory Commit Protocol (v1.12.0):
+    - Storage: .serena/memories/ tracked in git
+    - Commit command after memory changes
+    - Worktree synchronization rules
+    - Rationale for memories-as-code approach
 
   Removed Sections:
-  - None
+  - None (symlink approach deprecated)
 
   Templates Requiring Updates:
-  - .specify/templates/plan-template.md (✅ updated - add memory freshness check to Constitution Check)
-  - .specify/templates/tasks-template.md (✅ updated - add memory update task in final phase)
-  - CLAUDE.md (⚠ pending - reference Memory Freshness in Serena Memory section)
+  - CLAUDE.md (✅ updated - Memory Freshness Protocol v1.12.0)
+  - .gitignore (✅ updated - .serena/memories/ now tracked)
 
   Follow-up TODOs:
-  - Update CLAUDE.md Serena MCP section: Reference Memory Freshness requirements
-  - Verify all existing memories have "Last Updated" timestamps
+  - Update existing worktrees to use copied memories instead of symlinks
 
-  Ratification: Strengthening Principle XIV to emphasize memory WRITE/UPDATE operations.
-  Memory Freshness Protocol ensures agents actively maintain knowledge, not just read.
-  Write-First Principle prevents knowledge loss from discovered patterns.
+  Ratification: Memories are now treated as code, tracked in git, committed after changes.
+  This eliminates symlink security issues in worktrees and enables proper version control.
   Date: 2025-11-28
 -->
 
@@ -469,6 +465,27 @@ These cases require user approval before violating Serena-first:
 - ✅ `mcp__serena__read_memory` - Read memory content
 - ✅ `mcp__serena__write_memory` - Create new memory
 - ✅ `mcp__serena__edit_memory` - Update existing memory content
+
+#### 14.3.1 Memory Commit Protocol (v1.12.0)
+
+**⚠️ CRITICAL**: Memories are tracked in git and MUST be committed after changes.
+
+**Storage**: `.serena/memories/` is part of the codebase (NOT gitignored)
+
+**After ANY memory write/edit operation — MUST commit**:
+
+```bash
+git add .serena/memories/ && git commit -m "docs(memory): update <memory-name>"
+```
+
+**Worktree Synchronization**:
+
+- Each worktree has its OWN copy of `.serena/memories/`
+- Memory changes in worktree are committed to feature branch
+- Memories merged to main along with feature code
+- Conflicts resolved like any other code conflict
+
+**Rationale**: Memories as code ensures version control, merge conflict resolution, and proper synchronization across worktrees without symlink security issues.
 
 #### 14.4 Memory Freshness Protocol
 

@@ -1,7 +1,7 @@
 # CLAUDE.md - VoidPay Development Guide
 
 > **VoidPay** - Stateless Crypto Invoice Platform
-> **Constitution**: `.specify/memory/constitution.md` (v1.11.0) 🔴 **READ FIRST**
+> **Constitution**: `.specify/memory/constitution.md` (v1.12.0) 🔴 **READ FIRST**
 
 ---
 
@@ -334,9 +334,11 @@ git worktree prune
 
 **Indexed Files**: 67+ Markdown + All TypeScript (see `.serena/cache/`)
 
-### Memory Freshness Protocol (v1.11.0)
+### Memory Freshness Protocol (v1.12.0)
 
 **Core Rule**: Memories MUST be kept current. Stale info is WORSE than no info.
+
+**⚠️ CRITICAL: Memories are CODE** — stored in `.serena/memories/`, tracked in git, must be committed after changes.
 
 **Mandatory Update Triggers** — agent MUST update memory when:
 1. Feature completion → update `development-status`
@@ -344,6 +346,11 @@ git worktree prune
 3. Tech stack change → update `tech-stack-locked`
 4. Architecture decision → update `architecture-summary`
 5. Stale detection → immediate fix
+
+**After Memory Update — MUST commit**:
+```bash
+git add .serena/memories/ && git commit -m "docs(memory): update <memory-name>"
+```
 
 **Write-First Principle**: If discovered knowledge ISN'T in memory → STOP, write it, THEN continue.
 
@@ -488,6 +495,7 @@ git worktree prune
 
 ## Recent Changes
 
+- 2025-11-28: Constitution v1.12.0 - Memory Commit Protocol (memories tracked in git, must commit after changes)
 - 2025-11-28: Constitution v1.11.0 - Enhanced Principle XIV with Memory Freshness Protocol (mandatory updates)
 - 2025-11-28: Constitution v1.10.0 - Added TDD Discipline principle (XVI) with 80%+ coverage requirement
 - 2025-11-28: Constitution v1.9.0 - Added Serena Memory (XIV) and SpecKit Workflow (XV) principles
