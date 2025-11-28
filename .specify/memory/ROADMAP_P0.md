@@ -334,8 +334,9 @@
 
 ### P0.7.5 - Design Transfer Environment Setup
 
-**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI
+**Status**: ✅ **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI
 **Feature Folder**: N/A (infrastructure task)
+**Completed**: 2025-11-28
 
 **Scope**:
 
@@ -343,15 +344,15 @@ Install and configure dependencies required for transferring AI Studio design co
 
 **Tasks**:
 
-- [ ] Install Framer Motion: `pnpm add framer-motion`
-- [ ] Install Radix UI primitives: `pnpm add @radix-ui/react-dialog @radix-ui/react-select @radix-ui/react-popover`
-- [ ] Install qrcode.react: `pnpm add qrcode.react`
-- [ ] Verify CVA already installed (class-variance-authority)
-- [ ] Create `src/shared/ui/primitives/` directory structure
-- [ ] Create base Radix wrapper components (dialog.tsx, select.tsx, popover.tsx)
-- [ ] Verify Framer Motion works with Next.js App Router (client components)
+- [x] Install Framer Motion: `pnpm add framer-motion` (v12.23.24)
+- [x] Install Radix UI primitives: `pnpm add @radix-ui/react-dialog @radix-ui/react-select @radix-ui/react-popover` (dialog v1.1.15, select v2.2.6, popover v1.1.15)
+- [x] Install qrcode.react: `pnpm add qrcode.react` (v4.2.0)
+- [x] Verify CVA already installed (class-variance-authority v0.7.1)
+- [x] Create Radix wrapper components in `src/shared/ui/` (dialog.tsx, select.tsx, popover.tsx, motion.tsx)
+- [x] Create tests for new components (61 tests total in `src/shared/ui/__tests__/`)
+- [x] Verify Framer Motion works with Next.js App Router (client components)
 
-**New Dependencies**:
+**Installed Dependencies**:
 
 | Package | Version | Purpose |
 |---------|---------|---------|

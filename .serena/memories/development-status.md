@@ -2,7 +2,7 @@
 
 **Last Updated**: 2025-11-28 (v1.13.0 - AI Studio design source)
 **Current Phase**: P0 (MVP Core Features)
-**Overall Progress**: ~52% complete (10/19 P0 features)
+**Overall Progress**: ~57% complete (11/19 P0 features)
 
 ## Roadmap Structure
 
@@ -91,14 +91,21 @@
 - **Status**: 205 tests, 93%+ coverage, all quality gates passing
 - **Unblocks**: P0.8, P0.12, P0.13, P0.14 (all Web3 features)
 
-## In Progress (🟡)
+### P0.7.5 - Design Transfer Environment Setup ✅
+- **Completed**: 2025-11-28
+- **Implementation**: src/shared/ui/ (dialog.tsx, select.tsx, popover.tsx, motion.tsx)
+- **Installed Dependencies**:
+  - framer-motion 12.23.24 (complex animations)
+  - @radix-ui/react-dialog 1.1.15 (modals, sheets)
+  - @radix-ui/react-select 2.2.6 (dropdowns)
+  - @radix-ui/react-popover 1.1.15 (tooltips, popovers)
+  - qrcode.react 4.2.0 (QR codes)
+- **Created Components**: dialog.tsx, select.tsx, popover.tsx, motion.tsx (with CVA variants)
+- **Tests**: 57 new tests (dialog: 13, select: 12, popover: 13, motion: 19)
+- **Status**: TypeScript compiled, all lint checks pass, 61 UI tests passing
+- **Unblocks**: P0.8 (Page Compositions)
 
-### P0.7.5 - Design Transfer Environment Setup
-- **Status**: 🔴 Pending
-- **Priority**: P0 (MVP Blocker)
-- **Scope**: Install Framer Motion, Radix UI primitives, qrcode.react
-- **Dependencies**: P0.6.5 (completed)
-- **Tasks**: `pnpm add framer-motion @radix-ui/react-dialog @radix-ui/react-select @radix-ui/react-popover qrcode.react`
+## In Progress (🟡)
 
 ### P0.8 - Page Compositions & UI Components (AI Studio Transfer)
 - **Status**: 🔴 Pending (waiting for P0.7.5)
@@ -173,6 +180,7 @@
 
 ## Recent Milestones
 
+- **2025-11-28**: P0.7.5 - Design Transfer Environment Setup (Framer Motion 12, Radix UI, qrcode.react)
 - **2025-11-28**: Constitution v1.13.0 - UI stack update (shadcn/ui → Radix + CVA + Framer Motion)
 - **2025-11-28**: AI Studio design prototype adopted (assets/aistudio/v1/) - V0 deprecated
 - **2025-11-28**: Wagmi + Viem + RainbowKit wallet connection (P0.5) - unblocks all Web3 features
@@ -186,15 +194,15 @@
 
 1. ~~**Wagmi Setup** (P0.5)~~ - ✅ RESOLVED (2025-11-28)
 2. ~~**V0 Design Assets**~~ - Deprecated, using AI Studio (assets/aistudio/v1/)
-3. **Design Environment** - P0.7.5 (Framer Motion, Radix primitives) pending install
+3. ~~**Design Environment** (P0.7.5)~~ - ✅ RESOLVED (2025-11-28)
 4. **Alchemy API Keys** - Required for payment polling (P0.14)
 5. **Vercel KV Setup** - Required for rate limiting (already implemented, needs config)
 
 ## Next Actions
 
 1. ~~Complete P0.5 (Wagmi + Viem + RainbowKit)~~ - ✅ DONE
-2. **Install P0.7.5 dependencies** (Framer Motion, Radix, qrcode.react) ← NEXT
-3. Implement P0.8 (Page Compositions) - Based on AI Studio designs
+2. ~~Install P0.7.5 dependencies~~ - ✅ DONE (2025-11-28)
+3. **Implement P0.8 (Page Compositions)** - Based on AI Studio designs ← NEXT
 4. Sequential implementation: P0.12 → P0.13 → P0.14 (payment flow)
 5. Landing page (P0.7) - Marketing + SEO
 6. Deployment config (P0.19) - Production readiness
@@ -228,7 +236,7 @@ All completed features verified against:
 
 ## Progress Metrics
 
-- **P0 Features**: 10/19 completed (52%)
+- **P0 Features**: 11/19 completed (57%)
 - **P1 Features**: 0/43 completed (0%)
 - **Future Features**: 0/31 completed (0%)
 - **Overall**: 10/93 features (11% total, 52% of critical path)
