@@ -82,7 +82,29 @@ Given that feature description, do this:
    - This prevents conflicts when multiple agents work on different features concurrently
    - After feature completion and merge, the worktree MUST be removed: `git worktree remove worktrees/###-feature-name && git worktree prune`
 
-4. Load `.specify/templates/spec-template.md` to understand required sections.
+4. **Consult Project Context (Constitutional Principle XIII, XIV)**:
+
+   **MANDATORY**: Before reading ANY files, use Serena-first approach:
+
+   a. **Check Serena Memories**:
+      - Use `mcp__serena__list_memories` to see available project knowledge
+      - Use `mcp__serena__read_memory` for relevant memories (e.g., `tdd-testing-configuration`, `ROADMAP_P0`, `architecture-overview`)
+      - Serena memories are the PRIMARY source of truth for project context
+
+   b. **Search Roadmap Items** (if user mentions P0.X, P1.X, etc.):
+      - ❌ **PROHIBITED**: `Read` for .md files (Constitutional violation)
+      - ✅ **MANDATORY**: Use `mcp__serena__search_for_pattern` to find roadmap items
+      - Example: `search_for_pattern("P0.6.7", paths_include_glob="**/*ROADMAP*.md")`
+      - Only use targeted pattern search to extract relevant sections
+
+   c. **Understand Existing Specs**:
+      - Use `mcp__serena__list_dir("specs", recursive=true)` to see existing features
+      - Use `mcp__serena__search_for_pattern` to find related specifications
+
+   d. **Read Template** (non-code file, Read is acceptable):
+      - Load `.specify/templates/spec-template.md` to understand required sections
+
+   **Rationale**: Token efficiency (10-100x savings), Constitutional compliance (Principle XIII), semantic understanding vs. full file reads.
 
 5. Follow this execution flow:
 

@@ -3,26 +3,35 @@
 
   Version Change: 1.9.0 → 1.10.0
 
-  Modified Principles: None
+  Modified Principles:
+  - Testing Discipline (Governance section) → Expanded to Principle XVI
 
   Added Sections:
-  - XVI. TDD Discipline (Test-Driven Development) - mandates Red → Green → Refactor cycle, 80% coverage threshold, Vitest framework, mocked Web3 tests
+  - XVI. Test-Driven Development (TDD) Discipline - comprehensive TDD principle with:
+    - Classic (Detroit) Red-Green-Refactor cycle
+    - 80%+ coverage threshold for merge
+    - Vitest framework requirement
+    - Spec-level acceptance tests in spec.md
+    - Snapshot tests mandatory for schema/URL encoding
+    - RPC mocking for Web3 tests
 
-  Removed Sections: None
-
-  Optimization Changes: None
+  Removed Sections:
+  - Testing Discipline from Governance (migrated to Principle XVI)
 
   Templates Requiring Updates:
-  - .specify/templates/plan-template.md (add Principle XVI to Constitution Check)
-  - .specify/templates/tasks-template.md (add TDD task format: T###-test before T###-impl)
-  - CLAUDE.md (add Testing section referencing Principle XVI)
+  - .specify/templates/plan-template.md (✅ updated - add Principle XVI to Constitution Check)
+  - .specify/templates/spec-template.md (✅ updated - add TDD acceptance test format)
+  - .specify/templates/tasks-template.md (✅ updated - add TDD task format: T###-test before T###-impl)
+  - CLAUDE.md (⚠ pending - reference Principle XVI in Testing section)
 
   Follow-up TODOs:
-  - Update all Constitution Check lists to include "TDD discipline followed (XVI)"
-  - Update tasks template to show TDD task format
-  - Update Serena memory constitutional-principles-summary with Principle XVI
+  - Update CLAUDE.md Testing section: Reference Principle XVI
+  - Setup Vitest configuration in project root
+  - Add coverage threshold to CI pipeline
 
-  Ratification: Adding Principle XVI (TDD Discipline) to establish mandatory test-driven development practices, 80% minimum coverage threshold, and mocked Web3 testing. This principle supports Constitutional Principle IV (backward compatibility via snapshot tests) and ensures code quality across the project.
+  Ratification: Adding Principle XVI to establish TDD as constitutional requirement.
+  Classic (Detroit) style enforces test-first development with 80%+ coverage gate.
+  Spec-level acceptance tests ensure requirements are testable before implementation.
   Date: 2025-11-28
 -->
 
@@ -781,111 +790,298 @@ When bypassing SpecKit workflow for emergencies:
 - Missed deadline (poor planning, not emergency)
 - "Quick fix" that bypasses Constitution Check
 
-### XVI. TDD Discipline (Test-Driven Development)
+### XVI. Test-Driven Development (TDD) Discipline
 
-**Principle**: All code MUST be developed using Test-Driven Development (TDD) with the Red → Green → Refactor cycle. A minimum 80% test coverage is MANDATORY for merging any code to main branch.
+**Principle**: All feature development MUST follow the Classic (Detroit) TDD cycle: Red → Green → Refactor. Tests MUST be written BEFORE implementation code. Merge to main requires 80%+ code coverage.
 
 **Rules**:
 
 #### 16.1 TDD Cycle (MANDATORY)
 
-**Red Phase**: Write failing test FIRST
+**Red-Green-Refactor Cycle**:
 
-- Test MUST fail before implementation begins
-- Test defines expected behavior/acceptance criteria
-- Commit failing test with `[WIP]` prefix allowed in feature branches
+```
+1. RED: Write a failing test that defines expected behavior
+2. GREEN: Write MINIMAL code to make the test pass
+3. REFACTOR: Improve code quality while keeping tests green
+4. REPEAT: Move to next test case
+```
 
-**Green Phase**: Implement minimal code to pass
+**Cycle Rules**:
 
-- Write ONLY enough code to make test pass
-- No premature optimization or gold-plating
-- Commit passing implementation
+- Tests MUST fail before writing implementation (proves test validity)
+- Implementation MUST be minimal to pass the test (no speculative code)
+- Refactoring MUST NOT change observable behavior (tests remain green)
+- Each cycle SHOULD be short (5-15 minutes)
 
-**Refactor Phase**: Improve code while tests stay green
+#### 16.2 Testing Framework & Configuration
 
-- Refactor implementation without changing behavior
-- All tests MUST remain passing after refactor
-- Commit refactored code
+**Framework**: Vitest (MANDATORY)
 
-#### 16.2 Coverage Requirements (MANDATORY)
+- Native ESM support, fast execution, compatible with Next.js 15+
+- Jest compatibility for existing patterns
+- Built-in coverage reporting
 
-| Requirement                    | Value                               |
-| ------------------------------ | ----------------------------------- |
-| **Minimum coverage threshold** | 80% for merge to main               |
-| **Framework**                  | Vitest 3.x+                         |
-| **Test file location**         | `__tests__/` co-located with source |
-| **Naming convention**          | `*.test.ts`, `*.test.tsx`           |
-| **Web3 tests**                 | Mocked RPC only (NO testnet in CI)  |
+**Test Location**: `__tests__/` folders co-located with source
 
-#### 16.3 Mandatory Test Coverage
+```
+src/
+├── features/
+│   └── invoice/
+│       ├── __tests__/
+│       │   ├── create-invoice.test.ts
+│       │   └── __snapshots__/
+│       │       └── create-invoice.test.ts.snap
+│       ├── create-invoice.ts
+│       └── index.ts
+```
 
-The following MUST have test coverage:
+**Naming Conventions**:
 
-- **Schema versioning**: Old URLs MUST parse correctly (snapshot tests)
-- **URL compression**: Round-trip without data loss (snapshot tests)
-- **Magic Dust**: Unique, within range, exact match (unit tests)
-- **Multi-network**: Each network confirmation flow (mocked RPC)
-- **React components**: Rendering and interaction tests (@testing-library/react)
+- Test files: `*.test.ts` or `*.spec.ts`
+- Snapshot files: `__snapshots__/*.snap` (auto-generated)
+- Test utilities: `src/shared/lib/test-utils/`
 
-#### 16.4 Task Format Integration
+#### 16.3 Coverage Requirements
 
-Tasks in `tasks.md` MUST follow TDD format:
+**Merge Threshold**: 80%+ overall coverage
+
+- Lines: 80% minimum
+- Branches: 80% minimum
+- Functions: 80% minimum
+- Statements: 80% minimum
+
+**CI Enforcement**:
+
+- Coverage report generated on every PR
+- Merge BLOCKED if coverage drops below 80%
+- Coverage badge displayed in README
+
+**Exceptions**:
+
+- Generated code (excluded from coverage)
+- Type-only files (`.d.ts`)
+- Configuration files
+
+#### 16.4 Test Types (MANDATORY)
+
+**Unit Tests** (MANDATORY for all features):
+
+- Test individual functions/classes in isolation
+- Mock external dependencies
+- Fast execution (<100ms per test)
+- Located in `__tests__/` next to source
+
+**Snapshot Tests** (MANDATORY for schema & URL encoding):
+
+- Schema serialization (`InvoiceSchemaV1`)
+- URL compression output (`lz-string` encoding)
+- Protects against accidental breaking changes
+- Update with `vitest -u` when intentional changes
+
+#### 16.5 Web3 Testing Strategy
+
+**RPC Mocking** (MANDATORY):
+
+- All blockchain interactions MUST be mocked
+- Use `viem/test` utilities or custom mocks
+- Deterministic, offline-capable tests
+- No testnet dependencies in CI
+
+**Mock Requirements**:
+
+```typescript
+// ✅ CORRECT: Mock RPC responses
+const mockPublicClient = {
+  getBalance: vi.fn().mockResolvedValue(1000000000000000000n),
+  getTransaction: vi.fn().mockResolvedValue({ status: 'success' }),
+}
+
+// ❌ WRONG: Real RPC calls in tests
+const client = createPublicClient({ chain: mainnet, transport: http() })
+```
+
+**What to Mock**:
+
+- `getBalance`, `getTransaction`, `getTransactionReceipt`
+- Token contract reads (`balanceOf`, `decimals`, `symbol`)
+- Block confirmations and finality checks
+
+#### 16.6 SpecKit Integration (Spec-Level Tests)
+
+**Acceptance Tests in spec.md** (MANDATORY):
+
+- Each User Story MUST include acceptance scenarios
+- Scenarios use Gherkin-style format: Given/When/Then
+- Scenarios become executable tests during implementation
+
+**Workflow Integration**:
+
+```
+1. /speckit.specify:
+   - Define acceptance scenarios in spec.md
+   - Scenarios are human-readable test cases
+
+2. /speckit.plan:
+   - Technical Context includes "Testing: Vitest"
+   - Identify which scenarios need snapshot tests
+
+3. /speckit.tasks:
+   - Task format: T###-test (write test) → T###-impl (implement)
+   - Tests BEFORE implementation in task ordering
+
+4. /speckit.implement:
+   - Execute Red-Green-Refactor for each task pair
+   - Track coverage in task completion
+```
+
+**Task Format Example**:
 
 ```markdown
-## Tests (write FIRST - must FAIL) 🔴
+## Phase 3: User Story 1 - Create Invoice (P1)
 
-- [ ] T010-test Unit test for invoice validation
-- [ ] T011-test Snapshot test for schema encoding
+### Tests for User Story 1 (TDD - write FIRST)
 
-## Implementation (make tests PASS) 🟢
+- [ ] T010-test [US1] Unit test for invoice validation in **tests**/validate-invoice.test.ts
+- [ ] T011-test [US1] Snapshot test for schema encoding in **tests**/invoice-schema.test.ts
 
-- [ ] T010-impl Implement invoice validation
-- [ ] T011-impl Implement schema encoding
+### Implementation for User Story 1 (TDD - write AFTER tests fail)
+
+- [ ] T010-impl [US1] Implement invoice validation (make T010-test pass)
+- [ ] T011-impl [US1] Implement schema encoding (make T011-test pass)
 ```
 
-#### 16.5 WIP Exception
+#### 16.7 WIP Commits Exception
 
-- `[WIP]` commits allowed in feature branches during Red phase
-- Merge to main requires ALL tests green + 80%+ coverage
-- Pre-push hooks MUST enforce coverage threshold (see P0.6.7.1)
+**Work-in-Progress Commits**:
 
-#### 16.6 Anti-Patterns (VIOLATIONS)
+- WIP commits in feature branches MAY skip green tests
+- Commit message MUST include `[WIP]` prefix
+- Purpose: Save progress, share code, intermediate states
 
-**VIOLATION #1: Implementation before tests**
+**Merge Requirements**:
 
-```
-❌ Write feature code → write tests afterward  // WRONG
-✅ Write failing test → implement to pass → refactor  // CORRECT
-```
+- All tests MUST pass before merge to main
+- Coverage threshold MUST be met
+- No `[WIP]` commits in merge request
 
-**VIOLATION #2: Bypassing coverage**
+**Example**:
 
-```
-❌ git push --no-verify  // WRONG (violates Constitution)
-✅ Fix tests or add coverage until 80%+ threshold met  // CORRECT
-```
+```bash
+# Allowed in feature branch:
+git commit -m "[WIP] T010-test: failing test for invoice validation"
 
-**VIOLATION #3: Testnet in CI**
-
-```
-❌ Connect to Ethereum testnet in GitHub Actions  // WRONG
-✅ Mock all RPC calls with @wagmi/connectors mock + vi.mock()  // CORRECT
+# Required before merge:
+git commit -m "T010-impl: implement invoice validation (tests passing)"
 ```
 
-#### 16.7 Rationale
+#### 16.8 Anti-Patterns (VIOLATIONS)
 
-**Early Bug Detection**: Tests written first catch bugs before implementation
-**Design Pressure**: TDD forces better API design (testable = usable)
-**Regression Prevention**: 80% coverage prevents regression on refactoring
-**CI Reliability**: Mocked tests are fast, deterministic, no network flakiness
-**Constitutional Alignment**: Supports Principle IV (backward compatibility via snapshot tests)
+**VIOLATION #1: Implementation before test**
 
-#### 16.8 Enforcement
+```
+❌ Write create-invoice.ts → then write create-invoice.test.ts  // WRONG
+✅ Write create-invoice.test.ts (fails) → then create-invoice.ts (passes)  // CORRECT
+```
 
-- Pre-push hooks MUST run `pnpm test:coverage` and block on <80%
-- CI pipeline MUST run same test suite and block merge on failures
-- Code reviews MUST verify tests exist for new functionality
-- Snapshot tests MUST be reviewed carefully on updates (`vitest -u`)
+**VIOLATION #2: Skipping snapshot tests for schema**
+
+```
+❌ Change InvoiceSchemaV1 without updating snapshots  // WRONG
+✅ Run `vitest -u` and review snapshot changes  // CORRECT
+```
+
+**VIOLATION #3: Real RPC in unit tests**
+
+```
+❌ import { createPublicClient } from 'viem'; // Real RPC  // WRONG
+✅ vi.mock('viem', () => ({ ... }));  // Mock RPC  // CORRECT
+```
+
+**VIOLATION #4: Merging with failing tests**
+
+```
+❌ git merge feature-branch  // Tests failing  // WRONG
+✅ Fix tests → CI green → git merge  // CORRECT
+```
+
+**VIOLATION #5: Merging below coverage threshold**
+
+```
+❌ Coverage: 72% → Merge anyway  // WRONG
+✅ Add tests → Coverage: 81% → Merge  // CORRECT
+```
+
+#### 16.9 Rationale
+
+**Why Classic (Detroit) TDD**:
+
+- Focus on behavior, not implementation details
+- Tests serve as executable documentation
+- Minimal mocking leads to better design
+- Refactoring is safe with comprehensive tests
+
+**Why 80% Coverage Threshold**:
+
+- High enough to catch regressions
+- Achievable without test ceremony overhead
+- Industry standard for production systems
+- Allows pragmatic exceptions
+
+**Why Vitest**:
+
+- 20x faster than Jest for large codebases
+- Native ESM support (no transpilation issues)
+- Compatible with existing Jest patterns
+- Built-in UI for debugging
+
+**Why Spec-Level Tests**:
+
+- Requirements become testable before code
+- Acceptance scenarios drive implementation
+- User stories verified by acceptance tests
+- Traceability: spec → test → code
+
+**Why RPC Mocking**:
+
+- Tests run offline (CI reliability)
+- Deterministic results (no network variability)
+- Fast execution (no network latency)
+- Privacy-first (no telemetry to RPC providers)
+
+#### 16.10 Integration with Other Principles
+
+**Principle IV (Schema Versioning)**:
+
+- Snapshot tests protect schema stability
+- Old URL parsing tests MUST pass forever
+- Migration adapters tested with fixtures
+
+**Principle VII (Web3 Safety)**:
+
+- Payment verification logic 100% unit tested
+- Magic Dust calculation tested for uniqueness
+- Decimal handling tested for all supported tokens
+
+**Principle VIII (Context Efficiency)**:
+
+- Test files are information-dense
+- One assertion per test (clear failures)
+- Descriptive test names (self-documenting)
+
+**Principle XV (SpecKit Workflow)**:
+
+- Acceptance tests defined in spec.md
+- Task pairs: T###-test → T###-impl
+- TDD cycle enforced during /speckit.implement
+
+#### 16.11 Enforcement
+
+- CI pipeline MUST run `vitest run --coverage` on every PR
+- Merge BLOCKED if coverage <80% or tests failing
+- Code reviews MUST verify test-first ordering in PRs
+- Constitutional compliance checks MUST verify TDD adherence
+- Snapshot updates MUST be reviewed (not auto-approved)
 
 ## Architectural Constraints
 
@@ -1075,7 +1271,7 @@ Changes to this Constitution require:
 - XIII: Serena-First Code Navigation & Tooling Priority
 - XIV: Serena Memory as Project Knowledge Repository
 - XV: SpecKit Workflow Compliance
-- XVI: TDD Discipline (Test-Driven Development)
+- XVI: Test-Driven Development (TDD) Discipline
 
 **Constitution Check Gate** in plan-template.md MUST verify:
 
@@ -1090,7 +1286,7 @@ Changes to this Constitution require:
 - All TypeScript/Markdown navigation uses Serena tools first (XIII)
 - Serena memories consulted before planning (XIV)
 - Following SpecKit workflow phases (XV)
-- TDD discipline followed with 80%+ coverage (XVI)
+- TDD cycle followed: Red → Green → Refactor with 80%+ coverage (XVI)
 
 ### Complexity Justification
 
@@ -1110,6 +1306,7 @@ Any violation of Constitutional principles MUST be explicitly justified in the "
 - Using Read/Grep for TypeScript code navigation (violates Principle XIII)
 - Skipping Serena memory consultation (violates Principle XIV)
 - Implementing feature without SpecKit workflow (violates Principle XV)
+- Merging with coverage below 80% or without TDD cycle (violates Principle XVI)
 
 ### Development Philosophy
 
@@ -1120,12 +1317,12 @@ Any violation of Constitutional principles MUST be explicitly justified in the "
 - Prefer boring, proven technologies over cutting-edge
 - Optimize for maintainability over cleverness
 
-**Testing Discipline**:
+**Testing Discipline** (See Principle XVI for comprehensive TDD requirements):
 
-- Schema versioning MUST have integration tests (old URLs must work)
-- Payment verification logic MUST have unit tests
-- URL compression/decompression MUST have round-trip tests
-- Multi-network support MUST have integration tests per network
+- All features MUST follow Red-Green-Refactor TDD cycle
+- 80%+ coverage threshold for merge to main
+- Snapshot tests MANDATORY for schema and URL encoding
+- RPC interactions MUST be mocked (no testnet in CI)
 
 **Observability Without Telemetry**:
 
