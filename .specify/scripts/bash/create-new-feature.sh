@@ -357,6 +357,23 @@ MCPEOF
         >&2 echo "[specify] Created .mcp.json with worktree path: $WORKTREE_DIR"
     fi
 
+    # Copy Claude Code settings to worktree
+    if [ -d "$REPO_ROOT/.claude" ] && [ ! -e "$WORKTREE_DIR/.claude" ]; then
+        mkdir -p "$WORKTREE_DIR/.claude"
+
+        # Copy settings.local.json if exists
+        if [ -f "$REPO_ROOT/.claude/settings.local.json" ]; then
+            cp "$REPO_ROOT/.claude/settings.local.json" "$WORKTREE_DIR/.claude/"
+        fi
+
+        # Symlink commands to share across worktrees
+        if [ -d "$REPO_ROOT/.claude/commands" ]; then
+            ln -s "$REPO_ROOT/.claude/commands" "$WORKTREE_DIR/.claude/commands"
+        fi
+
+        >&2 echo "[specify] Created .claude/ with settings and shared commands"
+    fi
+
     # Set up feature directory within the worktree
     FEATURE_DIR="$WORKTREE_DIR/specs/$BRANCH_NAME"
     mkdir -p "$FEATURE_DIR"
