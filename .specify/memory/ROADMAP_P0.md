@@ -243,29 +243,46 @@
 
 ### P0.6.7 - Testing Environment Setup (Vitest + TDD)
 
-**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XVI
+**Status**: ✅ **Completed**: 2025-11-28 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XVI
 **Depends On**: P0.1 (Repository Setup)
+**Feature Folder**: `specs/005-testing-environment/`
 **Memory**: `tdd-testing-configuration` (full config details)
+**Implemented**:
 
-- Vitest 3.x+ with 80%+ coverage threshold
-- @testing-library/react for components
-- RPC mocks (no testnet in CI)
-- Snapshot tests for schema/URL encoding
-
-**Success Criteria**: `pnpm test` runs, coverage ≥80%, CI blocks on failure
+- ✅ Vitest 4.0.14 with V8 coverage provider
+- ✅ 80%+ coverage thresholds (statements, branches, functions, lines)
+- ✅ @testing-library/react 16.3.0 for component testing
+- ✅ @testing-library/jest-dom 6.9.1 for DOM matchers
+- ✅ @testing-library/user-event 14.6.1 for user interactions
+- ✅ jsdom environment for browser simulation
+- ✅ vite-tsconfig-paths for path alias support
+- ✅ `vitest.config.ts` with React plugin and coverage exclusions
+- ✅ `vitest.setup.ts` with jest-dom matchers and cleanup
+- ✅ Test scripts: `pnpm test`, `pnpm test:coverage`, `pnpm test:watch`, `pnpm test:ui`
+  **Notes**:
+- Coverage excludes: node_modules, .next, .specify, config files, .d.ts files
+- HTML and text coverage reporters configured
+- Global test utilities enabled for cleaner test syntax
 
 ### P0.6.7.1 - Git Hooks Setup (Husky + lint-staged)
 
-**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XVI
+**Status**: ✅ **Completed**: 2025-11-28 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XVI
 **Depends On**: P0.6.7 (Testing Environment)
+**Feature Folder**: `specs/005-testing-environment/` (integrated)
 **Memory**: `tdd-testing-configuration` (full config details)
+**Implemented**:
 
-- Husky for git hooks (pre-commit, pre-push)
-- lint-staged for staged file processing
-- Pre-commit: lint + type-check on staged files
-- Pre-push: full test suite with coverage check
-
-**Success Criteria**: Commits blocked on lint errors, pushes blocked on test failures
+- ✅ Husky 9.1.7 for git hooks management
+- ✅ lint-staged 16.2.7 for staged file processing
+- ✅ Pre-commit hook: `pnpm lint-staged && pnpm typecheck`
+- ✅ Pre-push hook: `pnpm test:coverage`
+- ✅ lint-staged config for `.ts/.tsx` files (eslint --fix, prettier --write)
+- ✅ lint-staged config for `.js/.jsx/.mjs/.cjs` files
+- ✅ `pnpm prepare` script for husky installation
+  **Notes**:
+- Commits blocked on lint errors or type errors
+- Pushes blocked on test failures or coverage below 80%
+- Simple hook implementation leveraging existing scripts
 
 ### P0.6.8 - Global Notification System (Sonner)
 
