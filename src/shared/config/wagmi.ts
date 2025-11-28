@@ -1,16 +1,13 @@
-import { getDefaultConfig } from '@rainbow-me/rainbowkit'
-import { arbitrum, mainnet, optimism, polygon } from 'wagmi/chains'
-import { createStorage, noopStorage } from 'wagmi'
+/**
+ * Wagmi Configuration Re-export
+ *
+ * Re-exports the Wagmi config from the wallet-connect feature module.
+ * The feature module contains all Web3 configuration including:
+ * - Custom transport routing to /api/rpc (Constitutional Principle VI)
+ * - Chain configurations for mainnet and testnet
+ * - LocalStorage persistence
+ *
+ * @see src/features/wallet-connect/config/wagmi.ts for implementation
+ */
 
-// SSR-safe storage that only uses localStorage in the browser
-const storage = createStorage({
-  storage: typeof window !== 'undefined' && window.localStorage ? window.localStorage : noopStorage,
-})
-
-export const config = getDefaultConfig({
-  appName: 'VoidPay',
-  projectId: 'YOUR_PROJECT_ID',
-  chains: [mainnet, polygon, optimism, arbitrum],
-  ssr: true,
-  storage,
-})
+export { wagmiConfig as config, chains } from '@/features/wallet-connect/config/wagmi'

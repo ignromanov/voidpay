@@ -10,6 +10,7 @@ export const envSchema = z.object({
   NEXT_PUBLIC_INFURA_OPT_URL: z.string().url(),
   NEXT_PUBLIC_INFURA_POLY_URL: z.string().url(),
   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: z.string(),
+  NEXT_PUBLIC_ENABLE_TESTNETS: z.string().optional().default('false'),
   
   // RPC Proxy (Server-side only - NOT prefixed with NEXT_PUBLIC_)
   ALCHEMY_API_KEY: z.string().optional(),
