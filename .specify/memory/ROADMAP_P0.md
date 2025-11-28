@@ -26,12 +26,12 @@
 - ✅ Tailwind CSS 4.1.17
 - ✅ ESLint + Prettier configured
 - ✅ .nvmrc with Node 22.19.0 (upgraded from 20)
-- ✅ shadcn/ui initialized with button & card components
+- ✅ Radix UI + CVA initialized with button & card components
 - ✅ Git hooks setup (via pnpm scripts)
   **Deviations**:
 - Used Next.js 15 instead of 16 (user preference for stability)
 - Node 22 instead of 20 (latest LTS)
-- Added shadcn/ui early (originally planned for P0.5)
+- Added Radix UI + CVA early (originally planned for P0.5)
 - Configured Geist fonts in layout (originally P0.8)
   **Notes**:
 - All quality gates passing (lint, type-check, format)
@@ -220,7 +220,7 @@
 - All UI components use design tokens (no arbitrary values)
 - WCAG 2.1 AA accessibility compliance targeted
 - Framer Motion added for ambient animations
-- **Design Fidelity**: Verified against V0 assets (Principle XII)
+- **Design Fidelity**: Verified against design assets (Principle XI)
 
 ### P0.6.6 - App Shell & Global Layouts (UI Assembly)
 
@@ -239,7 +239,7 @@
 - Smooth 20-30s animations with easeInOut transitions
 - Performance-optimized with CSS will-change and blur effects
 - Dark theme application verified (globals.css populated)
-- **Design Fidelity**: Verified `AmbientBackground` matches V0 asset fidelity (Principle XII)
+- **Design Fidelity**: Verified `AmbientBackground` matches design asset fidelity (Principle XI)
 
 ### P0.6.7 - Testing Environment Setup (Vitest + TDD)
 
@@ -332,11 +332,52 @@
 - CTA "Start Invoicing".
 - SEO optimization & Dark mode theme.
 
-### P0.8 - Page Compositions & UI Components (V0 Implementation)
+### P0.7.5 - Design Transfer Environment Setup
+
+**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI
+**Feature Folder**: N/A (infrastructure task)
+
+**Scope**:
+
+Install and configure dependencies required for transferring AI Studio design components to production.
+
+**Tasks**:
+
+- [ ] Install Framer Motion: `pnpm add framer-motion`
+- [ ] Install Radix UI primitives: `pnpm add @radix-ui/react-dialog @radix-ui/react-select @radix-ui/react-popover`
+- [ ] Install qrcode.react: `pnpm add qrcode.react`
+- [ ] Verify CVA already installed (class-variance-authority)
+- [ ] Create `src/shared/ui/primitives/` directory structure
+- [ ] Create base Radix wrapper components (dialog.tsx, select.tsx, popover.tsx)
+- [ ] Verify Framer Motion works with Next.js App Router (client components)
+
+**New Dependencies**:
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `framer-motion` | 12.x+ | Complex animations (NetworkBackground, transitions) |
+| `@radix-ui/react-dialog` | Latest | Modals, sheets, drawers |
+| `@radix-ui/react-select` | Latest | Dropdowns, token/network selects |
+| `@radix-ui/react-popover` | Latest | Tooltips, popovers |
+| `qrcode.react` | 4.x+ | QR codes for invoice sharing |
+
+**Dependencies**:
+
+- P0.6.5 (Design System) ✅ Completed
+
+**Notes**:
+
+- Constitution v1.13.0 replaced shadcn/ui with Radix primitives + CVA + Framer Motion
+- AI Studio prototype (`assets/aistudio/v1/`) is new design source of truth
+- V0 designs (`assets/v0/`) deprecated for new features
+
+---
+
+### P0.8 - Page Compositions & UI Components (AI Studio Transfer)
 
 **Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI, XII
 **Feature Folder**: `specs/006-ui-components/` (to be created)
-**V0 Design Reference**: `assets/v0/v16/`
+**Design Reference**: `assets/aistudio/v1/` (AI Studio prototype)
 
 **Scope**:
 
@@ -344,31 +385,55 @@
 - Create Page (`/create`) - Invoice editor with form + preview
 - Pay Page (`/pay`) - Payment terminal with invoice display
 - Invoice Form Component - Line items, metadata, calculations
-- Invoice Preview Component - Print-ready paper representation
-- Payment View Component - Web3 payment controls
-- Network Background Component - Ambient network-themed effects
+- Invoice Preview Component - Print-ready paper representation (InvoicePaper)
+- Payment View Component - Web3 payment controls (SmartPayButton)
+- Network Background Component - Framer Motion animated effects
+
+**AI Studio Components to Transfer**:
+
+| AI Studio Component | Production Location | Complexity |
+|---------------------|---------------------|------------|
+| `NetworkBackground.tsx` | `src/shared/ui/network-background.tsx` | High (Framer Motion) |
+| `InvoicePaper.tsx` | `src/widgets/invoice/InvoicePaper.tsx` | Medium |
+| `Button.tsx` (void variant) | `src/shared/ui/void-button.tsx` | Medium (CSS animation) |
+| `SmartPayButton.tsx` | `src/features/payment/ui/SmartPayButton.tsx` | Medium |
+| `AuroraText.tsx` | `src/shared/ui/aurora-text.tsx` | Low (CSS only) |
+| `HyperText.tsx` | `src/shared/ui/hyper-text.tsx` | Low (React hooks) |
+| `TokenSelect.tsx` | `src/shared/ui/primitives/select.tsx` | Medium (Radix) |
+| `ShareModal.tsx` | `src/features/invoice/ui/ShareModal.tsx` | Medium (Radix Dialog) |
 
 **Implementation Requirements**:
 
-- ✅ MUST use V0 assets from `assets/v0/v16/` as pixel-perfect reference (Principle XII)
-- ✅ MUST use `@radix-ui/react-*` components via shadcn/ui (Principle XII)
-- ✅ MUST follow App Shell Architecture (Header/Footer separation) (Principle XI)
-- ✅ MUST maintain Hybrid Theme (Dark Desk + Light Paper) (Principle XI)
-- ✅ MUST enforce ISO 216 (A4) aspect ratio 1:1.414 for invoice components (Principle XI)
+- ✅ MUST use AI Studio assets from `assets/aistudio/v1/` as pixel-perfect reference (Principle XI)
+- ✅ MUST use `@radix-ui/react-*` primitives for interactive components (Principle XI)
+- ✅ MUST use CVA for component variants (Principle XI)
+- ✅ MUST use Framer Motion for complex animations (NetworkBackground, transitions)
+- ✅ MUST follow App Shell Architecture (Header/Footer separation) (Principle XII)
+- ✅ MUST maintain Hybrid Theme (Dark Desk + Light Paper) (Principle XII)
+- ✅ MUST enforce ISO 216 (A4) aspect ratio 1:1.414 for invoice components (Principle XII)
 - ✅ MUST use network-specific ambient colors (Arbitrum blue, Optimism red, Polygon purple)
-- ✅ MUST integrate with existing FSD structure (`page-compositions/`, `widgets/`, `features/`)
+- ✅ MUST integrate with existing FSD structure (`widgets/`, `features/`, `shared/ui/`)
+
+**Transfer Protocol**:
+
+1. Extract design tokens (colors, spacing, shadows) from AI Studio components
+2. Adapt to CVA variant pattern for production components
+3. Wrap interactive elements with Radix primitives for accessibility
+4. Use Framer Motion for animations that require JS (not CSS-only)
+5. Test pixel-fidelity against prototype screenshots
 
 **Dependencies**:
 
 - P0.6 (FSD Structure) ✅ Completed
 - P0.6.5 (Design System) ✅ Completed
 - P0.6.6 (App Shell) ✅ Completed
+- P0.7.5 (Design Transfer Environment) 🔴 Required
 
 **Notes**:
 
-- V0 designs provide complete reference implementations
-- Components must be adapted to FSD layer structure
-- Focus on pixel-perfect fidelity to V0 designs
+- AI Studio prototype uses Vite + React (NOT Next.js) — adapt routing/state
+- Transfer design patterns, NOT code directly
+- Focus on pixel-perfect fidelity to AI Studio designs
 - Integration with Zustand stores (P0.3) for state management
 
 ### P0.12.1 - Payment Terminal UI (The Interaction Layer)

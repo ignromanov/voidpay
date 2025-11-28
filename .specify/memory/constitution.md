@@ -1,34 +1,53 @@
 <!--
   SYNC IMPACT REPORT
 
-  Version Change: 1.11.0 → 1.12.0
+  Version Change: 1.12.0 → 1.13.0
 
   Modified Principles:
-  - XIV. Serena Memory as Project Knowledge Repository → Added Memory Commit Protocol
-    - Added 14.3.1 Memory Commit Protocol - memories are tracked in git
-    - Memories are part of codebase (NOT gitignored, NOT symlinked)
-    - Each worktree has its own copy of memories
-    - Memory changes must be committed after write/edit operations
+  - XI. Design Fidelity → Updated to support AI Studio as design source (in addition to V0)
+    - Added AI Studio prototype location: assets/aistudio/v{N}/
+    - Clarified design source hierarchy: AI Studio (current) > V0 (legacy)
+  - XI. Component Library → Replaced shadcn/ui with Radix UI primitives + CVA
+    - REMOVED: "via shadcn/ui" reference
+    - ADDED: Direct Radix primitives (Dialog, Select, Popover)
+    - ADDED: CVA for variant management
+    - ADDED: Framer Motion for complex animations
 
   Added Sections:
-  - 14.3.1 Memory Commit Protocol (v1.12.0):
-    - Storage: .serena/memories/ tracked in git
-    - Commit command after memory changes
-    - Worktree synchronization rules
-    - Rationale for memories-as-code approach
+  - 11.5 Design Source of Truth (NEW):
+    - AI Studio prototype location and purpose
+    - Component architecture for production
+    - Styling stack definition (CVA, Radix, Framer Motion)
+    - Transfer protocol from prototype to production
+  - Technology Stack updated:
+    - REMOVED: shadcn/ui
+    - ADDED: Radix UI primitives (@radix-ui/react-dialog, select, popover)
+    - ADDED: class-variance-authority (CVA) 0.7.1+
+    - ADDED: Framer Motion 12.x+
 
   Removed Sections:
-  - None (symlink approach deprecated)
+  - shadcn/ui references throughout document
 
   Templates Requiring Updates:
-  - CLAUDE.md (✅ updated - Memory Freshness Protocol v1.12.0)
-  - .gitignore (✅ updated - .serena/memories/ now tracked)
+  - CLAUDE.md (✅ updated - Tech Stack section)
+  - README.md (✅ updated - Styling line)
+  - walkthrough.md (✅ updated - Styling line)
+  - .serena/memories/tech-stack-locked.md (✅ updated - UI section)
+  - .serena/memories/architecture-summary.md (✅ updated - ui/ description)
+  - .serena/memories/project-overview.md (✅ updated - styling line)
+  - .serena/memories/constitutional-principles-summary.md (✅ updated - Principle XI)
 
   Follow-up TODOs:
-  - Update existing worktrees to use copied memories instead of symlinks
+  - Install new dependencies: pnpm add framer-motion @radix-ui/react-dialog @radix-ui/react-select @radix-ui/react-popover
+  - Update all Serena memories to reflect new UI stack
+  - Update CLAUDE.md Tech Stack section
 
-  Ratification: Memories are now treated as code, tracked in git, committed after changes.
-  This eliminates symlink security issues in worktrees and enables proper version control.
+  Rationale:
+  - AI Studio replaced V0 as primary design source
+  - shadcn/ui removed because its pre-styled components don't match AI Studio custom design
+  - Radix primitives retained for accessibility (Dialog, Select, Popover)
+  - CVA retained for variant management (already installed)
+  - Framer Motion added for complex animations (NetworkBackground, transitions)
   Date: 2025-11-28
 -->
 
@@ -239,21 +258,80 @@
 
 **Rationale**: Git worktrees enable true parallel development by creating separate working directories for each feature branch while sharing the same Git repository. This prevents file-level conflicts when multiple agents work on different features simultaneously. Without worktrees, concurrent agents would compete for the same working directory, causing constant context switching, merge conflicts, and lost work.
 
-### XI. Design Fidelity & V0 Integration
+### XI. Design Fidelity & Design Source Integration
 
-**Principle**: All UI implementation MUST be strictly based on the V0 design assets located in `assets/v0`. Agents MUST NOT invent designs and MUST ask for clarification if assets are missing.
+**Principle**: All UI implementation MUST be strictly based on approved design assets. Agents MUST NOT invent designs and MUST ask for clarification if assets are missing.
 
 **Rules**:
 
-- **Source of Truth**: The `assets/v0` directory is the absolute source of truth for all visual design.
-- **Component Library**: Agents MUST use `@radix-ui/react-*` components (via shadcn/ui) as the foundation.
-- **Strict Fidelity**: Implementations MUST match the V0 design reference pixel-perfectly unless explicitly instructed otherwise.
-- **Agent Responsibility**:
-  - Agents MUST search `assets/v0` for the relevant design file before implementation.
-  - If a design element is missing, agents MUST ask the user for guidance, NOT invent a solution.
-  - Agents MUST NOT deviate from the V0 design without explicit user approval.
+#### 11.1 Design Source Hierarchy
 
-**Rationale**: V0 assets represent the approved design vision. Inventing designs leads to inconsistency and drift from the product vision. Strict adherence ensures a cohesive and premium user experience.
+- **Primary Source**: `assets/aistudio/v{N}/` — AI Studio prototype (current active design)
+- **Legacy Source**: `assets/v0/` — V0 designs (historical reference, deprecated for new features)
+- **Version Selection**: Always use the HIGHEST version number folder (e.g., `v2/` over `v1/`)
+
+#### 11.2 Component Library
+
+- **Primitives**: Agents MUST use `@radix-ui/react-*` primitives for interactive components requiring accessibility:
+  - `@radix-ui/react-dialog` — Modals, sheets, drawers
+  - `@radix-ui/react-select` — Dropdowns, selects
+  - `@radix-ui/react-popover` — Tooltips, popovers, menus
+- **Variant Management**: Use `class-variance-authority` (CVA) for component variants
+- **Styling**: Tailwind CSS classes with `clsx` + `tailwind-merge` for conditional composition
+- **Animation**: Framer Motion for complex animations (NetworkBackground, page transitions)
+
+#### 11.3 Strict Fidelity
+
+- Implementations MUST match the design reference pixel-perfectly unless explicitly instructed otherwise
+- Color values, spacing, typography MUST be extracted from design source
+- Animation timing and easing MUST match prototype behavior
+
+#### 11.4 Agent Responsibility
+
+- Agents MUST search design assets (`assets/aistudio/` or `assets/v0/`) for relevant files before implementation
+- If a design element is missing, agents MUST ask the user for guidance, NOT invent a solution
+- Agents MUST NOT deviate from the design without explicit user approval
+
+#### 11.5 Design Source of Truth (AI Studio)
+
+**Prototype Location**: `assets/aistudio/v{N}/`
+
+- **Stack**: Vite + React (prototype only, NOT production stack)
+- **Purpose**: Visual reference, component design, interaction patterns
+- **NOT for**: Direct code copy — prototype uses different routing, state management
+
+**Component Architecture (Production)**:
+
+```
+src/shared/ui/
+├── primitives/              # Radix wrappers with custom styles
+│   ├── dialog.tsx           # @radix-ui/react-dialog + AI Studio styling
+│   ├── select.tsx           # @radix-ui/react-select + AI Studio styling
+│   └── popover.tsx          # @radix-ui/react-popover + AI Studio styling
+├── aurora-text.tsx          # CSS animation (no Radix needed)
+├── hyper-text.tsx           # React hooks only (no Radix needed)
+├── void-button.tsx          # Complex CSS animation (CVA variants)
+└── network-background.tsx   # Framer Motion animation
+```
+
+**Styling Stack**:
+
+| Tool | Purpose | Required |
+|------|---------|----------|
+| CVA (class-variance-authority) | Variant management for components | ✅ Yes |
+| clsx + tailwind-merge | Conditional class composition | ✅ Yes |
+| Framer Motion | Complex animations (NetworkBackground, transitions) | ✅ Yes |
+| tailwindcss-animate | Simple CSS animations (pulse, spin) | ✅ Yes |
+
+**Transfer Protocol** (Prototype → Production):
+
+1. Extract design tokens (colors, spacing, shadows) from AI Studio components
+2. Adapt to CVA variant pattern for production components
+3. Wrap interactive elements with Radix primitives for accessibility
+4. Use Framer Motion for animations that require JS (not CSS-only)
+5. Test pixel-fidelity against prototype screenshots
+
+**Rationale**: AI Studio prototypes represent the approved design vision. Using Radix primitives ensures accessibility compliance. CVA provides type-safe variant management. Framer Motion enables smooth, physics-based animations that CSS alone cannot achieve. This separation (design source vs production stack) allows rapid prototyping without compromising production code quality.
 
 ### XII. UI/UX Design Principles
 
@@ -1271,7 +1349,9 @@ The following technology choices are locked for MVP to ensure consistency and ma
 **UI & Styling**:
 
 - Tailwind CSS 4+
-- shadcn/ui (Radix UI components)
+- Radix UI primitives (@radix-ui/react-dialog, select, popover)
+- class-variance-authority (CVA) 0.7.1+
+- Framer Motion 12.x+ (complex animations)
 - Lucide React (latest - icons)
 
 **Supported Networks (MVP)**:
@@ -1520,4 +1600,4 @@ Any violation of Constitutional principles MUST be explicitly justified in the "
 - Track deviations in tasks.md during implementation
 - Update ROADMAP and memories upon feature completion
 
-**Version**: 1.11.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-28
+**Version**: 1.13.0 | **Ratified**: 2025-11-19 | **Last Amended**: 2025-11-28

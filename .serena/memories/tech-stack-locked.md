@@ -1,7 +1,7 @@
 # VoidPay - Locked Technology Stack
 
 **Status**: Locked for MVP (Major version updates require constitutional amendment)
-**Last Updated**: 2025-11-28
+**Last Updated**: 2025-11-28 (v1.13.0 - shadcn/ui → Radix + CVA + Framer Motion)
 **Version Policy**: Minor/patch updates permitted, security patches applied immediately
 
 ## Core Framework
@@ -40,12 +40,13 @@
 | Component | Version | Rationale |
 |-----------|---------|-----------|
 | **Tailwind CSS** | 4.1.17+ | Fast prototyping, large ecosystem |
-| **shadcn/ui** | Latest | Radix UI components, easy customization |
-| **Radix UI** | Latest | Accessible primitives (via shadcn/ui) |
+| **Radix UI primitives** | Latest | @radix-ui/react-dialog, select, popover (accessibility) |
+| **CVA** | 0.7.1+ | class-variance-authority for variant management |
+| **Framer Motion** | 12.x+ | Complex animations (NetworkBackground, transitions) |
 | **Lucide React** | Latest | Icon library |
 | **clsx** | 2.1.1+ | Conditional classes |
 | **tailwind-merge** | 2.5.4+ | Class merging utility |
-| **Framer Motion** | Latest | Ambient animations, transitions |
+| **tailwindcss-animate** | 1.0.7+ | Simple CSS animations (pulse, spin) |
 
 ## Typography
 

@@ -3,8 +3,8 @@
 **Project**: VoidPay - Stateless Crypto Invoice Platform
 **Domain**: voidpay.xyz
 **Status**: Active Development (MVP Phase)
-**Constitution**: v1.8.0 (13 Principles - NON-NEGOTIABLE)
-**Last Updated**: 2025-11-28
+**Constitution**: v1.13.0 (16 Principles - NON-NEGOTIABLE)
+**Last Updated**: 2025-11-28 (v1.13.0 - UI stack update)
 
 ## What is VoidPay?
 
@@ -47,7 +47,7 @@ Privacy-first crypto invoicing platform where ALL invoice data is encoded in URL
 - Next.js 15+, React 19+, TypeScript 5+ (strict)
 - Wagmi 2+, Viem 2+, RainbowKit 2+
 - Zustand 5+, TanStack Query 5+
-- Tailwind CSS 4+, shadcn/ui (Radix)
+- Tailwind CSS 4+, Radix UI primitives, CVA, Framer Motion
 - lz-string 1.5.0+ (URL compression)
 
 ## Architecture Pattern

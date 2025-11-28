@@ -1,6 +1,6 @@
 # VoidPay - Development Status
 
-**Last Updated**: 2025-11-28
+**Last Updated**: 2025-11-28 (v1.13.0 - AI Studio design source)
 **Current Phase**: P0 (MVP Core Features)
 **Overall Progress**: ~52% complete (10/19 P0 features)
 
@@ -62,7 +62,7 @@
 ### P0.6.5 - Design System Implementation ✅
 - **Completed**: 2025-11-22
 - **Implementation**: specs/005-fsd-design-system/
-- **Features**: Tailwind v4 tokens, Geist fonts, shadcn/ui components, InvoicePaper widget
+- **Features**: Tailwind v4 tokens, Geist fonts, Radix UI + CVA components, InvoicePaper widget
 - **Status**: WCAG AA compliance targeted
 
 ### P0.6.6 - App Shell & Global Layouts ✅
@@ -93,13 +93,20 @@
 
 ## In Progress (🟡)
 
-### P0.8 - Page Compositions & UI Components (V0 Implementation)
-- **Status**: 🟡 In Progress
+### P0.7.5 - Design Transfer Environment Setup
+- **Status**: 🔴 Pending
+- **Priority**: P0 (MVP Blocker)
+- **Scope**: Install Framer Motion, Radix UI primitives, qrcode.react
+- **Dependencies**: P0.6.5 (completed)
+- **Tasks**: `pnpm add framer-motion @radix-ui/react-dialog @radix-ui/react-select @radix-ui/react-popover qrcode.react`
+
+### P0.8 - Page Compositions & UI Components (AI Studio Transfer)
+- **Status**: 🔴 Pending (waiting for P0.7.5)
 - **Priority**: P0 (MVP Blocker)
 - **Scope**: Landing page, Create page, Pay page, Invoice form, Payment view
-- **V0 Reference**: assets/v0/v16/
-- **Dependencies**: P0.6, P0.6.5, P0.6.6 (all completed)
-- **Requirements**: Pixel-perfect fidelity to V0 designs, Hybrid Theme, ISO 216 compliance
+- **Design Reference**: assets/aistudio/v1/ (AI Studio prototype)
+- **Dependencies**: P0.6, P0.6.5, P0.6.6, **P0.7.5** (environment setup)
+- **Requirements**: Pixel-perfect fidelity to AI Studio designs, Hybrid Theme, ISO 216 compliance
 
 ## Pending (🔴) - Critical Path
 
@@ -166,6 +173,8 @@
 
 ## Recent Milestones
 
+- **2025-11-28**: Constitution v1.13.0 - UI stack update (shadcn/ui → Radix + CVA + Framer Motion)
+- **2025-11-28**: AI Studio design prototype adopted (assets/aistudio/v1/) - V0 deprecated
 - **2025-11-28**: Wagmi + Viem + RainbowKit wallet connection (P0.5) - unblocks all Web3 features
 - **2025-11-28**: Testing environment + Git hooks (P0.6.7, P0.6.7.1) - TDD enforcement
 - **2025-11-22**: FSD structure + Design system + App Shell (3 features in 1 day)
@@ -176,17 +185,19 @@
 ## Known Blockers
 
 1. ~~**Wagmi Setup** (P0.5)~~ - ✅ RESOLVED (2025-11-28)
-2. **V0 Design Assets** - Page Compositions (P0.8) require pixel-perfect fidelity
-3. **Alchemy API Keys** - Required for payment polling (P0.14)
-4. **Vercel KV Setup** - Required for rate limiting (already implemented, needs config)
+2. ~~**V0 Design Assets**~~ - Deprecated, using AI Studio (assets/aistudio/v1/)
+3. **Design Environment** - P0.7.5 (Framer Motion, Radix primitives) pending install
+4. **Alchemy API Keys** - Required for payment polling (P0.14)
+5. **Vercel KV Setup** - Required for rate limiting (already implemented, needs config)
 
 ## Next Actions
 
 1. ~~Complete P0.5 (Wagmi + Viem + RainbowKit)~~ - ✅ DONE
-2. Implement P0.8 (Page Compositions) - Based on V0 designs ← NEXT
-3. Sequential implementation: P0.12 → P0.13 → P0.14 (payment flow)
-4. Landing page (P0.7) - Marketing + SEO
-5. Deployment config (P0.19) - Production readiness
+2. **Install P0.7.5 dependencies** (Framer Motion, Radix, qrcode.react) ← NEXT
+3. Implement P0.8 (Page Compositions) - Based on AI Studio designs
+4. Sequential implementation: P0.12 → P0.13 → P0.14 (payment flow)
+5. Landing page (P0.7) - Marketing + SEO
+6. Deployment config (P0.19) - Production readiness
 
 ## Testing Status
 

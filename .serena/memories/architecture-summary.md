@@ -2,7 +2,7 @@
 
 **Pattern**: Feature-Sliced Design (FSD)
 **Framework**: Next.js 15+ App Router
-**Last Updated**: 2025-11-28
+**Last Updated**: 2025-11-28 (v1.13.0 - UI stack: Radix + CVA + Framer Motion)
 
 ## Project Structure (FSD Layers)
 
@@ -40,7 +40,8 @@ src/
 │   └── network/             # Chain configs, theme maps, RPC endpoints
 │
 └── shared/                  # Layer 6: Reusable Primitives
-    ├── ui/                  # shadcn/ui components (Button, Card, Input)
+    ├── ui/                  # UI primitives (Radix wrappers, CVA components)
+    │   └── primitives/      # Radix Dialog, Select, Popover with custom styles
     ├── lib/                 # Utilities (cn, formatters, compression)
     │   ├── compression/     # lz-string wrapper
     │   ├── binary-codec/    # Binary codec (P1.42 - experimental)

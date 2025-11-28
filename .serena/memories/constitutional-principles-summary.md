@@ -1,7 +1,7 @@
 # VoidPay - Constitutional Principles (Quick Reference)
 
-**Version**: 1.11.0
-**Last Updated**: 2025-11-28
+**Version**: 1.13.0
+**Last Updated**: 2025-11-28 (v1.13.0 - shadcn/ui → Radix + CVA + Framer Motion)
 **Status**: NON-NEGOTIABLE (Requires amendment for changes)
 **Full Document**: `.specify/memory/constitution.md`
 
@@ -76,10 +76,12 @@
 - NO cross-worktree file modifications
 - Cleanup after merge: `git worktree remove` + `git worktree prune`
 
-### XI. Design Fidelity & V0 Integration
-- V0 assets in `assets/v0/` are source of truth
-- MUST use Radix UI components (shadcn/ui)
-- Pixel-perfect fidelity to V0 designs
+### XI. Design Fidelity & Design Source Integration
+- **Primary Source**: AI Studio prototype (`assets/aistudio/v{N}/`)
+- **Legacy Source**: V0 designs (`assets/v0/`) - deprecated for new features
+- **Component Library**: Radix UI primitives (Dialog, Select, Popover) + CVA for variants
+- **Animation**: Framer Motion for complex animations (NetworkBackground, transitions)
+- Pixel-perfect fidelity to design source
 - Ask for guidance if design missing (DON'T invent)
 
 ### XII. UI/UX Design Principles

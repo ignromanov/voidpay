@@ -43,7 +43,7 @@ Stateless Invoicing Platform built with Next.js, Wagmi, and Feature-Sliced Desig
 
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS v4, shadcn/ui
+- **Styling**: Tailwind CSS v4, Radix UI, CVA, Framer Motion
 - **Web3**: Wagmi v2, Viem, RainbowKit
 - **State**: Zustand, TanStack Query
 - **Design Methodology**: Feature-Sliced Design (FSD)

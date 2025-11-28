@@ -4,7 +4,7 @@ I have successfully initialized the VoidPay project with the following stack:
 
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript 5.7
-- **Styling**: Tailwind CSS v4, shadcn/ui
+- **Styling**: Tailwind CSS v4, Radix UI, CVA, Framer Motion
 - **Web3**: Wagmi v2, Viem v2, RainbowKit v2
 - **State**: Zustand v5, TanStack Query v5
 - **Architecture**: Feature-Sliced Design (FSD)
