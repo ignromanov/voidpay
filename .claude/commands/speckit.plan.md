@@ -28,7 +28,12 @@ You **MUST** consider the user input before proceeding (if not empty).
    - If NOT in worktree, ERROR: "Planning must be executed in feature worktree. Expected: {WORKTREE_DIR}, Current: {pwd}"
    - This ensures isolation and prevents conflicts with other concurrent features
 
-3. **Load context**: Read FEATURE_SPEC and `.specify/memory/constitution.md`. Load IMPL_PLAN template (already copied).
+3. **Load context (Serena-First - Constitutional Principle XIII)**:
+   - ❌ **PROHIBITED**: `Read` for .md files without Serena first
+   - ✅ **MANDATORY**: Use Serena tools for Markdown documentation
+   - FEATURE_SPEC (spec.md in worktree): Use `mcp__serena__search_for_pattern` for specific sections
+   - Constitution: Use `mcp__serena__read_memory("constitution")` or search_for_pattern
+   - IMPL_PLAN template: Can use `Read` (templates are acceptable, not project documentation)
 
 4. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
    - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")

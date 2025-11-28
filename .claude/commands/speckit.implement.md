@@ -55,14 +55,17 @@ You **MUST** consider the user input before proceeding (if not empty).
      - Display the table showing all checklists passed
      - Automatically proceed to step 4
 
-4. Load and analyze the implementation context:
-   - **REQUIRED**: Read tasks.md for the complete task list and execution plan
-   - **REQUIRED**: Read plan.md for tech stack, architecture, and file structure
-   - **IF EXISTS**: Read data-model.md for entities and relationships
-   - **IF EXISTS**: Read contracts/ for API specifications and test requirements
-   - **IF EXISTS**: Read research.md for technical decisions and constraints
-   - **IF EXISTS**: Read quickstart.md for integration scenarios
+4. **Load and analyze the implementation context (Serena-First - Constitutional Principle XIII)**:
+   - ❌ **PROHIBITED**: Direct `Read` for .md files
+   - ✅ **MANDATORY**: Use `mcp__serena__search_for_pattern` to extract specific sections
+   - **REQUIRED**: Search tasks.md for task list and execution plan sections
+   - **REQUIRED**: Search plan.md for tech stack, architecture, and file structure sections
+   - **IF EXISTS**: Search data-model.md for entities and relationships
+   - **IF EXISTS**: Read contracts/ files (JSON/YAML schemas are acceptable via Read)
+   - **IF EXISTS**: Search research.md for technical decisions and constraints
+   - **IF EXISTS**: Search quickstart.md for integration scenarios
    - **IMPORTANT**: All paths are relative to the worktree directory
+   - **RATIONALE**: Targeted section extraction saves 10-100x tokens vs. full file reads
 
 5. **Project Setup Verification**:
    - **REQUIRED**: Create/verify ignore files based on actual project setup:
