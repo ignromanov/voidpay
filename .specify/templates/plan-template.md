@@ -42,6 +42,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 - [ ] All TypeScript/Markdown navigation uses Serena tools first (XIII)
 - [ ] Serena memories consulted before planning via `mcp__serena__*` tools (XIV)
 - [ ] Following SpecKit workflow phases: specify → plan → tasks → implement (XV)
+- [ ] TDD cycle planned: Red → Green → Refactor with 80%+ coverage target (XVI)
 
 ## Project Structure
 
