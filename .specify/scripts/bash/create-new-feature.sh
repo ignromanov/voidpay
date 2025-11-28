@@ -319,17 +319,20 @@ if [ "$HAS_GIT" = true ]; then
     >&2 echo "[specify] All feature work must happen in this worktree directory"
 
 
-    # Create .serena directory structure for worktree (isolated cache, shared memories)
+    # Create .serena directory structure for worktree (isolated cache, copied memories)
+    # Constitution v1.12.0: Memories are code, tracked in git, copied to worktrees (not symlinked)
     if [ -d "$REPO_ROOT/.serena" ] && [ ! -e "$WORKTREE_DIR/.serena" ]; then
         mkdir -p "$WORKTREE_DIR/.serena/cache" "$WORKTREE_DIR/.serena/logs"
 
-        # Symlink memories to share knowledge across all worktrees
-        ln -s "$REPO_ROOT/.serena/memories" "$WORKTREE_DIR/.serena/memories"
+        # Copy memories to worktree (memories are code, must be merged like code)
+        if [ -d "$REPO_ROOT/.serena/memories" ]; then
+            cp -r "$REPO_ROOT/.serena/memories" "$WORKTREE_DIR/.serena/memories"
+        fi
 
         # Create worktree-specific project.yml
         cat > "$WORKTREE_DIR/.serena/project.yml" << SERENAEOF
 # Serena project config for worktree: $BRANCH_NAME
-# This is a worktree-specific config with shared memories
+# Memories are part of the codebase and must be committed after changes
 
 languages:
 - typescript
@@ -342,20 +345,20 @@ read_only: false
 excluded_tools: []
 initial_prompt: ""
 
-# Unique project name for this worktree
-project_name: "voidpay-$BRANCH_NAME"
+# Use the same project name as main repo for consistent memory access
+project_name: "stateless-invoicing-platform"
 
 included_optional_tools: []
 SERENAEOF
 
-        # Create .gitignore for .serena
+        # Create .gitignore for .serena (cache/logs local, memories tracked in git)
         cat > "$WORKTREE_DIR/.serena/.gitignore" << GITIGNOREEOF
 # Serena cache and logs are local to each worktree
 cache/
 logs/
 GITIGNOREEOF
 
-        >&2 echo "[specify] Created .serena/ with isolated cache and shared memories"
+        >&2 echo "[specify] Created .serena/ with isolated cache and copied memories"
     fi
 
     # Generate .mcp.json with worktree-specific path for Serena MCP
