@@ -477,6 +477,8 @@ git add .serena/memories/ && git commit -m "docs(memory): update <memory-name>"
 **Philosophy**: Privacy > Features. Simplicity > Cleverness. YAGNI always.
 
 ## Active Technologies
+- TypeScript 5.x+ (strict mode), React 19.0.0+, Node.js 20+ + Wagmi 2.19.4+, Viem 2.39.3+, RainbowKit 2.2.9+, TanStack Query 5.90.10+ (peer dep) (008-wagmi-rainbowkit-setup)
+- LocalStorage (via Wagmi createStorage + Zustand persist) (008-wagmi-rainbowkit-setup)
 
 - TypeScript 5.x+ (Strict Mode) + `lz-string` (v1.5.0+), `zod` (for runtime validation), `big.js` or native `BigInt` (for amounts) (002-url-state-codec)
 - None (Stateless URL-based state) (002-url-state-codec)

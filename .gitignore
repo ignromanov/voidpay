@@ -13,6 +13,9 @@ assets/
 .serena/logs/
 # .serena/memories/ is NOT ignored - it's part of codebase
 
+# Cache
+.cache/
+
 # MCP config (contains absolute paths, generated per worktree)
 .mcp.json
 
