@@ -224,6 +224,8 @@ export async function POST(req: Request) {
 
 ## 🔄 Workflow
 
+**CONSTITUTIONAL REQUIREMENT**: All features MUST follow SpecKit workflow (Principle XV). Ad-hoc development is PROHIBITED.
+
 ### Feature Development (with Git Worktrees)
 
 Each feature is developed in an **isolated Git worktree** to enable parallel development without conflicts:
@@ -255,10 +257,121 @@ git worktree prune
 ### Process
 
 1. Read constitution before starting
-2. `/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement`
-3. Verify no principle violations
-4. All work happens in feature worktree (Constitution Principle X)
-5. **Update Roadmap**: Mark item completed in `ROADMAP_P*.md` with Feature Folder, Implemented, Deviations, and Notes.
+2. **Consult Serena memories** via `mcp__serena__*` tools (Principle XIV)
+3. `/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement`
+4. Verify Constitution Check (all 15 principles)
+5. All work happens in feature worktree (Principle X)
+6. **Update Roadmap & Memories**: Mark item completed in `ROADMAP_P*.md`, update Serena memories if new patterns discovered
+
+---
+
+## 🧰 Serena MCP Usage Guidelines
+
+**⚠️ CONSTITUTIONAL REQUIREMENTS**:
+- **Principle XIII**: Serena symbolic tools MANDATORY for TypeScript/Markdown navigation
+- **Principle XIV**: Serena memories (`.serena/memories/`) MANDATORY as project knowledge source of truth
+
+**Access**: All Serena operations via `mcp__serena__*` tools. Direct file access to `.serena/` is PROHIBITED.
+
+**Indexed Files**: 67+ Markdown + All TypeScript (see `.serena/cache/`)
+
+### 🚫 PROHIBITED (Constitutional Violations)
+
+1. ❌ **PROHIBITED** - Reading .ts/.tsx/.md files via Read without prior `get_symbols_overview`
+2. ❌ **PROHIBITED** - Using Grep to find TypeScript functions/classes/types/interfaces
+3. ❌ **PROHIBITED** - Using Grep to search Markdown documentation files
+4. ❌ **PROHIBITED** - Editing symbols without `find_referencing_symbols` check
+5. ❌ **PROHIBITED** - Using Read + Edit for entire symbol replacement (use `replace_symbol_body`)
+6. ❌ **PROHIBITED** - Direct file access to `.serena/memories/` (use `mcp__serena__*` tools)
+
+### ✅ MANDATORY (Constitutional Requirements)
+
+1. ✅ **MANDATORY** - Use `get_symbols_overview` before reading any TypeScript/Markdown file
+2. ✅ **MANDATORY** - Use `find_symbol` for locating functions/classes by name
+3. ✅ **MANDATORY** - Use `find_referencing_symbols` before editing any symbol
+4. ✅ **MANDATORY** - Use `search_for_pattern` (Serena) instead of Grep for .ts/.md files
+5. ✅ **MANDATORY** - Use `replace_symbol_body` for replacing entire functions/classes
+6. ✅ **MANDATORY** - Consult Serena memories via `mcp__serena__read_memory` before starting features
+
+### Core Principles
+
+1. **Never Read Entire Files Unless Necessary**
+   - Use `get_symbols_overview` to see file structure first
+   - Read only specific symbols with `find_symbol`
+   - ONLY read full files for non-code content or when symbol tools insufficient
+
+2. **Intelligent Step-by-Step Code Reading**
+   - Start with overview → Find specific symbols → Read only needed bodies
+   - Use cached index (67+ Markdown files + All TypeScript)
+   - Don't re-read what you already have
+
+3. **Symbol-First Navigation**
+   - Symbols identified by `name_path` + `relative_path`
+   - Example: `Foo/__init__` (Python) or `MyClass/myMethod` (TypeScript)
+   - Use `depth` parameter to control child symbol visibility
+
+### Workflow
+
+**Before Any Code Changes (REQUIRED):**
+```
+1. get_symbols_overview (file) → see top-level structure
+2. find_symbol (specific symbol) → get details without body
+3. find_symbol (with include_body=true) → read implementation
+4. find_referencing_symbols → understand usage before editing
+```
+
+**For Code Search:**
+- `search_for_pattern` (Serena) - REQUIRED for TypeScript/Markdown content search
+- `find_symbol` - Symbolic search when you know name
+- `find_referencing_symbols` - Track dependencies
+- `Grep` - ONLY for non-indexed files (CSS, HTML, YAML)
+
+**For Editing:**
+- `replace_symbol_body` - Replace entire function/class (REQUIRED for full symbol changes)
+- `insert_after_symbol` - Add new code after symbol
+- `insert_before_symbol` - Add imports or prepend code
+- `Read` + `Edit` - ONLY for small edits within a symbol body
+
+### ⚠️ Anti-Patterns (Constitutional Violations)
+
+**VIOLATION #1**: Reading TypeScript without symbols
+```
+❌ Read("src/features/invoice/create.tsx")  // PROHIBITED
+✅ get_symbols_overview("src/features/invoice/create.tsx")  // CORRECT
+```
+
+**VIOLATION #2**: Using Grep for code symbols
+```
+❌ Grep(pattern="function createInvoice", type="ts")  // PROHIBITED
+✅ find_symbol("createInvoice")  // CORRECT
+```
+
+**VIOLATION #3**: Reading full file then using symbolic tools (wasteful)
+```
+❌ Read("file.ts") → find_symbol("Foo")  // PROHIBITED (duplication)
+✅ find_symbol("Foo", include_body=true)  // CORRECT (efficient)
+```
+
+**VIOLATION #4**: Editing without checking references
+```
+❌ replace_symbol_body() without find_referencing_symbols  // PROHIBITED (unsafe)
+✅ find_referencing_symbols() → review → replace_symbol_body()  // CORRECT
+```
+
+**VIOLATION #5**: Grep in Markdown documentation
+```
+❌ Grep(pattern="Constitutional Principle", glob="**/*.md")  // PROHIBITED
+✅ search_for_pattern("Constitutional Principle", paths_include_glob="**/*.md")  // CORRECT
+```
+
+### Rationale
+
+- **Token Efficiency**: Symbolic reads save 10-100x tokens vs full file reads
+- **Semantic Understanding**: Language servers provide type info that grep cannot
+- **Refactoring Safety**: `find_referencing_symbols` prevents breaking changes
+- **Constitutional Alignment**: Supports Principle VIII (Context Efficiency)
+
+**Memory**: Serena creates project-specific memories in `.serena/memories/` (auto-populated on first use)
 
 ---
 
