@@ -45,7 +45,22 @@ description: Merge the current feature branch into master.
    git push origin master --quiet
    ```
 
-8. Offer to delete the feature branch locally and remotely.
+8. **Worktree Cleanup (Constitution Principle X)**:
+   - Check if a worktree exists for the feature branch:
+   ```bash
+   git worktree list | grep "<feature-branch-name>"
+   ```
+   - If worktree exists, remove it:
+   ```bash
+   git worktree remove worktrees/<feature-branch-name> --force
+   git worktree prune
+   ```
+   - Verify cleanup:
+   ```bash
+   git worktree list
+   ```
+
+9. Offer to delete the feature branch locally and remotely.
    ```bash
    git branch -d <feature-branch-name>
    git push origin --delete <feature-branch-name>

@@ -292,9 +292,70 @@ if [ "$HAS_GIT" = true ]; then
 
     # Create isolated worktree for this feature
     git worktree add "$WORKTREE_DIR" "$BRANCH_NAME"
-
     >&2 echo "[specify] Created worktree: $WORKTREE_DIR"
     >&2 echo "[specify] All feature work must happen in this worktree directory"
+
+
+    # Create .serena directory structure for worktree (isolated cache, shared memories)
+    if [ -d "$REPO_ROOT/.serena" ] && [ ! -e "$WORKTREE_DIR/.serena" ]; then
+        mkdir -p "$WORKTREE_DIR/.serena/cache" "$WORKTREE_DIR/.serena/logs"
+
+        # Symlink memories to share knowledge across all worktrees
+        ln -s "$REPO_ROOT/.serena/memories" "$WORKTREE_DIR/.serena/memories"
+
+        # Create worktree-specific project.yml
+        cat > "$WORKTREE_DIR/.serena/project.yml" << SERENAEOF
+# Serena project config for worktree: $BRANCH_NAME
+# This is a worktree-specific config with shared memories
+
+languages:
+- typescript
+- markdown
+
+encoding: "utf-8"
+ignore_all_files_in_gitignore: true
+ignored_paths: []
+read_only: false
+excluded_tools: []
+initial_prompt: ""
+
+# Unique project name for this worktree
+project_name: "voidpay-$BRANCH_NAME"
+
+included_optional_tools: []
+SERENAEOF
+
+        # Create .gitignore for .serena
+        cat > "$WORKTREE_DIR/.serena/.gitignore" << GITIGNOREEOF
+# Serena cache and logs are local to each worktree
+cache/
+logs/
+GITIGNOREEOF
+
+        >&2 echo "[specify] Created .serena/ with isolated cache and shared memories"
+    fi
+
+    # Generate .mcp.json with worktree-specific path for Serena MCP
+    if [ -f "$REPO_ROOT/.mcp.json" ] && [ ! -e "$WORKTREE_DIR/.mcp.json" ]; then
+        cat > "$WORKTREE_DIR/.mcp.json" << MCPEOF
+{
+"mcpServers": {
+    "serena": {
+    "command": "uvx",
+    "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server",
+        "--project",
+        "$WORKTREE_DIR"
+    ]
+    }
+}
+}
+MCPEOF
+        >&2 echo "[specify] Created .mcp.json with worktree path: $WORKTREE_DIR"
+    fi
 
     # Set up feature directory within the worktree
     FEATURE_DIR="$WORKTREE_DIR/specs/$BRANCH_NAME"

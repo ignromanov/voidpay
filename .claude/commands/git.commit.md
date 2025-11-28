@@ -2,6 +2,17 @@
 description: Run project checks (lint, type-check, build) and commit changes if successful.
 ---
 
+0. **Worktree Context Detection (Constitution Principle X)**:
+   - Detect if running in a worktree:
+   ```bash
+   git rev-parse --show-toplevel
+   ```
+   - Get current branch to include in commit context:
+   ```bash
+   git branch --show-current
+   ```
+   - If in a worktree (path contains `worktrees/`), note this for commit message scope.
+
 1. Check for unstaged changes.
    ```bash
    git status --porcelain
