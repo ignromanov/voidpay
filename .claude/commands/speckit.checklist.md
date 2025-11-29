@@ -33,9 +33,24 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Execution Steps
 
-1. **Setup**: Run `.specify/scripts/bash/check-prerequisites.sh --json` from **current directory** (do NOT cd elsewhere - current directory IS the worktree) and parse JSON for FEATURE_DIR and AVAILABLE_DOCS list.
-   - All file paths must be absolute.
-   - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. **Setup - Detect worktree and run prerequisites**:
+
+   a. First, try running from current directory:
+      ```bash
+      .specify/scripts/bash/check-prerequisites.sh --json
+      ```
+
+   b. If the above fails with "Not on a feature branch" error, detect the active worktree:
+      - List all worktrees: `git worktree list --porcelain`
+      - Find the feature worktree in `worktrees/` directory (the one that's not the main repo)
+      - Run the script FROM that worktree directory:
+        ```bash
+        cd <WORKTREE_PATH> && .specify/scripts/bash/check-prerequisites.sh --json
+        ```
+
+   c. Parse JSON for FEATURE_DIR and AVAILABLE_DOCS list. All file paths must be absolute.
+
+   d. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
 2. **Clarify intent (dynamic)**: Derive up to THREE initial contextual clarifying questions (no pre-baked catalog). They MUST:
    - Be generated from the user's phrasing + extracted signals from spec/plan/tasks

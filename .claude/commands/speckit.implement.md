@@ -12,7 +12,24 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Outline
 
-1. Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` from **current directory** (do NOT cd elsewhere - current directory IS the worktree) and parse FEATURE_DIR, WORKTREE_DIR, and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. **Detect worktree and run prerequisites**:
+
+   a. First, try running from current directory:
+      ```bash
+      .specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
+      ```
+
+   b. If the above fails with "Not on a feature branch" error, detect the active worktree:
+      - List all worktrees: `git worktree list --porcelain`
+      - Find the feature worktree in `worktrees/` directory (the one that's not the main repo)
+      - Run the script FROM that worktree directory:
+        ```bash
+        cd <WORKTREE_PATH> && .specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
+        ```
+
+   c. Parse FEATURE_DIR, WORKTREE_DIR, and AVAILABLE_DOCS list. All paths must be absolute.
+
+   d. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
 2. **Worktree Verification (Constitution Principle X)**:
    - Verify that you are currently in the worktree directory (WORKTREE_DIR from JSON)

@@ -22,12 +22,31 @@ Note: This clarification workflow is expected to run (and be completed) BEFORE i
 
 Execution steps:
 
-1. Run `.specify/scripts/bash/check-prerequisites.sh --json --paths-only` from **current directory** (do NOT cd elsewhere - current directory IS the worktree) **once** (combined `--json --paths-only` mode / `-Json -PathsOnly`). Parse minimal JSON payload fields:
-   - `FEATURE_DIR`
-   - `FEATURE_SPEC`
-   - (Optionally capture `IMPL_PLAN`, `TASKS` for future chained flows.)
-   - If JSON parsing fails, abort and instruct user to re-run `/speckit.specify` or verify feature branch environment.
-   - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
+1. **Detect worktree directory** and run prerequisites check:
+
+   a. First, check if current directory is already a feature worktree by running:
+      ```bash
+      .specify/scripts/bash/check-prerequisites.sh --json --paths-only
+      ```
+
+   b. If the above fails with "Not on a feature branch" error, detect the active worktree:
+      - List all worktrees: `git worktree list --porcelain`
+      - Find the most recently created feature worktree in `worktrees/` directory
+      - OR if only one worktree exists (besides main), use that one
+      - Run the script FROM that worktree directory:
+        ```bash
+        cd <WORKTREE_PATH> && .specify/scripts/bash/check-prerequisites.sh --json --paths-only
+        ```
+
+   c. Parse the JSON payload fields:
+      - `FEATURE_DIR`
+      - `FEATURE_SPEC`
+      - `WORKTREE_DIR` (use this for all subsequent file operations)
+      - (Optionally capture `IMPL_PLAN`, `TASKS` for future chained flows.)
+
+   d. If JSON parsing fails after worktree detection, abort and instruct user to re-run `/speckit.specify` or verify feature branch environment.
+
+   e. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
 2. Load the current spec file. Perform a structured ambiguity & coverage scan using this taxonomy. For each category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization (do not output raw map unless no questions will be asked).
 
