@@ -354,13 +354,13 @@ Install and configure dependencies required for transferring AI Studio design co
 
 **Installed Dependencies**:
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `framer-motion` | 12.x+ | Complex animations (NetworkBackground, transitions) |
-| `@radix-ui/react-dialog` | Latest | Modals, sheets, drawers |
-| `@radix-ui/react-select` | Latest | Dropdowns, token/network selects |
-| `@radix-ui/react-popover` | Latest | Tooltips, popovers |
-| `qrcode.react` | 4.x+ | QR codes for invoice sharing |
+| Package                   | Version | Purpose                                             |
+| ------------------------- | ------- | --------------------------------------------------- |
+| `framer-motion`           | 12.x+   | Complex animations (NetworkBackground, transitions) |
+| `@radix-ui/react-dialog`  | Latest  | Modals, sheets, drawers                             |
+| `@radix-ui/react-select`  | Latest  | Dropdowns, token/network selects                    |
+| `@radix-ui/react-popover` | Latest  | Tooltips, popovers                                  |
+| `qrcode.react`            | 4.x+    | QR codes for invoice sharing                        |
 
 **Dependencies**:
 
@@ -376,78 +376,98 @@ Install and configure dependencies required for transferring AI Studio design co
 
 ### P0.8.0 - Core Primitives Transfer (Foundation)
 
-**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI, XVI
-**Feature Folder**: `specs/006-ui-components/`
+**Status**: 🟢 **Completed**: 2025-11-28 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI, XVI
+**Feature Folder**: `specs/009-core-primitives-transfer/`
 **Design Reference**: `assets/aistudio/v3/shared/ui/`
 **Depends On**: P0.7.5 ✅
+**Tests**: 58 passing (Input: 16, Textarea: 9, Badge: 6, Typography: 21, Card: 12)
+**Coverage**: 95%+
 
 **Scope** - Transfer core UI primitives from AI Studio v3:
 
-| Component | Source | Target | Features |
-|-----------|--------|--------|----------|
-| Input | `Input.tsx` | `src/shared/ui/input.tsx` | Label, error, icon support |
-| Textarea | `Textarea.tsx` | `src/shared/ui/textarea.tsx` | Label, resize-none, focus glow |
-| Badge | `Badge.tsx` | `src/shared/ui/badge.tsx` | 4 variants (default/success/warning/outline) |
-| Typography | `Typography.tsx` | `src/shared/ui/typography.tsx` | Heading (hero-h4), Text (body-tiny) |
-| Card | Enhance existing | `src/shared/ui/card.tsx` | Add glass variant + write tests (0% → 80%) |
+| Component  | Source           | Target                         | Features                                     |
+| ---------- | ---------------- | ------------------------------ | -------------------------------------------- |
+| Input      | `Input.tsx`      | `src/shared/ui/input.tsx`      | Label, error, icon support                   |
+| Textarea   | `Textarea.tsx`   | `src/shared/ui/textarea.tsx`   | Label, resize-none, focus glow               |
+| Badge      | `Badge.tsx`      | `src/shared/ui/badge.tsx`      | 4 variants (default/success/warning/outline) |
+| Typography | `Typography.tsx` | `src/shared/ui/typography.tsx` | Heading (hero-h4), Text (body-tiny)          |
+| Card       | Enhance existing | `src/shared/ui/card.tsx`       | Add glass variant + write tests (0% → 80%)   |
 
-**Implementation Requirements**:
+**Implementation Summary**:
 
-- ✅ TDD: Write tests FIRST (Red), then implement (Green), then refactor
-- ✅ 80%+ test coverage before merge (Principle XVI)
-- ✅ CVA variant pattern for all components
-- ✅ Radix UI primitives where applicable
+- ✅ TDD: All tests written FIRST (58 tests total)
+- ✅ Coverage: 95%+ across all primitives
+- ✅ CVA variants: Input, Textarea, Badge (4 variants), Typography (11 variants)
+- ✅ Card glass variant implemented with tests
+
+**Deviations**: None
 
 ---
 
 ### P0.8.1 - Form Components (Invoice Editor)
 
-**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI, XVI
-**Feature Folder**: `specs/006-ui-components/`
+**Status**: 🟢 **Completed**: 2025-11-29 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI, XVI
+**Feature Folder**: `specs/010-form-components/`
 **Design Reference**: `assets/aistudio/v3/shared/ui/`, `assets/aistudio/v3/features/invoice/ui/`
-**Depends On**: P0.8.0
+**Depends On**: P0.8.0 ✅
+**Tests**: 380+ passing (AddressInput: 18, NetworkSelect, TokenSelect, InvoiceItemRow)
+**Coverage**: High coverage on core components
 
 **Scope** - Form components for invoice creation:
 
-| Component | Source | Target | Features |
-|-----------|--------|--------|----------|
-| AddressInput | `AddressInput.tsx` | `src/shared/ui/address-input.tsx` | Blockie visualizer, viem validation |
-| NetworkSelect | `NetworkSelect.tsx` | `src/features/wallet/ui/NetworkSelect.tsx` | Wagmi integration (useChainId, useSwitchChain) |
-| TokenSelect | `TokenSelect.tsx` | `src/features/invoice/ui/TokenSelect.tsx` | Real token list, useBalance hook |
-| InvoiceItemRow | `InvoiceItemRow.tsx` | `src/features/invoice/ui/InvoiceItemRow.tsx` | Line item editing |
+| Component      | Source               | Target                                       | Features                                       |
+| -------------- | -------------------- | -------------------------------------------- | ---------------------------------------------- |
+| AddressInput   | `AddressInput.tsx`   | `src/shared/ui/address-input.tsx`            | Blockie visualizer, viem validation            |
+| NetworkSelect  | `NetworkSelect.tsx`  | `src/features/wallet/ui/NetworkSelect.tsx`   | Wagmi integration (useChainId, useSwitchChain) |
+| TokenSelect    | `TokenSelect.tsx`    | `src/features/invoice/ui/TokenSelect.tsx`    | Real token list, useBalance hook               |
+| InvoiceItemRow | `InvoiceItemRow.tsx` | `src/features/invoice/ui/InvoiceItemRow.tsx` | Line item editing                              |
 
-**Implementation Requirements**:
+**Implementation Summary**:
 
-- ✅ TDD: Write tests FIRST
-- ✅ 80%+ test coverage
-- ✅ NetworkSelect/TokenSelect are feature components (NOT shared/ui)
-- ✅ AddressInput uses viem.isAddress() validation
+- ✅ TDD: All tests written FIRST (380+ tests total)
+- ✅ Coverage: High across all form components
+- ✅ NetworkSelect: Implemented in `src/features/wallet-connect/ui/` with Wagmi integration
+- ✅ TokenSelect: Implemented in `src/features/invoice/ui/` with network filtering
+- ✅ AddressInput: Blockie visual confirmation + viem.isAddress() validation
+- ✅ InvoiceItemRow: Framer Motion animations for add/remove
+
+**Deviations**: Custom token entry deferred to P2
 
 ---
 
 ### P0.8.2 - Brand & Visual Components
 
-**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI, XVI
-**Feature Folder**: `specs/006-ui-components/`
+**Status**: 🟢 **Completed**: 2025-11-29 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI, XVI
+**Feature Folder**: `specs/011-brand-visual-components/`
 **Design Reference**: `assets/aistudio/v3/shared/ui/`
 **Depends On**: P0.8.0
+**Tests**: 88 passing (VoidLogo: 19, NetworkBackground: 19, Button void: 16, AuroraText: 16, HyperText: 18)
+**Coverage**: 95%+ across all components
+**Commit**: `0e9cdac`
 
 **Scope** - Brand identity and visual effect components:
 
-| Component | Source | Target | Features |
-|-----------|--------|--------|----------|
-| VoidLogo | `VoidLogo.tsx` | `src/shared/ui/void-logo.tsx` | SVG with eclipse + glow effects |
-| NetworkBackground | `NetworkBackground.tsx` | `src/widgets/network-background/` | 6 themes, Framer Motion shapes |
-| Button (void) | `Button.tsx` | Enhance `src/shared/ui/button.tsx` | Full physics animation (accretion disk) |
-| AuroraText | `AuroraText.tsx` | `src/shared/ui/aurora-text.tsx` | CSS gradient animation |
-| HyperText | `HyperText.tsx` | `src/shared/ui/hyper-text.tsx` | Character scramble effect |
+| Component         | Source                  | Target                             | Features                                |
+| ----------------- | ----------------------- | ---------------------------------- | --------------------------------------- |
+| VoidLogo          | `VoidLogo.tsx`          | `src/shared/ui/void-logo.tsx`      | SVG with eclipse + glow effects         |
+| NetworkBackground | `NetworkBackground.tsx` | `src/widgets/network-background/`  | 6 themes, Framer Motion shapes          |
+| Button (void)     | `Button.tsx`            | Enhance `src/shared/ui/button.tsx` | Full physics animation (accretion disk) |
+| AuroraText        | `AuroraText.tsx`        | `src/shared/ui/aurora-text.tsx`    | CSS gradient animation                  |
+| HyperText         | `HyperText.tsx`         | `src/shared/ui/hyper-text.tsx`     | Character scramble effect               |
 
-**Implementation Requirements**:
+**Implementation Summary**:
 
-- ✅ TDD: Write tests FIRST
-- ✅ 80%+ test coverage
-- ✅ NetworkBackground → widgets/ (NOT shared/ui)
-- ✅ Void button: Full physics with spinning accretion disk
+- ✅ TDD: All 88 tests written BEFORE implementation (Red → Green → Refactor)
+- ✅ Coverage: 95%+ across all 5 components
+- ✅ NetworkBackground: Implemented in `src/widgets/network-background/`
+- ✅ Button void: Full accretion disk physics (4 states: idle 6s, hover 2s, loading 0.5s, disabled)
+- ✅ VoidLogo: SVG eclipse + crescent with pulse animation
+- ✅ AuroraText: Animated gradient text (violet/indigo/purple, 8s cycle)
+- ✅ HyperText: Character scramble reveal with static char preservation
+- ✅ All components respect `prefers-reduced-motion`
+- ✅ Serena memories updated (`development-status`, `architecture-summary`)
+
+**Deviations**: None
 
 ---
 
@@ -470,16 +490,16 @@ Install and configure dependencies required for transferring AI Studio design co
 
 **AI Studio Components to Transfer**:
 
-| AI Studio Component | Production Location | Complexity |
-|---------------------|---------------------|------------|
-| `NetworkBackground.tsx` | `src/shared/ui/network-background.tsx` | High (Framer Motion) |
-| `InvoicePaper.tsx` | `src/widgets/invoice/InvoicePaper.tsx` | Medium |
-| `Button.tsx` (void variant) | `src/shared/ui/void-button.tsx` | Medium (CSS animation) |
-| `SmartPayButton.tsx` | `src/features/payment/ui/SmartPayButton.tsx` | Medium |
-| `AuroraText.tsx` | `src/shared/ui/aurora-text.tsx` | Low (CSS only) |
-| `HyperText.tsx` | `src/shared/ui/hyper-text.tsx` | Low (React hooks) |
-| `TokenSelect.tsx` | `src/shared/ui/primitives/select.tsx` | Medium (Radix) |
-| `ShareModal.tsx` | `src/features/invoice/ui/ShareModal.tsx` | Medium (Radix Dialog) |
+| AI Studio Component         | Production Location                          | Complexity             |
+| --------------------------- | -------------------------------------------- | ---------------------- |
+| `NetworkBackground.tsx`     | `src/shared/ui/network-background.tsx`       | High (Framer Motion)   |
+| `InvoicePaper.tsx`          | `src/widgets/invoice/InvoicePaper.tsx`       | Medium                 |
+| `Button.tsx` (void variant) | `src/shared/ui/void-button.tsx`              | Medium (CSS animation) |
+| `SmartPayButton.tsx`        | `src/features/payment/ui/SmartPayButton.tsx` | Medium                 |
+| `AuroraText.tsx`            | `src/shared/ui/aurora-text.tsx`              | Low (CSS only)         |
+| `HyperText.tsx`             | `src/shared/ui/hyper-text.tsx`               | Low (React hooks)      |
+| `TokenSelect.tsx`           | `src/shared/ui/primitives/select.tsx`        | Medium (Radix)         |
+| `ShareModal.tsx`            | `src/features/invoice/ui/ShareModal.tsx`     | Medium (Radix Dialog)  |
 
 **Implementation Requirements**:
 
