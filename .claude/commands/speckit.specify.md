@@ -132,7 +132,15 @@ Given that feature description, do this:
     7. Identify Key Entities (if data involved)
     8. Return: SUCCESS (spec ready for planning)
 
-6. Write the specification to SPEC_FILE (in the worktree) using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
+6. **Write the specification to SPEC_FILE** (in the worktree):
+
+   **CRITICAL**: Before writing, you MUST read the spec file first (the Write tool requires reading before overwriting):
+
+   a. **Read the template**: Use `Read(SPEC_FILE)` to load the template that was copied by the script
+   b. **Transform content**: Replace all placeholders with concrete details derived from the feature description
+   c. **Write the spec**: Use `Write(SPEC_FILE)` with the transformed content
+
+   Preserve section order and headings from the template while filling in feature-specific details.
 
 7. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
 
