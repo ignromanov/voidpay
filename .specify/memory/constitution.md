@@ -266,8 +266,8 @@
 
 #### 11.1 Design Source Hierarchy
 
-- **Primary Source**: `assets/aistudio/v{N}/` — AI Studio prototype (current active design)
-- **Legacy Source**: `assets/v0/` — V0 designs (historical reference, deprecated for new features)
+- **Primary Source**: `assets/aistudio/v3/` — AI Studio (Gemini 3 Pro) prototype (CURRENT active design)
+- **Legacy Source**: `assets/v0/` — Vercel V0 designs (DEPRECATED, historical reference only)
 - **Version Selection**: Always use the HIGHEST version number folder (e.g., `v2/` over `v1/`)
 
 #### 11.2 Component Library

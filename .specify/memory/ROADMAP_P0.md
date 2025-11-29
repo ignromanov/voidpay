@@ -369,16 +369,94 @@ Install and configure dependencies required for transferring AI Studio design co
 **Notes**:
 
 - Constitution v1.13.0 replaced shadcn/ui with Radix primitives + CVA + Framer Motion
-- AI Studio prototype (`assets/aistudio/v1/`) is new design source of truth
+- AI Studio prototype (`assets/aistudio/v3/`) is new design source of truth
 - V0 designs (`assets/v0/`) deprecated for new features
 
 ---
 
-### P0.8 - Page Compositions & UI Components (AI Studio Transfer)
+### P0.8.0 - Core Primitives Transfer (Foundation)
+
+**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI, XVI
+**Feature Folder**: `specs/006-ui-components/`
+**Design Reference**: `assets/aistudio/v3/shared/ui/`
+**Depends On**: P0.7.5 ✅
+
+**Scope** - Transfer core UI primitives from AI Studio v3:
+
+| Component | Source | Target | Features |
+|-----------|--------|--------|----------|
+| Input | `Input.tsx` | `src/shared/ui/input.tsx` | Label, error, icon support |
+| Textarea | `Textarea.tsx` | `src/shared/ui/textarea.tsx` | Label, resize-none, focus glow |
+| Badge | `Badge.tsx` | `src/shared/ui/badge.tsx` | 4 variants (default/success/warning/outline) |
+| Typography | `Typography.tsx` | `src/shared/ui/typography.tsx` | Heading (hero-h4), Text (body-tiny) |
+| Card | Enhance existing | `src/shared/ui/card.tsx` | Add glass variant + write tests (0% → 80%) |
+
+**Implementation Requirements**:
+
+- ✅ TDD: Write tests FIRST (Red), then implement (Green), then refactor
+- ✅ 80%+ test coverage before merge (Principle XVI)
+- ✅ CVA variant pattern for all components
+- ✅ Radix UI primitives where applicable
+
+---
+
+### P0.8.1 - Form Components (Invoice Editor)
+
+**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI, XVI
+**Feature Folder**: `specs/006-ui-components/`
+**Design Reference**: `assets/aistudio/v3/shared/ui/`, `assets/aistudio/v3/features/invoice/ui/`
+**Depends On**: P0.8.0
+
+**Scope** - Form components for invoice creation:
+
+| Component | Source | Target | Features |
+|-----------|--------|--------|----------|
+| AddressInput | `AddressInput.tsx` | `src/shared/ui/address-input.tsx` | Blockie visualizer, viem validation |
+| NetworkSelect | `NetworkSelect.tsx` | `src/features/wallet/ui/NetworkSelect.tsx` | Wagmi integration (useChainId, useSwitchChain) |
+| TokenSelect | `TokenSelect.tsx` | `src/features/invoice/ui/TokenSelect.tsx` | Real token list, useBalance hook |
+| InvoiceItemRow | `InvoiceItemRow.tsx` | `src/features/invoice/ui/InvoiceItemRow.tsx` | Line item editing |
+
+**Implementation Requirements**:
+
+- ✅ TDD: Write tests FIRST
+- ✅ 80%+ test coverage
+- ✅ NetworkSelect/TokenSelect are feature components (NOT shared/ui)
+- ✅ AddressInput uses viem.isAddress() validation
+
+---
+
+### P0.8.2 - Brand & Visual Components
+
+**Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI, XVI
+**Feature Folder**: `specs/006-ui-components/`
+**Design Reference**: `assets/aistudio/v3/shared/ui/`
+**Depends On**: P0.8.0
+
+**Scope** - Brand identity and visual effect components:
+
+| Component | Source | Target | Features |
+|-----------|--------|--------|----------|
+| VoidLogo | `VoidLogo.tsx` | `src/shared/ui/void-logo.tsx` | SVG with eclipse + glow effects |
+| NetworkBackground | `NetworkBackground.tsx` | `src/widgets/network-background/` | 6 themes, Framer Motion shapes |
+| Button (void) | `Button.tsx` | Enhance `src/shared/ui/button.tsx` | Full physics animation (accretion disk) |
+| AuroraText | `AuroraText.tsx` | `src/shared/ui/aurora-text.tsx` | CSS gradient animation |
+| HyperText | `HyperText.tsx` | `src/shared/ui/hyper-text.tsx` | Character scramble effect |
+
+**Implementation Requirements**:
+
+- ✅ TDD: Write tests FIRST
+- ✅ 80%+ test coverage
+- ✅ NetworkBackground → widgets/ (NOT shared/ui)
+- ✅ Void button: Full physics with spinning accretion disk
+
+---
+
+### P0.8.3 - Page Compositions & UI Components (AI Studio Transfer)
 
 **Status**: 🔴 **Priority**: P0 **Compliance**: ✅ **Constitutional**: Principle XI, XII
-**Feature Folder**: `specs/006-ui-components/` (to be created)
-**Design Reference**: `assets/aistudio/v1/` (AI Studio prototype)
+**Feature Folder**: `specs/006-ui-components/`
+**Design Reference**: `assets/aistudio/v3/` (AI Studio prototype - LATEST)
+**Depends On**: P0.8.0, P0.8.1, P0.8.2
 
 **Scope**:
 
@@ -405,7 +483,7 @@ Install and configure dependencies required for transferring AI Studio design co
 
 **Implementation Requirements**:
 
-- ✅ MUST use AI Studio assets from `assets/aistudio/v1/` as pixel-perfect reference (Principle XI)
+- ✅ MUST use AI Studio assets from `assets/aistudio/v3/` as pixel-perfect reference (Principle XI)
 - ✅ MUST use `@radix-ui/react-*` primitives for interactive components (Principle XI)
 - ✅ MUST use CVA for component variants (Principle XI)
 - ✅ MUST use Framer Motion for complex animations (NetworkBackground, transitions)
@@ -428,7 +506,10 @@ Install and configure dependencies required for transferring AI Studio design co
 - P0.6 (FSD Structure) ✅ Completed
 - P0.6.5 (Design System) ✅ Completed
 - P0.6.6 (App Shell) ✅ Completed
-- P0.7.5 (Design Transfer Environment) 🔴 Required
+- P0.7.5 (Design Transfer Environment) ✅ Completed
+- P0.8.0 (Core Primitives) 🔴 Required
+- P0.8.1 (Form Components) 🔴 Required
+- P0.8.2 (Brand Components) 🔴 Required
 
 **Notes**:
 
@@ -512,11 +593,14 @@ Install and configure dependencies required for transferring AI Studio design co
 
 ## 🎯 Critical Path (MVP Only)
 
-1. P0.2 → P0.3 → P0.4 → P0.5 (Infrastructure in parallel)
-2. P0.8 (Page Compositions & UI) → P0.12 (Payment Terminal) → P0.13 → P0.14 (Core flows)
-3. P0.7 (Landing Page) + Testing + Launch
+1. P0.2 → P0.3 → P0.4 → P0.5 (Infrastructure) ✅ Complete
+2. P0.7.5 (Design Transfer Environment) ✅ Complete
+3. **P0.8.0 (Core Primitives) → P0.8.1 (Form Components) → P0.8.2 (Brand) → P0.8.3 (Page Compositions)** ← NEXT
+4. P0.12 (Payment Terminal) → P0.13 (Magic Dust) → P0.14 (Polling)
+5. P0.7 (Landing Page) + Testing + Launch
 
 ---
 
-**Document Version**: 1.2.0
-**Last Updated**: 2025-11-22
+**Document Version**: 1.3.0
+**Last Updated**: 2025-11-28
+**Changes**: Split P0.8 into P0.8.0-P0.8.3, updated design source to AI Studio v3

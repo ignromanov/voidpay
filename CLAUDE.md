@@ -29,7 +29,7 @@ Privacy-first crypto invoicing platform. Invoice data encoded in **URLs** (no ba
 8. **Documentation Context Efficiency** - Information-dense docs for AI agents
 9. **Implementation Deviation Tracking** - Track reality vs. plan in `ROADMAP_P*.md`
 10. **Git Worktree Isolation** - Each feature in isolated worktree (parallel development)
-11. **Design Fidelity** - V0 assets are source of truth, pixel-perfect implementation
+11. **Design Fidelity** - AI Studio (Gemini 3 Pro) v3 is source of truth, pixel-perfect implementation
 12. **UI/UX Principles** - Hybrid Theme (dark desk + light paper), ISO 216 A4 ratio
 13. **Serena-First Navigation** - Symbolic tools mandatory for TypeScript/Markdown
 14. **Serena Memory Repository** - Read AND Write/Update memories (keep fresh!)
@@ -272,6 +272,17 @@ vitest -u           # Update snapshots (review carefully!)
 ---
 
 ## 🎨 Design
+
+### Design Assets
+
+| Source | Location | Status | Description |
+|--------|----------|--------|-------------|
+| **AI Studio v3** | `assets/aistudio/v3/` | ✅ CURRENT | Gemini 3 Pro generated prototypes, FSD structure, complete UI kit |
+| **Vercel V0** | `assets/v0/` | ❌ DEPRECATED | Legacy Vercel V0 designs, historical reference only |
+
+**Active Design Source**: `assets/aistudio/v3/` — Always use the LATEST version folder.
+
+### Design Tokens
 
 **Accent**: Electric Violet `#7C3AED`
 **Typography**: Geist Sans (UI), Geist Mono (data)

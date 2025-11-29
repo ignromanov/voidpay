@@ -107,13 +107,27 @@
 
 ## In Progress (🟡)
 
-### P0.8 - Page Compositions & UI Components (AI Studio Transfer)
-- **Status**: 🔴 Pending (waiting for P0.7.5)
-- **Priority**: P0 (MVP Blocker)
-- **Scope**: Landing page, Create page, Pay page, Invoice form, Payment view
-- **Design Reference**: assets/aistudio/v1/ (AI Studio prototype)
-- **Dependencies**: P0.6, P0.6.5, P0.6.6, **P0.7.5** (environment setup)
-- **Requirements**: Pixel-perfect fidelity to AI Studio designs, Hybrid Theme, ISO 216 compliance
+### P0.8.0 - Core Primitives Transfer ← NEXT
+- **Status**: 🟡 In Progress
+- **Scope**: Input, Textarea, Badge, Typography, Card (glass + tests)
+- **Design Reference**: assets/aistudio/v3/shared/ui/
+- **Dependencies**: P0.7.5 ✅
+
+### P0.8.1 - Form Components
+- **Status**: 🔴 Pending
+- **Scope**: AddressInput, NetworkSelect (wagmi), TokenSelect, InvoiceItemRow
+- **Dependencies**: P0.8.0
+
+### P0.8.2 - Brand & Visual Components
+- **Status**: 🔴 Pending
+- **Scope**: VoidLogo, NetworkBackground (widget), Button void variant, AuroraText, HyperText
+- **Dependencies**: P0.8.0
+
+### P0.8.3 - Page Compositions (formerly P0.8)
+- **Status**: 🔴 Pending
+- **Scope**: Landing page, Create page, Pay page, InvoicePaper, Workspaces
+- **Design Reference**: assets/aistudio/v3/ (AI Studio prototype - LATEST)
+- **Dependencies**: P0.8.0, P0.8.1, P0.8.2
 
 ## Pending (🔴) - Critical Path
 
@@ -182,7 +196,7 @@
 
 - **2025-11-28**: P0.7.5 - Design Transfer Environment Setup (Framer Motion 12, Radix UI, qrcode.react)
 - **2025-11-28**: Constitution v1.13.0 - UI stack update (shadcn/ui → Radix + CVA + Framer Motion)
-- **2025-11-28**: AI Studio design prototype adopted (assets/aistudio/v1/) - V0 deprecated
+- **2025-11-28**: AI Studio design prototype adopted (assets/aistudio/v3/) - V0 deprecated
 - **2025-11-28**: Wagmi + Viem + RainbowKit wallet connection (P0.5) - unblocks all Web3 features
 - **2025-11-28**: Testing environment + Git hooks (P0.6.7, P0.6.7.1) - TDD enforcement
 - **2025-11-22**: FSD structure + Design system + App Shell (3 features in 1 day)
@@ -193,7 +207,7 @@
 ## Known Blockers
 
 1. ~~**Wagmi Setup** (P0.5)~~ - ✅ RESOLVED (2025-11-28)
-2. ~~**V0 Design Assets**~~ - Deprecated, using AI Studio (assets/aistudio/v1/)
+2. ~~**V0 Design Assets**~~ - Deprecated, using AI Studio (assets/aistudio/v3/)
 3. ~~**Design Environment** (P0.7.5)~~ - ✅ RESOLVED (2025-11-28)
 4. **Alchemy API Keys** - Required for payment polling (P0.14)
 5. **Vercel KV Setup** - Required for rate limiting (already implemented, needs config)
@@ -202,10 +216,11 @@
 
 1. ~~Complete P0.5 (Wagmi + Viem + RainbowKit)~~ - ✅ DONE
 2. ~~Install P0.7.5 dependencies~~ - ✅ DONE (2025-11-28)
-3. **Implement P0.8 (Page Compositions)** - Based on AI Studio designs ← NEXT
-4. Sequential implementation: P0.12 → P0.13 → P0.14 (payment flow)
-5. Landing page (P0.7) - Marketing + SEO
-6. Deployment config (P0.19) - Production readiness
+3. **Implement P0.8.0 (Core Primitives)** - Input, Textarea, Badge, Typography ← NEXT
+4. P0.8.1 (Form Components) → P0.8.2 (Brand) → P0.8.3 (Page Compositions)
+5. Sequential implementation: P0.12 → P0.13 → P0.14 (payment flow)
+6. Landing page (P0.7) - Marketing + SEO
+7. Deployment config (P0.19) - Production readiness
 
 ## Testing Status
 

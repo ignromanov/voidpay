@@ -77,8 +77,8 @@
 - Cleanup after merge: `git worktree remove` + `git worktree prune`
 
 ### XI. Design Fidelity & Design Source Integration
-- **Primary Source**: AI Studio prototype (`assets/aistudio/v{N}/`)
-- **Legacy Source**: V0 designs (`assets/v0/`) - deprecated for new features
+- **Primary Source**: AI Studio (Gemini 3 Pro) prototype (`assets/aistudio/v3/`) - CURRENT
+- **Legacy Source**: Vercel V0 designs (`assets/v0/`) - DEPRECATED for new features
 - **Component Library**: Radix UI primitives (Dialog, Select, Popover) + CVA for variants
 - **Animation**: Framer Motion for complex animations (NetworkBackground, transitions)
 - Pixel-perfect fidelity to design source
