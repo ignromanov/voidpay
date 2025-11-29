@@ -275,10 +275,10 @@ vitest -u           # Update snapshots (review carefully!)
 
 ### Design Assets
 
-| Source | Location | Status | Description |
-|--------|----------|--------|-------------|
-| **AI Studio v3** | `assets/aistudio/v3/` | ✅ CURRENT | Gemini 3 Pro generated prototypes, FSD structure, complete UI kit |
-| **Vercel V0** | `assets/v0/` | ❌ DEPRECATED | Legacy Vercel V0 designs, historical reference only |
+| Source           | Location              | Status        | Description                                                       |
+| ---------------- | --------------------- | ------------- | ----------------------------------------------------------------- |
+| **AI Studio v3** | `assets/aistudio/v3/` | ✅ CURRENT    | Gemini 3 Pro generated prototypes, FSD structure, complete UI kit |
+| **Vercel V0**    | `assets/v0/`          | ❌ DEPRECATED | Legacy Vercel V0 designs, historical reference only               |
 
 **Active Design Source**: `assets/aistudio/v3/` — Always use the LATEST version folder.
 
@@ -353,6 +353,7 @@ git worktree prune
 **⚠️ CRITICAL: Memories are CODE** — stored in `.serena/memories/`, tracked in git, must be committed after changes.
 
 **Mandatory Update Triggers** — agent MUST update memory when:
+
 1. Feature completion → update `development-status`
 2. New pattern discovered → write new pattern memory
 3. Tech stack change → update `tech-stack-locked`
@@ -360,6 +361,7 @@ git worktree prune
 5. Stale detection → immediate fix
 
 **After Memory Update — MUST commit**:
+
 ```bash
 git add .serena/memories/ && git commit -m "docs(memory): update <memory-name>"
 ```
@@ -489,8 +491,11 @@ git add .serena/memories/ && git commit -m "docs(memory): update <memory-name>"
 **Philosophy**: Privacy > Features. Simplicity > Cleverness. YAGNI always.
 
 ## Active Technologies
+
 - TypeScript 5.x+ (strict mode), React 19.0.0+, Node.js 20+ + Wagmi 2.19.4+, Viem 2.39.3+, RainbowKit 2.2.9+, TanStack Query 5.90.10+ (peer dep) (008-wagmi-rainbowkit-setup)
 - LocalStorage (via Wagmi createStorage + Zustand persist) (008-wagmi-rainbowkit-setup)
+- TypeScript 5.x+ (strict mode) + React 19.0.0+, Wagmi 2.19.4+, Viem 2.39.3+, Radix UI Select, CVA 0.7.1+, Framer Motion 12.x+ (010-form-components)
+- N/A (component state, form values managed by parent) (010-form-components)
 
 - TypeScript 5.x+ (Strict Mode) + `lz-string` (v1.5.0+), `zod` (for runtime validation), `big.js` or native `BigInt` (for amounts) (002-url-state-codec)
 - None (Stateless URL-based state) (002-url-state-codec)

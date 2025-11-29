@@ -35,6 +35,9 @@ export {
 // Input (new)
 export { Input, inputVariants, type InputProps } from './input'
 
+// AddressInput (feature: 010-form-components)
+export { AddressInput, type AddressInputProps } from './address-input'
+
 // Motion (existing)
 export {
   motion,

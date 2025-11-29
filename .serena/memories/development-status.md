@@ -141,11 +141,16 @@
 - **Deviations**: None
 - **Status**: All quality gates passing (326 tests, type-check, lint)
 
-### P0.8.1 - Form Components ← NEXT
+### P0.8.1 - Form Components ✅
 
-- **Status**: 🟡 Next Up
-- **Scope**: AddressInput, NetworkSelect (wagmi), TokenSelect, InvoiceItemRow
-- **Dependencies**: P0.8.0
+- **Completed**: 2025-11-29
+- **Implementation**: specs/010-form-components/
+- **Features**: AddressInput (blockie visual confirm), NetworkSelect (Wagmi integration), TokenSelect (network filtering), InvoiceItemRow (Framer Motion animations)
+- **Tests**: 380+ tests passing (blockie: 8, AddressInput: 18, NetworkSelect, TokenSelect, InvoiceItemRow)
+- **Coverage**: High coverage on core components
+- **Deviations**: Custom token entry (P2) deferred, test environment minor issues with Radix Select
+- **Status**: All P1 components implemented, quality gates passing
+- **Unblocks**: P0.8.3 (Page Compositions)
 
 ### P0.8.2 - Brand & Visual Components
 
@@ -233,6 +238,7 @@
 
 ## Recent Milestones
 
+- **2025-11-29**: P0.8.1 - Form Components (AddressInput, NetworkSelect, TokenSelect, InvoiceItemRow)
 - **2025-11-28**: P0.8.0 - Core Primitives Transfer (Input, Textarea, Badge, Typography, Card glass variant)
 - **2025-11-28**: P0.7.5 - Design Transfer Environment Setup (Framer Motion 12, Radix UI, qrcode.react)
 - **2025-11-28**: Constitution v1.13.0 - UI stack update (shadcn/ui → Radix + CVA + Framer Motion)
@@ -293,7 +299,7 @@ All completed features verified against:
 
 ## Progress Metrics
 
-- **P0 Features**: 12/19 completed (63%)
+- **P0 Features**: 13/19 completed (68%)
 - **P1 Features**: 0/43 completed (0%)
 - **Future Features**: 0/31 completed (0%)
 - **Overall**: 10/93 features (11% total, 52% of critical path)

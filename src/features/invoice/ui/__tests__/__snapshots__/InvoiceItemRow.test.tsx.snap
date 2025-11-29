@@ -1,0 +1,349 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 1`] = `
+<div
+  class="group flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700"
+  style="opacity: 0; transform: translateY(-10px);"
+>
+  <div
+    class="grid flex-1 grid-cols-12 gap-3"
+  >
+    <div
+      class="col-span-6"
+    >
+      <div
+        class="w-full"
+      >
+        <div
+          class="relative"
+        >
+          <input
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
+            id="_r_14_"
+            placeholder="Item description"
+            type="text"
+            value="Consulting"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="col-span-2"
+    >
+      <div
+        class="w-full"
+      >
+        <div
+          class="relative"
+        >
+          <input
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
+            id="_r_15_"
+            min="0.01"
+            placeholder="Qty"
+            step="0.01"
+            type="number"
+            value="2.5"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="col-span-2"
+    >
+      <div
+        class="w-full"
+      >
+        <div
+          class="relative"
+        >
+          <input
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
+            id="_r_16_"
+            placeholder="0.00"
+            type="text"
+            value="75.25"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="col-span-2 flex items-center"
+    >
+      <div
+        class="flex h-9 w-full items-center rounded-lg border border-zinc-800 bg-zinc-950/50 px-3 text-sm font-mono text-zinc-400"
+      >
+        188.13
+         
+        USDC
+      </div>
+    </div>
+  </div>
+  <button
+    aria-label="Remove item"
+    class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:text-red-400 hover:bg-red-950/20"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4"
+      fill="none"
+      height="24"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M10 11v6"
+      />
+      <path
+        d="M14 11v6"
+      />
+      <path
+        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
+      />
+      <path
+        d="M3 6h18"
+      />
+      <path
+        d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1`] = `
+<div
+  class="group flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700"
+  style="opacity: 0; transform: translateY(-10px);"
+>
+  <div
+    class="grid flex-1 grid-cols-12 gap-3"
+  >
+    <div
+      class="col-span-6"
+    >
+      <div
+        class="w-full"
+      >
+        <div
+          class="relative"
+        >
+          <input
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
+            id="_r_u_"
+            placeholder="Item description"
+            type="text"
+            value="Web Development Services"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="col-span-2"
+    >
+      <div
+        class="w-full"
+      >
+        <div
+          class="relative"
+        >
+          <input
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
+            id="_r_v_"
+            min="0.01"
+            placeholder="Qty"
+            step="0.01"
+            type="number"
+            value="10"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="col-span-2"
+    >
+      <div
+        class="w-full"
+      >
+        <div
+          class="relative"
+        >
+          <input
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
+            id="_r_10_"
+            placeholder="0.00"
+            type="text"
+            value="100.50"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="col-span-2 flex items-center"
+    >
+      <div
+        class="flex h-9 w-full items-center rounded-lg border border-zinc-800 bg-zinc-950/50 px-3 text-sm font-mono text-zinc-400"
+      >
+        1005.00
+         
+        USDC
+      </div>
+    </div>
+  </div>
+  <button
+    aria-label="Remove item"
+    class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:text-red-400 hover:bg-red-950/20"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4"
+      fill="none"
+      height="24"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M10 11v6"
+      />
+      <path
+        d="M14 11v6"
+      />
+      <path
+        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
+      />
+      <path
+        d="M3 6h18"
+      />
+      <path
+        d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+      />
+    </svg>
+  </button>
+</div>
+`;
+
+exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`] = `
+<div
+  class="group flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700"
+  style="opacity: 0; transform: translateY(-10px);"
+>
+  <div
+    class="grid flex-1 grid-cols-12 gap-3"
+  >
+    <div
+      class="col-span-6"
+    >
+      <div
+        class="w-full"
+      >
+        <div
+          class="relative"
+        >
+          <input
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
+            id="_r_11_"
+            placeholder="Item description"
+            type="text"
+            value=""
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="col-span-2"
+    >
+      <div
+        class="w-full"
+      >
+        <div
+          class="relative"
+        >
+          <input
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
+            id="_r_12_"
+            min="0.01"
+            placeholder="Qty"
+            step="0.01"
+            type="number"
+            value=""
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="col-span-2"
+    >
+      <div
+        class="w-full"
+      >
+        <div
+          class="relative"
+        >
+          <input
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
+            id="_r_13_"
+            placeholder="0.00"
+            type="text"
+            value=""
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="col-span-2 flex items-center"
+    >
+      <div
+        class="flex h-9 w-full items-center rounded-lg border border-zinc-800 bg-zinc-950/50 px-3 text-sm font-mono text-zinc-400"
+      >
+        0.00
+         
+        ETH
+      </div>
+    </div>
+  </div>
+  <button
+    aria-label="Remove item"
+    class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:text-red-400 hover:bg-red-950/20"
+  >
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4"
+      fill="none"
+      height="24"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M10 11v6"
+      />
+      <path
+        d="M14 11v6"
+      />
+      <path
+        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
+      />
+      <path
+        d="M3 6h18"
+      />
+      <path
+        d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+      />
+    </svg>
+  </button>
+</div>
+`;
