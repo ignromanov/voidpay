@@ -1,14 +1,31 @@
+'use client'
+
 import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/shared/lib/utils'
 
-import { cn } from '@/lib/utils'
+/**
+ * Card component variants using CVA
+ */
+export const cardVariants = cva('rounded-xl border text-zinc-100 shadow-sm', {
+  variants: {
+    variant: {
+      default: 'bg-zinc-900/50 border-zinc-800',
+      glass: 'backdrop-blur-xl bg-zinc-950/30 border-zinc-800',
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+})
 
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('bg-card text-card-foreground rounded-xl border shadow', className)}
-      {...props}
-    />
+export interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, ...props }, ref) => (
+    <div ref={ref} className={cn(cardVariants({ variant }), className)} {...props} />
   )
 )
 Card.displayName = 'Card'
