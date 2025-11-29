@@ -94,3 +94,12 @@ export {
   type TextVariant,
   type TextElement,
 } from './typography'
+
+// VoidLogo (feature: 011-brand-visual-components)
+export { VoidLogo, type VoidLogoProps } from './void-logo'
+
+// AuroraText (feature: 011-brand-visual-components)
+export { AuroraText, type AuroraTextProps } from './aurora-text'
+
+// HyperText (feature: 011-brand-visual-components)
+export { HyperText, type HyperTextProps } from './hyper-text'
