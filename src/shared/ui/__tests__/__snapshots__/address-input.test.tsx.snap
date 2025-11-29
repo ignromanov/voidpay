@@ -1,0 +1,117 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with disabled state 1`] = `
+<div
+  class="w-full"
+>
+  <div
+    class="relative"
+  >
+    <input
+      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 pr-9"
+      disabled=""
+      id="_r_h_"
+      type="text"
+      value="0x1234567890123456789012345678901234567890"
+    />
+    <div
+      class="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-zinc-500"
+    >
+      <div
+        aria-label="Address blockie"
+        class="h-5 w-5 rounded-full bg-emerald-500"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with empty value 1`] = `
+<div
+  class="w-full"
+>
+  <div
+    class="relative"
+  >
+    <input
+      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800"
+      id="_r_d_"
+      type="text"
+      value=""
+    />
+  </div>
+</div>
+`;
+
+exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with invalid address 1`] = `
+<div
+  class="w-full"
+>
+  <div
+    class="relative"
+  >
+    <input
+      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800"
+      id="_r_f_"
+      type="text"
+      value="invalid-address"
+    />
+  </div>
+</div>
+`;
+
+exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with label and error 1`] = `
+<div
+  class="w-full"
+>
+  <label
+    class="mb-1.5 block text-xs font-medium tracking-wide text-zinc-400 uppercase"
+    for="_r_g_"
+  >
+    Wallet Address
+  </label>
+  <div
+    class="relative"
+  >
+    <input
+      aria-describedby="_r_g_-error"
+      aria-invalid="true"
+      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-red-500/50 focus:border-red-500 focus:ring-red-500/50"
+      id="_r_g_"
+      type="text"
+      value="invalid"
+    />
+  </div>
+  <p
+    class="mt-1.5 text-xs text-red-400"
+    id="_r_g_-error"
+  >
+    Invalid address format
+  </p>
+</div>
+`;
+
+exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with valid address 1`] = `
+<div
+  class="w-full"
+>
+  <div
+    class="relative"
+  >
+    <input
+      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 pr-9"
+      id="_r_e_"
+      type="text"
+      value="0x1234567890123456789012345678901234567890"
+    />
+    <div
+      class="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-zinc-500"
+    >
+      <div
+        aria-label="Address blockie"
+        class="h-5 w-5 rounded-full bg-emerald-500"
+      />
+    </div>
+  </div>
+</div>
+`;
