@@ -387,9 +387,9 @@ MCPEOF
     if [ -d "$REPO_ROOT/.claude" ] && [ ! -e "$WORKTREE_DIR/.claude" ]; then
         mkdir -p "$WORKTREE_DIR/.claude"
 
-        # Symlink settings.local.json to share across worktrees
+        # Copy settings.local.json to worktree (each worktree may need different settings)
         if [ -f "$REPO_ROOT/.claude/settings.local.json" ]; then
-            ln -s "$REPO_ROOT/.claude/settings.local.json" "$WORKTREE_DIR/.claude/settings.local.json"
+            cp "$REPO_ROOT/.claude/settings.local.json" "$WORKTREE_DIR/.claude/settings.local.json"
         fi
 
         # Symlink commands to share across worktrees
