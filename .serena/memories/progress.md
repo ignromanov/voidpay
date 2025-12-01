@@ -58,7 +58,7 @@ P0.8.2 (Brand) → P0.8.3 (Pages) → P0.12 (Terminal)
 ## Test Status
 
 - **32 test files** in src/
-- **400+ test cases** passing
+- **500+ test cases** passing
 - **Coverage threshold**: 80%
 - **Git Hooks**: Pre-commit (lint+typecheck), Pre-push (test:coverage)
 
