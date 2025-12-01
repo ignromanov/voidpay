@@ -74,4 +74,4 @@ P0.8.2 (Brand) → P0.8.3 (Pages) → P0.12 (Terminal)
 
 - Roadmaps: `.specify/memory/ROADMAP_*.md`
 - Constitution: `.specify/memory/constitution.md`
-- Agent Guide: `CLAUDE.md`
+- Agent Guide: Memory Bank (`.serena/memories/`)

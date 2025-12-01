@@ -4,8 +4,8 @@
   Version Change: 1.13.0 → 2.0.0
 
   Modified Principles:
-  - REMOVED: XIII. Serena-First Code Navigation (moved to CLAUDE.md as agent tooling)
-  - REMOVED: XIV. Serena Memory Repository (moved to CLAUDE.md as Memory Bank protocol)
+  - REMOVED: XIII. Serena-First Code Navigation (moved to Memory Bank as agent tooling)
+  - REMOVED: XIV. Serena Memory Repository (moved to Memory Bank protocol in .serena/memories/)
   - SIMPLIFIED: XV → XIII. Feature Specification Workflow (removed agent commands, kept artifact requirements)
   - RENUMBERED: XVI → XIV. Test-Driven Development (TDD) Discipline
 
@@ -15,19 +15,19 @@
   Removed Sections:
   - All agent-specific tool instructions (Serena MCP, symbolic navigation, memory access patterns)
   - SpecKit slash commands references (/speckit.specify, /speckit.plan, etc.)
-  - Agent workflow patterns (moved to CLAUDE.md)
+  - Agent workflow patterns (moved to Memory Bank + SpecKit commands)
 
   Templates Requiring Updates:
-  - CLAUDE.md (⚠ pending - needs Memory Bank protocol + Tool Usage)
-  - .serena/memories/* (⚠ pending - rename to Memory Bank structure)
+  - agent-file-template.md (⚠ DEPRECATED - no longer used)
+  - .serena/memories/* (✅ DONE - Memory Bank structure in place)
 
   Follow-up TODOs:
-  - Rename memories to Memory Bank format (activeContext, productContext, etc.)
-  - Update CLAUDE.md with agent tooling instructions
+  - ✅ DONE: Memories renamed to Memory Bank format (activeContext, productContext, etc.)
+  - ✅ DONE: Agent context moved from CLAUDE.md to Memory Bank
 
   Rationale:
   - Constitution should contain ONLY project governance and constraints
-  - Agent tooling belongs in CLAUDE.md (agent-specific instructions)
+  - Agent tooling belongs in Memory Bank (.serena/memories/) + SpecKit slash commands
   - Separation enables constitution to be useful for human developers too
 
   Date: 2025-12-01

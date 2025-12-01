@@ -167,7 +167,16 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Confirm the implementation follows the technical plan
    - Report final status with summary of completed work
 
-11. **Post-Implementation: Integration and Worktree Cleanup**:
+11. **Memory Bank Update** (MANDATORY before worktree cleanup):
+   - **Update `activeContext`** — mark feature session as COMPLETE
+   - **Update `progress`** — mark feature milestone as completed
+   - **Update `fsdRegistry`** — if new slices created (Feature, Entity, Widget)
+   - **Update `sharedUiIndex`** — if new UI components added to `shared/ui`
+   - **Update `dataFlow`** — if new Zustand stores created
+   - **Check `specDrift`** — log any intentional deviations from spec
+   - ⚠️ **DO NOT** write to CLAUDE.md — Memory Bank is the source of truth
+
+12. **Post-Implementation: Integration and Worktree Cleanup**:
    - After feature completion, commit all changes in the worktree: `git add . && git commit -m "..."`
    - Switch back to main branch: `git checkout main` (or appropriate base branch)
    - Merge feature branch: `git merge ###-feature-name` or `git rebase ###-feature-name`

@@ -73,19 +73,34 @@ You **MUST** consider the user input before proceeding (if not empty).
    - For each dependency → best practices task
    - For each integration → patterns task
 
-2. **Generate and dispatch research agents**:
+2. **Launch research-agent** using the Task tool:
 
-   ```text
-   For each unknown in Technical Context:
-     Task: "Research {unknown} for {feature context}"
-   For each technology choice:
-     Task: "Find best practices for {tech} in {domain}"
+   ```
+   Use Task tool with:
+   - subagent_type: "research-agent"
+   - prompt: Format the input as follows:
+
+   ## RESEARCH TASK
+   Feature: [feature name from spec]
+   Spec: [SPECS_DIR]/spec.md
+
+   ## UNKNOWNS TO RESEARCH
+   1. [Unknown 1]: [context from Technical Context NEEDS CLARIFICATION]
+   2. [Unknown 2]: [context]
+   ...
+
+   ## CONSTRAINTS
+   - Project Stack: Next.js 15+, React 19+, TypeScript 5+, Wagmi 2+, Viem 2+, Zustand 5+
+   - Constitution Principles: [relevant principles for this feature]
+   - Existing Patterns: [patterns found in codebase via Serena]
+
+   ## OUTPUT PATH
+   [SPECS_DIR]/research.md
    ```
 
-3. **Consolidate findings** in `research.md` using format:
-   - Decision: [what was chosen]
-   - Rationale: [why chosen]
-   - Alternatives considered: [what else evaluated]
+3. **Verify agent output**:
+   - If agent returns BLOCKED → resolve blockers before proceeding to Phase 1
+   - If agent returns COMPLETED → verify research.md exists and has all unknowns resolved
 
 **Output**: research.md with all NEEDS CLARIFICATION resolved
 
@@ -103,14 +118,40 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Use standard REST/GraphQL patterns
    - Output OpenAPI/GraphQL schema to `/contracts/`
 
-3. **Agent context update**:
-   - Run `.specify/scripts/bash/update-agent-context.sh claude`
-   - These scripts detect which AI agent is in use
-   - Update the appropriate agent-specific context file
-   - Add only new technology from current plan
-   - Preserve manual additions between markers
+3. **Memory Bank Update** (replaces bash script - memories are the single source of truth):
 
-**Output**: data-model.md, /contracts/*, quickstart.md, agent-specific file
+   a. **Update `activeContext`** with current feature session:
+      ```
+      mcp__serena__edit_memory(
+        memory_file_name: "activeContext",
+        needle: "\\*\\*Current Session\\*\\*:.*",
+        repl: "**Current Session**: [BRANCH] — [Feature Name] (In Progress)",
+        mode: "regex"
+      )
+      ```
+
+   b. **Update `techContext`** ONLY if plan introduces NEW dependencies:
+      - Read current `techContext` to check if dependency already exists
+      - If new dependency found in plan's "Primary Dependencies" field:
+        ```
+        mcp__serena__edit_memory(
+          memory_file_name: "techContext",
+          needle: "## [Relevant Section]\\n",
+          repl: "## [Relevant Section]\n\n| New Dep | Version |\n",
+          mode: "regex"
+        )
+        ```
+      - ⚠️ Note: techContext is "Locked for MVP" — only add if absolutely required
+
+   c. **Log feature start in `progress`** if not already tracked:
+      ```
+      mcp__serena__read_memory("progress")
+      // If feature not listed, add to current milestone
+      ```
+
+   d. **DO NOT** write to CLAUDE.md or any other agent files — Memory Bank is the source of truth
+
+**Output**: data-model.md, /contracts/*, quickstart.md, Memory Bank updates (activeContext, progress, techContext if needed)
 
 ## Key rules
 
