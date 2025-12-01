@@ -1,4 +1,4 @@
-import { useCreatorStore } from '@/entities/user/model/creator-store'
+import { useCreatorStore } from '@/entities/creator/model/useCreatorStore'
 import { usePayerStore } from '@/entities/user/model/payer-store'
 
 export interface ExportDataV1 {
