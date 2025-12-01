@@ -2,7 +2,7 @@
 
 > **Project**: VoidPay - Stateless Crypto Invoice Platform
 > **Constitution**: v1.6.0 (MUST READ: `.specify/memory/constitution.md`)
-> **Last Updated**: 2025-11-21
+> **Last Updated**: 2025-11-29
 > **Status**: Active Development
 
 ---

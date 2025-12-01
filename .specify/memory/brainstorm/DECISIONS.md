@@ -60,14 +60,14 @@
 
 ### 3.1 Core Framework
 
-| Компонент      | Решение                      | Обоснование                                                     |
-| :------------- | :--------------------------- | :-------------------------------------------------------------- |
-| **Framework**  | Next.js 14+ (App Router)     | Server Components для OG Images, SEO                            |
-| **Language**   | TypeScript                   | Строгая типизация для работы с деньгами                         |
-| **State**      | Zustand + persist middleware | Легковесная альтернатива Redux, отличная поддержка LocalStorage |
-| **Async Data** | TanStack Query               | Кэширование RPC, дедупликация, polling                          |
-| **UI Styling** | Tailwind CSS                 | Быстрая верстка, хорошая экосистема                             |
-| **UI Kit**     | shadcn/ui                    | Radix UI компоненты, легкая кастомизация                        |
+| Компонент      | Решение                      | Обоснование                                                       |
+| :------------- | :--------------------------- | :---------------------------------------------------------------- |
+| **Framework**  | Next.js 14+ (App Router)     | Server Components для OG Images, SEO                              |
+| **Language**   | TypeScript                   | Строгая типизация для работы с деньгами                           |
+| **State**      | Zustand + persist middleware | Легковесная альтернатива Redux, отличная поддержка LocalStorage   |
+| **Async Data** | TanStack Query               | Кэширование RPC, дедупликация, polling                            |
+| **UI Styling** | Tailwind CSS                 | Быстрая верстка, хорошая экосистема                               |
+| **UI Kit**     | Radix UI + CVA + Framer      | Radix primitives (доступность), CVA (варианты), Framer (анимации) |
 
 ### 3.2 Web3 Infrastructure
 
