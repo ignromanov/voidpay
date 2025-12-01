@@ -228,14 +228,40 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Update tasks.md checkboxes after each successful batch
    - Halt if non-recoverable error occurs
 
-10. **Completion validation**:
-    - Verify all required tasks are marked [X]
-    - Run final validation:
-      ```bash
-      pnpm type-check
-      pnpm lint
-      pnpm test  # if tests exist
-      ```
+10. **Final validation via lint-fix-agent**:
+
+    After all implementation batches complete, launch the `lint-fix-agent` to validate and fix any remaining errors:
+
+    ```
+    Task tool call:
+    - subagent_type: lint-fix-agent
+    - model: sonnet
+    - prompt: |
+        ## SCOPE
+        Validate all code in the worktree: [WORKTREE_DIR]
+
+        ## FOCUS AREAS
+        - Files created/modified during implementation: [list from executor reports]
+        - FSD layer compliance (imports follow app→widgets→features→entities→shared)
+
+        ## REQUIREMENTS
+        1. Run `pnpm type-check` - fix ALL TypeScript errors
+        2. Run `pnpm lint` - fix ALL ESLint errors
+        3. Run `pnpm test --run` if tests exist - report failures
+        4. Verify all public APIs exported via index.ts
+
+        ## COMPLETION
+        Return Code Quality Report with status and fixes applied.
+    ```
+
+    **Handle lint-fix-agent report**:
+    - **PASSED**: Proceed to Memory Bank Update
+    - **WARNINGS**: Review warnings, proceed if acceptable
+    - **FAILED with fixes**: Review fixes, re-run agent if needed
+    - **FAILED without fixes**: Escalate to user with remaining errors
+
+    **Post-validation checks** (orchestrator responsibility):
+    - Verify all required tasks are marked [X] in tasks.md
     - Check that implemented features match the original specification
     - Confirm the implementation follows the technical plan
     - Report final status with summary of completed work
@@ -259,9 +285,11 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ---
 
-## Executor Agent Reference
+## Agent Reference
 
-The `speckit-code-executor` agent is a **disciplined implementation worker** that:
+### speckit-code-executor
+
+A **disciplined implementation worker** that:
 - Executes code changes EXACTLY as instructed
 - NEVER makes independent architectural decisions
 - STOPS and reports when encountering discrepancies
@@ -280,6 +308,26 @@ The `speckit-code-executor` agent is a **disciplined implementation worker** tha
 - Spec interpretation
 - Naming conventions not in spec
 - Feature additions beyond task scope
+
+### lint-fix-agent
+
+A **code quality enforcement agent** that:
+- Runs TypeScript compiler and ESLint checks
+- Fixes errors autonomously with surgical precision
+- Returns concise Code Quality Report (PASSED/WARNINGS/FAILED)
+- Preserves context window by avoiding full file reads
+
+**When to launch**:
+| Trigger | Action |
+|---------|--------|
+| All implementation batches complete | Final validation (step 10) |
+| Executor reports type errors | Immediate fix before next batch |
+| Before commit | Ensure clean codebase |
+
+**Report handling**:
+- `✅ PASSED` — Proceed to next step
+- `⚠️ WARNINGS` — Review, proceed if acceptable
+- `❌ FAILED` — Review fixes, retry or escalate
 
 ---
 
