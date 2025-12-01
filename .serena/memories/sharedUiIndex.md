@@ -70,9 +70,27 @@
 
 ## Action Components
 
-| Component | Import               | Key Props                                | Variants                                                                                          |
-| --------- | -------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `Button`  | `@/shared/ui/button` | `variant`, `size`, `disabled`, `asChild` | `default`, `destructive`, `outline`, `secondary`, `ghost`, `link` / `default`, `sm`, `lg`, `icon` |
+| Component | Import               | Key Props                                | Variants                                                                                                  |
+| --------- | -------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `Button`  | `@/shared/ui/button` | `variant`, `size`, `disabled`, `asChild` | `default`, `destructive`, `outline`, `secondary`, `ghost`, `link`, `void` / `default`, `sm`, `lg`, `icon` |
+
+## Brand Components (P0.8.2)
+
+| Component           | Import                            | Key Props                             | Variants / Notes                                 |
+| ------------------- | --------------------------------- | ------------------------------------- | ------------------------------------------------ |
+| `VoidLogo`          | `@/shared/ui/void-logo`           | `size`, `animate`, `className`        | `sm`, `md`, `lg`, `xl` or custom number          |
+| `AuroraText`        | `@/shared/ui/aurora-text`         | `as`, `className`, `children`         | Polymorphic: `span`, `h1`-`h6`, `p`              |
+| `HyperText`         | `@/shared/ui/hyper-text`          | `text`, `className`, `animateOnMount` | Character scramble reveal effect                 |
+| `VoidButtonOverlay` | `@/shared/ui/button-void-overlay` | `isLoading`, `isDisabled`             | Accretion disk animation for void button variant |
+
+## Brand Utilities
+
+| Utility            | Import                                 | Purpose                                     |
+| ------------------ | -------------------------------------- | ------------------------------------------- |
+| `useReducedMotion` | `@/shared/ui/hooks/use-reduced-motion` | Accessibility hook for animation preference |
+| `useHyperText`     | `@/shared/ui/hooks/use-hyper-text`     | Hook for character scramble animation       |
+| `NETWORK_THEMES`   | `@/shared/ui/constants/brand-tokens`   | Network background theme configurations     |
+| `SIZE_PRESETS`     | `@/shared/ui/constants/brand-tokens`   | Size presets for VoidLogo                   |
 
 ## Address Input (Shared UI)
 

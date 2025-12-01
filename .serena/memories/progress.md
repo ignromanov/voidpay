@@ -2,7 +2,7 @@
 
 **Last Updated**: 2025-12-01
 **Phase**: P0 (MVP Core)
-**Progress**: ~68% P0 complete (13/19 features)
+**Progress**: ~74% P0 complete (14/19 features)
 
 ## Completed (P0)
 
@@ -23,13 +23,9 @@
 | P0.7.5 Design Transfer | 2025-11-28 | src/shared/ui/                      |
 | P0.8.0 Core Primitives | 2025-11-28 | specs/009-core-primitives-transfer/ |
 | P0.8.1 Form Components | 2025-11-29 | specs/010-form-components/          |
+| P0.8.2 Brand & Visual  | 2025-12-01 | specs/011-brand-visual-components/  |
 
 ## In Progress
-
-### P0.8.2 Brand & Visual Components
-
-- Status: Pending
-- Scope: VoidLogo, NetworkBackground, AuroraText, HyperText
 
 ### P0.8.3 Page Compositions
 

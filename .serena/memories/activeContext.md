@@ -1,50 +1,36 @@
 # Active Context
 
 **Last Updated**: 2025-12-01
-**Current Session**: Memory Bank Audit & Correction — COMPLETE
+**Current Session**: P0.8.2 Brand & Visual Components — COMPLETE
 
 ## Completed This Session
 
-### Memory Bank Audit (2025-12-01)
+### P0.8.2 Brand & Visual Components (2025-12-01)
 
-1. **Analyzed all 13 memory files** against actual codebase state
-2. **Found and fixed critical discrepancies**:
-   - fsdRegistry.md: 15+ inaccuracies (wrong paths, missing features)
-   - sharedUiIndex.md: All import paths were wrong (`primitives/` prefix)
-   - dataFlow.md: Store locations and state schemas incorrect
-   - progress.md: Test count claim outdated
+1. **Implemented 5 brand components** with full TDD coverage (88 tests, 95%+):
+   - `VoidLogo` — Eclipse + crescent SVG logo with pulse animation
+   - `NetworkBackground` — Themed floating shapes with crossfade transitions
+   - `AuroraText` — Animated gradient text with polymorphic rendering
+   - `HyperText` — Character scramble reveal effect
+   - `Button void` — Accretion disk overlay variant
 
-### Code Changes Made
+2. **Created supporting utilities**:
+   - `useReducedMotion` hook for accessibility
+   - `useHyperText` hook for scramble animation
+   - `brand-tokens` constants (network themes, size presets)
+   - Animation type definitions
 
-1. **Deleted legacy store**: `entities/user/model/creator-store.ts`
-   - Was duplicate of `entities/creator/model/useCreatorStore.ts`
-   - Updated imports in `features/data-export/model/`
+3. **Updated documentation**:
+   - ROADMAP_P0.md: Marked P0.8.0, P0.8.1, P0.8.2 as complete
+   - ROADMAP.md: Updated Last Updated date
+   - DECISIONS.md: Updated UI Kit (shadcn → Radix + CVA + Framer)
+   - development-status, architecture-summary (Serena memories)
 
-2. **Created 5 public API barrels**:
-   - `entities/creator/index.ts`
-   - `features/invoice-draft/index.ts`
-   - `features/invoice-history/index.ts`
-   - `features/rpc-proxy/index.ts`
-   - `features/data-export/index.ts`
+### Commits Made
 
-3. **Fixed type errors** in `features/data-export/model/import.ts`
-
-### Memory Files Updated
-
-| File               | Changes                                                             |
-| ------------------ | ------------------------------------------------------------------- |
-| `fsdRegistry.md`   | Complete rewrite with accurate slice registry                       |
-| `sharedUiIndex.md` | Fixed all import paths (removed `/primitives/` prefix)              |
-| `dataFlow.md`      | Corrected store locations, state schemas, removed duplicate warning |
-| `progress.md`      | Updated test status (32 files, 400+ cases, 80% threshold)           |
-| `activeContext.md` | This file                                                           |
-
-### Key Findings
-
-- **entities/token** documented but doesn't exist (token logic in features/invoice)
-- **widgets/app-shell** documented but doesn't exist (only widgets/navigation)
-- **useUserPreferences** store exists but is unused (reserved for future)
-- **Test count**: 842 passed in combined run (src + worktrees)
+- `0e9cdac` feat(brand): implement brand & visual components (P0.8.2)
+- `5f5212b` docs(roadmap): mark P0.8.0, P0.8.1, P0.8.2 as completed
+- `70f6328` docs(memory): update ROADMAP.md date and DECISIONS.md UI stack
 
 ## Memory Bank Structure (13 files)
 
@@ -72,8 +58,8 @@
 
 ## Next Steps
 
-1. Continue with P0.8.2 (Brand & Visual Components)
-2. Consider fixing vitest.config.ts to exclude worktrees
+1. **P0.8.3 Page Compositions** — Landing, Create, Pay pages using brand components
+2. Merge 011-brand-visual-components worktree to main
 
 ## Blockers
 
