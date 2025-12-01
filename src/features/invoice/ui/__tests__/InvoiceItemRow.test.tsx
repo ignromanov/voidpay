@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { InvoiceItemRow } from '../InvoiceItemRow'
 import { LineItem } from '@/entities/invoice/model/types'
@@ -21,7 +21,6 @@ const mockLineItem: LineItem = {
 describe('InvoiceItemRow - Field Updates', () => {
   it('should update description when changed', async () => {
     const onUpdate = vi.fn()
-    const user = userEvent.setup()
 
     render(
       <InvoiceItemRow
@@ -32,18 +31,16 @@ describe('InvoiceItemRow - Field Updates', () => {
       />
     )
 
-    const descInput = screen.getByPlaceholderText('Item description')
-    await user.clear(descInput)
-    await user.type(descInput, 'New description')
+    const descInput = screen.getByPlaceholderText('Item description') as HTMLInputElement
+    fireEvent.change(descInput, { target: { value: 'New description' } })
 
     expect(onUpdate).toHaveBeenCalled()
     const lastCall = onUpdate.mock.calls[onUpdate.mock.calls.length - 1]?.[0]
-    expect(lastCall.description).toContain('New description')
+    expect(lastCall.description).toBe('New description')
   })
 
   it('should update quantity when changed', async () => {
     const onUpdate = vi.fn()
-    const user = userEvent.setup()
 
     render(
       <InvoiceItemRow
@@ -54,9 +51,8 @@ describe('InvoiceItemRow - Field Updates', () => {
       />
     )
 
-    const qtyInput = screen.getByPlaceholderText('Qty')
-    await user.clear(qtyInput)
-    await user.type(qtyInput, '25')
+    const qtyInput = screen.getByPlaceholderText('Qty') as HTMLInputElement
+    fireEvent.change(qtyInput, { target: { value: '25' } })
 
     expect(onUpdate).toHaveBeenCalled()
     const lastCall = onUpdate.mock.calls[onUpdate.mock.calls.length - 1]?.[0]
@@ -65,7 +61,6 @@ describe('InvoiceItemRow - Field Updates', () => {
 
   it('should update rate when changed', async () => {
     const onUpdate = vi.fn()
-    const user = userEvent.setup()
 
     render(
       <InvoiceItemRow
@@ -76,9 +71,8 @@ describe('InvoiceItemRow - Field Updates', () => {
       />
     )
 
-    const rateInput = screen.getByPlaceholderText('0.00')
-    await user.clear(rateInput)
-    await user.type(rateInput, '150.75')
+    const rateInput = screen.getByPlaceholderText('0.00') as HTMLInputElement
+    fireEvent.change(rateInput, { target: { value: '150.75' } })
 
     expect(onUpdate).toHaveBeenCalled()
     const lastCall = onUpdate.mock.calls[onUpdate.mock.calls.length - 1]?.[0]

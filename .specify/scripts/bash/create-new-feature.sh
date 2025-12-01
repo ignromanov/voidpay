@@ -318,6 +318,11 @@ if [ "$HAS_GIT" = true ]; then
     >&2 echo "[specify] Created worktree: $WORKTREE_DIR"
     >&2 echo "[specify] All feature work must happen in this worktree directory"
 
+    # Create symlink to root node_modules for IDE/tooling compatibility (vitest, eslint, etc.)
+    if [ -d "$REPO_ROOT/node_modules" ] && [ ! -e "$WORKTREE_DIR/node_modules" ]; then
+        ln -s "$REPO_ROOT/node_modules" "$WORKTREE_DIR/node_modules"
+        >&2 echo "[specify] Created node_modules symlink for tooling compatibility"
+    fi
 
     # Create .serena directory structure for worktree (isolated cache, copied memories)
     # Constitution v1.12.0: Memories are code, tracked in git, copied to worktrees (not symlinked)

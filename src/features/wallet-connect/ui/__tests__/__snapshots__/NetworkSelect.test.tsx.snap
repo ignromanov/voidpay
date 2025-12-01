@@ -3,7 +3,7 @@
 exports[`NetworkSelect - Snapshots > should match snapshot with default state 1`] = `
 <button
   aria-autocomplete="none"
-  aria-controls="radix-_r_18_"
+  aria-controls="radix-_r_20_"
   aria-expanded="false"
   class="flex items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 h-9 w-[200px]"
   data-state="closed"
@@ -62,7 +62,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with default state 1`
 exports[`NetworkSelect - Snapshots > should match snapshot with different network 1`] = `
 <button
   aria-autocomplete="none"
-  aria-controls="radix-_r_1i_"
+  aria-controls="radix-_r_2a_"
   aria-expanded="false"
   class="flex items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 h-9 w-[200px]"
   data-state="closed"
@@ -121,7 +121,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with different networ
 exports[`NetworkSelect - Snapshots > should match snapshot with disabled state 1`] = `
 <button
   aria-autocomplete="none"
-  aria-controls="radix-_r_1d_"
+  aria-controls="radix-_r_25_"
   aria-expanded="false"
   class="flex items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 h-9 w-[200px]"
   data-disabled=""
