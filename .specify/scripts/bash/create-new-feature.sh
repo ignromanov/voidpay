@@ -5,13 +5,14 @@ set -e
 JSON_MODE=false
 SHORT_NAME=""
 BRANCH_NUMBER=""
+UPDATE_BRANCH=""
 ARGS=()
 i=1
 while [ $i -le $# ]; do
     arg="${!i}"
     case "$arg" in
-        --json) 
-            JSON_MODE=true 
+        --json)
+            JSON_MODE=true
             ;;
         --short-name)
             if [ $((i + 1)) -gt $# ]; then
@@ -40,22 +41,36 @@ while [ $i -le $# ]; do
             fi
             BRANCH_NUMBER="$next_arg"
             ;;
-        --help|-h) 
-            echo "Usage: $0 [--json] [--short-name <name>] [--number N] <feature_description>"
+        --branch)
+            if [ $((i + 1)) -gt $# ]; then
+                echo 'Error: --branch requires a value' >&2
+                exit 1
+            fi
+            i=$((i + 1))
+            next_arg="${!i}"
+            if [[ "$next_arg" == --* ]]; then
+                echo 'Error: --branch requires a value' >&2
+                exit 1
+            fi
+            UPDATE_BRANCH="$next_arg"
+            ;;
+        --help|-h)
+            echo "Usage: $0 [--json] [--short-name <name>] [--number N] [--branch <name>] <feature_description>"
             echo ""
             echo "Options:"
             echo "  --json              Output in JSON format"
             echo "  --short-name <name> Provide a custom short name (2-4 words) for the branch"
             echo "  --number N          Specify branch number manually (overrides auto-detection)"
+            echo "  --branch <name>     Update existing branch (skip branch/worktree creation)"
             echo "  --help, -h          Show this help message"
             echo ""
             echo "Examples:"
             echo "  $0 'Add user authentication system' --short-name 'user-auth'"
-            echo "  $0 'Implement OAuth2 integration for API' --number 5"
+            echo "  $0 --branch '012-landing-page' 'Updated description'"
             exit 0
             ;;
-        *) 
-            ARGS+=("$arg") 
+        *)
+            ARGS+=("$arg")
             ;;
     esac
     i=$((i + 1))
@@ -208,6 +223,99 @@ cd "$REPO_ROOT"
 
 SPECS_DIR="$REPO_ROOT/specs"
 mkdir -p "$SPECS_DIR"
+
+# ============================================================================
+# UPDATE MODE: If --branch is provided, switch to existing branch/worktree
+# ============================================================================
+if [ -n "$UPDATE_BRANCH" ]; then
+    BRANCH_NAME="$UPDATE_BRANCH"
+
+    # Validate branch exists
+    if [ "$HAS_GIT" = true ]; then
+        if ! git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
+            echo "Error: Branch '$BRANCH_NAME' does not exist" >&2
+            exit 1
+        fi
+    fi
+
+    # Extract feature number from branch name (expects ###-name format)
+    FEATURE_NUM=$(echo "$BRANCH_NAME" | grep -oE '^[0-9]{3}' || echo "")
+    if [ -z "$FEATURE_NUM" ]; then
+        echo "Error: Branch name '$BRANCH_NAME' does not match expected format (###-name)" >&2
+        exit 1
+    fi
+
+    WORKTREES_DIR="$REPO_ROOT/worktrees"
+    WORKTREE_DIR="$WORKTREES_DIR/$BRANCH_NAME"
+
+    # Check if worktree exists, create if not
+    if [ "$HAS_GIT" = true ] && [ ! -d "$WORKTREE_DIR" ]; then
+        mkdir -p "$WORKTREES_DIR"
+        git worktree add "$WORKTREE_DIR" "$BRANCH_NAME"
+        >&2 echo "[specify] Created worktree: $WORKTREE_DIR"
+
+        # Create symlink to root node_modules
+        if [ -d "$REPO_ROOT/node_modules" ] && [ ! -e "$WORKTREE_DIR/node_modules" ]; then
+            ln -s "$REPO_ROOT/node_modules" "$WORKTREE_DIR/node_modules"
+            >&2 echo "[specify] Created node_modules symlink"
+        fi
+
+        # Copy .serena if needed
+        if [ -d "$REPO_ROOT/.serena" ] && [ ! -e "$WORKTREE_DIR/.serena" ]; then
+            mkdir -p "$WORKTREE_DIR/.serena/cache" "$WORKTREE_DIR/.serena/logs"
+            if [ -d "$REPO_ROOT/.serena/memories" ]; then
+                cp -r "$REPO_ROOT/.serena/memories" "$WORKTREE_DIR/.serena/memories"
+            fi
+            >&2 echo "[specify] Created .serena/ with copied memories"
+        fi
+
+        # Setup .claude if needed
+        if [ -d "$REPO_ROOT/.claude" ] && [ ! -e "$WORKTREE_DIR/.claude" ]; then
+            mkdir -p "$WORKTREE_DIR/.claude"
+            if [ -f "$REPO_ROOT/.claude/settings.local.json" ]; then
+                cp "$REPO_ROOT/.claude/settings.local.json" "$WORKTREE_DIR/.claude/settings.local.json"
+            fi
+            if [ -d "$REPO_ROOT/.claude/commands" ]; then
+                ln -s "$REPO_ROOT/.claude/commands" "$WORKTREE_DIR/.claude/commands"
+            fi
+            >&2 echo "[specify] Created .claude/ with settings"
+        fi
+    elif [ "$HAS_GIT" = true ]; then
+        >&2 echo "[specify] Using existing worktree: $WORKTREE_DIR"
+    else
+        WORKTREE_DIR="$REPO_ROOT"
+    fi
+
+    FEATURE_DIR="$WORKTREE_DIR/specs/$BRANCH_NAME"
+    SPEC_FILE="$FEATURE_DIR/spec.md"
+
+    # Verify spec file exists
+    if [ ! -f "$SPEC_FILE" ]; then
+        echo "Error: Spec file not found at $SPEC_FILE" >&2
+        exit 1
+    fi
+
+    >&2 echo "[specify] Update mode: editing existing spec"
+
+    # Output and exit
+    export SPECIFY_FEATURE="$BRANCH_NAME"
+
+    if $JSON_MODE; then
+        printf '{"BRANCH_NAME":"%s","SPEC_FILE":"%s","FEATURE_NUM":"%s","WORKTREE_DIR":"%s","FEATURE_DIR":"%s","MODE":"update"}\n' "$BRANCH_NAME" "$SPEC_FILE" "$FEATURE_NUM" "$WORKTREE_DIR" "$FEATURE_DIR"
+    else
+        echo "BRANCH_NAME: $BRANCH_NAME"
+        echo "SPEC_FILE: $SPEC_FILE"
+        echo "FEATURE_NUM: $FEATURE_NUM"
+        echo "WORKTREE_DIR: $WORKTREE_DIR"
+        echo "FEATURE_DIR: $FEATURE_DIR"
+        echo "MODE: update"
+    fi
+    exit 0
+fi
+
+# ============================================================================
+# CREATE MODE: Create new branch and worktree
+# ============================================================================
 
 # Function to generate branch name with stop word filtering and length filtering
 generate_branch_name() {
