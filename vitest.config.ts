@@ -9,11 +9,20 @@ const rootDir = import.meta.dirname
 export default defineConfig({
   plugins: [react(), tsconfigPaths({ root: rootDir })],
   test: {
-    root: rootDir,
-    environment: 'jsdom',
-    globals: true,
-    setupFiles: [path.join(rootDir, 'vitest.setup.ts')],
-    exclude: ['**/node_modules/**', '**/dist/**', '**/worktrees/**', '**/assets/**'],
+    // Explicitly define single project to prevent IDE from discovering worktree configs
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'unit',
+          root: rootDir,
+          environment: 'jsdom',
+          globals: true,
+          setupFiles: [path.join(rootDir, 'vitest.setup.ts')],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/worktrees/**', '**/assets/**'],
+        },
+      },
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
