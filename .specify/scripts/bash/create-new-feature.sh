@@ -474,26 +474,39 @@ GITIGNOREEOF
         >&2 echo "[specify] Created .serena/ with isolated cache and copied memories"
     fi
 
-    # Generate .mcp.json with worktree-specific path for Serena MCP
+    # Copy .mcp.json from root and update serena project path for worktree
+    # This preserves all MCP servers (read-website-fast, claude-context, etc.)
     if [ -f "$REPO_ROOT/.mcp.json" ] && [ ! -e "$WORKTREE_DIR/.mcp.json" ]; then
-        cat > "$WORKTREE_DIR/.mcp.json" << MCPEOF
-{
-"mcpServers": {
-    "serena": {
-    "command": "uvx",
-    "args": [
-        "--from",
-        "git+https://github.com/oraios/serena",
-        "serena",
-        "start-mcp-server",
-        "--project",
-        "$WORKTREE_DIR"
-    ]
-    }
-}
-}
-MCPEOF
-        >&2 echo "[specify] Created .mcp.json with worktree path: $WORKTREE_DIR"
+        if command -v jq &> /dev/null; then
+            # Use jq to update serena's --project arg while preserving everything else
+            jq --arg worktree "$WORKTREE_DIR" '
+                .mcpServers.serena.args = [
+                    "--from",
+                    "git+https://github.com/oraios/serena",
+                    "serena",
+                    "start-mcp-server",
+                    "--project",
+                    $worktree,
+                    "--context",
+                    "ide-assistant",
+                    "--mode",
+                    "editing",
+                    "--mode",
+                    "interactive"
+                ]
+            ' "$REPO_ROOT/.mcp.json" > "$WORKTREE_DIR/.mcp.json"
+            >&2 echo "[specify] Created .mcp.json with all MCP servers, serena path: $WORKTREE_DIR"
+        else
+            # Fallback: copy and use sed for basic replacement (less reliable)
+            cp "$REPO_ROOT/.mcp.json" "$WORKTREE_DIR/.mcp.json"
+            # Try to update the project path for serena
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' "s|--project.*stateless-invoicing-platform\"|--project\",\"$WORKTREE_DIR\"|g" "$WORKTREE_DIR/.mcp.json"
+            else
+                sed -i "s|--project.*stateless-invoicing-platform\"|--project\",\"$WORKTREE_DIR\"|g" "$WORKTREE_DIR/.mcp.json"
+            fi
+            >&2 echo "[specify] Created .mcp.json (copied from root, jq not available for precise update)"
+        fi
     fi
 
     # Setup Claude Code settings for worktree

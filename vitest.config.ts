@@ -9,20 +9,16 @@ const rootDir = import.meta.dirname
 export default defineConfig({
   plugins: [react(), tsconfigPaths({ root: rootDir })],
   test: {
-    // Explicitly define single project to prevent IDE from discovering worktree configs
-    projects: [
-      {
-        extends: true,
-        test: {
-          name: 'unit',
-          root: rootDir,
-          environment: 'jsdom',
-          globals: true,
-          setupFiles: [path.join(rootDir, 'vitest.setup.ts')],
-          exclude: ['**/node_modules/**', '**/dist/**', '**/worktrees/**', '**/assets/**'],
-        },
-      },
-    ],
+    root: rootDir,
+    // happy-dom is 2-3x lighter than jsdom
+    environment: 'happy-dom',
+    globals: true,
+    setupFiles: [path.join(rootDir, 'vitest.setup.ts')],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/worktrees/**', '**/assets/**'],
+    // Use forks pool for better memory isolation between workers
+    pool: 'forks',
+    // Limit parallelism to reduce CPU/memory pressure
+    maxWorkers: 4,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

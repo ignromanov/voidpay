@@ -2,12 +2,12 @@ import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
 import { afterEach, beforeAll } from 'vitest'
 
-// Runs a cleanup after each test case (e.g. clearing jsdom)
+// Runs a cleanup after each test case (e.g. clearing DOM)
 afterEach(() => {
   cleanup()
 })
 
-// Mock pointer capture methods for Radix UI components (jsdom compatibility)
+// Mock pointer capture methods for Radix UI components (happy-dom compatibility)
 beforeAll(() => {
   if (!Element.prototype.hasPointerCapture) {
     Element.prototype.hasPointerCapture = () => false
