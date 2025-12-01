@@ -17,7 +17,7 @@
 │                      ZUSTAND STORES                              │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
 │  │ useCreatorStore │  │  usePayerStore  │  │useUserPreferences│ │
-│  │  (LocalStorage) │  │   (Session)     │  │  (LocalStorage)  │ │
+│  │  (LocalStorage) │  │  (LocalStorage) │  │  (Reserved)      │ │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
                               ▼
@@ -33,62 +33,69 @@
 
 ### 1. `useCreatorStore` (Creator Side)
 
-| Property        | Description                                 |
-| --------------- | ------------------------------------------- |
-| **Location**    | `entities/user/model/creator-store.ts`      |
-| **Persistence** | LocalStorage (`voidpay-creator`)            |
-| **Purpose**     | Invoice creation state, creator preferences |
+| Property        | Description                                     |
+| --------------- | ----------------------------------------------- |
+| **Location**    | `entities/creator/model/useCreatorStore.ts`     |
+| **Persistence** | LocalStorage (`voidpay:creator`)                |
+| **Purpose**     | Invoice drafts, templates, history, preferences |
 
 **State Schema:**
 
 ```typescript
-type CreatorStoreState = {
+type CreatorStoreV1 = {
+  version: 1
+  activeDraft: InvoiceDraft | null
+  templates: InvoiceTemplate[]
+  history: CreationHistoryEntry[]
   preferences: UserPreferences
-  invoiceCounter: InvoiceIDCounter
+  idCounter: InvoiceIDCounter
 }
 ```
 
 **Write Access:**
 | Slice | Can Write | Actions |
 |-------|-----------|---------|
-| `features/create-invoice` | ✅ | `incrementCounter`, `updatePreferences` |
-| `widgets/invoice-editor` | ✅ | `updatePreferences` |
+| `features/invoice-draft` | ✅ | `updateDraft`, `clearDraft`, `createNewDraft` |
+| `features/invoice-draft` | ✅ | `saveAsTemplate`, `loadTemplate`, `deleteTemplate` |
+| `features/invoice-history` | ✅ | `addHistoryEntry`, `deleteHistoryEntry`, `duplicateHistoryEntry` |
+| `features/data-export` | ✅ | `updatePreferences` (via import) |
+| `app/create` | ✅ | All creation actions |
 
 ---
 
 ### 2. `usePayerStore` (Payer Side)
 
-| Property        | Description                                |
-| --------------- | ------------------------------------------ |
-| **Location**    | `entities/user/model/payer-store.ts`       |
-| **Persistence** | Session only (no LocalStorage)             |
-| **Purpose**     | Payment flow state, selected token/network |
+| Property        | Description                          |
+| --------------- | ------------------------------------ |
+| **Location**    | `entities/user/model/payer-store.ts` |
+| **Persistence** | LocalStorage (`voidpay:payer`)       |
+| **Purpose**     | Payment receipts                     |
 
 **State Schema:**
 
 ```typescript
 type PayerStoreState = {
-  selectedToken: Token | null
-  selectedNetwork: Network | null
-  paymentStatus: PaymentStatus
+  version: number
+  receipts: PaymentReceipt[]
 }
 ```
 
 **Write Access:**
 | Slice | Can Write | Actions |
 |-------|-----------|---------|
-| `features/process-payment` | ✅ | All actions |
-| `widgets/payment-flow` | ✅ | `setSelectedToken`, `setSelectedNetwork` |
+| `features/data-export` | ✅ | `addReceipt` (via import) |
+| `widgets/payment-terminal` | ✅ | `addReceipt` |
 
 ---
 
-### 3. `useUserPreferences` (Global Preferences)
+### 3. `useUserPreferences` (Reserved)
 
-| Property        | Description                          |
-| --------------- | ------------------------------------ |
-| **Location**    | `entities/user/model/store.ts`       |
-| **Persistence** | LocalStorage (`voidpay-preferences`) |
-| **Purpose**     | Theme, language, display preferences |
+| Property        | Description                                   |
+| --------------- | --------------------------------------------- |
+| **Location**    | `entities/user/model/store.ts`                |
+| **Persistence** | LocalStorage (`voidpay-preferences`)          |
+| **Purpose**     | Reserved for future: theme, language, display |
+| **Status**      | ⚠️ Not currently used in codebase             |
 
 **State Schema:**
 
@@ -99,12 +106,6 @@ type UserPreferences = {
   locale: string
 }
 ```
-
-**Write Access:**
-| Slice | Can Write | Actions |
-|-------|-----------|---------|
-| `widgets/settings` | ✅ | All actions |
-| `app/providers` | Read only | — |
 
 ---
 
@@ -137,14 +138,6 @@ TanStack Query → Token Prices API → Cache (5min) → UI Components
 3. **Feature isolation** — Features can't read other features' stores
 4. **Entity stores only** — Stores live in `entities/*/model/`
 5. **URL is truth** — For invoice data, URL params are source of truth
-
----
-
-## ⚠️ Known Issues
-
-| Issue                    | Location                              | Status              |
-| ------------------------ | ------------------------------------- | ------------------- |
-| Duplicate creator stores | `entities/user` vs `entities/creator` | Needs consolidation |
 
 ---
 

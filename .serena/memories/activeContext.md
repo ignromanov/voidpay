@@ -1,31 +1,52 @@
 # Active Context
 
 **Last Updated**: 2025-12-01
-**Current Session**: Memory Bank v2.1 Setup — COMPLETE
+**Current Session**: Memory Bank Audit & Correction — COMPLETE
 
 ## Completed This Session
 
-### Memory Bank v2.1 Updates
+### Memory Bank Audit (2025-12-01)
 
-1. **userPreferences.md** — Personal coding style rules (Meta-Learning)
-   - Type vs Interface rules, no `any`, named exports only
-   - Library preferences (date-fns, not moment)
-   - Naming conventions
-   - **Learning Log**: When user corrects → add rule here
+1. **Analyzed all 13 memory files** against actual codebase state
+2. **Found and fixed critical discrepancies**:
+   - fsdRegistry.md: 15+ inaccuracies (wrong paths, missing features)
+   - sharedUiIndex.md: All import paths were wrong (`primitives/` prefix)
+   - dataFlow.md: Store locations and state schemas incorrect
+   - progress.md: Test count claim outdated
 
-2. **dataFlow.md** — State Topology & Store Ownership
-   - Maps all Zustand stores
-   - Defines which slices can write to each store
-   - Prevents prop drilling and duplicate stores
-   - ⚠️ Found: duplicate `useCreatorStore` (entities/user vs entities/creator)
+### Code Changes Made
 
-3. **CLAUDE.md Updated**:
-   - Operational Loop now has **7 steps** (added VALIDATE)
-   - **Step 5: VALIDATE** — Run `pnpm type-check` + `pnpm lint`, fix before reporting success
-   - **Meta-Learning Protocol** — When corrected, add rule to userPreferences.md
-   - New anti-patterns for state and style compliance
+1. **Deleted legacy store**: `entities/user/model/creator-store.ts`
+   - Was duplicate of `entities/creator/model/useCreatorStore.ts`
+   - Updated imports in `features/data-export/model/`
 
-### Memory Bank Structure (13 files total)
+2. **Created 5 public API barrels**:
+   - `entities/creator/index.ts`
+   - `features/invoice-draft/index.ts`
+   - `features/invoice-history/index.ts`
+   - `features/rpc-proxy/index.ts`
+   - `features/data-export/index.ts`
+
+3. **Fixed type errors** in `features/data-export/model/import.ts`
+
+### Memory Files Updated
+
+| File               | Changes                                                             |
+| ------------------ | ------------------------------------------------------------------- |
+| `fsdRegistry.md`   | Complete rewrite with accurate slice registry                       |
+| `sharedUiIndex.md` | Fixed all import paths (removed `/primitives/` prefix)              |
+| `dataFlow.md`      | Corrected store locations, state schemas, removed duplicate warning |
+| `progress.md`      | Updated test status (32 files, 400+ cases, 80% threshold)           |
+| `activeContext.md` | This file                                                           |
+
+### Key Findings
+
+- **entities/token** documented but doesn't exist (token logic in features/invoice)
+- **widgets/app-shell** documented but doesn't exist (only widgets/navigation)
+- **useUserPreferences** store exists but is unused (reserved for future)
+- **Test count**: 842 passed in combined run (src + worktrees)
+
+## Memory Bank Structure (13 files)
 
 **Context Files (6)**
 
@@ -34,13 +55,13 @@
 - `systemPatterns` — Architecture "How"
 - `techContext` — Dependencies "What"
 - `progress` — Roadmap status
-- `userPreferences` — **NEW** Personal coding style rules
+- `userPreferences` — Personal coding style rules
 
 **Architecture Registries (5)**
 
 - `fsdRegistry` — FSD slice registry
 - `sharedUiIndex` — UI Design System catalog
-- `dataFlow` — **NEW** State topology & store ownership
+- `dataFlow` — State topology & store ownership
 - `specDrift` — SpecKit deviation log
 - `refactoringCandidates` — Technical debt tracker
 
@@ -49,22 +70,10 @@
 - `008-wagmi-rainbowkit-implementation`
 - `binary-codec-optimization`
 
-## Operational Loop v2
-
-```
-1. SYNC       → Read activeContext.md + userPreferences.md
-2. SPEC       → Find SpecKit definition
-3. ARCHITECT  → Consult fsdRegistry + sharedUiIndex + dataFlow
-4. EXECUTE    → Write code using Serena
-5. VALIDATE   → pnpm type-check + pnpm lint (FIX errors)
-6. VERIFY     → Does code match Spec?
-7. PERSIST    → Update memories
-```
-
 ## Next Steps
 
-1. Commit all memory changes
-2. Continue with P0.8.2 (Brand & Visual Components)
+1. Continue with P0.8.2 (Brand & Visual Components)
+2. Consider fixing vitest.config.ts to exclude worktrees
 
 ## Blockers
 

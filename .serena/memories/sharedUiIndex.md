@@ -6,35 +6,36 @@
 
 ## Primitives (Radix Wrappers)
 
-| Component           | Import                           | Key Props                            | Variants                                |
-| ------------------- | -------------------------------- | ------------------------------------ | --------------------------------------- |
-| `Dialog`            | `@/shared/ui/primitives/dialog`  | `open`, `onOpenChange`               | -                                       |
-| `DialogContent`     | `@/shared/ui/primitives/dialog`  | `className`                          | -                                       |
-| `DialogHeader`      | `@/shared/ui/primitives/dialog`  | `className`                          | -                                       |
-| `DialogFooter`      | `@/shared/ui/primitives/dialog`  | `className`                          | -                                       |
-| `DialogTitle`       | `@/shared/ui/primitives/dialog`  | `className`                          | -                                       |
-| `DialogDescription` | `@/shared/ui/primitives/dialog`  | `className`                          | -                                       |
-| `DialogClose`       | `@/shared/ui/primitives/dialog`  | `asChild`                            | -                                       |
-| `Select`            | `@/shared/ui/primitives/select`  | `value`, `onValueChange`, `disabled` | -                                       |
-| `SelectTrigger`     | `@/shared/ui/primitives/select`  | `className`, `variant`, `size`       | `default`, `outline` / `sm`, `md`, `lg` |
-| `SelectValue`       | `@/shared/ui/primitives/select`  | `placeholder`                        | -                                       |
-| `SelectContent`     | `@/shared/ui/primitives/select`  | `className`, `position`              | -                                       |
-| `SelectItem`        | `@/shared/ui/primitives/select`  | `value`, `disabled`                  | -                                       |
-| `SelectGroup`       | `@/shared/ui/primitives/select`  | -                                    | -                                       |
-| `SelectLabel`       | `@/shared/ui/primitives/select`  | -                                    | -                                       |
-| `Popover`           | `@/shared/ui/primitives/popover` | `open`, `onOpenChange`               | -                                       |
-| `PopoverTrigger`    | `@/shared/ui/primitives/popover` | `asChild`                            | -                                       |
-| `PopoverContent`    | `@/shared/ui/primitives/popover` | `align`, `sideOffset`, `className`   | -                                       |
-| `PopoverAnchor`     | `@/shared/ui/primitives/popover` | `asChild`                            | -                                       |
+| Component           | Import                | Key Props                            | Variants                                |
+| ------------------- | --------------------- | ------------------------------------ | --------------------------------------- |
+| `Dialog`            | `@/shared/ui/dialog`  | `open`, `onOpenChange`               | -                                       |
+| `DialogContent`     | `@/shared/ui/dialog`  | `className`                          | -                                       |
+| `DialogHeader`      | `@/shared/ui/dialog`  | `className`                          | -                                       |
+| `DialogFooter`      | `@/shared/ui/dialog`  | `className`                          | -                                       |
+| `DialogTitle`       | `@/shared/ui/dialog`  | `className`                          | -                                       |
+| `DialogDescription` | `@/shared/ui/dialog`  | `className`                          | -                                       |
+| `DialogClose`       | `@/shared/ui/dialog`  | `asChild`                            | -                                       |
+| `Select`            | `@/shared/ui/select`  | `value`, `onValueChange`, `disabled` | -                                       |
+| `SelectTrigger`     | `@/shared/ui/select`  | `className`, `variant`, `size`       | `default`, `outline` / `sm`, `md`, `lg` |
+| `SelectValue`       | `@/shared/ui/select`  | `placeholder`                        | -                                       |
+| `SelectContent`     | `@/shared/ui/select`  | `className`, `position`              | -                                       |
+| `SelectItem`        | `@/shared/ui/select`  | `value`, `disabled`                  | -                                       |
+| `SelectGroup`       | `@/shared/ui/select`  | -                                    | -                                       |
+| `SelectLabel`       | `@/shared/ui/select`  | -                                    | -                                       |
+| `Popover`           | `@/shared/ui/popover` | `open`, `onOpenChange`               | -                                       |
+| `PopoverTrigger`    | `@/shared/ui/popover` | `asChild`                            | -                                       |
+| `PopoverContent`    | `@/shared/ui/popover` | `align`, `sideOffset`, `className`   | -                                       |
+| `PopoverAnchor`     | `@/shared/ui/popover` | `asChild`                            | -                                       |
 
 ## Motion Components
 
-| Component         | Import               | Key Props                        | Variants                      |
-| ----------------- | -------------------- | -------------------------------- | ----------------------------- |
-| `FadeIn`          | `@/shared/ui/motion` | `duration`, `delay`, `className` | -                             |
-| `SlideIn`         | `@/shared/ui/motion` | `direction`, `duration`, `delay` | `up`, `down`, `left`, `right` |
-| `ScaleIn`         | `@/shared/ui/motion` | `duration`, `delay`, `className` | -                             |
-| `AnimatePresence` | `@/shared/ui/motion` | `mode`                           | -                             |
+| Component              | Import               | Key Props                                  | Notes                        |
+| ---------------------- | -------------------- | ------------------------------------------ | ---------------------------- |
+| `motion`               | `@/shared/ui/motion` | `initial`, `animate`, `exit`, `transition` | Raw Framer Motion primitive  |
+| `AnimatePresence`      | `@/shared/ui/motion` | `mode`                                     | For exit animations          |
+| `useAnimationControls` | `@/shared/ui/motion` | -                                          | Imperative animation control |
+| `useScroll`            | `@/shared/ui/motion` | -                                          | Scroll position tracking     |
+| `useTransform`         | `@/shared/ui/motion` | -                                          | Value transformation         |
 
 ## Form Components
 
@@ -73,14 +74,19 @@
 | --------- | -------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `Button`  | `@/shared/ui/button` | `variant`, `size`, `disabled`, `asChild` | `default`, `destructive`, `outline`, `secondary`, `ghost`, `link` / `default`, `sm`, `lg`, `icon` |
 
+## Address Input (Shared UI)
+
+| Component      | Import                      | Key Props                             | Variants |
+| -------------- | --------------------------- | ------------------------------------- | -------- |
+| `AddressInput` | `@/shared/ui/address-input` | `value`, `onChange`, `label`, `error` | -        |
+
 ## Feature-Level Form Components
 
-| Component        | Import                        | Key Props                                        | Variants |
-| ---------------- | ----------------------------- | ------------------------------------------------ | -------- |
-| `AddressInput`   | `@/features/address-input`    | `value`, `onChange`, `label`, `error`, `chainId` | -        |
-| `NetworkSelect`  | `@/features/network-select`   | `value`, `onValueChange`, `disabled`, `testnets` | -        |
-| `TokenSelect`    | `@/features/token-select`     | `value`, `onValueChange`, `chainId`, `disabled`  | -        |
-| `InvoiceItemRow` | `@/features/invoice-item-row` | `item`, `onChange`, `onRemove`, `canRemove`      | -        |
+| Component        | Import                      | Key Props                                        | Variants |
+| ---------------- | --------------------------- | ------------------------------------------------ | -------- |
+| `NetworkSelect`  | `@/features/wallet-connect` | `value`, `onValueChange`, `disabled`, `testnets` | -        |
+| `TokenSelect`    | `@/features/invoice`        | `value`, `onValueChange`, `chainId`, `disabled`  | -        |
+| `InvoiceItemRow` | `@/features/invoice`        | `item`, `onChange`, `onRemove`, `canRemove`      | -        |
 
 ---
 
@@ -107,7 +113,7 @@ git add .serena/memories/ && git commit -m "docs(memory): update sharedUiIndex"
 ```typescript
 // ✅ Correct - from Public API
 import { Button } from '@/shared/ui/button'
-import { Dialog, DialogContent } from '@/shared/ui/primitives/dialog'
+import { Dialog, DialogContent } from '@/shared/ui/dialog'
 
 // ❌ Wrong - from internal path
 import { Button } from '@/shared/ui/button/button'
