@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { Button, Card, CardContent, Heading, Text, useReducedMotion, motion, AnimatePresence } from '@/shared/ui'
 
+import { useNetworkTheme } from '../context/network-theme-context'
 import { DEMO_INVOICES, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
 import { useDemoRotation } from '../hooks/use-demo-rotation'
 
@@ -43,12 +44,21 @@ export function DemoSection() {
   const [isHovered, setIsHovered] = useState(false)
   const [wrapperScale, setWrapperScale] = useState(0.45)
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
+  const { setTheme } = useNetworkTheme()
 
   const { activeIndex, pause, resume, goTo } = useDemoRotation({
     itemCount: DEMO_INVOICES.length,
     interval: ROTATION_INTERVAL_MS,
     autoStart: !prefersReducedMotion,
   })
+
+  // Sync network theme with active invoice
+  useEffect(() => {
+    const currentInvoice = DEMO_INVOICES[activeIndex]
+    if (currentInvoice) {
+      setTheme(currentInvoice.network as 'ethereum' | 'arbitrum' | 'optimism')
+    }
+  }, [activeIndex, setTheme])
 
   // Responsive scaling based on viewport
   useEffect(() => {

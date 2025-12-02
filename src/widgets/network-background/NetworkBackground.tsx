@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { NETWORK_THEMES, type NetworkTheme } from '@/shared/ui/constants/brand-tokens'
 import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
-import { Shape } from './shapes'
+import { Shape, type ShapeConfig, type ShapeZone } from './shapes'
 
 export interface NetworkBackgroundProps {
   /** Network theme controlling colors and shapes */
@@ -14,39 +14,56 @@ export interface NetworkBackgroundProps {
 }
 
 /**
+ * Generate 2 large shapes positioned on left and right sides
+ * Shapes are large (60-70% of viewport height) and drift slowly
+ * Max 20% extends beyond screen edges (top/bottom)
+ */
+function generateShapes(themeConfig: (typeof NETWORK_THEMES)[NetworkTheme]): ShapeConfig[] {
+  const shapes: ShapeConfig[] = []
+
+  // Left side shape - large, upper area
+  shapes.push({
+    type: themeConfig.shape,
+    color: themeConfig.primary,
+    zone: 'left' as ShapeZone,
+    sizeVh: 0.65, // 65% of viewport height
+    topPercent: 10, // Upper area
+    duration: 25,
+    delay: 0,
+  })
+
+  // Right side shape - large, lower area
+  shapes.push({
+    type: themeConfig.shape,
+    color: themeConfig.secondary,
+    zone: 'right' as ShapeZone,
+    sizeVh: 0.7, // 70% of viewport height
+    topPercent: 20, // Middle-lower area
+    duration: 30,
+    delay: 2,
+  })
+
+  return shapes
+}
+
+/**
  * NetworkBackground widget - Ambient animated background for network themes
  *
- * Renders floating shapes with network-specific colors and patterns.
+ * Renders 2-3 large floating shapes on left/right sides of the screen.
+ * Shapes are network-specific (rhombus for ETH, triangle for ARB, circle for OP).
  * Supports smooth theme transitions with AnimatePresence.
  * Respects prefers-reduced-motion accessibility setting.
  *
- * @component
- * @example
- * ```tsx
- * // Default ethereum theme
- * <NetworkBackground />
- *
- * // Arbitrum theme
- * <NetworkBackground theme="arbitrum" />
- *
- * // With custom styling
- * <NetworkBackground theme="polygon" className="opacity-50" />
- * ```
+ * Layout constraints:
+ * - Shapes positioned on left/right edges only (not center)
+ * - No more than 40% of shape extends beyond screen edges
+ * - Large shapes (50-70% of viewport height)
+ * - Slow horizontal drift animation
  */
 export function NetworkBackground({ theme = 'ethereum', className }: NetworkBackgroundProps) {
   const prefersReducedMotion = useReducedMotion()
   const themeConfig = NETWORK_THEMES[theme]
-
-  // Generate shapes based on theme configuration
-  const shapes = Array.from({ length: themeConfig.shapeCount }, (_, index) => ({
-    id: `${theme}-${index}`,
-    type: themeConfig.shape,
-    color: index % 2 === 0 ? themeConfig.primary : themeConfig.secondary,
-    size: 150 + index * 20,
-    delay: index * 0.5,
-    duration: 15 + index * 2,
-    index,
-  }))
+  const shapes = generateShapes(themeConfig)
 
   if (prefersReducedMotion) {
     // Static gradient overlay for reduced motion
@@ -71,16 +88,8 @@ export function NetworkBackground({ theme = 'ethereum', className }: NetworkBack
           transition={{ duration: 1.5 }}
           className="relative h-full w-full"
         >
-          {shapes.map((shape) => (
-            <Shape
-              key={shape.id}
-              type={shape.type}
-              color={shape.color}
-              size={shape.size}
-              delay={shape.delay}
-              duration={shape.duration}
-              index={shape.index}
-            />
+          {shapes.map((shape, index) => (
+            <Shape key={`${theme}-${index}`} {...shape} />
           ))}
 
           {/* Noise texture overlay */}

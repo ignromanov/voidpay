@@ -103,3 +103,6 @@ export { AuroraText, type AuroraTextProps } from './aurora-text'
 
 // HyperText (feature: 011-brand-visual-components)
 export { HyperText, type HyperTextProps } from './hyper-text'
+
+// NetworkBackground (feature: 012-landing-page)
+export { NetworkBackground, type NetworkBackgroundProps } from './network-background'

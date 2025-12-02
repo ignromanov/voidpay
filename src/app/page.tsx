@@ -5,14 +5,7 @@
 
 import type { Metadata } from 'next'
 
-import {
-  DemoSection,
-  FooterCta,
-  HeroSection,
-  HowItWorks,
-  WhyVoidPay,
-} from '@/widgets/landing'
-import { NetworkBackground } from '@/widgets/network-background'
+import { LandingContent } from '@/widgets/landing'
 
 export const metadata: Metadata = {
   title: 'VoidPay - Stateless Crypto Invoicing',
@@ -56,15 +49,7 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <main className="relative min-h-screen">
-      {/* Network-themed animated background */}
-      <NetworkBackground theme="ethereum" className="fixed inset-0 -z-10" />
-
-      {/* Page sections - order per design assets */}
-      <HeroSection />
-      <DemoSection />
-      <HowItWorks />
-      <WhyVoidPay />
-      <FooterCta />
+      <LandingContent />
     </main>
   )
 }

@@ -109,6 +109,38 @@ type UserPreferences = {
 
 ---
 
+### 4. `NetworkThemeContext` (Landing Page Only)
+
+| Property        | Description                                          |
+| --------------- | ---------------------------------------------------- |
+| **Location**    | `widgets/landing/context/network-theme-context.tsx`  |
+| **Persistence** | None (React Context, memory only)                    |
+| **Purpose**     | Sync active network between DemoSection and landing page visuals |
+
+**State Schema:**
+
+```typescript
+type NetworkTheme = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'
+
+type NetworkThemeContextValue = {
+  theme: NetworkTheme
+  setTheme: (theme: NetworkTheme) => void
+}
+```
+
+**Write Access:**
+| Slice | Can Write | Actions |
+|-------|-----------|---------|
+| `widgets/landing/DemoSection` | ✅ | `setTheme` (when network changes in demo invoice) |
+
+**Read Access:**
+| Slice | Reads | Purpose |
+|-------|-------|---------|
+| `widgets/network-background` | `theme` | Animates background shapes per network |
+| `widgets/landing/HeroSection` | `theme` | Highlights active network badge |
+
+---
+
 ## Data Flow Patterns
 
 ### Pattern 1: Invoice Creation Flow

@@ -1,34 +1,39 @@
 # Active Context
 
 **Last Updated**: 2025-12-02
-**Current Session**: 012-landing-page — Visual fixes and animations
+**Current Session**: 012-landing-page — NetworkBackground and theme sync
 
 ## Session Summary
 
-Fixed browser and visual issues to match design v3:
+Implemented network-themed background animations and synced network highlighting:
 
 ### Changes Made (2025-12-02):
 
-1. **Navigation widget** (`widgets/navigation/Navigation.tsx`):
-   - Added VoidLogo icon next to brand name
-   - Updated nav links: Home, History, Blocked (red with ShieldAlert icon)
-   - Added separator + Create button with Plus icon
-   - Added GitHub icon link
-   - Added Connect wallet button with Wallet icon
-   - Sticky header with backdrop blur
+1. **NetworkBackground widget** (`widgets/network-background/`):
+   - 2 large floating shapes on left/right sides (65-70% viewport height)
+   - Network-specific shapes: rhombus (ETH), triangle (ARB), circle (OP), hexagon (Polygon)
+   - Slow horizontal drift animation with subtle glow (opacity 0.12-0.22)
+   - AnimatePresence for smooth 1.5s theme transitions
+   - Respects prefers-reduced-motion accessibility
 
-2. **Footer widget** (NEW: `widgets/footer/`):
-   - Copyright © 2024 VoidPay Protocol
-   - Privacy and Terms links
-   - Support VoidPay button with Heart icon
-   - GitHub and Twitter social links
-   - Added to RootLayout
+2. **NetworkThemeContext** (`widgets/landing/context/`):
+   - React Context to sync active network between DemoSection and background
+   - Consumed by: NetworkBackground, HeroSection, DemoSection
 
-3. **DemoSection animations** (`widgets/landing/demo-section/`):
-   - AnimatePresence for invoice card transitions (fade + slide)
-   - Network-colored background glow (ETH=blue, ARB=cyan, OP=red)
-   - White paper invoice (removed colored borders)
-   - Dark text for light background
+3. **LandingContent wrapper** (`widgets/landing/ui/LandingContent.tsx`):
+   - Wraps landing sections with NetworkThemeProvider
+   - Provides network theme context to all child components
+
+4. **HeroSection network badges** (`widgets/landing/hero-section/`):
+   - Added Polygon network to supported networks list
+   - Network badges highlight when active (opacity 0.85 vs 0.45)
+   - Subtle animation sync with DemoSection network selection
+
+5. **Shape clipPaths** (`widgets/network-background/shapes.tsx`):
+   - Ethereum: tall diamond crystal (polygon 50% 0%, 85% 45%, 50% 100%, 15% 45%)
+   - Arbitrum: triangle (polygon 50% 0%, 100% 100%, 0% 100%)
+   - Optimism: circle (border-radius 50%)
+   - Polygon: hexagon (6-point polygon)
 
 ### Previous Session (2025-12-01):
 

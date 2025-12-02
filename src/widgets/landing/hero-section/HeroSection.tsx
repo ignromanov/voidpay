@@ -18,10 +18,12 @@ import {
   useReducedMotion,
 } from '@/shared/ui'
 
+import { useNetworkTheme } from '../context/network-theme-context'
 import { SUPPORTED_NETWORKS } from '../constants/networks'
 
 export function HeroSection() {
   const prefersReducedMotion = useReducedMotion()
+  const { theme } = useNetworkTheme()
 
   return (
     <section
@@ -99,16 +101,23 @@ export function HeroSection() {
         </motion.div>
 
         {/* Network trust signals */}
-        <div className="flex justify-center gap-8 pt-12 text-zinc-600 opacity-60 grayscale transition-all duration-500 hover:grayscale-0">
-          {SUPPORTED_NETWORKS.map(({ name, icon: Icon }) => (
-            <div
-              key={name}
-              className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
-            >
-              <Icon className="h-3 w-3" aria-hidden="true" />
-              {name}
-            </div>
-          ))}
+        <div className="flex justify-center gap-6 pt-12">
+          {SUPPORTED_NETWORKS.map(({ id, name, icon: Icon }) => {
+            const isActive = theme === id
+            return (
+              <motion.div
+                key={id}
+                animate={{
+                  opacity: isActive ? 0.85 : 0.45,
+                }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest text-zinc-400"
+              >
+                <Icon className="h-3 w-3" aria-hidden="true" />
+                {name}
+              </motion.div>
+            )
+          })}
         </div>
       </motion.div>
     </section>
