@@ -16,10 +16,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className="bg-zinc-950 text-zinc-50 antialiased">
         <Web3Provider>
-          <Navigation />
-          {children}
+          <>
+            <Navigation />
+            {children}
+          </>
         </Web3Provider>
       </body>
     </html>

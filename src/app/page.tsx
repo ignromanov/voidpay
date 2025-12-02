@@ -1,15 +1,70 @@
-import { ConnectButton } from '@rainbow-me/rainbowkit'
+/**
+ * Landing Page - Marketing & SEO
+ * Feature: 012-landing-page
+ */
 
-export default function Home() {
+import type { Metadata } from 'next'
+
+import {
+  DemoSection,
+  FooterCta,
+  HeroSection,
+  HowItWorks,
+  WhyVoidPay,
+} from '@/widgets/landing'
+import { NetworkBackground } from '@/widgets/network-background'
+
+export const metadata: Metadata = {
+  title: 'VoidPay - Stateless Crypto Invoicing',
+  description:
+    'Create crypto invoices without accounts or servers. Privacy-first, zero-backend invoicing for Ethereum, Arbitrum, and Optimism.',
+  keywords: [
+    'crypto invoice',
+    'web3 payments',
+    'stateless invoicing',
+    'privacy-first',
+    'ethereum invoice',
+    'arbitrum payments',
+    'optimism payments',
+    'crypto billing',
+    'decentralized payments',
+  ],
+  openGraph: {
+    title: 'VoidPay - Stateless Crypto Invoicing',
+    description:
+      'Create crypto invoices without accounts or servers. Privacy-first, zero-backend invoicing.',
+    url: 'https://voidpay.xyz',
+    siteName: 'VoidPay',
+    type: 'website',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'VoidPay - Stateless Crypto Invoicing',
+    description:
+      'Create crypto invoices without accounts or servers. Privacy-first, zero-backend invoicing.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: 'https://voidpay.xyz',
+  },
+}
+
+export default function LandingPage() {
   return (
-    <div className="grid min-h-screen grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20">
-      <main className="row-start-2 flex flex-col items-center gap-8 sm:items-start">
-        <h1 className="text-electric-violet text-4xl font-bold">VoidPay</h1>
-        <p className="text-lg">Stateless Invoicing Platform</p>
-        <div className="flex flex-col items-center gap-4 sm:flex-row">
-          <ConnectButton />
-        </div>
-      </main>
-    </div>
+    <main className="relative min-h-screen">
+      {/* Network-themed animated background */}
+      <NetworkBackground theme="ethereum" className="fixed inset-0 -z-10" />
+
+      {/* Page sections - order per design assets */}
+      <HeroSection />
+      <DemoSection />
+      <HowItWorks />
+      <WhyVoidPay />
+      <FooterCta />
+    </main>
   )
 }
