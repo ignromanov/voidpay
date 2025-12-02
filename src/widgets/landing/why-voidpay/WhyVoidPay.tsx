@@ -8,7 +8,7 @@
 
 import type { SVGProps } from 'react'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 import { Heading, Text, motion, useReducedMotion } from '@/shared/ui'
 
 import { FEATURE_CARDS } from '../constants/features'

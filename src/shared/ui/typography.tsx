@@ -14,7 +14,7 @@ import { cn } from '@/shared/lib/utils'
 export const headingVariants = cva('text-zinc-100', {
   variants: {
     variant: {
-      hero: 'text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.95]',
+      hero: 'text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.15]',
       h1: 'text-3xl md:text-4xl font-black tracking-tighter',
       h2: 'text-2xl font-bold tracking-tight',
       h3: 'text-xl font-bold tracking-tight',
@@ -40,7 +40,7 @@ export type HeadingElement = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 
 export interface HeadingProps
   extends React.HTMLAttributes<HTMLHeadingElement>,
-    VariantProps<typeof headingVariants> {
+  VariantProps<typeof headingVariants> {
   /** Semantic HTML element override */
   as?: HeadingElement
 }
@@ -96,7 +96,7 @@ export type TextElement = 'p' | 'span' | 'div' | 'label'
 
 export interface TextProps
   extends React.HTMLAttributes<HTMLElement>,
-    VariantProps<typeof textVariants> {
+  VariantProps<typeof textVariants> {
   /** Semantic HTML element override */
   as?: TextElement
   /** Use monospace font (Geist Mono) */

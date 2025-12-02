@@ -16,14 +16,24 @@ export const FAQ_ITEMS: FaqItem[] = [
       "Yes, forever. We don't store your data on any server, so there's nothing to charge for. You only pay network gas fees when sending payments.",
   },
   {
+    question: "Why don't you have a token?",
+    answer:
+      "Because we're a tool, not speculation. VoidPay does one thing: invoices. No governance token, no staking, no 'utility' gimmicks. Just send the link.",
+  },
+  {
     question: 'What if VoidPay shuts down?',
     answer:
       "Your invoices keep working. The data is in the URL, not on our servers. You can even self-host VoidPay — it's open source.",
   },
   {
+    question: 'Can I self-host this?',
+    answer:
+      "Yes. Clone the repo, deploy anywhere. We're just a Next.js app — no database, no lock-in. If we disappear, you don't.",
+  },
+  {
     question: 'Do you collect any data?',
     answer:
-      "Zero. No analytics, no telemetry, no tracking. We literally can't see your invoices — they exist only in your URL.",
+      "Your invoices? Never tracked. We can't see them — the data lives in your URL, not on our servers. This landing page uses cookie-free analytics to count visits, but the invoice creator and payment pages collect nothing.",
   },
   {
     question: 'What happens if the link breaks?',
@@ -54,5 +64,10 @@ export const FAQ_ITEMS: FaqItem[] = [
     question: 'How do I get paid?',
     answer:
       'Share your invoice link with your client. They connect their wallet, review the invoice, and pay with one click. The payment goes directly to your wallet address.',
+  },
+  {
+    question: 'Who builds VoidPay?',
+    answer:
+      "Open source contributors who believe invoicing shouldn't require surveillance. Check our GitHub.",
   },
 ]

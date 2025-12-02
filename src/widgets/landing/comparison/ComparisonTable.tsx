@@ -102,7 +102,7 @@ export function ComparisonTable() {
         className="mx-auto max-w-4xl"
       >
         {/* Section header */}
-        <div className="mb-12 text-center">
+        <div className="mb-16 text-center">
           <Heading variant="h1" as="h2" className="mb-4">
             How We Compare
           </Heading>

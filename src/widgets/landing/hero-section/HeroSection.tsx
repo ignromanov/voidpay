@@ -47,15 +47,16 @@ export function HeroSection() {
             <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-500" />
           </span>
           <span className="text-xs font-medium tracking-wide text-zinc-300">
-            v1.0 Public Beta Live
+            Open Source • Zero Tracking
           </span>
         </motion.div>
 
         {/* Main headline */}
         <div className="space-y-2">
           <Heading variant="hero" as="h1" id="hero-heading">
-            Get Paid in Crypto. <br />
-            <AuroraText className="drop-shadow-2xl">Instantly.</AuroraText>
+            Get Paid in Crypto.
+            <br />
+            <AuroraText className="drop-shadow-2xl">Just Send a Link.</AuroraText>
           </Heading>
         </div>
 
@@ -64,8 +65,10 @@ export function HeroSection() {
           variant="large"
           className="mx-auto max-w-2xl px-4 font-light leading-relaxed text-zinc-400/90"
         >
-          If we shut down tomorrow, your invoices keep working.{' '}
-          <span className="font-medium text-zinc-100">That&apos;s the point.</span>
+          No servers. No accounts.{' '}
+          <span className="font-medium text-zinc-100">
+            If we disappear, your invoices don&apos;t.
+          </span>
         </Text>
 
         {/* CTA */}
@@ -81,12 +84,12 @@ export function HeroSection() {
               size="lg"
               className="h-14 rounded-2xl px-8 text-base shadow-[0_0_40px_-10px_rgba(124,58,237,0.5)]"
             >
-              Create Invoice
+              Create Your Invoice
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
           <span className="mt-3 text-sm text-zinc-500">
-            No sign-up required
+            No signup. Takes 30 seconds.
           </span>
         </motion.div>
       </motion.div>

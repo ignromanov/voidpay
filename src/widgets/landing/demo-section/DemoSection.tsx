@@ -36,6 +36,11 @@ const NETWORK_THEMES = {
     glowFrom: 'from-red-600/40',
     glowTo: 'to-orange-600/40',
   },
+  polygon: {
+    badge: 'bg-purple-600',
+    glowFrom: 'from-purple-600/40',
+    glowTo: 'to-violet-600/40',
+  },
 } as const
 
 export function DemoSection() {
@@ -56,7 +61,7 @@ export function DemoSection() {
   useEffect(() => {
     const currentInvoice = DEMO_INVOICES[activeIndex]
     if (currentInvoice) {
-      setTheme(currentInvoice.network as 'ethereum' | 'arbitrum' | 'optimism')
+      setTheme(currentInvoice.network as 'ethereum' | 'arbitrum' | 'optimism' | 'polygon')
     }
   }, [activeIndex, setTheme])
 
@@ -116,7 +121,7 @@ export function DemoSection() {
   }
 
   return (
-    <section className="relative z-10 flex w-full flex-col items-center justify-center overflow-visible py-24" aria-labelledby="demo-heading">
+    <section className="relative z-10 flex w-full flex-col items-center justify-center overflow-visible py-32" aria-labelledby="demo-heading">
       {/* Section header */}
       <div className="mb-16 space-y-3 px-4 text-center">
         <Heading variant="h1" as="h2" id="demo-heading">
@@ -130,8 +135,8 @@ export function DemoSection() {
       {/* Invoice paper container with dynamic scaling */}
       <div
         ref={containerRef}
-        className="relative my-2 flex w-full max-w-[1400px] justify-center px-4 transition-[height] duration-200 ease-linear"
-        style={{ height: scaledHeight + 100 }}
+        className="relative flex w-full max-w-[1400px] justify-center px-4 transition-[height] duration-200 ease-linear"
+        style={{ height: scaledHeight + 40 }}
       >
         {/* Scaled invoice wrapper */}
         <div
@@ -236,15 +241,14 @@ export function DemoSection() {
       </div>
 
       {/* Navigation dots */}
-      <div className="mt-6 flex justify-center gap-2">
+      <div className="mt-3 flex justify-center gap-2">
         {DEMO_INVOICES.map((invoice, index) => (
           <button
             key={invoice.id}
             type="button"
             aria-label={`View ${invoice.network} invoice`}
-            className={`h-2 rounded-full transition-all ${
-              index === activeIndex ? 'w-6 bg-violet-500' : 'w-2 bg-zinc-600 hover:bg-zinc-500'
-            }`}
+            className={`h-2 rounded-full transition-all ${index === activeIndex ? 'w-6 bg-violet-500' : 'w-2 bg-zinc-600 hover:bg-zinc-500'
+              }`}
             onClick={() => {
               goTo(index)
               pause()

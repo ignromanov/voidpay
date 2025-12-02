@@ -9,6 +9,7 @@
  */
 
 import { NetworkBackground } from '@/widgets/network-background'
+import { AudienceSection } from '../audience-section/AudienceSection'
 import { ComparisonTable } from '../comparison'
 import { NetworkThemeProvider, useNetworkTheme } from '../context/network-theme-context'
 import { DemoSection } from '../demo-section/DemoSection'
@@ -32,6 +33,7 @@ function LandingSections() {
       <HowItWorks />
       <DemoSection />
       <WhyVoidPay />
+      <AudienceSection />
       <ComparisonTable />
       <FaqSection />
       <FooterCta />

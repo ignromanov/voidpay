@@ -42,6 +42,18 @@ export const DEMO_INVOICES: DemoInvoice[] = [
       { description: 'Content Creation', quantity: 12, unitPrice: '50' },
     ],
   },
+  {
+    id: 'demo-poly-001',
+    network: 'polygon',
+    recipient: '0xdef0...mnop',
+    amount: '750',
+    token: 'USDC',
+    description: 'API Integration',
+    items: [
+      { description: 'REST API Development', quantity: 15, unitPrice: '30' },
+      { description: 'Documentation', quantity: 1, unitPrice: '300' },
+    ],
+  },
 ]
 
 export const ROTATION_INTERVAL_MS = 15_000 // 15 seconds for better comprehension

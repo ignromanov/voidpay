@@ -9,7 +9,7 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 import { Heading, Text, motion, AnimatePresence } from '@/shared/ui'
 
 import { FAQ_ITEMS, type FaqItem } from '../constants/faq'
@@ -60,7 +60,7 @@ export function FaqSection() {
   return (
     <section
       id="faq"
-      className="relative z-10 border-t border-zinc-900 bg-zinc-950/10 px-6 py-40 backdrop-blur-sm"
+      className="relative z-10 border-t border-zinc-900 bg-zinc-950/10 px-6 py-32 backdrop-blur-sm"
       aria-labelledby="faq-heading"
     >
       <div className="mx-auto max-w-3xl">

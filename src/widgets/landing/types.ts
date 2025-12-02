@@ -39,7 +39,7 @@ export type NetworkBadge = {
  */
 export type DemoInvoice = {
   id: string
-  network: 'ethereum' | 'arbitrum' | 'optimism'
+  network: 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'
   recipient: string
   amount: string
   token: string

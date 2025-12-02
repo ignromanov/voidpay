@@ -7,6 +7,7 @@
 export { HeroSection } from './hero-section'
 export { HowItWorks } from './how-it-works'
 export { WhyVoidPay } from './why-voidpay'
+export { AudienceSection } from './audience-section'
 export { DemoSection } from './demo-section'
 export { FooterCta } from './footer-cta'
 export { LandingContent } from './ui/LandingContent'

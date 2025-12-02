@@ -11,7 +11,7 @@
 import { createContext, useContext, useState, useCallback, useMemo } from 'react'
 import type { ReactNode } from 'react'
 
-type NetworkTheme = 'ethereum' | 'arbitrum' | 'optimism'
+type NetworkTheme = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'
 
 type NetworkThemeContextValue = {
   theme: NetworkTheme

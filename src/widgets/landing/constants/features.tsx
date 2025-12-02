@@ -46,10 +46,10 @@ export const FEATURE_CARDS: FeatureCard[] = [
     iconColor: 'text-emerald-500',
   },
   {
-    id: 'aesthetic',
-    title: 'Aesthetic First',
+    id: 'no-bloat',
+    title: 'No Bloat',
     description:
-      "Designed with a 'Floating Workspace' philosophy. Dark mode by default. Stark white paper contrast. Beautiful typography.",
+      'One tool. One purpose. No CRM, no upsells, no subscriptions. Just send the link.',
     icon: LayoutTemplate,
     iconColor: 'text-pink-500',
   },

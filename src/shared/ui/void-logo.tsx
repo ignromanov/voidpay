@@ -1,6 +1,7 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { useEffect, useState } from 'react'
+import { cn } from '@/shared/lib/utils'
 import { type SizePreset, getSizeValue } from './constants/brand-tokens'
 import { useReducedMotion } from './hooks/use-reduced-motion'
 
@@ -36,6 +37,12 @@ const MIN_SIZE = 16
  */
 export function VoidLogo({ className, size = 'md', static: isStatic = false }: VoidLogoProps) {
   const prefersReducedMotion = useReducedMotion()
+  const [mounted, setMounted] = useState(false)
+
+  // Only enable animations after hydration to prevent SSR mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Calculate numeric size from preset or direct number
   let numericSize: number
@@ -46,8 +53,8 @@ export function VoidLogo({ className, size = 'md', static: isStatic = false }: V
     numericSize = getSizeValue(size)
   }
 
-  // Determine if animation should be applied
-  const shouldAnimate = !isStatic && !prefersReducedMotion
+  // Determine if animation should be applied (only after mount)
+  const shouldAnimate = mounted && !isStatic && !prefersReducedMotion
 
   return (
     <svg
