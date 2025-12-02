@@ -1,11 +1,46 @@
 # Active Context
 
 **Last Updated**: 2025-12-02
-**Current Session**: 012-landing-page — NetworkBackground and theme sync
+**Current Session**: 012-landing-page — DAO Diplomat copy refinement
 
 ## Session Summary
 
 ### Changes Made (2025-12-02 - Latest):
+
+**DAO Diplomat Copy Refinement Session**:
+
+Applied DAO Diplomat skill principles (sovereignty > hype, education > sales) to refine landing page messaging:
+
+1. **HeroSection** (`widgets/landing/hero-section/HeroSection.tsx`):
+   - Updated badge: "Open Source • Zero Tracking"
+   - Two-line headline: "Get Paid in Crypto." / "Just Send a Link." (Aurora on second line)
+   - Subtext: "No servers. No accounts. If we disappear, your invoices don't."
+   - CTA: "Create Your Invoice" with "No signup. Takes 30 seconds."
+
+2. **AudienceSection** (`widgets/landing/audience-section/`) — NEW WIDGET:
+   - Created "Built For" section targeting 3 audiences: Freelancers, DAOs, Agencies
+   - Each card: icon, title, headline, description with pain points
+   - Framer Motion stagger animations
+   - Network-colored icons (emerald, violet, cyan)
+
+3. **FooterCta** (`widgets/landing/footer-cta/FooterCta.tsx`):
+   - Aurora on "Your Rules"
+   - CTA: "Get Paid Now"
+   - Subtext: "No signup. No fees. Just results."
+   - Added social links (GitHub, Twitter)
+
+4. **Features** (`widgets/landing/constants/features.tsx`):
+   - "Aesthetic First" → "No Bloat"
+   - Updated description: "One tool. One purpose. No CRM, no upsells, no subscriptions. Just send the link."
+
+5. **FAQ** (`widgets/landing/constants/faq.ts`):
+   - Added 4 new questions: token policy, self-hosting, data collection transparency, who builds
+   - Data collection answer: "Your invoices? Never tracked. We can't see them — the data lives in your URL, not on our servers. This landing page uses cookie-free analytics to count visits, but the invoice creator and payment pages collect nothing."
+
+6. **LandingContent** (`widgets/landing/ui/LandingContent.tsx`):
+   - Added AudienceSection after WhyVoidPay
+
+### Previous Session (2025-12-02 - VoidLogo redesign):
 
 1. **VoidLogo redesign** (`shared/ui/void-logo.tsx`):
    - Changed from crescent moon to black hole design

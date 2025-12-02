@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 import { useHyperText } from './hooks/use-hyper-text'
 
 export interface HyperTextProps {
