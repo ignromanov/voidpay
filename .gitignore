@@ -1,5 +1,6 @@
 # Local settings
 .claude/settings.local.json
+.claude/skills/
 
 # Assets
 assets/

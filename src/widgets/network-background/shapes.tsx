@@ -20,6 +20,8 @@ export type ShapeConfig = {
   duration: number
   /** Animation delay in seconds */
   delay: number
+  /** Disable animations for reduced motion */
+  reducedMotion?: boolean
 }
 
 /**
@@ -48,7 +50,7 @@ const CLIP_PATHS: Record<ShapeType, string | undefined> = {
  * - Shapes don't enter the central area of the screen
  * - Slow horizontal drift animation
  */
-export function Shape({ type, color, zone, sizeVh, topPercent, duration, delay }: ShapeConfig) {
+export function Shape({ type, color, zone, sizeVh, topPercent, duration, reducedMotion }: ShapeConfig) {
   // Calculate horizontal position based on zone
   // Max 20% off-screen, staying away from center
   const getHorizontalPosition = () => {
@@ -68,6 +70,9 @@ export function Shape({ type, color, zone, sizeVh, topPercent, duration, delay }
   const isRounded = type === 'circle'
   const isBlob = type === 'blob'
 
+  // Static position for reduced motion
+  const staticLeft = zone === 'left' ? -8 : 62
+
   return (
     <motion.div
       className="absolute mix-blend-screen"
@@ -78,19 +83,19 @@ export function Shape({ type, color, zone, sizeVh, topPercent, duration, delay }
         filter: 'blur(60px)',
       }}
       initial={{
-        left: `${start}%`,
-        opacity: 0,
+        left: reducedMotion ? `${staticLeft}%` : `${start}%`,
+        opacity: 0.2,
       }}
-      animate={{
-        left: driftDirection.map(v => `${v}%`),
-        opacity: [0.12, 0.22, 0.12],
-      }}
-      transition={{
-        duration,
-        delay,
-        repeat: Infinity,
-        ease: 'easeInOut',
-      }}
+      animate={
+        reducedMotion
+          ? { left: `${staticLeft}%`, opacity: 0.2 }
+          : { left: driftDirection.map(v => `${v}%`), opacity: [0.12, 0.22, 0.12] }
+      }
+      transition={
+        reducedMotion
+          ? { duration: 0 }
+          : { duration, repeat: Infinity, ease: 'easeInOut' }
+      }
     >
       <div
         data-shape={type}

@@ -1,7 +1,8 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 import { NETWORK_THEMES, type NetworkTheme } from '@/shared/ui/constants/brand-tokens'
 import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
 import { Shape, type ShapeConfig, type ShapeZone } from './shapes'
@@ -40,7 +41,7 @@ function generateShapes(themeConfig: (typeof NETWORK_THEMES)[NetworkTheme]): Sha
     sizeVh: 0.7, // 70% of viewport height
     topPercent: 20, // Middle-lower area
     duration: 30,
-    delay: 2,
+    delay: 0,
   })
 
   return shapes
@@ -62,11 +63,17 @@ function generateShapes(themeConfig: (typeof NETWORK_THEMES)[NetworkTheme]): Sha
  */
 export function NetworkBackground({ theme = 'ethereum', className }: NetworkBackgroundProps) {
   const prefersReducedMotion = useReducedMotion()
+  const [mounted, setMounted] = useState(false)
   const themeConfig = NETWORK_THEMES[theme]
   const shapes = generateShapes(themeConfig)
 
-  if (prefersReducedMotion) {
-    // Static gradient overlay for reduced motion
+  // Only enable animations after hydration to prevent SSR mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Show static gradient on SSR only
+  if (!mounted) {
     return (
       <div
         className={cn('pointer-events-none fixed inset-0 -z-10 overflow-hidden', className)}
@@ -82,14 +89,14 @@ export function NetworkBackground({ theme = 'ethereum', className }: NetworkBack
       <AnimatePresence mode="wait">
         <motion.div
           key={theme}
-          initial={{ opacity: 0 }}
+          initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.5 }}
+          transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
           className="relative h-full w-full"
         >
           {shapes.map((shape, index) => (
-            <Shape key={`${theme}-${index}`} {...shape} />
+            <Shape key={`${theme}-${index}`} {...shape} reducedMotion={prefersReducedMotion} />
           ))}
 
           {/* Noise texture overlay */}
