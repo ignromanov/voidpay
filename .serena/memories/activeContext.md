@@ -5,6 +5,26 @@
 
 ## Session Summary
 
+### Changes Made (2025-12-02 - Latest):
+
+1. **VoidLogo redesign** (`shared/ui/void-logo.tsx`):
+   - Changed from crescent moon to black hole design
+   - Black center (#09090B / #000000) with subtle violet glow (#7C3AED)
+   - Thin 1.5px violet border with soft blur filter
+   - New animation: `animate-blackhole-pulse` (subtle drop-shadow pulsing)
+
+2. **Social Images** (`app/`):
+   - `icon.tsx` — 32x32 favicon with black hole
+   - `apple-icon.tsx` — 180x180 Apple Touch Icon
+   - `opengraph-image.tsx` — 1200x630 OG image
+   - `twitter-image.tsx` — 1200x600 Twitter Card
+   - All using consistent black hole + VoidPay branding
+
+3. **CSS Animation** (`app/globals.css`):
+   - Added `--animate-blackhole-pulse` with subtle violet glow pulse
+
+### Previous Session (2025-12-02):
+
 Implemented network-themed background animations and synced network highlighting:
 
 ### Changes Made (2025-12-02):

@@ -44,4 +44,4 @@ export const DEMO_INVOICES: DemoInvoice[] = [
   },
 ]
 
-export const ROTATION_INTERVAL_MS = 10_000 // 10 seconds per spec
+export const ROTATION_INTERVAL_MS = 15_000 // 15 seconds for better comprehension

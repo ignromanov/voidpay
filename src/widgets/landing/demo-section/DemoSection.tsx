@@ -118,12 +118,12 @@ export function DemoSection() {
   return (
     <section className="relative z-10 flex w-full flex-col items-center justify-center overflow-visible py-24" aria-labelledby="demo-heading">
       {/* Section header */}
-      <div className="mb-16 space-y-1 px-4 text-center">
-        <Heading variant="h2" as="h2" id="demo-heading" className="text-xl font-bold tracking-tight text-white md:text-2xl">
-          Interactive Preview
+      <div className="mb-16 space-y-3 px-4 text-center">
+        <Heading variant="h1" as="h2" id="demo-heading">
+          See Real Invoices
         </Heading>
-        <Text variant="body" className="mx-auto max-w-md text-sm text-zinc-400">
-          Click <span className="font-bold text-white">&quot;Use This Template&quot;</span> to start editing immediately.
+        <Text variant="large" className="mx-auto max-w-lg text-zinc-400">
+          Each invoice is a self-contained URL. Hover to use as a template.
         </Text>
       </div>
 

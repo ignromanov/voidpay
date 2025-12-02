@@ -9,11 +9,14 @@
  */
 
 import { NetworkBackground } from '@/widgets/network-background'
+import { ComparisonTable } from '../comparison'
 import { NetworkThemeProvider, useNetworkTheme } from '../context/network-theme-context'
 import { DemoSection } from '../demo-section/DemoSection'
+import { FaqSection } from '../faq-section'
 import { FooterCta } from '../footer-cta/FooterCta'
 import { HeroSection } from '../hero-section/HeroSection'
 import { HowItWorks } from '../how-it-works/HowItWorks'
+import { SocialProofStrip } from '../social-proof'
 import { WhyVoidPay } from '../why-voidpay/WhyVoidPay'
 
 function LandingBackground() {
@@ -25,9 +28,12 @@ function LandingSections() {
   return (
     <>
       <HeroSection />
-      <DemoSection />
+      <SocialProofStrip />
       <HowItWorks />
+      <DemoSection />
       <WhyVoidPay />
+      <ComparisonTable />
+      <FaqSection />
       <FooterCta />
     </>
   )

@@ -1,5 +1,5 @@
 /**
- * HowItWorks - 3-step workflow section
+ * HowItWorks - Horizontal timeline workflow section
  * Feature: 012-landing-page
  * User Story: US3 (Feature Discovery & Trust Building)
  */
@@ -8,69 +8,94 @@
 
 import type { SVGProps } from 'react'
 
-import { Heading, Text } from '@/shared/ui'
+import { ArrowRight } from 'lucide-react'
+
+import { Heading, Text, motion, useReducedMotion } from '@/shared/ui'
 
 import { WORKFLOW_STEPS } from '../constants/features'
 
-function StepCard({
-  number,
+function TimelineStep({
+  step,
   icon: Icon,
   title,
   description,
+  isLast,
 }: {
-  number: string
+  step: number
   icon: React.ComponentType<SVGProps<SVGSVGElement>>
   title: string
   description: string
+  isLast: boolean
 }) {
+  const prefersReducedMotion = useReducedMotion()
+
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/20 p-8 backdrop-blur-sm transition-colors hover:bg-zinc-900/40">
-      {/* Large background number */}
-      <span className="pointer-events-none absolute -right-4 -top-10 select-none text-[100px] font-black text-white/5 transition-colors group-hover:text-white/10 md:text-[150px]">
-        {number}
-      </span>
-      <div className="relative z-10">
-        {/* Icon container */}
-        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-600 shadow-lg shadow-violet-900/20">
-          <Icon className="h-8 w-8 text-white" aria-hidden="true" />
+    <motion.div
+      initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: step * 0.15 }}
+      className="relative flex flex-col items-center text-center md:flex-1"
+    >
+      {/* Step number + Icon */}
+      <div className="relative mb-6">
+        <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-violet-500/30 bg-violet-600/10 shadow-lg shadow-violet-900/10">
+          <Icon className="h-10 w-10 text-violet-400" aria-hidden="true" />
         </div>
-        <Heading variant="h2" as="h3" className="mb-3 text-2xl">
-          {title}
-        </Heading>
-        <Text variant="body" className="text-zinc-400">
-          {description}
-        </Text>
+        {/* Step number badge */}
+        <span className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white shadow-lg">
+          {step}
+        </span>
       </div>
-    </div>
+
+      {/* Title */}
+      <Heading variant="h3" as="h3" className="mb-2 text-xl">
+        {title}
+      </Heading>
+
+      {/* Description */}
+      <Text variant="body" className="max-w-xs text-sm text-zinc-400">
+        {description}
+      </Text>
+
+      {/* Arrow to next step (hidden on mobile, shown on md+) */}
+      {!isLast && (
+        <div className="absolute right-0 top-10 hidden translate-x-1/2 md:block">
+          <ArrowRight className="h-6 w-6 text-zinc-600" aria-hidden="true" />
+        </div>
+      )}
+    </motion.div>
   )
 }
 
 export function HowItWorks() {
   return (
     <section
-      className="relative z-10 border-t border-zinc-900 bg-zinc-950/10 px-6 py-40 backdrop-blur-sm"
+      id="how-it-works"
+      className="relative z-10 bg-zinc-950/10 px-6 py-32 backdrop-blur-sm"
       aria-labelledby="how-it-works-heading"
     >
-      <div className="mx-auto max-w-6xl space-y-20">
+      <div className="mx-auto max-w-5xl space-y-16">
         {/* Section header */}
         <div className="space-y-4 text-center">
           <Heading variant="h1" as="h2" id="how-it-works-heading">
-            How It Works
+            Three Steps to Get Paid
           </Heading>
           <Text variant="large" className="text-zinc-400">
-            The simplest invoicing workflow in web3.
+            No accounts. No sign-ups. Just invoices.
           </Text>
         </div>
 
-        {/* Step cards grid */}
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
-          {WORKFLOW_STEPS.map(({ step, title, description, icon }) => (
-            <StepCard
+        {/* Timeline steps */}
+        <div className="relative flex flex-col gap-12 md:flex-row md:items-start md:justify-between md:gap-8">
+          {WORKFLOW_STEPS.map(({ step, title, description, icon }, index) => (
+            <TimelineStep
               key={step}
-              number={String(step).padStart(2, '0')}
+              step={step}
               icon={icon}
               title={title}
               description={description}
+              isLast={index === WORKFLOW_STEPS.length - 1}
             />
           ))}
         </div>

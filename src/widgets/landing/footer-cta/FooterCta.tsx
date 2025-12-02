@@ -21,8 +21,8 @@ export function FooterCta() {
           Ready to upgrade your billing?
         </Heading>
 
-        <Text variant="large" className="text-zinc-400">
-          Join thousands of web3 natives using VoidPay to settle millions in on-chain volume.
+        <Text variant="large" className="mx-auto max-w-xl text-zinc-400">
+          No accounts. No fees. No data stored. Just send a link and get paid in crypto.
         </Text>
 
         <div className="pt-8">

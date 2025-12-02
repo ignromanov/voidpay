@@ -7,6 +7,7 @@
   --animate-accretion-hover: accretion-idle 2s linear infinite;
   --animate-accretion-loading: accretion-idle 0.5s linear infinite;
   --animate-crescent-pulse: crescent-pulse 3s ease-in-out infinite;
+  --animate-blackhole-pulse: blackhole-pulse 4s ease-in-out infinite;
 
   /* Custom color - electric violet */
   --color-electric-violet: #7c3aed;
@@ -25,4 +26,13 @@
 @keyframes crescent-pulse {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
+}
+
+@keyframes blackhole-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(124, 58, 237, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.5));
+  }
 }

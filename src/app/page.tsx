@@ -4,8 +4,54 @@
  */
 
 import type { Metadata } from 'next'
+import Script from 'next/script'
 
 import { LandingContent } from '@/widgets/landing'
+import { FAQ_ITEMS } from '@/widgets/landing/constants/faq'
+
+// JSON-LD: FAQPage schema for rich snippets
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQ_ITEMS.map((item) => ({
+    '@type': 'Question',
+    name: item.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.answer,
+    },
+  })),
+}
+
+// JSON-LD: Organization schema
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'VoidPay',
+  url: 'https://voidpay.xyz',
+  logo: 'https://voidpay.xyz/logo.png',
+  description: 'Privacy-first, stateless crypto invoicing platform',
+  sameAs: ['https://github.com/voidpay/voidpay', 'https://twitter.com/voidpay'],
+}
+
+// JSON-LD: SoftwareApplication schema
+const softwareSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'VoidPay',
+  applicationCategory: 'FinanceApplication',
+  operatingSystem: 'Web',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+  },
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '5',
+    ratingCount: '1',
+  },
+}
 
 export const metadata: Metadata = {
   title: 'VoidPay - Stateless Crypto Invoicing',
@@ -48,8 +94,27 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <main className="relative min-h-screen">
-      <LandingContent />
-    </main>
+    <>
+      {/* JSON-LD Structured Data */}
+      <Script
+        id="faq-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <Script
+        id="organization-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <Script
+        id="software-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+      />
+
+      <main className="relative min-h-screen">
+        <LandingContent />
+      </main>
+    </>
   )
 }

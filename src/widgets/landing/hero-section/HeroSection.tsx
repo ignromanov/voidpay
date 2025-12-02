@@ -18,16 +18,12 @@ import {
   useReducedMotion,
 } from '@/shared/ui'
 
-import { useNetworkTheme } from '../context/network-theme-context'
-import { SUPPORTED_NETWORKS } from '../constants/networks'
-
 export function HeroSection() {
   const prefersReducedMotion = useReducedMotion()
-  const { theme } = useNetworkTheme()
 
   return (
     <section
-      className="relative z-10 flex min-h-[85vh] flex-col items-center justify-center overflow-hidden px-4 pb-20 pt-24 text-center md:px-6"
+      className="relative z-10 flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pb-24 pt-24 text-center md:px-6"
       aria-labelledby="hero-heading"
     >
       {/* Background glow element */}
@@ -58,8 +54,8 @@ export function HeroSection() {
         {/* Main headline */}
         <div className="space-y-2">
           <Heading variant="hero" as="h1" id="hero-heading">
-            The Stateless <br />
-            <AuroraText className="drop-shadow-2xl">Crypto Invoice.</AuroraText>
+            Get Paid in Crypto. <br />
+            <AuroraText className="drop-shadow-2xl">Instantly.</AuroraText>
           </Heading>
         </div>
 
@@ -68,10 +64,10 @@ export function HeroSection() {
           variant="large"
           className="mx-auto max-w-2xl px-4 font-light leading-relaxed text-zinc-400/90"
         >
-          No backend, no sign-up, just links.
+          Create stateless invoices that live in URLs.
           <br />
-          Create pure, immutable{' '}
-          <span className="font-medium text-zinc-100">on-chain business</span> documents instantly.
+          No backend, no sign-up —{' '}
+          <span className="font-medium text-zinc-100">your data never touches our servers.</span>
         </Text>
 
         {/* CTAs */}
@@ -79,46 +75,66 @@ export function HeroSection() {
           initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className="flex flex-col justify-center gap-5 px-4 pt-8 sm:flex-row"
+          className="flex flex-col items-center justify-center gap-5 px-4 pt-8 sm:flex-row"
         >
-          <Link href="/create" className="w-full sm:w-auto">
-            <Button
-              variant="glow"
-              size="lg"
-              className="h-14 w-full rounded-2xl text-base shadow-[0_0_40px_-10px_rgba(124,58,237,0.5)]"
-            >
-              Start Invoicing
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
+          <div className="flex w-full flex-col items-center sm:w-auto">
+            <Link href="/create" className="w-full sm:w-auto">
+              <Button
+                variant="glow"
+                size="lg"
+                className="h-14 w-full rounded-2xl text-base shadow-[0_0_40px_-10px_rgba(124,58,237,0.5)]"
+              >
+                Create Free Invoice
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <span className="mt-2 text-xs text-zinc-500">
+              Takes 30 seconds. No signup.
+            </span>
+          </div>
           <Button
             variant="outline"
             size="lg"
-            className="h-14 w-full rounded-2xl border-zinc-700/50 bg-zinc-900/40 text-base text-white backdrop-blur hover:border-zinc-500 hover:bg-zinc-800/60 sm:w-auto"
+            onClick={() => {
+              document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })
+            }}
+            className="h-14 w-full rounded-2xl border-zinc-700/50 bg-zinc-900/40 text-base backdrop-blur hover:border-zinc-500 hover:bg-zinc-800/60 sm:w-auto"
           >
-            View Gallery
+            See How It Works
+            <span className="text-zinc-400">↓</span>
           </Button>
         </motion.div>
+      </motion.div>
 
-        {/* Network trust signals */}
-        <div className="flex justify-center gap-6 pt-12">
-          {SUPPORTED_NETWORKS.map(({ id, name, icon: Icon }) => {
-            const isActive = theme === id
-            return (
-              <motion.div
-                key={id}
-                animate={{
-                  opacity: isActive ? 0.85 : 0.45,
-                }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
-                className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest text-zinc-400"
-              >
-                <Icon className="h-3 w-3" aria-hidden="true" />
-                {name}
-              </motion.div>
-            )
-          })}
-        </div>
+      {/* Scroll indicator - positioned at bottom of section */}
+      <motion.div
+        initial={prefersReducedMotion ? {} : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2, duration: 0.8 }}
+        className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2"
+      >
+        <motion.div
+          animate={prefersReducedMotion ? {} : { y: [0, 8, 0] }}
+          transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+          className="flex flex-col items-center gap-2 text-zinc-500"
+        >
+          <span className="text-xs uppercase tracking-widest">Scroll</span>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            className="text-zinc-500"
+          >
+            <path
+              d="M10 4v12M4 10l6 6 6-6"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </motion.div>
       </motion.div>
     </section>
   )

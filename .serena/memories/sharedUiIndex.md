@@ -78,7 +78,7 @@
 
 | Component           | Import                            | Key Props                             | Variants / Notes                                 |
 | ------------------- | --------------------------------- | ------------------------------------- | ------------------------------------------------ |
-| `VoidLogo`          | `@/shared/ui/void-logo`           | `size`, `animate`, `className`        | `sm`, `md`, `lg`, `xl` or custom number          |
+| `VoidLogo`          | `@/shared/ui/void-logo`           | `size`, `static`, `className`         | Black hole with subtle violet glow. Sizes: `sm`, `md`, `lg`, `xl` or custom number |
 | `AuroraText`        | `@/shared/ui/aurora-text`         | `as`, `className`, `children`         | Polymorphic: `span`, `h1`-`h6`, `p`              |
 | `HyperText`         | `@/shared/ui/hyper-text`          | `text`, `className`, `animateOnMount` | Character scramble reveal effect                 |
 | `VoidButtonOverlay` | `@/shared/ui/button-void-overlay` | `isLoading`, `isDisabled`             | Accretion disk animation for void button variant |

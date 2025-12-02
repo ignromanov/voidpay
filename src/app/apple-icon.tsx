@@ -1,12 +1,12 @@
 import { ImageResponse } from 'next/og'
 
 export const size = {
-  width: 32,
-  height: 32,
+  width: 180,
+  height: 180,
 }
 export const contentType = 'image/png'
 
-export default function Icon() {
+export default function AppleIcon() {
   return new ImageResponse(
     (
       <div
@@ -22,12 +22,12 @@ export default function Icon() {
         {/* Черная дыра с subtle violet glow */}
         <div
           style={{
-            width: 24,
-            height: 24,
+            width: 140,
+            height: 140,
             borderRadius: '50%',
             background: '#000',
-            border: '1.5px solid #7C3AED',
-            boxShadow: '0 0 6px rgba(124, 58, 237, 0.5)',
+            border: '3px solid #7C3AED',
+            boxShadow: '0 0 20px rgba(124, 58, 237, 0.5)',
           }}
         />
       </div>

@@ -90,7 +90,7 @@ describe('VoidLogo', () => {
       const svg = container.querySelector('svg')
 
       // Should not have pulse animation class
-      expect(svg?.getAttribute('class')).not.toContain('animate-crescent-pulse')
+      expect(svg?.getAttribute('class')).not.toContain('animate-blackhole-pulse')
     })
 
     it('should have animation class when static=false', () => {
@@ -98,7 +98,7 @@ describe('VoidLogo', () => {
       const svg = container.querySelector('svg')
 
       // Should have pulse animation class
-      expect(svg?.getAttribute('class')).toContain('animate-crescent-pulse')
+      expect(svg?.getAttribute('class')).toContain('animate-blackhole-pulse')
     })
 
     it('should have animation by default (static undefined)', () => {
@@ -106,7 +106,7 @@ describe('VoidLogo', () => {
       const svg = container.querySelector('svg')
 
       // Should have pulse animation class by default
-      expect(svg?.getAttribute('class')).toContain('animate-crescent-pulse')
+      expect(svg?.getAttribute('class')).toContain('animate-blackhole-pulse')
     })
   })
 
@@ -124,7 +124,7 @@ describe('VoidLogo', () => {
       const svg = container.querySelector('svg')
 
       // Should still have default animation class (if not static)
-      expect(svg?.getAttribute('class')).toContain('animate-crescent-pulse')
+      expect(svg?.getAttribute('class')).toContain('animate-blackhole-pulse')
     })
 
     it('should handle empty className', () => {
@@ -188,7 +188,7 @@ describe('VoidLogo', () => {
       const svg = container.querySelector('svg')
 
       // Should not have animation when reduced motion is preferred
-      expect(svg?.getAttribute('class')).not.toContain('animate-crescent-pulse')
+      expect(svg?.getAttribute('class')).not.toContain('animate-blackhole-pulse')
     })
   })
 })
