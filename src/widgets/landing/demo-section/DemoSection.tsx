@@ -9,7 +9,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
-import { Button, Card, CardContent, Heading, Text, useReducedMotion } from '@/shared/ui'
+import { Button, Card, CardContent, Heading, Text, useReducedMotion, motion, AnimatePresence } from '@/shared/ui'
 
 import { DEMO_INVOICES, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
 import { useDemoRotation } from '../hooks/use-demo-rotation'
@@ -18,19 +18,22 @@ import { useDemoRotation } from '../hooks/use-demo-rotation'
 const INVOICE_WIDTH = 794
 const INVOICE_HEIGHT = 1123
 
-// Network theme colors for visual distinction
+// Network theme colors for background glow only
 const NETWORK_THEMES = {
   ethereum: {
-    border: 'border-blue-500/30',
     badge: 'bg-blue-600',
+    glowFrom: 'from-blue-600/40',
+    glowTo: 'to-indigo-600/40',
   },
   arbitrum: {
-    border: 'border-cyan-500/30',
     badge: 'bg-cyan-600',
+    glowFrom: 'from-cyan-600/40',
+    glowTo: 'to-blue-600/40',
   },
   optimism: {
-    border: 'border-red-500/30',
     badge: 'bg-red-600',
+    glowFrom: 'from-red-600/40',
+    glowTo: 'to-orange-600/40',
   },
 } as const
 
@@ -127,82 +130,99 @@ export function DemoSection() {
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          {/* Invoice paper simulation */}
+          {/* Invoice paper simulation with animation */}
           <div className="rounded-sm shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]">
-            <Card
-              variant="glass"
-              className={`relative overflow-hidden transition-all duration-300 ${theme.border}`}
-              style={{ width: INVOICE_WIDTH, height: INVOICE_HEIGHT }}
-            >
-              {/* Network badge */}
-              <div
-                className={`absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-medium text-white ${theme.badge}`}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentInvoice.id}
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
+                transition={{ duration: 0.4, ease: 'easeInOut' }}
               >
-                {currentInvoice.network.charAt(0).toUpperCase() + currentInvoice.network.slice(1)}
-              </div>
+                <Card
+                  variant="default"
+                  className="relative overflow-hidden bg-white text-zinc-900"
+                  style={{ width: INVOICE_WIDTH, height: INVOICE_HEIGHT }}
+                >
+                  {/* Network badge */}
+                  <div
+                    className={`absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-medium text-white ${theme.badge}`}
+                  >
+                    {currentInvoice.network.charAt(0).toUpperCase() + currentInvoice.network.slice(1)}
+                  </div>
 
-              <CardContent className="flex h-full flex-col p-8">
-                {/* Invoice header */}
-                <div className="mb-8 border-b border-zinc-700 pb-6">
-                  <Text variant="label" className="text-violet-400">
-                    INVOICE
-                  </Text>
-                  <Heading variant="h2" as="h3" className="mt-2 text-3xl">
-                    {currentInvoice.description}
-                  </Heading>
-                </div>
-
-                {/* Line items */}
-                <div className="mb-8 flex-1 space-y-4">
-                  {currentInvoice.items.map((item, index) => (
-                    <div key={index} className="flex justify-between text-lg">
-                      <Text variant="body" className="text-zinc-300">
-                        {item.description}
+                  <CardContent className="flex h-full flex-col p-8">
+                    {/* Invoice header */}
+                    <div className="mb-8 border-b border-zinc-200 pb-6">
+                      <Text variant="label" className="text-violet-600">
+                        INVOICE
                       </Text>
-                      <Text variant="body" mono className="text-zinc-400">
-                        {item.quantity} x {item.unitPrice}
+                      <Heading variant="h2" as="h3" className="mt-2 text-3xl text-zinc-900">
+                        {currentInvoice.description}
+                      </Heading>
+                    </div>
+
+                    {/* Line items */}
+                    <div className="mb-8 flex-1 space-y-4">
+                      {currentInvoice.items.map((item, index) => (
+                        <div key={index} className="flex justify-between text-lg">
+                          <Text variant="body" className="text-zinc-700">
+                            {item.description}
+                          </Text>
+                          <Text variant="body" mono className="text-zinc-500">
+                            {item.quantity} x {item.unitPrice}
+                          </Text>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Total */}
+                    <div className="border-t border-zinc-200 pt-6">
+                      <div className="flex items-center justify-between">
+                        <Text variant="label" className="text-zinc-500">
+                          Total
+                        </Text>
+                        <Text variant="body" mono className="text-4xl font-bold text-zinc-900">
+                          {currentInvoice.amount} {currentInvoice.token}
+                        </Text>
+                      </div>
+                      <Text variant="small" className="mt-2 text-zinc-400">
+                        To: {currentInvoice.recipient}
                       </Text>
                     </div>
-                  ))}
-                </div>
+                  </CardContent>
 
-                {/* Total */}
-                <div className="border-t border-zinc-700 pt-6">
-                  <div className="flex items-center justify-between">
-                    <Text variant="label" className="text-zinc-400">
-                      Total
-                    </Text>
-                    <Text variant="body" mono className="text-4xl font-bold text-white">
-                      {currentInvoice.amount} {currentInvoice.token}
-                    </Text>
-                  </div>
-                  <Text variant="small" className="mt-2 text-zinc-500">
-                    To: {currentInvoice.recipient}
-                  </Text>
-                </div>
-              </CardContent>
-
-              {/* Hover overlay with CTA */}
-              {isHovered && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/5 transition-opacity">
-                  <Button
-                    variant="glow"
-                    className="rounded-full bg-violet-600 px-6 py-3"
-                    asChild
-                  >
-                    <Link href={`/create?template=${currentInvoice.id}`}>Use This Template</Link>
-                  </Button>
-                </div>
-              )}
-            </Card>
+                  {/* Hover overlay with CTA */}
+                  {isHovered && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/5 transition-opacity">
+                      <Button
+                        variant="glow"
+                        className="rounded-full bg-violet-600 px-6 py-3"
+                        asChild
+                      >
+                        <Link href={`/create?template=${currentInvoice.id}`}>Use This Template</Link>
+                      </Button>
+                    </div>
+                  )}
+                </Card>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
 
-        {/* Background glow effect */}
-        <div
-          className="pointer-events-none absolute left-1/2 top-[40%] -z-10 aspect-square w-full max-w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr from-violet-600/30 to-indigo-600/30 opacity-70 blur-[100px] mix-blend-screen"
-          style={{ transform: `scale(${wrapperScale})` }}
-        />
+        {/* Background glow effect - animated with network colors */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`glow-${currentInvoice.network}`}
+            initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 0.7, scale: 1 }}
+            exit={prefersReducedMotion ? { opacity: 0.7, scale: 1 } : { opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className={`pointer-events-none absolute left-1/2 top-[40%] -z-10 aspect-square w-full max-w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr ${theme.glowFrom} ${theme.glowTo} blur-[100px] mix-blend-screen`}
+            style={{ transform: `translateX(-50%) translateY(-50%) scale(${wrapperScale})` }}
+          />
+        </AnimatePresence>
       </div>
 
       {/* Navigation dots */}
