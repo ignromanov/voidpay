@@ -2,7 +2,7 @@
 
 **Last Updated**: 2025-12-01
 **Phase**: P0 (MVP Core)
-**Progress**: ~74% P0 complete (14/19 features)
+**Progress**: ~79% P0 complete (15/19 features)
 
 ## Completed (P0)
 
@@ -24,13 +24,14 @@
 | P0.8.0 Core Primitives | 2025-11-28 | specs/009-core-primitives-transfer/ |
 | P0.8.1 Form Components | 2025-11-29 | specs/010-form-components/          |
 | P0.8.2 Brand & Visual  | 2025-12-01 | specs/011-brand-visual-components/  |
+| P0.12 Landing Page     | 2025-12-01 | specs/012-landing-page/             |
 
 ## In Progress
 
 ### P0.8.3 Page Compositions
 
 - Status: Pending
-- Scope: Landing, Create, Pay pages
+- Scope: Create, Pay pages (Landing complete)
 - Design: assets/aistudio/v3/
 
 ## Pending (Critical Path)
@@ -40,14 +41,12 @@
 | P0.12 Payment Terminal | P0       | P0.8.3       |
 | P0.13 Magic Dust       | P0       | P0.12        |
 | P0.14 Payment Polling  | P0       | P0.13        |
-| P0.7 Landing Page      | P0       | P0.8.3       |
 | P0.19 Deployment       | P0       | All above    |
 
 ## Critical Path to MVP
 
 ```
-P0.8.2 (Brand) → P0.8.3 (Pages) → P0.12 (Terminal)
-→ P0.13 (Magic Dust) → P0.14 (Polling) → P0.7 (Landing) → P0.19 (Deploy)
+P0.8.3 (Pages) → P0.12 (Terminal) → P0.13 (Magic Dust) → P0.14 (Polling) → P0.19 (Deploy)
 ```
 
 ## Known Blockers
@@ -64,6 +63,7 @@ P0.8.2 (Brand) → P0.8.3 (Pages) → P0.12 (Terminal)
 
 ## Recent Milestones
 
+- 2025-12-01: P0.12 Landing Page (5 widgets, 56 tests)
 - 2025-12-01: Constitution v2.0.0 (agent tooling → CLAUDE.md)
 - 2025-11-29: P0.8.1 Form Components
 - 2025-11-28: P0.8.0 Core Primitives

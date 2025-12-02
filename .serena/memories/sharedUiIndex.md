@@ -72,7 +72,7 @@
 
 | Component | Import               | Key Props                                | Variants                                                                                                  |
 | --------- | -------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `Button`  | `@/shared/ui/button` | `variant`, `size`, `disabled`, `asChild` | `default`, `destructive`, `outline`, `secondary`, `ghost`, `link`, `void` / `default`, `sm`, `lg`, `icon` |
+| `Button`  | `@/shared/ui/button` | `variant`, `size`, `disabled`, `asChild` | `default`, `destructive`, `outline`, `secondary`, `ghost`, `link`, `glow`, `void` / `default`, `sm`, `lg`, `icon` |
 
 ## Brand Components (P0.8.2)
 
