@@ -1,11 +1,36 @@
 # Active Context
 
-**Last Updated**: 2025-12-01
-**Current Session**: 012-landing-page — Design implementation complete
+**Last Updated**: 2025-12-02
+**Current Session**: 012-landing-page — Visual fixes and animations
 
 ## Session Summary
 
-Updated landing page components to match design assets from `assets/aistudio/v3`:
+Fixed browser and visual issues to match design v3:
+
+### Changes Made (2025-12-02):
+
+1. **Navigation widget** (`widgets/navigation/Navigation.tsx`):
+   - Added VoidLogo icon next to brand name
+   - Updated nav links: Home, History, Blocked (red with ShieldAlert icon)
+   - Added separator + Create button with Plus icon
+   - Added GitHub icon link
+   - Added Connect wallet button with Wallet icon
+   - Sticky header with backdrop blur
+
+2. **Footer widget** (NEW: `widgets/footer/`):
+   - Copyright © 2024 VoidPay Protocol
+   - Privacy and Terms links
+   - Support VoidPay button with Heart icon
+   - GitHub and Twitter social links
+   - Added to RootLayout
+
+3. **DemoSection animations** (`widgets/landing/demo-section/`):
+   - AnimatePresence for invoice card transitions (fade + slide)
+   - Network-colored background glow (ETH=blue, ARB=cyan, OP=red)
+   - White paper invoice (removed colored borders)
+   - Dark text for light background
+
+### Previous Session (2025-12-01):
 
 ### Changes Made:
 1. **Button component** (`shared/ui/button.tsx`):

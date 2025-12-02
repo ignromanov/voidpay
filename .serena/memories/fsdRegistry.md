@@ -86,7 +86,8 @@ shared/ ───────► Can import: nothing (leaf layer)
 | Slice                        | Public API                                                          | Status      | SpecKit | Dependencies                              |
 | ---------------------------- | ------------------------------------------------------------------- | ----------- | ------- | ----------------------------------------- |
 | `widgets/landing`            | `HeroSection, HowItWorks, WhyVoidPay, DemoSection, FooterCta`       | Implemented | P0.12   | shared/ui, widgets/network-background     |
-| `widgets/navigation`         | `Navigation` (no public API)                                        | Draft       | P0.6.6  | features/wallet-connect, shared/ui        |
+| `widgets/navigation`         | `Navigation`                                                        | Implemented | P0.12   | shared/ui (VoidLogo, Button)              |
+| `widgets/footer`             | `Footer`                                                            | Implemented | P0.12   | shared/ui (Button)                        |
 | `widgets/network-background` | `NetworkBackground`                                                 | Implemented | P0.8.2  | shared/ui (motion, brand-tokens)          |
 | `widgets/invoice-paper`      | -                                                                   | Pending     | P0.8.3  | entities/invoice, shared/ui               |
 | `widgets/invoice-editor`     | -                                                                   | Pending     | P0.8.3  | features/\*, entities/invoice             |
