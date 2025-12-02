@@ -23,7 +23,7 @@ export function HeroSection() {
 
   return (
     <section
-      className="relative z-10 flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pb-24 pt-24 text-center md:px-6"
+      className="relative z-10 flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pb-36 pt-16 text-center md:px-6"
       aria-labelledby="hero-heading"
     >
       {/* Background glow element */}
@@ -35,7 +35,7 @@ export function HeroSection() {
         transition={{ duration: 0.8, ease: 'easeOut' }}
         className="relative z-20 mx-auto max-w-5xl space-y-10"
       >
-        {/* Beta badge */}
+        {/* Open Source • Zero Tracking badge */}
         <motion.div
           initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -99,7 +99,7 @@ export function HeroSection() {
         initial={prefersReducedMotion ? {} : { opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2, duration: 0.8 }}
-        className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2"
+        className="absolute bottom-28 left-1/2 z-20 -translate-x-1/2"
       >
         <motion.div
           animate={prefersReducedMotion ? {} : { y: [0, 8, 0] }}
