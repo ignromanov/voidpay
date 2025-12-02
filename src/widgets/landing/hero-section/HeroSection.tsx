@@ -64,45 +64,30 @@ export function HeroSection() {
           variant="large"
           className="mx-auto max-w-2xl px-4 font-light leading-relaxed text-zinc-400/90"
         >
-          Create stateless invoices that live in URLs.
-          <br />
-          No backend, no sign-up —{' '}
-          <span className="font-medium text-zinc-100">your data never touches our servers.</span>
+          If we shut down tomorrow, your invoices keep working.{' '}
+          <span className="font-medium text-zinc-100">That&apos;s the point.</span>
         </Text>
 
-        {/* CTAs */}
+        {/* CTA */}
         <motion.div
           initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className="flex flex-col items-center justify-center gap-5 px-4 pt-8 sm:flex-row"
+          className="flex flex-col items-center px-4 pt-8"
         >
-          <div className="flex w-full flex-col items-center sm:w-auto">
-            <Link href="/create" className="w-full sm:w-auto">
-              <Button
-                variant="glow"
-                size="lg"
-                className="h-14 w-full rounded-2xl text-base shadow-[0_0_40px_-10px_rgba(124,58,237,0.5)]"
-              >
-                Create Free Invoice
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <span className="mt-2 text-xs text-zinc-500">
-              Takes 30 seconds. No signup.
-            </span>
-          </div>
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => {
-              document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })
-            }}
-            className="h-14 w-full rounded-2xl border-zinc-700/50 bg-zinc-900/40 text-base backdrop-blur hover:border-zinc-500 hover:bg-zinc-800/60 sm:w-auto"
-          >
-            See How It Works
-            <span className="text-zinc-400">↓</span>
-          </Button>
+          <Link href="/create">
+            <Button
+              variant="glow"
+              size="lg"
+              className="h-14 rounded-2xl px-8 text-base shadow-[0_0_40px_-10px_rgba(124,58,237,0.5)]"
+            >
+              Create Invoice
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+          <span className="mt-3 text-sm text-zinc-500">
+            No sign-up required
+          </span>
         </motion.div>
       </motion.div>
 

@@ -16,6 +16,16 @@ export const FAQ_ITEMS: FaqItem[] = [
       "Yes, forever. We don't store your data on any server, so there's nothing to charge for. You only pay network gas fees when sending payments.",
   },
   {
+    question: 'What if VoidPay shuts down?',
+    answer:
+      "Your invoices keep working. The data is in the URL, not on our servers. You can even self-host VoidPay — it's open source.",
+  },
+  {
+    question: 'Do you collect any data?',
+    answer:
+      "Zero. No analytics, no telemetry, no tracking. We literally can't see your invoices — they exist only in your URL.",
+  },
+  {
     question: 'What happens if the link breaks?',
     answer:
       "It can't break. Your invoice data IS the link — it's encoded directly in the URL. As long as you have the URL saved, your invoice exists forever.",

@@ -18,23 +18,26 @@ export function FooterCta() {
     >
       <div className="mx-auto max-w-4xl space-y-10 text-center">
         <Heading variant="hero" as="h2" id="footer-cta-heading" className="text-4xl md:text-6xl">
-          Ready to upgrade your billing?
+          Your Invoice. Your Link. Your Rules.
         </Heading>
 
         <Text variant="large" className="mx-auto max-w-xl text-zinc-400">
-          No accounts. No fees. No data stored. Just send a link and get paid in crypto.
+          Create your first invoice in 30 seconds.
         </Text>
 
-        <div className="pt-8">
+        <div className="flex flex-col items-center pt-8">
           <Link href="/create">
             <Button
               variant="glow"
               size="lg"
-              className="h-16 w-full rounded-2xl px-12 text-xl shadow-[0_0_60px_-15px_rgba(124,58,237,0.5)] sm:w-auto"
+              className="h-16 rounded-2xl px-12 text-xl shadow-[0_0_60px_-15px_rgba(124,58,237,0.5)]"
             >
-              Create Free Invoice
+              Create Invoice
             </Button>
           </Link>
+          <span className="mt-3 text-sm text-zinc-500">
+            No sign-up required
+          </span>
         </div>
       </div>
     </section>

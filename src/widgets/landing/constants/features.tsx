@@ -23,17 +23,17 @@ import type { FeatureCard, WorkflowStep } from '../types'
 export const FEATURE_CARDS: FeatureCard[] = [
   {
     id: 'no-database',
-    title: 'No Database',
+    title: 'Zero Storage, Zero Risk',
     description:
-      "We don't store your data. Your invoice information is encoded directly into the URL, making it truly stateless and private.",
+      "If we get hacked, there's nothing to steal. Your invoice data exists only in your URL.",
     icon: Database,
     iconColor: 'text-violet-500',
   },
   {
     id: 'multichain',
-    title: 'Multi-Chain',
+    title: 'Multi-Chain Native',
     description:
-      'Support for Ethereum, Arbitrum, Optimism, Polygon, and Base. The UI adapts to the network vibe automatically.',
+      'Ethereum, Arbitrum, Optimism, Polygon. The UI vibes with your network.',
     icon: Globe2,
     iconColor: 'text-cyan-500',
   },
@@ -55,9 +55,9 @@ export const FEATURE_CARDS: FeatureCard[] = [
   },
   {
     id: 'instant',
-    title: 'Instant Pay',
+    title: 'One-Click Payments',
     description:
-      'Recipients can connect their wallet and pay instantly. No sign-ups required for either party.',
+      'Your client opens the link, connects wallet, pays. No sign-up for either party.',
     icon: Zap,
     iconColor: 'text-yellow-500',
   },
@@ -78,20 +78,19 @@ export const WORKFLOW_STEPS: WorkflowStep[] = [
   {
     step: 1,
     title: 'Create',
-    description:
-      'Fill out the invoice details in our beautiful editor. Select your preferred network and token.',
+    description: 'Add invoice details. Pick network and token.',
     icon: MousePointerClick,
   },
   {
     step: 2,
     title: 'Share',
-    description: 'Generate a unique, immutable link. No PDF attachments, just a sleek web link.',
+    description: 'Get a permanent URL. No attachments needed.',
     icon: Share2,
   },
   {
     step: 3,
     title: 'Get Paid',
-    description: 'Your client connects their wallet and pays instantly in the requested token.',
+    description: 'Client connects wallet and pays. One click.',
     icon: Wallet,
   },
 ]

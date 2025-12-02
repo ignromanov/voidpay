@@ -8,7 +8,7 @@
 
 import type { LucideIcon } from 'lucide-react'
 
-import { Github, Lock, Zap, Globe } from 'lucide-react'
+import { Github, Lock, ServerOff, Globe } from 'lucide-react'
 
 import { motion, useReducedMotion } from '@/shared/ui'
 
@@ -32,9 +32,9 @@ const TRUST_BADGES: TrustBadge[] = [
     href: 'https://github.com/voidpay/voidpay',
   },
   {
-    icon: Zap,
-    label: 'Instant Settlement',
-    description: 'Direct wallet-to-wallet',
+    icon: ServerOff,
+    label: 'Shutdown-Proof',
+    description: 'Deploy locally if we disappear',
   },
   {
     icon: Globe,
