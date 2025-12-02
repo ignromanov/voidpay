@@ -260,6 +260,24 @@ if [ -n "$UPDATE_BRANCH" ]; then
             >&2 echo "[specify] Created node_modules symlink"
         fi
 
+        # Create symlink to pnpm-lock.yaml
+        if [ -f "$REPO_ROOT/pnpm-lock.yaml" ] && [ ! -e "$WORKTREE_DIR/pnpm-lock.yaml" ]; then
+            ln -s "$REPO_ROOT/pnpm-lock.yaml" "$WORKTREE_DIR/pnpm-lock.yaml"
+            >&2 echo "[specify] Created pnpm-lock.yaml symlink"
+        fi
+
+        # Create symlink to .env.local
+        if [ -f "$REPO_ROOT/.env.local" ] && [ ! -e "$WORKTREE_DIR/.env.local" ]; then
+            ln -s "$REPO_ROOT/.env.local" "$WORKTREE_DIR/.env.local"
+            >&2 echo "[specify] Created .env.local symlink"
+        fi
+
+        # Create symlink to assets directory
+        if [ -d "$REPO_ROOT/assets" ] && [ ! -e "$WORKTREE_DIR/assets" ]; then
+            ln -s "$REPO_ROOT/assets" "$WORKTREE_DIR/assets"
+            >&2 echo "[specify] Created assets symlink"
+        fi
+
         # Copy .serena if needed
         if [ -d "$REPO_ROOT/.serena" ] && [ ! -e "$WORKTREE_DIR/.serena" ]; then
             mkdir -p "$WORKTREE_DIR/.serena/cache" "$WORKTREE_DIR/.serena/logs"
@@ -430,6 +448,24 @@ if [ "$HAS_GIT" = true ]; then
     if [ -d "$REPO_ROOT/node_modules" ] && [ ! -e "$WORKTREE_DIR/node_modules" ]; then
         ln -s "$REPO_ROOT/node_modules" "$WORKTREE_DIR/node_modules"
         >&2 echo "[specify] Created node_modules symlink for tooling compatibility"
+    fi
+
+    # Create symlink to pnpm-lock.yaml for consistent dependency resolution
+    if [ -f "$REPO_ROOT/pnpm-lock.yaml" ] && [ ! -e "$WORKTREE_DIR/pnpm-lock.yaml" ]; then
+        ln -s "$REPO_ROOT/pnpm-lock.yaml" "$WORKTREE_DIR/pnpm-lock.yaml"
+        >&2 echo "[specify] Created pnpm-lock.yaml symlink for consistent deps"
+    fi
+
+    # Create symlink to .env.local for shared local environment variables
+    if [ -f "$REPO_ROOT/.env.local" ] && [ ! -e "$WORKTREE_DIR/.env.local" ]; then
+        ln -s "$REPO_ROOT/.env.local" "$WORKTREE_DIR/.env.local"
+        >&2 echo "[specify] Created .env.local symlink for shared secrets"
+    fi
+
+    # Create symlink to assets directory for shared static files
+    if [ -d "$REPO_ROOT/assets" ] && [ ! -e "$WORKTREE_DIR/assets" ]; then
+        ln -s "$REPO_ROOT/assets" "$WORKTREE_DIR/assets"
+        >&2 echo "[specify] Created assets symlink for shared static files"
     fi
 
     # Create .serena directory structure for worktree (isolated cache, copied memories)
