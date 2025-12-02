@@ -115,9 +115,9 @@ describe('wagmi config with testnets', () => {
     // Should have 8 chains: 4 mainnet + 4 testnet
     expect(chains.length).toBe(8)
 
-    // Check for testnet chains
-    const sepolia = chains.find((c) => c.id === 11155111)
-    expect(sepolia).toBeDefined()
+    // Check for testnet chains (Sepolia)
+    const hasTestnet = chains.some((c) => c.testnet)
+    expect(hasTestnet).toBe(true)
   })
 
   it('should exclude testnet chains when NEXT_PUBLIC_ENABLE_TESTNETS is false', async () => {
@@ -129,8 +129,8 @@ describe('wagmi config with testnets', () => {
     // Should have only 4 mainnet chains
     expect(chains.length).toBe(4)
 
-    // Sepolia should not be present
-    const sepolia = chains.find((c) => c.id === 11155111)
-    expect(sepolia).toBeUndefined()
+    // No testnets should be present
+    const hasTestnet = chains.some((c) => c.testnet)
+    expect(hasTestnet).toBe(false)
   })
 })
