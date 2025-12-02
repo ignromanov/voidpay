@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Web3Provider } from './providers'
 import { Navigation } from '@/widgets/navigation/Navigation'
+import { Footer } from '@/widgets/footer'
 import '@rainbow-me/rainbowkit/styles.css'
 import './globals.css'
 
@@ -21,6 +22,7 @@ export default function RootLayout({
           <>
             <Navigation />
             {children}
+            <Footer />
           </>
         </Web3Provider>
       </body>
