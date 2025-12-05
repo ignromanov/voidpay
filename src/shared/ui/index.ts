@@ -38,25 +38,11 @@ export { Input, inputVariants, type InputProps } from './input'
 // AddressInput (feature: 010-form-components)
 export { AddressInput, type AddressInputProps } from './address-input'
 
-// Motion (existing)
-export {
-  motion,
-  AnimatePresence,
-  useAnimation,
-  useMotionValue,
-  useTransform,
-  useSpring,
-  useScroll,
-  useInView,
-  useDragControls,
-  useAnimationControls,
-  useReducedMotion,
-  LayoutGroup,
-  Reorder,
-  type MotionProps,
-  type Variants,
-  type Transition,
-} from './motion'
+// Motion (minimal exports for bundle optimization)
+export { motion, AnimatePresence, type MotionProps, type Variants, type Transition } from './motion'
+
+// Reduced motion hook (accessibility)
+export { useReducedMotion } from './hooks/use-reduced-motion'
 
 // Popover (existing)
 export { Popover, PopoverTrigger, PopoverContent } from './popover'
@@ -106,3 +92,6 @@ export { HyperText, type HyperTextProps } from './hyper-text'
 
 // NetworkBackground (feature: 012-landing-page)
 export { NetworkBackground, type NetworkBackgroundProps } from './network-background'
+
+// WalletButton (feature: 012-landing-page)
+export { WalletButton } from './wallet-button'

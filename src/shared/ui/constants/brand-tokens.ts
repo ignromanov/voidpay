@@ -6,7 +6,7 @@
 /**
  * Network theme identifier
  */
-export type NetworkTheme = 'arbitrum' | 'optimism' | 'polygon' | 'ethereum' | 'base' | 'voidpay'
+export type NetworkTheme = 'arbitrum' | 'optimism' | 'polygon' | 'ethereum' | 'voidpay'
 
 /**
  * Shape types for network backgrounds
@@ -66,13 +66,6 @@ export const NETWORK_THEMES: Record<NetworkTheme, ThemeConfig> = {
     shape: 'rhombus',
     animation: 'sway',
     shapeCount: 8,
-  },
-  base: {
-    primary: '#0052FF',
-    secondary: '#3D7DFF',
-    shape: 'circle',
-    animation: 'drift',
-    shapeCount: 6,
   },
   voidpay: {
     primary: '#7C3AED',
