@@ -1,47 +1,61 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { cn } from '@/shared/lib/utils'
+import { cn, useHydrated } from '@/shared/lib'
+import { AnimatePresence, motion } from '@/shared/ui'
 import { NETWORK_THEMES, type NetworkTheme } from '@/shared/ui/constants/brand-tokens'
 import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
 import { Shape, type ShapeConfig, type ShapeZone } from './shapes'
 
 export interface NetworkBackgroundProps {
-  /** Network theme controlling colors and shapes */
+  /** Network theme controlling colors and shapes (defaults to voidpay) */
   theme?: NetworkTheme
   /** Custom CSS classes for the container */
   className?: string
 }
 
 /**
- * Generate 2 large shapes positioned on left and right sides
- * Shapes are large (60-70% of viewport height) and drift slowly
- * Max 20% extends beyond screen edges (top/bottom)
+ * Generate shapes with asymmetric layout:
+ * - Primary: Large shape top-left (dominant, 70% vh)
+ * - Secondary: Smaller shape bottom-right (45% vh)
+ * - Accent: Small shape mid-right (25% vh)
  */
 function generateShapes(themeConfig: (typeof NETWORK_THEMES)[NetworkTheme]): ShapeConfig[] {
   const shapes: ShapeConfig[] = []
 
-  // Left side shape - large, upper area
+  // Primary: Large shape top-left (anchor point, below header)
+  // Vertical range: 8% to ~58% (offset for ~64px header)
   shapes.push({
     type: themeConfig.shape,
     color: themeConfig.primary,
     zone: 'left' as ShapeZone,
-    sizeVh: 0.65, // 65% of viewport height
-    topPercent: 10, // Upper area
-    duration: 25,
+    sizeVh: 0.5, // 50% of viewport height
+    topPercent: 8,
+    duration: 20,
     delay: 0,
   })
 
-  // Right side shape - large, lower area
+  // Secondary: Large shape right side (diagonal balance)
+  // Vertical range: 20% to ~80%
   shapes.push({
     type: themeConfig.shape,
     color: themeConfig.secondary,
     zone: 'right' as ShapeZone,
-    sizeVh: 0.7, // 70% of viewport height
-    topPercent: 20, // Middle-lower area
-    duration: 30,
-    delay: 0,
+    sizeVh: 0.6, // 60% of viewport height
+    topPercent: 20,
+    duration: 25,
+    delay: 2,
+  })
+
+  // Accent: Small shape bottom-left (subtle, fills empty corner)
+  // Vertical range: 65% to ~90%
+  shapes.push({
+    type: themeConfig.shape,
+    color: themeConfig.primary,
+    zone: 'left' as ShapeZone,
+    sizeVh: 0.25, // 25% of viewport height
+    topPercent: 65,
+    duration: 15,
+    delay: 4,
   })
 
   return shapes
@@ -61,25 +75,18 @@ function generateShapes(themeConfig: (typeof NETWORK_THEMES)[NetworkTheme]): Sha
  * - Large shapes (50-70% of viewport height)
  * - Slow horizontal drift animation
  */
-export function NetworkBackground({ theme = 'ethereum', className }: NetworkBackgroundProps) {
+export function NetworkBackground({ theme = 'voidpay', className }: NetworkBackgroundProps) {
   const prefersReducedMotion = useReducedMotion()
-  const [mounted, setMounted] = useState(false)
+  const hydrated = useHydrated()
   const themeConfig = NETWORK_THEMES[theme]
   const shapes = generateShapes(themeConfig)
 
-  // Only enable animations after hydration to prevent SSR mismatch
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Show static gradient on SSR only
-  if (!mounted) {
+  // Render nothing on SSR to avoid flash - shapes appear after hydration
+  if (!hydrated) {
     return (
       <div
         className={cn('pointer-events-none fixed inset-0 -z-10 overflow-hidden', className)}
-        style={{
-          background: `linear-gradient(135deg, ${themeConfig.primary}15, ${themeConfig.secondary}10)`,
-        }}
+        aria-hidden="true"
       />
     )
   }
@@ -89,8 +96,8 @@ export function NetworkBackground({ theme = 'ethereum', className }: NetworkBack
       <AnimatePresence mode="wait">
         <motion.div
           key={theme}
-          initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={prefersReducedMotion ? { opacity: 0.7 } : { opacity: 0 }}
+          animate={{ opacity: 0.7 }}
           exit={{ opacity: 0 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
           className="relative h-full w-full"

@@ -117,25 +117,7 @@ describe('NetworkBackground', () => {
     })
   })
 
-  describe('T025-test: Base theme (blue circles)', () => {
-    it('should apply base theme colors', () => {
-      const { container } = render(<NetworkBackground theme="base" />)
-
-      // Should contain shapes
-      const shapes = container.querySelectorAll('[data-shape]')
-      expect(shapes.length).toBeGreaterThan(0)
-    })
-
-    it('should render 6 shapes for base', () => {
-      const { container } = render(<NetworkBackground theme="base" />)
-      const shapes = container.querySelectorAll('[data-shape="circle"]')
-
-      // Base should have 6 circles
-      expect(shapes.length).toBe(6)
-    })
-  })
-
-  describe('T026-test: VoidPay theme (violet blobs)', () => {
+  describe('T025-test: VoidPay theme (violet blobs)', () => {
     it('should apply voidpay theme colors', () => {
       const { container } = render(<NetworkBackground theme="voidpay" />)
 
@@ -204,7 +186,6 @@ describe('NetworkBackground', () => {
         'optimism',
         'polygon',
         'ethereum',
-        'base',
         'voidpay',
       ]
 
