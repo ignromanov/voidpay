@@ -8,6 +8,7 @@
 
 import type { SVGProps } from 'react'
 
+import { useHydrated } from '@/shared/lib'
 import { cn } from '@/shared/lib/utils'
 import { Heading, Text, motion, useReducedMotion } from '@/shared/ui'
 
@@ -21,17 +22,17 @@ function HeroFeatureCard({
   title,
   description,
   iconColor = 'text-violet-500',
-  prefersReducedMotion,
+  shouldAnimate,
 }: {
   icon: React.ComponentType<SVGProps<SVGSVGElement>>
   title: string
   description: string
   iconColor?: string
-  prefersReducedMotion: boolean
+  shouldAnimate: boolean
 }) {
   return (
     <motion.div
-      initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+      initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
@@ -51,44 +52,15 @@ function HeroFeatureCard({
   )
 }
 
-function SecondaryFeatureCard({
-  icon: Icon,
-  title,
-  description,
-  iconColor = 'text-violet-500',
-}: {
-  icon: React.ComponentType<SVGProps<SVGSVGElement>>
-  title: string
-  description: string
-  iconColor?: string
-}) {
-  return (
-    <div className="group flex items-start gap-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 p-5 backdrop-blur-sm transition-all hover:border-zinc-700 hover:bg-zinc-900/40">
-      {/* Icon container - smaller */}
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950">
-        <Icon className={cn('h-5 w-5', iconColor)} aria-hidden="true" />
-      </div>
-      <div>
-        <Heading variant="h3" as="h3" className="mb-1 text-base">
-          {title}
-        </Heading>
-        <Text variant="body" className="text-sm text-zinc-500">
-          {description}
-        </Text>
-      </div>
-    </div>
-  )
-}
-
 export function WhyVoidPay() {
-  const prefersReducedMotion = useReducedMotion() ?? false
+  const prefersReducedMotion = useReducedMotion()
+  const hydrated = useHydrated()
+  const shouldAnimate = hydrated && !prefersReducedMotion
 
   // Sort topCards to match TOP_FEATURES order
   const topCards = TOP_FEATURES
     .map((id) => FEATURE_CARDS.find((card) => card.id === id))
     .filter((card): card is NonNullable<typeof card> => card !== undefined)
-
-  const secondaryCards = FEATURE_CARDS.filter((card) => !TOP_FEATURES.includes(card.id))
 
   return (
     <section className="relative z-10 bg-transparent px-6 py-32" aria-labelledby="why-voidpay-heading">
@@ -103,28 +75,15 @@ export function WhyVoidPay() {
           </Text>
         </div>
 
-        {/* TOP 3 feature cards - large grid */}
-        <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-3">
+        {/* TOP 3 feature cards */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {topCards.map((card) => (
             <HeroFeatureCard
               key={card.id}
               icon={card.icon}
               title={card.title}
               description={card.description}
-              prefersReducedMotion={prefersReducedMotion}
-              {...(card.iconColor ? { iconColor: card.iconColor } : {})}
-            />
-          ))}
-        </div>
-
-        {/* Secondary features - compact row */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {secondaryCards.map((card) => (
-            <SecondaryFeatureCard
-              key={card.id}
-              icon={card.icon}
-              title={card.title}
-              description={card.description}
+              shouldAnimate={shouldAnimate}
               {...(card.iconColor ? { iconColor: card.iconColor } : {})}
             />
           ))}
