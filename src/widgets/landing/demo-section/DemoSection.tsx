@@ -9,6 +9,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
+import { useHydrated } from '@/shared/lib'
 import { Button, Card, CardContent, Heading, Text, useReducedMotion, motion, AnimatePresence } from '@/shared/ui'
 
 import { useNetworkTheme } from '../context/network-theme-context'
@@ -45,7 +46,11 @@ const NETWORK_THEMES = {
 
 export function DemoSection() {
   const prefersReducedMotion = useReducedMotion()
+  const hydrated = useHydrated()
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // Only apply animations after hydration to prevent SSR mismatch
+  const shouldAnimate = hydrated && !prefersReducedMotion
   const [isHovered, setIsHovered] = useState(false)
   const [wrapperScale, setWrapperScale] = useState(0.45)
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
@@ -138,21 +143,29 @@ export function DemoSection() {
         className="relative flex w-full max-w-[1400px] justify-center px-4 transition-[height] duration-200 ease-linear"
         style={{ height: scaledHeight + 40 }}
       >
-        {/* Scaled invoice wrapper */}
+        {/* Hover zone wrapper - contains both scaled invoice and button overlay */}
         <div
-          className="absolute left-1/2 top-0 z-20 origin-top transition-transform duration-300 ease-out will-change-transform"
-          style={{ transform: `translateX(-50%) scale(${wrapperScale})` }}
+          className="absolute left-1/2 top-0 z-20 -translate-x-1/2"
+          style={{
+            width: INVOICE_WIDTH * wrapperScale,
+            height: INVOICE_HEIGHT * wrapperScale,
+          }}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
+          {/* Scaled invoice wrapper */}
+          <div
+            className="absolute left-1/2 top-0 origin-top transition-transform duration-300 ease-out will-change-transform"
+            style={{ transform: `translateX(-50%) scale(${wrapperScale})` }}
+          >
           {/* Invoice paper simulation with animation */}
           <div className="rounded-sm shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentInvoice.id}
-                initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
                 animate={{ opacity: 1, y: 0 }}
-                exit={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
+                exit={shouldAnimate ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, ease: 'easeInOut' }}
               >
                 <Card
@@ -208,31 +221,42 @@ export function DemoSection() {
                     </div>
                   </CardContent>
 
-                  {/* Hover overlay with CTA */}
-                  {isHovered && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/5 transition-opacity">
-                      <Button
-                        variant="glow"
-                        className="rounded-full bg-violet-600 px-6 py-3"
-                        asChild
-                      >
-                        <Link href={`/create?template=${currentInvoice.id}`}>Use This Template</Link>
-                      </Button>
-                    </div>
-                  )}
                 </Card>
               </motion.div>
             </AnimatePresence>
           </div>
         </div>
 
+          {/* Hover overlay with CTA - inside hover zone to prevent flickering */}
+          <AnimatePresence>
+            {isHovered && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 z-30 flex items-center justify-center"
+              >
+                <Button
+                  variant="glow"
+                  size="lg"
+                  className="rounded-full bg-violet-600 px-8 py-4"
+                  asChild
+                >
+                  <Link href={`/create?template=${currentInvoice.id}`}>Use This Template</Link>
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
         {/* Background glow effect - animated with network colors */}
         <AnimatePresence mode="wait">
           <motion.div
             key={`glow-${currentInvoice.network}`}
-            initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.8 }}
+            initial={shouldAnimate ? { opacity: 0, scale: 0.8 } : false}
             animate={{ opacity: 0.7, scale: 1 }}
-            exit={prefersReducedMotion ? { opacity: 0.7, scale: 1 } : { opacity: 0, scale: 0.8 }}
+            exit={shouldAnimate ? { opacity: 0, scale: 0.8 } : { opacity: 0.7, scale: 1 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
             className={`pointer-events-none absolute left-1/2 top-[40%] -z-10 aspect-square w-full max-w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr ${theme.glowFrom} ${theme.glowTo} blur-[100px] mix-blend-screen`}
             style={{ transform: `translateX(-50%) translateY(-50%) scale(${wrapperScale})` }}
@@ -241,19 +265,26 @@ export function DemoSection() {
       </div>
 
       {/* Navigation dots */}
-      <div className="mt-3 flex justify-center gap-2">
+      <div className="mt-6 flex justify-center gap-3">
         {DEMO_INVOICES.map((invoice, index) => (
           <button
             key={invoice.id}
             type="button"
             aria-label={`View ${invoice.network} invoice`}
-            className={`h-2 rounded-full transition-all ${index === activeIndex ? 'w-6 bg-violet-500' : 'w-2 bg-zinc-600 hover:bg-zinc-500'
-              }`}
+            className="group relative flex h-8 w-8 cursor-pointer items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
             onClick={() => {
               goTo(index)
               pause()
             }}
-          />
+          >
+            <span
+              className={`block h-2 rounded-full transition-all duration-200 group-hover:scale-125 ${
+                index === activeIndex
+                  ? 'w-6 bg-violet-500'
+                  : 'w-2 bg-zinc-600 group-hover:bg-zinc-400'
+              }`}
+            />
+          </button>
         ))}
       </div>
     </section>
