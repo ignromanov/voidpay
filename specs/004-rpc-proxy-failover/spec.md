@@ -89,6 +89,7 @@ The application serves multiple concurrent users making blockchain requests. The
 - **Complete provider failure**: When both primary and fallback providers are simultaneously unavailable, the system returns HTTP 503 with a user-friendly error message advising users to retry later.
 
 **Deferred to Post-MVP** (see ROADMAP_P1.md: P1.41 - RPC Proxy Edge Cases & Error Resilience):
+
 - Partial provider failures (some RPC methods work, others fail)
 - Invalid or malformed provider data responses
 - Mock-to-production mode transitions
@@ -140,7 +141,6 @@ The application serves multiple concurrent users making blockchain requests. The
 - **Failover Timeout**: 2-second timeout for failover operations is assumed to balance responsiveness with allowing sufficient time for network operations.
 - **Transaction Simulation Timing**: Mock transactions will simulate realistic timing (1-3 seconds for success, 10-30 seconds for long finalization) based on typical blockchain confirmation times.
 - **Privacy Requirement**: Zero logging and telemetry is a constitutional requirement (Principle VI) and must be strictly enforced.
-
 
 ## Success Criteria _(mandatory)_
 

@@ -16,6 +16,7 @@
 ## Path Conventions
 
 This project uses Next.js App Router structure:
+
 - `src/app/` - Next.js routes
 - `src/features/` - Feature-specific logic
 - `src/shared/` - Shared utilities and configuration
@@ -311,19 +312,21 @@ Upon completing this feature, **MUST** update `ROADMAP_P0.md`:
 
 ```markdown
 ### P0.4 - RPC Proxy & Multi-Provider Failover
+
 **Status**: 🟢 **Completed**: 2025-11-21 **Compliance**: ✅
 **Feature Folder**: `specs/004-rpc-proxy-failover/`
 **Implemented**:
+
 - ✅ Edge API route at /api/rpc with Alchemy (primary) + Infura (fallback)
 - ✅ Automatic failover with <2s timeout
 - ✅ Privacy-preserving proxy (zero logging, secure API keys)
 - ✅ Mock RPC provider with simulation modes
 - ✅ Per-IP rate limiting (100 req/min) via Vercel KV
 - ✅ Security hardening (CORS, method allowlist, header validation)
-**Deviations**:
+  **Deviations**:
 - Used Vercel KV for rate limiting (justified exception to Principle I - transient operational data only)
 - Added anonymous request IDs for operational metrics (privacy-preserving monitoring)
-**Notes**:
+  **Notes**:
 - Edge Runtime constraints required Web API-only implementation
 - Mock provider automatically disabled in production builds
 - All RPC methods explicitly allowlisted for security

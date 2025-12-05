@@ -27,11 +27,7 @@ describe('Motion Exports', () => {
 
     it('should render motion.div with animation props', () => {
       render(
-        <motion.div
-          data-testid="animated-div"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
+        <motion.div data-testid="animated-div" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           Animated content
         </motion.div>
       )
@@ -42,17 +38,12 @@ describe('Motion Exports', () => {
 
     it('should render motion.button', () => {
       render(
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
+        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
           Click me
         </motion.button>
       )
 
-      expect(
-        screen.getByRole('button', { name: /click me/i })
-      ).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /click me/i })).toBeInTheDocument()
     })
   })
 
@@ -103,12 +94,7 @@ describe('Motion Exports', () => {
       const items = ['Item 1', 'Item 2', 'Item 3']
 
       render(
-        <Reorder.Group
-          axis="y"
-          values={items}
-          onReorder={() => {}}
-          data-testid="reorder-group"
-        >
+        <Reorder.Group axis="y" values={items} onReorder={() => {}} data-testid="reorder-group">
           {items.map((item) => (
             <Reorder.Item key={item} value={item}>
               {item}

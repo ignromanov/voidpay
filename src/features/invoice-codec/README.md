@@ -13,6 +13,7 @@ Stateless URL-based invoice encoding/decoding system for VoidPay.
 ## Installation
 
 Dependencies are already installed in the project:
+
 - `lz-string` - URL-safe compression
 - `zod` - Runtime validation
 
@@ -31,7 +32,7 @@ If not set, the system will fall back to `https://voidpay.com` as the default.
 ### Encoding an Invoice
 
 ```typescript
-import { generateInvoiceUrl, InvoiceSchemaV1 } from '@/features/invoice-codec';
+import { generateInvoiceUrl, InvoiceSchemaV1 } from '@/features/invoice-codec'
 
 const invoice: InvoiceSchemaV1 = {
   v: 1,
@@ -43,31 +44,31 @@ const invoice: InvoiceSchemaV1 = {
   dec: 6,
   f: { n: 'Alice', a: '0x1234567890123456789012345678901234567890' },
   c: { n: 'Bob' },
-  it: [{ d: 'Service', q: 1, r: '100000000' }]
-};
+  it: [{ d: 'Service', q: 1, r: '100000000' }],
+}
 
 try {
-  const url = generateInvoiceUrl(invoice);
-  console.log('Shareable URL:', url);
+  const url = generateInvoiceUrl(invoice)
+  console.log('Shareable URL:', url)
 } catch (error) {
-  console.error('Encoding failed:', error.message);
+  console.error('Encoding failed:', error.message)
 }
 ```
 
 ### Decoding a URL
 
 ```typescript
-import { decodeInvoice } from '@/features/invoice-codec';
+import { decodeInvoice } from '@/features/invoice-codec'
 
-const searchParams = new URLSearchParams(window.location.search);
-const compressedData = searchParams.get('d');
+const searchParams = new URLSearchParams(window.location.search)
+const compressedData = searchParams.get('d')
 
 if (compressedData) {
   try {
-    const invoice = decodeInvoice(compressedData);
-    console.log('Invoice Data:', invoice);
+    const invoice = decodeInvoice(compressedData)
+    console.log('Invoice Data:', invoice)
   } catch (error) {
-    console.error('Invalid invoice URL:', error.message);
+    console.error('Invalid invoice URL:', error.message)
   }
 }
 ```
@@ -176,6 +177,7 @@ Error: Failed to decompress invoice data
 ## Implementation Status
 
 ✅ **Completed Tasks**:
+
 - T001: Dependencies installed (lz-string, zod)
 - T002: Project structure created
 - T003: InvoiceSchemaV1 interface
@@ -189,6 +191,7 @@ Error: Failed to decompress invoice data
 - T014: Export verification
 
 ⏭️ **Skipped** (as per user request):
+
 - T009: Round-trip tests
 - T011: Forward compatibility tests
 - T013: Validation and limit tests

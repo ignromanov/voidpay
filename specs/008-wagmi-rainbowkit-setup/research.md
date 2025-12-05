@@ -11,6 +11,7 @@
 **Decision**: Wagmi v2.x (^2.19.4)
 **Rationale**: RainbowKit 2.2.9 requires `wagmi: ^2.9.0` as peer dependency. Wagmi v3.x is not yet supported.
 **Alternatives Rejected**:
+
 - Wagmi v3.x (3.0.2) - Incompatible with RainbowKit 2.x
 - ethers.js - Constitutional violation (tech-stack-locked)
 
@@ -19,6 +20,7 @@
 **Decision**: Viem v2.x (^2.39.3)
 **Rationale**: RainbowKit 2.2.9 requires `viem: 2.x` as peer dependency. Already specified in tech-stack-locked memory.
 **Alternatives Rejected**:
+
 - Viem v3.x - Not yet released
 - ethers.js - Architectural decision to use Viem (lighter, faster)
 
@@ -27,6 +29,7 @@
 **Decision**: RainbowKit v2.2.9
 **Rationale**: Latest stable release compatible with Wagmi v2.x and React 19.
 **Peer Dependencies**:
+
 - `@tanstack/react-query: >=5.0.0` (already in project: 5.90.10+)
 - `react: >=18` (project has 19.0.0+)
 - `viem: 2.x`
@@ -36,11 +39,13 @@
 
 **Decision**: Single HTTP transport to `/api/rpc?chainId={id}`
 **Rationale**:
+
 - Constitutional Principle VI (RPC Key Protection)
 - Existing `/api/rpc` proxy handles provider selection (Alchemy/Infura failover)
 - No client-side RPC keys
 
 **Implementation**:
+
 ```typescript
 import { http } from 'viem'
 
@@ -58,6 +63,7 @@ const createProxyTransport = (chainId: number) =>
 **Decision**: `darkTheme` with Electric Violet accent
 **Rationale**: Matches Hybrid Theme Strategy (dark desk zinc-950)
 **Implementation**:
+
 ```typescript
 import { darkTheme } from '@rainbow-me/rainbowkit'
 
@@ -74,6 +80,7 @@ const theme = darkTheme({
 
 **Decision**: MetaMask, WalletConnect, Coinbase Wallet, Rainbow
 **Rationale**:
+
 - MetaMask: Most popular browser extension
 - WalletConnect: Mobile wallet support (QR code)
 - Coinbase Wallet: Second largest user base
@@ -85,11 +92,13 @@ const theme = darkTheme({
 
 **Decision**: Wagmi `createStorage` with LocalStorage
 **Rationale**:
+
 - Constitutional Principle II (Privacy-First)
 - Matches existing Zustand persist pattern
 - No server-side session storage
 
 **Implementation**:
+
 ```typescript
 import { createStorage } from 'wagmi'
 
@@ -113,6 +122,7 @@ const storage = createStorage({
 
 **Decision**: Environment variable `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
 **Rationale**:
+
 - Required for WalletConnect v2 protocol
 - Public variable (safe for client-side)
 - Obtain from https://cloud.walletconnect.com/
@@ -133,15 +143,15 @@ RainbowKitProvider
 
 ### A2: FSD Layer Placement
 
-| Component | FSD Layer | Path |
-|-----------|-----------|------|
-| Wagmi config | features | `src/features/wallet-connect/config/wagmi.ts` |
-| Chain configs | features | `src/features/wallet-connect/config/chains.ts` |
-| RainbowKit theme | features | `src/features/wallet-connect/config/rainbowkit-theme.ts` |
-| Custom transport | features/lib | `src/features/wallet-connect/lib/custom-transport.ts` |
-| ConnectButton | features/ui | `src/features/wallet-connect/ui/ConnectButton.tsx` |
-| TestnetBanner | features/ui | `src/features/wallet-connect/ui/TestnetBanner.tsx` |
-| Providers wrapper | app | `src/app/providers.tsx` |
+| Component         | FSD Layer    | Path                                                     |
+| ----------------- | ------------ | -------------------------------------------------------- |
+| Wagmi config      | features     | `src/features/wallet-connect/config/wagmi.ts`            |
+| Chain configs     | features     | `src/features/wallet-connect/config/chains.ts`           |
+| RainbowKit theme  | features     | `src/features/wallet-connect/config/rainbowkit-theme.ts` |
+| Custom transport  | features/lib | `src/features/wallet-connect/lib/custom-transport.ts`    |
+| ConnectButton     | features/ui  | `src/features/wallet-connect/ui/ConnectButton.tsx`       |
+| TestnetBanner     | features/ui  | `src/features/wallet-connect/ui/TestnetBanner.tsx`       |
+| Providers wrapper | app          | `src/app/providers.tsx`                                  |
 
 ### A3: Testnet Banner Design
 
@@ -172,12 +182,12 @@ NEXT_PUBLIC_ENABLE_TESTNETS=true
 
 ### Unit Tests (Vitest)
 
-| Test File | Coverage |
-|-----------|----------|
-| `wagmi-config.test.ts` | Config creation, chain list, storage |
-| `custom-transport.test.ts` | URL generation, request routing |
-| `chains.test.ts` | Mainnet/testnet filtering, chain IDs |
-| `rainbowkit-theme.test.ts` | Theme object structure, colors |
+| Test File                  | Coverage                             |
+| -------------------------- | ------------------------------------ |
+| `wagmi-config.test.ts`     | Config creation, chain list, storage |
+| `custom-transport.test.ts` | URL generation, request routing      |
+| `chains.test.ts`           | Mainnet/testnet filtering, chain IDs |
+| `rainbowkit-theme.test.ts` | Theme object structure, colors       |
 
 ### Mocking Strategy
 
@@ -187,12 +197,12 @@ NEXT_PUBLIC_ENABLE_TESTNETS=true
 
 ## Risks & Mitigations
 
-| Risk | Mitigation |
-|------|------------|
-| WalletConnect Project ID exposure | Public env var is expected behavior |
-| RainbowKit v3 breaking changes | Pin to v2.2.9, monitor releases |
-| Transport errors not reaching proxy | Retry logic with 3 attempts |
-| Mobile wallet deep-linking issues | WalletConnect protocol handles this |
+| Risk                                | Mitigation                          |
+| ----------------------------------- | ----------------------------------- |
+| WalletConnect Project ID exposure   | Public env var is expected behavior |
+| RainbowKit v3 breaking changes      | Pin to v2.2.9, monitor releases     |
+| Transport errors not reaching proxy | Retry logic with 3 attempts         |
+| Mobile wallet deep-linking issues   | WalletConnect protocol handles this |
 
 ## Open Questions (Resolved)
 

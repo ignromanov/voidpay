@@ -26,11 +26,9 @@ export function searchHistory(
   const normalizedQuery = query.toLowerCase().trim()
 
   return history.filter((entry) => {
-    const searchableText = [
-      entry.invoiceId,
-      entry.recipientName,
-      entry.totalAmount,
-    ].join(' ').toLowerCase()
+    const searchableText = [entry.invoiceId, entry.recipientName, entry.totalAmount]
+      .join(' ')
+      .toLowerCase()
 
     return searchableText.includes(normalizedQuery)
   })

@@ -20,7 +20,7 @@ describe('chains testnet filtering', () => {
       const chains = getSupportedChains()
 
       expect(chains.length).toBe(4)
-      expect(chains.every(c => !c.testnet)).toBe(true)
+      expect(chains.every((c) => !c.testnet)).toBe(true)
     })
 
     it('should return all chains when NEXT_PUBLIC_ENABLE_TESTNETS is true', async () => {
@@ -38,7 +38,7 @@ describe('chains testnet filtering', () => {
       const { getSupportedChains } = await import('../chains')
       const chains = getSupportedChains()
 
-      const sepolia = chains.find(c => c.id === 11155111)
+      const sepolia = chains.find((c) => c.id === 11155111)
       expect(sepolia).toBeDefined()
       expect(sepolia?.testnet).toBe(true)
     })
@@ -49,7 +49,7 @@ describe('chains testnet filtering', () => {
       const { getSupportedChains } = await import('../chains')
       const chains = getSupportedChains()
 
-      const sepolia = chains.find(c => c.id === 11155111)
+      const sepolia = chains.find((c) => c.id === 11155111)
       expect(sepolia).toBeUndefined()
     })
   })

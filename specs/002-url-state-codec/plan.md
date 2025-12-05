@@ -8,6 +8,7 @@
 ## Summary
 
 Implement a stateless URL state codec system for invoice data to enable zero-backend invoicing. Key components include:
+
 1.  **InvoiceSchemaV1**: TypeScript interface with abbreviated keys (`v`, `id`, `iss`, `due`, `nt`, `net`, `cur`, `dec`, `f`, `c`, `it`, `tax`, `dsc`, `ads`, `ph`) to minimize payload.
 2.  **URL Compression**: Use `lz-string` for LZW compression/decompression.
 3.  **Validation**: Enforce 2000-byte URL limit and schema validation (Zod recommended).
@@ -83,5 +84,5 @@ src/
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
-| :--- | :--- | :--- |
-| None | N/A | N/A |
+| :-------- | :--------- | :----------------------------------- |
+| None      | N/A        | N/A                                  |

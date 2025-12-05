@@ -25,14 +25,14 @@ Implement a privacy-preserving, server-side RPC proxy using Next.js Edge API Rou
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-- [x] No backend database introduced (Principle I) - *Exception: Vercel KV used for transient Rate Limiting (Infrastructure State)*
+- [x] No backend database introduced (Principle I) - _Exception: Vercel KV used for transient Rate Limiting (Infrastructure State)_
 - [x] No user authentication/registration added (Principle III)
-- [x] Schema changes follow versioning rules (Principle IV) - *N/A*
+- [x] Schema changes follow versioning rules (Principle IV) - _N/A_
 - [x] New features preserve privacy-first approach (Principle II)
 - [x] Security mechanisms not bypassed (Principle V)
 - [x] Documentation follows context efficiency guidelines (Principle VIII)
-- [x] UI follows Hybrid Theme Strategy: dark desk (`zinc-950`), light paper (`white`) (Principle XI) - *N/A*
-- [x] Document representations maintain ISO 216 (A4) aspect ratio `1:1.414` (Principle XI) - *N/A*
+- [x] UI follows Hybrid Theme Strategy: dark desk (`zinc-950`), light paper (`white`) (Principle XI) - _N/A_
+- [x] Document representations maintain ISO 216 (A4) aspect ratio `1:1.414` (Principle XI) - _N/A_
 
 ## Project Structure
 
@@ -76,6 +76,6 @@ src/
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-| Violation                  | Why Needed         | Simpler Alternative Rejected Because |
-| -------------------------- | ------------------ | ------------------------------------ |
-| Vercel KV (Transient DB)   | Rate Limiting (FR-004) | In-memory limiting doesn't work in serverless/edge. WAF is too opaque/expensive. |
+| Violation                | Why Needed             | Simpler Alternative Rejected Because                                             |
+| ------------------------ | ---------------------- | -------------------------------------------------------------------------------- |
+| Vercel KV (Transient DB) | Rate Limiting (FR-004) | In-memory limiting doesn't work in serverless/edge. WAF is too opaque/expensive. |

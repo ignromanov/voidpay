@@ -202,8 +202,12 @@ export const useCreatorStore = create<CreatorStore>()(
               sender: {
                 name: state.preferences.defaultSenderName || '',
                 wallet: state.preferences.defaultSenderWallet || '',
-                ...(state.preferences.defaultSenderEmail && { email: state.preferences.defaultSenderEmail }),
-                ...(state.preferences.defaultSenderAddress && { address: state.preferences.defaultSenderAddress }),
+                ...(state.preferences.defaultSenderEmail && {
+                  email: state.preferences.defaultSenderEmail,
+                }),
+                ...(state.preferences.defaultSenderAddress && {
+                  address: state.preferences.defaultSenderAddress,
+                }),
               },
               recipient: {
                 name: '',
@@ -248,8 +252,12 @@ export const useCreatorStore = create<CreatorStore>()(
           sender: {
             name: state.preferences.defaultSenderName || '',
             wallet: state.preferences.defaultSenderWallet || '',
-            ...(state.preferences.defaultSenderEmail && { email: state.preferences.defaultSenderEmail }),
-            ...(state.preferences.defaultSenderAddress && { address: state.preferences.defaultSenderAddress }),
+            ...(state.preferences.defaultSenderEmail && {
+              email: state.preferences.defaultSenderEmail,
+            }),
+            ...(state.preferences.defaultSenderAddress && {
+              address: state.preferences.defaultSenderAddress,
+            }),
           },
           recipient: {
             name: '',
@@ -392,8 +400,12 @@ export const useCreatorStore = create<CreatorStore>()(
           sender: {
             name: state.preferences.defaultSenderName || '',
             wallet: state.preferences.defaultSenderWallet || '',
-            ...(state.preferences.defaultSenderEmail && { email: state.preferences.defaultSenderEmail }),
-            ...(state.preferences.defaultSenderAddress && { address: state.preferences.defaultSenderAddress }),
+            ...(state.preferences.defaultSenderEmail && {
+              email: state.preferences.defaultSenderEmail,
+            }),
+            ...(state.preferences.defaultSenderAddress && {
+              address: state.preferences.defaultSenderAddress,
+            }),
           },
           recipient: {
             name: entry.recipientName,

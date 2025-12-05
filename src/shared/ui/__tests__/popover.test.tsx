@@ -18,9 +18,7 @@ describe('Popover Component', () => {
       </Popover>
     )
 
-    expect(
-      screen.getByRole('button', { name: /open popover/i })
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /open popover/i })).toBeInTheDocument()
   })
 
   it('should open popover when trigger is clicked', async () => {

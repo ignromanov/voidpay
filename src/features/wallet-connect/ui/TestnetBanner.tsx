@@ -59,19 +59,17 @@ export function TestnetBanner({ className }: TestnetBannerProps) {
     <div
       role="alert"
       className={cn(
-        'w-full bg-amber-500/10 border-b border-amber-500/20',
+        'w-full border-b border-amber-500/20 bg-amber-500/10',
         'px-4 py-2 text-center',
         className
       )}
     >
-      <p className="text-sm text-amber-500 font-medium">
+      <p className="text-sm font-medium text-amber-500">
         <span className="font-bold">TESTNET MODE</span>
         {' · '}
         Connected to {chainName}
         {' · '}
-        <span className="text-amber-400">
-          Use test funds only. Do not send real assets.
-        </span>
+        <span className="text-amber-400">Use test funds only. Do not send real assets.</span>
       </p>
     </div>
   )

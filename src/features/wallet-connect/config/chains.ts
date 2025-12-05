@@ -27,12 +27,7 @@ import type { Chain } from 'viem'
  * - Optimism (10)
  * - Polygon PoS (137)
  */
-export const MAINNET_CHAINS: [Chain, ...Chain[]] = [
-  mainnet,
-  arbitrum,
-  optimism,
-  polygon,
-]
+export const MAINNET_CHAINS: [Chain, ...Chain[]] = [mainnet, arbitrum, optimism, polygon]
 
 /**
  * Supported testnet chains (available when NEXT_PUBLIC_ENABLE_TESTNETS=true)
@@ -42,12 +37,7 @@ export const MAINNET_CHAINS: [Chain, ...Chain[]] = [
  * - Optimism Sepolia (11155420)
  * - Polygon Amoy (80002)
  */
-export const TESTNET_CHAINS: Chain[] = [
-  sepolia,
-  arbitrumSepolia,
-  optimismSepolia,
-  polygonAmoy,
-]
+export const TESTNET_CHAINS: Chain[] = [sepolia, arbitrumSepolia, optimismSepolia, polygonAmoy]
 
 /**
  * Chain IDs organized by network type

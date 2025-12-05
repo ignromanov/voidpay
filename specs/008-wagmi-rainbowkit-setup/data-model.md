@@ -17,8 +17,8 @@ import type { Chain } from 'viem'
 interface ExtendedChainConfig extends Chain {
   // VoidPay-specific extensions
   themeColors: {
-    primary: string    // Gradient start
-    secondary: string  // Gradient end
+    primary: string // Gradient start
+    secondary: string // Gradient end
   }
   isTestnet: boolean
 }
@@ -26,21 +26,21 @@ interface ExtendedChainConfig extends Chain {
 
 **Mainnet Chains**:
 
-| Chain | ID | Native | Theme Primary | Theme Secondary |
-|-------|-----|--------|---------------|-----------------|
-| Ethereum | 1 | ETH | #7C3AED | #A78BFA |
-| Arbitrum | 42161 | ETH | #3B82F6 | #06B6D4 |
-| Optimism | 10 | ETH | #EF4444 | #F97316 |
-| Polygon | 137 | POL | #A855F7 | #C084FC |
+| Chain    | ID    | Native | Theme Primary | Theme Secondary |
+| -------- | ----- | ------ | ------------- | --------------- |
+| Ethereum | 1     | ETH    | #7C3AED       | #A78BFA         |
+| Arbitrum | 42161 | ETH    | #3B82F6       | #06B6D4         |
+| Optimism | 10    | ETH    | #EF4444       | #F97316         |
+| Polygon  | 137   | POL    | #A855F7       | #C084FC         |
 
 **Testnet Chains**:
 
-| Chain | ID | Native | Parent Mainnet |
-|-------|-----|--------|----------------|
-| Sepolia | 11155111 | ETH | Ethereum |
-| Arbitrum Sepolia | 421614 | ETH | Arbitrum |
-| Optimism Sepolia | 11155420 | ETH | Optimism |
-| Polygon Amoy | 80002 | POL | Polygon |
+| Chain            | ID       | Native | Parent Mainnet |
+| ---------------- | -------- | ------ | -------------- |
+| Sepolia          | 11155111 | ETH    | Ethereum       |
+| Arbitrum Sepolia | 421614   | ETH    | Arbitrum       |
+| Optimism Sepolia | 11155420 | ETH    | Optimism       |
+| Polygon Amoy     | 80002    | POL    | Polygon        |
 
 ### E2: WagmiConfig
 
@@ -54,8 +54,8 @@ import type { Config } from 'wagmi'
 
 interface WagmiConfigOptions {
   chains: readonly Chain[]
-  projectId: string  // WalletConnect Project ID
-  appName: string    // Application name for wallets
+  projectId: string // WalletConnect Project ID
+  appName: string // Application name for wallets
   appDescription?: string
   appUrl?: string
   appIcon?: string
@@ -80,7 +80,7 @@ interface WagmiStorageState {
       }
     }>
     chainId: number
-    current: string | null  // Current connection key
+    current: string | null // Current connection key
   }
   version: number
 }
@@ -96,8 +96,8 @@ Custom theme configuration for RainbowKit.
 import type { Theme } from '@rainbow-me/rainbowkit'
 
 interface VoidPayThemeConfig {
-  accentColor: string         // #7C3AED (Electric Violet)
-  accentColorForeground: string  // white
+  accentColor: string // #7C3AED (Electric Violet)
+  accentColorForeground: string // white
   borderRadius: 'none' | 'small' | 'medium' | 'large'
   fontStack: 'rounded' | 'system'
   overlayBlur: 'none' | 'small' | 'large'
@@ -149,16 +149,17 @@ Alchemy/Infura (provider selection)
 
 Wagmi manages connection state internally with LocalStorage persistence:
 
-| State | Type | Persistence |
-|-------|------|-------------|
-| `isConnected` | boolean | Session + LocalStorage |
-| `address` | `0x${string}` | LocalStorage |
-| `chainId` | number | LocalStorage |
-| `connector` | Connector | LocalStorage (reference) |
+| State         | Type          | Persistence              |
+| ------------- | ------------- | ------------------------ |
+| `isConnected` | boolean       | Session + LocalStorage   |
+| `address`     | `0x${string}` | LocalStorage             |
+| `chainId`     | number        | LocalStorage             |
+| `connector`   | Connector     | LocalStorage (reference) |
 
 ### Application State (Zustand - No Changes)
 
 Existing stores remain unchanged:
+
 - `useCreatorStore` - Invoice drafts, history
 - `usePayerStore` - Receipts, transaction hashes
 
@@ -173,8 +174,10 @@ const SUPPORTED_MAINNET_IDS = [1, 42161, 10, 137] as const
 const SUPPORTED_TESTNET_IDS = [11155111, 421614, 11155420, 80002] as const
 
 function isSupportedChain(chainId: number): boolean {
-  return SUPPORTED_MAINNET_IDS.includes(chainId) ||
+  return (
+    SUPPORTED_MAINNET_IDS.includes(chainId) ||
     (ENABLE_TESTNETS && SUPPORTED_TESTNET_IDS.includes(chainId))
+  )
 }
 ```
 

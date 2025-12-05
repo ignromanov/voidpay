@@ -54,9 +54,7 @@ export function Web3Provider({ children }: ProviderProps) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={voidPayTheme}>
-          {children}
-        </RainbowKitProvider>
+        <RainbowKitProvider theme={voidPayTheme}>{children}</RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   )

@@ -41,9 +41,7 @@ export interface NetworkMismatchResult {
  * @param params - Invoice and connected chain IDs
  * @returns Mismatch detection result with chain details
  */
-export function detectNetworkMismatch(
-  params: DetectNetworkMismatchParams
-): NetworkMismatchResult {
+export function detectNetworkMismatch(params: DetectNetworkMismatchParams): NetworkMismatchResult {
   const { invoiceChainId, connectedChainId } = params
 
   const expectedChain = getChainById(invoiceChainId)

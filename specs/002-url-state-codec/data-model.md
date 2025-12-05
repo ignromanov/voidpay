@@ -12,66 +12,66 @@ The `InvoiceSchemaV1` is the source of truth for the invoice data structure. It 
 ```typescript
 interface InvoiceSchemaV1 {
   /** Schema Version (Fixed: 1) */
-  v: 1;
+  v: 1
   /** Invoice ID (UUID or unique string) */
-  id: string;
+  id: string
   /** Issue Date (Unix Timestamp in seconds) */
-  iss: number;
+  iss: number
   /** Due Date (Unix Timestamp in seconds) */
-  due: number;
+  due: number
   /** Notes (Max 280 chars) */
-  nt?: string;
+  nt?: string
   /** Network Chain ID (e.g., 1, 137) */
-  net: number;
+  net: number
   /** Currency Symbol (e.g., "USDC", "ETH") */
-  cur: string;
+  cur: string
   /** Token Address (Optional, undefined for native) */
-  t?: string;
+  t?: string
   /** Token Decimals (Required for precision) */
-  dec: number;
+  dec: number
   /** Sender Info */
   f: {
     /** Name */
-    n: string;
+    n: string
     /** Wallet Address */
-    a: string;
+    a: string
     /** Email (Optional) */
-    e?: string;
+    e?: string
     /** Physical Address (Optional, multi-line allowed) */
-    ads?: string;
+    ads?: string
     /** Phone (Optional) */
-    ph?: string;
-  };
+    ph?: string
+  }
   /** Client Info */
   c: {
     /** Name */
-    n: string;
+    n: string
     /** Wallet Address (Optional) */
-    a?: string;
+    a?: string
     /** Email (Optional) */
-    e?: string;
+    e?: string
     /** Physical Address (Optional, multi-line allowed) */
-    ads?: string;
+    ads?: string
     /** Phone (Optional) */
-    ph?: string;
-  };
+    ph?: string
+  }
   /** Line Items */
   it: Array<{
     /** Description */
-    d: string;
+    d: string
     /** Quantity (BigInt string or number) */
-    q: string | number;
+    q: string | number
     /** Rate/Price (BigInt string) */
-    r: string;
-  }>;
+    r: string
+  }>
   /** Tax Rate (Percentage string e.g. "10%" or Fixed Amount string) */
-  tax?: string;
+  tax?: string
   /** Discount (Percentage string e.g. "10%" or Fixed Amount string) */
-  dsc?: string;
+  dsc?: string
   /** Reserved: Metadata (Extensibility) */
-  meta?: Record<string, unknown>;
+  meta?: Record<string, unknown>
   /** Reserved: Future use */
-  _future?: unknown;
+  _future?: unknown
 }
 ```
 

@@ -122,10 +122,7 @@ export function getNetworkTheme(chainId: number): NetworkTheme | undefined {
  * @param colorKey - Which color to get (primary, secondary, accent, glow)
  * @returns The color value or default fallback
  */
-export function getNetworkThemeColor(
-  chainId: number,
-  colorKey: keyof NetworkTheme
-): string {
+export function getNetworkThemeColor(chainId: number, colorKey: keyof NetworkTheme): string {
   const theme = NETWORK_THEMES[chainId] ?? DEFAULT_NETWORK_THEME
   return theme[colorKey]
 }

@@ -3,10 +3,10 @@
  * Feature: 004-rpc-proxy-failover
  */
 
-import type { JsonRpcRequest, JsonRpcResponse, MockTransaction, MockMode } from '../model/types';
+import type { JsonRpcRequest, JsonRpcResponse, MockTransaction, MockMode } from '../model/types'
 
 // In-memory transaction state for mock provider
-const mockTransactions = new Map<string, MockTransaction>();
+const mockTransactions = new Map<string, MockTransaction>()
 
 /**
  * Handle mock RPC requests with simulation modes
@@ -19,9 +19,9 @@ export async function handleMockRequest(
   mode: MockMode = 'success'
 ): Promise<JsonRpcResponse> {
   // Simulate network delay based on mode
-  const delay = getDelayForMode(mode);
-  await new Promise(resolve => setTimeout(resolve, delay));
-  
+  const delay = getDelayForMode(mode)
+  await new Promise((resolve) => setTimeout(resolve, delay))
+
   // Simulate error mode
   if (mode === 'error') {
     return {
@@ -31,38 +31,38 @@ export async function handleMockRequest(
         message: 'Mock error: Simulated RPC failure',
       },
       id: request.id,
-    };
+    }
   }
-  
+
   // Handle different RPC methods
   switch (request.method) {
     case 'eth_blockNumber':
-      return mockBlockNumber(request);
-    
+      return mockBlockNumber(request)
+
     case 'eth_call':
-      return mockCall(request);
-    
+      return mockCall(request)
+
     case 'eth_getBalance':
-      return mockGetBalance(request);
-    
+      return mockGetBalance(request)
+
     case 'eth_getGasPrice':
-      return mockGetGasPrice(request);
-    
+      return mockGetGasPrice(request)
+
     case 'eth_estimateGas':
-      return mockEstimateGas(request);
-    
+      return mockEstimateGas(request)
+
     case 'eth_sendRawTransaction':
-      return mockSendRawTransaction(request);
-    
+      return mockSendRawTransaction(request)
+
     case 'eth_getTransactionReceipt':
-      return mockGetTransactionReceipt(request);
-    
+      return mockGetTransactionReceipt(request)
+
     case 'eth_chainId':
-      return mockChainId(request);
-    
+      return mockChainId(request)
+
     case 'net_version':
-      return mockNetVersion(request);
-    
+      return mockNetVersion(request)
+
     default:
       return {
         jsonrpc: '2.0',
@@ -71,7 +71,7 @@ export async function handleMockRequest(
           message: `Method not found: ${request.method}`,
         },
         id: request.id,
-      };
+      }
   }
 }
 
@@ -81,13 +81,13 @@ export async function handleMockRequest(
 function getDelayForMode(mode: MockMode): number {
   switch (mode) {
     case 'success':
-      return Math.random() * 2000 + 1000; // 1-3 seconds
+      return Math.random() * 2000 + 1000 // 1-3 seconds
     case 'slow':
-      return Math.random() * 20000 + 10000; // 10-30 seconds
+      return Math.random() * 20000 + 10000 // 10-30 seconds
     case 'error':
-      return Math.random() * 1000 + 500; // 0.5-1.5 seconds
+      return Math.random() * 1000 + 500 // 0.5-1.5 seconds
     default:
-      return 1000;
+      return 1000
   }
 }
 
@@ -95,12 +95,12 @@ function getDelayForMode(mode: MockMode): number {
  * Mock eth_blockNumber
  */
 function mockBlockNumber(request: JsonRpcRequest): JsonRpcResponse {
-  const blockNumber = Math.floor(Date.now() / 1000); // Use timestamp as block number
+  const blockNumber = Math.floor(Date.now() / 1000) // Use timestamp as block number
   return {
     jsonrpc: '2.0',
     result: `0x${blockNumber.toString(16)}`,
     id: request.id,
-  };
+  }
 }
 
 /**
@@ -112,7 +112,7 @@ function mockCall(request: JsonRpcRequest): JsonRpcResponse {
     jsonrpc: '2.0',
     result: '0x0000000000000000000000000000000000000000000000000de0b6b3a7640000', // 1 ETH in wei
     id: request.id,
-  };
+  }
 }
 
 /**
@@ -123,7 +123,7 @@ function mockGetBalance(request: JsonRpcRequest): JsonRpcResponse {
     jsonrpc: '2.0',
     result: '0x1bc16d674ec80000', // 2 ETH in wei
     id: request.id,
-  };
+  }
 }
 
 /**
@@ -134,7 +134,7 @@ function mockGetGasPrice(request: JsonRpcRequest): JsonRpcResponse {
     jsonrpc: '2.0',
     result: '0x3b9aca00', // 1 gwei
     id: request.id,
-  };
+  }
 }
 
 /**
@@ -145,15 +145,15 @@ function mockEstimateGas(request: JsonRpcRequest): JsonRpcResponse {
     jsonrpc: '2.0',
     result: '0x5208', // 21000 gas (standard transfer)
     id: request.id,
-  };
+  }
 }
 
 /**
  * Mock eth_sendRawTransaction
  */
 function mockSendRawTransaction(request: JsonRpcRequest): JsonRpcResponse {
-  const txHash = generateFakeTxHash();
-  
+  const txHash = generateFakeTxHash()
+
   // Store transaction state
   mockTransactions.set(txHash, {
     hash: txHash,
@@ -162,47 +162,47 @@ function mockSendRawTransaction(request: JsonRpcRequest): JsonRpcResponse {
     to: '0x0000000000000000000000000000000000000001',
     value: '0x0',
     timestamp: Date.now(),
-  });
-  
+  })
+
   // Simulate transaction confirmation after 3 seconds
   setTimeout(() => {
-    const tx = mockTransactions.get(txHash);
+    const tx = mockTransactions.get(txHash)
     if (tx) {
-      tx.status = 'success';
-      mockTransactions.set(txHash, tx);
+      tx.status = 'success'
+      mockTransactions.set(txHash, tx)
     }
-  }, 3000);
-  
+  }, 3000)
+
   return {
     jsonrpc: '2.0',
     result: txHash,
     id: request.id,
-  };
+  }
 }
 
 /**
  * Mock eth_getTransactionReceipt
  */
 function mockGetTransactionReceipt(request: JsonRpcRequest): JsonRpcResponse {
-  const txHash = request.params[0] as string;
-  const tx = mockTransactions.get(txHash);
-  
+  const txHash = request.params[0] as string
+  const tx = mockTransactions.get(txHash)
+
   if (!tx) {
     return {
       jsonrpc: '2.0',
       result: null, // Transaction not found
       id: request.id,
-    };
+    }
   }
-  
+
   if (tx.status === 'pending') {
     return {
       jsonrpc: '2.0',
       result: null, // Still pending
       id: request.id,
-    };
+    }
   }
-  
+
   return {
     jsonrpc: '2.0',
     result: {
@@ -216,12 +216,13 @@ function mockGetTransactionReceipt(request: JsonRpcRequest): JsonRpcResponse {
       gasUsed: '0x5208',
       contractAddress: null,
       logs: [],
-      logsBloom: '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      logsBloom:
+        '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       status: tx.status === 'success' ? '0x1' : '0x0',
       effectiveGasPrice: '0x3b9aca00',
     },
     id: request.id,
-  };
+  }
 }
 
 /**
@@ -232,7 +233,7 @@ function mockChainId(request: JsonRpcRequest): JsonRpcResponse {
     jsonrpc: '2.0',
     result: '0x1', // Ethereum Mainnet
     id: request.id,
-  };
+  }
 }
 
 /**
@@ -243,18 +244,21 @@ function mockNetVersion(request: JsonRpcRequest): JsonRpcResponse {
     jsonrpc: '2.0',
     result: '1', // Ethereum Mainnet
     id: request.id,
-  };
+  }
 }
 
 /**
  * Generate a fake transaction hash
  */
 function generateFakeTxHash(): string {
-  const randomBytes = new Uint8Array(32);
-  crypto.getRandomValues(randomBytes);
-  return '0x' + Array.from(randomBytes)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+  const randomBytes = new Uint8Array(32)
+  crypto.getRandomValues(randomBytes)
+  return (
+    '0x' +
+    Array.from(randomBytes)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
+  )
 }
 
 /**
@@ -265,23 +269,24 @@ export function shouldUseMock(url: URL): boolean {
   // 1. Running on localhost
   // 2. debug=1 query param is present
   // 3. NODE_ENV is development
-  
-  const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
-  const hasDebugParam = url.searchParams.get('debug') === '1' || url.searchParams.get('debug') === 'true';
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  
-  return isLocalhost || hasDebugParam || isDevelopment;
+
+  const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1'
+  const hasDebugParam =
+    url.searchParams.get('debug') === '1' || url.searchParams.get('debug') === 'true'
+  const isDevelopment = process.env.NODE_ENV === 'development'
+
+  return isLocalhost || hasDebugParam || isDevelopment
 }
 
 /**
  * Get mock mode from query parameters
  */
 export function getMockMode(url: URL): MockMode {
-  const mode = url.searchParams.get('mock');
-  
+  const mode = url.searchParams.get('mock')
+
   if (mode === 'error' || mode === 'slow' || mode === 'success') {
-    return mode;
+    return mode
   }
-  
-  return 'success';
+
+  return 'success'
 }

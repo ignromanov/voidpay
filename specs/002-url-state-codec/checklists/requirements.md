@@ -57,6 +57,7 @@
 **Ready for**: `/speckit.plan` (proceed to technical planning phase)
 
 **Worktree Status**:
+
 - ✅ Worktree created at `/Users/ignat/Documents/Repository/stateless-invoicing-platform/worktrees/002-url-state-codec`
 - ✅ Branch `002-url-state-codec` checked out in worktree
 - ✅ Spec.md synchronized and validated

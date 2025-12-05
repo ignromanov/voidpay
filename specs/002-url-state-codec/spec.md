@@ -8,6 +8,7 @@
 ## Clarifications
 
 ### Session 2025-11-19
+
 - Q: Nested Field Keys Strategy → A: Abbreviated Keys (Option A) - Use short keys for nested objects (e.g., `f.n`, `it.q`) to maximize URL capacity.
 - Q: Amount Representation → A: BigInt + Decimals (Option A) - Store amounts as BigInts (serialized as strings) combined with `dec` field to ensure precision.
 - Q: Tax & Discount Logic → A: Flexible Strings (Option A) - Use suffixes (e.g., `"10%"` vs `"50"`) to distinguish between percentage and fixed amounts.

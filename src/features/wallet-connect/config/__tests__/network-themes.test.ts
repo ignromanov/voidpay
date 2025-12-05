@@ -5,11 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import {
-  NETWORK_THEMES,
-  getNetworkTheme,
-  getNetworkThemeColor,
-} from '../network-themes'
+import { NETWORK_THEMES, getNetworkTheme, getNetworkThemeColor } from '../network-themes'
 
 describe('network-themes', () => {
   describe('NETWORK_THEMES', () => {

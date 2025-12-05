@@ -8,6 +8,7 @@
 ## Summary
 
 Integrate Wagmi v2.x, Viem v2.x, and RainbowKit v2.x for Web3 wallet connectivity. Setup includes:
+
 - Custom Wagmi config with 4 mainnet + 4 testnet networks
 - Single custom HTTP transport routing ALL RPC calls to `/api/rpc?chainId={id}`
 - RainbowKit theme with Electric Violet (#7C3AED) accent
@@ -39,7 +40,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 - [x] Documentation follows context efficiency guidelines (VIII) - _Concise plan, structured format_
 - [x] UI follows Hybrid Theme Strategy: dark desk (`zinc-950`), light paper (`white`) (XII) - _RainbowKit theme matches dark desk_
 - [x] Document representations maintain ISO 216 (A4) aspect ratio `1:1.414` (XII) - _N/A for this feature (no invoice display changes)_
-- [x] All TypeScript/Markdown navigation uses Serena tools first (XIII) - _Using mcp__serena__* for planning_
+- [x] All TypeScript/Markdown navigation uses Serena tools first (XIII) - _Using mcp**serena**\* for planning_
 - [x] Serena memories consulted before planning via `mcp__serena__*` tools (XIV) - _Read: tech-stack-locked, architecture-summary, development-status, constitutional-principles-summary_
 - [x] Memory update plan identified: which memories need updating after feature completion (XIV) - _Update: development-status (mark P0.5 complete)_
 - [x] Following SpecKit workflow phases: specify → plan → tasks → implement (XV) - _Currently in plan phase_

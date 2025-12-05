@@ -51,9 +51,7 @@ export function createChainTransport(chainId: number): Transport {
  * @param chainIds - Array of chain IDs
  * @returns Record mapping chain IDs to their transports
  */
-export function createTransportsForChains(
-  chainIds: number[]
-): Record<number, Transport> {
+export function createTransportsForChains(chainIds: number[]): Record<number, Transport> {
   const transports: Record<number, Transport> = {}
 
   for (const chainId of chainIds) {

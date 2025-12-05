@@ -34,14 +34,12 @@ const ERROR_MESSAGES: Record<ConnectionErrorType, string> = {
     'No wallet found. Please install MetaMask or another Web3 wallet.',
   [ConnectionErrorType.ALREADY_PENDING]:
     'Connection already pending. Please check your wallet for a pending request.',
-  [ConnectionErrorType.WALLET_LOCKED]:
-    'Wallet is locked. Please unlock your wallet and try again.',
+  [ConnectionErrorType.WALLET_LOCKED]: 'Wallet is locked. Please unlock your wallet and try again.',
   [ConnectionErrorType.CHAIN_NOT_SUPPORTED]:
     'This network is not supported by your wallet. Please add it manually.',
   [ConnectionErrorType.NETWORK_ERROR]:
     'Network error occurred. Please check your internet connection and try again.',
-  [ConnectionErrorType.UNKNOWN]:
-    'Connection failed. Please try again or use a different wallet.',
+  [ConnectionErrorType.UNKNOWN]: 'Connection failed. Please try again or use a different wallet.',
 }
 
 /**
@@ -55,7 +53,10 @@ const ERROR_PATTERNS: Array<{
   { pattern: /no provider|not found|not installed/i, type: ConnectionErrorType.NO_PROVIDER },
   { pattern: /already pending|pending request/i, type: ConnectionErrorType.ALREADY_PENDING },
   { pattern: /locked|unlock/i, type: ConnectionErrorType.WALLET_LOCKED },
-  { pattern: /chain.*not.*support|unrecognized chain/i, type: ConnectionErrorType.CHAIN_NOT_SUPPORTED },
+  {
+    pattern: /chain.*not.*support|unrecognized chain/i,
+    type: ConnectionErrorType.CHAIN_NOT_SUPPORTED,
+  },
   { pattern: /network|timeout|fetch/i, type: ConnectionErrorType.NETWORK_ERROR },
 ]
 

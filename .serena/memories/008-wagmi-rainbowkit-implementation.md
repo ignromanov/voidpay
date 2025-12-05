@@ -9,12 +9,14 @@
 Full TDD implementation of Wagmi v2 + Viem v2 + RainbowKit v2 wallet connection infrastructure.
 
 ### Dependencies Installed
+
 - wagmi@2.19.4
 - viem@2.39.3
 - @rainbow-me/rainbowkit@2.2.9
 - @tanstack/react-query@5.90.10 (peer dependency)
 
 ### Feature Structure (FSD)
+
 ```
 src/features/wallet-connect/
 ├── config/
@@ -38,20 +40,24 @@ src/features/wallet-connect/
 ### Key Implementation Details
 
 #### 1. Custom Transport (Constitutional Principle VI)
+
 All RPC calls route through `/api/rpc?chainId=X` proxy - no client-side API keys.
 
 #### 2. Network Configuration
+
 - **Mainnet**: Ethereum (1), Arbitrum (42161), Optimism (10), Polygon (137)
 - **Testnet**: Sepolia, Arbitrum Sepolia, OP Sepolia, Polygon Amoy
 - Controlled via `NEXT_PUBLIC_ENABLE_TESTNETS=true`
 
 #### 3. Theme Integration
+
 - Electric Violet (#7C3AED) accent color
 - Dark theme base matching VoidPay design
 - Per-network color themes (ETH=violet, ARB=blue, OP=red, POLY=purple)
 - CSS variable injection via `useNetworkTheme` hook
 
 #### 4. Storage Configuration
+
 - SSR-safe storage with localStorage persistence
 - Key: `voidpay-wallet`
 - Zustand-compatible pattern
@@ -91,6 +97,7 @@ export { getConnectionErrorMessage, parseConnectionError, ConnectionErrorType }
 ### Integration Points
 
 **Providers Setup** (`src/app/providers.tsx`):
+
 ```typescript
 import { WagmiProvider } from 'wagmi'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -119,6 +126,7 @@ export function Web3Provider({ children }) {
 ### Status
 
 ✅ **Ready for merge** - All quality gates passing:
+
 - `pnpm lint` ✓
 - `pnpm type-check` ✓
 - `pnpm test:coverage` ✓ (80%+ all metrics)

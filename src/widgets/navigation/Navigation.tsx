@@ -35,10 +35,11 @@ export function Navigation() {
                   key={link.href}
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   href={link.href as any}
-                  className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive
-                    ? 'bg-gray-800 text-white'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                    }`}
+                  className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-gray-800 text-white'
+                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                  }`}
                 >
                   {link.label}
                 </Link>

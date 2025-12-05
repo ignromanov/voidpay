@@ -5,18 +5,21 @@
 **Total Tasks**: 14 (11 completed, 3 test tasks skipped)
 
 ## Phase 1: Setup
+
 _Goal: Initialize project structure and dependencies_
 
 - [x] T001 Install dependencies (lz-string, zod) in package.json
 - [x] T002 Create project structure for entities and features (src/entities/invoice, src/features/invoice-codec)
 
 ## Phase 2: Foundational
+
 _Goal: Define core data models and validation rules_
 
 - [x] T003 Create InvoiceSchemaV1 interface in src/entities/invoice/model/schema.ts
 - [x] T004 Create Zod validation schemas in src/entities/invoice/lib/validation.ts
 
 ## Phase 3: User Story 1 - Create and Share Invoice URL (P1)
+
 _Goal: Enable generating and reading invoice URLs_
 _Independent Test_: Create an invoice, generate URL, open in new tab, verify data matches.
 
@@ -27,6 +30,7 @@ _Independent Test_: Create an invoice, generate URL, open in new tab, verify dat
 - [ ] T009 [US1] Create round-trip tests in src/features/invoice-codec/test/codec.test.ts
 
 ## Phase 4: User Story 2 - Future-Proof Invoice URLs (P1)
+
 _Goal: Ensure backward compatibility and versioning_
 _Independent Test_: Verify v1 parser works with simulated future schema versions.
 
@@ -34,6 +38,7 @@ _Independent Test_: Verify v1 parser works with simulated future schema versions
 - [ ] T011 [US2] Add forward compatibility tests in src/features/invoice-codec/test/versioning.test.ts
 
 ## Phase 5: User Story 3 - Validate Invoice Data Integrity (P2)
+
 _Goal: Prevent malformed or invalid data from being displayed_
 _Independent Test_: Attempt to parse invalid/corrupted URLs and verify error messages.
 
@@ -41,6 +46,7 @@ _Independent Test_: Attempt to parse invalid/corrupted URLs and verify error mes
 - [ ] T013 [US3] Create validation and limit tests in src/features/invoice-codec/test/limits.test.ts
 
 ## Phase 6: Polish & Cross-Cutting Concerns
+
 _Goal: Final verification and cleanup_
 
 - [x] T014 Verify all exports and types in src/features/invoice-codec/index.ts

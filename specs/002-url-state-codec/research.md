@@ -6,6 +6,7 @@
 ## Key Decisions
 
 ### 1. Compression Algorithm: `lz-string`
+
 - **Decision**: Use `lz-string` library (LZW-based).
 - **Rationale**:
   - Optimized for UTF-16 storage (localStorage/URL safe).
@@ -16,6 +17,7 @@
   - `Brotli`: Better ratio but lacks ubiquitous client-side JS support without WASM overhead.
 
 ### 2. Data Representation: Abbreviated Keys
+
 - **Decision**: Map descriptive keys to 1-2 char codes (e.g., `issueDate` -> `iss`).
 - **Rationale**:
   - JSON keys consume significant space.
@@ -23,6 +25,7 @@
 - **Trade-off**: Reduced readability of raw JSON, handled by strong TypeScript interfaces.
 
 ### 3. Numeric Precision: Stringified BigInts
+
 - **Decision**: Store monetary values as strings representing BigInts.
 - **Rationale**:
   - JavaScript `number` (IEEE 754) loses precision for large integers (safe up to 2^53).
@@ -30,6 +33,7 @@
   - `BigInt` is not JSON serializable by default, so string serialization is required.
 
 ### 4. Date Format: Unix Timestamp (Seconds)
+
 - **Decision**: Use integer seconds for `iss` and `due`.
 - **Rationale**:
   - ISO 8601 strings (`2025-11-19T...`) take ~24 bytes.

@@ -59,13 +59,13 @@ KV_REST_API_TOKEN=...
 Configure Wagmi to use the proxy endpoint:
 
 ```typescript
-import { createConfig, http } from 'wagmi';
-import { mainnet } from 'wagmi/chains';
+import { createConfig, http } from 'wagmi'
+import { mainnet } from 'wagmi/chains'
 
 export const config = createConfig({
   chains: [mainnet],
   transports: {
     [mainnet.id]: http('/api/rpc'), // Point to local proxy
   },
-});
+})
 ```

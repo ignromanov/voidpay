@@ -55,7 +55,7 @@
 1.  **Parent Element (`motion.div`):** Отвечает за Позицию, Движение (`x`, `y`, `rotate`, `scale`), Размытие (`blur-[100px]+`) и Смешивание (`mix-blend-screen`).
 2.  **Child Element (`div`):** Отвечает за Цвет (`bg-...`) и Форму (`clip-path` или `border-radius`).
 
-*Rule:* Никогда не применять `clip-path` и `blur` к одному элементу. Blur — на родителя, Clip-path — на ребенка.
+_Rule:_ Никогда не применять `clip-path` и `blur` к одному элементу. Blur — на родителя, Clip-path — на ребенка.
 
 ## 3.2. Сценарий Создателя (Route: `/create`)
 
@@ -75,6 +75,7 @@
   - _Purpose:_ Визуально отделяет ответственность платформы от контента пользователя.
 
 **Content Area (The Paper):**
+
 - **Desktop:** Split View.
   - _Left (Editor):_ Скроллящаяся форма ввода данных.
   - _Right (Preview):_ Закрепленный Invoice Card. Строго содержит только данные инвойса и watermark "Powered by VoidPay". Никаких кнопок "Report Abuse" внутри карты.

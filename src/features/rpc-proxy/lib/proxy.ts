@@ -3,8 +3,8 @@
  * Feature: 004-rpc-proxy-failover
  */
 
-import type { JsonRpcRequest, JsonRpcResponse, ProxyResult, RpcMethod } from '../model/types';
-import { loadRpcConfig, validateServerSideOnly } from './config';
+import type { JsonRpcRequest, JsonRpcResponse, ProxyResult, RpcMethod } from '../model/types'
+import { loadRpcConfig, validateServerSideOnly } from './config'
 
 // Allowlist of permitted RPC methods (security requirement FR-019)
 const ALLOWED_METHODS = new Set<RpcMethod>([
@@ -17,7 +17,7 @@ const ALLOWED_METHODS = new Set<RpcMethod>([
   'eth_getTransactionReceipt',
   'eth_chainId',
   'net_version',
-] as const);
+] as const)
 
 /**
  * Proxy an RPC request with automatic failover
@@ -25,11 +25,11 @@ const ALLOWED_METHODS = new Set<RpcMethod>([
  * @returns Proxy result with response and metadata
  */
 export async function proxyRequest(request: JsonRpcRequest): Promise<ProxyResult> {
-  validateServerSideOnly();
-  
+  validateServerSideOnly()
+
   // Validate method is allowlisted
   if (!ALLOWED_METHODS.has(request.method as RpcMethod)) {
-    const requestId = generateRequestId();
+    const requestId = generateRequestId()
     return {
       response: {
         jsonrpc: '2.0',
@@ -41,25 +41,25 @@ export async function proxyRequest(request: JsonRpcRequest): Promise<ProxyResult
       },
       provider: 'primary',
       requestId,
-    };
+    }
   }
-  
-  const config = loadRpcConfig();
-  const requestId = generateRequestId();
-  
+
+  const config = loadRpcConfig()
+  const requestId = generateRequestId()
+
   // Try primary provider (Alchemy)
   try {
     const response = await fetchProvider(
       config.providers.primary.url,
       request,
       2000 // 2 second timeout for failover
-    );
-    
+    )
+
     return {
       response,
       provider: 'primary',
       requestId,
-    };
+    }
   } catch {
     // Primary failed - try fallback (Infura)
     try {
@@ -67,13 +67,13 @@ export async function proxyRequest(request: JsonRpcRequest): Promise<ProxyResult
         config.providers.fallback.url,
         request,
         5000 // 5 second timeout for fallback
-      );
-      
+      )
+
       return {
         response,
         provider: 'fallback',
         requestId,
-      };
+      }
     } catch {
       // Both providers failed
       return {
@@ -87,7 +87,7 @@ export async function proxyRequest(request: JsonRpcRequest): Promise<ProxyResult
         },
         provider: 'fallback',
         requestId,
-      };
+      }
     }
   }
 }
@@ -100,9 +100,9 @@ async function fetchProvider(
   request: JsonRpcRequest,
   timeoutMs: number
 ): Promise<JsonRpcResponse> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -111,28 +111,28 @@ async function fetchProvider(
       },
       body: JSON.stringify(request),
       signal: controller.signal,
-    });
-    
-    clearTimeout(timeoutId);
-    
+    })
+
+    clearTimeout(timeoutId)
+
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      throw new Error(`HTTP ${response.status}`)
     }
-    
-    const data = await response.json() as JsonRpcResponse;
-    
+
+    const data = (await response.json()) as JsonRpcResponse
+
     // Check for JSON-RPC error response
     if (data.error) {
       // Classify error - if it's a retryable error, throw to trigger failover
       if (isRetryableError(data.error.code)) {
-        throw new Error(`RPC Error ${data.error.code}: ${data.error.message}`);
+        throw new Error(`RPC Error ${data.error.code}: ${data.error.message}`)
       }
     }
-    
-    return data;
+
+    return data
   } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
+    clearTimeout(timeoutId)
+    throw error
   }
 }
 
@@ -144,10 +144,10 @@ function isRetryableError(code: number): boolean {
   const retryableCodes = [
     -32603, // Internal error
     -32000, // Server error
-    429,    // Rate limit (some providers use this)
-  ];
-  
-  return retryableCodes.includes(code);
+    429, // Rate limit (some providers use this)
+  ]
+
+  return retryableCodes.includes(code)
 }
 
 /**
@@ -155,5 +155,5 @@ function isRetryableError(code: number): boolean {
  * No user linkage - just for monitoring request flow
  */
 function generateRequestId(): string {
-  return `req_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  return `req_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
 }
