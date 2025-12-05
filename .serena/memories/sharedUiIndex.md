@@ -29,13 +29,13 @@
 
 ## Motion Components
 
-| Component              | Import               | Key Props                                  | Notes                        |
-| ---------------------- | -------------------- | ------------------------------------------ | ---------------------------- |
-| `motion`               | `@/shared/ui/motion` | `initial`, `animate`, `exit`, `transition` | Raw Framer Motion primitive  |
-| `AnimatePresence`      | `@/shared/ui/motion` | `mode`                                     | For exit animations          |
-| `useAnimationControls` | `@/shared/ui/motion` | -                                          | Imperative animation control |
-| `useScroll`            | `@/shared/ui/motion` | -                                          | Scroll position tracking     |
-| `useTransform`         | `@/shared/ui/motion` | -                                          | Value transformation         |
+| Component         | Import               | Key Props                                  | Notes                                    |
+| ----------------- | -------------------- | ------------------------------------------ | ---------------------------------------- |
+| `motion`          | `@/shared/ui`        | `initial`, `animate`, `exit`, `transition` | Raw Framer Motion primitive              |
+| `AnimatePresence` | `@/shared/ui`        | `mode`                                     | For exit animations                      |
+
+> **Note**: Motion exports minimized for bundle optimization. Only `motion` and `AnimatePresence` are exported.
+> Other hooks (useAnimation, useScroll, etc.) were removed as unused. Add back to `motion.tsx` if needed.
 
 ## Form Components
 
@@ -87,7 +87,7 @@
 
 | Utility            | Import                                 | Purpose                                     |
 | ------------------ | -------------------------------------- | ------------------------------------------- |
-| `useReducedMotion` | `@/shared/ui/hooks/use-reduced-motion` | Accessibility hook for animation preference |
+| `useReducedMotion` | `@/shared/ui`                          | Accessibility hook for animation preference |
 | `useHyperText`     | `@/shared/ui/hooks/use-hyper-text`     | Hook for character scramble animation       |
 | `NETWORK_THEMES`   | `@/shared/ui/constants/brand-tokens`   | Network background theme configurations     |
 | `SIZE_PRESETS`     | `@/shared/ui/constants/brand-tokens`   | Size presets for VoidLogo                   |

@@ -1,6 +1,6 @@
 # System Patterns
 
-**Last Updated**: 2025-12-01
+**Last Updated**: 2025-12-03
 **Pattern**: Feature-Sliced Design (FSD)
 **Framework**: Next.js 15+ App Router
 
@@ -50,6 +50,28 @@ src/
 | `/`          | Marketing landing | Indexed |
 | `/create`    | Invoice editor    | Noindex |
 | `/pay?d=...` | Payment view      | Noindex |
+
+## Performance Patterns
+
+### Hydration Safety
+- **useHydrated** hook (`shared/lib/hooks/use-hydrated.ts`)
+- Uses `useSyncExternalStore` — no extra re-render
+- Pattern: `const hydrated = useHydrated(); if (!hydrated) return <fallback />`
+
+### Lazy Loading Strategy
+- **Above fold** (immediate): HeroSection, SocialProofStrip
+- **Below fold** (dynamic): All other landing sections
+- `next/dynamic` with `ssr: true` for SEO preservation
+
+### Web3 Loading
+- **LazyWeb3Provider** (`app/lazy-web3-provider.tsx`)
+- `requestIdleCallback` preloads after initial render
+- Children render immediately, providers load in background
+
+### Bundle Optimization
+- Framer Motion: Only `motion`, `AnimatePresence` exported
+- Zod: Validation constants separated (`entities/invoice/lib/constants.ts`)
+- Import centralization: `@/shared/ui` for all motion components
 
 ## Key Architectural Decisions
 

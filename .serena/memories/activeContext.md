@@ -1,11 +1,91 @@
 # Active Context
 
-**Last Updated**: 2025-12-02
-**Current Session**: 012-landing-page — DAO Diplomat copy refinement
+**Last Updated**: 2025-12-03
+**Current Session**: 012-landing-page — Lighthouse Performance Optimization
 
 ## Session Summary
 
-### Changes Made (2025-12-02 - Latest):
+### Changes Made (2025-12-03 - Latest):
+
+**Lighthouse Performance Optimization Session**:
+
+Analyzed Lighthouse report (LCP 4.2s, TBT 720ms, hydration errors) and implemented fixes:
+
+1. **Hydration Mismatch Fix** — Created `useHydrated` hook (`shared/lib/hooks/use-hydrated.ts`):
+   - Uses `useSyncExternalStore` (no extra re-render vs useState+useEffect)
+   - Applied to: HeroSection, DemoSection, NetworkBackground, VoidLogo
+   - Fixes console errors from Framer Motion conditional `initial` props
+
+2. **Conservative Web3 Lazy Loading** — Created `LazyWeb3Provider` (`app/lazy-web3-provider.tsx`):
+   - Uses `requestIdleCallback` to preload after initial render
+   - Web3 providers load in background (timeout: 2s)
+   - Children render immediately without blocking
+
+3. **Framer Motion Bundle Optimization** — Minimized exports (`shared/ui/motion.tsx`):
+   - Reduced from 15+ exports to just `motion`, `AnimatePresence`, types
+   - Removed unused: useAnimation, useScroll, LayoutGroup, Reorder, etc.
+   - All imports now go through `@/shared/ui`
+
+4. **Zod Code Splitting** — Separated constants from validation:
+   - Created `entities/invoice/lib/constants.ts` (ETH_ADDRESS_REGEX, NUMERIC_STRING_REGEX)
+   - `address-input.tsx` imports regex without pulling in zod (~65 KiB saved)
+   - Zod only loads on `/create` page
+
+5. **Aggressive Lazy Loading** — All below-fold sections (`widgets/landing/ui/LandingContent.tsx`):
+   - **Immediate**: HeroSection, SocialProofStrip (above fold)
+   - **Lazy (dynamic)**: HowItWorks, DemoSection, WhyVoidPay, AudienceSection, FaqSection, FooterCta
+   - `ssr: true` preserves SEO (HTML rendered, JS deferred)
+
+6. **Font Configuration** — Geist fonts with Tailwind 4:
+   - Added `font-sans` class to `<body>` for explicit font application
+   - CSS variables: `--font-geist-sans`, `--font-geist-mono`
+
+**Files Created**:
+- `src/shared/lib/hooks/use-hydrated.ts` — SSR-safe hydration hook
+- `src/shared/lib/hooks/index.ts` — Hooks barrel export
+- `src/app/lazy-web3-provider.tsx` — Conservative Web3 lazy loading
+- `src/entities/invoice/lib/constants.ts` — Validation constants (zod-free)
+
+**Files Modified**:
+- `src/shared/lib/index.ts` — Export useHydrated
+- `src/shared/ui/motion.tsx` — Minimized exports
+- `src/shared/ui/index.ts` — Updated motion re-exports
+- `src/shared/ui/__tests__/motion.test.tsx` — Updated tests
+- `src/widgets/landing/ui/LandingContent.tsx` — Aggressive lazy loading
+- `src/widgets/network-background/*.tsx` — Centralized motion imports
+- `src/shared/ui/address-input.tsx` — Import from constants
+- `src/entities/invoice/lib/validation.ts` — Import from constants
+- `src/app/layout.tsx` — LazyWeb3Provider, font-sans class
+
+**Expected Improvements**:
+- Eliminated hydration mismatch errors
+- Reduced initial JS bundle (~200-300 KiB)
+- Faster LCP (less JS parsing)
+- Lower TBT (less main thread blocking)
+
+---
+
+### Previous Session (2025-12-03 - SVG Network Shapes):
+
+**SVG Network Shapes Refactor Session**:
+
+Replaced clip-path shapes with inline SVG for accurate network logo representation:
+
+1. **shapes.tsx** (`widgets/network-background/shapes.tsx`):
+   - Replaced all clip-path based shapes with inline SVG components
+   - **EthereumSvg**: 6 polygons from original SVG with proper opacity gradients
+   - **ArbitrumSvg**: Hexagon bg (#213147), cyan accents (#12AAFF from theme), white strokes
+   - **PolygonSvg**: Exact path from polygon-matic-logo.svg
+   - **OptimismSvg**: Simple circle (text omitted for background use)
+   - **VoidPaySvg**: Custom organic blob with inner void
+   - Fixed Arbitrum colors: dark blue background + cyan accents (was using theme color for both)
+
+2. **NetworkBackground.tsx** (`widgets/network-background/`):
+   - SSR now renders transparent container (no gradient flash)
+   - Shapes fade in smoothly after hydration (opacity: 0 → animate)
+   - Added `delay: 1` for initial fade-in animation
+
+### Previous Session (2025-12-02 - DAO Diplomat):
 
 **DAO Diplomat Copy Refinement Session**:
 
