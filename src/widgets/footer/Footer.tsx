@@ -13,7 +13,7 @@ import { Github, Twitter } from 'lucide-react'
 
 export function Footer() {
   return (
-    <footer className="sticky bottom-0 z-40 border-t border-zinc-800/50 bg-zinc-950/80 backdrop-blur-xl">
+    <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-800/30 bg-zinc-950/60 backdrop-blur-xl">
       <div className="mx-auto flex h-10 max-w-7xl items-center justify-between px-4 text-xs text-zinc-500">
         {/* Left: Copyright */}
         <div className="flex items-center gap-3">

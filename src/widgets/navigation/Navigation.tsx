@@ -13,9 +13,10 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Plus, Github, Wallet, ShieldAlert } from 'lucide-react'
+import { Plus, Github, ShieldAlert } from 'lucide-react'
 import { VoidLogo } from '@/shared/ui/void-logo'
 import { Button } from '@/shared/ui/button'
+import { WalletButton } from '@/shared/ui/wallet-button'
 
 export function Navigation() {
   const pathname = usePathname()
@@ -26,7 +27,7 @@ export function Navigation() {
   ]
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-xl">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-800/30 bg-zinc-950/60 backdrop-blur-xl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -86,10 +87,7 @@ export function Navigation() {
           </div>
 
           {/* Connect Wallet Button */}
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <Wallet className="h-4 w-4" />
-            Connect
-          </Button>
+          <WalletButton />
         </div>
       </div>
     </nav>
