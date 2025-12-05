@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 @theme {
+  /* Font families - Geist fonts */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
   /* Custom animations */
   --animate-aurora: aurora 8s ease infinite;
   --animate-accretion-idle: accretion-idle 6s linear infinite;
@@ -16,6 +20,15 @@
 @keyframes aurora {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
+}
+
+/* Respect reduced motion preference - stop all custom animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-aurora,
+  .animate-accretion-idle,
+  .animate-blackhole-pulse {
+    animation: none !important;
+  }
 }
 
 @keyframes accretion-idle {

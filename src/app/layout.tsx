@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
-import { Web3Provider } from './providers'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
+import { LazyWeb3Provider } from './lazy-web3-provider'
 import { Navigation } from '@/widgets/navigation/Navigation'
 import { Footer } from '@/widgets/footer'
 import '@rainbow-me/rainbowkit/styles.css'
@@ -16,15 +18,23 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="bg-zinc-950 text-zinc-50 antialiased">
-        <Web3Provider>
+    <html
+      lang="en"
+      className={`${GeistSans.variable} ${GeistMono.variable} overflow-x-hidden`}
+      style={{ backgroundColor: '#09090b' }}
+    >
+      {/*
+        Font preload is handled automatically by next/font (geist package).
+        GeistSans and GeistMono are self-hosted with optimal loading strategy.
+      */}
+      <body className="overflow-x-hidden bg-zinc-950 text-zinc-50 antialiased font-sans">
+        <LazyWeb3Provider>
           <>
             <Navigation />
-            {children}
+            <main className="pt-16 pb-10">{children}</main>
             <Footer />
           </>
-        </Web3Provider>
+        </LazyWeb3Provider>
       </body>
     </html>
   )
