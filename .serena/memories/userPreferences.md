@@ -36,9 +36,11 @@
 
 > When user corrects agent, add entry here with date.
 
-| Date       | Correction    | Rule Added      |
-| ---------- | ------------- | --------------- |
-| 2024-12-01 | Initial setup | All above rules |
+| Date       | Correction                         | Rule Added                                                      |
+| ---------- | ---------------------------------- | --------------------------------------------------------------- |
+| 2024-12-01 | Initial setup                      | All above rules                                                 |
+| 2025-12-02 | Scroll indicator in wrong position | Position absolute elements relative to section, not content div |
+| 2025-12-02 | Visual verification needed         | Use Playwright MCP to verify visual changes                     |
 
 ---
 

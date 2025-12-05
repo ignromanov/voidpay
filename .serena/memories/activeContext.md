@@ -1,36 +1,45 @@
 # Active Context
 
-**Last Updated**: 2025-12-01
-**Current Session**: P0.8.2 Brand & Visual Components — COMPLETE
+**Last Updated**: 2025-12-02
+**Current Session**: 012-landing-page — SEO & CRO Improvements
 
 ## Completed This Session
 
-### P0.8.2 Brand & Visual Components (2025-12-01)
+### 012-landing-page Landing Page (2025-12-02)
 
-1. **Implemented 5 brand components** with full TDD coverage (88 tests, 95%+):
-   - `VoidLogo` — Eclipse + crescent SVG logo with pulse animation
-   - `NetworkBackground` — Themed floating shapes with crossfade transitions
-   - `AuroraText` — Animated gradient text with polymorphic rendering
-   - `HyperText` — Character scramble reveal effect
-   - `Button void` — Accretion disk overlay variant
+1. **SEO Analysis & Implementation**:
+   - Added JSON-LD schemas (FAQPage, Organization, SoftwareApplication)
+   - Created `public/robots.txt` for crawler rules
+   - Hero: Changed to `min-h-screen` for proper viewport coverage
 
-2. **Created supporting utilities**:
-   - `useReducedMotion` hook for accessibility
-   - `useHyperText` hook for scramble animation
-   - `brand-tokens` constants (network themes, size presets)
-   - Animation type definitions
+2. **CRO Improvements**:
+   - Hero: "Get Paid in Crypto. Instantly." headline
+   - CTA: "Create Free Invoice" + subtext "Takes 30 seconds. No signup."
+   - Secondary CTA: "See How It Works" with scroll behavior
+   - Scroll indicator at bottom of Hero
 
-3. **Updated documentation**:
-   - ROADMAP_P0.md: Marked P0.8.0, P0.8.1, P0.8.2 as complete
-   - ROADMAP.md: Updated Last Updated date
-   - DECISIONS.md: Updated UI Kit (shadcn → Radix + CVA + Framer)
-   - development-status, architecture-summary (Serena memories)
+3. **New Components** in `widgets/landing/`:
+   - `SocialProofStrip` — Trust badges (Zero Data, Open Source, Instant, Multi-Chain)
+   - `FaqSection` — 7 FAQ items with accordion
+   - `ComparisonTable` — VoidPay vs Request Network vs Traditional
+   - `NetworkThemeContext` — Background theme sync with demo invoice
 
-### Commits Made
+4. **Modified Components**:
+   - `HeroSection` — New headline, CTAs, scroll indicator
+   - `HowItWorks` — Timeline layout with arrows between steps
+   - `WhyVoidPay` — TOP 3 features as large cards, rest as compact
+   - `FooterCta` — Removed unverifiable "thousands of users" claim
+   - `LandingContent` — New section order with all new components
 
-- `0e9cdac` feat(brand): implement brand & visual components (P0.8.2)
-- `5f5212b` docs(roadmap): mark P0.8.0, P0.8.1, P0.8.2 as completed
-- `70f6328` docs(memory): update ROADMAP.md date and DECISIONS.md UI stack
+5. **Section Order** (final):
+   Hero → SocialProofStrip → HowItWorks → DemoSection → WhyVoidPay → ComparisonTable → FaqSection → FooterCta
+
+### Bug Fixes Applied
+
+- Scroll indicator position (was in center, moved to bottom of section)
+- Removed gradient connecting line in HowItWorks (user preference)
+- Fixed `useReducedMotion` type (`?? false` for nullish coalescing)
+- ComparisonTable horizontal scroll for mobile
 
 ## Memory Bank Structure (13 files)
 
@@ -58,8 +67,10 @@
 
 ## Next Steps
 
-1. **P0.8.3 Page Compositions** — Landing, Create, Pay pages using brand components
-2. Merge 011-brand-visual-components worktree to main
+1. Visual polish of landing page based on user feedback
+2. Mobile responsiveness testing
+3. Performance optimization (LCP, CLS audit)
+4. Merge 012-landing-page worktree to main
 
 ## Blockers
 
