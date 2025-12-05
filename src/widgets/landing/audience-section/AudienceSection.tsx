@@ -8,6 +8,7 @@
 
 import { Briefcase, Building2, Users } from 'lucide-react'
 
+import { useHydrated } from '@/shared/lib'
 import { Heading, Text, useReducedMotion } from '@/shared/ui'
 
 import { AudienceCard } from './AudienceCard'
@@ -43,7 +44,9 @@ const AUDIENCES = [
 ] as const
 
 export function AudienceSection() {
-  const prefersReducedMotion = useReducedMotion() ?? false
+  const prefersReducedMotion = useReducedMotion()
+  const hydrated = useHydrated()
+  const shouldAnimate = hydrated && !prefersReducedMotion
 
   return (
     <section
@@ -72,7 +75,7 @@ export function AudienceSection() {
               headline={audience.headline}
               description={audience.description}
               iconColor={audience.iconColor}
-              prefersReducedMotion={prefersReducedMotion}
+              shouldAnimate={shouldAnimate}
             />
           ))}
         </div>

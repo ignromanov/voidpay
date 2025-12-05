@@ -10,6 +10,7 @@ import type { SVGProps } from 'react'
 
 import { ArrowRight } from 'lucide-react'
 
+import { useHydrated } from '@/shared/lib'
 import { Heading, Text, motion, useReducedMotion } from '@/shared/ui'
 
 import { WORKFLOW_STEPS } from '../constants/features'
@@ -28,10 +29,12 @@ function TimelineStep({
   isLast: boolean
 }) {
   const prefersReducedMotion = useReducedMotion()
+  const hydrated = useHydrated()
+  const shouldAnimate = hydrated && !prefersReducedMotion
 
   return (
     <motion.div
-      initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+      initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: step * 0.15 }}

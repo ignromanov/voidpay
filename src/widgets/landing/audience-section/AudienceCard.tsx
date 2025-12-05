@@ -16,7 +16,7 @@ export type AudienceCardProps = {
   headline: string
   description: string
   iconColor?: string
-  prefersReducedMotion: boolean
+  shouldAnimate: boolean
 }
 
 export function AudienceCard({
@@ -25,11 +25,11 @@ export function AudienceCard({
   headline,
   description,
   iconColor = 'text-violet-500',
-  prefersReducedMotion,
+  shouldAnimate,
 }: AudienceCardProps) {
   return (
     <motion.div
-      initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+      initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}

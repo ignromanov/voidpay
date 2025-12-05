@@ -10,6 +10,7 @@ import type { LucideIcon } from 'lucide-react'
 
 import { Github, Lock, ServerOff, Globe } from 'lucide-react'
 
+import { useHydrated } from '@/shared/lib'
 import { motion, useReducedMotion } from '@/shared/ui'
 
 type TrustBadge = {
@@ -76,11 +77,15 @@ function TrustBadge({ icon: Icon, label, description, href }: TrustBadge) {
 
 export function SocialProofStrip() {
   const prefersReducedMotion = useReducedMotion()
+  const hydrated = useHydrated()
+
+  // Only animate after hydration to prevent SSR mismatch
+  const shouldAnimate = hydrated && !prefersReducedMotion
 
   return (
     <section className="relative z-10 border-y border-zinc-800/50 bg-zinc-900/30 px-6 py-8 backdrop-blur-sm">
       <motion.div
-        initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
+        initial={shouldAnimate ? { opacity: 0, y: 10 } : false}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}

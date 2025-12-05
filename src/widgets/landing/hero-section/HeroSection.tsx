@@ -9,6 +9,7 @@
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
+import { useHydrated } from '@/shared/lib'
 import {
   AuroraText,
   Button,
@@ -20,6 +21,10 @@ import {
 
 export function HeroSection() {
   const prefersReducedMotion = useReducedMotion()
+  const hydrated = useHydrated()
+
+  // Only apply animations after hydration to prevent SSR mismatch
+  const shouldAnimate = hydrated && !prefersReducedMotion
 
   return (
     <section
@@ -27,17 +32,17 @@ export function HeroSection() {
       aria-labelledby="hero-heading"
     >
       {/* Background glow element */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-600/10 blur-[120px]" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[min(800px,150vw)] w-[min(800px,150vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-600/10 blur-[120px]" />
 
       <motion.div
-        initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+        initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
         className="relative z-20 mx-auto max-w-5xl space-y-10"
       >
         {/* Open Source • Zero Tracking badge */}
         <motion.div
-          initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.9 }}
+          initial={shouldAnimate ? { opacity: 0, scale: 0.9 } : false}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
           className="mx-auto inline-flex cursor-default items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/50 px-3 py-1 shadow-lg backdrop-blur transition-colors hover:border-violet-500/50"
@@ -73,7 +78,7 @@ export function HeroSection() {
 
         {/* CTA */}
         <motion.div
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
+          initial={shouldAnimate ? { opacity: 0, y: 10 } : false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
           className="flex flex-col items-center px-4 pt-8"
@@ -96,13 +101,13 @@ export function HeroSection() {
 
       {/* Scroll indicator - positioned at bottom of section */}
       <motion.div
-        initial={prefersReducedMotion ? {} : { opacity: 0 }}
+        initial={shouldAnimate ? { opacity: 0 } : false}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2, duration: 0.8 }}
         className="absolute bottom-28 left-1/2 z-20 -translate-x-1/2"
       >
         <motion.div
-          animate={prefersReducedMotion ? {} : { y: [0, 8, 0] }}
+          animate={shouldAnimate ? { y: [0, 8, 0] } : {}}
           transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
           className="flex flex-col items-center gap-2 text-zinc-500"
         >
