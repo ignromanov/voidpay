@@ -83,23 +83,24 @@ shared/ ───────► Can import: nothing (leaf layer)
 
 ## Widgets Layer
 
-| Slice                        | Public API                   | Status      | SpecKit | Dependencies                              |
-| ---------------------------- | ---------------------------- | ----------- | ------- | ----------------------------------------- |
-| `widgets/navigation`         | `Navigation` (no public API) | Draft       | P0.6.6  | features/wallet-connect, shared/ui        |
-| `widgets/network-background` | `NetworkBackground`          | Implemented | P0.8.2  | shared/ui (motion, brand-tokens)          |
-| `widgets/invoice-paper`      | -                            | Pending     | P0.8.3  | entities/invoice, shared/ui               |
-| `widgets/invoice-editor`     | -                            | Pending     | P0.8.3  | features/\*, entities/invoice             |
-| `widgets/payment-terminal`   | -                            | Pending     | P0.12   | features/wallet-connect, entities/invoice |
+| Slice                        | Public API                                                                                                                   | Status      | SpecKit | Dependencies                              |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------- | ------- | ----------------------------------------- |
+| `widgets/navigation`         | `Navigation` (no public API)                                                                                                 | Draft       | P0.6.6  | features/wallet-connect, shared/ui        |
+| `widgets/network-background` | `NetworkBackground`                                                                                                          | Implemented | P0.8.2  | shared/ui (motion, brand-tokens)          |
+| `widgets/invoice-paper`      | -                                                                                                                            | Pending     | P0.8.3  | entities/invoice, shared/ui               |
+| `widgets/landing`            | `LandingContent, HeroSection, SocialProofStrip, HowItWorks, DemoSection, WhyVoidPay, ComparisonTable, FaqSection, FooterCta` | Implemented | P0.12   | shared/ui, entities/network               |
+| `widgets/invoice-editor`     | -                                                                                                                            | Pending     | P0.8.3  | features/\*, entities/invoice             |
+| `widgets/payment-terminal`   | -                                                                                                                            | Pending     | P0.12   | features/wallet-connect, entities/invoice |
 
 ---
 
 ## Pages Layer (app/)
 
-| Route     | Composition | Status  | SpecKit | Dependencies                                    |
-| --------- | ----------- | ------- | ------- | ----------------------------------------------- |
-| `/`       | LandingPage | Pending | P0.7    | widgets/navigation                              |
-| `/create` | EditorPage  | Pending | P0.8.3  | widgets/invoice-editor, widgets/invoice-paper   |
-| `/pay`    | PaymentPage | Pending | P0.8.3  | widgets/invoice-paper, widgets/payment-terminal |
+| Route     | Composition | Status      | SpecKit | Dependencies                                    |
+| --------- | ----------- | ----------- | ------- | ----------------------------------------------- |
+| `/`       | LandingPage | Implemented | 012     | widgets/landing, widgets/navigation             |
+| `/create` | EditorPage  | Pending     | P0.8.3  | widgets/invoice-editor, widgets/invoice-paper   |
+| `/pay`    | PaymentPage | Pending     | P0.8.3  | widgets/invoice-paper, widgets/payment-terminal |
 
 ---
 

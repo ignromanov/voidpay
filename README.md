@@ -50,12 +50,70 @@ Stateless Invoicing Platform built with Next.js, Wagmi, and Feature-Sliced Desig
 
 ## Scripts
 
-- `pnpm dev`: Start development server
+### Development
+
+- `pnpm dev`: Start development server with **Turbopack** (5-10x faster)
+- `pnpm dev:webpack`: Start development server with webpack (fallback)
+- `pnpm dev:debug`: Start development server with Node.js inspector
+
+### Build & Production
+
 - `pnpm build`: Build for production
 - `pnpm start`: Start production server
+
+### Code Quality
+
 - `pnpm lint`: Run ESLint
+- `pnpm lint:fix`: Run ESLint with auto-fix
 - `pnpm format`: Format code with Prettier
+- `pnpm format:check`: Check code formatting
 - `pnpm type-check`: Run TypeScript compiler check
+- `pnpm validate`: Run all checks (type-check + lint + tests)
+
+### Testing
+
+- `pnpm test`: Run tests in watch mode
+- `pnpm test:coverage`: Run tests with coverage report
+- `pnpm test:ui`: Run tests with Vitest UI
+
+## Turbopack
+
+This project uses **Turbopack** by default for development, providing:
+
+- ⚡️ **5-10x faster cold starts** compared to webpack
+- 🔄 **Instant HMR** (Hot Module Replacement)
+- 🎯 **Incremental compilation** - only rebuilds what changed
+- 🧠 **Lower memory usage** - optimized for large codebases
+
+### Configuration
+
+Turbopack is configured in `next.config.mjs` with support for Git worktrees:
+
+```js
+// Auto-detect worktree and use correct project root
+const isWorktree = __dirname.includes('/worktrees/')
+const projectRoot = isWorktree ? resolve(__dirname, '../..') : __dirname
+
+turbopack: {
+  root: projectRoot, // Supports symlinked node_modules in worktrees
+}
+```
+
+**Key features**:
+
+- ✅ Automatically detects Git worktrees
+- ✅ Resolves symlinked `node_modules` correctly
+- ✅ Node.js polyfills (fs, net, tls) handled automatically
+
+### When to Use Webpack
+
+If you encounter issues with Turbopack, you can fallback to webpack:
+
+```bash
+pnpm dev:webpack
+```
+
+**Note**: Production builds still use webpack for maximum compatibility.
 
 ## Development Workflow
 
