@@ -100,27 +100,37 @@ describe('connection-error', () => {
   describe('additional error types', () => {
     it('should identify already pending errors', async () => {
       const { parseConnectionError, ConnectionErrorType } = await import('../connection-error')
-      expect(parseConnectionError(new Error('Request already pending'))).toBe(ConnectionErrorType.ALREADY_PENDING)
+      expect(parseConnectionError(new Error('Request already pending'))).toBe(
+        ConnectionErrorType.ALREADY_PENDING
+      )
     })
 
     it('should identify wallet locked errors', async () => {
       const { parseConnectionError, ConnectionErrorType } = await import('../connection-error')
-      expect(parseConnectionError(new Error('Wallet is locked'))).toBe(ConnectionErrorType.WALLET_LOCKED)
+      expect(parseConnectionError(new Error('Wallet is locked'))).toBe(
+        ConnectionErrorType.WALLET_LOCKED
+      )
     })
 
     it('should identify chain not supported errors', async () => {
       const { parseConnectionError, ConnectionErrorType } = await import('../connection-error')
-      expect(parseConnectionError(new Error('Unrecognized chain ID'))).toBe(ConnectionErrorType.CHAIN_NOT_SUPPORTED)
+      expect(parseConnectionError(new Error('Unrecognized chain ID'))).toBe(
+        ConnectionErrorType.CHAIN_NOT_SUPPORTED
+      )
     })
 
     it('should identify network errors', async () => {
       const { parseConnectionError, ConnectionErrorType } = await import('../connection-error')
-      expect(parseConnectionError(new Error('Network timeout'))).toBe(ConnectionErrorType.NETWORK_ERROR)
+      expect(parseConnectionError(new Error('Network timeout'))).toBe(
+        ConnectionErrorType.NETWORK_ERROR
+      )
     })
 
     it('should handle non-Error objects', async () => {
       const { parseConnectionError, ConnectionErrorType } = await import('../connection-error')
-      expect(parseConnectionError('User rejected the request')).toBe(ConnectionErrorType.USER_REJECTED)
+      expect(parseConnectionError('User rejected the request')).toBe(
+        ConnectionErrorType.USER_REJECTED
+      )
       expect(parseConnectionError('Something went wrong')).toBe(ConnectionErrorType.UNKNOWN)
     })
   })
@@ -128,7 +138,7 @@ describe('connection-error', () => {
   describe('error messages', () => {
     it('should provide messages for all error types', async () => {
       const { getConnectionErrorMessage, ConnectionErrorType } = await import('../connection-error')
-      
+
       expect(getConnectionErrorMessage(ConnectionErrorType.USER_REJECTED)).toBeTruthy()
       expect(getConnectionErrorMessage(ConnectionErrorType.NO_PROVIDER)).toBeTruthy()
       expect(getConnectionErrorMessage(ConnectionErrorType.ALREADY_PENDING)).toBeTruthy()

@@ -18,8 +18,7 @@ import { createTransportsForChains } from '../lib/custom-transport'
  * WalletConnect Project ID from environment
  * Required for WalletConnect v2 connections
  */
-const walletConnectProjectId =
-  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? ''
+const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? ''
 
 /**
  * Get chains configuration

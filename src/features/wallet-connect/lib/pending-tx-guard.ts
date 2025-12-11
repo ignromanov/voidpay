@@ -27,9 +27,7 @@ export interface ShouldBlockNetworkSwitchParams {
  * @param params - Parameters including pending tx count
  * @returns True if network switch should be blocked
  */
-export function shouldBlockNetworkSwitch(
-  params: ShouldBlockNetworkSwitchParams
-): boolean {
+export function shouldBlockNetworkSwitch(params: ShouldBlockNetworkSwitchParams): boolean {
   return params.pendingTxCount > 0
 }
 
@@ -68,9 +66,7 @@ export interface UsePendingTxGuardReturn {
  */
 export function usePendingTxGuard(): UsePendingTxGuardReturn {
   // Track pending transaction hashes
-  const [pendingTxHashes, setPendingTxHashes] = useState<Set<`0x${string}`>>(
-    new Set()
-  )
+  const [pendingTxHashes, setPendingTxHashes] = useState<Set<`0x${string}`>>(new Set())
 
   // Watch for new pending transactions
   useWatchPendingTransactions({
@@ -85,11 +81,14 @@ export function usePendingTxGuard(): UsePendingTxGuardReturn {
 
   // Clean up old transactions periodically (after 5 minutes)
   useEffect(() => {
-    const cleanup = setInterval(() => {
-      // In a real app, you'd check transaction status
-      // For now, we clear after 5 minutes as a fallback
-      setPendingTxHashes(new Set())
-    }, 5 * 60 * 1000)
+    const cleanup = setInterval(
+      () => {
+        // In a real app, you'd check transaction status
+        // For now, we clear after 5 minutes as a fallback
+        setPendingTxHashes(new Set())
+      },
+      5 * 60 * 1000
+    )
 
     return () => clearInterval(cleanup)
   }, [])
@@ -101,9 +100,7 @@ export function usePendingTxGuard(): UsePendingTxGuardReturn {
     () => ({
       pendingTxCount,
       shouldBlock,
-      warningMessage: shouldBlock
-        ? getPendingTxWarningMessage(pendingTxCount)
-        : null,
+      warningMessage: shouldBlock ? getPendingTxWarningMessage(pendingTxCount) : null,
     }),
     [pendingTxCount, shouldBlock]
   )

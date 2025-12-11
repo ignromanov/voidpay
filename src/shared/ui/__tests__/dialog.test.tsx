@@ -23,9 +23,7 @@ describe('Dialog Component', () => {
       </Dialog>
     )
 
-    expect(
-      screen.getByRole('button', { name: /open dialog/i })
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /open dialog/i })).toBeInTheDocument()
   })
 
   it('should open dialog when trigger is clicked', async () => {

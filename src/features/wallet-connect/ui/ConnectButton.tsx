@@ -18,11 +18,7 @@ import { cn } from '@/shared/lib/utils'
  * @param endChars - Number of characters to show at end (default: 4)
  * @returns Truncated address (e.g., "0x1234...5678")
  */
-export function truncateAddress(
-  address: string,
-  startChars = 6,
-  endChars = 4
-): string {
+export function truncateAddress(address: string, startChars = 6, endChars = 4): string {
   if (!address) return ''
   if (address.length <= startChars + endChars) return address
   return `${address.slice(0, startChars)}...${address.slice(-endChars)}`
@@ -47,20 +43,10 @@ export interface ConnectWalletButtonProps {
  * - Truncated address when connected
  * - Network selector via RainbowKit's chain modal
  */
-export function ConnectWalletButton({
-  className,
-  showBalance = false,
-}: ConnectWalletButtonProps) {
+export function ConnectWalletButton({ className, showBalance = false }: ConnectWalletButtonProps) {
   return (
     <ConnectButton.Custom>
-      {({
-        account,
-        chain,
-        openAccountModal,
-        openChainModal,
-        openConnectModal,
-        mounted,
-      }) => {
+      {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted }) => {
         const ready = mounted
         const connected = ready && account && chain
 
@@ -83,10 +69,10 @@ export function ConnectWalletButton({
                     type="button"
                     className={cn(
                       'inline-flex items-center justify-center gap-2 rounded-lg',
-                      'bg-violet-600 hover:bg-violet-700 text-white',
+                      'bg-violet-600 text-white hover:bg-violet-700',
                       'px-4 py-2 text-sm font-medium',
                       'transition-colors duration-200',
-                      'focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2',
+                      'focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:outline-none',
                       className
                     )}
                   >
@@ -102,7 +88,7 @@ export function ConnectWalletButton({
                     type="button"
                     className={cn(
                       'inline-flex items-center justify-center gap-2 rounded-lg',
-                      'bg-red-600 hover:bg-red-700 text-white',
+                      'bg-red-600 text-white hover:bg-red-700',
                       'px-4 py-2 text-sm font-medium',
                       'transition-colors duration-200',
                       className
@@ -121,7 +107,7 @@ export function ConnectWalletButton({
                     type="button"
                     className={cn(
                       'inline-flex items-center gap-2 rounded-lg',
-                      'bg-zinc-800 hover:bg-zinc-700 text-zinc-100',
+                      'bg-zinc-800 text-zinc-100 hover:bg-zinc-700',
                       'px-3 py-2 text-sm font-medium',
                       'transition-colors duration-200',
                       'border border-zinc-700'
@@ -151,7 +137,7 @@ export function ConnectWalletButton({
                     type="button"
                     className={cn(
                       'inline-flex items-center gap-2 rounded-lg',
-                      'bg-zinc-800 hover:bg-zinc-700 text-zinc-100',
+                      'bg-zinc-800 text-zinc-100 hover:bg-zinc-700',
                       'px-3 py-2 text-sm font-medium',
                       'transition-colors duration-200',
                       'border border-zinc-700',
@@ -159,9 +145,7 @@ export function ConnectWalletButton({
                     )}
                   >
                     {showBalance && account.displayBalance && (
-                      <span className="text-zinc-400">
-                        {account.displayBalance}
-                      </span>
+                      <span className="text-zinc-400">{account.displayBalance}</span>
                     )}
                     <span>{truncateAddress(account.address)}</span>
                   </button>

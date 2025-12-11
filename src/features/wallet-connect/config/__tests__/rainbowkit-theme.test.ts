@@ -6,7 +6,12 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { voidPayTheme, VOIDPAY_ACCENT_COLOR, createVoidPayTheme, VOIDPAY_COLORS } from '../rainbowkit-theme'
+import {
+  voidPayTheme,
+  VOIDPAY_ACCENT_COLOR,
+  createVoidPayTheme,
+  VOIDPAY_COLORS,
+} from '../rainbowkit-theme'
 
 describe('rainbowkit-theme', () => {
   describe('VOIDPAY_ACCENT_COLOR', () => {

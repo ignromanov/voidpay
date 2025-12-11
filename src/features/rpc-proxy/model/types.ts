@@ -12,65 +12,65 @@ export type RpcMethod =
   | 'eth_sendRawTransaction'
   | 'eth_getTransactionReceipt'
   | 'eth_chainId'
-  | 'net_version';
+  | 'net_version'
 
 export interface JsonRpcRequest {
-  jsonrpc: '2.0';
-  method: string;
-  params: unknown[];
-  id: number | string | null;
+  jsonrpc: '2.0'
+  method: string
+  params: unknown[]
+  id: number | string | null
 }
 
 export interface JsonRpcResponse {
-  jsonrpc: '2.0';
-  result?: unknown;
+  jsonrpc: '2.0'
+  result?: unknown
   error?: {
-    code: number;
-    message: string;
-    data?: unknown;
-  };
-  id: number | string | null;
+    code: number
+    message: string
+    data?: unknown
+  }
+  id: number | string | null
 }
 
 export interface RpcProviderConfig {
-  name: 'Alchemy' | 'Infura';
-  url: string;
-  apiKey: string;
+  name: 'Alchemy' | 'Infura'
+  url: string
+  apiKey: string
 }
 
 export interface RpcConfig {
   providers: {
-    primary: RpcProviderConfig;
-    fallback: RpcProviderConfig;
-  };
+    primary: RpcProviderConfig
+    fallback: RpcProviderConfig
+  }
   rateLimit: {
-    requestsPerMinute: number;
-    windowSeconds: number;
-  };
+    requestsPerMinute: number
+    windowSeconds: number
+  }
   mock: {
-    enabled: boolean;
-  };
+    enabled: boolean
+  }
 }
 
 export interface MockTransaction {
-  hash: string;
-  status: 'pending' | 'success' | 'reverted';
-  from: string;
-  to: string;
-  value: string;
-  timestamp: number;
+  hash: string
+  status: 'pending' | 'success' | 'reverted'
+  from: string
+  to: string
+  value: string
+  timestamp: number
 }
 
-export type MockMode = 'success' | 'error' | 'slow';
+export type MockMode = 'success' | 'error' | 'slow'
 
 export interface ProxyResult {
-  response: JsonRpcResponse;
-  provider: 'primary' | 'fallback' | 'mock';
-  requestId: string;
+  response: JsonRpcResponse
+  provider: 'primary' | 'fallback' | 'mock'
+  requestId: string
 }
 
 export interface RateLimitResult {
-  allowed: boolean;
-  remaining: number;
-  limit: number;
+  allowed: boolean
+  remaining: number
+  limit: number
 }

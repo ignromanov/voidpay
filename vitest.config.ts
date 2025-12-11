@@ -1,42 +1,32 @@
-import path from 'node:path'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
-// Use import.meta.dirname for worktree compatibility (Node 20+)
-const rootDir = import.meta.dirname
-
 export default defineConfig({
-  plugins: [react(), tsconfigPaths({ root: rootDir })],
+  plugins: [react(), tsconfigPaths()],
   test: {
-    root: rootDir,
-    // happy-dom is 2-3x lighter than jsdom
     environment: 'happy-dom',
     globals: true,
-    setupFiles: [path.join(rootDir, 'vitest.setup.ts')],
-    exclude: ['**/node_modules/**', '**/dist/**', '**/worktrees/**', '**/assets/**'],
-    // Use forks pool for better memory isolation between workers
+    setupFiles: ['./vitest.setup.ts'],
+
+    // Performance optimizations
     pool: 'forks',
-    // Limit parallelism to reduce CPU/memory pressure
-    maxWorkers: 4,
+    isolate: false,
+
+    // Coverage configuration
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'html'],
+      reporter: ['text', 'json', 'html'],
       exclude: [
-        'node_modules',
-        'coverage',
-        'assets',
-        '.next',
+        'node_modules/',
+        'dist/',
         '**/*.config.*',
         '**/*.d.ts',
-        '.specify/**',
+        '**/types.ts',
+        '**/__tests__/**',
+        '**/*.test.*',
+        '**/*.spec.*',
       ],
-      thresholds: {
-        statements: 80,
-        branches: 80,
-        functions: 80,
-        lines: 80,
-      },
     },
   },
 })

@@ -40,8 +40,8 @@ export function HistoryList({ className = '' }: HistoryListProps) {
 
   if (history.length === 0) {
     return (
-      <div className={`text-center py-12 ${className}`}>
-        <div className="text-gray-400 mb-2">
+      <div className={`py-12 text-center ${className}`}>
+        <div className="mb-2 text-gray-400">
           <svg
             className="mx-auto h-12 w-12"
             fill="none"
@@ -57,7 +57,7 @@ export function HistoryList({ className = '' }: HistoryListProps) {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-200 mb-1">No invoices created yet</h3>
+        <h3 className="mb-1 text-lg font-medium text-gray-200">No invoices created yet</h3>
         <p className="text-sm text-gray-400">
           Your created invoices will appear here for easy access and duplication.
         </p>
@@ -67,9 +67,11 @@ export function HistoryList({ className = '' }: HistoryListProps) {
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-100">Creation History</h2>
-        <span className="text-sm text-gray-400">{history.length} invoice{history.length !== 1 ? 's' : ''}</span>
+        <span className="text-sm text-gray-400">
+          {history.length} invoice{history.length !== 1 ? 's' : ''}
+        </span>
       </div>
 
       <div className="space-y-2">
@@ -118,19 +120,19 @@ function HistoryEntryCard({
   })
 
   return (
-    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition-colors">
+    <div className="rounded-lg border border-gray-700 bg-gray-800/50 p-4 transition-colors hover:border-gray-600">
       <div className="flex items-start justify-between gap-4">
         {/* Left: Invoice Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-sm font-semibold text-gray-100 truncate">{entry.invoiceId}</h3>
+        <div className="min-w-0 flex-1">
+          <div className="mb-1 flex items-center gap-2">
+            <h3 className="truncate text-sm font-semibold text-gray-100">{entry.invoiceId}</h3>
             {entry.txHash && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-900/30 text-green-400 border border-green-800">
+              <span className="inline-flex items-center rounded border border-green-800 bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-400">
                 Paid
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-300 mb-1">{entry.recipientName}</p>
+          <p className="mb-1 text-sm text-gray-300">{entry.recipientName}</p>
           <div className="flex items-center gap-3 text-xs text-gray-400">
             <span>{formattedDate}</span>
             <span>•</span>
@@ -144,21 +146,21 @@ function HistoryEntryCard({
             <>
               <button
                 onClick={onView}
-                className="px-3 py-1.5 text-xs font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
+                className="rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
                 title="View Invoice"
               >
                 View
               </button>
               <button
                 onClick={onDuplicate}
-                className="px-3 py-1.5 text-xs font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
+                className="rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
                 title="Duplicate as Draft"
               >
                 Duplicate
               </button>
               <button
                 onClick={onDelete}
-                className="px-3 py-1.5 text-xs font-medium text-red-400 hover:text-red-300 bg-red-900/20 hover:bg-red-900/30 rounded transition-colors"
+                className="rounded bg-red-900/20 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-900/30 hover:text-red-300"
                 title="Delete Entry"
               >
                 Delete
@@ -168,13 +170,13 @@ function HistoryEntryCard({
             <>
               <button
                 onClick={onDeleteConfirm}
-                className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded transition-colors"
+                className="rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
               >
                 Confirm
               </button>
               <button
                 onClick={onDeleteCancel}
-                className="px-3 py-1.5 text-xs font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
+                className="rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
               >
                 Cancel
               </button>
