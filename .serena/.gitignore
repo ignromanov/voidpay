@@ -1,6 +1,0 @@
-# Serena cache and logs are local, not tracked
-cache/
-logs/
-
-# Memories ARE tracked in git (part of codebase)
-# !memories/
