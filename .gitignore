@@ -1,6 +1,13 @@
-# Local settings
+# AI Artifacts (private repo in .ai/)
+.ai/
+.specify
+.serena
+.claude
+specs
+CLAUDE.md
+
+# Local settings (legacy, now in .ai/)
 .claude/settings.local.json
-.claude/skills/
 
 # Assets
 assets/
@@ -9,10 +16,7 @@ assets/
 .vscode/
 .idea/
 
-# Serena (cache/logs ignored, memories tracked)
-.serena/cache/
-.serena/logs/
-# .serena/memories/ is NOT ignored - it's part of codebase
+# Serena cache/logs (in .ai/.serena/, memories tracked in .ai/ repo)
 
 # Cache
 .cache/
@@ -27,7 +31,7 @@ Thumbs.db
 # Dependencies
 node_modules
 .pnpm-store/
-.playwright-mcp
+.playwright-mcp/
 
 # Next.js
 .next/
