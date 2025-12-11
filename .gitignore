@@ -68,3 +68,4 @@ next-env.d.ts
 # Git Worktrees (Constitution Principle X)
 worktrees/
 coverage/
+CLAUDE.md
