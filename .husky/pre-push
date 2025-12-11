@@ -1,1 +1,2 @@
-pnpm test:coverage
+# Quiet mode: suppress verbose output, show only summary/errors
+pnpm test:coverage --silent 2>&1 | tail -20

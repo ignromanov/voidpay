@@ -8,7 +8,6 @@
     "dev:webpack": "next dev",
     "dev:debug": "NODE_OPTIONS='--inspect' next dev --turbopack",
     "build": "next build",
-    "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
