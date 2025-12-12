@@ -182,7 +182,7 @@ describe('FaqSection', () => {
 
   describe('Chevron Animation', () => {
     it('should rotate chevron when item is open', () => {
-      const { container } = render(<FaqSection />)
+      render(<FaqSection />)
 
       // First button is open by default
       const firstButton = screen.getByText('Is VoidPay really free?').closest('button')
@@ -192,7 +192,7 @@ describe('FaqSection', () => {
     })
 
     it('should not rotate chevron when item is closed', () => {
-      const { container } = render(<FaqSection />)
+      render(<FaqSection />)
 
       const secondButton = screen.getByText("Why don't you have a token?").closest('button')
       const chevron = secondButton?.querySelector('[aria-hidden="true"]')

@@ -55,7 +55,7 @@ describe('HowItWorks', () => {
     })
 
     it('should render 3 timeline steps', () => {
-      const { container } = render(<HowItWorks />)
+      render(<HowItWorks />)
 
       // TimelineStep renders step numbers
       const stepNumbers = screen.getAllByText(/^[1-3]$/)
