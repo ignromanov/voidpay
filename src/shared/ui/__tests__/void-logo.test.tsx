@@ -1,9 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
-import { useReducedMotion } from 'framer-motion'
+
+// Mock the local wrapper hook directly (VoidLogo imports from ./hooks/use-reduced-motion)
+vi.mock('../hooks/use-reduced-motion', () => ({
+  useReducedMotion: vi.fn(() => false),
+}))
+
+// Import the mocked module to access the mock function
+import { useReducedMotion } from '../hooks/use-reduced-motion'
 import { VoidLogo } from '../void-logo'
 
-// Get the mocked useReducedMotion from global vitest.setup.ts mock
+// Get reference to the mock for test manipulation
 const mockUseReducedMotion = vi.mocked(useReducedMotion)
 
 describe('VoidLogo', () => {
@@ -176,16 +183,13 @@ describe('VoidLogo', () => {
   describe('Accessibility', () => {
     it('should respect prefers-reduced-motion', () => {
       // Configure mock to return true (user prefers reduced motion)
-      mockUseReducedMotion.mockReturnValue(true)
+      mockUseReducedMotion.mockReturnValueOnce(true)
 
       const { container } = render(<VoidLogo />)
       const svg = container.querySelector('svg')
 
       // Should not have animation when reduced motion is preferred
       expect(svg?.getAttribute('class')).not.toContain('animate-blackhole-pulse')
-
-      // Reset mock for other tests
-      mockUseReducedMotion.mockReturnValue(false)
     })
   })
 })
