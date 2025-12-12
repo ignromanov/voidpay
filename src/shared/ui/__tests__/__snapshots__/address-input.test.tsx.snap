@@ -10,7 +10,7 @@ exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with 
     <input
       class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 pr-9"
       disabled=""
-      id=":r0:"
+      id="test-id"
       type="text"
       value="0x1234567890123456789012345678901234567890"
     />
@@ -35,7 +35,7 @@ exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with 
   >
     <input
       class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800"
-      id=":r0:"
+      id="test-id"
       type="text"
       value=""
     />
@@ -52,7 +52,7 @@ exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with 
   >
     <input
       class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800"
-      id=":r0:"
+      id="test-id"
       type="text"
       value="invalid-address"
     />
@@ -66,7 +66,7 @@ exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with 
 >
   <label
     class="mb-1.5 block text-xs font-medium tracking-wide text-zinc-400 uppercase"
-    for=":r0:"
+    for="test-id"
   >
     Wallet Address
   </label>
@@ -74,17 +74,17 @@ exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with 
     class="relative"
   >
     <input
-      aria-describedby=":r0:-error"
+      aria-describedby="test-id-error"
       aria-invalid="true"
       class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-red-500/50 focus:border-red-500 focus:ring-red-500/50"
-      id=":r0:"
+      id="test-id"
       type="text"
       value="invalid"
     />
   </div>
   <p
     class="mt-1.5 text-xs text-red-400"
-    id=":r0:-error"
+    id="test-id-error"
   >
     Invalid address format
   </p>
@@ -100,7 +100,7 @@ exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with 
   >
     <input
       class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 pr-9"
-      id=":r0:"
+      id="test-id"
       type="text"
       value="0x1234567890123456789012345678901234567890"
     />

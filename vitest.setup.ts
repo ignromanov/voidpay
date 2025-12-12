@@ -1,105 +1,94 @@
+/**
+ * Vitest Global Setup
+ *
+ * This file runs BEFORE all tests.
+ *
+ * Mock strategy:
+ * - framer-motion: via alias in vitest.config.ts → __mocks__/framer-motion.tsx
+ * - React.useId: via vi.mock in this file
+ * - matchMedia: via vi.hoisted in this file
+ *
+ * @see https://vitest.dev/guide/mocking.html
+ */
 import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, vi } from 'vitest'
 
-// Mock React useId for deterministic snapshots
-let idCounter = 0
-vi.mock('react', async () => {
-  const actual = await vi.importActual('react')
+// ============================================================================
+// HOISTED MOCKS - Run before any imports
+// ============================================================================
+
+/**
+ * Mock window.matchMedia for prefers-reduced-motion
+ * Must be hoisted because some libraries read it on import
+ *
+ * @see https://rebeccamdeprey.com/blog/mock-windowmatchmedia-in-vitest
+ */
+vi.hoisted(() => {
+  Object.defineProperty(globalThis, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches: query === '(prefers-reduced-motion: reduce)',
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  })
+})
+
+// ============================================================================
+// MODULE MOCKS
+// ============================================================================
+
+/**
+ * Mock React.useId for deterministic snapshot testing
+ *
+ * React's useId generates unique IDs like ":r0:", ":r1:" based on component tree.
+ * In CI, test execution order differs, causing snapshot mismatches.
+ * Using a STATIC ID eliminates this variability.
+ *
+ * @see https://4markdown.com/how-to-stabilize-useid-testing-with-global-mocking/
+ */
+vi.mock('react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react')>()
   return {
     ...actual,
-    useId: () => `:r${(idCounter++).toString(16)}:`,
+    useId: () => 'test-id',
   }
 })
 
-// Mock framer-motion for deterministic snapshots across environments
-// This ensures motion components render as plain divs without animation props
-vi.mock('framer-motion', async () => {
-  const React = await import('react')
-  const actual = await vi.importActual('framer-motion')
+/**
+ * Mock our wrapper hook for consistency
+ */
+vi.mock('@/shared/ui/hooks/use-reduced-motion', () => ({
+  useReducedMotion: () => true,
+}))
 
-  // Helper to strip motion-specific props from elements
-  const stripMotionProps = (props: Record<string, unknown>) => {
-    const {
-      initial: _initial,
-      animate: _animate,
-      exit: _exit,
-      transition: _transition,
-      variants: _variants,
-      whileHover: _whileHover,
-      whileTap: _whileTap,
-      whileFocus: _whileFocus,
-      whileInView: _whileInView,
-      whileDrag: _whileDrag,
-      layout: _layout,
-      layoutId: _layoutId,
-      onAnimationStart: _onAnimationStart,
-      onAnimationComplete: _onAnimationComplete,
-      ...rest
-    } = props
-    // Intentionally discard motion-specific props
-    void [_initial, _animate, _exit, _transition, _variants, _whileHover, _whileTap, _whileFocus, _whileInView, _whileDrag, _layout, _layoutId, _onAnimationStart, _onAnimationComplete]
-    return rest
-  }
+// ============================================================================
+// LIFECYCLE HOOKS
+// ============================================================================
 
-  // Create a simple motion component factory
-  const createMotionComponent = (Component: string) => {
-    const MotionComponent = React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
-      const cleanProps = stripMotionProps(props)
-      return React.createElement(Component, { ...cleanProps, ref })
-    })
-    MotionComponent.displayName = `motion.${Component}`
-    return MotionComponent
-  }
-
-  return {
-    ...actual,
-    motion: {
-      div: createMotionComponent('div'),
-      span: createMotionComponent('span'),
-      a: createMotionComponent('a'),
-      button: createMotionComponent('button'),
-      ul: createMotionComponent('ul'),
-      li: createMotionComponent('li'),
-      nav: createMotionComponent('nav'),
-      section: createMotionComponent('section'),
-      article: createMotionComponent('article'),
-      header: createMotionComponent('header'),
-      footer: createMotionComponent('footer'),
-      main: createMotionComponent('main'),
-      form: createMotionComponent('form'),
-      input: createMotionComponent('input'),
-      p: createMotionComponent('p'),
-      h1: createMotionComponent('h1'),
-      h2: createMotionComponent('h2'),
-      h3: createMotionComponent('h3'),
-      h4: createMotionComponent('h4'),
-      img: createMotionComponent('img'),
-      svg: createMotionComponent('svg'),
-      path: createMotionComponent('path'),
-    },
-    AnimatePresence: ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children),
-    useReducedMotion: vi.fn(() => false),
-    useInView: vi.fn(() => true),
-    useAnimation: vi.fn(() => ({
-      start: vi.fn(),
-      stop: vi.fn(),
-      set: vi.fn(),
-    })),
-  }
-})
-
-// Reset ID counter before each test for consistent snapshots
-beforeEach(() => {
-  idCounter = 0
-})
-
-// Runs a cleanup after each test case (e.g. clearing DOM)
+/**
+ * Runs a cleanup after each test case (e.g. clearing DOM)
+ */
 afterEach(() => {
   cleanup()
 })
 
-// Mock pointer capture methods for Radix UI components (happy-dom compatibility)
+/**
+ * Reset all mocks before each test to ensure clean state
+ */
+beforeEach(() => {
+  vi.clearAllMocks()
+})
+
+/**
+ * Mock pointer capture methods for Radix UI components (happy-dom compatibility)
+ */
 beforeAll(() => {
   if (!Element.prototype.hasPointerCapture) {
     Element.prototype.hasPointerCapture = () => false

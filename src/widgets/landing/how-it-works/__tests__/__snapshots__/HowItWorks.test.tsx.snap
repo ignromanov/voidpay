@@ -30,7 +30,6 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
       >
         <div
           class="relative flex flex-col items-center text-center md:flex-1"
-          style="opacity: 0; transform: translateY(20px);"
         >
           <div
             class="relative mb-6"
@@ -111,7 +110,6 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
         </div>
         <div
           class="relative flex flex-col items-center text-center md:flex-1"
-          style="opacity: 0; transform: translateY(20px);"
         >
           <div
             class="relative mb-6"
@@ -204,7 +202,6 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
         </div>
         <div
           class="relative flex flex-col items-center text-center md:flex-1"
-          style="opacity: 0; transform: translateY(20px);"
         >
           <div
             class="relative mb-6"
