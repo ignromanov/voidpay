@@ -3,7 +3,6 @@
 exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 1`] = `
 <div
   class="group flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700"
-  style="opacity: 0; transform: translateY(-10px);"
 >
   <div
     class="grid flex-1 grid-cols-12 gap-3"
@@ -119,7 +118,6 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
 exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1`] = `
 <div
   class="group flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700"
-  style="opacity: 0; transform: translateY(-10px);"
 >
   <div
     class="grid flex-1 grid-cols-12 gap-3"
@@ -235,7 +233,6 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
 exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`] = `
 <div
   class="group flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700"
-  style="opacity: 0; transform: translateY(-10px);"
 >
   <div
     class="grid flex-1 grid-cols-12 gap-3"

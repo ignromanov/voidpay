@@ -29,7 +29,7 @@ exports[`WhyVoidPay > T023-test: Snapshot > should match snapshot 1`] = `
       >
         <div
           class="group rounded-3xl border border-violet-500/20 bg-gradient-to-b from-zinc-900/80 to-zinc-950/80 p-10 backdrop-blur-sm transition-all hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-900/10"
-          style="opacity: 0; transform: translateY(20px);"
+          viewport="[object Object]"
         >
           <div
             class="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-900 shadow-lg transition-transform group-hover:scale-110"
@@ -74,7 +74,7 @@ exports[`WhyVoidPay > T023-test: Snapshot > should match snapshot 1`] = `
         </div>
         <div
           class="group rounded-3xl border border-violet-500/20 bg-gradient-to-b from-zinc-900/80 to-zinc-950/80 p-10 backdrop-blur-sm transition-all hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-900/10"
-          style="opacity: 0; transform: translateY(20px);"
+          viewport="[object Object]"
         >
           <div
             class="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-900 shadow-lg transition-transform group-hover:scale-110"
@@ -110,7 +110,7 @@ exports[`WhyVoidPay > T023-test: Snapshot > should match snapshot 1`] = `
         </div>
         <div
           class="group rounded-3xl border border-violet-500/20 bg-gradient-to-b from-zinc-900/80 to-zinc-950/80 p-10 backdrop-blur-sm transition-all hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-900/10"
-          style="opacity: 0; transform: translateY(20px);"
+          viewport="[object Object]"
         >
           <div
             class="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-900 shadow-lg transition-transform group-hover:scale-110"

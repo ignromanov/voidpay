@@ -12,6 +12,79 @@ vi.mock('react', async () => {
   }
 })
 
+// Mock framer-motion for deterministic snapshots across environments
+// This ensures motion components render as plain divs without animation props
+vi.mock('framer-motion', async () => {
+  const React = await import('react')
+  const actual = await vi.importActual('framer-motion')
+
+  // Helper to strip motion-specific props from elements
+  const stripMotionProps = (props: Record<string, unknown>) => {
+    const {
+      initial,
+      animate,
+      exit,
+      transition,
+      variants,
+      whileHover,
+      whileTap,
+      whileFocus,
+      whileInView,
+      whileDrag,
+      layout,
+      layoutId,
+      onAnimationStart,
+      onAnimationComplete,
+      ...rest
+    } = props
+    return rest
+  }
+
+  // Create a simple motion component factory
+  const createMotionComponent = (Component: string) => {
+    return React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
+      const cleanProps = stripMotionProps(props)
+      return React.createElement(Component, { ...cleanProps, ref })
+    })
+  }
+
+  return {
+    ...actual,
+    motion: {
+      div: createMotionComponent('div'),
+      span: createMotionComponent('span'),
+      a: createMotionComponent('a'),
+      button: createMotionComponent('button'),
+      ul: createMotionComponent('ul'),
+      li: createMotionComponent('li'),
+      nav: createMotionComponent('nav'),
+      section: createMotionComponent('section'),
+      article: createMotionComponent('article'),
+      header: createMotionComponent('header'),
+      footer: createMotionComponent('footer'),
+      main: createMotionComponent('main'),
+      form: createMotionComponent('form'),
+      input: createMotionComponent('input'),
+      p: createMotionComponent('p'),
+      h1: createMotionComponent('h1'),
+      h2: createMotionComponent('h2'),
+      h3: createMotionComponent('h3'),
+      h4: createMotionComponent('h4'),
+      img: createMotionComponent('img'),
+      svg: createMotionComponent('svg'),
+      path: createMotionComponent('path'),
+    },
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children),
+    useReducedMotion: vi.fn(() => false),
+    useInView: vi.fn(() => true),
+    useAnimation: vi.fn(() => ({
+      start: vi.fn(),
+      stop: vi.fn(),
+      set: vi.fn(),
+    })),
+  }
+})
+
 // Reset ID counter before each test for consistent snapshots
 beforeEach(() => {
   idCounter = 0

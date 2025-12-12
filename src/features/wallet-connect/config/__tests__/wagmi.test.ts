@@ -19,7 +19,7 @@ describe('wagmi configuration', () => {
     // Dynamic import to ensure mocks are applied
     const { wagmiConfig: config } = await import('../wagmi')
     wagmiConfig = config
-  })
+  }, 30000) // 30s timeout for WalletConnect initialization
 
   afterEach(() => {
     vi.resetModules()
