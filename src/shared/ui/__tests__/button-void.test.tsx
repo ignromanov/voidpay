@@ -156,7 +156,7 @@ describe('Button void variant', () => {
       )
 
       const button = container.querySelector('button')
-      expect(button?.getAttribute('class')).toContain('h-10')
+      expect(button?.getAttribute('class')).toContain('h-12')
     })
 
     it('should merge custom className', () => {

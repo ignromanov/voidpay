@@ -1,6 +1,21 @@
 import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
-import { afterEach, beforeAll } from 'vitest'
+import { afterEach, beforeAll, beforeEach, vi } from 'vitest'
+
+// Mock React useId for deterministic snapshots
+let idCounter = 0
+vi.mock('react', async () => {
+  const actual = await vi.importActual('react')
+  return {
+    ...actual,
+    useId: () => `:r${(idCounter++).toString(16)}:`,
+  }
+})
+
+// Reset ID counter before each test for consistent snapshots
+beforeEach(() => {
+  idCounter = 0
+})
 
 // Runs a cleanup after each test case (e.g. clearing DOM)
 afterEach(() => {

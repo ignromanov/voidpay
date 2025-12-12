@@ -114,14 +114,14 @@ describe('AuroraText', () => {
   })
 
   describe('T043-test: Reduced motion (static gradient)', () => {
-    it('should not animate when prefers-reduced-motion is true', async () => {
-      const { useReducedMotion } = await import('framer-motion')
-      vi.mocked(useReducedMotion).mockReturnValue(true)
-
+    it('should always include animate-aurora class (CSS handles reduced-motion)', () => {
+      // AuroraText always includes animate-aurora class
+      // CSS @media (prefers-reduced-motion: reduce) disables the animation
+      // This is the correct approach to avoid React hydration mismatches
       const { container } = render(<AuroraText>Static</AuroraText>)
 
       const element = container.firstChild as HTMLElement
-      expect(element.className).not.toContain('animate-aurora')
+      expect(element.className).toContain('animate-aurora')
     })
   })
 

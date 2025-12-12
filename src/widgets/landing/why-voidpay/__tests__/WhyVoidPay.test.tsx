@@ -2,6 +2,12 @@
  * WhyVoidPay Tests
  * Feature: 012-landing-page
  * User Story: US3 (Feature Discovery)
+ *
+ * Tests for the WhyVoidPay section which displays TOP 3 feature cards.
+ * The component now shows only the 3 most important features:
+ * - Zero Storage, Zero Risk (no-database)
+ * - One-Click Payments (instant)
+ * - Multi-Chain Native (multichain)
  */
 
 import { render, screen } from '@testing-library/react'
@@ -11,65 +17,63 @@ import { WhyVoidPay } from '../WhyVoidPay'
 
 describe('WhyVoidPay', () => {
   describe('T022-test: Feature cards rendering', () => {
-    it('should render 6 feature cards', () => {
+    it('should render 3 top feature cards', () => {
       render(<WhyVoidPay />)
-      
-      expect(screen.getByText('Privacy First')).toBeInTheDocument()
-      expect(screen.getByText('Zero Backend')).toBeInTheDocument()
-      expect(screen.getByText('Instant Setup')).toBeInTheDocument()
-      expect(screen.getByText('Shareable Links')).toBeInTheDocument()
-      expect(screen.getByText('Multi-Chain')).toBeInTheDocument()
-      expect(screen.getByText('Self-Custody')).toBeInTheDocument()
+
+      // TOP 3 features based on TOP_FEATURES array
+      expect(screen.getByText('Zero Storage, Zero Risk')).toBeInTheDocument()
+      expect(screen.getByText('One-Click Payments')).toBeInTheDocument()
+      expect(screen.getByText('Multi-Chain Native')).toBeInTheDocument()
     })
 
     it('should render feature descriptions', () => {
       render(<WhyVoidPay />)
-      
-      expect(screen.getByText(/no tracking, no analytics/i)).toBeInTheDocument()
-      expect(screen.getByText(/no database, no sign-up/i)).toBeInTheDocument()
+
+      expect(screen.getByText(/nothing to steal/i)).toBeInTheDocument()
+      expect(screen.getByText(/connects wallet, pays/i)).toBeInTheDocument()
+      expect(screen.getByText(/Ethereum, Arbitrum, Optimism/i)).toBeInTheDocument()
     })
   })
 
   describe('Section structure', () => {
     it('should render section heading', () => {
       render(<WhyVoidPay />)
-      
+
       expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
       expect(screen.getByText('Why VoidPay?')).toBeInTheDocument()
     })
 
-    it('should render 6 cards with glass variant', () => {
+    it('should render 3 cards with backdrop blur', () => {
       const { container } = render(<WhyVoidPay />)
-      
-      // Should have 6 Card components (glass variant has backdrop-blur)
+
+      // Should have 3 Card components (with backdrop-blur)
       const cards = container.querySelectorAll('[class*="backdrop-blur"]')
-      expect(cards.length).toBe(6)
+      expect(cards.length).toBe(3)
     })
   })
 
   describe('Responsive grid', () => {
     it('should have responsive grid classes', () => {
       const { container } = render(<WhyVoidPay />)
-      
+
       // Find the grid container
       const grid = container.querySelector('[class*="grid"]')
       expect(grid?.className).toContain('grid-cols-1')
-      expect(grid?.className).toContain('sm:grid-cols-2')
-      expect(grid?.className).toContain('lg:grid-cols-3')
+      expect(grid?.className).toContain('md:grid-cols-3')
     })
   })
 
   describe('Accessibility', () => {
     it('should have proper aria-labelledby on section', () => {
       render(<WhyVoidPay />)
-      
+
       const section = document.querySelector('section')
       expect(section).toHaveAttribute('aria-labelledby', 'why-voidpay-heading')
     })
 
     it('should have aria-hidden on icons', () => {
       const { container } = render(<WhyVoidPay />)
-      
+
       const icons = container.querySelectorAll('svg[aria-hidden="true"]')
       expect(icons.length).toBeGreaterThan(0)
     })

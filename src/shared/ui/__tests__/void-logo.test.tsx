@@ -180,9 +180,9 @@ describe('VoidLogo', () => {
 
   describe('Accessibility', () => {
     it('should respect prefers-reduced-motion', async () => {
-      // Re-mock useReducedMotion to return true
-      const { useReducedMotion } = await import('framer-motion')
-      vi.mocked(useReducedMotion).mockReturnValue(true)
+      // Import and configure mock BEFORE rendering
+      const framerMotion = await import('framer-motion')
+      vi.mocked(framerMotion.useReducedMotion).mockReturnValue(true)
 
       const { container } = render(<VoidLogo />)
       const svg = container.querySelector('svg')

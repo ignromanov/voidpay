@@ -18,10 +18,14 @@ describe('TestnetBanner', () => {
     vi.resetModules()
   })
 
-  it('should export TestnetBanner component', async () => {
-    const { TestnetBanner } = await import('../TestnetBanner')
-    expect(TestnetBanner).toBeDefined()
-  })
+  it(
+    'should export TestnetBanner component',
+    async () => {
+      const { TestnetBanner } = await import('../TestnetBanner')
+      expect(TestnetBanner).toBeDefined()
+    },
+    20000
+  ) // Increase timeout for dynamic import
 
   it('should not render when on mainnet', async () => {
     vi.mocked((await import('wagmi')).useChainId).mockReturnValue(1)

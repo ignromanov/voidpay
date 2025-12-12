@@ -48,31 +48,40 @@ describe('HeroSection', () => {
       expect(heading).toBeInTheDocument()
       expect(heading).toHaveAttribute('id', 'hero-heading')
     })
-  })
 
-  describe('T013-test: Network badges', () => {
-    it('should display supported network badges', () => {
+    it('should display "Get Paid in Crypto" headline', () => {
       render(<HeroSection />)
 
-      expect(screen.getByText('Ethereum')).toBeInTheDocument()
-      expect(screen.getByText('Arbitrum')).toBeInTheDocument()
-      expect(screen.getByText('Optimism')).toBeInTheDocument()
+      expect(screen.getByText(/Get Paid in Crypto/)).toBeInTheDocument()
     })
 
-    it('should have accessible network list', () => {
+    it('should display aurora text "Just Send a Link"', () => {
       render(<HeroSection />)
 
-      const list = screen.getByRole('list', { name: /supported networks/i })
-      expect(list).toBeInTheDocument()
+      expect(screen.getByText(/Just Send a Link/)).toBeInTheDocument()
+    })
+  })
+
+  describe('T013-test: Open Source badge', () => {
+    it('should display the Open Source badge', () => {
+      render(<HeroSection />)
+
+      expect(screen.getByText(/Open Source.*Zero Tracking/)).toBeInTheDocument()
     })
   })
 
   describe('T017-test: Primary CTA button', () => {
-    it('should render "Start Invoicing" CTA button', () => {
+    it('should render "Create Your Invoice" CTA button', () => {
       render(<HeroSection />)
 
       // Check button text exists
-      expect(screen.getByText(/start invoicing/i)).toBeInTheDocument()
+      expect(screen.getByText(/Create Your Invoice/i)).toBeInTheDocument()
+    })
+
+    it('should show "No signup" reassurance text', () => {
+      render(<HeroSection />)
+
+      expect(screen.getByText(/No signup.*30 seconds/i)).toBeInTheDocument()
     })
   })
 
@@ -80,8 +89,14 @@ describe('HeroSection', () => {
     it('should render value proposition', () => {
       render(<HeroSection />)
 
-      // HyperText displays "No backend, no sign-up."
-      expect(screen.getByText(/create crypto invoices/i)).toBeInTheDocument()
+      // Main value proposition
+      expect(screen.getByText(/No servers.*No accounts/i)).toBeInTheDocument()
+    })
+
+    it('should render key message about invoice durability', () => {
+      render(<HeroSection />)
+
+      expect(screen.getByText(/If we disappear.*invoices don't/i)).toBeInTheDocument()
     })
   })
 
@@ -91,6 +106,14 @@ describe('HeroSection', () => {
 
       const section = document.querySelector('section')
       expect(section).toHaveAttribute('aria-labelledby', 'hero-heading')
+    })
+  })
+
+  describe('Scroll indicator', () => {
+    it('should render scroll indicator', () => {
+      render(<HeroSection />)
+
+      expect(screen.getByText('Scroll')).toBeInTheDocument()
     })
   })
 })

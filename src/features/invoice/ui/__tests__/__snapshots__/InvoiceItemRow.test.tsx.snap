@@ -19,7 +19,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
         >
           <input
             class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
-            id="_r_14_"
+            id=":r0:"
             placeholder="Item description"
             type="text"
             value="Consulting"
@@ -38,7 +38,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
         >
           <input
             class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
-            id="_r_15_"
+            id=":r1:"
             min="0.01"
             placeholder="Qty"
             step="0.01"
@@ -59,7 +59,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
         >
           <input
             class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
-            id="_r_16_"
+            id=":r2:"
             placeholder="0.00"
             type="text"
             value="75.25"
@@ -81,7 +81,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
   </div>
   <button
     aria-label="Remove item"
-    class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
   >
     <svg
       aria-hidden="true"
@@ -135,7 +135,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
         >
           <input
             class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
-            id="_r_u_"
+            id=":r0:"
             placeholder="Item description"
             type="text"
             value="Web Development Services"
@@ -154,7 +154,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
         >
           <input
             class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
-            id="_r_v_"
+            id=":r1:"
             min="0.01"
             placeholder="Qty"
             step="0.01"
@@ -175,7 +175,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
         >
           <input
             class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
-            id="_r_10_"
+            id=":r2:"
             placeholder="0.00"
             type="text"
             value="100.50"
@@ -197,7 +197,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
   </div>
   <button
     aria-label="Remove item"
-    class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
   >
     <svg
       aria-hidden="true"
@@ -251,7 +251,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
         >
           <input
             class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
-            id="_r_11_"
+            id=":r0:"
             placeholder="Item description"
             type="text"
             value=""
@@ -270,7 +270,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
         >
           <input
             class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
-            id="_r_12_"
+            id=":r1:"
             min="0.01"
             placeholder="Qty"
             step="0.01"
@@ -291,7 +291,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
         >
           <input
             class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
-            id="_r_13_"
+            id=":r2:"
             placeholder="0.00"
             type="text"
             value=""
@@ -313,7 +313,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
   </div>
   <button
     aria-label="Remove item"
-    class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
   >
     <svg
       aria-hidden="true"

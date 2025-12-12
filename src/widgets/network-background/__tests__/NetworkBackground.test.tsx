@@ -25,7 +25,7 @@ describe('NetworkBackground', () => {
   })
 
   describe('T020-test: Default theme rendering', () => {
-    it('should render with default ethereum theme', () => {
+    it('should render with default voidpay theme', () => {
       const { container } = render(<NetworkBackground />)
 
       // Should render a container
@@ -40,98 +40,98 @@ describe('NetworkBackground', () => {
       const { container } = render(<NetworkBackground />)
       const element = container.firstChild as HTMLElement
 
-      // Should have negative z-index or low z-index for background
-      expect(element.className.includes('z-') || element.style.zIndex).toBeTruthy()
+      // Should have negative z-index for background
+      expect(element.className).toContain('-z-10')
     })
   })
 
-  describe('T021-test: Arbitrum theme (blue triangles)', () => {
-    it('should apply arbitrum theme colors', () => {
+  describe('T021-test: Arbitrum theme (triangles)', () => {
+    it('should apply arbitrum theme with triangle shapes', () => {
       const { container } = render(<NetworkBackground theme="arbitrum" />)
 
-      // Should contain shapes (div or svg elements)
-      const shapes = container.querySelectorAll('[data-shape]')
+      // Should contain shapes with data-shape attribute
+      const shapes = container.querySelectorAll('[data-shape="triangle"]')
       expect(shapes.length).toBeGreaterThan(0)
     })
 
-    it('should render 8 shapes for arbitrum', () => {
+    it('should render 3 shapes for arbitrum (primary, secondary, accent)', () => {
       const { container } = render(<NetworkBackground theme="arbitrum" />)
       const shapes = container.querySelectorAll('[data-shape="triangle"]')
 
-      // Arbitrum should have 8 triangles
-      expect(shapes.length).toBe(8)
+      // Arbitrum should have 3 triangle shapes
+      expect(shapes.length).toBe(3)
     })
   })
 
-  describe('T022-test: Optimism theme (red circles)', () => {
-    it('should apply optimism theme colors', () => {
+  describe('T022-test: Optimism theme (circles)', () => {
+    it('should apply optimism theme with circle shapes', () => {
       const { container } = render(<NetworkBackground theme="optimism" />)
 
       // Should contain shapes
-      const shapes = container.querySelectorAll('[data-shape]')
+      const shapes = container.querySelectorAll('[data-shape="circle"]')
       expect(shapes.length).toBeGreaterThan(0)
     })
 
-    it('should render 8 shapes for optimism', () => {
+    it('should render 3 shapes for optimism', () => {
       const { container } = render(<NetworkBackground theme="optimism" />)
       const shapes = container.querySelectorAll('[data-shape="circle"]')
 
-      // Optimism should have 8 circles
-      expect(shapes.length).toBe(8)
+      // Optimism should have 3 circle shapes
+      expect(shapes.length).toBe(3)
     })
   })
 
-  describe('T023-test: Polygon theme (purple hexagons)', () => {
-    it('should apply polygon theme colors', () => {
+  describe('T023-test: Polygon theme (hexagons)', () => {
+    it('should apply polygon theme with hexagon shapes', () => {
       const { container } = render(<NetworkBackground theme="polygon" />)
 
       // Should contain shapes
-      const shapes = container.querySelectorAll('[data-shape]')
+      const shapes = container.querySelectorAll('[data-shape="hexagon"]')
       expect(shapes.length).toBeGreaterThan(0)
     })
 
-    it('should render 6 shapes for polygon', () => {
+    it('should render 3 shapes for polygon', () => {
       const { container } = render(<NetworkBackground theme="polygon" />)
       const shapes = container.querySelectorAll('[data-shape="hexagon"]')
 
-      // Polygon should have 6 hexagons
-      expect(shapes.length).toBe(6)
+      // Polygon should have 3 hexagon shapes
+      expect(shapes.length).toBe(3)
     })
   })
 
-  describe('T024-test: Ethereum theme (blue rhombus)', () => {
-    it('should apply ethereum theme colors', () => {
+  describe('T024-test: Ethereum theme (rhombus)', () => {
+    it('should apply ethereum theme with rhombus shapes', () => {
       const { container } = render(<NetworkBackground theme="ethereum" />)
 
       // Should contain shapes
-      const shapes = container.querySelectorAll('[data-shape]')
+      const shapes = container.querySelectorAll('[data-shape="rhombus"]')
       expect(shapes.length).toBeGreaterThan(0)
     })
 
-    it('should render 8 shapes for ethereum', () => {
+    it('should render 3 shapes for ethereum', () => {
       const { container } = render(<NetworkBackground theme="ethereum" />)
       const shapes = container.querySelectorAll('[data-shape="rhombus"]')
 
-      // Ethereum should have 8 rhombus shapes
-      expect(shapes.length).toBe(8)
+      // Ethereum should have 3 rhombus shapes
+      expect(shapes.length).toBe(3)
     })
   })
 
-  describe('T025-test: VoidPay theme (violet blobs)', () => {
-    it('should apply voidpay theme colors', () => {
+  describe('T025-test: VoidPay theme (blobs)', () => {
+    it('should apply voidpay theme with blob shapes', () => {
       const { container } = render(<NetworkBackground theme="voidpay" />)
 
       // Should contain shapes
-      const shapes = container.querySelectorAll('[data-shape]')
+      const shapes = container.querySelectorAll('[data-shape="blob"]')
       expect(shapes.length).toBeGreaterThan(0)
     })
 
-    it('should render 10 shapes for voidpay', () => {
+    it('should render 3 shapes for voidpay', () => {
       const { container } = render(<NetworkBackground theme="voidpay" />)
       const shapes = container.querySelectorAll('[data-shape="blob"]')
 
-      // VoidPay should have 10 blobs
-      expect(shapes.length).toBe(10)
+      // VoidPay should have 3 blob shapes
+      expect(shapes.length).toBe(3)
     })
   })
 
@@ -141,14 +141,14 @@ describe('NetworkBackground', () => {
 
       // Initial render
       let shapes = container.querySelectorAll('[data-shape="rhombus"]')
-      expect(shapes.length).toBe(8)
+      expect(shapes.length).toBe(3)
 
       // Change theme
       rerender(<NetworkBackground theme="arbitrum" />)
 
       // Should now have different shapes (AnimatePresence handles transition)
       shapes = container.querySelectorAll('[data-shape="triangle"]')
-      expect(shapes.length).toBe(8)
+      expect(shapes.length).toBe(3)
     })
 
     it('should handle rapid theme changes', () => {
@@ -161,7 +161,7 @@ describe('NetworkBackground', () => {
 
       // Should end with polygon shapes
       const shapes = container.querySelectorAll('[data-shape="hexagon"]')
-      expect(shapes.length).toBe(6)
+      expect(shapes.length).toBe(3)
     })
   })
 

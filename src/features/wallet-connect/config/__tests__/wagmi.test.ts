@@ -26,16 +26,24 @@ describe('wagmi configuration', () => {
   })
 
   describe('config structure', () => {
-    it('should export a valid Wagmi config', () => {
-      expect(wagmiConfig).toBeDefined()
-      expect(wagmiConfig.state).toBeDefined()
-    })
+    it(
+      'should export a valid Wagmi config',
+      () => {
+        expect(wagmiConfig).toBeDefined()
+        expect(wagmiConfig.state).toBeDefined()
+      },
+      20000
+    ) // Increase timeout for WalletConnect initialization
 
-    it('should include supported chains', () => {
-      const chains = wagmiConfig.chains
-      expect(chains).toBeDefined()
-      expect(chains.length).toBeGreaterThanOrEqual(4) // At least 4 mainnet chains
-    })
+    it(
+      'should include supported chains',
+      () => {
+        const chains = wagmiConfig.chains
+        expect(chains).toBeDefined()
+        expect(chains.length).toBeGreaterThanOrEqual(4) // At least 4 mainnet chains
+      },
+      20000
+    ) // Increase timeout for WalletConnect initialization
 
     it('should have Ethereum mainnet as a supported chain', () => {
       const chains = wagmiConfig.chains

@@ -30,10 +30,10 @@ import { FooterCta } from '../FooterCta'
 
 describe('FooterCta', () => {
   describe('T018-test: Secondary CTA rendering', () => {
-    it('should render "Create Free Invoice" CTA button', () => {
+    it('should render "Get Paid Now" CTA button', () => {
       render(<FooterCta />)
 
-      expect(screen.getByText(/create free invoice/i)).toBeInTheDocument()
+      expect(screen.getByText(/Get Paid Now/i)).toBeInTheDocument()
     })
   })
 
@@ -43,19 +43,41 @@ describe('FooterCta', () => {
 
       const heading = document.querySelector('h2')
       expect(heading).toBeInTheDocument()
-      expect(screen.getByText(/ready to invoice/i)).toBeInTheDocument()
+      expect(screen.getByText(/Your Invoice.*Your Link/i)).toBeInTheDocument()
+    })
+
+    it('should render aurora text "Your Rules"', () => {
+      render(<FooterCta />)
+
+      expect(screen.getByText(/Your Rules/)).toBeInTheDocument()
     })
 
     it('should render supporting text', () => {
       render(<FooterCta />)
 
-      expect(screen.getByText(/no account required/i)).toBeInTheDocument()
+      expect(screen.getByText(/Ready to own your invoices/i)).toBeInTheDocument()
     })
 
-    it('should render "Free forever" disclaimer', () => {
+    it('should render disclaimer', () => {
       render(<FooterCta />)
 
-      expect(screen.getByText(/free forever/i)).toBeInTheDocument()
+      expect(screen.getByText(/No signup.*No fees.*Just results/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('Social links', () => {
+    it('should render GitHub link', () => {
+      render(<FooterCta />)
+
+      const githubLink = screen.getByRole('link', { name: /github/i })
+      expect(githubLink).toBeInTheDocument()
+    })
+
+    it('should render Twitter link', () => {
+      render(<FooterCta />)
+
+      const twitterLink = screen.getByRole('link', { name: /twitter/i })
+      expect(twitterLink).toBeInTheDocument()
     })
   })
 
