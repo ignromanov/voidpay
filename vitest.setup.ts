@@ -21,31 +21,35 @@ vi.mock('framer-motion', async () => {
   // Helper to strip motion-specific props from elements
   const stripMotionProps = (props: Record<string, unknown>) => {
     const {
-      initial,
-      animate,
-      exit,
-      transition,
-      variants,
-      whileHover,
-      whileTap,
-      whileFocus,
-      whileInView,
-      whileDrag,
-      layout,
-      layoutId,
-      onAnimationStart,
-      onAnimationComplete,
+      initial: _initial,
+      animate: _animate,
+      exit: _exit,
+      transition: _transition,
+      variants: _variants,
+      whileHover: _whileHover,
+      whileTap: _whileTap,
+      whileFocus: _whileFocus,
+      whileInView: _whileInView,
+      whileDrag: _whileDrag,
+      layout: _layout,
+      layoutId: _layoutId,
+      onAnimationStart: _onAnimationStart,
+      onAnimationComplete: _onAnimationComplete,
       ...rest
     } = props
+    // Intentionally discard motion-specific props
+    void [_initial, _animate, _exit, _transition, _variants, _whileHover, _whileTap, _whileFocus, _whileInView, _whileDrag, _layout, _layoutId, _onAnimationStart, _onAnimationComplete]
     return rest
   }
 
   // Create a simple motion component factory
   const createMotionComponent = (Component: string) => {
-    return React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
+    const MotionComponent = React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
       const cleanProps = stripMotionProps(props)
       return React.createElement(Component, { ...cleanProps, ref })
     })
+    MotionComponent.displayName = `motion.${Component}`
+    return MotionComponent
   }
 
   return {
