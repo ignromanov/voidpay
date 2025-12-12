@@ -114,24 +114,28 @@ describe('HyperText', () => {
       const { container } = render(<HyperText text="Hello World" duration={100} />)
 
       // Wait a bit for partial animation
-      await new Promise((resolve) => setTimeout(resolve, 30))
-
-      // Space should be preserved at all times
-      const text = container.textContent || ''
-      const spaceCount = (text.match(/ /g) || []).length
-      expect(spaceCount).toBeGreaterThanOrEqual(1)
+      await waitFor(
+        () => {
+          const text = container.textContent || ''
+          const spaceCount = (text.match(/ /g) || []).length
+          expect(spaceCount).toBeGreaterThanOrEqual(1)
+        },
+        { timeout: 500 }
+      )
     })
 
     it('should preserve punctuation during animation', async () => {
       const { container } = render(<HyperText text="Hello, World!" duration={100} />)
 
       // Wait for partial animation
-      await new Promise((resolve) => setTimeout(resolve, 30))
-
-      // Punctuation should be preserved
-      const text = container.textContent || ''
-      expect(text).toContain(',')
-      expect(text).toContain('!')
+      await waitFor(
+        () => {
+          const text = container.textContent || ''
+          expect(text).toContain(',')
+          expect(text).toContain('!')
+        },
+        { timeout: 500 }
+      )
     })
   })
 

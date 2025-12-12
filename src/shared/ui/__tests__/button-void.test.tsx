@@ -3,7 +3,12 @@ import { render } from '@testing-library/react'
 import { Button } from '../button'
 import * as React from 'react'
 
-// Mock useReducedMotion hook
+// Mock useReducedMotion hook to always return false (enable animations in tests)
+vi.mock('../hooks/use-reduced-motion', () => ({
+  useReducedMotion: vi.fn(() => false),
+}))
+
+// Mock framer-motion components for simplified rendering
 vi.mock('framer-motion', async () => {
   const actual = await vi.importActual('framer-motion')
   return {
@@ -13,7 +18,6 @@ vi.mock('framer-motion', async () => {
         <div {...props}>{children}</div>
       ),
     },
-    useReducedMotion: vi.fn(() => false),
   }
 })
 
