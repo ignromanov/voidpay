@@ -1,47 +1,36 @@
 'use client'
 
 /**
- * Framer Motion exports with LazyMotion for bundle optimization
+ * Framer Motion exports for Next.js App Router
  *
- * Uses LazyMotion with domAnimation (lighter than full motion API).
- * Provides ~40% smaller bundle than full framer-motion.
+ * This file re-exports only the Framer Motion components actually used in the project.
+ * Limiting exports helps with tree-shaking and reduces bundle size.
  *
- * Performance Strategy:
- * - domAnimation: ~20KB (vs ~45KB full motion)
- * - Synchronous import: no render blocking waterfall
+ * Note: LazyMotion was tested but caused FCP regressions due to strict mode
+ * blocking render. Direct exports work better with Next.js code splitting.
  *
  * Usage:
  * ```tsx
- * import { motion, AnimatePresence, MotionProvider } from '@/shared/ui'
+ * import { motion, AnimatePresence } from '@/shared/ui'
  *
- * <MotionProvider>
- *   <motion.div animate={{ opacity: 1 }}>Content</motion.div>
- * </MotionProvider>
+ * <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+ *   Content
+ * </motion.div>
  * ```
  */
 
-import { LazyMotion, domAnimation, m, AnimatePresence as FramerAnimatePresence } from 'framer-motion'
 import type { ReactNode } from 'react'
 
-/**
- * MotionProvider - Wraps content with lighter domAnimation features
- *
- * Uses synchronous domAnimation import to avoid render blocking.
- * Excludes heavier features like SVG morphing, layout animations, drag.
- */
-export function MotionProvider({ children }: { children: ReactNode }) {
-  return (
-    <LazyMotion features={domAnimation} strict>
-      {children}
-    </LazyMotion>
-  )
-}
-
-// Export m as motion for backward compatibility with existing components
-export { m as motion }
-
-// Re-export AnimatePresence
-export { FramerAnimatePresence as AnimatePresence }
+// Core animation components
+export { motion, AnimatePresence } from 'framer-motion'
 
 // Types for component props
 export type { MotionProps, Variants, Transition } from 'framer-motion'
+
+/**
+ * MotionProvider - No-op wrapper for backward compatibility
+ * Kept to avoid breaking existing code that uses it.
+ */
+export function MotionProvider({ children }: { children: ReactNode }) {
+  return <>{children}</>
+}
