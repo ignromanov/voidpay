@@ -20,12 +20,15 @@ const nextConfig = {
 
   // Experimental features for better performance
   experimental: {
-    // Optimize memory usage
+    // Optimize memory usage and tree-shaking for large dependencies
     optimizePackageImports: [
       'lucide-react',
       '@radix-ui/react-dialog',
       '@radix-ui/react-popover',
       '@radix-ui/react-select',
+      'wagmi',
+      'viem',
+      '@rainbow-me/rainbowkit',
     ],
   },
 

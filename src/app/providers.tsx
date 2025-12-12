@@ -17,8 +17,7 @@ import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { config } from '@/shared/config/wagmi'
 import { voidPayTheme } from '@/features/wallet-connect/config/rainbowkit-theme'
 
-// Import RainbowKit CSS
-import '@rainbow-me/rainbowkit/styles.css'
+// Note: RainbowKit CSS is imported in layout.tsx to avoid duplication
 
 /**
  * QueryClient instance for React Query

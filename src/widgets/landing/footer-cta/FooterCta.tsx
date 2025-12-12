@@ -44,7 +44,7 @@ export function FooterCta() {
               Get Paid Now
             </Button>
           </Link>
-          <span className="mt-3 text-sm text-zinc-500">
+          <span className="mt-3 text-sm text-zinc-400">
             No signup. No fees. Just results.
           </span>
         </div>
@@ -56,7 +56,7 @@ export function FooterCta() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub"
-            className="text-zinc-500 transition-colors hover:text-white"
+            className="text-zinc-400 transition-colors hover:text-white"
           >
             <Github className="h-6 w-6" />
           </a>
@@ -65,7 +65,7 @@ export function FooterCta() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Twitter"
-            className="text-zinc-500 transition-colors hover:text-white"
+            className="text-zinc-400 transition-colors hover:text-white"
           >
             <Twitter className="h-6 w-6" />
           </a>

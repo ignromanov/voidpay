@@ -51,7 +51,7 @@ function TrustBadge({ icon: Icon, label, description, href }: TrustBadge) {
         <Icon className="h-5 w-5 text-violet-400" aria-hidden="true" />
       </div>
       <span className="text-sm font-medium text-zinc-100">{label}</span>
-      <span className="text-xs text-zinc-500">{description}</span>
+      <span className="text-xs text-zinc-400">{description}</span>
     </>
   )
 

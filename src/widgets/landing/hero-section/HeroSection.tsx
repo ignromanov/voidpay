@@ -93,7 +93,7 @@ export function HeroSection() {
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
-          <span className="mt-3 text-sm text-zinc-500">
+          <span className="mt-3 text-sm text-zinc-400">
             No signup. Takes 30 seconds.
           </span>
         </motion.div>
@@ -109,7 +109,7 @@ export function HeroSection() {
         <motion.div
           animate={shouldAnimate ? { y: [0, 8, 0] } : {}}
           transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-          className="flex flex-col items-center gap-2 text-zinc-500"
+          className="flex flex-col items-center gap-2 text-zinc-400"
         >
           <span className="text-xs uppercase tracking-widest">Scroll</span>
           <svg
@@ -117,7 +117,7 @@ export function HeroSection() {
             height="20"
             viewBox="0 0 20 20"
             fill="none"
-            className="text-zinc-500"
+            className="text-zinc-400"
           >
             <path
               d="M10 4v12M4 10l6 6 6-6"

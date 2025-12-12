@@ -215,7 +215,7 @@ export function DemoSection() {
                           {currentInvoice.amount} {currentInvoice.token}
                         </Text>
                       </div>
-                      <Text variant="small" className="mt-2 text-zinc-400">
+                      <Text variant="small" className="mt-2 text-zinc-600">
                         To: {currentInvoice.recipient}
                       </Text>
                     </div>

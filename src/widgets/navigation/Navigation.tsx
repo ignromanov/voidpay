@@ -16,7 +16,7 @@ import { usePathname } from 'next/navigation'
 import { Plus, Github, ShieldAlert } from 'lucide-react'
 import { VoidLogo } from '@/shared/ui/void-logo'
 import { Button } from '@/shared/ui/button'
-import { WalletButton } from '@/shared/ui/wallet-button'
+import { LazyWalletButton as WalletButton } from '@/shared/ui/wallet-button-lazy'
 
 export function Navigation() {
   const pathname = usePathname()
@@ -80,6 +80,7 @@ export function Navigation() {
               href="https://github.com/voidpay/voidpay"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="GitHub repository"
               className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-800/50 hover:text-zinc-50"
             >
               <Github className="h-5 w-5" />
