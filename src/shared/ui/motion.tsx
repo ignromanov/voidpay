@@ -3,55 +3,44 @@
 /**
  * Framer Motion exports with LazyMotion for bundle optimization
  *
- * Uses LazyMotion with dynamic feature loading to reduce initial JS bundle.
- * The `m` component is exported as `motion` for backward compatibility.
+ * Uses LazyMotion with domAnimation (lighter than full motion API).
+ * Provides ~40% smaller bundle than full framer-motion.
  *
  * Performance Strategy:
- * - Initial bundle: ~15KB (LazyMotion shell + m component)
- * - Deferred: ~25KB (domAnimation features loaded async)
- * - Total savings: ~20KB off critical path
+ * - domAnimation: ~20KB (vs ~45KB full motion)
+ * - Synchronous import: no render blocking waterfall
  *
  * Usage:
  * ```tsx
  * import { motion, AnimatePresence, MotionProvider } from '@/shared/ui'
  *
- * // Wrap your animated content with MotionProvider
  * <MotionProvider>
  *   <motion.div animate={{ opacity: 1 }}>Content</motion.div>
  * </MotionProvider>
  * ```
- *
- * Note: All motion components MUST be inside MotionProvider to work.
  */
 
-import { LazyMotion, m, AnimatePresence as FramerAnimatePresence } from 'framer-motion'
+import { LazyMotion, domAnimation, m, AnimatePresence as FramerAnimatePresence } from 'framer-motion'
 import type { ReactNode } from 'react'
 
-// Dynamic import for domAnimation features - loaded after initial render
-const loadFeatures = () =>
-  import('framer-motion').then((mod) => mod.domAnimation)
-
 /**
- * MotionProvider - Wraps content to enable lazy-loaded animations
+ * MotionProvider - Wraps content with lighter domAnimation features
  *
- * Must wrap all components using motion.* animations.
- * Features are loaded asynchronously after initial render.
- *
- * @param strict - If true, throws error when m is used outside LazyMotion
+ * Uses synchronous domAnimation import to avoid render blocking.
+ * Excludes heavier features like SVG morphing, layout animations, drag.
  */
 export function MotionProvider({ children }: { children: ReactNode }) {
   return (
-    <LazyMotion features={loadFeatures} strict>
+    <LazyMotion features={domAnimation} strict>
       {children}
     </LazyMotion>
   )
 }
 
 // Export m as motion for backward compatibility with existing components
-// The m component works identically to motion but requires LazyMotion wrapper
 export { m as motion }
 
-// Re-export AnimatePresence (works with both motion and m)
+// Re-export AnimatePresence
 export { FramerAnimatePresence as AnimatePresence }
 
 // Types for component props
