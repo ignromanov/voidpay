@@ -1,15 +1,16 @@
 'use client'
 
 /**
- * LazyWeb3Provider - Conservative lazy loading for Web3 providers
+ * LazyWeb3Provider - Lazy loading for Web3 providers WITHOUT unmounting
  *
  * Strategy:
- * 1. Render children immediately (no blocking)
- * 2. Load Web3 providers in background after first render
- * 3. Once loaded, wrap children with full Web3 context
+ * 1. Always render Web3Provider (loaded via dynamic import)
+ * 2. Track loading state via context for UI feedback
+ * 3. NO conditional rendering of children - prevents flash/remount
  *
- * This improves LCP by not blocking initial render with heavy Web3 bundles,
- * while still having providers ready quickly for wallet interactions.
+ * Previous implementation caused full DOM unmount/remount when switching
+ * from `{children}` to `<Web3Provider>{children}</Web3Provider>`,
+ * resulting in visible page flash.
  */
 
 import dynamic from 'next/dynamic'
@@ -23,6 +24,7 @@ export function useWeb3Loaded() {
 }
 
 // Dynamically import the full Web3Provider (wagmi, rainbowkit, etc.)
+// Using ssr: false since Web3 providers require browser APIs
 const Web3Provider = dynamic(
   () => import('./providers').then((mod) => mod.Web3Provider),
   { ssr: false }
@@ -35,34 +37,18 @@ interface LazyWeb3ProviderProps {
 export function LazyWeb3Provider({ children }: LazyWeb3ProviderProps) {
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // Preload Web3 providers after initial render
+  // Track when Web3Provider module is fully loaded
   useEffect(() => {
-    // Small delay to ensure initial paint completes
-    const timer = requestIdleCallback(
-      () => {
-        import('./providers').then(() => {
-          setIsLoaded(true)
-        })
-      },
-      { timeout: 2000 }
-    )
-
-    return () => cancelIdleCallback(timer)
+    // Preload the module, then mark as loaded
+    import('./providers').then(() => {
+      setIsLoaded(true)
+    })
   }, [])
 
-  // Before Web3 is loaded, render children without providers
-  // This means wallet hooks won't work yet, but page renders fast
-  if (!isLoaded) {
-    return (
-      <Web3LoadedContext.Provider value={false}>
-        {children}
-      </Web3LoadedContext.Provider>
-    )
-  }
-
-  // After loaded, wrap with full Web3 context
+  // Always render Web3Provider - it handles its own loading state internally
+  // This prevents the unmount/remount cycle that caused flashing
   return (
-    <Web3LoadedContext.Provider value={true}>
+    <Web3LoadedContext.Provider value={isLoaded}>
       <Web3Provider>{children}</Web3Provider>
     </Web3LoadedContext.Provider>
   )
