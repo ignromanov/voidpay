@@ -46,6 +46,10 @@ const nextConfig = {
       fs: false,
       net: false,
       tls: false,
+      // Suppress MetaMask SDK React Native import warnings
+      '@react-native-async-storage/async-storage': false,
+      // Suppress WalletConnect pino-pretty import warnings
+      'pino-pretty': false,
     }
 
     return config

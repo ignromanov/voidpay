@@ -38,11 +38,24 @@ export function LazyWeb3Provider({ children }: LazyWeb3ProviderProps) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   // Track when Web3Provider module is fully loaded
+  // Defer loading until browser is idle to avoid blocking initial paint
   useEffect(() => {
-    // Preload the module, then mark as loaded
-    import('./providers').then(() => {
-      setIsLoaded(true)
-    })
+    const loadWeb3 = () => {
+      import('./providers').then(() => {
+        setIsLoaded(true)
+      })
+    }
+
+    // Use requestIdleCallback to defer loading until browser is idle
+    // This prevents Web3 from blocking LCP and reduces TBT
+    if ('requestIdleCallback' in window) {
+      const idleId = requestIdleCallback(loadWeb3, { timeout: 5000 })
+      return () => cancelIdleCallback(idleId)
+    } else {
+      // Fallback for Safari - defer 3 seconds after initial paint
+      const timeoutId = setTimeout(loadWeb3, 3000)
+      return () => clearTimeout(timeoutId)
+    }
   }, [])
 
   // Always render Web3Provider - it handles its own loading state internally
