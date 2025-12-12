@@ -6,11 +6,11 @@
 
 'use client'
 
-import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 import { useHydrated } from '@/shared/lib'
 import {
+  ArrowRightIcon,
   AuroraText,
   Button,
   Heading,
@@ -90,7 +90,7 @@ export function HeroSection() {
               className="h-14 rounded-2xl px-8 text-base shadow-[0_0_40px_-10px_rgba(124,58,237,0.5)]"
             >
               Create Your Invoice
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRightIcon size={16} />
             </Button>
           </Link>
           <span className="mt-3 text-sm text-zinc-400">

@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { cn, useHydrated } from '@/shared/lib'
 import { AnimatePresence, motion } from '@/shared/ui'
 import { NETWORK_THEMES, type NetworkTheme } from '@/shared/ui/constants/brand-tokens'
@@ -11,6 +13,32 @@ export interface NetworkBackgroundProps {
   theme?: NetworkTheme
   /** Custom CSS classes for the container */
   className?: string
+}
+
+/**
+ * Hook to defer animation start until browser is idle
+ * Prevents shape animations from blocking LCP and TBT
+ */
+function useDeferredAnimation(): boolean {
+  const [shouldAnimate, setShouldAnimate] = useState(false)
+
+  useEffect(() => {
+    // Use requestIdleCallback to start animations when browser is idle
+    // This prevents blocking the main thread during initial render
+    if ('requestIdleCallback' in window) {
+      const idleId = requestIdleCallback(
+        () => setShouldAnimate(true),
+        { timeout: 3000 } // Start within 3s even if not idle
+      )
+      return () => cancelIdleCallback(idleId)
+    } else {
+      // Safari fallback - wait 2 seconds after mount
+      const timeoutId = setTimeout(() => setShouldAnimate(true), 2000)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [])
+
+  return shouldAnimate
 }
 
 /**
@@ -78,6 +106,7 @@ function generateShapes(themeConfig: (typeof NETWORK_THEMES)[NetworkTheme]): Sha
 export function NetworkBackground({ theme = 'voidpay', className }: NetworkBackgroundProps) {
   const prefersReducedMotion = useReducedMotion()
   const hydrated = useHydrated()
+  const shouldAnimate = useDeferredAnimation()
   const themeConfig = NETWORK_THEMES[theme]
   const shapes = generateShapes(themeConfig)
 
@@ -91,6 +120,10 @@ export function NetworkBackground({ theme = 'voidpay', className }: NetworkBackg
     )
   }
 
+  // Combine reduced motion preference with deferred animation state
+  // Shapes will be static until browser is idle
+  const disableAnimation = prefersReducedMotion || !shouldAnimate
+
   return (
     <div className={cn('pointer-events-none fixed inset-0 -z-10 overflow-hidden', className)}>
       <AnimatePresence mode="wait">
@@ -103,7 +136,7 @@ export function NetworkBackground({ theme = 'voidpay', className }: NetworkBackg
           className="relative h-full w-full"
         >
           {shapes.map((shape, index) => (
-            <Shape key={`${theme}-${index}`} {...shape} reducedMotion={prefersReducedMotion} />
+            <Shape key={`${theme}-${index}`} {...shape} reducedMotion={disableAnimation} />
           ))}
 
           {/* Noise texture overlay */}

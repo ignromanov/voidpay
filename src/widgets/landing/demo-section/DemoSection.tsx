@@ -53,7 +53,6 @@ export function DemoSection() {
   const shouldAnimate = hydrated && !prefersReducedMotion
   const [isHovered, setIsHovered] = useState(false)
   const [wrapperScale, setWrapperScale] = useState(0.45)
-  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
   const { setTheme } = useNetworkTheme()
 
   const { activeIndex, pause, resume, goTo } = useDemoRotation({
@@ -70,39 +69,63 @@ export function DemoSection() {
     }
   }, [activeIndex, setTheme])
 
-  // Responsive scaling based on viewport
+  // Responsive scaling with RAF-throttled resize handling
+  // Combines viewport tracking and scale calculation in one effect
   useEffect(() => {
-    setViewportSize({ width: window.innerWidth, height: window.innerHeight })
-    const handleResize = () => setViewportSize({ width: window.innerWidth, height: window.innerHeight })
+    let rafId: number | null = null
+    let isScheduled = false
 
+    // Calculate scale from dimensions (pure function, no setState)
+    const calculateScale = (width: number, height: number): number => {
+      if (width === 0 || height === 0) return 0.45
+      const PADDING_X = width < 768 ? 24 : 48
+      const availableWidth = Math.max(width - PADDING_X, 280)
+      const targetHeight = Math.max(height * 0.75, 400)
+      const widthRatio = availableWidth / INVOICE_WIDTH
+      const heightRatio = targetHeight / INVOICE_HEIGHT
+      const ratio = Math.min(widthRatio, heightRatio)
+      return Math.min(Math.max(ratio, 0.25), 0.85)
+    }
+
+    // Throttled update using requestAnimationFrame
+    const updateSize = (width: number, height: number) => {
+      if (isScheduled) return
+      isScheduled = true
+      rafId = requestAnimationFrame(() => {
+        const newScale = calculateScale(width, height)
+        setWrapperScale(newScale)
+        isScheduled = false
+      })
+    }
+
+    // Initial measurement
+    updateSize(window.innerWidth, window.innerHeight)
+
+    // Window resize handler (throttled)
+    const handleResize = () => {
+      updateSize(window.innerWidth, window.innerHeight)
+    }
+
+    // Container resize observer (throttled)
     const container = containerRef.current
+    let observer: ResizeObserver | null = null
     if (container) {
-      const observer = new ResizeObserver((entries) => {
+      observer = new ResizeObserver((entries) => {
         for (const entry of entries) {
-          setViewportSize((prev) => ({ ...prev, width: entry.contentRect.width }))
+          updateSize(entry.contentRect.width, window.innerHeight)
         }
       })
       observer.observe(container)
-      window.addEventListener('resize', handleResize)
-      return () => {
-        observer.disconnect()
-        window.removeEventListener('resize', handleResize)
-      }
     }
-    return undefined
-  }, [])
 
-  // Calculate scale based on viewport
-  useEffect(() => {
-    if (viewportSize.width === 0 || viewportSize.height === 0) return
-    const PADDING_X = viewportSize.width < 768 ? 24 : 48
-    const availableWidth = Math.max(viewportSize.width - PADDING_X, 280)
-    const targetHeight = Math.max(viewportSize.height * 0.75, 400)
-    const widthRatio = availableWidth / INVOICE_WIDTH
-    const heightRatio = targetHeight / INVOICE_HEIGHT
-    const ratio = Math.min(widthRatio, heightRatio)
-    setWrapperScale(Math.min(Math.max(ratio, 0.25), 0.85))
-  }, [viewportSize])
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId)
+      observer?.disconnect()
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
 
   const currentInvoice = DEMO_INVOICES[activeIndex]
 

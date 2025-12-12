@@ -6,49 +6,56 @@
 
 'use client'
 
-import type { LucideIcon } from 'lucide-react'
-
-import { Github, Lock, ServerOff, Globe } from 'lucide-react'
+import type { ComponentType, SVGProps } from 'react'
 
 import { useHydrated } from '@/shared/lib'
-import { motion, useReducedMotion } from '@/shared/ui'
+import {
+  GithubIcon,
+  GlobeIcon,
+  LockIcon,
+  motion,
+  ServerOffIcon,
+  useReducedMotion,
+} from '@/shared/ui'
 
-type TrustBadge = {
-  icon: LucideIcon
+type IconComponent = ComponentType<SVGProps<SVGSVGElement> & { size?: number | string }>
+
+type TrustBadgeData = {
+  icon: IconComponent
   label: string
   description: string
   href?: string
 }
 
-const TRUST_BADGES: TrustBadge[] = [
+const TRUST_BADGES: TrustBadgeData[] = [
   {
-    icon: Lock,
+    icon: LockIcon,
     label: 'Zero Data Storage',
     description: 'No servers, no databases',
   },
   {
-    icon: Github,
+    icon: GithubIcon,
     label: 'Open Source',
     description: 'Verify the code yourself',
     href: 'https://github.com/voidpay/voidpay',
   },
   {
-    icon: ServerOff,
+    icon: ServerOffIcon,
     label: 'Shutdown-Proof',
     description: 'Deploy locally if we disappear',
   },
   {
-    icon: Globe,
+    icon: GlobeIcon,
     label: 'Multi-Chain',
     description: 'ETH • Arbitrum • Optimism • Polygon',
   },
 ]
 
-function TrustBadge({ icon: Icon, label, description, href }: TrustBadge) {
+function TrustBadge({ icon: Icon, label, description, href }: TrustBadgeData) {
   const content = (
     <>
       <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-700/50 bg-zinc-800/50 transition-colors group-hover:border-violet-500/50 group-hover:bg-violet-900/20">
-        <Icon className="h-5 w-5 text-violet-400" aria-hidden="true" />
+        <Icon size={20} className="text-violet-400" aria-hidden="true" />
       </div>
       <span className="text-sm font-medium text-zinc-100">{label}</span>
       <span className="text-xs text-zinc-400">{description}</span>

@@ -38,11 +38,27 @@ export { Input, inputVariants, type InputProps } from './input'
 // AddressInput (feature: 010-form-components)
 export { AddressInput, type AddressInputProps } from './address-input'
 
-// Motion (minimal exports for bundle optimization)
-export { motion, AnimatePresence, type MotionProps, type Variants, type Transition } from './motion'
+// Motion (LazyMotion for bundle optimization)
+export {
+  motion,
+  AnimatePresence,
+  MotionProvider,
+  type MotionProps,
+  type Variants,
+  type Transition,
+} from './motion'
 
 // Reduced motion hook (accessibility)
 export { useReducedMotion } from './hooks/use-reduced-motion'
+
+// Critical path inline SVG icons (above-fold optimization)
+export {
+  ArrowRightIcon,
+  LockIcon,
+  ServerOffIcon,
+  GlobeIcon,
+  GithubIcon,
+} from './icons'
 
 // Popover (existing)
 export { Popover, PopoverTrigger, PopoverContent } from './popover'

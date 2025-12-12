@@ -16,6 +16,7 @@
 
 import dynamic from 'next/dynamic'
 import { NetworkBackground } from '@/widgets/network-background'
+import { MotionProvider } from '@/shared/ui'
 import { NetworkThemeProvider, useNetworkTheme } from '../context/network-theme-context'
 import { HeroSection } from '../hero-section/HeroSection'
 import { SocialProofStrip } from '../social-proof'
@@ -75,9 +76,11 @@ function LandingSections() {
 
 export function LandingContent() {
   return (
-    <NetworkThemeProvider defaultTheme="ethereum">
-      <LandingBackground />
-      <LandingSections />
-    </NetworkThemeProvider>
+    <MotionProvider>
+      <NetworkThemeProvider defaultTheme="ethereum">
+        <LandingBackground />
+        <LandingSections />
+      </NetworkThemeProvider>
+    </MotionProvider>
   )
 }
