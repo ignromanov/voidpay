@@ -4,6 +4,7 @@
  */
 
 import type { ComponentType, SVGProps } from 'react'
+import type { NetworkTheme } from '@/shared/ui/constants/brand-tokens'
 
 /**
  * Feature card for WhyVoidPay section
@@ -39,7 +40,7 @@ export type NetworkBadge = {
  */
 export type DemoInvoice = {
   id: string
-  network: 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'
+  network: NetworkTheme
   recipient: string
   amount: string
   token: string

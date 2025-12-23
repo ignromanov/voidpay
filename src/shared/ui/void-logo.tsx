@@ -95,10 +95,10 @@ export function VoidLogo({ className, size = 'md', static: isStatic = false }: V
         opacity="0.7"
       />
 
-      {/* Черная дыра — абсолютный void */}
+      {/* Void core - absolute black */}
       <circle cx="50" cy="50" r="31" fill="#09090B" />
 
-      {/* Глубокий центр */}
+      {/* Deep center */}
       <circle cx="50" cy="50" r="22" fill="#000000" />
     </svg>
   )

@@ -10,8 +10,7 @@
 
 import { createContext, useContext, useState, useCallback, useMemo } from 'react'
 import type { ReactNode } from 'react'
-
-type NetworkTheme = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'
+import type { NetworkTheme } from '@/shared/ui/constants/brand-tokens'
 
 type NetworkThemeContextValue = {
   theme: NetworkTheme

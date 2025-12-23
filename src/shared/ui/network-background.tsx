@@ -13,10 +13,9 @@
 import { cn } from '@/shared/lib/utils'
 import { motion, AnimatePresence, type Transition } from './motion'
 import type { TargetAndTransition } from 'framer-motion'
+import type { NetworkTheme } from './constants/brand-tokens'
 
 // --- Types & Constants ---
-
-type NetworkTheme = 'arbitrum' | 'optimism' | 'ethereum' | 'polygon'
 
 export type NetworkBackgroundProps = {
   theme?: NetworkTheme

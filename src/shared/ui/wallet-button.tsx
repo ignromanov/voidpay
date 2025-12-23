@@ -78,6 +78,7 @@ export function WalletButton() {
                     onClick={openChainModal}
                   >
                     {chain.hasIcon && chain.iconUrl && (
+                      /* eslint-disable-next-line @next/next/no-img-element -- Dynamic URL from RainbowKit */
                       <img
                         alt={chain.name ?? 'Chain icon'}
                         src={chain.iconUrl}

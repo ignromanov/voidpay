@@ -39,7 +39,7 @@ const TRUST_BADGES: TrustBadgeData[] = [
     icon: GithubIcon,
     label: 'Open Source',
     description: 'Verify the code yourself',
-    href: 'https://github.com/voidpay/voidpay',
+    href: 'https://github.com/ignromanov/voidpay',
   },
   {
     icon: ServerOffIcon,

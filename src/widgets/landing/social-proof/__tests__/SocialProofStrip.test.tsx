@@ -34,7 +34,7 @@ describe('SocialProofStrip', () => {
 
       const link = screen.getByText('Open Source').closest('a')
       expect(link).toBeInTheDocument()
-      expect(link).toHaveAttribute('href', 'https://github.com/voidpay/voidpay')
+      expect(link).toHaveAttribute('href', 'https://github.com/ignromanov/voidpay')
       expect(link).toHaveAttribute('target', '_blank')
       expect(link).toHaveAttribute('rel', 'noopener noreferrer')
     })

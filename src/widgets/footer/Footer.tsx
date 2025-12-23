@@ -25,7 +25,7 @@ export function Footer() {
         {/* Right: Social */}
         <div className="flex items-center gap-1">
           <a
-            href="https://github.com/voidpay/voidpay"
+            href="https://github.com/ignromanov/voidpay"
             target="_blank"
             rel="noopener noreferrer"
             className="rounded p-1.5 transition-colors hover:bg-zinc-800/50 hover:text-zinc-300"

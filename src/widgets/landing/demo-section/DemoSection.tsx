@@ -67,7 +67,7 @@ export function DemoSection() {
   useEffect(() => {
     const currentInvoice = DEMO_INVOICES[activeIndex]
     if (currentInvoice) {
-      setTheme(currentInvoice.network as 'ethereum' | 'arbitrum' | 'optimism' | 'polygon')
+      setTheme(currentInvoice.network)
     }
   }, [activeIndex, setTheme])
 

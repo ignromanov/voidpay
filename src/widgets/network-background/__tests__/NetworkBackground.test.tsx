@@ -117,24 +117,6 @@ describe('NetworkBackground', () => {
     })
   })
 
-  describe('T025-test: VoidPay theme (blobs)', () => {
-    it('should apply voidpay theme with blob shapes', () => {
-      const { container } = render(<NetworkBackground theme="voidpay" />)
-
-      // Should contain shapes
-      const shapes = container.querySelectorAll('[data-shape="blob"]')
-      expect(shapes.length).toBeGreaterThan(0)
-    })
-
-    it('should render 3 shapes for voidpay', () => {
-      const { container } = render(<NetworkBackground theme="voidpay" />)
-      const shapes = container.querySelectorAll('[data-shape="blob"]')
-
-      // VoidPay should have 3 blob shapes
-      expect(shapes.length).toBe(3)
-    })
-  })
-
   describe('T027-test: Theme transition (AnimatePresence)', () => {
     it('should render with AnimatePresence for theme changes', () => {
       const { container, rerender } = render(<NetworkBackground theme="ethereum" />)
@@ -181,13 +163,7 @@ describe('NetworkBackground', () => {
     })
 
     it('should render all theme variants without errors', () => {
-      const themes: NetworkTheme[] = [
-        'arbitrum',
-        'optimism',
-        'polygon',
-        'ethereum',
-        'voidpay',
-      ]
+      const themes: NetworkTheme[] = ['ethereum', 'arbitrum', 'optimism', 'polygon']
 
       themes.forEach((theme) => {
         const { container } = render(<NetworkBackground theme={theme} />)

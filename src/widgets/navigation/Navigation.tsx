@@ -77,7 +77,7 @@ export function Navigation() {
 
             {/* GitHub Link */}
             <a
-              href="https://github.com/voidpay/voidpay"
+              href="https://github.com/ignromanov/voidpay"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub repository"

@@ -9,7 +9,7 @@ import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
 import { Shape, type ShapeConfig, type ShapeZone } from './shapes'
 
 export interface NetworkBackgroundProps {
-  /** Network theme controlling colors and shapes (defaults to voidpay) */
+  /** Network theme controlling colors and shapes (defaults to ethereum) */
   theme?: NetworkTheme
   /** Custom CSS classes for the container */
   className?: string
@@ -102,7 +102,7 @@ function generateShapes(themeConfig: (typeof NETWORK_THEMES)[NetworkTheme]): Sha
  * - Large shapes (50-70% of viewport height)
  * - Slow horizontal drift animation
  */
-export function NetworkBackground({ theme = 'voidpay', className }: NetworkBackgroundProps) {
+export function NetworkBackground({ theme = 'ethereum', className }: NetworkBackgroundProps) {
   const prefersReducedMotion = useReducedMotion()
   const hydrated = useHydrated()
   const shouldAnimate = useDeferredAnimation()

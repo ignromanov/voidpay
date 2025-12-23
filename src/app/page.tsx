@@ -32,7 +32,7 @@ const organizationSchema = {
   url: 'https://voidpay.xyz',
   logo: 'https://voidpay.xyz/logo.png',
   description: 'Privacy-first, stateless crypto invoicing platform',
-  sameAs: ['https://github.com/voidpay/voidpay', 'https://twitter.com/voidpay'],
+  sameAs: ['https://github.com/ignromanov/voidpay', 'https://twitter.com/voidpay'],
 }
 
 // JSON-LD: SoftwareApplication schema
