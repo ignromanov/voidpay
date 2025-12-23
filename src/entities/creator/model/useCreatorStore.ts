@@ -18,7 +18,7 @@ import type {
   CreationHistoryEntry,
   UserPreferences,
 } from './types'
-import { CREATOR_STORE_KEY } from '@/shared/config/storage-keys'
+import { CREATOR_STORE_KEY } from '@/shared/config'
 
 /**
  * Store Actions Interface

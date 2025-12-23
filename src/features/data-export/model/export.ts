@@ -1,5 +1,5 @@
-import { useCreatorStore } from '@/entities/creator/model/useCreatorStore'
-import { usePayerStore } from '@/entities/user/model/payer-store'
+import { useCreatorStore } from '@/entities/creator'
+import { usePayerStore } from '@/entities/user'
 
 export interface ExportDataV1 {
   version: 1

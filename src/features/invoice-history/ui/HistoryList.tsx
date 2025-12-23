@@ -8,8 +8,8 @@
  */
 
 import { useState } from 'react'
-import { useCreatorStore } from '@/entities/creator/model/useCreatorStore'
-import type { CreationHistoryEntry } from '@/entities/invoice/model/types'
+import { useCreatorStore } from '@/entities/creator'
+import type { CreationHistoryEntry } from '@/entities/invoice'
 
 interface HistoryListProps {
   /** Optional CSS class name */

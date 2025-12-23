@@ -5,7 +5,7 @@ import { Trash2 } from 'lucide-react'
 import { motion } from '@/shared/ui/motion'
 import { Input } from '@/shared/ui/input'
 import { Button } from '@/shared/ui/button'
-import { LineItem } from '@/entities/invoice/model/types'
+import type { LineItem } from '@/entities/invoice'
 import { cn } from '@/shared/lib/utils'
 
 /**

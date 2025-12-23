@@ -7,8 +7,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useCreatorStore } from '@/entities/creator/model/useCreatorStore'
-import type { InvoiceTemplate } from '@/entities/invoice/model/types'
+import { useCreatorStore } from '@/entities/creator'
+import type { InvoiceTemplate } from '@/entities/invoice'
 
 interface TemplateListProps {
   /**

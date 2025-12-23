@@ -9,7 +9,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { InvoiceItemRow } from '../InvoiceItemRow'
-import { LineItem } from '@/entities/invoice/model/types'
+import type { LineItem } from '@/entities/invoice'
 
 const mockLineItem: LineItem = {
   id: '123',

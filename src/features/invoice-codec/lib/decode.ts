@@ -1,5 +1,5 @@
-import { InvoiceSchemaV1 } from '@/entities/invoice/model/schema'
-import { invoiceSchema } from '@/entities/invoice/lib/validation'
+import type { InvoiceSchemaV1 } from '@/entities/invoice'
+import { invoiceSchema } from '@/entities/invoice'
 import { decompress } from '@/shared/lib/compression'
 
 /**

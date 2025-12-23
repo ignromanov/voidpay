@@ -4,7 +4,7 @@
  * Client-side search functionality for history entries.
  */
 
-import type { CreationHistoryEntry } from '@/entities/invoice/model/types'
+import type { CreationHistoryEntry } from '@/entities/invoice'
 
 /**
  * Search history entries by query string
