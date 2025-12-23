@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { useSwitchChain } from 'wagmi'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
-import { NETWORK_CONFIG } from '@/features/invoice'
+import { NETWORK_CONFIG } from '@/entities/network'
 import { cn } from '@/shared/lib/utils'
 
 /**

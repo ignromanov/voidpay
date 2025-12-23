@@ -5,6 +5,10 @@
  * supported by VoidPay.
  */
 
-// Network configuration and types (from config layer)
+// Network chain configuration (from config layer)
 export { NETWORKS } from './config/networks'
 export type { NetworkId } from './config/networks'
+
+// Network UI configuration (from config layer)
+export { NETWORK_CONFIG } from './config/ui-config'
+export type { NetworkConfig } from './config/ui-config'

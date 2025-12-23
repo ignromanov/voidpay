@@ -10,8 +10,6 @@
  * - Changes require new version with migration path
  */
 
-import { Hexagon, Triangle, Zap } from 'lucide-react'
-
 /**
  * Token representation for selector components
  */
@@ -30,17 +28,6 @@ export interface TokenInfo {
 
   /** Tailwind color class for icon background */
   iconColor: string
-}
-
-/**
- * Network configuration for UI rendering
- */
-export interface NetworkConfig {
-  chainId: number
-  name: string
-  icon: React.ComponentType<{ className?: string }>
-  iconFilled: boolean
-  colorClass: string
 }
 
 /**
@@ -171,39 +158,3 @@ export const NETWORK_TOKENS: Record<number, TokenInfo[]> = {
     },
   ],
 }
-
-/**
- * Network configuration for network selector
- *
- * Icons from lucide-react, colors match network branding
- */
-export const NETWORK_CONFIG: NetworkConfig[] = [
-  {
-    chainId: 1,
-    name: 'Ethereum',
-    icon: Hexagon,
-    iconFilled: false,
-    colorClass: 'text-indigo-400',
-  },
-  {
-    chainId: 42161,
-    name: 'Arbitrum',
-    icon: Triangle,
-    iconFilled: true,
-    colorClass: 'text-blue-400',
-  },
-  {
-    chainId: 10,
-    name: 'Optimism',
-    icon: Zap,
-    iconFilled: true,
-    colorClass: 'text-red-400',
-  },
-  {
-    chainId: 137,
-    name: 'Polygon',
-    icon: Hexagon,
-    iconFilled: true,
-    colorClass: 'text-purple-400',
-  },
-]
