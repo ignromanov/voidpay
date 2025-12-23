@@ -1,10 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useCreatorStore } from '@/entities/creator/model/useCreatorStore'
-import { useAutoSave } from '@/features/invoice-draft/lib/auto-save'
-import { NewInvoiceDialog } from '@/features/invoice-draft/ui/NewInvoiceDialog'
-import { generateAndTrackInvoice } from '@/entities/invoice/lib/invoice-helpers'
+import { useCreatorStore } from '@/entities/creator'
+import { useAutoSave, NewInvoiceDialog } from '@/features/invoice-draft'
+import { generateAndTrackInvoice } from '@/features/generate-link'
 
 export default function CreateInvoicePage() {
   const activeDraft = useCreatorStore((s) => s.activeDraft)

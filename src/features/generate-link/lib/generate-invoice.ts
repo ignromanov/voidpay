@@ -1,7 +1,8 @@
 /**
  * Invoice Generation Helpers
  *
- * Utilities for generating invoice URLs and managing creation history.
+ * Orchestrates invoice URL generation and history tracking.
+ * This feature combines entities/invoice (data) with entities/creator (storage).
  */
 
 import type { InvoiceDraft } from '@/entities/invoice'
