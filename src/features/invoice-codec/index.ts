@@ -2,5 +2,5 @@
 export * from './lib/encode'
 export * from './lib/decode'
 
-// Re-export schema type for convenience
-export type { InvoiceSchemaV1 } from '@/entities/invoice/model/schema'
+// Re-export schema type for convenience (via public API)
+export type { InvoiceSchemaV1 } from '@/entities/invoice'
