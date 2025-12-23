@@ -1,3 +1,10 @@
+/**
+ * Network Configuration
+ *
+ * Defines supported blockchain networks for VoidPay.
+ * This is configuration data, placed in config/ segment per FSD conventions.
+ */
+
 import { mainnet, arbitrum, optimism, polygon } from 'wagmi/chains'
 
 export const NETWORKS = {

@@ -4,8 +4,8 @@
  * Utilities for generating invoice URLs and managing creation history.
  */
 
-import type { InvoiceDraft } from '@/entities/invoice/model/types'
-import { useCreatorStore } from '@/entities/creator/model/useCreatorStore'
+import type { InvoiceDraft } from '@/entities/invoice'
+import { useCreatorStore } from '@/entities/creator'
 
 /**
  * Calculate total amount from invoice draft

@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Input, type InputProps } from './input'
-import { ETH_ADDRESS_REGEX } from '@/entities/invoice/lib/constants'
+import { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
 import { getBlockieColor } from '@/shared/lib/utils'
 
 /**

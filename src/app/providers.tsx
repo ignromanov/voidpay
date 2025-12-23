@@ -21,7 +21,7 @@ import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import '@rainbow-me/rainbowkit/styles.css'
 
 import { config } from '@/shared/config/wagmi'
-import { voidPayTheme } from '@/features/wallet-connect/config/rainbowkit-theme'
+import { voidPayTheme } from '@/shared/config/rainbowkit-theme'
 
 /**
  * QueryClient instance for React Query

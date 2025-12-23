@@ -1,9 +1,10 @@
 import { z } from 'zod'
 import { InvoiceSchemaV1 } from '../model/schema'
-import { ETH_ADDRESS_REGEX, NUMERIC_STRING_REGEX } from './constants'
+import { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
+import { NUMERIC_STRING_REGEX } from './constants'
 
 // Re-export for backwards compatibility
-export { ETH_ADDRESS_REGEX } from './constants'
+export { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
 
 export const invoiceSchema = z.object({
   v: z.literal(1),
