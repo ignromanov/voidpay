@@ -213,23 +213,26 @@ const SHAPE_COMPONENTS: Record<ShapeType, React.FC<{ color: string; opacity: num
  * - Uses inline SVG for accurate logo representation
  */
 export function Shape({ type, color, zone, sizeVh, topPercent, duration, delay, reducedMotion }: ShapeConfig) {
-  // Amplitude scales inversely with size - larger shapes move less (visual mass)
+  // Amplitude scales with size - smaller shapes move MORE (lighter, floatier)
+  // Large shapes move less (visual mass), small shapes drift further
+  const isSmall = sizeVh < 0.3
   const amplitudeScale = 1 - sizeVh * 0.3
-  const baseAmplitude = 35
-  const amplitude = baseAmplitude * amplitudeScale
+  const baseAmplitude = 12
+  // Small shapes: fixed amplitude to reach ~20% from left edge (-4 + 24 = 20)
+  const amplitude = isSmall ? 24 : baseAmplitude * amplitudeScale
 
-  // Position drift from edge
-  const start = -10
+  // Position drift from edge - small left objects start visible, large ones start off-screen
+  const baseStart = zone === 'left' ? (isSmall ? 4 : -4) : -8
+  const start = baseStart
   const end = start + amplitude
-  const driftDirection = [start, end, start]
 
   // Static position for reduced motion
   const staticPos = (start + end) / 2
 
-  // Breathing: noticeable fade in/out
-  // Higher values for visibility with screen blend mode on dark backgrounds
-  const opacityMin = 0.2
-  const opacityMax = 0.55
+  // Breathing: very subtle fade for background feel
+  // Lower opacity for more ambient appearance
+  const opacityMin = 0.08
+  const opacityMax = 0.25
 
   // Desync opacity from position - breathing is slower
   const breathingDuration = duration * 1.2
@@ -258,7 +261,7 @@ export function Shape({ type, color, zone, sizeVh, topPercent, duration, delay, 
         width,
         height,
         top: `${topPercent}%`,
-        filter: 'blur(15px)',
+        filter: 'blur(12px)', // Lighter blur
       }}
       initial={{
         [positionProp]: reducedMotion ? `${staticPos}%` : `${start}%`,
@@ -268,28 +271,26 @@ export function Shape({ type, color, zone, sizeVh, topPercent, duration, delay, 
         reducedMotion
           ? { [positionProp]: `${staticPos}%`, opacity: (opacityMin + opacityMax) / 2 }
           : {
-            [positionProp]: driftDirection.map(v => `${v}%`),
-            opacity: [opacityMin, opacityMax, opacityMin],
-          }
+              [positionProp]: `${end}%`,
+              opacity: [opacityMin, opacityMax, opacityMin],
+            }
       }
       transition={
         reducedMotion
           ? { duration: 0.8 } // Smooth fade-in even with reduced motion
           : {
-            duration,
-            repeat: Infinity,
-            repeatDelay: -duration * phaseOffset, // Negative delay = start mid-cycle
-            // Gentle sine-like movement for ambient floating
-            ease: [0.45, 0.05, 0.55, 0.95],
-            opacity: {
-              duration: breathingDuration,
+              duration: duration * 1.4, // 2x slower, languid movement
               repeat: Infinity,
-              delay: 1, // Initial fade-in delay
-              repeatDelay: -breathingDuration * phaseOffset * 0.7, // Different phase for opacity
-              // Asymmetric breathing: slow inhale, gentle exhale
-              ease: [0.22, 0.61, 0.36, 1],
-            },
-          }
+              repeatType: 'mirror', // Seamless back-and-forth without jump
+              ease: 'easeInOut', // Simple smooth easing
+              opacity: {
+                duration: breathingDuration,
+                repeat: Infinity,
+                delay: 1, // Initial fade-in delay
+                repeatDelay: -breathingDuration * phaseOffset * 0.7,
+                ease: [0.22, 0.61, 0.36, 1],
+              },
+            }
       }
     >
       <ShapeComponent color={color} opacity={1} />
