@@ -42,7 +42,7 @@ import dynamic from 'next/dynamic'
 
 // Dynamically import the Web3Provider - only loads when actually rendered
 const DynamicWeb3Provider = dynamic(
-  () => import('@/app/providers').then((mod) => mod.Web3Provider),
+  () => import('./web3-provider').then((mod) => mod.Web3Provider),
   {
     ssr: false,
     loading: () => null, // No visual loading state - parent handles this

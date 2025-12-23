@@ -90,7 +90,7 @@ export function LazyWalletButton() {
         // Dynamic imports happen HERE, not at module level
         // This ensures webpack doesn't include them in initial bundle
         const [providersModule, walletModule] = await Promise.all([
-          import('@/app/providers'),
+          import('@/shared/providers'),
           import('./wallet-button'),
         ])
 

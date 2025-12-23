@@ -1,13 +1,71 @@
 /**
- * Wagmi Configuration Re-export
+ * Wagmi Configuration for VoidPay
  *
- * Re-exports the Wagmi config from the wallet-connect feature module.
- * The feature module contains all Web3 configuration including:
+ * Configures Wagmi with:
  * - Custom transport routing to /api/rpc (Constitutional Principle VI)
- * - Chain configurations for mainnet and testnet
- * - LocalStorage persistence
+ * - LocalStorage persistence via createStorage
+ * - All supported mainnet/testnet chains
  *
- * @see src/features/wallet-connect/config/wagmi.ts for implementation
+ * @see https://wagmi.sh/core/api/createConfig
  */
 
-export { wagmiConfig as config, chains } from '@/features/wallet-connect/config/wagmi'
+import { createStorage } from 'wagmi'
+import { getDefaultConfig } from '@rainbow-me/rainbowkit'
+import { getSupportedChains, ALL_CHAIN_IDS } from './chains'
+import { createTransportsForChains } from '../lib/custom-transport'
+
+/**
+ * WalletConnect Project ID from environment
+ * Required for WalletConnect v2 connections
+ */
+const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? ''
+
+/**
+ * Get chains configuration
+ */
+const chains = getSupportedChains()
+
+/**
+ * Create transports for all supported chains
+ * Routes all RPC calls through /api/rpc proxy
+ */
+const transports = createTransportsForChains([...ALL_CHAIN_IDS])
+
+/**
+ * Wagmi configuration using RainbowKit's getDefaultConfig
+ *
+ * This provides:
+ * - Pre-configured connectors (MetaMask, WalletConnect, Coinbase, Rainbow)
+ * - Automatic wallet detection
+ * - Mobile wallet support via WalletConnect
+ * - SSR-safe storage with LocalStorage persistence
+ */
+export const wagmiConfig = getDefaultConfig({
+  appName: 'VoidPay',
+  projectId: walletConnectProjectId,
+  chains,
+  transports,
+  ssr: true,
+  storage: createStorage({
+    storage:
+      typeof window !== 'undefined'
+        ? window.localStorage
+        : {
+            getItem: () => null,
+            setItem: () => {},
+            removeItem: () => {},
+          },
+    key: 'voidpay-wallet',
+  }),
+})
+
+/**
+ * Re-export chains for convenience
+ */
+export { chains }
+
+/**
+ * Alias for backward compatibility
+ * @deprecated Use wagmiConfig instead
+ */
+export const config = wagmiConfig
