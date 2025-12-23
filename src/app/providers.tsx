@@ -7,6 +7,9 @@
  * - WagmiProvider: Ethereum wallet connection and state
  * - QueryClientProvider: React Query for async state management
  * - RainbowKitProvider: Wallet connection UI with VoidPay theme
+ *
+ * PERFORMANCE: This module is loaded on-demand via dynamic import.
+ * RainbowKit CSS is co-located here to load together with the provider.
  */
 
 import React from 'react'
@@ -14,10 +17,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider } from 'wagmi'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 
+// RainbowKit styles - loaded on-demand with Web3Provider
+import '@rainbow-me/rainbowkit/styles.css'
+
 import { config } from '@/shared/config/wagmi'
 import { voidPayTheme } from '@/features/wallet-connect/config/rainbowkit-theme'
-
-// Note: RainbowKit CSS is imported in layout.tsx to avoid duplication
 
 /**
  * QueryClient instance for React Query

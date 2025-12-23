@@ -38,17 +38,12 @@ export { Input, inputVariants, type InputProps } from './input'
 // AddressInput (feature: 010-form-components)
 export { AddressInput, type AddressInputProps } from './address-input'
 
-// Motion (LazyMotion for bundle optimization)
-export {
-  motion,
-  AnimatePresence,
-  MotionProvider,
-  type MotionProps,
-  type Variants,
-  type Transition,
-} from './motion'
+// Motion - NOT exported from barrel to prevent Framer Motion bundle inclusion
+// Use direct imports instead:
+// - import { motion, AnimatePresence } from '@/shared/ui/motion' (for below-fold components)
+// - Types: import type { MotionProps, Variants, Transition } from '@/shared/ui/motion'
 
-// Reduced motion hook (accessibility)
+// Reduced motion hook (accessibility) - Pure JS implementation, no Framer Motion
 export { useReducedMotion } from './hooks/use-reduced-motion'
 
 // Critical path inline SVG icons (above-fold optimization)
@@ -106,8 +101,12 @@ export { AuroraText, type AuroraTextProps } from './aurora-text'
 // HyperText (feature: 011-brand-visual-components)
 export { HyperText, type HyperTextProps } from './hyper-text'
 
-// NetworkBackground (feature: 012-landing-page)
-export { NetworkBackground, type NetworkBackgroundProps } from './network-background'
+// NetworkBackground - NOT exported from barrel to prevent Framer Motion bundle inclusion
+// Use direct imports instead:
+// - import { NetworkBackground } from '@/widgets/network-background' (recommended)
+// - import { NetworkBackground } from '@/shared/ui/network-background' (direct)
 
-// WalletButton (feature: 012-landing-page)
-export { WalletButton } from './wallet-button'
+// WalletButton - NOT exported from barrel to prevent Web3 bundle inclusion
+// Use direct imports instead:
+// - import { LazyWalletButton } from '@/shared/ui/wallet-button-lazy' (recommended)
+// - import { WalletButton } from '@/shared/ui/wallet-button' (requires Web3Provider)

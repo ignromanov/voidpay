@@ -9,7 +9,9 @@
 import { Check, X, Minus } from 'lucide-react'
 
 import { useHydrated } from '@/shared/lib'
-import { Heading, Text, motion, useReducedMotion } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui'
+import { motion } from '@/shared/ui/motion'
+import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
 
 type ComparisonValue = 'yes' | 'no' | 'partial' | string
 
@@ -96,7 +98,7 @@ export function ComparisonTable() {
   const shouldAnimate = hydrated && !prefersReducedMotion
 
   return (
-    <section className="relative z-10 border-t border-zinc-900 bg-zinc-950/10 px-6 py-32 backdrop-blur-sm">
+    <section className="relative border-t border-zinc-900 bg-zinc-950/10 px-6 py-32 backdrop-blur-sm">
       <motion.div
         initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
         whileInView={{ opacity: 1, y: 0 }}

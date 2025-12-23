@@ -2,18 +2,20 @@
  * SocialProofStrip - Minimal trust signals section
  * Feature: 012-landing-page
  * Research: Qualitative proof > quantitative for early-stage
+ *
+ * Performance: Uses CSS animations instead of Framer Motion for LCP optimization.
+ * Animation triggers on scroll via CSS (no JS Intersection Observer needed).
  */
 
 'use client'
 
 import type { ComponentType, SVGProps } from 'react'
 
-import { useHydrated } from '@/shared/lib'
+import { cn, useHydrated } from '@/shared/lib'
 import {
   GithubIcon,
   GlobeIcon,
   LockIcon,
-  motion,
   ServerOffIcon,
   useReducedMotion,
 } from '@/shared/ui'
@@ -87,23 +89,23 @@ export function SocialProofStrip() {
   const hydrated = useHydrated()
 
   // Only animate after hydration to prevent SSR mismatch
+  // Uses CSS animation with longer delay (0.6s) since this is below hero
   const shouldAnimate = hydrated && !prefersReducedMotion
 
   return (
-    <section className="relative z-10 border-y border-zinc-800/50 bg-zinc-900/30 px-6 py-8 backdrop-blur-sm">
-      <motion.div
-        initial={shouldAnimate ? { opacity: 0, y: 10 } : false}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-        className="mx-auto max-w-5xl"
+    <section className="relative border-y border-zinc-800/50 bg-zinc-900/30 px-6 py-8 backdrop-blur-sm">
+      <div
+        className={cn(
+          'mx-auto max-w-5xl',
+          shouldAnimate && 'hero-animate-social-proof'
+        )}
       >
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
           {TRUST_BADGES.map((badge) => (
             <TrustBadge key={badge.label} {...badge} />
           ))}
         </div>
-      </motion.div>
+      </div>
     </section>
   )
 }

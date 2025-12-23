@@ -10,7 +10,9 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
 import { useHydrated } from '@/shared/lib'
-import { Button, Card, CardContent, Heading, Text, useReducedMotion, motion, AnimatePresence } from '@/shared/ui'
+import { Button, Card, CardContent, Heading, Text } from '@/shared/ui'
+import { AnimatePresence, motion } from '@/shared/ui/motion'
+import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
 
 import { useNetworkTheme } from '../context/network-theme-context'
 import { DEMO_INVOICES, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
@@ -130,7 +132,16 @@ export function DemoSection() {
   const currentInvoice = DEMO_INVOICES[activeIndex]
 
   if (!currentInvoice) {
-    return null
+    // Defensive check - should never happen with correct DEMO_INVOICES config
+    console.error('[DemoSection] Invalid activeIndex or empty DEMO_INVOICES:', {
+      activeIndex,
+      invoicesLength: DEMO_INVOICES.length,
+    })
+    return (
+      <section className="py-32 text-center text-zinc-500">
+        Demo content unavailable
+      </section>
+    )
   }
 
   const theme = NETWORK_THEMES[currentInvoice.network]
@@ -149,7 +160,7 @@ export function DemoSection() {
   }
 
   return (
-    <section className="relative z-10 flex w-full flex-col items-center justify-center overflow-visible py-32" aria-labelledby="demo-heading">
+    <section className="relative flex w-full flex-col items-center justify-center overflow-visible py-32" aria-labelledby="demo-heading">
       {/* Section header */}
       <div className="mb-16 space-y-3 px-4 text-center">
         <Heading variant="h1" as="h2" id="demo-heading">

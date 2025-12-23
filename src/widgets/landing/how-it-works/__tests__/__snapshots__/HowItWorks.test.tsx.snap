@@ -4,7 +4,7 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
 <div>
   <section
     aria-labelledby="how-it-works-heading"
-    class="relative z-10 bg-zinc-950/10 px-6 py-32 backdrop-blur-sm"
+    class="relative bg-zinc-950/10 px-6 py-32 backdrop-blur-sm"
     id="how-it-works"
   >
     <div

@@ -21,7 +21,7 @@ const SOCIAL_LINKS = {
 export function FooterCta() {
   return (
     <section
-      className="relative z-10 border-t border-zinc-800/50 bg-gradient-to-b from-transparent to-violet-950/30 px-6 py-40"
+      className="relative border-t border-zinc-800/50 bg-gradient-to-b from-transparent to-violet-950/30 px-6 py-40"
       aria-labelledby="footer-cta-heading"
     >
       <div className="mx-auto max-w-4xl space-y-10 text-center">

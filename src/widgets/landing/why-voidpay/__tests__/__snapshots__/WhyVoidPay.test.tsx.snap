@@ -4,7 +4,7 @@ exports[`WhyVoidPay > T023-test: Snapshot > should match snapshot 1`] = `
 <div>
   <section
     aria-labelledby="why-voidpay-heading"
-    class="relative z-10 bg-transparent px-6 py-32"
+    class="relative bg-transparent px-6 py-32"
   >
     <div
       class="mx-auto max-w-6xl"

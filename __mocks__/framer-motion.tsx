@@ -1,11 +1,14 @@
 /**
  * Framer Motion Mock for Vitest
  *
- * This file is automatically used by Vitest when tests import 'framer-motion'.
- * It provides deterministic snapshots by stripping animation-related props
+ * This mock is applied via the alias configuration in vitest.config.ts.
+ * It replaces 'framer-motion' imports with this file for all tests.
+ *
+ * Purpose: Provides deterministic snapshots by stripping animation-related props
  * and rendering motion.* components as regular HTML elements.
  *
- * @see https://vitest.dev/guide/mocking.html#automocking
+ * @see vitest.config.ts (alias: { 'framer-motion': ... })
+ * @see https://vitest.dev/guide/mocking.html
  */
 import * as React from 'react'
 

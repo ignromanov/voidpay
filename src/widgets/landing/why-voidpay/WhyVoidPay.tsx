@@ -10,7 +10,9 @@ import type { SVGProps } from 'react'
 
 import { useHydrated } from '@/shared/lib'
 import { cn } from '@/shared/lib/utils'
-import { Heading, Text, motion, useReducedMotion } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui'
+import { motion } from '@/shared/ui/motion'
+import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
 
 import { FEATURE_CARDS } from '../constants/features'
 
@@ -63,7 +65,7 @@ export function WhyVoidPay() {
     .filter((card): card is NonNullable<typeof card> => card !== undefined)
 
   return (
-    <section className="relative z-10 bg-transparent px-6 py-32" aria-labelledby="why-voidpay-heading">
+    <section className="relative bg-transparent px-6 py-32" aria-labelledby="why-voidpay-heading">
       <div className="mx-auto max-w-6xl">
         {/* Section header */}
         <div className="mb-16 text-center">

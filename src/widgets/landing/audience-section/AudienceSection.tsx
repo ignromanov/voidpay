@@ -50,7 +50,7 @@ export function AudienceSection() {
 
   return (
     <section
-      className="relative z-10 bg-transparent px-6 py-32"
+      className="relative bg-transparent px-6 py-32"
       aria-labelledby="audience-section-heading"
     >
       <div className="mx-auto max-w-6xl">

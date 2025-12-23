@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 import { cn, useHydrated } from '@/shared/lib'
-import { AnimatePresence, motion } from '@/shared/ui'
+import { AnimatePresence, motion } from '@/shared/ui/motion'
 import { NETWORK_THEMES, type NetworkTheme } from '@/shared/ui/constants/brand-tokens'
 import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
 import { Shape, type ShapeConfig, type ShapeZone } from './shapes'
@@ -26,10 +26,9 @@ function useDeferredAnimation(): boolean {
     // Use requestIdleCallback to start animations when browser is idle
     // This prevents blocking the main thread during initial render
     if ('requestIdleCallback' in window) {
-      const idleId = requestIdleCallback(
-        () => setShouldAnimate(true),
-        { timeout: 3000 } // Start within 3s even if not idle
-      )
+      const idleId = requestIdleCallback(() => setShouldAnimate(true), {
+        timeout: 3000, // Start within 3s even if not idle
+      })
       return () => cancelIdleCallback(idleId)
     } else {
       // Safari fallback - wait 2 seconds after mount
@@ -129,10 +128,10 @@ export function NetworkBackground({ theme = 'voidpay', className }: NetworkBackg
       <AnimatePresence mode="wait">
         <motion.div
           key={theme}
-          initial={prefersReducedMotion ? { opacity: 0.7 } : { opacity: 0 }}
-          animate={{ opacity: 0.7 }}
+          initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+          transition={{ duration: prefersReducedMotion ? 0 : 0.5 }}
           className="relative h-full w-full"
         >
           {shapes.map((shape, index) => (

@@ -4,30 +4,19 @@
  * WalletButton - Unified wallet connection button
  *
  * Handles all states:
- * - Loading (Web3 not ready) → disabled placeholder
  * - Not connected → "Connect" button
  * - Wrong network → warning button
  * - Connected → chain selector + account button
+ *
+ * NOTE: This component MUST be rendered inside Web3Provider context.
+ * For lazy-loaded usage, use LazyWalletButton from wallet-button-lazy.tsx
  */
 
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { Wallet, ChevronDown } from 'lucide-react'
 import { Button } from './button'
-import { useWeb3Loaded } from '@/app/lazy-web3-provider'
 
 export function WalletButton() {
-  const web3Loaded = useWeb3Loaded()
-
-  // Placeholder while Web3 loads
-  if (!web3Loaded) {
-    return (
-      <Button variant="outline" size="sm" className="gap-1.5" disabled>
-        <Wallet className="h-4 w-4" />
-        Connect
-      </Button>
-    )
-  }
-
   return (
     <ConnectButton.Custom>
       {({

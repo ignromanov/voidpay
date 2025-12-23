@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from '@/shared/ui'
+import { motion } from '@/shared/ui/motion'
 import type { ShapeType } from '@/shared/ui/constants/brand-tokens'
 
 /**
@@ -73,10 +73,8 @@ function EthereumSvg({ color, opacity }: { color: string; opacity: number }) {
  * Colors: #213147 (bg), #12AAFF (cyan accents), #FFFFFF (white strokes)
  */
 function ArbitrumSvg({ color, opacity }: { color: string; opacity: number }) {
-  // Arbitrum uses dark blue background with cyan accents
-  // color prop is the theme's cyan, we use original dark blue for background
-  const darkBlue = '#213147'
-
+  // Use theme color for visibility on dark backgrounds with screen blend mode
+  // Original Arbitrum colors don't work well with mix-blend-mode: screen
   return (
     <svg
       viewBox="0 0 2500 2500"
@@ -84,40 +82,40 @@ function ArbitrumSvg({ color, opacity }: { color: string; opacity: number }) {
       className="w-full h-full"
       style={{ opacity }}
     >
-      {/* .st1 #213147 - Main hexagon background */}
+      {/* Main hexagon background - uses theme color for visibility */}
       <path
-        fill={darkBlue}
+        fill={color}
         fillOpacity={1}
         d="M226,760v980c0,63,33,120,88,152l849,490c54,31,121,31,175,0l849-490c54-31,88-89,88-152V760c0-63-33-120-88-152l-849-490c-54-31-121-31-175,0L314,608c-54,31-87,89-87,152H226z"
       />
-      {/* .st2 #12AAFF - Cyan accent lower */}
+      {/* Cyan accent lower - lighter for depth */}
       <path
         fill={color}
-        fillOpacity={1}
+        fillOpacity={0.7}
         d="M1435,1440l-121,332c-3,9-3,19,0,29l208,571l241-139l-289-793C1467,1422,1442,1422,1435,1440z"
       />
-      {/* .st2 #12AAFF - Cyan accent upper */}
+      {/* Cyan accent upper - lighter for depth */}
       <path
         fill={color}
-        fillOpacity={1}
+        fillOpacity={0.7}
         d="M1678,882c-7-18-32-18-39,0l-121,332c-3,9-3,19,0,29l341,935l241-139L1678,883V882z"
       />
-      {/* .st1 #213147 - Small triangle detail */}
+      {/* Small triangle detail */}
       <polygon
-        fill={darkBlue}
-        fillOpacity={0.8}
+        fill={color}
+        fillOpacity={0.5}
         points="642,2179 727,1947 897,2088 738,2234"
       />
-      {/* .st4 #FFFFFF - White stroke left */}
+      {/* White stroke left - adds definition */}
       <path
         fill="white"
-        fillOpacity={0.9}
+        fillOpacity={0.6}
         d="M1172,644H939c-17,0-33,11-39,27L401,2039l241,139l550-1507c5-14-5-28-19-28L1172,644z"
       />
-      {/* .st4 #FFFFFF - White stroke right */}
+      {/* White stroke right - adds definition */}
       <path
         fill="white"
-        fillOpacity={0.9}
+        fillOpacity={0.6}
         d="M1580,644h-233c-17,0-33,11-39,27L738,2233l241,139l620-1701c5-14-5-28-19-28V644z"
       />
     </svg>
@@ -229,8 +227,9 @@ export function Shape({ type, color, zone, sizeVh, topPercent, duration, delay, 
   const staticPos = (start + end) / 2
 
   // Breathing: noticeable fade in/out
-  const opacityMin = 0.08
-  const opacityMax = 0.32
+  // Higher values for visibility with screen blend mode on dark backgrounds
+  const opacityMin = 0.2
+  const opacityMax = 0.55
 
   // Desync opacity from position - breathing is slower
   const breathingDuration = duration * 1.2
@@ -253,13 +252,13 @@ export function Shape({ type, color, zone, sizeVh, topPercent, duration, delay, 
 
   return (
     <motion.div
-      className="absolute mix-blend-screen"
+      className="absolute"
       data-shape={type}
       style={{
         width,
         height,
         top: `${topPercent}%`,
-        filter: 'blur(30px)',
+        filter: 'blur(15px)',
       }}
       initial={{
         [positionProp]: reducedMotion ? `${staticPos}%` : `${start}%`,

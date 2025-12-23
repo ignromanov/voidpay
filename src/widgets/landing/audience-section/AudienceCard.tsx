@@ -8,7 +8,8 @@
 import type { LucideIcon } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
-import { Heading, Text, motion } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui'
+import { motion } from '@/shared/ui/motion'
 
 export type AudienceCardProps = {
   icon: LucideIcon

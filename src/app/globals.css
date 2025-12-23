@@ -49,3 +49,86 @@
     filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.5));
   }
 }
+
+/* ============================================
+   Hero Section Animations (CSS-only for LCP)
+   Replaces Framer Motion for above-fold content
+   ============================================ */
+
+@keyframes hero-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes hero-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes hero-scroll-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
+/* Hero animation classes with staggered delays */
+.hero-animate-container {
+  animation: hero-fade-in-up 0.8s ease-out forwards;
+}
+
+.hero-animate-badge {
+  opacity: 0;
+  animation: hero-fade-in-scale 0.5s ease-out 0.2s forwards;
+}
+
+.hero-animate-cta {
+  opacity: 0;
+  animation: hero-fade-in-up 0.5s ease-out 0.4s forwards;
+}
+
+.hero-animate-scroll {
+  opacity: 0;
+  animation: hero-fade-in 0.8s ease-out 1.2s forwards;
+}
+
+.hero-animate-scroll-bounce {
+  animation: hero-scroll-bounce 2s ease-in-out infinite;
+}
+
+.hero-animate-social-proof {
+  opacity: 0;
+  animation: hero-fade-in-up 0.5s ease-out 0.6s forwards;
+}
+
+/* Respect reduced motion for hero animations */
+@media (prefers-reduced-motion: reduce) {
+  .hero-animate-container,
+  .hero-animate-badge,
+  .hero-animate-cta,
+  .hero-animate-scroll,
+  .hero-animate-social-proof {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .hero-animate-scroll-bounce {
+    animation: none !important;
+  }
+}

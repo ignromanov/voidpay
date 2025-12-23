@@ -43,7 +43,7 @@ importers:
         version: 12.23.26(react-dom@19.1.4(react@19.1.4))(react@19.1.4)
       geist:
         specifier: ^1.5.1
-        version: 1.5.1(next@15.5.8(@babel/core@7.28.5)(react-dom@19.1.4(react@19.1.4))(react@19.1.4))
+        version: 1.5.1(next@15.5.8(@babel/core@7.28.5)(@playwright/test@1.57.0)(react-dom@19.1.4(react@19.1.4))(react@19.1.4))
       lucide-react:
         specifier: ^0.560.0
         version: 0.560.0(react@19.1.4)
@@ -52,10 +52,10 @@ importers:
         version: 1.5.0
       next:
         specifier: ^15.5.8
-        version: 15.5.8(@babel/core@7.28.5)(react-dom@19.1.4(react@19.1.4))(react@19.1.4)
+        version: 15.5.8(@babel/core@7.28.5)(@playwright/test@1.57.0)(react-dom@19.1.4(react@19.1.4))(react@19.1.4)
       next-sitemap:
         specifier: ^4.2.3
-        version: 4.2.3(next@15.5.8(@babel/core@7.28.5)(react-dom@19.1.4(react@19.1.4))(react@19.1.4))
+        version: 4.2.3(next@15.5.8(@babel/core@7.28.5)(@playwright/test@1.57.0)(react-dom@19.1.4(react@19.1.4))(react@19.1.4))
       qrcode.react:
         specifier: ^4.2.0
         version: 4.2.0(react@19.1.4)
@@ -93,6 +93,9 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3.3.3
         version: 3.3.3
+      '@playwright/test':
+        specifier: ^1.57.0
+        version: 1.57.0
       '@tailwindcss/postcss':
         specifier: ^4.1.18
         version: 4.1.18
@@ -138,6 +141,9 @@ importers:
       lint-staged:
         specifier: ^16.2.7
         version: 16.2.7
+      playwright:
+        specifier: ^1.57.0
+        version: 1.57.0
       postcss:
         specifier: ^8.0.0
         version: 8.5.6
@@ -952,6 +958,11 @@ packages:
   '@paulmillr/qr@0.2.1':
     resolution: {integrity: sha512-IHnV6A+zxU7XwmKFinmYjUcwlyK9+xkG3/s9KcQhI9BjQKycrJ1JRO+FbNYPwZiPKW3je/DR0k7w8/gLa5eaxQ==}
     deprecated: 'The package is now available as "qr": npm install qr'
+
+  '@playwright/test@1.57.0':
+    resolution: {integrity: sha512-6TyEnHgd6SArQO8UO2OMTxshln3QMWBtPGrOCgs3wVEmQmwyuNtB10IZMfmYDE0riwNR1cu4q+pPcxMVtaG3TA==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   '@radix-ui/number@1.1.1':
     resolution: {integrity: sha512-MkKCwxlXTgz6CFoJx3pCwn07GKp36+aZyu/u2Ln2VrA5DcdyCZkASEDBTd8x5whTQQL5CiYf4prXKLcgQdv29g==}
@@ -3151,6 +3162,11 @@ packages:
       react-dom:
         optional: true
 
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
+
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -4052,6 +4068,16 @@ packages:
 
   pino@7.11.0:
     resolution: {integrity: sha512-dMACeu63HtRLmCG8VKdy4cShCPKaYDR4youZqoSWLxl5Gu99HUw8bw75thbPv9Nip+H+QYX8o3ZJbTdVZZ2TVg==}
+    hasBin: true
+
+  playwright-core@1.57.0:
+    resolution: {integrity: sha512-agTcKlMw/mjBWOnD6kFZttAAGHgi/Nw0CZ2o6JqWSbMlI219lAFLZZCyqByTsvVAJq5XA5H8cA6PrvBRpBWEuQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.57.0:
+    resolution: {integrity: sha512-ilYQj1s8sr2ppEJ2YVadYBN0Mb3mdo9J0wQ+UuDhzYqURwSoW4n1Xs5vs7ORwgDGmyEh33tRMeS8KhdkMoLXQw==}
+    engines: {node: '>=18'}
     hasBin: true
 
   pngjs@5.0.0:
@@ -6081,6 +6107,10 @@ snapshots:
   '@nolyfill/is-core-module@1.0.39': {}
 
   '@paulmillr/qr@0.2.1': {}
+
+  '@playwright/test@1.57.0':
+    dependencies:
+      playwright: 1.57.0
 
   '@radix-ui/number@1.1.1': {}
 
@@ -9305,6 +9335,9 @@ snapshots:
       react: 19.1.4
       react-dom: 19.1.4(react@19.1.4)
 
+  fsevents@2.3.2:
+    optional: true
+
   fsevents@2.3.3:
     optional: true
 
@@ -9321,9 +9354,9 @@ snapshots:
 
   functions-have-names@1.2.3: {}
 
-  geist@1.5.1(next@15.5.8(@babel/core@7.28.5)(react-dom@19.1.4(react@19.1.4))(react@19.1.4)):
+  geist@1.5.1(next@15.5.8(@babel/core@7.28.5)(@playwright/test@1.57.0)(react-dom@19.1.4(react@19.1.4))(react@19.1.4)):
     dependencies:
-      next: 15.5.8(@babel/core@7.28.5)(react-dom@19.1.4(react@19.1.4))(react@19.1.4)
+      next: 15.5.8(@babel/core@7.28.5)(@playwright/test@1.57.0)(react-dom@19.1.4(react@19.1.4))(react@19.1.4)
 
   generator-function@2.0.1: {}
 
@@ -9990,15 +10023,15 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  next-sitemap@4.2.3(next@15.5.8(@babel/core@7.28.5)(react-dom@19.1.4(react@19.1.4))(react@19.1.4)):
+  next-sitemap@4.2.3(next@15.5.8(@babel/core@7.28.5)(@playwright/test@1.57.0)(react-dom@19.1.4(react@19.1.4))(react@19.1.4)):
     dependencies:
       '@corex/deepmerge': 4.0.43
       '@next/env': 13.5.11
       fast-glob: 3.3.3
       minimist: 1.2.8
-      next: 15.5.8(@babel/core@7.28.5)(react-dom@19.1.4(react@19.1.4))(react@19.1.4)
+      next: 15.5.8(@babel/core@7.28.5)(@playwright/test@1.57.0)(react-dom@19.1.4(react@19.1.4))(react@19.1.4)
 
-  next@15.5.8(@babel/core@7.28.5)(react-dom@19.1.4(react@19.1.4))(react@19.1.4):
+  next@15.5.8(@babel/core@7.28.5)(@playwright/test@1.57.0)(react-dom@19.1.4(react@19.1.4))(react@19.1.4):
     dependencies:
       '@next/env': 15.5.8
       '@swc/helpers': 0.5.15
@@ -10016,6 +10049,7 @@ snapshots:
       '@next/swc-linux-x64-musl': 15.5.7
       '@next/swc-win32-arm64-msvc': 15.5.7
       '@next/swc-win32-x64-msvc': 15.5.7
+      '@playwright/test': 1.57.0
       sharp: 0.34.5
     transitivePeerDependencies:
       - '@babel/core'
@@ -10264,6 +10298,14 @@ snapshots:
       safe-stable-stringify: 2.5.0
       sonic-boom: 2.8.0
       thread-stream: 0.15.2
+
+  playwright-core@1.57.0: {}
+
+  playwright@1.57.0:
+    dependencies:
+      playwright-core: 1.57.0
+    optionalDependencies:
+      fsevents: 2.3.2
 
   pngjs@5.0.0: {}
 

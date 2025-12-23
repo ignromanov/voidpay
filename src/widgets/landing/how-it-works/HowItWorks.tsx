@@ -11,7 +11,9 @@ import type { SVGProps } from 'react'
 import { ArrowRight } from 'lucide-react'
 
 import { useHydrated } from '@/shared/lib'
-import { Heading, Text, motion, useReducedMotion } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui'
+import { motion } from '@/shared/ui/motion'
+import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
 
 import { WORKFLOW_STEPS } from '../constants/features'
 
@@ -75,7 +77,7 @@ export function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="relative z-10 bg-zinc-950/10 px-6 py-32 backdrop-blur-sm"
+      className="relative bg-zinc-950/10 px-6 py-32 backdrop-blur-sm"
       aria-labelledby="how-it-works-heading"
     >
       <div className="mx-auto max-w-5xl space-y-16">
