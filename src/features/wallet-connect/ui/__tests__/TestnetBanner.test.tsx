@@ -8,10 +8,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import React from 'react'
 
-// Mock wagmi
-vi.mock('wagmi', () => ({
-  useChainId: vi.fn(() => 1), // Default to mainnet
-}))
+// Mock wagmi with all required exports
+vi.mock('wagmi', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('wagmi')>()
+  return {
+    ...actual,
+    useChainId: vi.fn(() => 1), // Default to mainnet
+  }
+})
 
 describe('TestnetBanner', () => {
   beforeEach(() => {

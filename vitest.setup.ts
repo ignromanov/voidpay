@@ -19,6 +19,15 @@ import { afterEach, beforeAll, beforeEach, vi } from 'vitest'
 // ============================================================================
 
 /**
+ * Mock environment variables for Web3 configuration
+ * Must be set before any imports that read process.env
+ */
+vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID = 'test-project-id'
+  process.env.NEXT_PUBLIC_ENABLE_TESTNETS = 'false'
+})
+
+/**
  * Mock window.matchMedia for prefers-reduced-motion
  * Must be hoisted because some libraries read it on import
  *
@@ -37,6 +46,60 @@ vi.hoisted(() => {
       removeEventListener: () => {},
       dispatchEvent: () => false,
     }),
+  })
+
+  /**
+   * Mock localStorage and sessionStorage for Wagmi storage layer
+   * Wagmi's createStorage expects storage.setItem/getItem as functions
+   */
+  const createStorageMock = () => {
+    const store = new Map<string, string>()
+    return {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => store.set(key, value),
+      removeItem: (key: string) => store.delete(key),
+      clear: () => store.clear(),
+      get length() {
+        return store.size
+      },
+      key: (index: number) => Array.from(store.keys())[index] ?? null,
+    }
+  }
+
+  Object.defineProperty(globalThis, 'localStorage', {
+    writable: true,
+    value: createStorageMock(),
+  })
+
+  Object.defineProperty(globalThis, 'sessionStorage', {
+    writable: true,
+    value: createStorageMock(),
+  })
+
+  /**
+   * Mock indexedDB for Web3Modal/WalletConnect
+   */
+  Object.defineProperty(globalThis, 'indexedDB', {
+    writable: true,
+    value: {
+      open: () => ({
+        onupgradeneeded: null,
+        onsuccess: null,
+        onerror: null,
+        result: {
+          objectStoreNames: { contains: () => false },
+          createObjectStore: () => ({}),
+          transaction: () => ({
+            objectStore: () => ({
+              get: () => ({ onsuccess: null, onerror: null }),
+              put: () => ({ onsuccess: null, onerror: null }),
+              delete: () => ({ onsuccess: null, onerror: null }),
+            }),
+          }),
+        },
+      }),
+      deleteDatabase: () => ({ onsuccess: null, onerror: null }),
+    },
   })
 })
 
