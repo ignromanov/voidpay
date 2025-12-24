@@ -1,5 +1,6 @@
 'use client'
 
+import { cn } from '@/shared/lib'
 import { motion } from '@/shared/ui/motion'
 import type { ShapeType } from '@/shared/ui/constants/brand-tokens'
 
@@ -22,6 +23,8 @@ export type ShapeConfig = {
   delay: number
   /** Disable animations for reduced motion */
   reducedMotion?: boolean
+  /** Additional CSS classes (for responsive hiding, etc.) */
+  className?: string
 }
 
 /**
@@ -212,7 +215,7 @@ const SHAPE_COMPONENTS: Record<ShapeType, React.FC<{ color: string; opacity: num
  * - Slow horizontal drift animation
  * - Uses inline SVG for accurate logo representation
  */
-export function Shape({ type, color, zone, sizeVh, topPercent, duration, delay, reducedMotion }: ShapeConfig) {
+export function Shape({ type, color, zone, sizeVh, topPercent, duration, delay, reducedMotion, className }: ShapeConfig) {
   // Amplitude scales with size - smaller shapes move MORE (lighter, floatier)
   // Large shapes move less (visual mass), small shapes drift further
   const isSmall = sizeVh < 0.3
@@ -230,16 +233,12 @@ export function Shape({ type, color, zone, sizeVh, topPercent, duration, delay, 
   const staticPos = (start + end) / 2
 
   // Breathing: very subtle fade for background feel
-  // Lower opacity for more ambient appearance
   const opacityMin = 0.08
   const opacityMax = 0.25
+  const midOpacity = (opacityMin + opacityMax) / 2
 
   // Desync opacity from position - breathing is slower
   const breathingDuration = duration * 1.2
-
-  // Random phase offset to desynchronize animations (based on delay)
-  // Creates natural stagger - each shape starts at different point in cycle
-  const phaseOffset = delay / duration
 
   // Size constraint: use vh for desktop, but cap at 150vw on mobile
   const aspectRatio = SHAPE_ASPECT_RATIOS[type]
@@ -254,46 +253,64 @@ export function Shape({ type, color, zone, sizeVh, topPercent, duration, delay, 
   const positionProp = zone === 'left' ? 'left' : 'right'
 
   return (
+    // OUTER: fade-in container (runs once)
+    // Handles smooth appearance from invisible to visible
     <motion.div
-      className="absolute"
+      className={cn('absolute', className)}
       data-shape={type}
       style={{
         width,
         height,
         top: `${topPercent}%`,
-        filter: 'blur(12px)', // Lighter blur
+        [positionProp]: 0, // Anchor point for inner positioning
       }}
-      initial={{
-        [positionProp]: reducedMotion ? `${staticPos}%` : `${start}%`,
-        opacity: 0, // Start invisible for fade-in
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{
+        duration: 1.5,
+        delay: delay * 0.3,
+        ease: 'easeOut',
       }}
-      animate={
-        reducedMotion
-          ? { [positionProp]: `${staticPos}%`, opacity: (opacityMin + opacityMax) / 2 }
-          : {
-              [positionProp]: `${end}%`,
-              opacity: [opacityMin, opacityMax, opacityMin],
-            }
-      }
-      transition={
-        reducedMotion
-          ? { duration: 0.8 } // Smooth fade-in even with reduced motion
-          : {
-              duration: duration * 1.4, // 2x slower, languid movement
-              repeat: Infinity,
-              repeatType: 'mirror', // Seamless back-and-forth without jump
-              ease: 'easeInOut', // Simple smooth easing
-              opacity: {
-                duration: breathingDuration,
-                repeat: Infinity,
-                delay: 1, // Initial fade-in delay
-                repeatDelay: -breathingDuration * phaseOffset * 0.7,
-                ease: [0.22, 0.61, 0.36, 1],
-              },
-            }
-      }
     >
-      <ShapeComponent color={color} opacity={1} />
+      {/* INNER: breathing + drift (runs forever) */}
+      {/* Position uses left/right %, opacity oscillates between min and max */}
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          filter: 'blur(12px)',
+        }}
+        initial={{
+          [positionProp]: reducedMotion ? `${staticPos}%` : `${start}%`,
+          opacity: opacityMin,
+        }}
+        animate={
+          reducedMotion
+            ? { [positionProp]: `${staticPos}%`, opacity: midOpacity }
+            : {
+                [positionProp]: [`${start}%`, `${end}%`],
+                opacity: [opacityMin, opacityMax, opacityMin],
+              }
+        }
+        transition={
+          reducedMotion
+            ? { duration: 0.5 }
+            : {
+                [positionProp]: {
+                  duration: duration * 1.4,
+                  repeat: Infinity,
+                  repeatType: 'mirror' as const,
+                  ease: 'easeInOut' as const,
+                },
+                opacity: {
+                  duration: breathingDuration,
+                  repeat: Infinity,
+                  ease: [0.22, 0.61, 0.36, 1] as const,
+                },
+              }
+        }
+      >
+        <ShapeComponent color={color} opacity={1} />
+      </motion.div>
     </motion.div>
   )
 }

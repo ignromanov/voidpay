@@ -63,6 +63,7 @@ function generateShapes(themeConfig: (typeof NETWORK_THEMES)[NetworkTheme]): Sha
 
   // Secondary: Large shape right side (diagonal balance)
   // Vertical range: 20% to ~80%
+  // Hidden on mobile (<768px) - too wide for narrow viewport
   shapes.push({
     type: themeConfig.shape,
     color: themeConfig.secondary,
@@ -71,6 +72,7 @@ function generateShapes(themeConfig: (typeof NETWORK_THEMES)[NetworkTheme]): Sha
     topPercent: 20,
     duration: 25,
     delay: 2,
+    className: 'hidden md:block',
   })
 
   // Accent: Small shape bottom-left (subtle, fills empty corner)
