@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useHydrated } from '@/shared/lib'
 import { Button, Card, CardContent, Heading, Text } from '@/shared/ui'
 import { AnimatePresence, motion } from '@/shared/ui/motion'
-import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
+import { useReducedMotion } from '@/shared/ui'
 
 import { useNetworkTheme } from '../context/network-theme-context'
 import { DEMO_INVOICES, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'

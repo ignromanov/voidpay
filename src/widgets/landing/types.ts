@@ -4,7 +4,7 @@
  */
 
 import type { ComponentType, SVGProps } from 'react'
-import type { NetworkTheme } from '@/shared/ui/constants/brand-tokens'
+import type { NetworkTheme } from '@/shared/ui'
 
 /**
  * Feature card for WhyVoidPay section

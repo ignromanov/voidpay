@@ -7,7 +7,7 @@
  * Allows users to view, duplicate, or delete history entries.
  */
 
-import { HistoryList } from '@/features/invoice-history/ui/HistoryList'
+import { HistoryList } from '@/features/invoice-history'
 
 export default function HistoryPage() {
   return (

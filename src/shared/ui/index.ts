@@ -46,6 +46,9 @@ export { AddressInput, type AddressInputProps } from './address-input'
 // Reduced motion hook (accessibility) - Pure JS implementation, no Framer Motion
 export { useReducedMotion } from './hooks/use-reduced-motion'
 
+// Brand tokens (theme configuration)
+export type { NetworkTheme } from './constants/brand-tokens'
+
 // Critical path inline SVG icons (above-fold optimization)
 export {
   ArrowRightIcon,

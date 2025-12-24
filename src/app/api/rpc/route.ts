@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import type { JsonRpcRequest, JsonRpcResponse } from '@/features/rpc-proxy/model/types'
+import type { JsonRpcRequest, JsonRpcResponse } from '@/features/rpc-proxy'
 
 export const runtime = 'edge'
 
@@ -87,12 +87,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Rate limiting (skip for mock mode to avoid blocking development)
     const url = new URL(request.url)
-    const { shouldUseMock } = await import('@/features/rpc-proxy/lib/mock')
+    const { shouldUseMock } = await import('@/features/rpc-proxy')
 
     if (!shouldUseMock(url)) {
-      const { extractIpAddress, checkRateLimit } = await import(
-        '@/features/rpc-proxy/lib/rate-limit'
-      )
+      const { extractIpAddress, checkRateLimit } = await import('@/features/rpc-proxy')
       const ipAddress = extractIpAddress(request.headers)
       const rateLimitResult = await checkRateLimit(ipAddress)
 
@@ -119,7 +117,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check if mock mode should be enabled
-    const { getMockMode, handleMockRequest } = await import('@/features/rpc-proxy/lib/mock')
+    const { getMockMode, handleMockRequest } = await import('@/features/rpc-proxy')
 
     if (shouldUseMock(url)) {
       const mockMode = getMockMode(url)
@@ -136,7 +134,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Import proxy logic dynamically to avoid bundling in client
-    const { proxyRequest } = await import('@/features/rpc-proxy/lib/proxy')
+    const { proxyRequest } = await import('@/features/rpc-proxy')
 
     // Proxy the request with automatic failover
     const result = await proxyRequest(body)
@@ -144,9 +142,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Get rate limit info for response headers (if available)
     let rateLimitHeaders: Record<string, string> = {}
     if (!shouldUseMock(url)) {
-      const { extractIpAddress, checkRateLimit } = await import(
-        '@/features/rpc-proxy/lib/rate-limit'
-      )
+      const { extractIpAddress, checkRateLimit } = await import('@/features/rpc-proxy')
       const ipAddress = extractIpAddress(request.headers)
       const rateLimitResult = await checkRateLimit(ipAddress)
 

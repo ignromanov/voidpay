@@ -11,7 +11,7 @@ import { Check, X, Minus } from 'lucide-react'
 import { useHydrated } from '@/shared/lib'
 import { Heading, Text } from '@/shared/ui'
 import { motion } from '@/shared/ui/motion'
-import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
+import { useReducedMotion } from '@/shared/ui'
 
 type ComparisonValue = 'yes' | 'no' | 'partial' | string
 

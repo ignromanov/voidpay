@@ -6,9 +6,7 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 
-// Direct import to avoid barrel evaluation (prevents Framer Motion bundling)
-import { LandingContent } from '@/widgets/landing/ui/LandingContent'
-import { FAQ_ITEMS } from '@/widgets/landing/constants/faq'
+import { LandingContent, FAQ_ITEMS } from '@/widgets/landing'
 
 // JSON-LD: FAQPage schema for rich snippets
 const faqSchema = {

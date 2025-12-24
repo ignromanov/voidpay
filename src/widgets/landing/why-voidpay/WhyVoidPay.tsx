@@ -12,7 +12,7 @@ import { useHydrated } from '@/shared/lib'
 import { cn } from '@/shared/lib/utils'
 import { Heading, Text } from '@/shared/ui'
 import { motion } from '@/shared/ui/motion'
-import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
+import { useReducedMotion } from '@/shared/ui'
 
 import { FEATURE_CARDS } from '../constants/features'
 

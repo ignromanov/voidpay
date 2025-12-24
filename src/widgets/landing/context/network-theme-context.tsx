@@ -10,7 +10,7 @@
 
 import { createContext, useContext, useState, useCallback, useMemo } from 'react'
 import type { ReactNode } from 'react'
-import type { NetworkTheme } from '@/shared/ui/constants/brand-tokens'
+import type { NetworkTheme } from '@/shared/ui'
 
 type NetworkThemeContextValue = {
   theme: NetworkTheme

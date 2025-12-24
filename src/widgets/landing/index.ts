@@ -21,3 +21,6 @@ export { useInterval } from './hooks/use-interval'
 
 // Types
 export type { DemoInvoice, DemoLineItem, FeatureCard, NetworkBadge, WorkflowStep } from './types'
+
+// Constants
+export { FAQ_ITEMS } from './constants/faq'
