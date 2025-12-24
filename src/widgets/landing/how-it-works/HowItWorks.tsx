@@ -4,16 +4,11 @@
  * User Story: US3 (Feature Discovery & Trust Building)
  */
 
-'use client'
-
 import type { SVGProps } from 'react'
 
 import { ArrowRight } from 'lucide-react'
 
-import { useHydrated } from '@/shared/lib'
 import { Heading, Text } from '@/shared/ui'
-import { motion } from '@/shared/ui/motion'
-import { useReducedMotion } from '@/shared/ui'
 
 import { WORKFLOW_STEPS } from '../constants/features'
 
@@ -30,18 +25,8 @@ function TimelineStep({
   description: string
   isLast: boolean
 }) {
-  const prefersReducedMotion = useReducedMotion()
-  const hydrated = useHydrated()
-  const shouldAnimate = hydrated && !prefersReducedMotion
-
   return (
-    <motion.div
-      initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: step * 0.15 }}
-      className="relative flex flex-col items-center text-center md:flex-1"
-    >
+    <div className="relative flex flex-col items-center text-center md:flex-1">
       {/* Step number + Icon */}
       <div className="relative mb-6">
         <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-violet-500/30 bg-violet-600/10 shadow-lg shadow-violet-900/10">
@@ -69,7 +54,7 @@ function TimelineStep({
           <ArrowRight className="h-6 w-6 text-zinc-600" aria-hidden="true" />
         </div>
       )}
-    </motion.div>
+    </div>
   )
 }
 

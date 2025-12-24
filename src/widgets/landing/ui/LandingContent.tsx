@@ -122,6 +122,40 @@ function LazyBelowFold() {
 }
 
 export function LandingContent() {
+  // Preload bundles after initial paint for smoother scrolling
+  useEffect(() => {
+    // Use requestIdleCallback for preloading (setTimeout fallback for Safari)
+    const preload = () => {
+      // Preload below-fold sections bundle
+      import('./BelowFoldSections').catch(() => {
+        // Silent - just a preload, actual error handling in LazyBelowFold
+      })
+
+      // Prefetch /create route (main CTA destination)
+      if ('connection' in navigator) {
+        const connection = navigator.connection as { saveData?: boolean }
+        // Skip prefetch on slow connections or data saver mode
+        if (connection?.saveData) return
+      }
+
+      // Use link prefetch for route (works with Next.js)
+      const link = document.createElement('link')
+      link.rel = 'prefetch'
+      link.href = '/create'
+      link.as = 'document'
+      document.head.appendChild(link)
+    }
+
+    // requestIdleCallback with 2s timeout (fallback to setTimeout for Safari)
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(preload, { timeout: 2000 })
+      return () => window.cancelIdleCallback(id)
+    } else {
+      const id = setTimeout(preload, 100)
+      return () => clearTimeout(id)
+    }
+  }, [])
+
   return (
     <NetworkThemeProvider defaultTheme="ethereum">
       {/* Static background - immediate, no motion (z-0) */}

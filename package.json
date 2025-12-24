@@ -78,6 +78,7 @@
     "lz-string": "^1.0.0",
     "next": "^15.5.8",
     "next-sitemap": "^4.2.3",
+    "pixi.js": "^8.14.3",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.4",
     "react-dom": "^19.1.4",

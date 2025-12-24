@@ -22,6 +22,10 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'VoidPay',
   description: 'Stateless Invoicing Platform',
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({

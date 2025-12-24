@@ -4,20 +4,16 @@
  * Research: Qualitative proof > quantitative for early-stage
  *
  * Performance: Uses CSS animations instead of Framer Motion for LCP optimization.
- * Animation triggers on scroll via CSS (no JS Intersection Observer needed).
+ * Reduced motion is handled via @media (prefers-reduced-motion) in CSS.
  */
-
-'use client'
 
 import type { ComponentType, SVGProps } from 'react'
 
-import { cn, useHydrated } from '@/shared/lib'
 import {
   GithubIcon,
   GlobeIcon,
   LockIcon,
   ServerOffIcon,
-  useReducedMotion,
 } from '@/shared/ui'
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement> & { size?: number | string }>
@@ -85,21 +81,9 @@ function TrustBadge({ icon: Icon, label, description, href }: TrustBadgeData) {
 }
 
 export function SocialProofStrip() {
-  const prefersReducedMotion = useReducedMotion()
-  const hydrated = useHydrated()
-
-  // Only animate after hydration to prevent SSR mismatch
-  // Uses CSS animation with longer delay (0.6s) since this is below hero
-  const shouldAnimate = hydrated && !prefersReducedMotion
-
   return (
     <section className="relative border-y border-zinc-800/50 bg-zinc-900/30 px-6 py-8 backdrop-blur-sm">
-      <div
-        className={cn(
-          'mx-auto max-w-5xl',
-          shouldAnimate && 'hero-animate-social-proof'
-        )}
-      >
+      <div className="hero-animate-social-proof mx-auto max-w-5xl">
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
           {TRUST_BADGES.map((badge) => (
             <TrustBadge key={badge.label} {...badge} />

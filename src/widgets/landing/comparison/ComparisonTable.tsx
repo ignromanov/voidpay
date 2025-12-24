@@ -4,14 +4,9 @@
  * Research: Honest comparison builds trust (23% conversion lift)
  */
 
-'use client'
-
 import { Check, X, Minus } from 'lucide-react'
 
-import { useHydrated } from '@/shared/lib'
 import { Heading, Text } from '@/shared/ui'
-import { motion } from '@/shared/ui/motion'
-import { useReducedMotion } from '@/shared/ui'
 
 type ComparisonValue = 'yes' | 'no' | 'partial' | string
 
@@ -93,19 +88,9 @@ function ValueCell({ value }: { value: ComparisonValue }) {
 }
 
 export function ComparisonTable() {
-  const prefersReducedMotion = useReducedMotion()
-  const hydrated = useHydrated()
-  const shouldAnimate = hydrated && !prefersReducedMotion
-
   return (
     <section className="relative border-t border-zinc-900 bg-zinc-950/10 px-6 py-32 backdrop-blur-sm">
-      <motion.div
-        initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-        className="mx-auto max-w-4xl"
-      >
+      <div className="mx-auto max-w-4xl">
         {/* Section header */}
         <div className="mb-16 text-center">
           <Heading variant="h1" as="h2" className="mb-4">
@@ -154,7 +139,7 @@ export function ComparisonTable() {
         <Text variant="small" className="mt-6 text-center text-zinc-500">
           Comparison based on public documentation as of December 2024. Features may vary.
         </Text>
-      </motion.div>
+      </div>
     </section>
   )
 }

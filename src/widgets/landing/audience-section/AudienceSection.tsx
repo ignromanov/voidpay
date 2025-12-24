@@ -4,12 +4,9 @@
  * DAO Diplomat: Target Freelancers, DAOs, and Agencies with specific pain points
  */
 
-'use client'
-
 import { Briefcase, Building2, Users } from 'lucide-react'
 
-import { useHydrated } from '@/shared/lib'
-import { Heading, Text, useReducedMotion } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui'
 
 import { AudienceCard } from './AudienceCard'
 
@@ -44,10 +41,6 @@ const AUDIENCES = [
 ] as const
 
 export function AudienceSection() {
-  const prefersReducedMotion = useReducedMotion()
-  const hydrated = useHydrated()
-  const shouldAnimate = hydrated && !prefersReducedMotion
-
   return (
     <section
       className="relative bg-transparent px-6 py-32"
@@ -75,7 +68,6 @@ export function AudienceSection() {
               headline={audience.headline}
               description={audience.description}
               iconColor={audience.iconColor}
-              shouldAnimate={shouldAnimate}
             />
           ))}
         </div>

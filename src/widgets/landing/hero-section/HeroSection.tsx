@@ -5,30 +5,20 @@
  *
  * Performance: Uses CSS animations instead of Framer Motion for LCP optimization.
  * CSS animations in globals.css: hero-animate-container, hero-animate-badge, etc.
+ * Reduced motion is handled via @media (prefers-reduced-motion) in CSS.
  */
-
-'use client'
 
 import Link from 'next/link'
 
-import { cn, useHydrated } from '@/shared/lib'
 import {
   ArrowRightIcon,
   AuroraText,
   Button,
   Heading,
   Text,
-  useReducedMotion,
 } from '@/shared/ui'
 
 export function HeroSection() {
-  const prefersReducedMotion = useReducedMotion()
-  const hydrated = useHydrated()
-
-  // Only apply animations after hydration to prevent SSR mismatch
-  // CSS animations handle reduced motion via @media (prefers-reduced-motion)
-  const shouldAnimate = hydrated && !prefersReducedMotion
-
   return (
     <section
       className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pb-36 pt-16 text-center md:px-6"
@@ -37,19 +27,9 @@ export function HeroSection() {
       {/* Background glow element */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[min(800px,150vw)] w-[min(800px,150vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-600/10 blur-[120px]" />
 
-      <div
-        className={cn(
-          'relative z-20 mx-auto max-w-5xl space-y-10',
-          shouldAnimate && 'hero-animate-container'
-        )}
-      >
+      <div className="hero-animate-container relative z-20 mx-auto max-w-5xl space-y-10">
         {/* Open Source • Zero Tracking badge */}
-        <div
-          className={cn(
-            'mx-auto inline-flex cursor-default items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/50 px-3 py-1 shadow-lg backdrop-blur transition-colors hover:border-violet-500/50',
-            shouldAnimate && 'hero-animate-badge'
-          )}
-        >
+        <div className="hero-animate-badge mx-auto inline-flex cursor-default items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/50 px-3 py-1 shadow-lg backdrop-blur transition-colors hover:border-violet-500/50">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-500" />
@@ -80,12 +60,7 @@ export function HeroSection() {
         </Text>
 
         {/* CTA */}
-        <div
-          className={cn(
-            'flex flex-col items-center px-4 pt-8',
-            shouldAnimate && 'hero-animate-cta'
-          )}
-        >
+        <div className="hero-animate-cta flex flex-col items-center px-4 pt-8">
           <Link href="/create">
             <Button
               variant="glow"
@@ -103,18 +78,8 @@ export function HeroSection() {
       </div>
 
       {/* Scroll indicator - positioned at bottom of section */}
-      <div
-        className={cn(
-          'absolute bottom-28 left-1/2 z-20 -translate-x-1/2',
-          shouldAnimate && 'hero-animate-scroll'
-        )}
-      >
-        <div
-          className={cn(
-            'flex flex-col items-center gap-2 text-zinc-400',
-            shouldAnimate && 'hero-animate-scroll-bounce'
-          )}
-        >
+      <div className="hero-animate-scroll absolute bottom-28 left-1/2 z-20 -translate-x-1/2">
+        <div className="hero-animate-scroll-bounce flex flex-col items-center gap-2 text-zinc-400">
           <span className="text-xs uppercase tracking-widest">Scroll</span>
           <svg
             width="20"
