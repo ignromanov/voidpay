@@ -9,7 +9,7 @@
 
 import { useChainId } from 'wagmi'
 import { useMemo } from 'react'
-import { isTestnetChain, getChainById } from '../config/chains'
+import { isTestnetChain, getChainById } from '@/shared/config'
 import { cn } from '@/shared/lib/utils'
 
 /**

@@ -7,26 +7,15 @@
  * import { ConnectWalletButton, wagmiConfig } from '@/features/wallet-connect'
  */
 
-// Config exports
-export { wagmiConfig, chains } from './config/wagmi'
-export {
-  MAINNET_CHAINS,
-  TESTNET_CHAINS,
-  getSupportedChains,
-  getChainById,
-  isTestnetChain,
-} from './config/chains'
+// Config exports (from shared)
+export { wagmiConfig, chains, MAINNET_CHAINS, TESTNET_CHAINS, getSupportedChains, getChainById, isTestnetChain } from '@/shared/config'
 export { voidPayTheme, VOIDPAY_ACCENT_COLOR, createVoidPayTheme } from './config/rainbowkit-theme'
 
 // UI exports
 export { ConnectWalletButton, truncateAddress, DefaultConnectButton } from './ui/ConnectButton'
 
-// Lib exports
-export {
-  createCustomTransport,
-  createChainTransport,
-  createTransportsForChains,
-} from './lib/custom-transport'
+// Lib exports (from shared)
+export { createCustomTransport, createChainTransport, createTransportsForChains } from '@/shared/lib'
 export { useNetworkSwitch, canSwitchNetwork } from './lib/network-switch'
 export { detectNetworkMismatch, useNetworkMismatch } from './lib/network-mismatch'
 export {

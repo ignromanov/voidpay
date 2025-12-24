@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { createCustomTransport, createChainTransport } from '../custom-transport'
+import { createCustomTransport, createChainTransport } from '@/shared/lib'
 import type { Chain, HttpTransportConfig } from 'viem'
 
 // Mock the global fetch

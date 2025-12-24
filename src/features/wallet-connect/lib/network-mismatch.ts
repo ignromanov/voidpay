@@ -7,7 +7,7 @@
 
 import { useChainId } from 'wagmi'
 import { useMemo } from 'react'
-import { getChainById } from '../config/chains'
+import { getChainById } from '@/shared/config'
 
 /**
  * Parameters for network mismatch detection
