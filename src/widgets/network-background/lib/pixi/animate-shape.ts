@@ -62,6 +62,16 @@ function animateFadeIn(shape: AnimatedShape, deltaTime: number): boolean {
 }
 
 /**
+ * Calculate mass multiplier - larger shapes move slower
+ * Mass is proportional to size (sizeVh)
+ */
+function getMassMultiplier(sizeVh: number): number {
+  // Gentle scaling: 0.25 -> 1.0, 0.5 -> 1.25, 0.6 -> 1.35
+  // Smaller coefficient for subtler effect
+  return 1 + (sizeVh - 0.25) * 1
+}
+
+/**
  * Animate position oscillation (mirror effect with easeInOut)
  */
 function animatePosition(
@@ -72,8 +82,10 @@ function animatePosition(
   const { data, amplitude, startOffset } = shape
   const { width: vw, height: vh } = viewport
 
-  // Position speed based on duration * multiplier
-  const posSpeed = (2 * Math.PI) / (data.duration * ANIMATION.POSITION_MULTIPLIER)
+  // Position speed based on duration * multiplier * mass
+  // Larger shapes (higher mass) move slower
+  const massMultiplier = getMassMultiplier(data.sizeVh)
+  const posSpeed = (2 * Math.PI) / (data.duration * ANIMATION.POSITION_MULTIPLIER * massMultiplier)
   shape.phase += deltaTime * posSpeed
 
   // sin for mirror effect: oscillates -1 to 1
@@ -98,8 +110,10 @@ function animatePosition(
  * Animate breathing opacity with custom easing
  */
 function animateBreathing(shape: AnimatedShape, deltaTime: number): void {
+  // Apply mass multiplier - larger shapes breathe slower
+  const massMultiplier = getMassMultiplier(shape.data.sizeVh)
   const breathSpeed =
-    (2 * Math.PI) / (shape.data.duration * ANIMATION.BREATHING_MULTIPLIER)
+    (2 * Math.PI) / (shape.data.duration * ANIMATION.BREATHING_MULTIPLIER * massMultiplier)
   shape.breathingPhase += deltaTime * breathSpeed
 
   // Raw breath: 0 to 1 via sin wave

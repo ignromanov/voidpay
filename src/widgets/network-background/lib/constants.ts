@@ -13,9 +13,9 @@ export const ANIMATION = {
   /** Duration of theme transition fade-out (seconds) */
   FADE_OUT_DURATION_S: 0.5,
   /** Multiplier for breathing animation relative to base duration */
-  BREATHING_MULTIPLIER: 1.2,
+  BREATHING_MULTIPLIER: 2.5,
   /** Multiplier for position animation relative to base duration */
-  POSITION_MULTIPLIER: 1.4,
+  POSITION_MULTIPLIER: 3.0,
   /** Base amplitude for large shapes (percentage of viewport) */
   BASE_AMPLITUDE_PERCENT: 12,
   /** Fixed amplitude for small shapes (percentage of viewport) */
