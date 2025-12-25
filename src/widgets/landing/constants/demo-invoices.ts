@@ -56,4 +56,4 @@ export const DEMO_INVOICES: DemoInvoice[] = [
   },
 ]
 
-export const ROTATION_INTERVAL_MS = 15_000 // 15 seconds for better comprehension
+export const ROTATION_INTERVAL_MS = 30_000 // 30 seconds for viewing animations
