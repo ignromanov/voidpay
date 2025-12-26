@@ -1,0 +1,1 @@
+export { SocialProofStrip } from './SocialProofStrip'

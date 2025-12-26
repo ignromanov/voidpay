@@ -7,8 +7,8 @@
 
 import { useCallback } from 'react'
 import { useDebouncedCallback } from 'use-debounce'
-import { useCreatorStore } from '@/entities/creator/model/useCreatorStore'
-import type { InvoiceDraft } from '@/entities/invoice/model/types'
+import { useCreatorStore } from '@/entities/creator'
+import type { InvoiceDraft } from '@/entities/invoice'
 import { AUTO_SAVE_DEBOUNCE_MS } from '@/shared/lib/debounce'
 
 /**

@@ -15,7 +15,7 @@
 import { describe, it, expect } from 'vitest'
 import { encodeInvoice, generateInvoiceUrl } from '../lib/encode'
 import { decodeInvoice } from '../lib/decode'
-import type { InvoiceSchemaV1 } from '@/entities/invoice/model/schema'
+import type { InvoiceSchemaV1 } from '@/entities/invoice'
 
 // Canonical test invoice - represents a real-world invoice with all fields populated
 const createTestInvoiceV1 = (): InvoiceSchemaV1 => ({

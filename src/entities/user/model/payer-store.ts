@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
-import { PaymentReceipt } from '../../invoice/model/types'
-import { STORAGE_KEYS } from '@/shared/config/storage-keys'
+import type { PaymentReceipt } from '@/entities/invoice'
+import { STORAGE_KEYS } from '@/shared/config'
 
 // ============================================================================
 // Types

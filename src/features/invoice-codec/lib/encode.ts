@@ -1,4 +1,4 @@
-import { InvoiceSchemaV1 } from '@/entities/invoice/model/schema'
+import type { InvoiceSchemaV1 } from '@/entities/invoice'
 import { compress } from '@/shared/lib/compression'
 
 /**

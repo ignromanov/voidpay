@@ -1,0 +1,254 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
+<div>
+  <section
+    aria-labelledby="how-it-works-heading"
+    class="relative bg-zinc-950/10 px-6 py-32 backdrop-blur-sm"
+    id="how-it-works"
+  >
+    <div
+      class="mx-auto max-w-5xl space-y-16"
+    >
+      <div
+        class="space-y-4 text-center"
+      >
+        <h2
+          class="text-zinc-100 text-3xl md:text-4xl font-black tracking-tighter"
+          id="how-it-works-heading"
+        >
+          Three Steps to Get Paid
+        </h2>
+        <p
+          class="text-lg md:text-xl leading-relaxed text-zinc-400"
+        >
+          No accounts. No sign-ups. Just invoices.
+        </p>
+      </div>
+      <div
+        class="relative flex flex-col gap-12 md:flex-row md:items-start md:justify-between md:gap-8"
+      >
+        <div
+          class="relative flex flex-col items-center text-center md:flex-1"
+        >
+          <div
+            class="relative mb-6"
+          >
+            <div
+              class="flex h-20 w-20 items-center justify-center rounded-2xl border border-violet-500/30 bg-violet-600/10 shadow-lg shadow-violet-900/10"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-mouse-pointer-click h-10 w-10 text-violet-400"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M14 4.1 12 6"
+                />
+                <path
+                  d="m5.1 8-2.9-.8"
+                />
+                <path
+                  d="m6 12-1.9 2"
+                />
+                <path
+                  d="M7.2 2.2 8 5.1"
+                />
+                <path
+                  d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"
+                />
+              </svg>
+            </div>
+            <span
+              class="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white shadow-lg"
+            >
+              1
+            </span>
+          </div>
+          <h3
+            class="text-zinc-100 font-bold tracking-tight mb-2 text-xl"
+          >
+            Create
+          </h3>
+          <p
+            class="max-w-xs text-sm text-zinc-400"
+          >
+            Add invoice details. Pick network and token.
+          </p>
+          <div
+            class="absolute right-0 top-10 hidden translate-x-1/2 md:block"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-arrow-right h-6 w-6 text-zinc-600"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M5 12h14"
+              />
+              <path
+                d="m12 5 7 7-7 7"
+              />
+            </svg>
+          </div>
+        </div>
+        <div
+          class="relative flex flex-col items-center text-center md:flex-1"
+        >
+          <div
+            class="relative mb-6"
+          >
+            <div
+              class="flex h-20 w-20 items-center justify-center rounded-2xl border border-violet-500/30 bg-violet-600/10 shadow-lg shadow-violet-900/10"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-share2 lucide-share-2 h-10 w-10 text-violet-400"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="18"
+                  cy="5"
+                  r="3"
+                />
+                <circle
+                  cx="6"
+                  cy="12"
+                  r="3"
+                />
+                <circle
+                  cx="18"
+                  cy="19"
+                  r="3"
+                />
+                <line
+                  x1="8.59"
+                  x2="15.42"
+                  y1="13.51"
+                  y2="17.49"
+                />
+                <line
+                  x1="15.41"
+                  x2="8.59"
+                  y1="6.51"
+                  y2="10.49"
+                />
+              </svg>
+            </div>
+            <span
+              class="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white shadow-lg"
+            >
+              2
+            </span>
+          </div>
+          <h3
+            class="text-zinc-100 font-bold tracking-tight mb-2 text-xl"
+          >
+            Share
+          </h3>
+          <p
+            class="max-w-xs text-sm text-zinc-400"
+          >
+            Get a permanent URL. No attachments needed.
+          </p>
+          <div
+            class="absolute right-0 top-10 hidden translate-x-1/2 md:block"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-arrow-right h-6 w-6 text-zinc-600"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M5 12h14"
+              />
+              <path
+                d="m12 5 7 7-7 7"
+              />
+            </svg>
+          </div>
+        </div>
+        <div
+          class="relative flex flex-col items-center text-center md:flex-1"
+        >
+          <div
+            class="relative mb-6"
+          >
+            <div
+              class="flex h-20 w-20 items-center justify-center rounded-2xl border border-violet-500/30 bg-violet-600/10 shadow-lg shadow-violet-900/10"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-wallet h-10 w-10 text-violet-400"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"
+                />
+                <path
+                  d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"
+                />
+              </svg>
+            </div>
+            <span
+              class="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white shadow-lg"
+            >
+              3
+            </span>
+          </div>
+          <h3
+            class="text-zinc-100 font-bold tracking-tight mb-2 text-xl"
+          >
+            Get Paid
+          </h3>
+          <p
+            class="max-w-xs text-sm text-zinc-400"
+          >
+            Client connects wallet and pays. One click.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+`;

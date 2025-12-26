@@ -1,0 +1,11 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /pay?*
+
+# Host
+Host: https://voidpay.xyz
+
+# Sitemaps
+Sitemap: https://voidpay.xyz/sitemap.xml

@@ -1,16 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
+
+// Mock the local wrapper hook directly (VoidLogo imports from ./hooks/use-reduced-motion)
+vi.mock('../hooks/use-reduced-motion', () => ({
+  useReducedMotion: vi.fn(() => false),
+}))
+
+// Import the mocked module to access the mock function
+import { useReducedMotion } from '../hooks/use-reduced-motion'
 import { VoidLogo } from '../void-logo'
 
-/**
- * VoidLogo Component Tests
- *
- * Note: Global mocks for framer-motion and useReducedMotion are defined in vitest.setup.ts.
- * The global mock sets useReducedMotion to return TRUE by default (reduced motion enabled).
- *
- * For tests that need to verify animation behavior (when reduced motion is disabled),
- * we override the mock locally using vi.doMock.
- */
+// Get reference to the mock for test manipulation
+const mockUseReducedMotion = vi.mocked(useReducedMotion)
 
 describe('VoidLogo', () => {
   beforeEach(() => {
@@ -91,20 +92,23 @@ describe('VoidLogo', () => {
       const svg = container.querySelector('svg')
 
       // Should not have pulse animation class
-      expect(svg?.getAttribute('class')).not.toContain('animate-crescent-pulse')
+      expect(svg?.getAttribute('class')).not.toContain('animate-blackhole-pulse')
     })
 
-    /**
-     * Note: This test verifies behavior when animations would normally be enabled.
-     * However, our global mock sets useReducedMotion to TRUE, so animations are
-     * disabled by default. We test the static={false} prop explicitly.
-     */
-    it('should not have animation class when reduced motion is preferred (global mock)', () => {
+    it('should have animation class when static=false', () => {
       const { container } = render(<VoidLogo static={false} />)
       const svg = container.querySelector('svg')
 
-      // Global mock sets useReducedMotion to true, so animation should be disabled
-      expect(svg?.getAttribute('class')).not.toContain('animate-crescent-pulse')
+      // Should have pulse animation class
+      expect(svg?.getAttribute('class')).toContain('animate-blackhole-pulse')
+    })
+
+    it('should have animation by default (static undefined)', () => {
+      const { container } = render(<VoidLogo />)
+      const svg = container.querySelector('svg')
+
+      // Should have pulse animation class by default
+      expect(svg?.getAttribute('class')).toContain('animate-blackhole-pulse')
     })
   })
 
@@ -118,11 +122,11 @@ describe('VoidLogo', () => {
     })
 
     it('should preserve default classes when className provided', () => {
-      const { container } = render(<VoidLogo className="custom-class" static />)
+      const { container } = render(<VoidLogo className="custom-class" />)
       const svg = container.querySelector('svg')
 
-      // Should have custom class, static prevents animation
-      expect(svg?.getAttribute('class')).toContain('custom-class')
+      // Should still have default animation class (if not static)
+      expect(svg?.getAttribute('class')).toContain('animate-blackhole-pulse')
     })
 
     it('should handle empty className', () => {
@@ -177,18 +181,15 @@ describe('VoidLogo', () => {
   })
 
   describe('Accessibility', () => {
-    /**
-     * This test verifies that the component respects reduced motion preference.
-     * The global mock in vitest.setup.ts sets useReducedMotion to TRUE,
-     * so this test passes when animations are correctly disabled.
-     */
-    it('should respect prefers-reduced-motion (enabled by global mock)', () => {
+    it('should respect prefers-reduced-motion', () => {
+      // Configure mock to return true (user prefers reduced motion)
+      mockUseReducedMotion.mockReturnValueOnce(true)
+
       const { container } = render(<VoidLogo />)
       const svg = container.querySelector('svg')
 
-      // Global mock returns true for useReducedMotion
-      // Animation should NOT be present
-      expect(svg?.getAttribute('class')).not.toContain('animate-crescent-pulse')
+      // Should not have animation when reduced motion is preferred
+      expect(svg?.getAttribute('class')).not.toContain('animate-blackhole-pulse')
     })
   })
 })

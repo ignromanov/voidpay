@@ -80,7 +80,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
   </div>
   <button
     aria-label="Remove item"
-    class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
   >
     <svg
       aria-hidden="true"
@@ -195,7 +195,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
   </div>
   <button
     aria-label="Remove item"
-    class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
   >
     <svg
       aria-hidden="true"
@@ -310,7 +310,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
   </div>
   <button
     aria-label="Remove item"
-    class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
   >
     <svg
       aria-hidden="true"

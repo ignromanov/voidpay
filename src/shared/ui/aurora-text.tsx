@@ -1,8 +1,5 @@
-'use client'
-
 import * as React from 'react'
-import { cn } from '@/lib/utils'
-import { useReducedMotion } from './hooks/use-reduced-motion'
+import { cn } from '@/shared/lib/utils'
 
 export interface AuroraTextProps {
   /** Text content or React children */
@@ -18,7 +15,7 @@ export interface AuroraTextProps {
  *
  * Renders text with a cycling violet/indigo/purple gradient and drop shadow.
  * Gradient animates across the text using background-clip-text technique.
- * Respects prefers-reduced-motion accessibility setting.
+ * Respects prefers-reduced-motion via CSS @media query (no hydration issues).
  *
  * @component
  * @example
@@ -38,15 +35,13 @@ export interface AuroraTextProps {
  * ```
  */
 export function AuroraText({ children, className, as: Component = 'span' }: AuroraTextProps) {
-  const prefersReducedMotion = useReducedMotion()
-
   return (
     <Component
       className={cn(
         'inline-block bg-gradient-to-r from-violet-500 via-indigo-500 to-purple-500',
         'bg-[length:200%_auto] bg-clip-text text-transparent',
         'drop-shadow-[0_0_8px_rgba(124,58,237,0.5)]',
-        !prefersReducedMotion && 'animate-aurora',
+        'animate-aurora', // CSS handles reduced motion via @media query
         className
       )}
     >

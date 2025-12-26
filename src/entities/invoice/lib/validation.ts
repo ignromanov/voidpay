@@ -1,10 +1,10 @@
 import { z } from 'zod'
 import { InvoiceSchemaV1 } from '../model/schema'
+import { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
+import { NUMERIC_STRING_REGEX } from './constants'
 
-// Regex for Ethereum address
-export const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/
-// Regex for numeric string (positive, optional decimal)
-const NUMERIC_STRING_REGEX = /^\d+(\.\d+)?$/
+// Re-export for backwards compatibility
+export { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
 
 export const invoiceSchema = z.object({
   v: z.literal(1),

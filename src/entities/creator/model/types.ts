@@ -9,7 +9,7 @@ import type {
   InvoiceDraft,
   InvoiceTemplate,
   CreationHistoryEntry,
-} from '@/entities/invoice/model/types'
+} from '@/entities/invoice'
 
 /**
  * UserPreferences

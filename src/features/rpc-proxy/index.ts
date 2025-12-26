@@ -1,4 +1,6 @@
 // Public API for features/rpc-proxy
+
+// Types
 export type {
   JsonRpcRequest,
   JsonRpcResponse,
@@ -7,6 +9,11 @@ export type {
   ProxyResult,
   RateLimitResult,
 } from './model/types'
+
+// Core proxy functionality
 export { proxyRequest } from './lib/proxy'
 export { loadRpcConfig, validateServerSideOnly } from './lib/config'
-export { checkRateLimit } from './lib/rate-limit'
+export { checkRateLimit, extractIpAddress } from './lib/rate-limit'
+
+// Mock mode (for development/testing)
+export { getMockMode, handleMockRequest, shouldUseMock } from './lib/mock'

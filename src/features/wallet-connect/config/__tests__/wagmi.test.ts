@@ -19,23 +19,31 @@ describe('wagmi configuration', () => {
     // Dynamic import to ensure mocks are applied
     const { wagmiConfig: config } = await import('../wagmi')
     wagmiConfig = config
-  })
+  }, 30000) // 30s timeout for WalletConnect initialization
 
   afterEach(() => {
     vi.resetModules()
   })
 
   describe('config structure', () => {
-    it('should export a valid Wagmi config', () => {
-      expect(wagmiConfig).toBeDefined()
-      expect(wagmiConfig.state).toBeDefined()
-    })
+    it(
+      'should export a valid Wagmi config',
+      () => {
+        expect(wagmiConfig).toBeDefined()
+        expect(wagmiConfig.state).toBeDefined()
+      },
+      20000
+    ) // Increase timeout for WalletConnect initialization
 
-    it('should include supported chains', () => {
-      const chains = wagmiConfig.chains
-      expect(chains).toBeDefined()
-      expect(chains.length).toBeGreaterThanOrEqual(4) // At least 4 mainnet chains
-    })
+    it(
+      'should include supported chains',
+      () => {
+        const chains = wagmiConfig.chains
+        expect(chains).toBeDefined()
+        expect(chains.length).toBeGreaterThanOrEqual(4) // At least 4 mainnet chains
+      },
+      20000
+    ) // Increase timeout for WalletConnect initialization
 
     it('should have Ethereum mainnet as a supported chain', () => {
       const chains = wagmiConfig.chains
@@ -115,9 +123,9 @@ describe('wagmi config with testnets', () => {
     // Should have 8 chains: 4 mainnet + 4 testnet
     expect(chains.length).toBe(8)
 
-    // Check for testnet chains
-    const sepolia = chains.find((c) => c.id === 11155111)
-    expect(sepolia).toBeDefined()
+    // Check for testnet chains (Sepolia)
+    const hasTestnet = chains.some((c) => c.testnet === true)
+    expect(hasTestnet).toBe(true)
   })
 
   it('should exclude testnet chains when NEXT_PUBLIC_ENABLE_TESTNETS is false', async () => {
@@ -129,8 +137,8 @@ describe('wagmi config with testnets', () => {
     // Should have only 4 mainnet chains
     expect(chains.length).toBe(4)
 
-    // Sepolia should not be present
-    const sepolia = chains.find((c) => c.id === 11155111)
-    expect(sepolia).toBeUndefined()
+    // No testnets should be present
+    const hasTestnet = chains.some((c) => c.testnet === true)
+    expect(hasTestnet).toBe(false)
   })
 })

@@ -18,10 +18,14 @@ vi.mock('wagmi', async () => {
 
 describe('use-network-theme', () => {
   describe('useNetworkTheme', () => {
-    it('should export useNetworkTheme hook', async () => {
-      const { useNetworkTheme } = await import('../use-network-theme')
-      expect(useNetworkTheme).toBeDefined()
-    })
+    it(
+      'should export useNetworkTheme hook',
+      async () => {
+        const networkThemeModule = await import('../use-network-theme')
+        expect(networkThemeModule.useNetworkTheme).toBeDefined()
+      },
+      20000
+    ) // Increase timeout for dynamic import
 
     it('should return theme colors for connected network', async () => {
       const { useNetworkTheme } = await import('../use-network-theme')

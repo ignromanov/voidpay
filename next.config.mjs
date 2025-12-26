@@ -20,12 +20,15 @@ const nextConfig = {
 
   // Experimental features for better performance
   experimental: {
-    // Optimize memory usage
+    // Optimize memory usage and tree-shaking for large dependencies
     optimizePackageImports: [
       'lucide-react',
       '@radix-ui/react-dialog',
       '@radix-ui/react-popover',
       '@radix-ui/react-select',
+      'wagmi',
+      'viem',
+      '@rainbow-me/rainbowkit',
     ],
   },
 
@@ -43,6 +46,10 @@ const nextConfig = {
       fs: false,
       net: false,
       tls: false,
+      // Suppress MetaMask SDK React Native import warnings
+      '@react-native-async-storage/async-storage': false,
+      // Suppress WalletConnect pino-pretty import warnings
+      'pino-pretty': false,
     }
 
     return config

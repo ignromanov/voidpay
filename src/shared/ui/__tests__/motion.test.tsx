@@ -1,20 +1,22 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@/shared/test-utils'
-import {
-  motion,
-  AnimatePresence,
-  useAnimation,
-  useMotionValue,
-  useTransform,
-  useSpring,
-  useScroll,
-  useInView,
-  useDragControls,
-  useAnimationControls,
-  useReducedMotion,
-  LayoutGroup,
-  Reorder,
-} from '../motion'
+import { motion, AnimatePresence } from '../motion'
+import { useReducedMotion } from '../hooks/use-reduced-motion'
+
+/**
+ * Motion Exports Tests
+ *
+ * Tests only the minimal set of framer-motion exports that are actually used
+ * in the project. This keeps the bundle size small while ensuring core
+ * animation functionality works correctly.
+ *
+ * Removed exports (not used in codebase):
+ * - useAnimation, useMotionValue, useTransform, useSpring
+ * - useScroll, useInView, useDragControls, useAnimationControls
+ * - LayoutGroup, Reorder
+ *
+ * If you need these, add them back to motion.tsx exports.
+ */
 
 describe('Motion Exports', () => {
   describe('motion component', () => {
@@ -65,92 +67,7 @@ describe('Motion Exports', () => {
     })
   })
 
-  describe('LayoutGroup', () => {
-    it('should export LayoutGroup component', () => {
-      expect(LayoutGroup).toBeDefined()
-    })
-
-    it('should render children inside LayoutGroup', () => {
-      render(
-        <LayoutGroup>
-          <motion.div layout data-testid="layout-child">
-            Layout content
-          </motion.div>
-        </LayoutGroup>
-      )
-
-      expect(screen.getByTestId('layout-child')).toBeInTheDocument()
-    })
-  })
-
-  describe('Reorder', () => {
-    it('should export Reorder components', () => {
-      expect(Reorder).toBeDefined()
-      expect(Reorder.Group).toBeDefined()
-      expect(Reorder.Item).toBeDefined()
-    })
-
-    it('should render Reorder.Group with items', () => {
-      const items = ['Item 1', 'Item 2', 'Item 3']
-
-      render(
-        <Reorder.Group axis="y" values={items} onReorder={() => {}} data-testid="reorder-group">
-          {items.map((item) => (
-            <Reorder.Item key={item} value={item}>
-              {item}
-            </Reorder.Item>
-          ))}
-        </Reorder.Group>
-      )
-
-      expect(screen.getByTestId('reorder-group')).toBeInTheDocument()
-      expect(screen.getByText('Item 1')).toBeInTheDocument()
-      expect(screen.getByText('Item 2')).toBeInTheDocument()
-      expect(screen.getByText('Item 3')).toBeInTheDocument()
-    })
-  })
-
-  describe('Hooks', () => {
-    it('should export useAnimation hook', () => {
-      expect(useAnimation).toBeDefined()
-      expect(typeof useAnimation).toBe('function')
-    })
-
-    it('should export useMotionValue hook', () => {
-      expect(useMotionValue).toBeDefined()
-      expect(typeof useMotionValue).toBe('function')
-    })
-
-    it('should export useTransform hook', () => {
-      expect(useTransform).toBeDefined()
-      expect(typeof useTransform).toBe('function')
-    })
-
-    it('should export useSpring hook', () => {
-      expect(useSpring).toBeDefined()
-      expect(typeof useSpring).toBe('function')
-    })
-
-    it('should export useScroll hook', () => {
-      expect(useScroll).toBeDefined()
-      expect(typeof useScroll).toBe('function')
-    })
-
-    it('should export useInView hook', () => {
-      expect(useInView).toBeDefined()
-      expect(typeof useInView).toBe('function')
-    })
-
-    it('should export useDragControls hook', () => {
-      expect(useDragControls).toBeDefined()
-      expect(typeof useDragControls).toBe('function')
-    })
-
-    it('should export useAnimationControls hook', () => {
-      expect(useAnimationControls).toBeDefined()
-      expect(typeof useAnimationControls).toBe('function')
-    })
-
+  describe('useReducedMotion hook', () => {
     it('should export useReducedMotion hook', () => {
       expect(useReducedMotion).toBeDefined()
       expect(typeof useReducedMotion).toBe('function')

@@ -2,13 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
 import { AuroraText } from '../aurora-text'
 
-/**
- * AuroraText Component Tests
- *
- * Note: Global mock sets useReducedMotion to return TRUE (reduced motion preferred).
- * This means animation classes are disabled by default.
- * Tests verify that the component correctly respects this accessibility setting.
- */
+// Mock useReducedMotion
+vi.mock('framer-motion', async () => {
+  const actual = await vi.importActual('framer-motion')
+  return {
+    ...actual,
+    useReducedMotion: vi.fn(() => false),
+  }
+})
 
 describe('AuroraText', () => {
   beforeEach(() => {
@@ -43,13 +44,11 @@ describe('AuroraText', () => {
       expect(element.className).toContain('bg-clip-text')
     })
 
-    it('should NOT have aurora animation class when reduced motion is preferred', () => {
-      // Global mock sets useReducedMotion = true
+    it('should have aurora animation class', () => {
       const { container } = render(<AuroraText>Animated</AuroraText>)
 
       const element = container.firstChild as HTMLElement
-      // Component correctly disables animation when reduced motion is preferred
-      expect(element.className).not.toContain('animate-aurora')
+      expect(element.className).toContain('animate-aurora')
     })
   })
 
@@ -98,16 +97,15 @@ describe('AuroraText', () => {
       expect(element.className).toContain('font-bold')
     })
 
-    it('should preserve gradient classes when className provided', () => {
+    it('should preserve animation class when className provided', () => {
       const { container } = render(<AuroraText className="custom-class">Text</AuroraText>)
 
       const element = container.firstChild as HTMLElement
+      expect(element.className).toContain('animate-aurora')
       expect(element.className).toContain('custom-class')
-      // Gradient classes should always be present
-      expect(element.className).toContain('bg-clip-text')
     })
 
-    it('should preserve gradient classes with custom className', () => {
+    it('should preserve gradient classes when className provided', () => {
       const { container } = render(<AuroraText className="uppercase">Text</AuroraText>)
 
       const element = container.firstChild as HTMLElement
@@ -116,21 +114,14 @@ describe('AuroraText', () => {
   })
 
   describe('T043-test: Reduced motion (static gradient)', () => {
-    it('should not animate when prefers-reduced-motion is true (global mock)', () => {
-      // Global mock returns true for useReducedMotion
+    it('should always include animate-aurora class (CSS handles reduced-motion)', () => {
+      // AuroraText always includes animate-aurora class
+      // CSS @media (prefers-reduced-motion: reduce) disables the animation
+      // This is the correct approach to avoid React hydration mismatches
       const { container } = render(<AuroraText>Static</AuroraText>)
 
       const element = container.firstChild as HTMLElement
-      expect(element.className).not.toContain('animate-aurora')
-    })
-
-    it('should still have gradient styling without animation', () => {
-      const { container } = render(<AuroraText>Static Gradient</AuroraText>)
-
-      const element = container.firstChild as HTMLElement
-      // Gradient should work even without animation
-      expect(element.className).toContain('bg-clip-text')
-      expect(element.className).toContain('bg-')
+      expect(element.className).toContain('animate-aurora')
     })
   })
 

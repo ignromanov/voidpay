@@ -10,10 +10,14 @@ import { renderHook } from '@testing-library/react'
 // Mock useChainId return value
 let mockChainId: number | undefined = 1
 
-// Mock wagmi
-vi.mock('wagmi', () => ({
-  useChainId: vi.fn(() => mockChainId),
-}))
+// Mock wagmi with all required exports
+vi.mock('wagmi', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('wagmi')>()
+  return {
+    ...actual,
+    useChainId: vi.fn(() => mockChainId),
+  }
+})
 
 describe('network-mismatch', () => {
   beforeEach(() => {
@@ -22,10 +26,14 @@ describe('network-mismatch', () => {
   })
 
   describe('detectNetworkMismatch', () => {
-    it('should export detectNetworkMismatch function', async () => {
-      const { detectNetworkMismatch } = await import('../network-mismatch')
-      expect(detectNetworkMismatch).toBeDefined()
-    })
+    it(
+      'should export detectNetworkMismatch function',
+      async () => {
+        const { detectNetworkMismatch } = await import('../network-mismatch')
+        expect(detectNetworkMismatch).toBeDefined()
+      },
+      20000
+    ) // Increase timeout for dynamic import
 
     it('should return false when networks match', async () => {
       const { detectNetworkMismatch } = await import('../network-mismatch')

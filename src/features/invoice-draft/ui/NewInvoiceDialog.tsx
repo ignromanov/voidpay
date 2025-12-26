@@ -10,7 +10,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useCreatorStore } from '@/entities/creator/model/useCreatorStore'
+import { useCreatorStore } from '@/entities/creator'
 
 interface NewInvoiceDialogProps {
   /**

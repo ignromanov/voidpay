@@ -25,50 +25,47 @@ vi.mock('wagmi', async () => {
   }
 })
 
+// Import the module statically since we've mocked all dependencies
+import { useNetworkSwitch, canSwitchNetwork } from '../network-switch'
+
 describe('network-switch', () => {
   beforeEach(() => {
     mockSwitchChain.mockClear()
   })
 
   describe('useNetworkSwitch', () => {
-    it('should export useNetworkSwitch hook', async () => {
-      const { useNetworkSwitch } = await import('../network-switch')
+    it('should export useNetworkSwitch hook', () => {
       expect(useNetworkSwitch).toBeDefined()
       expect(typeof useNetworkSwitch).toBe('function')
     })
 
-    it('should return switchToChain function', async () => {
-      const { useNetworkSwitch } = await import('../network-switch')
+    it('should return switchToChain function', () => {
       const { result } = renderHook(() => useNetworkSwitch())
 
       expect(result.current.switchToChain).toBeDefined()
       expect(typeof result.current.switchToChain).toBe('function')
     })
 
-    it('should return isSwitching state', async () => {
-      const { useNetworkSwitch } = await import('../network-switch')
+    it('should return isSwitching state', () => {
       const { result } = renderHook(() => useNetworkSwitch())
 
       expect(typeof result.current.isSwitching).toBe('boolean')
     })
 
-    it('should return current chain ID', async () => {
-      const { useNetworkSwitch } = await import('../network-switch')
+    it('should return current chain ID', () => {
       const { result } = renderHook(() => useNetworkSwitch())
 
       expect(result.current.currentChainId).toBeDefined()
       expect(typeof result.current.currentChainId).toBe('number')
     })
 
-    it('should return error state', async () => {
-      const { useNetworkSwitch } = await import('../network-switch')
+    it('should return error state', () => {
       const { result } = renderHook(() => useNetworkSwitch())
 
       expect('error' in result.current).toBe(true)
     })
 
-    it('should call switchChain when switchToChain is called', async () => {
-      const { useNetworkSwitch } = await import('../network-switch')
+    it('should call switchChain when switchToChain is called', () => {
       const { result } = renderHook(() => useNetworkSwitch())
 
       act(() => {
@@ -78,8 +75,7 @@ describe('network-switch', () => {
       expect(mockSwitchChain).toHaveBeenCalledWith({ chainId: 137 })
     })
 
-    it('should return chains array', async () => {
-      const { useNetworkSwitch } = await import('../network-switch')
+    it('should return chains array', () => {
       const { result } = renderHook(() => useNetworkSwitch())
 
       expect(result.current.chains).toBeDefined()
@@ -88,25 +84,21 @@ describe('network-switch', () => {
   })
 
   describe('canSwitchNetwork', () => {
-    it('should export canSwitchNetwork utility', async () => {
-      const { canSwitchNetwork } = await import('../network-switch')
+    it('should export canSwitchNetwork utility', () => {
       expect(canSwitchNetwork).toBeDefined()
     })
 
-    it('should return true when connected and no pending transactions', async () => {
-      const { canSwitchNetwork } = await import('../network-switch')
+    it('should return true when connected and no pending transactions', () => {
       const result = canSwitchNetwork({ isConnected: true, hasPendingTx: false })
       expect(result).toBe(true)
     })
 
-    it('should return false when not connected', async () => {
-      const { canSwitchNetwork } = await import('../network-switch')
+    it('should return false when not connected', () => {
       const result = canSwitchNetwork({ isConnected: false, hasPendingTx: false })
       expect(result).toBe(false)
     })
 
-    it('should return false when there are pending transactions', async () => {
-      const { canSwitchNetwork } = await import('../network-switch')
+    it('should return false when there are pending transactions', () => {
       const result = canSwitchNetwork({ isConnected: true, hasPendingTx: true })
       expect(result).toBe(false)
     })

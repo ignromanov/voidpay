@@ -1,12 +1,12 @@
 'use client'
 
-import { useReducedMotion as useFramerReducedMotion } from 'framer-motion'
+import { useState, useEffect } from 'react'
 
 /**
  * Hook to detect user's reduced motion preference
  *
- * Wraps Framer Motion's useReducedMotion hook for consistent usage
- * across all brand components. Respects system accessibility settings.
+ * Pure JavaScript implementation without Framer Motion dependency.
+ * Uses window.matchMedia to detect prefers-reduced-motion media query.
  *
  * @returns {boolean} true if user prefers reduced motion, false otherwise
  *
@@ -26,9 +26,26 @@ import { useReducedMotion as useFramerReducedMotion } from 'framer-motion'
  * }
  * ```
  *
- * @see https://www.framer.com/motion/use-reduced-motion/
  * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion
  */
 export function useReducedMotion(): boolean {
-  return useFramerReducedMotion() ?? false
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+
+  useEffect(() => {
+    // SSR-safe check for window
+    if (typeof window === 'undefined') return
+
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReducedMotion(mediaQuery.matches)
+
+    // Listen for changes (user can toggle system preference)
+    const handler = (event: MediaQueryListEvent) => {
+      setPrefersReducedMotion(event.matches)
+    }
+
+    mediaQuery.addEventListener('change', handler)
+    return () => mediaQuery.removeEventListener('change', handler)
+  }, [])
+
+  return prefersReducedMotion
 }

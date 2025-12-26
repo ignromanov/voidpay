@@ -13,7 +13,7 @@ import {
   getChainById,
   getSupportedChains,
   isTestnetChain,
-} from '../chains'
+} from '@/shared/config'
 
 describe('chains configuration', () => {
   describe('MAINNET_CHAINS', () => {
@@ -181,26 +181,26 @@ describe('chains configuration', () => {
 
   describe('getChainName', () => {
     it('should return chain name for known chains', async () => {
-      const { getChainName } = await import('../chains')
+      const { getChainName } = await import('@/shared/config')
       expect(getChainName(1)).toBe('Ethereum')
       expect(getChainName(137)).toBe('Polygon')
     })
 
     it('should return "Unknown" for unknown chain IDs', async () => {
-      const { getChainName } = await import('../chains')
+      const { getChainName } = await import('@/shared/config')
       expect(getChainName(999999)).toBe('Unknown')
     })
   })
 
   describe('getBlockExplorerUrl', () => {
     it('should return block explorer URL for known chains', async () => {
-      const { getBlockExplorerUrl } = await import('../chains')
+      const { getBlockExplorerUrl } = await import('@/shared/config')
       const ethUrl = getBlockExplorerUrl(1)
       expect(ethUrl).toContain('etherscan')
     })
 
     it('should return undefined for unknown chain IDs', async () => {
-      const { getBlockExplorerUrl } = await import('../chains')
+      const { getBlockExplorerUrl } = await import('@/shared/config')
       expect(getBlockExplorerUrl(999999)).toBeUndefined()
     })
   })

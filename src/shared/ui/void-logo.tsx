@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { cn, useHydrated } from '@/shared/lib'
 import { type SizePreset, getSizeValue } from './constants/brand-tokens'
 import { useReducedMotion } from './hooks/use-reduced-motion'
 
@@ -18,7 +18,7 @@ const MIN_SIZE = 16
 /**
  * VoidPay brand logo component
  *
- * Renders an SVG logo with eclipse body, crescent mask, and violet glow effect.
+ * Renders an SVG logo as a black hole with subtle violet glow effect.
  * Includes optional pulse animation that respects prefers-reduced-motion.
  *
  * @component
@@ -36,6 +36,7 @@ const MIN_SIZE = 16
  */
 export function VoidLogo({ className, size = 'md', static: isStatic = false }: VoidLogoProps) {
   const prefersReducedMotion = useReducedMotion()
+  const hydrated = useHydrated()
 
   // Calculate numeric size from preset or direct number
   let numericSize: number
@@ -46,8 +47,8 @@ export function VoidLogo({ className, size = 'md', static: isStatic = false }: V
     numericSize = getSizeValue(size)
   }
 
-  // Determine if animation should be applied
-  const shouldAnimate = !isStatic && !prefersReducedMotion
+  // Determine if animation should be applied (only after hydration)
+  const shouldAnimate = hydrated && !isStatic && !prefersReducedMotion
 
   return (
     <svg
@@ -58,32 +59,47 @@ export function VoidLogo({ className, size = 'md', static: isStatic = false }: V
       xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label="VoidPay Logo"
-      className={cn('relative', shouldAnimate && 'animate-crescent-pulse', className)}
+      className={cn('relative', shouldAnimate && 'animate-blackhole-pulse', className)}
     >
       <defs>
-        {/* Radial gradient for glow effect */}
-        <radialGradient id="void-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.8" />
-          <stop offset="50%" stopColor="#7C3AED" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="#7C3AED" stopOpacity="0" />
-        </radialGradient>
-
-        {/* Crescent mask for void effect */}
-        <mask id="void-mask">
-          <rect width="100" height="100" fill="white" />
-          {/* Offset circle to create crescent */}
-          <circle cx="60" cy="50" r="35" fill="black" />
-        </mask>
+        {/* Subtle glow filter */}
+        <filter id="subtle-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
 
-      {/* Glow layer */}
-      <circle cx="50" cy="50" r="45" fill="url(#void-glow)" className="opacity-60" />
+      {/* Тонкое свечение контура — фирменный violet */}
+      <circle
+        cx="50"
+        cy="50"
+        r="34"
+        fill="none"
+        stroke="#7C3AED"
+        strokeWidth="1"
+        opacity="0.4"
+        filter="url(#subtle-glow)"
+      />
 
-      {/* Eclipse body with crescent mask */}
-      <circle cx="50" cy="50" r="40" fill="#7C3AED" mask="url(#void-mask)" />
+      {/* Основной контур — тонкий, subtle */}
+      <circle
+        cx="50"
+        cy="50"
+        r="32"
+        fill="none"
+        stroke="#7C3AED"
+        strokeWidth="1.5"
+        opacity="0.7"
+      />
 
-      {/* Event horizon ring */}
-      <circle cx="50" cy="50" r="40" fill="none" stroke="#A78BFA" strokeWidth="1" opacity="0.5" />
+      {/* Void core - absolute black */}
+      <circle cx="50" cy="50" r="31" fill="#09090B" />
+
+      {/* Deep center */}
+      <circle cx="50" cy="50" r="22" fill="#000000" />
     </svg>
   )
 }

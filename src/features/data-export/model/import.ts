@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { useCreatorStore } from '@/entities/creator/model/useCreatorStore'
-import { usePayerStore } from '@/entities/user/model/payer-store'
+import { useCreatorStore } from '@/entities/creator'
+import { usePayerStore } from '@/entities/user'
 import { ExportDataV1 } from './export'
 
 // Validation schema for import data

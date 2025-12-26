@@ -1,0 +1,159 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`WhyVoidPay > T023-test: Snapshot > should match snapshot 1`] = `
+<div>
+  <section
+    aria-labelledby="why-voidpay-heading"
+    class="relative bg-transparent px-6 py-32"
+  >
+    <div
+      class="mx-auto max-w-6xl"
+    >
+      <div
+        class="mb-16 text-center"
+      >
+        <h2
+          class="text-zinc-100 text-3xl md:text-4xl font-black tracking-tighter mb-4"
+          id="why-voidpay-heading"
+        >
+          Why VoidPay?
+        </h2>
+        <p
+          class="text-lg md:text-xl leading-relaxed mx-auto max-w-2xl text-zinc-400"
+        >
+          Built for freelancers, DAOs, and agencies who demand privacy and speed.
+        </p>
+      </div>
+      <div
+        class="grid grid-cols-1 gap-6 md:grid-cols-3"
+      >
+        <div
+          class="group rounded-3xl border border-violet-500/20 bg-gradient-to-b from-zinc-900/80 to-zinc-950/80 p-10 backdrop-blur-sm transition-all hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-900/10"
+        >
+          <div
+            class="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-900 shadow-lg transition-transform group-hover:scale-110"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-database h-8 w-8 text-violet-500"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <ellipse
+                cx="12"
+                cy="5"
+                rx="9"
+                ry="3"
+              />
+              <path
+                d="M3 5V19A9 3 0 0 0 21 19V5"
+              />
+              <path
+                d="M3 12A9 3 0 0 0 21 12"
+              />
+            </svg>
+          </div>
+          <h3
+            class="text-zinc-100 font-bold tracking-tight mb-4 text-2xl"
+          >
+            Zero Storage, Zero Risk
+          </h3>
+          <p
+            class="text-lg md:text-xl leading-relaxed text-zinc-400"
+          >
+            If we get hacked, there's nothing to steal. Your invoice data exists only in your URL.
+          </p>
+        </div>
+        <div
+          class="group rounded-3xl border border-violet-500/20 bg-gradient-to-b from-zinc-900/80 to-zinc-950/80 p-10 backdrop-blur-sm transition-all hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-900/10"
+        >
+          <div
+            class="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-900 shadow-lg transition-transform group-hover:scale-110"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-zap h-8 w-8 text-yellow-500"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"
+              />
+            </svg>
+          </div>
+          <h3
+            class="text-zinc-100 font-bold tracking-tight mb-4 text-2xl"
+          >
+            One-Click Payments
+          </h3>
+          <p
+            class="text-lg md:text-xl leading-relaxed text-zinc-400"
+          >
+            Your client opens the link, connects wallet, pays. No sign-up for either party.
+          </p>
+        </div>
+        <div
+          class="group rounded-3xl border border-violet-500/20 bg-gradient-to-b from-zinc-900/80 to-zinc-950/80 p-10 backdrop-blur-sm transition-all hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-900/10"
+        >
+          <div
+            class="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-900 shadow-lg transition-transform group-hover:scale-110"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-earth h-8 w-8 text-cyan-500"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M21.54 15H17a2 2 0 0 0-2 2v4.54"
+              />
+              <path
+                d="M7 3.34V5a3 3 0 0 0 3 3a2 2 0 0 1 2 2c0 1.1.9 2 2 2a2 2 0 0 0 2-2c0-1.1.9-2 2-2h3.17"
+              />
+              <path
+                d="M11 21.95V18a2 2 0 0 0-2-2a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05"
+              />
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+              />
+            </svg>
+          </div>
+          <h3
+            class="text-zinc-100 font-bold tracking-tight mb-4 text-2xl"
+          >
+            Multi-Chain Native
+          </h3>
+          <p
+            class="text-lg md:text-xl leading-relaxed text-zinc-400"
+          >
+            Ethereum, Arbitrum, Optimism, Polygon. The UI vibes with your network.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+`;
