@@ -1,19 +1,18 @@
 'use client'
 
 /**
- * Application Providers Re-export
+ * Application Providers
  *
- * @deprecated Import from '@/shared/providers' instead
- *
- * This file re-exports Web3Provider from shared for backward compatibility.
- * All new code should import directly from shared.
+ * Re-exports Web3Provider from the wallet-connect feature.
+ * This file is dynamically imported by lazy-web3-provider.tsx
+ * to enable lazy loading of the Web3 stack.
  */
 
-export { Web3Provider } from '@/shared/providers'
+export { Web3Provider } from '@/features/wallet-connect'
 
 /**
  * Providers - Alias for Web3Provider
  *
- * Used in layout.tsx for consistent naming.
+ * Used for consistent naming in lazy loading.
  */
-export { Web3Provider as Providers } from '@/shared/providers'
+export { Web3Provider as Providers } from '@/features/wallet-connect'

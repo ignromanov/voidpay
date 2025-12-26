@@ -1,6 +1,10 @@
 /**
  * Wagmi Configuration for VoidPay
  *
+ * Feature-level configuration for Web3 wallet connectivity.
+ * Placed in features/wallet-connect per FSD - this is the feature
+ * responsible for wallet interaction.
+ *
  * Configures Wagmi with:
  * - Custom transport routing to /api/rpc (Constitutional Principle VI)
  * - LocalStorage persistence via createStorage
@@ -11,8 +15,8 @@
 
 import { createStorage } from 'wagmi'
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
-import { getSupportedChains, ALL_CHAIN_IDS } from './chains'
-import { createTransportsForChains } from '../lib/custom-transport'
+import { getSupportedChains, ALL_CHAIN_IDS } from '@/shared/config'
+import { createTransportsForChains } from '@/shared/lib'
 
 /**
  * WalletConnect Project ID from environment

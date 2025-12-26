@@ -17,7 +17,7 @@ describe('wagmi configuration', () => {
 
   beforeEach(async () => {
     // Dynamic import to ensure mocks are applied
-    const { wagmiConfig: config } = await import('@/shared/config')
+    const { wagmiConfig: config } = await import('../wagmi')
     wagmiConfig = config
   }, 30000) // 30s timeout for WalletConnect initialization
 
@@ -117,28 +117,28 @@ describe('wagmi config with testnets', () => {
     vi.stubEnv('NEXT_PUBLIC_ENABLE_TESTNETS', 'true')
 
     // Re-import with new env
-    const { wagmiConfig: config } = await import('@/shared/config')
+    const { wagmiConfig: config } = await import('../wagmi')
 
     const chains = config.chains
     // Should have 8 chains: 4 mainnet + 4 testnet
     expect(chains.length).toBe(8)
 
     // Check for testnet chains (Sepolia)
-    const hasTestnet = chains.some((c) => c.testnet)
+    const hasTestnet = chains.some((c) => c.testnet === true)
     expect(hasTestnet).toBe(true)
   })
 
   it('should exclude testnet chains when NEXT_PUBLIC_ENABLE_TESTNETS is false', async () => {
     vi.stubEnv('NEXT_PUBLIC_ENABLE_TESTNETS', 'false')
 
-    const { wagmiConfig: config } = await import('@/shared/config')
+    const { wagmiConfig: config } = await import('../wagmi')
 
     const chains = config.chains
     // Should have only 4 mainnet chains
     expect(chains.length).toBe(4)
 
     // No testnets should be present
-    const hasTestnet = chains.some((c) => c.testnet)
+    const hasTestnet = chains.some((c) => c.testnet === true)
     expect(hasTestnet).toBe(false)
   })
 })

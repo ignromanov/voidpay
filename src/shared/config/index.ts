@@ -1,7 +1,12 @@
 /**
  * Shared Config - Public API
  *
- * Exports all configuration modules for the application.
+ * Exports configuration modules for the application.
+ *
+ * IMPORTANT: Web3-related configs (wagmi, rainbowkit) are NOT exported here
+ * to avoid side effects during SSR/build. They belong to features/wallet-connect:
+ * - import { wagmiConfig } from '@/features/wallet-connect/config/wagmi'
+ * - import { voidPayTheme } from '@/features/wallet-connect/config/rainbowkit-theme'
  */
 
 // Environment configuration
@@ -29,8 +34,8 @@ export {
   getBlockExplorerUrl,
 } from './chains'
 
-// Wagmi configuration
-export { wagmiConfig, config, chains } from './wagmi'
-
-// RainbowKit theme
-export { voidPayTheme } from './rainbowkit-theme'
+// NOTE: wagmiConfig and voidPayTheme are intentionally NOT exported here.
+// They trigger RainbowKit initialization which requires browser environment.
+// These configs belong to features/wallet-connect - import directly from:
+// - '@/features/wallet-connect/config/wagmi'
+// - '@/features/wallet-connect/config/rainbowkit-theme'

@@ -3,12 +3,19 @@
  *
  * Exports for the wallet-connect feature (FSD structure).
  *
+ * IMPORTANT: wagmiConfig and chains are NOT exported from this barrel file
+ * to avoid SSR side effects. Import them directly when needed:
+ * - import { wagmiConfig, chains } from '@/features/wallet-connect/config/wagmi'
+ *
  * @example
- * import { ConnectWalletButton, wagmiConfig } from '@/features/wallet-connect'
+ * import { ConnectWalletButton, Web3Provider } from '@/features/wallet-connect'
  */
 
-// Config exports (from shared)
-export { wagmiConfig, chains, MAINNET_CHAINS, TESTNET_CHAINS, getSupportedChains, getChainById, isTestnetChain } from '@/shared/config'
+// Provider exports (lazy-loaded)
+export { Web3Provider, Web3ScopeProvider, useWeb3Scope, withWeb3Scope } from './providers'
+
+// Config exports (safe for SSR)
+export { MAINNET_CHAINS, TESTNET_CHAINS, getSupportedChains, getChainById, isTestnetChain } from '@/shared/config'
 export { voidPayTheme, VOIDPAY_ACCENT_COLOR, createVoidPayTheme } from './config/rainbowkit-theme'
 
 // UI exports

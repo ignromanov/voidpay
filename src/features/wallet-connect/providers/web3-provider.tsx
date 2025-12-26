@@ -3,6 +3,10 @@
 /**
  * Web3Provider - Core Web3 provider stack
  *
+ * Feature-level provider for Web3 functionality.
+ * Placed in features/wallet-connect per FSD - this feature owns
+ * all wallet connectivity and Web3 context.
+ *
  * Sets up the React context providers for Web3 functionality:
  * - WagmiProvider: Ethereum wallet connection and state
  * - QueryClientProvider: React Query for async state management
@@ -20,8 +24,8 @@ import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 // RainbowKit styles - loaded on-demand with Web3Provider
 import '@rainbow-me/rainbowkit/styles.css'
 
-import { config } from '@/shared/config/wagmi'
-import { voidPayTheme } from '@/shared/config/rainbowkit-theme'
+import { wagmiConfig } from '../config/wagmi'
+import { voidPayTheme } from '../config/rainbowkit-theme'
 
 /**
  * QueryClient instance for React Query
@@ -55,7 +59,7 @@ type Web3ProviderProps = {
  */
 export function Web3Provider({ children }: Web3ProviderProps) {
   return (
-    <WagmiProvider config={config}>
+    <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={voidPayTheme} locale="en">
           {children}
