@@ -104,11 +104,6 @@ export { AuroraText, type AuroraTextProps } from './aurora-text'
 // HyperText (feature: 011-brand-visual-components)
 export { HyperText, type HyperTextProps } from './hyper-text'
 
-// NetworkBackground - NOT exported from barrel to prevent Framer Motion bundle inclusion
-// Use direct imports instead:
-// - import { NetworkBackground } from '@/widgets/network-background' (recommended)
-// - import { NetworkBackground } from '@/shared/ui/network-background' (direct)
-
 // WalletButton - NOT exported from barrel to prevent Web3 bundle inclusion
 // Use direct imports instead:
 // - import { LazyWalletButton } from '@/shared/ui/wallet-button-lazy' (recommended)
