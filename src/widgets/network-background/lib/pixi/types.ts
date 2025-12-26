@@ -13,9 +13,9 @@ export interface AnimatedShape {
   phase: number
   /** Current phase in breathing animation (radians) */
   breathingPhase: number
-  /** Center offset for position oscillation (pixels) */
-  startOffset: number
-  /** Oscillation amplitude (pixels) */
+  /** Starting X position for oscillation (pixels) */
+  startX: number
+  /** Oscillation amplitude (pixels) — shape moves from startX to startX+amplitude */
   amplitude: number
   /** Fade-in animation progress (0 to 1+) */
   fadeInProgress: number
@@ -51,9 +51,9 @@ export interface ShapeDimensions {
  * Animation parameters for a shape
  */
 export interface AnimationParams {
-  /** Center position for oscillation */
-  centerX: number
-  /** Bounded amplitude for oscillation */
+  /** Starting X position for oscillation */
+  startX: number
+  /** Amplitude for oscillation (shape moves from startX to startX+amplitude) */
   amplitude: number
   /** Vertical position */
   yPos: number

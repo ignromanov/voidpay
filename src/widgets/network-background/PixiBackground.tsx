@@ -8,7 +8,7 @@ import { NETWORK_THEMES, type NetworkTheme } from '@/shared/ui/constants/brand-t
 import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
 
 import {
-  ANIMATION,
+  ANIMATION_DEFAULTS,
   PIXI_CONFIG,
   BREAKPOINTS,
   generateShapes,
@@ -41,13 +41,13 @@ function useDeferredAnimation(): boolean {
   useEffect(() => {
     if ('requestIdleCallback' in window) {
       const idleId = requestIdleCallback(() => setShouldAnimate(true), {
-        timeout: ANIMATION.IDLE_CALLBACK_TIMEOUT_MS,
+        timeout: ANIMATION_DEFAULTS.IDLE_CALLBACK_TIMEOUT_MS,
       })
       return () => cancelIdleCallback(idleId)
     } else {
       const timeoutId = setTimeout(
         () => setShouldAnimate(true),
-        ANIMATION.SAFARI_FALLBACK_TIMEOUT_MS
+        ANIMATION_DEFAULTS.SAFARI_FALLBACK_TIMEOUT_MS
       )
       return () => clearTimeout(timeoutId)
     }

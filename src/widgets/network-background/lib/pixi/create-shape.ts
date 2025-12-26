@@ -4,9 +4,6 @@ import type { AnimatedShape, Viewport, ShapeDimensions, AnimationParams } from '
 import {
   SHAPE_ASPECT_RATIOS,
   SVG_VIEWBOX_SIZES,
-  BLUR,
-  ANIMATION,
-  POSITION,
 } from '../constants'
 import { generateSvg } from '../svg-generators'
 
@@ -30,8 +27,11 @@ export function calculateShapeDimensions(
 }
 
 /**
- * Calculate animation parameters with boundary constraints
- * Ensures at least 50% of shape remains visible at oscillation extremes
+ * Calculate animation parameters using shape-specific startPercent and amplitudePercent
+ * Movement: from startX toward center by amplitude, then back
+ *
+ * Left zone: starts off-screen left, moves RIGHT toward center
+ * Right zone: starts off-screen right, moves LEFT toward center
  */
 export function calculateAnimationParams(
   data: ShapeData,
@@ -41,40 +41,26 @@ export function calculateAnimationParams(
   const { width } = dimensions
   const { width: vw } = viewport
 
-  // Boundary constraints: at least 50% visible
-  const minX = -width / 2
-  const maxX = vw - width / 2
+  // Calculate amplitude from shape-specific amplitudePercent
+  // Positive for left zone (move right), negative for right zone (move left)
+  const baseAmplitude = (data.amplitudePercent / 100) * vw
+  const amplitude = data.zone === 'left' ? baseAmplitude : -baseAmplitude
 
-  // Calculate base amplitude
-  const isSmall = data.sizeVh < ANIMATION.SMALL_SHAPE_THRESHOLD
-  const amplitudeScale = 1 - data.sizeVh * 0.3
-  const baseAmplitudePercent = isSmall
-    ? ANIMATION.SMALL_AMPLITUDE_PERCENT
-    : ANIMATION.BASE_AMPLITUDE_PERCENT * amplitudeScale
-  let amplitude = (baseAmplitudePercent / 100) * vw
-
-  // Calculate center position based on zone
-  let centerX: number
+  // Calculate start position based on zone and startPercent
+  let startX: number
   if (data.zone === 'left') {
-    const baseCenter = isSmall
-      ? POSITION.LEFT_SMALL_CENTER_PERCENT
-      : POSITION.LEFT_LARGE_CENTER_PERCENT
-    centerX = (baseCenter / 100) * vw
-    // Bound amplitude for left zone
-    const maxAmpLeft = centerX - minX
-    const maxAmpRight = maxX - centerX
-    amplitude = Math.min(amplitude, maxAmpLeft, maxAmpRight)
+    // Left zone: startPercent relative to left edge (negative = off-screen left)
+    // Example: startPercent = -10 → starts at -10% of viewport width
+    startX = (data.startPercent / 100) * vw
   } else {
-    centerX = vw - width + (POSITION.RIGHT_OFFSET_PERCENT / 100) * vw
-    // Bound amplitude for right zone
-    const maxAmpLeft = centerX - minX
-    const maxAmpRight = maxX - centerX
-    amplitude = Math.min(amplitude, maxAmpLeft, maxAmpRight)
+    // Right zone: startPercent is offset beyond right edge (negative = off-screen right)
+    // Example: startPercent = -10 → starts 10% beyond right edge
+    startX = vw - width - (data.startPercent / 100) * vw
   }
 
   const yPos = (data.topPercent / 100) * viewport.height
 
-  return { centerX, amplitude, yPos }
+  return { startX, amplitude, yPos }
 }
 
 /**
@@ -113,20 +99,11 @@ export function createPixiShape(
 
   const graphics = new Graphics(context)
   graphics.scale.set(dimensions.scaleX, dimensions.scaleY)
-  graphics.filters = [new BlurFilter({ strength: BLUR.STRENGTH, quality: BLUR.QUALITY })]
+  // Use shape-specific blur parameters
+  graphics.filters = [new BlurFilter({ strength: data.blurStrength, quality: data.blurQuality })]
 
-  // Calculate start offset (center position relative to zone anchor)
-  const startOffset =
-    data.zone === 'left'
-      ? animParams.centerX
-      : animParams.centerX - (viewport.width - dimensions.width)
-
-  // Set initial position
-  if (data.zone === 'left') {
-    graphics.x = startOffset
-  } else {
-    graphics.x = viewport.width - dimensions.width + startOffset
-  }
+  // Set initial position at startX (shape starts here, animates toward center)
+  graphics.x = animParams.startX
   graphics.y = animParams.yPos
 
   // Start invisible for fade-in
@@ -136,10 +113,9 @@ export function createPixiShape(
     container: graphics,
     data,
     phase: 0,
-    // Start at -π/2 so sin(phase) = -1, giving rawBreath = 0 and alpha = OPACITY_MIN
-    // This ensures smooth transition from fade-in (ends at OPACITY_MIN) to breathing
+    // Start at 0 so (1 - cos(0)) / 2 = 0, shape at startX
     breathingPhase: -Math.PI / 2,
-    startOffset,
+    startX: animParams.startX,
     amplitude: animParams.amplitude,
     fadeInProgress: 0,
     fadeInComplete: false,

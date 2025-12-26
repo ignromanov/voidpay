@@ -1,12 +1,7 @@
 import type { AnimatedShape, Viewport } from './types'
-import {
-  ANIMATION,
-  SHAPE_ASPECT_RATIOS,
-} from '../constants'
+import { ANIMATION_DEFAULTS } from '../constants'
 
-const { OPACITY_MIN, OPACITY_MAX, FADE_IN_DURATION_S, FADE_OUT_DURATION_S, FADE_DELAY_MULTIPLIER } =
-  ANIMATION
-const OPACITY_RANGE = OPACITY_MAX - OPACITY_MIN
+const { FADE_IN_DURATION_S, FADE_OUT_DURATION_S, FADE_DELAY_MULTIPLIER } = ANIMATION_DEFAULTS
 
 /**
  * Animate fade-out for exiting shapes (theme transitions)
@@ -33,7 +28,7 @@ function animateFadeOut(shape: AnimatedShape, deltaTime: number): boolean {
 
 /**
  * Animate fade-in for new shapes
- * Fades to OPACITY_MIN to avoid flash when breathing starts
+ * Fades to shape's opacityMin to avoid flash when breathing starts
  * Returns true when complete
  */
 function animateFadeIn(shape: AnimatedShape, deltaTime: number): boolean {
@@ -50,11 +45,12 @@ function animateFadeIn(shape: AnimatedShape, deltaTime: number): boolean {
   )
   // easeOut curve
   const easedProgress = 1 - Math.pow(1 - fadeProgress, 3)
-  shape.container.alpha = easedProgress * OPACITY_MIN
+  // Use shape-specific opacityMin
+  shape.container.alpha = easedProgress * shape.data.opacityMin
 
   if (fadeProgress >= 1) {
     shape.fadeInComplete = true
-    shape.container.alpha = OPACITY_MIN
+    shape.container.alpha = shape.data.opacityMin
     return true
   }
 
@@ -72,48 +68,45 @@ function getMassMultiplier(sizeVh: number): number {
 }
 
 /**
- * Animate position oscillation (mirror effect with easeInOut)
+ * Animate position with one-directional movement
+ * Shape moves from startX to (startX + amplitude) and back
+ * Uses (1 - cos(phase)) / 2 for smooth 0→1→0 oscillation
  */
 function animatePosition(
   shape: AnimatedShape,
   deltaTime: number,
-  viewport: Viewport
+  _viewport: Viewport
 ): void {
-  const { data, amplitude, startOffset } = shape
-  const { width: vw, height: vh } = viewport
+  const { data, amplitude, startX } = shape
 
-  // Position speed based on duration * multiplier * mass
+  // Position speed based on duration * shape-specific multiplier * mass
   // Larger shapes (higher mass) move slower
   const massMultiplier = getMassMultiplier(data.sizeVh)
-  const posSpeed = (2 * Math.PI) / (data.duration * ANIMATION.POSITION_MULTIPLIER * massMultiplier)
+  const posSpeed = (2 * Math.PI) / (data.duration * data.positionMultiplier * massMultiplier)
   shape.phase += deltaTime * posSpeed
 
-  // sin for mirror effect: oscillates -1 to 1
-  const posProgress = Math.sin(shape.phase)
+  // One-directional oscillation: 0 → 1 → 0
+  // At phase=0: (1 - cos(0)) / 2 = 0 → shape at startX
+  // At phase=π: (1 - cos(π)) / 2 = 1 → shape at startX + amplitude
+  // At phase=2π: (1 - cos(2π)) / 2 = 0 → shape back at startX
+  const posProgress = (1 - Math.cos(shape.phase)) / 2
 
-  // Calculate shape width for right zone positioning
-  const aspectRatio = SHAPE_ASPECT_RATIOS[data.type]
-  const baseSize = Math.min(data.sizeVh * vh, vw * 1.5)
-  const width = aspectRatio >= 1 ? baseSize : baseSize * aspectRatio
-
-  // Apply position based on zone
-  // Both zones move toward center when posProgress > 0
-  if (data.zone === 'left') {
-    shape.container.x = startOffset + posProgress * amplitude
-  } else {
-    // Invert direction so positive posProgress moves LEFT (toward center)
-    shape.container.x = vw - width + startOffset - posProgress * amplitude
-  }
+  // Simple position update: startX already accounts for zone
+  shape.container.x = startX + posProgress * amplitude
 }
 
 /**
  * Animate breathing opacity with custom easing
+ * Uses shape-specific breathingMultiplier and opacity range
  */
 function animateBreathing(shape: AnimatedShape, deltaTime: number): void {
+  const { data } = shape
+
   // Apply mass multiplier - larger shapes breathe slower
-  const massMultiplier = getMassMultiplier(shape.data.sizeVh)
+  const massMultiplier = getMassMultiplier(data.sizeVh)
+  // Use shape-specific breathingMultiplier
   const breathSpeed =
-    (2 * Math.PI) / (shape.data.duration * ANIMATION.BREATHING_MULTIPLIER * massMultiplier)
+    (2 * Math.PI) / (data.duration * data.breathingMultiplier * massMultiplier)
   shape.breathingPhase += deltaTime * breathSpeed
 
   // Raw breath: 0 to 1 via sin wave
@@ -121,7 +114,9 @@ function animateBreathing(shape: AnimatedShape, deltaTime: number): void {
   // Smoothstep-like easing
   const breathProgress = rawBreath * rawBreath * (3 - 2 * rawBreath)
 
-  shape.container.alpha = OPACITY_MIN + breathProgress * OPACITY_RANGE
+  // Use shape-specific opacity range
+  const opacityRange = data.opacityMax - data.opacityMin
+  shape.container.alpha = data.opacityMin + breathProgress * opacityRange
 }
 
 /**
@@ -153,25 +148,19 @@ export function animateShape(
 
 /**
  * Set shape to static position for reduced motion mode
+ * Uses shape-specific opacity range
+ * Position is at startX (beginning of animation track)
  */
 export function setStaticPosition(
   shape: AnimatedShape,
-  viewport: Viewport
+  _viewport: Viewport
 ): void {
-  const staticOpacity = (OPACITY_MIN + OPACITY_MAX) / 2
+  const { data, startX } = shape
+  // Use shape-specific opacity for static position (midpoint of range)
+  const staticOpacity = (data.opacityMin + data.opacityMax) / 2
   shape.container.alpha = staticOpacity
   shape.fadeInComplete = true
 
-  const { data, startOffset } = shape
-  const { width: vw, height: vh } = viewport
-
-  // Set to center of oscillation
-  if (data.zone === 'left') {
-    shape.container.x = startOffset
-  } else {
-    const aspectRatio = SHAPE_ASPECT_RATIOS[data.type]
-    const baseSize = Math.min(data.sizeVh * vh, vw * 1.5)
-    const width = aspectRatio >= 1 ? baseSize : baseSize * aspectRatio
-    shape.container.x = vw - width + startOffset
-  }
+  // Set to start position (startX already accounts for zone)
+  shape.container.x = startX
 }
