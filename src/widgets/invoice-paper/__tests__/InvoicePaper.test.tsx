@@ -26,8 +26,8 @@ describe('InvoicePaper Integration', () => {
     expect(screen.getByText('Bob')).toBeDefined()
     expect(screen.getByText(/BILL TO/i)).toBeDefined()
 
-    // Payment Details
-    expect(screen.getByText(/Payment Details/i)).toBeDefined()
+    // Payment Info section (integrated into totals)
+    expect(screen.getByText(/Payment Info/i)).toBeDefined()
 
     // Items
     expect(screen.getByText('Web Design')).toBeDefined()
