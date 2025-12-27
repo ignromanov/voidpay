@@ -12,33 +12,43 @@ export const Watermark = React.memo<WatermarkProps>(({ status, date }) => {
   const config = {
     paid: {
       text: 'PAID',
-      color: 'text-emerald-500/20',
-      border: 'border-emerald-500/20',
+      color: 'text-emerald-600',
+      border: 'border-emerald-600',
+      dateColor: 'text-emerald-700',
     },
     overdue: {
       text: 'OVERDUE',
-      color: 'text-rose-500/20',
-      border: 'border-rose-500/20',
+      color: 'text-rose-600',
+      border: 'border-rose-600',
+      dateColor: 'text-rose-700',
     },
     draft: {
       text: 'DRAFT',
-      color: 'text-zinc-500/10',
-      border: 'border-zinc-500/10',
+      color: 'text-zinc-400',
+      border: 'border-zinc-400',
+      dateColor: 'text-zinc-500',
     },
   }[status] || {
     text: 'DRAFT',
-    color: 'text-zinc-500/10',
-    border: 'border-zinc-500/10',
+    color: 'text-zinc-400',
+    border: 'border-zinc-400',
+    dateColor: 'text-zinc-500',
   }
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center overflow-hidden">
+    <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center overflow-hidden select-none">
       <div
-        className={`flex -rotate-12 flex-col items-center justify-center rounded-xl border-8 px-12 py-6 opacity-60 mix-blend-multiply ${config.border} ${config.color}`}
+        className={`flex -rotate-12 flex-col items-center justify-center rounded-xl border-[8px] p-6 opacity-15 mix-blend-multiply ${config.border} ${config.color}`}
       >
-        <span className="text-8xl font-black tracking-[0.2em]">{config.text}</span>
+        <span className="mb-2 font-mono text-7xl leading-none font-black tracking-widest">
+          {config.text}
+        </span>
         {date && status === 'paid' && (
-          <span className="mt-2 text-xl font-bold tracking-widest">{date}</span>
+          <span
+            className={`border-t-2 pt-1 font-mono text-xl font-bold tracking-wider ${config.border} ${config.dateColor}`}
+          >
+            {date}
+          </span>
         )}
       </div>
     </div>

@@ -10,8 +10,8 @@ export const PaperFooter = React.memo<PaperFooterProps>(({ notes }) => {
   const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://voidpay.xyz'
 
   return (
-    <footer className="mt-auto border-t border-zinc-100 pt-8">
-      <div className="flex items-start justify-between gap-8">
+    <footer className="mt-12 flex items-end justify-between border-t border-dashed border-zinc-300 pt-6">
+      <div className="flex flex-1 items-end justify-between gap-8">
         <div className="max-w-[500px] flex-1">
           <h4 className="mb-2 text-[10px] font-bold tracking-widest text-zinc-400 uppercase">
             Notes & Terms

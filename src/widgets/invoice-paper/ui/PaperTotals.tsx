@@ -4,11 +4,13 @@ import { Totals } from '../lib/calculate-totals'
 interface PaperTotalsProps {
   totals: Totals
   currency: string
+  taxPercent?: string | undefined
+  discountPercent?: string | undefined
   showMagicDust?: boolean
 }
 
 export const PaperTotals = React.memo<PaperTotalsProps>(
-  ({ totals, currency, showMagicDust = true }) => {
+  ({ totals, currency, taxPercent, discountPercent, showMagicDust = true }) => {
     const formatAmount = (val: number) => {
       return val.toLocaleString('en-US', {
         minimumFractionDigits: 2,
@@ -29,7 +31,7 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
 
             {totals.taxAmount > 0 && (
               <div className="flex justify-between text-sm text-zinc-600">
-                <span>Tax</span>
+                <span>Tax{taxPercent ? ` (${taxPercent})` : ''}</span>
                 <span className="font-mono text-red-800">
                   +{formatAmount(totals.taxAmount)} {currency}
                 </span>
@@ -38,7 +40,7 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
 
             {totals.discountAmount > 0 && (
               <div className="flex justify-between text-sm text-zinc-600">
-                <span>Discount</span>
+                <span>Discount{discountPercent ? ` (${discountPercent})` : ''}</span>
                 <span className="font-mono text-emerald-600">
                   -{formatAmount(totals.discountAmount)} {currency}
                 </span>
