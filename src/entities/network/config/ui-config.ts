@@ -54,3 +54,36 @@ export const NETWORK_CONFIG: NetworkConfig[] = [
     colorClass: 'text-purple-400',
   },
 ]
+
+/**
+ * Network badge variants for each chain
+ */
+export const NETWORK_BADGES: Record<
+  number,
+  { variant: 'default' | 'secondary' | 'outline' | 'destructive' }
+> = {
+  1: { variant: 'secondary' },
+  42161: { variant: 'default' },
+  10: { variant: 'destructive' },
+  137: { variant: 'outline' },
+}
+
+/**
+ * Block explorers for each chain
+ */
+export const BLOCK_EXPLORERS: Record<number, { name: string; url: string }> = {
+  1: { name: 'Etherscan', url: 'https://etherscan.io' },
+  42161: { name: 'Arbiscan', url: 'https://arbiscan.io' },
+  10: { name: 'Optimism Etherscan', url: 'https://optimistic.etherscan.io' },
+  137: { name: 'Polygonscan', url: 'https://polygonscan.com' },
+}
+
+/**
+ * Network-specific shadows for the invoice paper
+ */
+export const NETWORK_SHADOWS: Record<number, string> = {
+  1: 'shadow-indigo-500/20',
+  42161: 'shadow-blue-500/20',
+  10: 'shadow-red-500/20',
+  137: 'shadow-purple-500/20',
+}

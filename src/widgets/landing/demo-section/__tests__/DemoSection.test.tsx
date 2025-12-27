@@ -43,7 +43,10 @@ vi.mock('@/shared/ui', async () => {
       if (asChild) {
         // For asChild with Link, children is the Link element
         // We need to extract the Link's children and href
-        const linkElement = children as React.ReactElement<{ href: string; children: React.ReactNode }>
+        const linkElement = children as React.ReactElement<{
+          href: string
+          children: React.ReactNode
+        }>
         return (
           <a href={linkElement.props.href} {...props}>
             {linkElement.props.children}
@@ -68,7 +71,7 @@ describe('DemoSection', () => {
     it('should render invoice preview card', () => {
       renderWithProviders(<DemoSection />)
 
-      expect(screen.getByText('INVOICE')).toBeInTheDocument()
+      expect(screen.getAllByText(/INVOICE/i)[0]).toBeInTheDocument()
     })
 
     it('should display invoice description', () => {
@@ -87,7 +90,8 @@ describe('DemoSection', () => {
     it('should display total amount with token', () => {
       renderWithProviders(<DemoSection />)
 
-      expect(screen.getByText(/0\.5 ETH/)).toBeInTheDocument()
+      expect(screen.getAllByText(/0\.50/)[0]).toBeInTheDocument()
+      expect(screen.getAllByText(/ETH/)[0]).toBeInTheDocument()
     })
   })
 
@@ -232,7 +236,7 @@ describe('DemoSection', () => {
     it('should display current network badge', () => {
       renderWithProviders(<DemoSection />)
 
-      expect(screen.getByText('Ethereum')).toBeInTheDocument()
+      expect(screen.getAllByText(/Ethereum/i)[0]).toBeInTheDocument()
     })
   })
 

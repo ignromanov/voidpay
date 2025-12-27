@@ -10,13 +10,16 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
 import { useHydrated } from '@/shared/lib'
-import { Button, Card, CardContent, Heading, Text } from '@/shared/ui'
+import { Button, Heading, Text } from '@/shared/ui'
 import { AnimatePresence, motion } from '@/shared/ui/motion'
 import { useReducedMotion } from '@/shared/ui'
 
 import { useNetworkTheme } from '../context/network-theme-context'
 import { DEMO_INVOICES, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
 import { useDemoRotation } from '../hooks/use-demo-rotation'
+import { InvoicePaper } from '@/widgets/invoice-paper'
+import type { InvoiceSchemaV1 } from '@/entities/invoice'
+import type { DemoInvoice } from '../types'
 
 // Invoice paper dimensions (A4 at 96 DPI)
 const INVOICE_WIDTH = 794
@@ -45,6 +48,38 @@ const NETWORK_THEMES = {
     glowTo: 'to-violet-600/40',
   },
 } as const
+
+const NETWORK_NAME_TO_ID: Record<string, number> = {
+  ethereum: 1,
+  arbitrum: 42161,
+  optimism: 10,
+  polygon: 137,
+}
+
+function mapDemoToSchema(demo: DemoInvoice): InvoiceSchemaV1 {
+  return {
+    v: 1,
+    id: demo.id,
+    iss: Math.floor(Date.now() / 1000),
+    due: Math.floor(Date.now() / 1000) + 86400 * 30, // 30 days
+    net: NETWORK_NAME_TO_ID[demo.network] || 1,
+    cur: demo.token,
+    dec: 18,
+    f: {
+      n: demo.description, // Use demo description as company name for visibility
+      a: '0x3210...9876',
+    },
+    c: {
+      n: 'Demo Client',
+      a: demo.recipient,
+    },
+    it: demo.items.map((item) => ({
+      d: item.description,
+      q: item.quantity,
+      r: item.unitPrice, // Just pass the unit price as string
+    })),
+  }
+}
 
 export function DemoSection() {
   const prefersReducedMotion = useReducedMotion()
@@ -137,11 +172,7 @@ export function DemoSection() {
       activeIndex,
       invoicesLength: DEMO_INVOICES.length,
     })
-    return (
-      <section className="py-32 text-center text-zinc-500">
-        Demo content unavailable
-      </section>
-    )
+    return <section className="py-32 text-center text-zinc-500">Demo content unavailable</section>
   }
 
   const theme = NETWORK_THEMES[currentInvoice.network]
@@ -160,7 +191,10 @@ export function DemoSection() {
   }
 
   return (
-    <section className="relative flex w-full flex-col items-center justify-center overflow-visible py-32" aria-labelledby="demo-heading">
+    <section
+      className="relative flex w-full flex-col items-center justify-center overflow-visible py-32"
+      aria-labelledby="demo-heading"
+    >
       {/* Section header */}
       <div className="mb-16 space-y-3 px-4 text-center">
         <Heading variant="h1" as="h2" id="demo-heading">
@@ -179,7 +213,7 @@ export function DemoSection() {
       >
         {/* Hover zone wrapper - contains both scaled invoice and button overlay */}
         <div
-          className="absolute left-1/2 top-0 z-20 -translate-x-1/2"
+          className="absolute top-0 left-1/2 z-20 -translate-x-1/2"
           style={{
             width: INVOICE_WIDTH * wrapperScale,
             height: INVOICE_HEIGHT * wrapperScale,
@@ -189,77 +223,30 @@ export function DemoSection() {
         >
           {/* Scaled invoice wrapper */}
           <div
-            className="absolute left-1/2 top-0 origin-top transition-transform duration-300 ease-out will-change-transform"
+            className="absolute top-0 left-1/2 origin-top transition-transform duration-300 ease-out will-change-transform"
             style={{ transform: `translateX(-50%) scale(${wrapperScale})` }}
           >
-          {/* Invoice paper simulation with animation */}
-          <div className="rounded-sm shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentInvoice.id}
-                initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
-                animate={{ opacity: 1, y: 0 }}
-                exit={shouldAnimate ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, ease: 'easeInOut' }}
-              >
-                <Card
-                  variant="default"
-                  className="relative overflow-hidden bg-white text-zinc-900"
-                  style={{ width: INVOICE_WIDTH, height: INVOICE_HEIGHT }}
+            {/* Invoice paper simulation with animation */}
+            <div className="rounded-sm shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentInvoice.id}
+                  initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={shouldAnimate ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeInOut' }}
                 >
-                  {/* Network badge */}
-                  <div
-                    className={`absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-medium text-white ${theme.badge}`}
-                  >
-                    {currentInvoice.network.charAt(0).toUpperCase() + currentInvoice.network.slice(1)}
+                  <div className="rounded-sm shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]">
+                    <InvoicePaper
+                      data={mapDemoToSchema(currentInvoice)}
+                      animated={shouldAnimate}
+                      className="border-none shadow-none"
+                    />
                   </div>
-
-                  <CardContent className="flex h-full flex-col p-8">
-                    {/* Invoice header */}
-                    <div className="mb-8 border-b border-zinc-200 pb-6">
-                      <Text variant="label" className="text-violet-600">
-                        INVOICE
-                      </Text>
-                      <Heading variant="h2" as="h3" className="mt-2 text-3xl text-zinc-900">
-                        {currentInvoice.description}
-                      </Heading>
-                    </div>
-
-                    {/* Line items */}
-                    <div className="mb-8 flex-1 space-y-4">
-                      {currentInvoice.items.map((item, index) => (
-                        <div key={index} className="flex justify-between text-lg">
-                          <Text variant="body" className="text-zinc-700">
-                            {item.description}
-                          </Text>
-                          <Text variant="body" mono className="text-zinc-500">
-                            {item.quantity} x {item.unitPrice}
-                          </Text>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Total */}
-                    <div className="border-t border-zinc-200 pt-6">
-                      <div className="flex items-center justify-between">
-                        <Text variant="label" className="text-zinc-500">
-                          Total
-                        </Text>
-                        <Text variant="body" mono className="text-4xl font-bold text-zinc-900">
-                          {currentInvoice.amount} {currentInvoice.token}
-                        </Text>
-                      </div>
-                      <Text variant="small" className="mt-2 text-zinc-600">
-                        To: {currentInvoice.recipient}
-                      </Text>
-                    </div>
-                  </CardContent>
-
-                </Card>
-              </motion.div>
-            </AnimatePresence>
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
-        </div>
 
           {/* Hover overlay with CTA - inside hover zone to prevent flickering */}
           <AnimatePresence>
@@ -292,7 +279,7 @@ export function DemoSection() {
             animate={{ opacity: 0.7, scale: 1 }}
             exit={shouldAnimate ? { opacity: 0, scale: 0.8 } : { opacity: 0.7, scale: 1 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
-            className={`pointer-events-none absolute left-1/2 top-[40%] -z-10 aspect-square w-full max-w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr ${theme.glowFrom} ${theme.glowTo} blur-[100px] mix-blend-screen`}
+            className={`pointer-events-none absolute top-[40%] left-1/2 -z-10 aspect-square w-full max-w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr ${theme.glowFrom} ${theme.glowTo} mix-blend-screen blur-[100px]`}
             style={{ transform: `translateX(-50%) translateY(-50%) scale(${wrapperScale})` }}
           />
         </AnimatePresence>
