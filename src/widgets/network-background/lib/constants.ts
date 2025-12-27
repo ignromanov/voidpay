@@ -165,11 +165,11 @@ export const SHAPE_CONFIG: Record<'PRIMARY' | 'SECONDARY' | 'ACCENT', ShapeConfi
     opacityMax: 0.18, // peaks at 18%
     breathingMultiplier: 2.5, // breathing cycle ≈ 60s
     positionMultiplier: 2.8, // position cycle ≈ 67s
-    amplitudePercent: 18, // travels 18% toward center
+    amplitudePercent: 20, // travels 35% toward center
 
     // Visual: medium blur
     blurStrength: 14, // 14px gaussian blur
-    blurQuality: 4, // medium quality
+    blurQuality: 2, // low quality
   },
 
   /**
@@ -189,18 +189,18 @@ export const SHAPE_CONFIG: Record<'PRIMARY' | 'SECONDARY' | 'ACCENT', ShapeConfi
 
     // Timing: slowest
     duration: 28, // 28s base cycle
-    delay: 1.5, // 1.5s delayed entrance
+    delay: 0.5, // 1.5s delayed entrance
 
     // Animation: high inertia (heavy mass)
     opacityMin: 0.05, // fades to 5%
     opacityMax: 0.16, // peaks at 16%
     breathingMultiplier: 2.8, // breathing cycle ≈ 78s
     positionMultiplier: 3.2, // position cycle ≈ 90s
-    amplitudePercent: 18, // smallest travel (heavy)
+    amplitudePercent: 20, // smallest travel (heavy)
 
     // Visual: strongest blur
     blurStrength: 16, // 16px gaussian blur
-    blurQuality: 4, // medium quality
+    blurQuality: 2, // low quality
   },
 
   /**
@@ -219,18 +219,18 @@ export const SHAPE_CONFIG: Record<'PRIMARY' | 'SECONDARY' | 'ACCENT', ShapeConfi
 
     // Timing: fastest
     duration: 20, // 20s base cycle
-    delay: 3, // 3s delayed entrance
+    delay: 1, // 3s delayed entrance
 
     // Animation: low inertia (light mass)
     opacityMin: 0.07, // fades to 7%
     opacityMax: 0.2, // peaks at 20%
     breathingMultiplier: 2.2, // breathing cycle ≈ 44s
     positionMultiplier: 2.5, // position cycle ≈ 50s
-    amplitudePercent: 20, // largest travel (light)
+    amplitudePercent: 40, // largest travel (light)
 
     // Visual: lightest blur
     blurStrength: 10, // 10px gaussian blur
-    blurQuality: 4, // medium quality
+    blurQuality: 2, // low quality
   },
 } as const
 

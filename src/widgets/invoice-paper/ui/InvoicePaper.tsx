@@ -3,7 +3,6 @@ import { InvoicePaperProps } from '../types'
 import { calculateTotals } from '../lib/calculate-totals'
 import { PaperHeader } from './PaperHeader'
 import { PartyInfo } from './PartyInfo'
-import { PaymentDetails } from './PaymentDetails'
 import { LineItemsTable } from './LineItemsTable'
 import { PaperTotals } from './PaperTotals'
 import { PaperFooter } from './PaperFooter'
@@ -44,7 +43,6 @@ export const InvoicePaper = React.memo(
         showTexture = true,
         className,
         containerRef,
-        onCopyAddress,
       },
       ref
     ) => {
@@ -84,15 +82,13 @@ export const InvoicePaper = React.memo(
             if (containerRef) containerRef.current = node
           }}
           className={cn(
-            // Base styles
-            'group/paper relative flex h-[1123px] min-h-[1123px] w-[794px] min-w-[794px] origin-top flex-col overflow-hidden bg-white text-black transition-shadow duration-500',
-            'shadow-2xl print:h-full print:min-h-0 print:w-full print:min-w-0 print:scale-100 print:shadow-none',
+            // Base styles - responsive by default with aspect-ratio
+            'group/paper relative flex aspect-[794/1123] w-full max-w-[794px] origin-top flex-col overflow-hidden bg-white text-black transition-shadow duration-500',
+            'shadow-2xl print:aspect-auto print:h-full print:min-h-0 print:w-full print:min-w-0 print:scale-100 print:shadow-none',
             shadowClass,
-            // Responsive scaling
-            responsive && [
-              'scale-[0.45] sm:scale-[0.6] md:scale-75 lg:scale-90 xl:scale-100',
-              'origin-top-left',
-            ],
+            // Legacy scaling support (optional)
+            !responsive && 'h-[1123px] min-h-[1123px] w-[794px] min-w-[794px]',
+            responsive && 'origin-top-left',
             className
           )}
           role="document"
@@ -101,7 +97,7 @@ export const InvoicePaper = React.memo(
           {/* Texture Layer - self-hosted for stateless operation */}
           {showTexture && (
             <div
-              className="pointer-events-none absolute inset-0 z-0 bg-[url('/textures/cream-pixels.png')] opacity-10 mix-blend-multiply print:hidden"
+              className="pointer-events-none absolute inset-0 z-0 bg-[url('/textures/cream-pixels.png')] opacity-[0.08] mix-blend-multiply print:hidden"
               aria-hidden="true"
             />
           )}
@@ -109,28 +105,15 @@ export const InvoicePaper = React.memo(
           {/* Content Container */}
           <div className={cn('relative z-10 flex h-full flex-col', VARIANT_STYLES[variant])}>
             <PaperHeader
-              from={from}
               invoiceId={data.id ?? ''}
               iss={data.iss ?? 0}
               due={data.due ?? 0}
               status={status}
             />
 
-            <section
-              className="grid grid-cols-2 gap-12 py-8"
-              aria-label="Invoice parties and payment information"
-            >
-              <PartyInfo client={client} />
-
-              <PaymentDetails
-                networkId={data.net ?? 1}
-                senderAddress={from.a}
-                currency={data.cur ?? ''}
-                tokenAddress={data.t}
-                txHash={txHash}
-                txHashValidated={txHashValidated}
-                onCopyAddress={onCopyAddress}
-              />
+            {/* Parties Section - From and Bill To */}
+            <section className="py-6 md:py-8" aria-label="Invoice parties">
+              <PartyInfo from={from} client={client} />
             </section>
 
             <LineItemsTable items={items} currency={data.cur ?? ''} />
@@ -140,9 +123,15 @@ export const InvoicePaper = React.memo(
               currency={data.cur ?? ''}
               taxPercent={data.tax}
               discountPercent={data.dsc}
+              showQR={shouldShowQR}
+              networkId={data.net ?? 1}
+              senderAddress={from.a}
+              tokenAddress={data.t}
+              txHash={txHash}
+              txHashValidated={txHashValidated}
             />
 
-            <PaperFooter notes={data.nt} showQR={shouldShowQR} />
+            <PaperFooter notes={data.nt} />
           </div>
 
           <Watermark status={status} date={paidDate} />

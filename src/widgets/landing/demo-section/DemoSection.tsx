@@ -85,15 +85,38 @@ export function DemoSection() {
       <div
         ref={containerRef}
         className="relative flex w-full max-w-[1400px] justify-center px-4 transition-[height] duration-200 ease-linear"
-        style={{ height: scaledHeight + 40 }}
+        style={
+          {
+            '--scaled-height': `${scaledHeight + 40}px`,
+            height: 'var(--scaled-height)',
+            willChange: 'height',
+          } as React.CSSProperties
+        }
       >
+        {/* Background glow - behind invoice, centered */}
+        <div
+          className={`pointer-events-none absolute z-10 rounded-full bg-gradient-to-br ${theme.glowFrom} ${theme.glowTo} opacity-60 blur-[120px] transition-all duration-500`}
+          style={{
+            width: `${Math.max(INVOICE_WIDTH * scale * 1.8, scaledHeight * 1.2)}px`,
+            height: `${Math.max(scaledHeight * 1.1, INVOICE_WIDTH * scale * 1.5)}px`,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+          }}
+        />
+
         {/* Hover zone */}
         <div
           className="absolute top-0 left-1/2 z-20 -translate-x-1/2"
-          style={{
-            width: INVOICE_WIDTH * scale,
-            height: scaledHeight,
-          }}
+          style={
+            {
+              '--hover-width': `${INVOICE_WIDTH * scale}px`,
+              '--hover-height': `${scaledHeight}px`,
+              width: 'var(--hover-width)',
+              height: 'var(--hover-height)',
+              willChange: 'width, height',
+            } as React.CSSProperties
+          }
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
@@ -121,12 +144,6 @@ export function DemoSection() {
             </Button>
           </div>
         </div>
-
-        {/* Background glow */}
-        <div
-          className={`pointer-events-none absolute top-[40%] left-1/2 -z-10 aspect-square w-full max-w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr ${theme.glowFrom} ${theme.glowTo} opacity-70 mix-blend-screen blur-[100px] transition-all duration-500`}
-          style={{ transform: `translateX(-50%) translateY(-50%) scale(${scale})` }}
-        />
       </div>
 
       {/* Pagination */}

@@ -79,9 +79,4 @@ export interface InvoicePaperProps {
    * Uses HTMLElement for semantic flexibility (article, section, etc.)
    */
   containerRef?: React.RefObject<HTMLElement | null> | undefined
-
-  /**
-   * Callback when user copies the wallet address
-   */
-  onCopyAddress?: ((address: string) => void) | undefined
 }

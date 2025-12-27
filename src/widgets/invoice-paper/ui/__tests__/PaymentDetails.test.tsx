@@ -4,10 +4,9 @@ import { PaymentDetails } from '../PaymentDetails'
 
 describe('PaymentDetails', () => {
   it('renders payment details header and network', () => {
-    render(<PaymentDetails networkId={1} senderAddress="0x123" currency="ETH" tokenAddress="" />)
+    render(<PaymentDetails networkId={1} senderAddress="0x123" currency="ETH" />)
     expect(screen.getByText(/Payment Details/i)).toBeDefined()
-    // Use a more specific selector for the network ID to avoid ambiguity
-    expect(screen.getAllByText(/1/)).toBeDefined()
+    expect(screen.getByText(/Network/i)).toBeDefined()
   })
 
   it('renders sender address', () => {
@@ -24,8 +23,7 @@ describe('PaymentDetails', () => {
         txHash="0xabcdef1234567890"
       />
     )
-    expect(screen.getByTitle('View on Explorer')).toBeDefined()
-    // Full hash is displayed in invoice documents for verification purposes
+    expect(screen.getByTitle('View on Block Explorer')).toBeDefined()
     expect(screen.getByText(/0xabcdef1234567890/i)).toBeDefined()
   })
 })
