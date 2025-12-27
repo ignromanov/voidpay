@@ -23,9 +23,31 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
 })
 
+// Variant-specific styles
+const VARIANT_STYLES = {
+  full: 'p-12',
+  compact: 'p-6',
+  preview: 'p-12 opacity-90',
+} as const
+
 export const InvoicePaper = React.memo(
-  forwardRef<HTMLDivElement, InvoicePaperProps>(
-    ({ data, status = 'pending', txHash, className, containerRef }, ref) => {
+  forwardRef<HTMLElement, InvoicePaperProps>(
+    (
+      {
+        data,
+        status = 'pending',
+        txHash,
+        txHashValidated = true,
+        variant = 'full',
+        responsive = false,
+        showQR = true,
+        showTexture = true,
+        className,
+        containerRef,
+        onCopyAddress,
+      },
+      ref
+    ) => {
       const totals = useMemo(
         () =>
           calculateTotals(data.it ?? EMPTY_ITEMS, {
@@ -51,25 +73,41 @@ export const InvoicePaper = React.memo(
         [status, data.iss]
       )
 
+      // Determine if QR should be shown based on variant
+      const shouldShowQR = showQR && variant !== 'compact'
+
       return (
-        <div
+        <article
           ref={(node) => {
             if (typeof ref === 'function') ref(node)
             else if (ref) ref.current = node
             if (containerRef) containerRef.current = node
           }}
           className={cn(
+            // Base styles
             'group/paper relative flex h-[1123px] min-h-[1123px] w-[794px] min-w-[794px] origin-top flex-col overflow-hidden bg-white text-black transition-shadow duration-500',
-            'shadow-2xl print:h-full print:min-h-0 print:w-full print:min-w-0 print:shadow-none',
+            'shadow-2xl print:h-full print:min-h-0 print:w-full print:min-w-0 print:scale-100 print:shadow-none',
             shadowClass,
+            // Responsive scaling
+            responsive && [
+              'scale-[0.45] sm:scale-[0.6] md:scale-75 lg:scale-90 xl:scale-100',
+              'origin-top-left',
+            ],
             className
           )}
+          role="document"
+          aria-label={`Invoice ${data.id ?? 'draft'}`}
         >
-          {/* Texture Layer */}
-          <div className="pointer-events-none absolute inset-0 z-0 bg-[url('https://www.transparenttextures.com/patterns/cream-pixels.png')] opacity-10 mix-blend-multiply"></div>
+          {/* Texture Layer - self-hosted for stateless operation */}
+          {showTexture && (
+            <div
+              className="pointer-events-none absolute inset-0 z-0 bg-[url('/textures/cream-pixels.png')] opacity-10 mix-blend-multiply print:hidden"
+              aria-hidden="true"
+            />
+          )}
 
           {/* Content Container */}
-          <div className="relative z-10 flex h-full flex-col p-12">
+          <div className={cn('relative z-10 flex h-full flex-col', VARIANT_STYLES[variant])}>
             <PaperHeader
               from={from}
               invoiceId={data.id ?? ''}
@@ -78,7 +116,10 @@ export const InvoicePaper = React.memo(
               status={status}
             />
 
-            <section className="grid grid-cols-2 gap-12 py-8">
+            <section
+              className="grid grid-cols-2 gap-12 py-8"
+              aria-label="Invoice parties and payment information"
+            >
               <PartyInfo client={client} />
 
               <PaymentDetails
@@ -87,6 +128,8 @@ export const InvoicePaper = React.memo(
                 currency={data.cur ?? ''}
                 tokenAddress={data.t}
                 txHash={txHash}
+                txHashValidated={txHashValidated}
+                onCopyAddress={onCopyAddress}
               />
             </section>
 
@@ -99,11 +142,17 @@ export const InvoicePaper = React.memo(
               discountPercent={data.dsc}
             />
 
-            <PaperFooter notes={data.nt} />
+            <PaperFooter notes={data.nt} showQR={shouldShowQR} />
           </div>
 
           <Watermark status={status} date={paidDate} />
-        </div>
+
+          {/* Screen reader status announcement */}
+          <div className="sr-only" role="status" aria-live="polite">
+            Invoice status: {status}
+            {status === 'paid' && paidDate && `, paid on ${paidDate}`}
+          </div>
+        </article>
       )
     }
   )

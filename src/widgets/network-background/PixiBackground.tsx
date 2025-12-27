@@ -98,6 +98,9 @@ export function PixiBackground({ theme = 'ethereum', className }: PixiBackground
       preference: PIXI_CONFIG.PREFERENCE,
     })
 
+    // Limit FPS to 30 for GPU optimization (animations are slow, 30fps is sufficient)
+    app.ticker.maxFPS = 30
+
     app.canvas.style.position = 'absolute'
     app.canvas.style.top = '0'
     app.canvas.style.left = '0'
@@ -185,9 +188,21 @@ export function PixiBackground({ theme = 'ethereum', className }: PixiBackground
     }
     window.addEventListener('resize', handleResize)
 
+    // Pause animations when tab is hidden (saves GPU when in background)
+    const handleVisibilityChange = () => {
+      if (!appRef.current) return
+      if (document.hidden) {
+        appRef.current.ticker.stop()
+      } else {
+        appRef.current.ticker.start()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
     return () => {
       mounted = false
       window.removeEventListener('resize', handleResize)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
 
       if (appRef.current) {
         if (tickerCallbackRef.current) {
