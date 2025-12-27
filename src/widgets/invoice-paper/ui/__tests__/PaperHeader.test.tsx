@@ -14,7 +14,6 @@ describe('PaperHeader', () => {
         iss={mockDate}
         due={mockDate}
         status="pending"
-        animated={false}
       />
     )
     expect(screen.getByText('Sender Name')).toBeDefined()
@@ -29,7 +28,6 @@ describe('PaperHeader', () => {
         iss={mockDate}
         due={mockDate}
         status="pending"
-        animated={false}
       />
     )
     expect(screen.getByText('INV-123')).toBeDefined()
@@ -43,7 +41,6 @@ describe('PaperHeader', () => {
         iss={mockDate}
         due={mockDate}
         status="pending"
-        animated={false}
       />
     )
     // Allow for small differences in formatting but expect DEC 27

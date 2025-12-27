@@ -1,33 +1,15 @@
 import React from 'react'
 import { InvoiceSchemaV1 } from '@/entities/invoice'
-import { HyperText } from '@/shared/ui/hyper-text'
 
 interface PartyInfoProps {
   client: InvoiceSchemaV1['c']
-  animated?: boolean
 }
 
-export const PartyInfo: React.FC<PartyInfoProps> = ({ client, animated = true }) => {
-  const AnimatedText = ({
-    text,
-    className = '',
-  }: {
-    text: string | undefined
-    className?: string
-  }) => {
-    const str = text || ''
-    if (animated && str) {
-      return <HyperText text={str} className={className} />
-    }
-    return <span className={className}>{str}</span>
-  }
-
+export const PartyInfo = React.memo<PartyInfoProps>(({ client }) => {
   return (
     <div className="py-8">
       <p className="mb-3 text-xs font-bold tracking-widest text-zinc-400 uppercase">Bill To</p>
-      <p className="mb-1 text-lg font-bold text-black">
-        <AnimatedText text={client.n || 'Client Name'} />
-      </p>
+      <p className="mb-1 text-lg font-bold text-black">{client.n || 'Client Name'}</p>
       <div className="space-y-0.5 text-sm text-zinc-600">
         <p>{client.e}</p>
         {client.ph && <p>{client.ph}</p>}
@@ -39,11 +21,11 @@ export const PartyInfo: React.FC<PartyInfoProps> = ({ client, animated = true })
           <p className="mb-1 text-xs font-bold tracking-widest text-zinc-400 uppercase">
             Client Wallet
           </p>
-          <p className="font-mono text-xs break-all text-zinc-800">
-            <AnimatedText text={client.a} />
-          </p>
+          <p className="font-mono text-xs break-all text-zinc-800">{client.a}</p>
         </div>
       )}
     </div>
   )
-}
+})
+
+PartyInfo.displayName = 'PartyInfo'

@@ -10,13 +10,13 @@ describe('PartyInfo', () => {
   }
 
   it('renders client name and label', () => {
-    render(<PartyInfo client={mockClient} animated={false} />)
+    render(<PartyInfo client={mockClient} />)
     expect(screen.getByText(/BILL TO/i)).toBeDefined()
     expect(screen.getByText('Client Name')).toBeDefined()
   })
 
   it('renders wallet address', () => {
-    render(<PartyInfo client={mockClient} animated={false} />)
+    render(<PartyInfo client={mockClient} />)
     expect(screen.getByText('0x123...456')).toBeDefined()
   })
 

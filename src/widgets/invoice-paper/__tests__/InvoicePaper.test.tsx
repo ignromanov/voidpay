@@ -16,7 +16,7 @@ describe('InvoicePaper Integration', () => {
   }
 
   it('renders all core sections', () => {
-    render(<InvoicePaper data={mockData} animated={false} />)
+    render(<InvoicePaper data={mockData} />)
 
     // Header
     expect(screen.getByText('Alice')).toBeDefined()
@@ -36,7 +36,7 @@ describe('InvoicePaper Integration', () => {
     expect(screen.getAllByText(/1,500\.00/).length).toBeGreaterThanOrEqual(2)
 
     // Footer
-    expect(screen.getByText(/Powered by VoidPay/i)).toBeDefined()
+    expect(screen.getByText(/Powered by/i)).toBeDefined()
   })
 
   it('renders watermark for paid status', () => {

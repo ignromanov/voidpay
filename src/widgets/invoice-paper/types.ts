@@ -29,12 +29,6 @@ export interface InvoicePaperProps {
   txHash?: string
 
   /**
-   * Should animate text elements?
-   * @default true
-   */
-  animated?: boolean
-
-  /**
    * Additional CSS classes for the container.
    */
   className?: string | undefined

@@ -6,7 +6,7 @@ interface LineItemsTableProps {
   currency: string
 }
 
-export const LineItemsTable: React.FC<LineItemsTableProps> = ({ items, currency }) => {
+export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, currency }) => {
   const formatAmount = (val: string | number) => {
     const num = typeof val === 'string' ? parseFloat(val) : val
     return isNaN(num)
@@ -64,4 +64,6 @@ export const LineItemsTable: React.FC<LineItemsTableProps> = ({ items, currency 
       </table>
     </section>
   )
-}
+})
+
+LineItemsTable.displayName = 'LineItemsTable'

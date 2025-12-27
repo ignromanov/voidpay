@@ -6,7 +6,7 @@ interface WatermarkProps {
   date?: string | undefined
 }
 
-export const Watermark: React.FC<WatermarkProps> = ({ status, date }) => {
+export const Watermark = React.memo<WatermarkProps>(({ status, date }) => {
   if (status === 'pending') return null
 
   const config = {
@@ -43,4 +43,6 @@ export const Watermark: React.FC<WatermarkProps> = ({ status, date }) => {
       </div>
     </div>
   )
-}
+})
+
+Watermark.displayName = 'Watermark'

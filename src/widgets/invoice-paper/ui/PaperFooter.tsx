@@ -6,7 +6,7 @@ interface PaperFooterProps {
   notes?: string | undefined
 }
 
-export const PaperFooter: React.FC<PaperFooterProps> = ({ notes }) => {
+export const PaperFooter = React.memo<PaperFooterProps>(({ notes }) => {
   const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://voidpay.xyz'
 
   return (
@@ -37,4 +37,6 @@ export const PaperFooter: React.FC<PaperFooterProps> = ({ notes }) => {
       </div>
     </footer>
   )
-}
+})
+
+PaperFooter.displayName = 'PaperFooter'

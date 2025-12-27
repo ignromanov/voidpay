@@ -11,7 +11,7 @@ describe('InvoicePaper Preview Mode', () => {
       it: [],
       cur: 'USDC',
     } as unknown as InvoiceSchemaV1
-    render(<InvoicePaper data={emptyData} animated={false} />)
+    render(<InvoicePaper data={emptyData} />)
     expect(screen.getByText(/No items added yet/i)).toBeDefined()
   })
 
@@ -20,10 +20,11 @@ describe('InvoicePaper Preview Mode', () => {
       f: { n: 'Alice' },
       c: { n: 'Bob' },
     } as unknown as InvoiceSchemaV1
-    render(<InvoicePaper data={minimalData} animated={false} />)
+    render(<InvoicePaper data={minimalData} />)
     expect(screen.getByText(/Alice/i)).toBeDefined()
     expect(screen.getByText(/Bob/i)).toBeDefined()
-    expect(screen.getByText(/0\.00/i)).toBeDefined()
+    // Multiple 0.00 values appear (subtotal and total)
+    expect(screen.getAllByText(/0\.00/).length).toBeGreaterThanOrEqual(1)
   })
 
   it('handles optional notes', () => {
@@ -31,7 +32,7 @@ describe('InvoicePaper Preview Mode', () => {
       f: { n: 'Alice' },
       c: { n: 'Bob' },
     } as unknown as InvoiceSchemaV1
-    render(<InvoicePaper data={minimalData} animated={false} />)
+    render(<InvoicePaper data={minimalData} />)
     expect(screen.getByText(/Thank you for your business/i)).toBeDefined()
   })
 })

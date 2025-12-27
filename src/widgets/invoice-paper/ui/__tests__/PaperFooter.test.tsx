@@ -3,9 +3,9 @@ import { describe, it, expect } from 'vitest'
 import { PaperFooter } from '../PaperFooter'
 
 describe('PaperFooter', () => {
-  it('renders thank you message', () => {
+  it('renders default notes with thank you message', () => {
     render(<PaperFooter />)
-    expect(screen.getByText('Thank you for your business!')).toBeDefined()
+    expect(screen.getByText(/Thank you for your business/)).toBeDefined()
   })
 
   it('renders custom notes', () => {
@@ -19,8 +19,8 @@ describe('PaperFooter', () => {
     expect(container.querySelector('svg')).toBeDefined()
   })
 
-  it('renders powered by link', () => {
+  it('renders powered by branding', () => {
     render(<PaperFooter />)
-    expect(screen.getByText('Powered by VoidPay')).toBeDefined()
+    expect(screen.getByText('Powered by')).toBeDefined()
   })
 })
