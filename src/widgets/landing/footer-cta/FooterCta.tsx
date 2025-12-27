@@ -26,8 +26,10 @@ export function FooterCta() {
     >
       <div className="mx-auto max-w-4xl space-y-10 text-center">
         <Heading variant="hero" as="h2" id="footer-cta-heading" className="text-4xl md:text-6xl">
-          <span className="whitespace-nowrap">Your Invoice.</span>{' '}
-          <span className="whitespace-nowrap">Your Link.</span>{' '}
+          <span className="whitespace-nowrap">Your Invoice.</span>
+          <br />
+          <span className="whitespace-nowrap">Your Link.</span>
+          <br />
           <AuroraText className="whitespace-nowrap drop-shadow-2xl">Your Rules.</AuroraText>
         </Heading>
 
