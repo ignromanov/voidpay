@@ -23,7 +23,10 @@ export const PaperFooter: React.FC<PaperFooterProps> = ({ notes }) => {
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-col items-end gap-0.5">
+            <span className="text-[9px] font-bold tracking-tight text-zinc-300 uppercase">
+              Powered by
+            </span>
             <VoidLogo className="h-4 text-black" />
             <p className="text-[10px] font-medium text-zinc-400">Stateless. Private. Yours.</p>
           </div>
