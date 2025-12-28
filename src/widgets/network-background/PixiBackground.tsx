@@ -104,6 +104,10 @@ export function PixiBackground({ theme = 'ethereum', className }: PixiBackground
     app.canvas.style.width = '100%'
     app.canvas.style.height = '100%'
 
+    // Configure ticker FPS for GPU optimization
+    app.ticker.maxFPS = PIXI_CONFIG.MAX_FPS
+    app.ticker.minFPS = PIXI_CONFIG.MIN_FPS
+
     containerRef.current.appendChild(app.canvas)
     appRef.current = app
 

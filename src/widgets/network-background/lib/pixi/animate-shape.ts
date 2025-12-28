@@ -39,10 +39,7 @@ function animateFadeIn(shape: AnimatedShape, deltaTime: number): boolean {
     return false
   }
 
-  const fadeProgress = Math.min(
-    (shape.fadeInProgress - fadeInDelay) / FADE_IN_DURATION_S,
-    1
-  )
+  const fadeProgress = Math.min((shape.fadeInProgress - fadeInDelay) / FADE_IN_DURATION_S, 1)
   // easeOut curve
   const easedProgress = 1 - Math.pow(1 - fadeProgress, 3)
   // Use shape-specific opacityMin
@@ -68,16 +65,14 @@ function getMassMultiplier(sizeVh: number): number {
 }
 
 /**
- * Animate position with one-directional movement
- * Shape moves from startX to (startX + amplitude) and back
+ * Animate position with one-directional movement (horizontal + optional vertical)
+ * Shape moves from start to (start + amplitude) and back
  * Uses (1 - cos(phase)) / 2 for smooth 0→1→0 oscillation
+ *
+ * If amplitudeY != 0, creates diagonal movement path
  */
-function animatePosition(
-  shape: AnimatedShape,
-  deltaTime: number,
-  _viewport: Viewport
-): void {
-  const { data, amplitude, startX } = shape
+function animatePosition(shape: AnimatedShape, deltaTime: number, _viewport: Viewport): void {
+  const { data, amplitude, amplitudeY, startX, startY } = shape
 
   // Position speed based on duration * shape-specific multiplier * mass
   // Larger shapes (higher mass) move slower
@@ -86,13 +81,14 @@ function animatePosition(
   shape.phase += deltaTime * posSpeed
 
   // One-directional oscillation: 0 → 1 → 0
-  // At phase=0: (1 - cos(0)) / 2 = 0 → shape at startX
-  // At phase=π: (1 - cos(π)) / 2 = 1 → shape at startX + amplitude
-  // At phase=2π: (1 - cos(2π)) / 2 = 0 → shape back at startX
+  // At phase=0: (1 - cos(0)) / 2 = 0 → shape at start
+  // At phase=π: (1 - cos(π)) / 2 = 1 → shape at start + amplitude
+  // At phase=2π: (1 - cos(2π)) / 2 = 0 → shape back at start
   const posProgress = (1 - Math.cos(shape.phase)) / 2
 
-  // Simple position update: startX already accounts for zone
+  // Apply position: horizontal + optional vertical (diagonal path)
   shape.container.x = startX + posProgress * amplitude
+  shape.container.y = startY + posProgress * amplitudeY
 }
 
 /**
@@ -105,8 +101,7 @@ function animateBreathing(shape: AnimatedShape, deltaTime: number): void {
   // Apply mass multiplier - larger shapes breathe slower
   const massMultiplier = getMassMultiplier(data.sizeVh)
   // Use shape-specific breathingMultiplier
-  const breathSpeed =
-    (2 * Math.PI) / (data.duration * data.breathingMultiplier * massMultiplier)
+  const breathSpeed = (2 * Math.PI) / (data.duration * data.breathingMultiplier * massMultiplier)
   shape.breathingPhase += deltaTime * breathSpeed
 
   // Raw breath: 0 to 1 via sin wave
@@ -123,11 +118,7 @@ function animateBreathing(shape: AnimatedShape, deltaTime: number): void {
  * Animate a single shape for one frame
  * Returns true if shape is still active, false if should be removed
  */
-export function animateShape(
-  shape: AnimatedShape,
-  deltaTime: number,
-  viewport: Viewport
-): boolean {
+export function animateShape(shape: AnimatedShape, deltaTime: number, viewport: Viewport): boolean {
   // Handle fade-out for exiting shapes
   if (shape.isExiting) {
     return animateFadeOut(shape, deltaTime)
@@ -149,18 +140,16 @@ export function animateShape(
 /**
  * Set shape to static position for reduced motion mode
  * Uses shape-specific opacity range
- * Position is at startX (beginning of animation track)
+ * Position is at start coordinates (beginning of animation track)
  */
-export function setStaticPosition(
-  shape: AnimatedShape,
-  _viewport: Viewport
-): void {
-  const { data, startX } = shape
+export function setStaticPosition(shape: AnimatedShape, _viewport: Viewport): void {
+  const { data, startX, startY } = shape
   // Use shape-specific opacity for static position (midpoint of range)
   const staticOpacity = (data.opacityMin + data.opacityMax) / 2
   shape.container.alpha = staticOpacity
   shape.fadeInComplete = true
 
-  // Set to start position (startX already accounts for zone)
+  // Set to start position (coordinates already account for zone)
   shape.container.x = startX
+  shape.container.y = startY
 }

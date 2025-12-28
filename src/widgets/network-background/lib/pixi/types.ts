@@ -15,8 +15,12 @@ export interface AnimatedShape {
   breathingPhase: number
   /** Starting X position for oscillation (pixels) */
   startX: number
-  /** Oscillation amplitude (pixels) — shape moves from startX to startX+amplitude */
+  /** Starting Y position for oscillation (pixels) */
+  startY: number
+  /** Horizontal oscillation amplitude (pixels) — shape moves from startX to startX+amplitude */
   amplitude: number
+  /** Vertical oscillation amplitude (pixels) — for diagonal movement */
+  amplitudeY: number
   /** Fade-in animation progress (0 to 1+) */
   fadeInProgress: number
   /** Whether initial fade-in is complete */
@@ -53,8 +57,10 @@ export interface ShapeDimensions {
 export interface AnimationParams {
   /** Starting X position for oscillation */
   startX: number
-  /** Amplitude for oscillation (shape moves from startX to startX+amplitude) */
+  /** Starting Y position for oscillation */
+  startY: number
+  /** Horizontal amplitude (shape moves from startX to startX+amplitude) */
   amplitude: number
-  /** Vertical position */
-  yPos: number
+  /** Vertical amplitude for diagonal movement (0 = horizontal only) */
+  amplitudeY: number
 }
