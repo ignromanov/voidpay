@@ -1,4 +1,5 @@
 import React from 'react'
+import { VoidLogo } from '@/shared/ui'
 
 interface PaperFooterProps {
   notes?: string | undefined
@@ -7,35 +8,42 @@ interface PaperFooterProps {
 export const PaperFooter = React.memo<PaperFooterProps>(({ notes }) => {
   return (
     <footer
-      className="mt-6 border-t border-zinc-200 pt-4"
+      className="mt-12 flex items-start justify-between border-t border-dashed border-zinc-300 pt-6"
       role="contentinfo"
       aria-label="Invoice footer with notes and branding"
     >
-      {/* Row 1: Headers */}
-      <div className="mb-2 flex items-baseline justify-between">
-        <h4 className="text-xs font-bold tracking-widest text-zinc-400 uppercase">Notes & Terms</h4>
-        <span className="text-xs text-zinc-500">
-          Powered by{' '}
+      {/* Left: Thank you message and notes */}
+      <div className="flex-1 pr-12">
+        <div>
+          <p className="text-sm font-bold text-black">Thank you for your business!</p>
+          <p className="mt-1 max-w-[400px] text-xs leading-relaxed text-zinc-500">
+            {notes ??
+              'Payment is due within 30 days. Please send funds to the address provided above.'}
+          </p>
+        </div>
+      </div>
+
+      {/* Right: VoidPay branding */}
+      <div className="flex shrink-0 flex-col items-end opacity-70">
+        <div className="mb-1 flex items-center gap-1.5">
+          <VoidLogo className="h-3 w-3" />
           <a
             href="https://voidpay.xyz"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-bold text-black transition-colors hover:text-violet-600"
+            className="text-[10px] font-bold tracking-widest text-zinc-900 uppercase transition-colors hover:text-violet-700"
           >
-            VoidPay
+            Powered by VoidPay
           </a>
-        </span>
-      </div>
-
-      {/* Row 2: Content */}
-      <div className="flex items-baseline justify-between gap-8">
-        <p className="max-w-[450px] flex-1 text-xs leading-relaxed whitespace-pre-wrap text-zinc-600">
-          {notes ??
-            'Thank you for your business. Please ensure the payment is made to the correct wallet address as transactions are irreversible.'}
-        </p>
-        <span className="flex-shrink-0 text-[10px] tracking-wide text-zinc-400">
-          Stateless. Private. Yours.
-        </span>
+        </div>
+        <a
+          href="https://voidpay.xyz"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-mono text-[9px] text-zinc-500 transition-colors hover:text-violet-600"
+        >
+          Create your own crypto invoice for free.
+        </a>
       </div>
     </footer>
   )

@@ -25,7 +25,7 @@ export const generateInvoiceUrl = (invoice: InvoiceSchemaV1, baseUrl?: string): 
   const compressed = encodeInvoice(invoice)
 
   // Use provided baseUrl, or env variable, or fallback to default
-  const appUrl = baseUrl || process.env.NEXT_PUBLIC_APP_URL || 'https://voidpay.com'
+  const appUrl = baseUrl || process.env.NEXT_PUBLIC_APP_URL || 'https://voidpay.xyz'
   const url = new URL(`${appUrl}/pay`)
   url.searchParams.set('d', compressed)
 

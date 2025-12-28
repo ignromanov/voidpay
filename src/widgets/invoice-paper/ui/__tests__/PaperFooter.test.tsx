@@ -21,6 +21,7 @@ describe('PaperFooter', () => {
 
   it('renders powered by branding', () => {
     render(<PaperFooter />)
-    expect(screen.getByText('Powered by')).toBeDefined()
+    expect(screen.getByText('Powered by VoidPay')).toBeDefined()
+    expect(screen.getByText('Create your own crypto invoice for free.')).toBeDefined()
   })
 })
