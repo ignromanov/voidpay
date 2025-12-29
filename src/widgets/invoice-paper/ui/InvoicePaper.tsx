@@ -109,6 +109,7 @@ export const InvoicePaper = React.memo(
               iss={data.iss ?? 0}
               due={data.due ?? 0}
               status={status}
+              txHashValidated={txHashValidated}
             />
 
             {/* Parties Section - From and Bill To */}
@@ -130,6 +131,7 @@ export const InvoicePaper = React.memo(
               txHash={txHash}
               txHashValidated={txHashValidated}
               variant={variant}
+              status={status}
             />
 
             <PaperFooter notes={data.nt} />

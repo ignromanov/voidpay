@@ -24,10 +24,12 @@ interface PaymentInfoProps {
   txHashValidated?: boolean | undefined
   /** Invoice URL for QR code */
   invoiceUrl?: string | undefined
-  /** Whether to show the QR code section */
+  /** Whether to show the QR code section (auto-hides when txHash present) */
   showQR?: boolean
   /** Display variant - 'full' enables interactive elements */
   variant?: InvoicePaperVariant
+  /** Invoice status - used to determine if QR should be hidden */
+  status?: 'pending' | 'paid' | 'overdue' | 'draft' | undefined
 }
 
 export const PaymentInfo = React.memo<PaymentInfoProps>(
@@ -41,8 +43,11 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
     invoiceUrl,
     showQR = true,
     variant = 'default',
+    status,
   }) => {
     const isInteractive = variant === 'full'
+    // Hide QR code when invoice is paid (txHash present) to give txHash more space
+    const shouldShowQR = showQR && !txHash && status !== 'paid'
 
     // SSR-safe URL handling
     // TODO: [P0.11.3] Generate EIP-681 payment URI for direct wallet integration
@@ -54,14 +59,14 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
       return typeof window !== 'undefined' ? window.location.href : APP_URLS.base
     }, [invoiceUrl])
 
-    const badgeConfig = NETWORK_BADGES[networkId] || { variant: 'outline' }
+    const badgeConfig = NETWORK_BADGES[networkId] || {
+      variant: 'outline' as const,
+      colorClass: 'bg-zinc-100 text-zinc-700 border-zinc-200',
+    }
 
     const networkBadgeClass = cn(
       'text-[9px] font-bold px-1.5 py-0.5 rounded border capitalize',
-      badgeConfig.variant === 'secondary' && 'bg-secondary text-secondary-foreground',
-      badgeConfig.variant === 'destructive' && 'bg-destructive text-destructive-foreground',
-      badgeConfig.variant === 'default' && 'bg-primary text-primary-foreground',
-      badgeConfig.variant === 'outline' && 'border-input bg-background'
+      badgeConfig.colorClass
     )
 
     const networkName = getNetworkName(networkId)
@@ -82,8 +87,8 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
 
         {/* Content: QR + Details side by side */}
         <div className="flex">
-          {/* QR Code */}
-          {showQR && (
+          {/* QR Code - hidden when paid to give txHash more space */}
+          {shouldShowQR && (
             <div className="flex flex-col items-center justify-center gap-1 border-r border-zinc-200 p-3">
               <div
                 className="flex aspect-square w-24 items-center justify-center rounded border border-zinc-200 bg-white p-1"
@@ -148,7 +153,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
               <div className="mt-1 border-t border-dashed border-zinc-300 pt-2">
                 <div className="flex flex-col gap-1">
                   <span className="flex items-center gap-1 text-[8px] font-bold text-zinc-400 uppercase">
-                    <Hash className="h-2 w-2" aria-hidden="true" /> Tx
+                    <Hash className="h-2 w-2" aria-hidden="true" /> Transaction
                     {!txHashValidated && (
                       <span
                         className="ml-1 flex items-center gap-0.5 text-amber-600"
@@ -159,39 +164,59 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                       </span>
                     )}
                   </span>
-                  <a
-                    href={getExplorerUrl(networkId, txHash)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn(
-                      'group flex items-center justify-between gap-1 rounded border px-1.5 py-1 transition-all',
-                      'focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1',
-                      'hover:shadow-sm',
-                      txHashValidated
-                        ? 'border-emerald-100 bg-emerald-50 hover:border-emerald-300 hover:bg-emerald-100'
-                        : 'border-amber-100 bg-amber-50 hover:border-amber-300 hover:bg-amber-100'
-                    )}
-                    aria-label={`View transaction ${txHash.slice(0, 10)}... on block explorer`}
-                    title="View on Block Explorer"
-                  >
-                    <span
+                  {isInteractive ? (
+                    <a
+                      href={getExplorerUrl(networkId, txHash)}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className={cn(
-                        'truncate font-mono text-[8px] font-medium',
-                        txHashValidated ? 'text-emerald-800' : 'text-amber-800'
+                        'group flex items-center justify-between gap-1 rounded border px-1.5 py-1 transition-all',
+                        'focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1',
+                        'hover:shadow-sm',
+                        txHashValidated
+                          ? 'border-emerald-100 bg-emerald-50 hover:border-emerald-300 hover:bg-emerald-100'
+                          : 'border-amber-100 bg-amber-50 hover:border-amber-300 hover:bg-amber-100'
+                      )}
+                      aria-label={`View transaction ${txHash.slice(0, 10)}... on block explorer`}
+                      title="View on Block Explorer"
+                    >
+                      <span
+                        className={cn(
+                          'truncate font-mono text-[8px] font-medium',
+                          txHashValidated ? 'text-emerald-800' : 'text-amber-800'
+                        )}
+                      >
+                        {txHash}
+                      </span>
+                      <ExternalLink
+                        className={cn(
+                          'h-2.5 w-2.5 flex-shrink-0',
+                          txHashValidated
+                            ? 'text-emerald-500 group-hover:text-emerald-700'
+                            : 'text-amber-500 group-hover:text-amber-700'
+                        )}
+                        aria-hidden="true"
+                      />
+                    </a>
+                  ) : (
+                    <div
+                      className={cn(
+                        'flex items-center gap-1 rounded border px-1.5 py-1',
+                        txHashValidated
+                          ? 'border-emerald-100 bg-emerald-50'
+                          : 'border-amber-100 bg-amber-50'
                       )}
                     >
-                      {txHash}
-                    </span>
-                    <ExternalLink
-                      className={cn(
-                        'h-2.5 w-2.5 flex-shrink-0',
-                        txHashValidated
-                          ? 'text-emerald-500 group-hover:text-emerald-700'
-                          : 'text-amber-500 group-hover:text-amber-700'
-                      )}
-                      aria-hidden="true"
-                    />
-                  </a>
+                      <span
+                        className={cn(
+                          'truncate font-mono text-[8px] font-medium',
+                          txHashValidated ? 'text-emerald-800' : 'text-amber-800'
+                        )}
+                      >
+                        {txHash}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

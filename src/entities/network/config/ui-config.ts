@@ -56,16 +56,20 @@ export const NETWORK_CONFIG: NetworkConfig[] = [
 ]
 
 /**
- * Network badge variants for each chain
+ * Network badge configuration with brand colors
  */
 export const NETWORK_BADGES: Record<
   number,
-  { variant: 'default' | 'secondary' | 'outline' | 'destructive' }
+  {
+    variant: 'default' | 'secondary' | 'outline' | 'destructive'
+    /** Tailwind classes for network-specific coloring */
+    colorClass: string
+  }
 > = {
-  1: { variant: 'secondary' },
-  42161: { variant: 'default' },
-  10: { variant: 'destructive' },
-  137: { variant: 'outline' },
+  1: { variant: 'secondary', colorClass: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
+  42161: { variant: 'default', colorClass: 'bg-blue-100 text-blue-700 border-blue-200' },
+  10: { variant: 'destructive', colorClass: 'bg-red-100 text-red-700 border-red-200' },
+  137: { variant: 'outline', colorClass: 'bg-purple-100 text-purple-700 border-purple-200' },
 }
 
 /**

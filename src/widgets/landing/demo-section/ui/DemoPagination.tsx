@@ -6,7 +6,7 @@
 import React from 'react'
 
 interface DemoPaginationProps {
-  items: ReadonlyArray<{ id: string }>
+  items: ReadonlyArray<{ invoiceId: string }>
   activeIndex: number
   onSelect: (index: number) => void
 }
@@ -17,9 +17,9 @@ export const DemoPagination = React.memo<DemoPaginationProps>(
       <div className="mt-6 flex justify-center gap-3">
         {items.map((item, index) => (
           <button
-            key={item.id}
+            key={item.invoiceId}
             type="button"
-            aria-label={`View invoice ${item.id}`}
+            aria-label={`View invoice ${item.invoiceId}`}
             className="group relative flex h-8 w-8 cursor-pointer items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
             onClick={() => onSelect(index)}
           >

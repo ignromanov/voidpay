@@ -19,6 +19,8 @@ interface PaperTotalsProps {
   txHash?: string | undefined
   txHashValidated?: boolean | undefined
   variant?: InvoicePaperVariant
+  /** Invoice status - affects QR visibility */
+  status?: 'pending' | 'paid' | 'overdue' | 'draft'
 }
 
 export const PaperTotals = React.memo<PaperTotalsProps>(
@@ -36,6 +38,7 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
     txHash,
     txHashValidated = true,
     variant = 'default',
+    status,
   }) => {
     return (
       <section className="mt-auto border-t border-zinc-200 pt-4">
@@ -50,6 +53,7 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
             invoiceUrl={invoiceUrl}
             showQR={showQR}
             variant={variant}
+            status={status}
           />
 
           <TotalsSection

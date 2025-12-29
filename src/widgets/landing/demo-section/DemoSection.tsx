@@ -36,7 +36,7 @@ export function DemoSection() {
   useEffect(() => {
     const currentInvoice = DEMO_INVOICES[activeIndex]
     if (currentInvoice) {
-      setTheme(getNetworkName(currentInvoice.net))
+      setTheme(getNetworkName(currentInvoice.data.net))
     }
   }, [activeIndex, setTheme])
 
@@ -64,7 +64,7 @@ export function DemoSection() {
     return <section className="py-32 text-center text-zinc-500">Demo content unavailable</section>
   }
 
-  const theme = NETWORK_THEMES[getNetworkName(currentInvoice.net)]
+  const theme = NETWORK_THEMES[getNetworkName(currentInvoice.data.net)]
 
   return (
     <section
@@ -126,7 +126,15 @@ export function DemoSection() {
             style={{ transform: `translateX(-50%) scale(${scale})` }}
           >
             <div className="rounded-sm shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]">
-              <InvoicePaper data={currentInvoice} className="border-none shadow-none" />
+              <InvoicePaper
+                data={currentInvoice.data}
+                status={currentInvoice.status}
+                {...(currentInvoice.txHash && { txHash: currentInvoice.txHash })}
+                {...(currentInvoice.txHashValidated !== undefined && {
+                  txHashValidated: currentInvoice.txHashValidated,
+                })}
+                className="border-none shadow-none"
+              />
             </div>
           </div>
 
@@ -140,7 +148,9 @@ export function DemoSection() {
               className="rounded-full bg-violet-600 px-8 py-4"
               asChild
             >
-              <Link href={`/create?template=${currentInvoice.id}`}>Use This Template</Link>
+              <Link href={`/create${new URL(currentInvoice.invoiceUrl).search}` as '/create'}>
+                Use This Template
+              </Link>
             </Button>
           </div>
         </div>
