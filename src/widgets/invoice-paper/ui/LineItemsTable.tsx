@@ -4,10 +4,9 @@ import { formatAmount, formatRate } from '../lib/format'
 
 interface LineItemsTableProps {
   items: InvoiceSchemaV1['it']
-  currency: string
 }
 
-export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, currency }) => {
+export const LineItemsTable = React.memo<LineItemsTableProps>(({ items }) => {
   return (
     <section className="flex-1">
       <div className="-mx-4 overflow-x-auto px-4">
@@ -45,7 +44,7 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, currency
                   <td className="py-4 text-center font-mono text-zinc-700">{item.q}</td>
                   <td className="py-4 text-right font-mono text-zinc-700">{formatRate(item.r)}</td>
                   <td className="py-4 text-right font-mono font-bold text-black">
-                    {formatAmount(amount)} {currency}
+                    {formatAmount(amount)}
                   </td>
                 </tr>
               )

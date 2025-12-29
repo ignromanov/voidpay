@@ -1,4 +1,5 @@
 import React from 'react'
+import { APP_URLS } from '@/shared/config'
 import { VoidLogo } from '@/shared/ui'
 
 interface PaperFooterProps {
@@ -18,7 +19,7 @@ export const PaperFooter = React.memo<PaperFooterProps>(({ notes }) => {
           <p className="text-sm font-bold text-black">Thank you for your business!</p>
           <p className="mt-1 max-w-[400px] text-xs leading-relaxed text-zinc-500">
             {notes ??
-              'Payment is due within 30 days. Please send funds to the address provided above.'}
+              'Payment is due by the date shown above. Please send the exact amount to the wallet address provided.'}
           </p>
         </div>
       </div>
@@ -28,7 +29,7 @@ export const PaperFooter = React.memo<PaperFooterProps>(({ notes }) => {
         <div className="mb-1 flex items-center gap-1.5">
           <VoidLogo className="h-3 w-3" />
           <a
-            href="https://voidpay.xyz"
+            href={APP_URLS.base}
             target="_blank"
             rel="noopener noreferrer"
             className="text-[9px] font-bold tracking-widest text-zinc-900 uppercase transition-colors hover:text-violet-700"
@@ -37,7 +38,7 @@ export const PaperFooter = React.memo<PaperFooterProps>(({ notes }) => {
           </a>
         </div>
         <a
-          href="https://voidpay.xyz"
+          href={APP_URLS.base}
           target="_blank"
           rel="noopener noreferrer"
           className="font-mono text-[8px] text-zinc-500 transition-colors hover:text-violet-600"

@@ -2,8 +2,12 @@ import { InvoiceSchemaV1 } from '@/entities/invoice'
 
 /**
  * Visual status of the invoice document
+ * - draft: Invoice being created (editable, not yet generated)
+ * - pending: Invoice created, awaiting payment
+ * - paid: Payment confirmed on-chain
+ * - overdue: Payment deadline passed
  */
-export type InvoiceStatus = 'draft' | 'pending' | 'paid'
+export type InvoiceStatus = 'draft' | 'pending' | 'paid' | 'overdue'
 
 /**
  * Invoice paper display variant

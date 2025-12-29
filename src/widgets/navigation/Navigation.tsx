@@ -14,6 +14,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Plus, Github, ShieldAlert } from 'lucide-react'
+import { SOCIAL_URLS } from '@/shared/config'
 import { VoidLogo } from '@/shared/ui/void-logo'
 import { Button } from '@/shared/ui/button'
 import { LazyWalletButton as WalletButton } from '@/shared/ui/wallet-button-lazy'
@@ -27,7 +28,7 @@ export function Navigation() {
   ]
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-800/30 bg-zinc-950/60 backdrop-blur-xl">
+    <nav className="fixed top-0 right-0 left-0 z-50 border-b border-zinc-800/30 bg-zinc-950/60 backdrop-blur-xl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -77,7 +78,7 @@ export function Navigation() {
 
             {/* GitHub Link */}
             <a
-              href="https://github.com/ignromanov/voidpay"
+              href={SOCIAL_URLS.github}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub repository"

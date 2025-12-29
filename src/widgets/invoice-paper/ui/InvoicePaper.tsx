@@ -116,7 +116,7 @@ export const InvoicePaper = React.memo(
               <PartyInfo from={from} client={client} variant={variant} />
             </section>
 
-            <LineItemsTable items={items} currency={data.cur ?? ''} />
+            <LineItemsTable items={items} />
 
             <PaperTotals
               totals={totals}

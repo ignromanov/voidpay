@@ -10,13 +10,8 @@
 import { Github, Twitter } from 'lucide-react'
 import Link from 'next/link'
 
+import { SOCIAL_URLS } from '@/shared/config'
 import { AuroraText, Button, Heading, Text } from '@/shared/ui'
-
-// Placeholder URLs - to be replaced with actual links
-const SOCIAL_LINKS = {
-  github: 'https://github.com/voidpay',
-  twitter: 'https://twitter.com/voidpay',
-} as const
 
 export function FooterCta() {
   return (
@@ -53,7 +48,7 @@ export function FooterCta() {
         {/* Social links */}
         <div className="flex items-center justify-center gap-6 pt-8">
           <a
-            href={SOCIAL_LINKS.github}
+            href={SOCIAL_URLS.githubOrg}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub"
@@ -62,7 +57,7 @@ export function FooterCta() {
             <Github className="h-6 w-6" />
           </a>
           <a
-            href={SOCIAL_LINKS.twitter}
+            href={SOCIAL_URLS.twitter}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Twitter"

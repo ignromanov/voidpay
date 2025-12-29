@@ -12,3 +12,6 @@ export type { NetworkId } from './config/networks'
 // Network UI configuration (from config layer)
 export { NETWORK_CONFIG } from './config/ui-config'
 export type { NetworkConfig } from './config/ui-config'
+
+// Network helper functions (from lib layer)
+export { getExplorerUrl, getNetworkName } from './lib/helpers'
