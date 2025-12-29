@@ -10,7 +10,7 @@ CLAUDE.md
 .claude/settings.local.json
 
 # Assets
-assets/
+assets
 
 # IDE
 .vscode/
