@@ -2,12 +2,19 @@ import React, { useMemo } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { Hexagon, Hash, ExternalLink, AlertTriangle } from 'lucide-react'
 import { Totals } from '../lib/calculate-totals'
+import { formatAmount, formatShortAddress } from '../lib/format'
 import {
   NETWORK_BADGES,
   BLOCK_EXPLORERS,
   NETWORK_CONFIG,
 } from '@/entities/network/config/ui-config'
 import { cn } from '@/shared/lib/utils'
+
+function getExplorerUrl(networkId: number, hash: string): string {
+  const config = BLOCK_EXPLORERS[networkId]
+  if (!config) return '#'
+  return `${config.url}/tx/${hash}`
+}
 
 interface PaperTotalsProps {
   totals: Totals
@@ -40,29 +47,11 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
     txHash,
     txHashValidated = true,
   }) => {
-    const formatAmount = (val: number) => {
-      return val.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
-    }
-
     // SSR-safe URL handling
     const qrUrl = useMemo(() => {
       if (invoiceUrl) return invoiceUrl
       return typeof window !== 'undefined' ? window.location.href : 'https://voidpay.xyz'
     }, [invoiceUrl])
-
-    const getExplorerUrl = (hash: string) => {
-      const config = BLOCK_EXPLORERS[networkId]
-      if (!config) return '#'
-      return `${config.url}/tx/${hash}`
-    }
-
-    const formatShortAddress = (addr: string) => {
-      if (!addr || addr.length < 10) return addr
-      return `${addr.slice(0, 6)}...${addr.slice(-4)}`
-    }
 
     const badgeConfig = NETWORK_BADGES[networkId] || { variant: 'outline' }
 
@@ -169,7 +158,7 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
                         )}
                       </span>
                       <a
-                        href={getExplorerUrl(txHash)}
+                        href={getExplorerUrl(networkId, txHash)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={cn(

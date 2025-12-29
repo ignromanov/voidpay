@@ -42,4 +42,44 @@ describe('PaperTotals', () => {
     expect(screen.getByText(/Token/i)).toBeDefined()
     expect(screen.getByText(/Scan to Pay/i)).toBeDefined()
   })
+
+  it('hides tax row when taxAmount is zero', () => {
+    const zeroTaxTotals = { ...mockTotals, taxAmount: 0 }
+    render(<PaperTotals {...baseProps} totals={zeroTaxTotals} />)
+    expect(screen.queryByText('Tax')).toBeNull()
+  })
+
+  it('hides discount row when discountAmount is zero', () => {
+    const zeroDiscountTotals = { ...mockTotals, discountAmount: 0 }
+    render(<PaperTotals {...baseProps} totals={zeroDiscountTotals} />)
+    expect(screen.queryByText('Discount')).toBeNull()
+  })
+
+  it('shows unverified warning when txHashValidated is false', () => {
+    render(
+      <PaperTotals
+        {...baseProps}
+        txHash="0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+        txHashValidated={false}
+      />
+    )
+    expect(screen.getByText('Unverified')).toBeDefined()
+    expect(screen.getByTitle('Transaction not yet verified on-chain')).toBeDefined()
+  })
+
+  it('hides unverified warning when txHashValidated is true', () => {
+    render(
+      <PaperTotals
+        {...baseProps}
+        txHash="0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+        txHashValidated={true}
+      />
+    )
+    expect(screen.queryByText('Unverified')).toBeNull()
+  })
+
+  it('hides QR code when showQR is false', () => {
+    render(<PaperTotals {...baseProps} showQR={false} />)
+    expect(screen.queryByText(/Scan to Pay/i)).toBeNull()
+  })
 })

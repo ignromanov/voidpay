@@ -1,5 +1,6 @@
 import React from 'react'
 import { InvoiceSchemaV1 } from '@/entities/invoice'
+import { formatAmount } from '../lib/format'
 
 interface LineItemsTableProps {
   items: InvoiceSchemaV1['it']
@@ -7,16 +8,6 @@ interface LineItemsTableProps {
 }
 
 export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, currency }) => {
-  const formatAmount = (val: string | number) => {
-    const num = typeof val === 'string' ? parseFloat(val) : val
-    return isNaN(num)
-      ? '0.00'
-      : num.toLocaleString('en-US', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })
-  }
-
   return (
     <section className="flex-1">
       <div className="-mx-4 overflow-x-auto px-4">

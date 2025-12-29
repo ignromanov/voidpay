@@ -87,30 +87,39 @@ export function PixiBackground({ theme = 'ethereum', className }: PixiBackground
   const initPixi = useCallback(async () => {
     if (!containerRef.current || appRef.current) return
 
-    const app = new Application()
+    try {
+      const app = new Application()
 
-    await app.init({
-      resizeTo: window,
-      backgroundAlpha: 0,
-      antialias: true,
-      resolution: Math.min(window.devicePixelRatio, PIXI_CONFIG.MAX_RESOLUTION),
-      autoDensity: true,
-      preference: PIXI_CONFIG.PREFERENCE,
-    })
+      await app.init({
+        resizeTo: window,
+        backgroundAlpha: 0,
+        antialias: true,
+        resolution: Math.min(window.devicePixelRatio, PIXI_CONFIG.MAX_RESOLUTION),
+        autoDensity: true,
+        preference: PIXI_CONFIG.PREFERENCE,
+      })
 
-    // Limit FPS to 20 for GPU optimization (animations are slow, 30fps is sufficient)
-    app.ticker.maxFPS = 20
+      // Limit FPS to 20 for GPU optimization (animations are slow, 30fps is sufficient)
+      app.ticker.maxFPS = 20
 
-    app.canvas.style.position = 'absolute'
-    app.canvas.style.top = '0'
-    app.canvas.style.left = '0'
-    app.canvas.style.width = '100%'
-    app.canvas.style.height = '100%'
+      app.canvas.style.position = 'absolute'
+      app.canvas.style.top = '0'
+      app.canvas.style.left = '0'
+      app.canvas.style.width = '100%'
+      app.canvas.style.height = '100%'
 
-    containerRef.current.appendChild(app.canvas)
-    appRef.current = app
+      containerRef.current.appendChild(app.canvas)
+      appRef.current = app
 
-    return app
+      return app
+    } catch (error) {
+      // WebGL initialization can fail on older devices or browsers with GPU issues
+      // Gracefully degrade to CSS-only background (no shapes, just noise texture)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[PixiBackground] WebGL initialization failed:', error)
+      }
+      return null
+    }
   }, [])
 
   // Create and position shapes

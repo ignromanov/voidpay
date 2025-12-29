@@ -9,7 +9,7 @@ interface WatermarkProps {
 export const Watermark = React.memo<WatermarkProps>(({ status, date }) => {
   if (status === 'pending') return null
 
-  const config = {
+  const WATERMARK_CONFIG = {
     paid: {
       text: 'PAID',
       color: 'text-emerald-600',
@@ -28,12 +28,9 @@ export const Watermark = React.memo<WatermarkProps>(({ status, date }) => {
       border: 'border-zinc-400',
       dateColor: 'text-zinc-500',
     },
-  }[status] || {
-    text: 'DRAFT',
-    color: 'text-zinc-400',
-    border: 'border-zinc-400',
-    dateColor: 'text-zinc-500',
-  }
+  } as const
+
+  const config = WATERMARK_CONFIG[status]
 
   return (
     <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center overflow-hidden select-none">

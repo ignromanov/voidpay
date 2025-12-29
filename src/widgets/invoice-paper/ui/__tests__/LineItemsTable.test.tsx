@@ -26,4 +26,32 @@ describe('LineItemsTable', () => {
     render(<LineItemsTable items={mockItems} currency="USDC" />)
     expect(screen.getAllByText(/1,000.00/).length).toBeGreaterThanOrEqual(2)
   })
+
+  it('renders empty state when items array is empty', () => {
+    render(<LineItemsTable items={[]} currency="USDC" />)
+    expect(screen.getByText(/No items added yet/i)).toBeDefined()
+  })
+
+  it('handles invalid quantity gracefully', () => {
+    const invalidItems = [
+      { d: 'Item with invalid qty', q: 'invalid' as unknown as number, r: '100' },
+    ]
+    render(<LineItemsTable items={invalidItems} currency="USDC" />)
+    // Invalid quantity should result in 0.00 amount
+    expect(screen.getByText('0.00 USDC')).toBeDefined()
+  })
+
+  it('handles invalid rate gracefully', () => {
+    const invalidItems = [{ d: 'Item with invalid rate', q: 1, r: 'invalid' }]
+    render(<LineItemsTable items={invalidItems} currency="USDC" />)
+    // Invalid rate should result in 0.00 amount
+    expect(screen.getByText('0.00 USDC')).toBeDefined()
+  })
+
+  it('handles string quantity correctly', () => {
+    const stringQtyItems = [{ d: 'Item', q: '2.5' as unknown as number, r: '100' }]
+    render(<LineItemsTable items={stringQtyItems} currency="USDC" />)
+    // 2.5 * 100 = 250
+    expect(screen.getByText('250.00 USDC')).toBeDefined()
+  })
 })
