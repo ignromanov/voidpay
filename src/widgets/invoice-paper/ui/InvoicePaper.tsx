@@ -24,9 +24,9 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
 
 // Variant-specific styles
 const VARIANT_STYLES = {
-  full: 'p-12',
-  compact: 'p-6',
-  preview: 'p-12 opacity-90',
+  full: 'p-12', // Interactive mode
+  default: 'p-12', // Standard mode
+  print: 'p-8 print:p-6', // Print-optimized
 } as const
 
 export const InvoicePaper = React.memo(
@@ -37,7 +37,7 @@ export const InvoicePaper = React.memo(
         status = 'pending',
         txHash,
         txHashValidated = true,
-        variant = 'full',
+        variant = 'default',
         responsive = false,
         showQR = true,
         showTexture = true,
@@ -72,7 +72,7 @@ export const InvoicePaper = React.memo(
       )
 
       // Determine if QR should be shown based on variant
-      const shouldShowQR = showQR && variant !== 'compact'
+      const shouldShowQR = showQR && variant !== 'print'
 
       return (
         <article
@@ -113,7 +113,7 @@ export const InvoicePaper = React.memo(
 
             {/* Parties Section - From and Bill To */}
             <section className="py-6 md:py-8" aria-label="Invoice parties">
-              <PartyInfo from={from} client={client} />
+              <PartyInfo from={from} client={client} variant={variant} />
             </section>
 
             <LineItemsTable items={items} currency={data.cur ?? ''} />
@@ -129,6 +129,7 @@ export const InvoicePaper = React.memo(
               tokenAddress={data.t}
               txHash={txHash}
               txHashValidated={txHashValidated}
+              variant={variant}
             />
 
             <PaperFooter notes={data.nt} />

@@ -12,7 +12,7 @@ describe('PaperHeader', () => {
 
   it('renders invoice ID correctly', () => {
     render(<PaperHeader invoiceId="INV-123" iss={mockDate} due={mockDate} status="pending" />)
-    expect(screen.getByText('INV-123')).toBeDefined()
+    expect(screen.getByText('#INV-123')).toBeDefined()
   })
 
   it('renders formatted dates', () => {

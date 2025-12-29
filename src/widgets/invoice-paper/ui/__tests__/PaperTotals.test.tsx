@@ -30,9 +30,10 @@ describe('PaperTotals', () => {
     expect(screen.getByText('1,050.00')).toBeDefined()
   })
 
-  it('renders exact amount with magic dust', () => {
+  it('renders payment ID with magic dust', () => {
     render(<PaperTotals {...baseProps} />)
-    expect(screen.getByText(/Exact: 1050\.000/)).toBeDefined()
+    expect(screen.getByText(/Payment ID/i)).toBeDefined()
+    expect(screen.getByText(/1050\.000/)).toBeDefined()
   })
 
   it('renders unified payment info section with QR', () => {
@@ -40,7 +41,7 @@ describe('PaperTotals', () => {
     expect(screen.getByText(/Payment Info/i)).toBeDefined()
     expect(screen.getByText(/Network/i)).toBeDefined()
     expect(screen.getByText(/Token/i)).toBeDefined()
-    expect(screen.getByText(/Scan to Pay/i)).toBeDefined()
+    expect(screen.getByText(/Scan for payment link/i)).toBeDefined()
   })
 
   it('hides tax row when taxAmount is zero', () => {
@@ -80,6 +81,6 @@ describe('PaperTotals', () => {
 
   it('hides QR code when showQR is false', () => {
     render(<PaperTotals {...baseProps} showQR={false} />)
-    expect(screen.queryByText(/Scan to Pay/i)).toBeNull()
+    expect(screen.queryByText(/Scan for payment link/i)).toBeNull()
   })
 })

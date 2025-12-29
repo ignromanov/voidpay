@@ -20,7 +20,7 @@ describe('InvoicePaper Integration', () => {
 
     // Header
     expect(screen.getByText('Alice')).toBeDefined()
-    expect(screen.getByText('INV-2024-001')).toBeDefined()
+    expect(screen.getByText('#INV-2024-001')).toBeDefined()
 
     // Party Info
     expect(screen.getByText('Bob')).toBeDefined()

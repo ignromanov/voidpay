@@ -37,12 +37,12 @@ export const Watermark = React.memo<WatermarkProps>(({ status, date }) => {
       <div
         className={`flex -rotate-12 flex-col items-center justify-center rounded-xl border-[8px] p-6 opacity-15 mix-blend-multiply ${config.border} ${config.color}`}
       >
-        <span className="mb-2 font-mono text-7xl leading-none font-black tracking-widest">
+        <span className="mb-2 font-mono text-4xl leading-none font-black tracking-widest md:text-5xl lg:text-7xl">
           {config.text}
         </span>
         {date && status === 'paid' && (
           <span
-            className={`border-t-2 pt-1 font-mono text-xl font-bold tracking-wider ${config.border} ${config.dateColor}`}
+            className={`border-t-2 pt-1 font-mono text-base font-bold tracking-wider md:text-lg lg:text-xl ${config.border} ${config.dateColor}`}
           >
             {date}
           </span>

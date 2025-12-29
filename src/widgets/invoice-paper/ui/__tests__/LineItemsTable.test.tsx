@@ -29,7 +29,7 @@ describe('LineItemsTable', () => {
 
   it('renders empty state when items array is empty', () => {
     render(<LineItemsTable items={[]} currency="USDC" />)
-    expect(screen.getByText(/No items added yet/i)).toBeDefined()
+    expect(screen.getByText(/No line items/i)).toBeDefined()
   })
 
   it('handles invalid quantity gracefully', () => {

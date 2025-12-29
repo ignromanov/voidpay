@@ -7,11 +7,11 @@ export type InvoiceStatus = 'draft' | 'pending' | 'paid'
 
 /**
  * Invoice paper display variant
- * - full: Complete invoice with all details and QR code
- * - compact: Reduced padding, no QR code (for embeds)
- * - preview: Draft watermark with reduced opacity
+ * - full: Interactive mode (copy buttons, hover effects) for modals
+ * - default: Standard mode for /create and /pay pages (readonly)
+ * - print: Print-optimized (less padding, no interactive elements)
  */
-export type InvoicePaperVariant = 'full' | 'compact' | 'preview'
+export type InvoicePaperVariant = 'full' | 'default' | 'print'
 
 /**
  * Props for the InvoicePaper widget
@@ -45,7 +45,7 @@ export interface InvoicePaperProps {
 
   /**
    * Display variant of the invoice paper.
-   * @default 'full'
+   * @default 'default'
    */
   variant?: InvoicePaperVariant | undefined
 

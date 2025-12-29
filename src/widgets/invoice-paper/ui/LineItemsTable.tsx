@@ -1,6 +1,6 @@
 import React from 'react'
 import { InvoiceSchemaV1 } from '@/entities/invoice'
-import { formatAmount } from '../lib/format'
+import { formatAmount, formatRate } from '../lib/format'
 
 interface LineItemsTableProps {
   items: InvoiceSchemaV1['it']
@@ -14,6 +14,7 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, currency
         <table className="w-full min-w-[500px] border-collapse text-left">
           <thead>
             <tr className="border-b-2 border-zinc-900">
+              <th className="w-8 py-3 text-xs font-bold tracking-widest text-black uppercase">#</th>
               <th className="w-1/2 py-3 text-xs font-bold tracking-widest text-black uppercase">
                 Description
               </th>
@@ -21,7 +22,7 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, currency
                 Qty
               </th>
               <th className="py-3 text-right text-xs font-bold tracking-widest text-black uppercase">
-                Rate
+                Rate (per unit)
               </th>
               <th className="py-3 text-right text-xs font-bold tracking-widest text-black uppercase">
                 Amount
@@ -37,13 +38,12 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, currency
               return (
                 <tr
                   key={idx}
-                  className="group border-b border-zinc-200 transition-colors last:border-0 hover:bg-zinc-50/50"
+                  className="group border-b border-zinc-200 transition-colors last:border-0 even:bg-zinc-50/50 hover:bg-zinc-100/50"
                 >
+                  <td className="py-4 font-mono text-zinc-400">{idx + 1}</td>
                   <td className="py-4 font-medium text-zinc-900">{item.d}</td>
                   <td className="py-4 text-center font-mono text-zinc-700">{item.q}</td>
-                  <td className="py-4 text-right font-mono text-zinc-700">
-                    {formatAmount(item.r)}
-                  </td>
+                  <td className="py-4 text-right font-mono text-zinc-700">{formatRate(item.r)}</td>
                   <td className="py-4 text-right font-mono font-bold text-black">
                     {formatAmount(amount)} {currency}
                   </td>
@@ -51,11 +51,10 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, currency
               )
             })}
             {items.length === 0 && (
-              <tr className="border-b border-zinc-100">
-                <td colSpan={4} className="py-12 text-center">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="text-4xl text-zinc-200 select-none">📝</div>
-                    <span className="text-sm text-zinc-400 italic">No items added yet.</span>
+              <tr>
+                <td colSpan={5} className="py-12">
+                  <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-zinc-200 py-8">
+                    <span className="text-sm text-zinc-400">No line items</span>
                   </div>
                 </td>
               </tr>

@@ -23,15 +23,15 @@ export const PaperFooter = React.memo<PaperFooterProps>(({ notes }) => {
         </div>
       </div>
 
-      {/* Right: VoidPay branding */}
-      <div className="flex shrink-0 flex-col items-end opacity-70">
+      {/* Right: VoidPay branding (subtle) */}
+      <div className="flex shrink-0 flex-col items-end opacity-50">
         <div className="mb-1 flex items-center gap-1.5">
           <VoidLogo className="h-3 w-3" />
           <a
             href="https://voidpay.xyz"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] font-bold tracking-widest text-zinc-900 uppercase transition-colors hover:text-violet-700"
+            className="text-[9px] font-bold tracking-widest text-zinc-900 uppercase transition-colors hover:text-violet-700"
           >
             Powered by VoidPay
           </a>
@@ -40,7 +40,7 @@ export const PaperFooter = React.memo<PaperFooterProps>(({ notes }) => {
           href="https://voidpay.xyz"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-mono text-[9px] text-zinc-500 transition-colors hover:text-violet-600"
+          className="font-mono text-[8px] text-zinc-500 transition-colors hover:text-violet-600"
         >
           Create your own crypto invoice for free.
         </a>

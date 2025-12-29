@@ -12,7 +12,7 @@ describe('InvoicePaper Preview Mode', () => {
       cur: 'USDC',
     } as unknown as InvoiceSchemaV1
     render(<InvoicePaper data={emptyData} />)
-    expect(screen.getByText(/No items added yet/i)).toBeDefined()
+    expect(screen.getByText(/No line items/i)).toBeDefined()
   })
 
   it('renders default values for missing data', () => {
