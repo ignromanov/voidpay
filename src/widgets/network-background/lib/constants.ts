@@ -103,11 +103,19 @@ export interface ShapeConfig {
   positionMultiplier: number
 
   /**
-   * Travel distance toward center as % of viewport width
+   * Horizontal travel distance toward center as % of viewport width
    * Shape moves from startPercent to (startPercent + amplitudePercent)
    * Larger shapes should have smaller amplitude (mass-based physics)
    */
   amplitudePercent: number
+
+  /**
+   * Vertical travel distance as % of viewport height (optional)
+   * Positive = moves down, Negative = moves up
+   * Combined with amplitudePercent creates diagonal movement
+   * @default 0 (horizontal only)
+   */
+  amplitudeYPercent?: number
 
   // ───────────────────────────────────────────────────────────────────────────
   // Visual
@@ -150,87 +158,88 @@ export const SHAPE_CONFIG: Record<'PRIMARY' | 'SECONDARY' | 'ACCENT', ShapeConfi
    * └─────────────────────────────────────────────────────────────────────────┘
    */
   PRIMARY: {
-    // Position: top-left corner, slightly off-screen
+    // Position: top-left corner (diagonal flow: anchor point)
     sizeVh: 0.5, // 50% viewport height
-    topPercent: 8, // 8% from top
+    topPercent: 6, // 6% from top
     startPercent: -2, // 2% beyond left edge
     zone: 'left',
 
-    // Timing: medium speed
-    duration: 24, // 24s base cycle
+    // Timing: golden ratio middle (φ¹ ≈ 32s)
+    duration: 32, // 32s base cycle
     delay: 0, // starts immediately
 
-    // Animation: medium inertia
-    opacityMin: 0.06, // fades to 6%
-    opacityMax: 0.18, // peaks at 18%
-    breathingMultiplier: 2.5, // breathing cycle ≈ 60s
-    positionMultiplier: 2.8, // position cycle ≈ 67s
-    amplitudePercent: 20, // travels 35% toward center
+    // Animation: moderate inertia, distinct breathing/movement cycles
+    opacityMin: 0.04, // fades to 4%
+    opacityMax: 0.2, // peaks at 20% (higher contrast)
+    breathingMultiplier: 2.3, // breathing cycle ≈ 74s (prime-based)
+    positionMultiplier: 3.1, // position cycle ≈ 99s (different from breathing)
+    amplitudePercent: 22, // moderate travel toward center
 
     // Visual: medium blur
     blurStrength: 14, // 14px gaussian blur
-    blurQuality: 2, // low quality
+    blurQuality: 2, // balanced quality/performance
   },
 
   /**
    * ┌─────────────────────────────────────────────────────────────────────────┐
-   * │ SECONDARY — Largest shape, right side                                   │
+   * │ SECONDARY — Largest shape, center-right (diagonal flow: middle point)  │
    * │ Size: 0.65vh (65% of viewport height)                                   │
    * │ Character: Heavy, majestic, slow-moving                                 │
    * └─────────────────────────────────────────────────────────────────────────┘
    */
   SECONDARY: {
-    // Position: right side, hidden on mobile
+    // Position: center-right (diagonal flow: creates S-curve with PRIMARY and ACCENT)
     sizeVh: 0.65, // 65% viewport height (largest)
-    topPercent: 12, // 12% from top
+    topPercent: 38, // 38% from top (centered vertically)
     startPercent: -2, // 2% beyond right edge
     zone: 'right',
     hideOnMobile: true, // too big for mobile
 
-    // Timing: slowest
-    duration: 28, // 28s base cycle
-    delay: 0.5, // 1.5s delayed entrance
+    // Timing: golden ratio largest (φ² ≈ 52s)
+    duration: 52, // 52s base cycle
+    delay: 1.5, // 1.5s delayed entrance
 
-    // Animation: high inertia (heavy mass)
-    opacityMin: 0.05, // fades to 5%
-    opacityMax: 0.16, // peaks at 16%
-    breathingMultiplier: 2.8, // breathing cycle ≈ 78s
-    positionMultiplier: 3.2, // position cycle ≈ 90s
-    amplitudePercent: 20, // smallest travel (heavy)
+    // Animation: moderate inertia, distinct breathing/movement cycles
+    opacityMin: 0.03, // fades to 3%
+    opacityMax: 0.22, // peaks at 22% (higher contrast)
+    breathingMultiplier: 2.7, // breathing cycle ≈ 140s (prime-based)
+    positionMultiplier: 3.7, // position cycle ≈ 192s (different from breathing)
+    amplitudePercent: 20, // moderate travel toward center
 
     // Visual: strongest blur
     blurStrength: 16, // 16px gaussian blur
-    blurQuality: 2, // low quality
+    blurQuality: 2, // balanced quality/performance
   },
 
   /**
    * ┌─────────────────────────────────────────────────────────────────────────┐
-   * │ ACCENT — Smallest shape, bottom-left                                    │
+   * │ ACCENT — Smallest shape, bottom-left (diagonal flow: end point)        │
    * │ Size: 0.22vh (22% of viewport height)                                   │
    * │ Character: Quick, playful, eye-catching                                 │
    * └─────────────────────────────────────────────────────────────────────────┘
    */
   ACCENT: {
-    // Position: bottom-left corner
+    // Position: bottom-left corner (diagonal flow: completes S-curve)
     sizeVh: 0.22, // 22% viewport height (smallest)
-    topPercent: 65, // 65% from top
-    startPercent: 5, // 5% beyond left edge
+    topPercent: 72, // 72% from top (lower for better diagonal)
+    startPercent: 5, // 5% inside left edge
     zone: 'left',
 
-    // Timing: fastest
-    duration: 20, // 20s base cycle
-    delay: 1, // 3s delayed entrance
+    // Timing: slowed down (×1.5 from original 20s)
+    duration: 30, // 30s base cycle
+    delay: 2.5, // 2.5s delayed entrance
 
-    // Animation: low inertia (light mass)
-    opacityMin: 0.07, // fades to 7%
-    opacityMax: 0.2, // peaks at 20%
-    breathingMultiplier: 2.2, // breathing cycle ≈ 44s
-    positionMultiplier: 2.5, // position cycle ≈ 50s
-    amplitudePercent: 40, // largest travel (light)
+    // Animation: screen-crossing diagonal flight, distinct breathing/movement cycles
+    opacityMin: 0.05, // fades to 5%
+    opacityMax: 0.28, // peaks at 28% (highest contrast, eye-catching)
+    breathingMultiplier: 1.9, // breathing cycle ≈ 57s (prime-based)
+    positionMultiplier: 2.9, // position cycle ≈ 87s (different from breathing)
+    amplitudePercent: 70, // crosses from 5% to 75% of screen
+    amplitudeYPercent: -60, // diagonal rise (~40° angle, ~650px on 1080p)
 
     // Visual: lightest blur
     blurStrength: 10, // 10px gaussian blur
-    blurQuality: 2, // low quality
+    blurQuality: 2, // balanced quality/performance
   },
 } as const
 
@@ -269,6 +278,10 @@ export const PIXI_CONFIG = {
   MAX_RESOLUTION: 2,
   /** Preferred rendering backend */
   PREFERENCE: 'webgl' as const,
+  /** Target FPS (lower = less GPU usage, 30 is smooth enough for ambient animation) */
+  MAX_FPS: 30,
+  /** Minimum FPS for deltaTime calculation (prevents animation jumps during lag) */
+  MIN_FPS: 15,
 } as const
 
 // =============================================================================

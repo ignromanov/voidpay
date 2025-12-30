@@ -53,8 +53,10 @@ export interface ShapeData {
   breathingMultiplier: number
   /** Multiplier for position animation relative to base duration */
   positionMultiplier: number
-  /** Oscillation amplitude as percentage of viewport width */
+  /** Horizontal oscillation amplitude as percentage of viewport width */
   amplitudePercent: number
+  /** Vertical oscillation amplitude as percentage of viewport height (for diagonal movement) */
+  amplitudeYPercent?: number
 
   // ─────────────────────────────────────────────────────────────────────────
   // Visual parameters
@@ -70,9 +72,7 @@ export interface ShapeData {
  * Creates asymmetric layout: primary (top-left), secondary (right), accent (bottom-left)
  * Each shape receives its full configuration from SHAPE_CONFIG
  */
-export function generateShapes(
-  themeConfig: (typeof NETWORK_THEMES)[NetworkTheme]
-): ShapeData[] {
+export function generateShapes(themeConfig: (typeof NETWORK_THEMES)[NetworkTheme]): ShapeData[] {
   return [
     // Primary: Large shape top-left (anchor point)
     {

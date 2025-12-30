@@ -1,19 +1,13 @@
 import { Graphics, GraphicsContext, BlurFilter } from 'pixi.js'
 import type { ShapeData } from '../generate-shapes'
 import type { AnimatedShape, Viewport, ShapeDimensions, AnimationParams } from './types'
-import {
-  SHAPE_ASPECT_RATIOS,
-  SVG_VIEWBOX_SIZES,
-} from '../constants'
+import { SHAPE_ASPECT_RATIOS, SVG_VIEWBOX_SIZES } from '../constants'
 import { generateSvg } from '../svg-generators'
 
 /**
  * Calculate shape dimensions based on viewport and aspect ratio
  */
-export function calculateShapeDimensions(
-  data: ShapeData,
-  viewport: Viewport
-): ShapeDimensions {
+export function calculateShapeDimensions(data: ShapeData, viewport: Viewport): ShapeDimensions {
   const aspectRatio = SHAPE_ASPECT_RATIOS[data.type]
   const baseSize = Math.min(data.sizeVh * viewport.height, viewport.width * 1.5)
   const width = aspectRatio >= 1 ? baseSize : baseSize * aspectRatio
@@ -32,6 +26,8 @@ export function calculateShapeDimensions(
  *
  * Left zone: starts off-screen left, moves RIGHT toward center
  * Right zone: starts off-screen right, moves LEFT toward center
+ *
+ * Optional diagonal movement via amplitudeYPercent
  */
 export function calculateAnimationParams(
   data: ShapeData,
@@ -39,12 +35,15 @@ export function calculateAnimationParams(
   viewport: Viewport
 ): AnimationParams {
   const { width } = dimensions
-  const { width: vw } = viewport
+  const { width: vw, height: vh } = viewport
 
-  // Calculate amplitude from shape-specific amplitudePercent
+  // Calculate horizontal amplitude from shape-specific amplitudePercent
   // Positive for left zone (move right), negative for right zone (move left)
   const baseAmplitude = (data.amplitudePercent / 100) * vw
   const amplitude = data.zone === 'left' ? baseAmplitude : -baseAmplitude
+
+  // Calculate vertical amplitude (optional, for diagonal movement)
+  const amplitudeY = ((data.amplitudeYPercent ?? 0) / 100) * vh
 
   // Calculate start position based on zone and startPercent
   let startX: number
@@ -58,9 +57,9 @@ export function calculateAnimationParams(
     startX = vw - width - (data.startPercent / 100) * vw
   }
 
-  const yPos = (data.topPercent / 100) * viewport.height
+  const startY = (data.topPercent / 100) * vh
 
-  return { startX, amplitude, yPos }
+  return { startX, startY, amplitude, amplitudeY }
 }
 
 /**
@@ -102,9 +101,9 @@ export function createPixiShape(
   // Use shape-specific blur parameters
   graphics.filters = [new BlurFilter({ strength: data.blurStrength, quality: data.blurQuality })]
 
-  // Set initial position at startX (shape starts here, animates toward center)
+  // Set initial position at start coordinates (shape starts here, animates toward center)
   graphics.x = animParams.startX
-  graphics.y = animParams.yPos
+  graphics.y = animParams.startY
 
   // Start invisible for fade-in
   graphics.alpha = 0
@@ -113,10 +112,12 @@ export function createPixiShape(
     container: graphics,
     data,
     phase: 0,
-    // Start at 0 so (1 - cos(0)) / 2 = 0, shape at startX
+    // Start at 0 so (1 - cos(0)) / 2 = 0, shape at start position
     breathingPhase: -Math.PI / 2,
     startX: animParams.startX,
+    startY: animParams.startY,
     amplitude: animParams.amplitude,
+    amplitudeY: animParams.amplitudeY,
     fadeInProgress: 0,
     fadeInComplete: false,
     fadeOutProgress: 0,

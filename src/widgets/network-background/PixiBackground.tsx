@@ -99,14 +99,9 @@ export function PixiBackground({ theme = 'ethereum', className }: PixiBackground
         preference: PIXI_CONFIG.PREFERENCE,
       })
 
-      // Limit FPS to 20 for GPU optimization (animations are slow, 30fps is sufficient)
-      app.ticker.maxFPS = 20
-
-      app.canvas.style.position = 'absolute'
-      app.canvas.style.top = '0'
-      app.canvas.style.left = '0'
-      app.canvas.style.width = '100%'
-      app.canvas.style.height = '100%'
+      // Configure ticker FPS for GPU optimization
+      app.ticker.maxFPS = PIXI_CONFIG.MAX_FPS
+      app.ticker.minFPS = PIXI_CONFIG.MIN_FPS
 
       containerRef.current.appendChild(app.canvas)
       appRef.current = app
