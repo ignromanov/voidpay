@@ -1,61 +1,65 @@
-export interface InvoiceSchemaV1 {
-  /** Schema Version (Fixed: 1) */
-  v: 1
+export interface Invoice {
+  /** Schema Version (Fixed: 2) */
+  version: 2
   /** Invoice ID (UUID or unique string) */
-  id: string
+  invoiceId: string
   /** Issue Date (Unix Timestamp in seconds) */
-  iss: number
+  issuedAt: number
   /** Due Date (Unix Timestamp in seconds) */
-  due: number
+  dueAt: number
   /** Notes (Max 280 chars) */
-  nt?: string | undefined
+  notes?: string | undefined
   /** Network Chain ID (e.g., 1, 137) */
-  net: number
+  networkId: number
   /** Currency Symbol (e.g., "USDC", "ETH") */
-  cur: string
+  currency: string
   /** Token Address (Optional, undefined for native) */
-  t?: string | undefined
+  tokenAddress?: string | undefined
   /** Token Decimals (Required for precision) */
-  dec: number
+  decimals: number
   /** Sender Info */
-  f: {
+  from: {
     /** Name */
-    n: string
+    name: string
     /** Wallet Address */
-    a: string
+    walletAddress: string
     /** Email (Optional) */
-    e?: string | undefined
+    email?: string | undefined
     /** Physical Address (Optional, multi-line allowed) */
-    ads?: string | undefined
+    physicalAddress?: string | undefined
     /** Phone (Optional) */
-    ph?: string | undefined
+    phone?: string | undefined
+    /** Tax ID (Optional) */
+    taxId?: string | undefined
   }
   /** Client Info */
-  c: {
+  client: {
     /** Name */
-    n: string
+    name: string
     /** Wallet Address (Optional) */
-    a?: string | undefined
+    walletAddress?: string | undefined
     /** Email (Optional) */
-    e?: string | undefined
+    email?: string | undefined
     /** Physical Address (Optional, multi-line allowed) */
-    ads?: string | undefined
+    physicalAddress?: string | undefined
     /** Phone (Optional) */
-    ph?: string | undefined
+    phone?: string | undefined
+    /** Tax ID (Optional) */
+    taxId?: string | undefined
   }
   /** Line Items */
-  it: Array<{
+  items: Array<{
     /** Description */
-    d: string
+    description: string
     /** Quantity (BigInt string or number) */
-    q: string | number
+    quantity: string | number
     /** Rate/Price (BigInt string) */
-    r: string
+    rate: string
   }>
   /** Tax Rate (Percentage string e.g. "10%" or Fixed Amount string) */
   tax?: string | undefined
   /** Discount (Percentage string e.g. "10%" or Fixed Amount string) */
-  dsc?: string | undefined
+  discount?: string | undefined
   /** Reserved: Metadata (Extensibility) */
   meta?: Record<string, unknown> | undefined
   /** Reserved: Future use */

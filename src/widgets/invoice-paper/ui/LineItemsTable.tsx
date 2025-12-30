@@ -1,9 +1,9 @@
 import React from 'react'
-import { InvoiceSchemaV1 } from '@/entities/invoice'
+import { Invoice } from '@/entities/invoice'
 import { formatAmount, formatRate } from '../lib/format'
 
 interface LineItemsTableProps {
-  items: InvoiceSchemaV1['it']
+  items: Invoice['items']
 }
 
 export const LineItemsTable = React.memo<LineItemsTableProps>(({ items }) => {
@@ -30,8 +30,9 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items }) => {
           </thead>
           <tbody className="text-sm">
             {items.map((item, idx) => {
-              const qty = typeof item.q === 'string' ? parseFloat(item.q) : item.q
-              const rate = parseFloat(item.r)
+              const qty =
+                typeof item.quantity === 'string' ? parseFloat(item.quantity) : item.quantity
+              const rate = parseFloat(item.rate)
               const amount = isNaN(qty) || isNaN(rate) ? 0 : qty * rate
 
               return (
@@ -40,9 +41,11 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items }) => {
                   className="group border-b border-zinc-200 transition-colors last:border-0 even:bg-zinc-50/50 hover:bg-zinc-100/50"
                 >
                   <td className="py-4 font-mono text-zinc-400">{idx + 1}</td>
-                  <td className="py-4 font-medium text-zinc-900">{item.d}</td>
-                  <td className="py-4 text-center font-mono text-zinc-700">{item.q}</td>
-                  <td className="py-4 text-right font-mono text-zinc-700">{formatRate(item.r)}</td>
+                  <td className="py-4 font-medium text-zinc-900">{item.description}</td>
+                  <td className="py-4 text-center font-mono text-zinc-700">{item.quantity}</td>
+                  <td className="py-4 text-right font-mono text-zinc-700">
+                    {formatRate(item.rate)}
+                  </td>
                   <td className="py-4 text-right font-mono font-bold text-black">
                     {formatAmount(amount)}
                   </td>

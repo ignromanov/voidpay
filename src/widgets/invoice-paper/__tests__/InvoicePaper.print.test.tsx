@@ -2,7 +2,7 @@ import { render } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import React from 'react'
 import { InvoicePaper } from '../ui/InvoicePaper'
-import type { InvoiceSchemaV1 } from '@/entities/invoice'
+import type { Invoice } from '@/entities/invoice'
 
 describe('InvoicePaper Print Support', () => {
   it('supports forwardRef for printing', () => {
@@ -16,7 +16,7 @@ describe('InvoicePaper Print Support', () => {
       f: { n: 'S', a: '0x1' },
       c: { n: 'C', a: '0x2' },
       it: [],
-    } as unknown as InvoiceSchemaV1
+    } as unknown as Invoice
 
     render(<InvoicePaper ref={ref} data={data} />)
     expect(ref.current).not.toBeNull()
@@ -32,7 +32,7 @@ describe('InvoicePaper Print Support', () => {
       f: { n: 'S', a: '0x1' },
       c: { n: 'C', a: '0x2' },
       it: [],
-    } as unknown as InvoiceSchemaV1
+    } as unknown as Invoice
 
     const { container } = render(<InvoicePaper data={data} />)
     const paper = container.firstChild as HTMLElement

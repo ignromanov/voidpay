@@ -1,12 +1,11 @@
 import React from 'react'
-import { Mail, Phone, MapPin, Wallet } from 'lucide-react'
-import { InvoiceSchemaV1 } from '@/entities/invoice'
-import { CopyButton } from '@/shared/ui'
+import { Invoice } from '@/entities/invoice'
+import { CopyButton, MailIcon, PhoneIcon, MapPinIcon, WalletIcon, HashIcon } from '@/shared/ui'
 import { InvoicePaperVariant } from '../types'
 
 interface PartyInfoProps {
-  from: InvoiceSchemaV1['f']
-  client: InvoiceSchemaV1['c']
+  from: Invoice['from']
+  client: Invoice['client']
   variant?: InvoicePaperVariant
 }
 
@@ -22,37 +21,45 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
       {/* FROM Section - Order: Name → Email → Phone → Address → Wallet */}
       <div className="flex flex-col">
         <p className="mb-3 text-xs font-bold tracking-widest text-zinc-400 uppercase">From</p>
-        {from.n && <p className="mb-3 text-lg font-bold text-black">{from.n}</p>}
+        {from.name && <p className="mb-3 text-lg font-bold text-black">{from.name}</p>}
         <div className="space-y-2">
-          {from.e && (
+          {from.email && (
             <div className="flex items-center gap-2">
-              <Mail className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
+              <MailIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
               <a
-                href={`mailto:${from.e}`}
+                href={`mailto:${from.email}`}
                 className="text-sm text-zinc-800 hover:text-zinc-600 hover:underline"
               >
-                {from.e}
+                {from.email}
               </a>
             </div>
           )}
-          {from.ph && (
+          {from.phone && (
             <div className="flex items-center gap-2">
-              <Phone className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
+              <PhoneIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
               <a
-                href={`tel:${from.ph}`}
+                href={`tel:${from.phone}`}
                 className="text-sm text-zinc-800 hover:text-zinc-600 hover:underline"
               >
-                {from.ph}
+                {from.phone}
               </a>
             </div>
           )}
-          {from.ads && (
-            <div className="mt-3 flex items-start gap-2">
-              <MapPin
+          {from.taxId && (
+            <div className="flex items-center gap-2">
+              <HashIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
+              <span className="text-sm text-zinc-800">{from.taxId}</span>
+            </div>
+          )}
+          {from.physicalAddress && (
+            <div className="mt-3 flex items-start gap-2 first:mt-0">
+              <MapPinIcon
                 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-zinc-400"
                 aria-hidden="true"
               />
-              <span className="text-sm whitespace-pre-line text-zinc-700">{from.ads}</span>
+              <span className="text-sm whitespace-pre-line text-zinc-700">
+                {from.physicalAddress}
+              </span>
             </div>
           )}
         </div>
@@ -63,47 +70,64 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
         <p className="mb-3 text-xs font-bold tracking-widest text-zinc-400 uppercase md:text-right">
           Bill To
         </p>
-        {client.n && <p className="mb-3 text-lg font-bold text-black md:text-right">{client.n}</p>}
+        {client.name && (
+          <p className="mb-3 text-lg font-bold text-black md:text-right">{client.name}</p>
+        )}
         <div className="space-y-2 md:text-right">
-          {client.e && (
+          {client.email && (
             <div className="flex items-center gap-2 md:flex-row-reverse">
-              <Mail className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
+              <MailIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
               <a
-                href={`mailto:${client.e}`}
+                href={`mailto:${client.email}`}
                 className="text-sm text-zinc-800 hover:text-zinc-600 hover:underline"
               >
-                {client.e}
+                {client.email}
               </a>
             </div>
           )}
-          {client.ph && (
+          {client.phone && (
             <div className="flex items-center gap-2 md:flex-row-reverse">
-              <Phone className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
+              <PhoneIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
               <a
-                href={`tel:${client.ph}`}
+                href={`tel:${client.phone}`}
                 className="text-sm text-zinc-800 hover:text-zinc-600 hover:underline"
               >
-                {client.ph}
+                {client.phone}
               </a>
             </div>
           )}
-          {client.ads && (
-            <div className="mt-3 flex items-start gap-2 md:flex-row-reverse">
-              <MapPin
+          {client.taxId && (
+            <div className="flex items-center gap-2 md:flex-row-reverse">
+              <HashIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
+              <span className="text-sm text-zinc-800">{client.taxId}</span>
+            </div>
+          )}
+          {client.physicalAddress && (
+            <div className="mt-3 flex items-start gap-2 first:mt-0 md:flex-row-reverse">
+              <MapPinIcon
                 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-zinc-400"
                 aria-hidden="true"
               />
-              <span className="text-sm whitespace-pre-line text-zinc-700">{client.ads}</span>
+              <span className="text-sm whitespace-pre-line text-zinc-700">
+                {client.physicalAddress}
+              </span>
             </div>
           )}
-          {client.a && (
-            <div className="mt-3 flex items-center gap-2 md:flex-row-reverse">
-              <Wallet className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
-              <span className="font-mono text-xs break-all text-zinc-800" title={client.a}>
-                {client.a}
+          {client.walletAddress && (
+            <div className="mt-3 flex items-center gap-2 first:mt-0 md:flex-row-reverse">
+              <WalletIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
+              <span
+                className="font-mono text-xs break-all text-zinc-800"
+                title={client.walletAddress}
+              >
+                {client.walletAddress}
               </span>
               {isInteractive && (
-                <CopyButton value={client.a} size="xs" aria-label="Copy client wallet address" />
+                <CopyButton
+                  value={client.walletAddress}
+                  size="xs"
+                  aria-label="Copy client wallet address"
+                />
               )}
             </div>
           )}

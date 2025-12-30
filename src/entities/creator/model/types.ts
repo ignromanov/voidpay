@@ -6,9 +6,11 @@
  */
 
 import type {
-  InvoiceDraft,
+  Invoice,
+  DraftState,
   InvoiceTemplate,
   CreationHistoryEntry,
+  LineItem,
 } from '@/entities/invoice'
 
 /**
@@ -37,8 +39,8 @@ export interface UserPreferences {
   /** Default currency symbol (e.g., "USDC") */
   defaultCurrency?: string
 
-  /** Default chain ID (e.g., 42161 for Arbitrum) */
-  defaultChainId?: number
+  /** Default network ID / chain ID (e.g., 42161 for Arbitrum) */
+  defaultNetworkId?: number
 
   // ========== Invoice Defaults ==========
 
@@ -77,7 +79,10 @@ export interface CreatorStoreV1 {
   version: 1
 
   /** Active draft (single in-progress invoice) */
-  activeDraft: InvoiceDraft | null
+  activeDraft: DraftState | null
+
+  /** UI-specific: Line items with IDs for React keys */
+  lineItems: LineItem[]
 
   /** Saved templates for reuse */
   templates: InvoiceTemplate[]
@@ -92,5 +97,5 @@ export interface CreatorStoreV1 {
   idCounter: InvoiceIDCounter
 }
 
-// Re-export invoice types for convenience
-export type { InvoiceDraft, InvoiceTemplate, CreationHistoryEntry }
+// Re-export types for convenience
+export type { Invoice, DraftState, InvoiceTemplate, CreationHistoryEntry, LineItem }

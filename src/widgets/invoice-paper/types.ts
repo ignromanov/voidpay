@@ -1,4 +1,4 @@
-import { InvoiceSchemaV1, ViewedInvoiceStatus as InvoiceStatus } from '@/entities/invoice'
+import { Invoice, ViewedInvoiceStatus as InvoiceStatus } from '@/entities/invoice'
 
 /**
  * Visual status of the invoice document
@@ -27,7 +27,7 @@ export interface InvoicePaperProps {
    * Invoice data following Schema V1.
    * Can be partial for 'draft' status preview.
    */
-  data: Partial<InvoiceSchemaV1>
+  data: Partial<Invoice>
 
   /**
    * Current status of the invoice.

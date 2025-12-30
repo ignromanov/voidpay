@@ -11,9 +11,14 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
+import {
+  invoiceItemsToLineItems,
+  type Invoice,
+  type DraftState,
+  type LineItem,
+} from '@/entities/invoice'
 import type {
   CreatorStoreV1,
-  InvoiceDraft,
   InvoiceTemplate,
   CreationHistoryEntry,
   UserPreferences,
@@ -27,9 +32,9 @@ interface CreatorStoreActions {
   // ========== Draft Management ==========
 
   /**
-   * Update the active draft (debounced in UI layer)
+   * Update the active draft data (debounced in UI layer)
    */
-  updateDraft: (draft: Partial<InvoiceDraft>) => void
+  updateDraft: (data: Partial<Invoice>) => void
 
   /**
    * Clear the active draft (called after URL generation)
@@ -40,6 +45,28 @@ interface CreatorStoreActions {
    * Create a new empty draft with default values from preferences
    */
   createNewDraft: () => string
+
+  // ========== Line Items Management ==========
+
+  /**
+   * Update line items (separate from draft for UI)
+   */
+  updateLineItems: (items: LineItem[]) => void
+
+  /**
+   * Add a new empty line item
+   */
+  addLineItem: () => void
+
+  /**
+   * Remove a line item by id
+   */
+  removeLineItem: (id: string) => void
+
+  /**
+   * Update a single line item
+   */
+  updateLineItem: (id: string, updates: Partial<Omit<LineItem, 'id'>>) => void
 
   // ========== Template Management ==========
 
@@ -123,11 +150,26 @@ interface CreatorStoreActions {
 type CreatorStore = CreatorStoreV1 & CreatorStoreActions
 
 /**
+ * Get current Unix timestamp in seconds
+ */
+function nowUnix(): number {
+  return Math.floor(Date.now() / 1000)
+}
+
+/**
+ * Get Unix timestamp for a date N days from now
+ */
+function daysFromNowUnix(days: number): number {
+  return nowUnix() + days * 24 * 60 * 60
+}
+
+/**
  * Initial state
  */
 const initialState: CreatorStoreV1 = {
   version: 1,
   activeDraft: null,
+  lineItems: [],
   templates: [],
   history: [],
   preferences: {},
@@ -138,15 +180,143 @@ const initialState: CreatorStoreV1 = {
 }
 
 /**
+ * Create default draft with preferences
+ */
+function createDefaultDraft(
+  draftId: string,
+  invoiceId: string,
+  preferences: UserPreferences
+): DraftState {
+  return {
+    meta: {
+      draftId,
+      lastModified: new Date().toISOString(),
+    },
+    data: {
+      version: 2,
+      invoiceId,
+      issuedAt: nowUnix(),
+      dueAt: daysFromNowUnix(30), // Default: 30 days from now
+      networkId: preferences.defaultNetworkId ?? 1,
+      currency: preferences.defaultCurrency ?? 'USDC',
+      decimals: 6, // Default for USDC
+      from: {
+        name: preferences.defaultSenderName ?? '',
+        walletAddress: preferences.defaultSenderWallet ?? '',
+        ...(preferences.defaultSenderEmail && { email: preferences.defaultSenderEmail }),
+        ...(preferences.defaultSenderAddress && {
+          physicalAddress: preferences.defaultSenderAddress,
+        }),
+      },
+      client: {
+        name: '',
+      },
+      items: [],
+      ...(preferences.defaultTaxRate && { tax: preferences.defaultTaxRate }),
+    },
+  }
+}
+
+/**
+ * Create default line item
+ */
+function createDefaultLineItem(): LineItem {
+  return {
+    id: uuidv4(),
+    description: '',
+    quantity: 1,
+    rate: '0',
+  }
+}
+
+/**
  * Migration function for future schema versions
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const migrate = (persistedState: any, version: number): CreatorStoreV1 => {
-  // Version 0 (no version) → Version 1
+  // Version 0 (no version) -> Version 1
   if (version === 0 || !persistedState.version) {
+    // Migrate from old InvoiceDraft format to new DraftState format
+    const oldDraft = persistedState.activeDraft
+
+    let newDraft: DraftState | null = null
+    let lineItems: LineItem[] = []
+
+    if (oldDraft) {
+      // Extract line items with ids
+      lineItems = (oldDraft.lineItems ?? []).map(
+        (item: { id?: string; description: string; quantity: number; rate: string }) => ({
+          id: item.id ?? uuidv4(),
+          description: item.description,
+          quantity: item.quantity,
+          rate: item.rate,
+        })
+      )
+
+      // Convert dates from ISO to Unix timestamps
+      const issuedAt = oldDraft.issueDate
+        ? Math.floor(new Date(oldDraft.issueDate).getTime() / 1000)
+        : nowUnix()
+
+      const dueAt = oldDraft.dueDate
+        ? Math.floor(new Date(oldDraft.dueDate).getTime() / 1000)
+        : daysFromNowUnix(30)
+
+      newDraft = {
+        meta: {
+          draftId: oldDraft.draftId ?? uuidv4(),
+          lastModified: oldDraft.lastModified ?? new Date().toISOString(),
+        },
+        data: {
+          version: 2,
+          invoiceId: oldDraft.invoiceId ?? '',
+          issuedAt,
+          dueAt,
+          networkId: oldDraft.chainId ?? 1,
+          currency: oldDraft.currencySymbol ?? 'USDC',
+          tokenAddress: oldDraft.tokenAddress,
+          decimals: oldDraft.decimals ?? 6,
+          from: {
+            name: oldDraft.sender?.name ?? '',
+            walletAddress: oldDraft.sender?.wallet ?? '',
+            ...(oldDraft.sender?.email && { email: oldDraft.sender.email }),
+            ...(oldDraft.sender?.address && { physicalAddress: oldDraft.sender.address }),
+          },
+          client: {
+            name: oldDraft.recipient?.name ?? '',
+            ...(oldDraft.recipient?.wallet && { walletAddress: oldDraft.recipient.wallet }),
+            ...(oldDraft.recipient?.email && { email: oldDraft.recipient.email }),
+            ...(oldDraft.recipient?.address && { physicalAddress: oldDraft.recipient.address }),
+          },
+          items: lineItems.map(({ description, quantity, rate }) => ({
+            description,
+            quantity,
+            rate,
+          })),
+          ...(oldDraft.taxRate && oldDraft.taxRate !== '0' && { tax: oldDraft.taxRate }),
+          ...(oldDraft.discountAmount &&
+            oldDraft.discountAmount !== '0' && { discount: oldDraft.discountAmount }),
+          ...(oldDraft.notes && { notes: oldDraft.notes }),
+        },
+      }
+    }
+
+    // Migrate preferences
+    const oldPrefs = persistedState.preferences ?? {}
+    const newPrefs: UserPreferences = {
+      ...oldPrefs,
+      // Rename defaultChainId to defaultNetworkId if it exists
+      ...(oldPrefs.defaultChainId && { defaultNetworkId: oldPrefs.defaultChainId }),
+    }
+    // Remove old key
+    delete (newPrefs as Record<string, unknown>).defaultChainId
+
     return {
       ...persistedState,
       version: 1,
+      activeDraft: newDraft,
+      lineItems,
+      preferences: newPrefs,
     }
   }
 
@@ -184,105 +354,193 @@ export const useCreatorStore = create<CreatorStore>()(
 
       // ========== Draft Management ==========
 
-      updateDraft: (draft) => {
+      updateDraft: (data) => {
         set((state) => {
           const currentDraft = state.activeDraft
 
           // If no active draft, create a new one
           if (!currentDraft) {
-            const newDraft: InvoiceDraft = {
-              draftId: uuidv4(),
-              lastModified: new Date().toISOString(),
-              invoiceId: '',
-              issueDate: '',
-              dueDate: '',
-              chainId: state.preferences.defaultChainId || 1,
-              currencySymbol: state.preferences.defaultCurrency || 'USDC',
-              decimals: 6,
-              sender: {
-                name: state.preferences.defaultSenderName || '',
-                wallet: state.preferences.defaultSenderWallet || '',
-                ...(state.preferences.defaultSenderEmail && {
-                  email: state.preferences.defaultSenderEmail,
-                }),
-                ...(state.preferences.defaultSenderAddress && {
-                  address: state.preferences.defaultSenderAddress,
-                }),
-              },
-              recipient: {
-                name: '',
-              },
-              lineItems: [],
-              taxRate: state.preferences.defaultTaxRate || '0',
-              discountAmount: '0',
-              ...draft,
-            }
+            const draftId = uuidv4()
+            const invoiceId = state.generateNextInvoiceId()
+            const newDraft = createDefaultDraft(draftId, invoiceId, state.preferences)
 
-            return { activeDraft: newDraft }
+            return {
+              activeDraft: {
+                ...newDraft,
+                data: { ...newDraft.data, ...data },
+              },
+              lineItems: [createDefaultLineItem()],
+            }
           }
 
           // Update existing draft
           return {
             activeDraft: {
-              ...currentDraft,
-              ...draft,
-              lastModified: new Date().toISOString(),
+              meta: {
+                ...currentDraft.meta,
+                lastModified: new Date().toISOString(),
+              },
+              data: {
+                ...currentDraft.data,
+                ...data,
+              },
             },
           }
         })
       },
 
       clearDraft: () => {
-        set({ activeDraft: null })
+        set({ activeDraft: null, lineItems: [] })
       },
 
       createNewDraft: () => {
         const draftId = uuidv4()
         const state = get()
+        const invoiceId = state.generateNextInvoiceId()
 
-        const newDraft: InvoiceDraft = {
-          draftId,
-          lastModified: new Date().toISOString(),
-          invoiceId: state.generateNextInvoiceId(),
-          issueDate: new Date().toISOString().split('T')[0] || '',
-          dueDate: '',
-          chainId: state.preferences.defaultChainId || 1,
-          currencySymbol: state.preferences.defaultCurrency || 'USDC',
-          decimals: 6,
-          sender: {
-            name: state.preferences.defaultSenderName || '',
-            wallet: state.preferences.defaultSenderWallet || '',
-            ...(state.preferences.defaultSenderEmail && {
-              email: state.preferences.defaultSenderEmail,
-            }),
-            ...(state.preferences.defaultSenderAddress && {
-              address: state.preferences.defaultSenderAddress,
-            }),
-          },
-          recipient: {
-            name: '',
-          },
-          lineItems: [
-            {
-              id: uuidv4(),
-              description: '',
-              quantity: 1,
-              rate: '0',
-            },
-          ],
-          taxRate: state.preferences.defaultTaxRate || '0',
-          discountAmount: '0',
-        }
+        const newDraft = createDefaultDraft(draftId, invoiceId, state.preferences)
 
-        set({ activeDraft: newDraft })
+        set({
+          activeDraft: newDraft,
+          lineItems: [createDefaultLineItem()],
+        })
+
         return draftId
+      },
+
+      // ========== Line Items Management ==========
+
+      updateLineItems: (items) => {
+        set((state) => {
+          // Also sync to draft.data.items (without ids)
+          const invoiceItems = items.map(({ description, quantity, rate }) => ({
+            description,
+            quantity,
+            rate,
+          }))
+
+          if (!state.activeDraft) {
+            return { lineItems: items }
+          }
+
+          return {
+            lineItems: items,
+            activeDraft: {
+              ...state.activeDraft,
+              meta: {
+                ...state.activeDraft.meta,
+                lastModified: new Date().toISOString(),
+              },
+              data: {
+                ...state.activeDraft.data,
+                items: invoiceItems,
+              },
+            },
+          }
+        })
+      },
+
+      addLineItem: () => {
+        set((state) => {
+          const newItem = createDefaultLineItem()
+          const newItems = [...state.lineItems, newItem]
+
+          const invoiceItems = newItems.map(({ description, quantity, rate }) => ({
+            description,
+            quantity,
+            rate,
+          }))
+
+          if (!state.activeDraft) {
+            return { lineItems: newItems }
+          }
+
+          return {
+            lineItems: newItems,
+            activeDraft: {
+              ...state.activeDraft,
+              meta: {
+                ...state.activeDraft.meta,
+                lastModified: new Date().toISOString(),
+              },
+              data: {
+                ...state.activeDraft.data,
+                items: invoiceItems,
+              },
+            },
+          }
+        })
+      },
+
+      removeLineItem: (id) => {
+        set((state) => {
+          const newItems = state.lineItems.filter((item) => item.id !== id)
+
+          const invoiceItems = newItems.map(({ description, quantity, rate }) => ({
+            description,
+            quantity,
+            rate,
+          }))
+
+          if (!state.activeDraft) {
+            return { lineItems: newItems }
+          }
+
+          return {
+            lineItems: newItems,
+            activeDraft: {
+              ...state.activeDraft,
+              meta: {
+                ...state.activeDraft.meta,
+                lastModified: new Date().toISOString(),
+              },
+              data: {
+                ...state.activeDraft.data,
+                items: invoiceItems,
+              },
+            },
+          }
+        })
+      },
+
+      updateLineItem: (id, updates) => {
+        set((state) => {
+          const newItems = state.lineItems.map((item) =>
+            item.id === id ? { ...item, ...updates } : item
+          )
+
+          const invoiceItems = newItems.map(({ description, quantity, rate }) => ({
+            description,
+            quantity,
+            rate,
+          }))
+
+          if (!state.activeDraft) {
+            return { lineItems: newItems }
+          }
+
+          return {
+            lineItems: newItems,
+            activeDraft: {
+              ...state.activeDraft,
+              meta: {
+                ...state.activeDraft.meta,
+                lastModified: new Date().toISOString(),
+              },
+              data: {
+                ...state.activeDraft.data,
+                items: invoiceItems,
+              },
+            },
+          }
+        })
       },
 
       // ========== Template Management ==========
 
       saveAsTemplate: (name) => {
         const state = get()
-        const { activeDraft } = state
+        const { activeDraft, lineItems } = state
 
         if (!activeDraft) {
           throw new Error('No active draft to save as template')
@@ -290,30 +548,29 @@ export const useCreatorStore = create<CreatorStore>()(
 
         const templateId = uuidv4()
 
-        // Auto-generate name if not provided
-        const templateName =
-          name ||
-          `${activeDraft.recipient.name || 'Untitled'} - ${activeDraft.issueDate || new Date().toISOString().split('T')[0]}`
+        // Get client name for auto-generated template name
+        const clientName = activeDraft.data.client?.name ?? 'Untitled'
+        const dateStr = activeDraft.data.issuedAt
+          ? new Date(activeDraft.data.issuedAt * 1000).toISOString().split('T')[0]
+          : new Date().toISOString().split('T')[0]
+
+        const templateName = name ?? `${clientName} - ${dateStr}`
+
+        // Include line items in template data
+        const templateData: Partial<Invoice> = {
+          ...activeDraft.data,
+          items: lineItems.map(({ description, quantity, rate }) => ({
+            description,
+            quantity,
+            rate,
+          })),
+        }
 
         const template: InvoiceTemplate = {
           templateId,
           name: templateName,
           createdAt: new Date().toISOString(),
-          invoiceData: {
-            invoiceId: activeDraft.invoiceId,
-            issueDate: activeDraft.issueDate,
-            dueDate: activeDraft.dueDate,
-            ...(activeDraft.notes && { notes: activeDraft.notes }),
-            chainId: activeDraft.chainId,
-            currencySymbol: activeDraft.currencySymbol,
-            ...(activeDraft.tokenAddress && { tokenAddress: activeDraft.tokenAddress }),
-            decimals: activeDraft.decimals,
-            sender: activeDraft.sender,
-            recipient: activeDraft.recipient,
-            lineItems: activeDraft.lineItems,
-            taxRate: activeDraft.taxRate,
-            discountAmount: activeDraft.discountAmount,
-          },
+          invoiceData: templateData,
         }
 
         set((state) => ({
@@ -331,13 +588,33 @@ export const useCreatorStore = create<CreatorStore>()(
           throw new Error(`Template ${templateId} not found`)
         }
 
-        const newDraft: InvoiceDraft = {
-          draftId: uuidv4(),
-          lastModified: new Date().toISOString(),
-          ...template.invoiceData,
+        const draftId = uuidv4()
+
+        // Convert template items to LineItems with ids
+        const lineItems: LineItem[] = (template.invoiceData.items ?? []).map((item) => ({
+          id: uuidv4(),
+          description: item.description,
+          quantity: typeof item.quantity === 'string' ? parseFloat(item.quantity) : item.quantity,
+          rate: item.rate,
+        }))
+
+        const newDraft: DraftState = {
+          meta: {
+            draftId,
+            lastModified: new Date().toISOString(),
+          },
+          data: {
+            ...template.invoiceData,
+            // Update dates to current
+            issuedAt: nowUnix(),
+            dueAt: daysFromNowUnix(30),
+          },
         }
 
-        set({ activeDraft: newDraft })
+        set({
+          activeDraft: newDraft,
+          lineItems,
+        })
       },
 
       deleteTemplate: (templateId) => {
@@ -385,44 +662,32 @@ export const useCreatorStore = create<CreatorStore>()(
         }
 
         // Create a new draft from the history entry
-        // Note: We don't have full invoice data in history, so this is a simplified version
+        // Use full invoice data from history entry
         const draftId = uuidv4()
 
-        const newDraft: InvoiceDraft = {
-          draftId,
-          lastModified: new Date().toISOString(),
-          invoiceId: entry.invoiceId,
-          issueDate: new Date().toISOString().split('T')[0] || '',
-          dueDate: '',
-          chainId: state.preferences.defaultChainId || 1,
-          currencySymbol: state.preferences.defaultCurrency || 'USDC',
-          decimals: 6,
-          sender: {
-            name: state.preferences.defaultSenderName || '',
-            wallet: state.preferences.defaultSenderWallet || '',
-            ...(state.preferences.defaultSenderEmail && {
-              email: state.preferences.defaultSenderEmail,
-            }),
-            ...(state.preferences.defaultSenderAddress && {
-              address: state.preferences.defaultSenderAddress,
-            }),
+        const newDraft: DraftState = {
+          meta: {
+            draftId,
+            lastModified: new Date().toISOString(),
           },
-          recipient: {
-            name: entry.recipientName,
+          data: {
+            ...entry.invoice,
+            // Reset dates for new invoice
+            issuedAt: nowUnix(),
+            dueAt: daysFromNowUnix(30),
           },
-          lineItems: [
-            {
-              id: uuidv4(),
-              description: '',
-              quantity: 1,
-              rate: '0',
-            },
-          ],
-          taxRate: state.preferences.defaultTaxRate || '0',
-          discountAmount: '0',
         }
 
-        set({ activeDraft: newDraft })
+        // Convert invoice items to line items with IDs
+        const restoredLineItems = entry.invoice.items?.length
+          ? invoiceItemsToLineItems(entry.invoice.items)
+          : [createDefaultLineItem()]
+
+        set({
+          activeDraft: newDraft,
+          lineItems: restoredLineItems,
+        })
+
         return draftId
       },
 
@@ -509,6 +774,7 @@ export const useCreatorStore = create<CreatorStore>()(
       partialize: (state) => ({
         version: state.version,
         activeDraft: state.activeDraft,
+        lineItems: state.lineItems,
         templates: state.templates,
         history: state.history,
         preferences: state.preferences,

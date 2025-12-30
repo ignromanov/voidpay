@@ -8,7 +8,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { INVOICE_VIEW_STORE_KEY } from '@/shared/config'
-import type { InvoiceSchemaV1 } from './schema'
+import type { Invoice } from './schema'
 
 /**
  * Status of a viewed invoice
@@ -24,7 +24,7 @@ export interface ViewedInvoice {
   /** Generated URL for sharing */
   invoiceUrl: string
   /** Original invoice data */
-  data: InvoiceSchemaV1
+  data: Invoice
   /** Current payment status */
   status: ViewedInvoiceStatus
   /** Transaction hash (if paid) */

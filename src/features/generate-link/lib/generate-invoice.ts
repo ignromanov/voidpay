@@ -5,41 +5,49 @@
  * This feature combines entities/invoice (data) with entities/creator (storage).
  */
 
-import type { InvoiceDraft } from '@/entities/invoice'
+import {
+  lineItemsToInvoiceItems,
+  type Invoice,
+  type DraftState,
+  type LineItem,
+} from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
 
 /**
- * Calculate total amount from invoice draft
+ * Calculate total amount from invoice data
  *
- * @param draft - Invoice draft
+ * @param invoice - Partial invoice data
+ * @param lineItems - Line items with UI ids
  * @returns Total amount as decimal string with currency symbol
  */
-export function calculateTotalAmount(draft: InvoiceDraft): string {
+export function calculateTotalAmount(invoice: Partial<Invoice>, lineItems: LineItem[]): string {
+  const currency = invoice.currency ?? 'USDC'
+
   // Calculate subtotal from line items
-  const subtotal = draft.lineItems.reduce((sum, item) => {
+  const subtotal = lineItems.reduce((sum, item) => {
     const itemTotal = parseFloat(item.rate) * item.quantity
     return sum + itemTotal
   }, 0)
 
-  // Apply tax rate
+  // Apply tax
   let total = subtotal
-  if (draft.taxRate) {
-    const taxValue = draft.taxRate.endsWith('%')
-      ? (subtotal * parseFloat(draft.taxRate)) / 100
-      : parseFloat(draft.taxRate)
+  if (invoice.tax) {
+    const taxValue = invoice.tax.endsWith('%')
+      ? (subtotal * parseFloat(invoice.tax)) / 100
+      : parseFloat(invoice.tax)
     total += taxValue
   }
 
   // Apply discount
-  if (draft.discountAmount) {
-    const discountValue = draft.discountAmount.endsWith('%')
-      ? (subtotal * parseFloat(draft.discountAmount)) / 100
-      : parseFloat(draft.discountAmount)
+  if (invoice.discount) {
+    const discountValue = invoice.discount.endsWith('%')
+      ? (subtotal * parseFloat(invoice.discount)) / 100
+      : parseFloat(invoice.discount)
     total -= discountValue
   }
 
   // Format with currency symbol
-  return `${total.toFixed(2)} ${draft.currencySymbol}`
+  return `${total.toFixed(2)} ${currency}`
 }
 
 /**
@@ -47,24 +55,30 @@ export function calculateTotalAmount(draft: InvoiceDraft): string {
  *
  * This should be called after successfully generating an invoice URL.
  *
- * @param draft - Invoice draft that was converted to URL
+ * @param invoice - Full invoice data
  * @param invoiceUrl - Generated invoice URL
  *
  * @example
- * const url = await generateInvoiceUrl(draft)
- * addToHistory(draft, url)
+ * const url = await generateInvoiceUrl(invoice)
+ * addToHistory(invoice, url)
  */
-export function addToHistory(draft: InvoiceDraft, invoiceUrl: string): void {
+export function addToHistory(invoice: Invoice, invoiceUrl: string): void {
   const { addHistoryEntry } = useCreatorStore.getState()
 
-  const totalAmount = calculateTotalAmount(draft)
-
   addHistoryEntry({
-    invoiceId: draft.invoiceId,
-    recipientName: draft.recipient.name,
-    totalAmount,
+    invoice,
     invoiceUrl,
   })
+}
+
+/**
+ * Build full Invoice from draft and line items
+ */
+export function buildInvoice(draft: DraftState, lineItems: LineItem[]): Invoice {
+  return {
+    ...draft.data,
+    items: lineItemsToInvoiceItems(lineItems),
+  } as Invoice
 }
 
 /**
@@ -73,21 +87,26 @@ export function addToHistory(draft: InvoiceDraft, invoiceUrl: string): void {
  * This is a convenience function that combines URL generation and history tracking.
  * Replace the URL generation logic with actual implementation.
  *
- * @param draft - Invoice draft
+ * @param draft - Draft state with invoice data
+ * @param lineItems - Line items for the invoice
  * @returns Generated invoice URL
  *
  * @example
- * const url = await generateAndTrackInvoice(draft)
+ * const url = await generateAndTrackInvoice(draft, lineItems)
  * router.push(url)
  */
-export async function generateAndTrackInvoice(draft: InvoiceDraft): Promise<string> {
+export async function generateAndTrackInvoice(
+  draft: DraftState,
+  lineItems: LineItem[]
+): Promise<string> {
   // TODO: Replace with actual URL generation logic from url-state-codec
   // For now, this is a placeholder
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  const invoiceUrl = `${baseUrl}/invoice?draft=${draft.draftId}`
+  const invoiceUrl = `${baseUrl}/invoice?draft=${draft.meta.draftId}`
 
-  // Add to history
-  addToHistory(draft, invoiceUrl)
+  // Build full invoice and add to history
+  const invoice = buildInvoice(draft, lineItems)
+  addToHistory(invoice, invoiceUrl)
 
   return invoiceUrl
 }

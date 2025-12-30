@@ -5,13 +5,13 @@ import { X } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogClose } from '@/shared/ui'
 import { InvoicePaper } from './InvoicePaper'
 import { InvoiceStatus } from '../types'
-import { InvoiceSchemaV1 } from '@/entities/invoice'
+import { Invoice } from '@/entities/invoice'
 
 export interface InvoicePreviewModalProps {
   /**
    * Invoice data to display
    */
-  data: Partial<InvoiceSchemaV1>
+  data: Partial<Invoice>
 
   /**
    * Invoice status for watermark/badge
@@ -51,7 +51,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
         >
           {/* Visually hidden title for accessibility */}
           <DialogTitle className="sr-only">
-            Invoice Preview {data.id ? `#${data.id}` : ''}
+            Invoice Preview {data.invoiceId ? `#${data.invoiceId}` : ''}
           </DialogTitle>
 
           {/* Close button positioned outside the invoice */}

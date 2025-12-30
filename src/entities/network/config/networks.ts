@@ -31,3 +31,20 @@ export const NETWORKS = {
 } as const
 
 export type NetworkId = keyof typeof NETWORKS
+
+/**
+ * Short network codes for compact URLs (OG previews, etc.)
+ */
+export const NETWORK_CODES: Record<NetworkId, string> = {
+  [mainnet.id]: 'eth',
+  [arbitrum.id]: 'arb',
+  [optimism.id]: 'op',
+  [polygon.id]: 'poly',
+}
+
+export const NETWORK_CODES_REVERSE: Record<string, NetworkId> = {
+  eth: mainnet.id,
+  arb: arbitrum.id,
+  op: optimism.id,
+  poly: polygon.id,
+}

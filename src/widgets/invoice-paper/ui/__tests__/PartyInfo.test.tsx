@@ -4,17 +4,21 @@ import { PartyInfo } from '../PartyInfo'
 
 describe('PartyInfo', () => {
   const mockFrom = {
-    n: 'Sender Company',
-    a: '0xsender',
-    e: 'sender@example.com',
-    ads: '123 Sender St',
+    name: 'Sender Company',
+    walletAddress: '0xsender',
+    email: 'sender@example.com',
+    phone: '+1234567890',
+    physicalAddress: '123 Sender St',
+    taxId: 'US12-3456789',
   }
 
   const mockClient = {
-    n: 'Client Name',
-    a: '0x123...456',
-    e: 'client@example.com',
-    ads: '123 Street\nCity, Country',
+    name: 'Client Name',
+    walletAddress: '0x123...456',
+    email: 'client@example.com',
+    phone: '+0987654321',
+    physicalAddress: '123 Street\nCity, Country',
+    taxId: 'DE123456789',
   }
 
   it('renders both From and Bill To labels', () => {
@@ -37,5 +41,11 @@ describe('PartyInfo', () => {
     render(<PartyInfo from={mockFrom} client={mockClient} />)
     expect(screen.getByText(/123 Sender St/)).toBeDefined()
     expect(screen.getByText(/123 Street/)).toBeDefined()
+  })
+
+  it('renders tax IDs for both parties', () => {
+    render(<PartyInfo from={mockFrom} client={mockClient} />)
+    expect(screen.getByText('US12-3456789')).toBeDefined()
+    expect(screen.getByText('DE123456789')).toBeDefined()
   })
 })

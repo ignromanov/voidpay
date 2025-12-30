@@ -36,7 +36,7 @@ export function DemoSection() {
   useEffect(() => {
     const currentInvoice = DEMO_INVOICES[activeIndex]
     if (currentInvoice) {
-      setTheme(getNetworkName(currentInvoice.data.net))
+      setTheme(getNetworkName(currentInvoice.data.networkId))
     }
   }, [activeIndex, setTheme])
 
@@ -64,7 +64,7 @@ export function DemoSection() {
     return <section className="py-32 text-center text-zinc-500">Demo content unavailable</section>
   }
 
-  const theme = NETWORK_THEMES[getNetworkName(currentInvoice.data.net)]
+  const theme = NETWORK_THEMES[getNetworkName(currentInvoice.data.networkId)]
 
   return (
     <section

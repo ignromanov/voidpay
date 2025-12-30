@@ -11,8 +11,8 @@ import { NETWORK_SHADOWS } from '@/entities/network/config/ui-config'
 import { cn } from '@/shared/lib/utils'
 
 // Stable fallback objects (prevent new object creation on each render)
-const EMPTY_PARTY = { n: '', a: '' } as const
-const EMPTY_CLIENT = { n: '' } as const
+const EMPTY_PARTY = { name: '', walletAddress: '' } as const
+const EMPTY_CLIENT = { name: '' } as const
 const EMPTY_ITEMS: never[] = []
 
 // Date formatter singleton
@@ -48,27 +48,27 @@ export const InvoicePaper = React.memo(
     ) => {
       const totals = useMemo(
         () =>
-          calculateTotals(data.it ?? EMPTY_ITEMS, {
+          calculateTotals(data.items ?? EMPTY_ITEMS, {
             tax: data.tax,
-            discount: data.dsc,
+            discount: data.discount,
           }),
-        [data.it, data.tax, data.dsc]
+        [data.items, data.tax, data.discount]
       )
 
-      const shadowClass = data.net ? NETWORK_SHADOWS[data.net] : 'shadow-black/20'
+      const shadowClass = data.networkId ? NETWORK_SHADOWS[data.networkId] : 'shadow-black/20'
 
       // Memoize stable props to prevent child re-renders
-      const from = data.f ?? EMPTY_PARTY
-      const client = data.c ?? EMPTY_CLIENT
-      const items = data.it ?? EMPTY_ITEMS
+      const from = data.from ?? EMPTY_PARTY
+      const client = data.client ?? EMPTY_CLIENT
+      const items = data.items ?? EMPTY_ITEMS
 
       // Format date for watermark if paid
       const paidDate = useMemo(
         () =>
-          status === 'paid' && data.iss
-            ? dateFormatter.format(new Date(data.iss * 1000)).toUpperCase()
+          status === 'paid' && data.issuedAt
+            ? dateFormatter.format(new Date(data.issuedAt * 1000)).toUpperCase()
             : undefined,
-        [status, data.iss]
+        [status, data.issuedAt]
       )
 
       // Determine if QR should be shown based on variant
@@ -92,7 +92,7 @@ export const InvoicePaper = React.memo(
             className
           )}
           role="document"
-          aria-label={`Invoice ${data.id ?? 'draft'}`}
+          aria-label={`Invoice ${data.invoiceId ?? 'draft'}`}
         >
           {/* Texture Layer - self-hosted for stateless operation */}
           {showTexture && (
@@ -105,9 +105,9 @@ export const InvoicePaper = React.memo(
           {/* Content Container */}
           <div className={cn('relative z-10 flex h-full flex-col', VARIANT_STYLES[variant])}>
             <PaperHeader
-              invoiceId={data.id ?? ''}
-              iss={data.iss ?? 0}
-              due={data.due ?? 0}
+              invoiceId={data.invoiceId ?? ''}
+              iss={data.issuedAt ?? 0}
+              due={data.dueAt ?? 0}
               status={status}
               txHashValidated={txHashValidated}
             />
@@ -121,20 +121,20 @@ export const InvoicePaper = React.memo(
 
             <PaperTotals
               totals={totals}
-              currency={data.cur ?? ''}
+              currency={data.currency ?? ''}
               taxPercent={data.tax}
-              discountPercent={data.dsc}
+              discountPercent={data.discount}
               showQR={shouldShowQR}
-              networkId={data.net ?? 1}
-              senderAddress={from.a}
-              tokenAddress={data.t}
+              networkId={data.networkId ?? 1}
+              senderAddress={from.walletAddress}
+              tokenAddress={data.tokenAddress}
               txHash={txHash}
               txHashValidated={txHashValidated}
               variant={variant}
               status={status}
             />
 
-            <PaperFooter notes={data.nt} />
+            <PaperFooter notes={data.notes} />
           </div>
 
           <Watermark status={status} date={paidDate} />

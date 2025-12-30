@@ -1,25 +1,25 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { InvoicePaper } from '../ui/InvoicePaper'
-import type { InvoiceSchemaV1 } from '@/entities/invoice'
+import type { Invoice } from '@/entities/invoice'
 
 describe('InvoicePaper Preview Mode', () => {
   it('renders placeholder for empty items', () => {
     const emptyData = {
-      f: { n: 'Alice', a: '0x1' },
-      c: { n: 'Bob', a: '0x2' },
-      it: [],
-      cur: 'USDC',
-    } as unknown as InvoiceSchemaV1
+      from: { name: 'Alice', walletAddress: '0x1' },
+      client: { name: 'Bob', walletAddress: '0x2' },
+      items: [],
+      currency: 'USDC',
+    } as unknown as Invoice
     render(<InvoicePaper data={emptyData} />)
     expect(screen.getByText(/No line items/i)).toBeDefined()
   })
 
   it('renders default values for missing data', () => {
     const minimalData = {
-      f: { n: 'Alice' },
-      c: { n: 'Bob' },
-    } as unknown as InvoiceSchemaV1
+      from: { name: 'Alice' },
+      client: { name: 'Bob' },
+    } as unknown as Invoice
     render(<InvoicePaper data={minimalData} />)
     expect(screen.getByText(/Alice/i)).toBeDefined()
     expect(screen.getByText(/Bob/i)).toBeDefined()
@@ -29,9 +29,9 @@ describe('InvoicePaper Preview Mode', () => {
 
   it('handles optional notes', () => {
     const minimalData = {
-      f: { n: 'Alice' },
-      c: { n: 'Bob' },
-    } as unknown as InvoiceSchemaV1
+      from: { name: 'Alice' },
+      client: { name: 'Bob' },
+    } as unknown as Invoice
     render(<InvoicePaper data={minimalData} />)
     expect(screen.getByText(/Thank you for your business/i)).toBeDefined()
   })

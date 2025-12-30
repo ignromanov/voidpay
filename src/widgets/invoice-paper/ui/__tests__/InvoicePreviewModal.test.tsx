@@ -5,25 +5,27 @@
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithUser, screen } from '@/shared/ui/__tests__/test-utils'
 import { InvoicePreviewModal } from '../InvoicePreviewModal'
-import { InvoiceSchemaV1 } from '@/entities/invoice'
+import { Invoice } from '@/entities/invoice'
 
 // Mock data
-const mockInvoiceData: Partial<InvoiceSchemaV1> = {
-  id: 'INV-001',
-  iss: 1704067200, // 2024-01-01
-  due: 1706745600, // 2024-02-01
-  net: 1,
-  cur: 'USDC',
-  dec: 6,
-  f: {
-    n: 'Acme Corp',
-    a: '0x1234567890abcdef1234567890abcdef12345678',
-    e: 'billing@acme.com',
+const mockInvoiceData: Partial<Invoice> = {
+  invoiceId: 'INV-001',
+  issuedAt: 1704067200, // 2024-01-01
+  dueAt: 1706745600, // 2024-02-01
+  networkId: 1,
+  currency: 'USDC',
+  decimals: 6,
+  from: {
+    name: 'Acme Corp',
+    walletAddress: '0x1234567890abcdef1234567890abcdef12345678',
+    email: 'billing@acme.com',
+    taxId: 'US12-3456789',
   },
-  c: {
-    n: 'Client Inc',
+  client: {
+    name: 'Client Inc',
+    taxId: 'DE987654321',
   },
-  it: [{ d: 'Development services', q: 10, r: '100' }],
+  items: [{ description: 'Development services', quantity: 10, rate: '100' }],
 }
 
 describe('InvoicePreviewModal', () => {
