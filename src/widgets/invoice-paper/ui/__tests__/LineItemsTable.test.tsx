@@ -4,8 +4,8 @@ import { LineItemsTable } from '../LineItemsTable'
 
 describe('LineItemsTable', () => {
   const mockItems = [
-    { d: 'Consulting', q: 1, r: '1000' },
-    { d: 'Design', q: 2, r: '500' },
+    { description: 'Consulting', quantity: 1, rate: '1000' },
+    { description: 'Design', quantity: 2, rate: '500' },
   ]
 
   it('renders table headers', () => {
@@ -34,7 +34,11 @@ describe('LineItemsTable', () => {
 
   it('handles invalid quantity gracefully', () => {
     const invalidItems = [
-      { d: 'Item with invalid qty', q: 'invalid' as unknown as number, r: '100' },
+      {
+        description: 'Item with invalid qty',
+        quantity: 'invalid' as unknown as number,
+        rate: '100',
+      },
     ]
     render(<LineItemsTable items={invalidItems} />)
     // Invalid quantity should result in 0.00 amount
@@ -42,14 +46,16 @@ describe('LineItemsTable', () => {
   })
 
   it('handles invalid rate gracefully', () => {
-    const invalidItems = [{ d: 'Item with invalid rate', q: 1, r: 'invalid' }]
+    const invalidItems = [{ description: 'Item with invalid rate', quantity: 1, rate: 'invalid' }]
     render(<LineItemsTable items={invalidItems} />)
     // Invalid rate should result in 0.00 in both rate and amount columns
     expect(screen.getAllByText('0.00').length).toBeGreaterThanOrEqual(2)
   })
 
   it('handles string quantity correctly', () => {
-    const stringQtyItems = [{ d: 'Item', q: '2.5' as unknown as number, r: '100' }]
+    const stringQtyItems = [
+      { description: 'Item', quantity: '2.5' as unknown as number, rate: '100' },
+    ]
     render(<LineItemsTable items={stringQtyItems} />)
     // 2.5 * 100 = 250
     expect(screen.getByText('250.00')).toBeDefined()

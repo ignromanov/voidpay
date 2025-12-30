@@ -81,17 +81,17 @@ export function encodeBinaryV2(invoice: InvoiceSchemaV1, useLzCompression = true
 
   // 2. Compute bit flags
   let flags = 0
-  if (invoice.nt) flags |= OptionalFields.HAS_NOTES
-  if (invoice.t) flags |= OptionalFields.HAS_TOKEN
-  if (invoice.f.e) flags |= OptionalFields.HAS_SENDER_EMAIL
-  if (invoice.f.ads) flags |= OptionalFields.HAS_SENDER_ADDRESS
-  if (invoice.f.ph) flags |= OptionalFields.HAS_SENDER_PHONE
-  if (invoice.c.a) flags |= OptionalFields.HAS_CLIENT_WALLET
-  if (invoice.c.e) flags |= OptionalFields.HAS_CLIENT_EMAIL
-  if (invoice.c.ads) flags |= OptionalFields.HAS_CLIENT_ADDRESS
-  if (invoice.c.ph) flags |= OptionalFields.HAS_CLIENT_PHONE
+  if (invoice.notes) flags |= OptionalFields.HAS_NOTES
+  if (invoice.tokenAddress) flags |= OptionalFields.HAS_TOKEN
+  if (invoice.from.email) flags |= OptionalFields.HAS_SENDER_EMAIL
+  if (invoice.from.physicalAddress) flags |= OptionalFields.HAS_SENDER_ADDRESS
+  if (invoice.from.phone) flags |= OptionalFields.HAS_SENDER_PHONE
+  if (invoice.client.walletAddress) flags |= OptionalFields.HAS_CLIENT_WALLET
+  if (invoice.client.email) flags |= OptionalFields.HAS_CLIENT_EMAIL
+  if (invoice.client.physicalAddress) flags |= OptionalFields.HAS_CLIENT_ADDRESS
+  if (invoice.client.phone) flags |= OptionalFields.HAS_CLIENT_PHONE
   if (invoice.tax) flags |= OptionalFields.HAS_TAX
-  if (invoice.dsc) flags |= OptionalFields.HAS_DISCOUNT
+  if (invoice.discount) flags |= OptionalFields.HAS_DISCOUNT
   if (useLzCompression) flags |= OptionalFields.USE_LZ_COMPRESSION
 
   // Write flags (2 bytes)
@@ -99,68 +99,68 @@ export function encodeBinaryV2(invoice: InvoiceSchemaV1, useLzCompression = true
   buffer.push(flags & 0xff)
 
   // 3. Invoice ID (UUID -> 16 bytes)
-  const idBytes = uuidToBytes(invoice.id)
+  const idBytes = uuidToBytes(invoice.invoiceId)
   buffer.push(...Array.from(idBytes))
 
   // 4. Issue Date (4 bytes, Unix timestamp)
-  writeUInt32(buffer, invoice.iss)
+  writeUInt32(buffer, invoice.issuedAt)
 
   // 5. Due Date as DELTA (varint - typically 1-3 bytes)
-  const dueDelta = invoice.due - invoice.iss
+  const dueDelta = invoice.dueAt - invoice.issuedAt
   writeVarInt(buffer, dueDelta)
 
   // 6. Notes (if flag set)
   if (flags & OptionalFields.HAS_NOTES) {
-    writeString(buffer, invoice.nt!)
+    writeString(buffer, invoice.notes!)
   }
 
   // 7. Network Chain ID (varint)
-  writeVarInt(buffer, invoice.net)
+  writeVarInt(buffer, invoice.networkId)
 
   // 8. Currency Symbol (with dictionary)
-  writeStringWithDict(buffer, invoice.cur, CURRENCY_DICT)
+  writeStringWithDict(buffer, invoice.currency, CURRENCY_DICT)
 
   // 9. Token Address (if flag set, with dictionary)
   if (flags & OptionalFields.HAS_TOKEN) {
-    writeOptionalAddressWithDict(buffer, invoice.t)
+    writeOptionalAddressWithDict(buffer, invoice.tokenAddress)
   }
 
   // 10. Decimals (varint)
-  writeVarInt(buffer, invoice.dec)
+  writeVarInt(buffer, invoice.decimals)
 
   // 11. Sender Info
-  writeString(buffer, invoice.f.n)
-  const senderAddressBytes = addressToBytes(invoice.f.a)
+  writeString(buffer, invoice.from.name)
+  const senderAddressBytes = addressToBytes(invoice.from.walletAddress)
   buffer.push(...Array.from(senderAddressBytes))
 
-  if (flags & OptionalFields.HAS_SENDER_EMAIL) writeString(buffer, invoice.f.e!)
-  if (flags & OptionalFields.HAS_SENDER_ADDRESS) writeString(buffer, invoice.f.ads!)
-  if (flags & OptionalFields.HAS_SENDER_PHONE) writeString(buffer, invoice.f.ph!)
+  if (flags & OptionalFields.HAS_SENDER_EMAIL) writeString(buffer, invoice.from.email!)
+  if (flags & OptionalFields.HAS_SENDER_ADDRESS) writeString(buffer, invoice.from.physicalAddress!)
+  if (flags & OptionalFields.HAS_SENDER_PHONE) writeString(buffer, invoice.from.phone!)
 
   // 12. Client Info
-  writeString(buffer, invoice.c.n)
+  writeString(buffer, invoice.client.name)
 
   if (flags & OptionalFields.HAS_CLIENT_WALLET) {
-    const clientAddressBytes = addressToBytes(invoice.c.a!)
+    const clientAddressBytes = addressToBytes(invoice.client.walletAddress!)
     buffer.push(...Array.from(clientAddressBytes))
   }
 
-  if (flags & OptionalFields.HAS_CLIENT_EMAIL) writeString(buffer, invoice.c.e!)
-  if (flags & OptionalFields.HAS_CLIENT_ADDRESS) writeString(buffer, invoice.c.ads!)
-  if (flags & OptionalFields.HAS_CLIENT_PHONE) writeString(buffer, invoice.c.ph!)
+  if (flags & OptionalFields.HAS_CLIENT_EMAIL) writeString(buffer, invoice.client.email!)
+  if (flags & OptionalFields.HAS_CLIENT_ADDRESS) writeString(buffer, invoice.client.physicalAddress!)
+  if (flags & OptionalFields.HAS_CLIENT_PHONE) writeString(buffer, invoice.client.phone!)
 
   // 13. Line Items (count + items)
-  writeVarInt(buffer, invoice.it.length)
-  for (const item of invoice.it) {
+  writeVarInt(buffer, invoice.items.length)
+  for (const item of invoice.items) {
     // Description (no dictionary - descriptions are too varied)
-    writeString(buffer, item.d)
+    writeString(buffer, item.description)
 
     // Quantity (as string or number, store as string)
-    const qtyStr = typeof item.q === 'number' ? item.q.toString() : item.q
+    const qtyStr = typeof item.quantity === 'number' ? item.quantity.toString() : item.quantity
     writeString(buffer, qtyStr)
 
     // Rate (string)
-    writeString(buffer, item.r)
+    writeString(buffer, item.rate)
   }
 
   // 14. Tax (if flag set)
@@ -170,7 +170,7 @@ export function encodeBinaryV2(invoice: InvoiceSchemaV1, useLzCompression = true
 
   // 15. Discount (if flag set)
   if (flags & OptionalFields.HAS_DISCOUNT) {
-    writeString(buffer, invoice.dsc!)
+    writeString(buffer, invoice.discount!)
   }
 
   // Convert to Uint8Array

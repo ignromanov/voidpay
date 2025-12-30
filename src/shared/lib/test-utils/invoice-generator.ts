@@ -129,9 +129,9 @@ export function generateRandomInvoice(): InvoiceSchemaV1 {
     const rate = (randomInt(10, 5000) * Math.pow(10, currency.decimals)).toString();
 
     return {
-      d: randomItem(SAMPLE_DATA.itemDescriptions),
-      q: qty,
-      r: rate,
+      description: randomItem(SAMPLE_DATA.itemDescriptions),
+      quantity: qty,
+      rate: rate,
     };
   });
 
@@ -150,36 +150,36 @@ export function generateRandomInvoice(): InvoiceSchemaV1 {
   const includeClientPhone = randomBool(0.4);
 
   const invoice: InvoiceSchemaV1 = {
-    v: 1,
-    id: generateUUID(),
-    iss,
-    due,
-    nt: includeNotes
+    version: 1,
+    invoiceId: generateUUID(),
+    issuedAt: iss,
+    dueAt: due,
+    notes: includeNotes
       ? 'Payment due within ' +
         randomInt(7, 30) +
         ' days. Please include invoice number in transaction memo.'
       : undefined,
-    net: chainId.id,
-    cur: currency.symbol,
-    t: currency.address,
-    dec: currency.decimals,
-    f: {
-      n: randomItem(SAMPLE_DATA.senderNames),
-      a: generateAddress(),
-      e: includeSenderEmail ? randomItem(SAMPLE_DATA.emails) : undefined,
-      ads: includeSenderAddress ? randomItem(SAMPLE_DATA.addresses) : undefined,
-      ph: includeSenderPhone ? randomItem(SAMPLE_DATA.phones) : undefined,
+    networkId: chainId.id,
+    currency: currency.symbol,
+    tokenAddress: currency.address,
+    decimals: currency.decimals,
+    from: {
+      name: randomItem(SAMPLE_DATA.senderNames),
+      walletAddress: generateAddress(),
+      email: includeSenderEmail ? randomItem(SAMPLE_DATA.emails) : undefined,
+      physicalAddress: includeSenderAddress ? randomItem(SAMPLE_DATA.addresses) : undefined,
+      phone: includeSenderPhone ? randomItem(SAMPLE_DATA.phones) : undefined,
     },
-    c: {
-      n: randomItem(SAMPLE_DATA.clientNames),
-      a: includeClientWallet ? generateAddress() : undefined,
-      e: includeClientEmail ? randomItem(SAMPLE_DATA.emails) : undefined,
-      ads: includeClientAddress ? randomItem(SAMPLE_DATA.addresses) : undefined,
-      ph: includeClientPhone ? randomItem(SAMPLE_DATA.phones) : undefined,
+    client: {
+      name: randomItem(SAMPLE_DATA.clientNames),
+      walletAddress: includeClientWallet ? generateAddress() : undefined,
+      email: includeClientEmail ? randomItem(SAMPLE_DATA.emails) : undefined,
+      physicalAddress: includeClientAddress ? randomItem(SAMPLE_DATA.addresses) : undefined,
+      phone: includeClientPhone ? randomItem(SAMPLE_DATA.phones) : undefined,
     },
-    it,
+    items: it,
     tax: includeTax ? randomInt(5, 25) + '%' : undefined,
-    dsc: includeDiscount ? randomInt(5, 20) + '%' : undefined,
+    discount: includeDiscount ? randomInt(5, 20) + '%' : undefined,
   };
 
   return invoice;

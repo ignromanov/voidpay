@@ -5,14 +5,14 @@ import { InvoiceSchemaV1 } from '@/entities/invoice'
 
 describe('InvoicePaper Integration', () => {
   const mockData: Partial<InvoiceSchemaV1> = {
-    id: 'INV-2024-001',
-    iss: 1735296000, // Dec 27
-    due: 1735382400, // Dec 28
-    f: { n: 'Alice', a: '0xSender' },
-    c: { n: 'Bob', a: '0xRecipient' },
-    it: [{ d: 'Web Design', q: 1, r: '1500' }],
-    cur: 'USDC',
-    net: 1,
+    invoiceId: 'INV-2024-001',
+    issuedAt: 1735296000, // Dec 27
+    dueAt: 1735382400, // Dec 28
+    from: { name: 'Alice', walletAddress: '0xSender' },
+    client: { name: 'Bob', walletAddress: '0xRecipient' },
+    items: [{ description: 'Web Design', quantity: 1, rate: '1500' }],
+    currency: 'USDC',
+    networkId: 1,
   }
 
   it('renders all core sections', () => {

@@ -98,7 +98,7 @@ export default function ComparePage() {
           charCount: binaryEncoded.length,
           compressionRatio: (binaryByteSize / jsonStr.length) * 100,
           steps: [
-            { step: '1', description: 'Convert UUID to 16 bytes', value: `${newInvoice.id} → 16 bytes` },
+            { step: '1', description: 'Convert UUID to 16 bytes', value: `${newInvoice.invoiceId} → 16 bytes` },
             { step: '2', description: 'Convert addresses to 20 bytes each', value: '0x... → 20 bytes' },
             { step: '3', description: 'Pack timestamps as UInt32', value: '4 bytes each' },
             { step: '4', description: 'Use varint for small numbers', value: 'Chain ID, decimals, etc.' },
@@ -230,12 +230,12 @@ export default function ComparePage() {
       const analysisReport = {
         timestamp: new Date().toISOString(),
         sample: {
-          invoiceId: invoice.id,
-          network: invoice.net,
-          currency: invoice.cur,
-          itemCount: invoice.it.length,
-          hasNotes: !!invoice.nt,
-          hasToken: !!invoice.t,
+          invoiceId: invoice.invoiceId,
+          network: invoice.networkId,
+          currency: invoice.currency,
+          itemCount: invoice.items.length,
+          hasNotes: !!invoice.notes,
+          hasToken: !!invoice.tokenAddress,
         },
         originalData: invoice,
         compressionResults: {
@@ -503,11 +503,11 @@ ${JSON.stringify(analysisReport, null, 2)}
             <div className="grid grid-cols-3 gap-6 text-xs">
               <div>
                 <div className="text-gray-500 mb-2">SAMPLE_ID</div>
-                <div className="text-[#ffb000] font-mono text-sm">{invoice.id.split('-')[0]}</div>
+                <div className="text-[#ffb000] font-mono text-sm">{invoice.invoiceId.split('-')[0]}</div>
               </div>
               <div>
                 <div className="text-gray-500 mb-2">NETWORK</div>
-                <div className="text-[#00ffaa] text-sm">CHAIN_{invoice.net}</div>
+                <div className="text-[#00ffaa] text-sm">CHAIN_{invoice.networkId}</div>
               </div>
               <div>
                 <div className="text-gray-500 mb-2">TIMESTAMP</div>

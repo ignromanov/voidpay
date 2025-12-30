@@ -56,109 +56,109 @@ export function encodeBinaryV3(invoice: InvoiceSchemaV1): string {
 
   // 2. Compute bit flags for optional fields
   let flags = 0;
-  if (invoice.nt) flags |= OptionalFields.HAS_NOTES;
-  if (invoice.t) flags |= OptionalFields.HAS_TOKEN;
-  if (invoice.f.e) flags |= OptionalFields.HAS_SENDER_EMAIL;
-  if (invoice.f.ads) flags |= OptionalFields.HAS_SENDER_ADDRESS;
-  if (invoice.f.ph) flags |= OptionalFields.HAS_SENDER_PHONE;
-  if (invoice.c.a) flags |= OptionalFields.HAS_CLIENT_WALLET;
-  if (invoice.c.e) flags |= OptionalFields.HAS_CLIENT_EMAIL;
-  if (invoice.c.ads) flags |= OptionalFields.HAS_CLIENT_ADDRESS;
-  if (invoice.c.ph) flags |= OptionalFields.HAS_CLIENT_PHONE;
+  if (invoice.notes) flags |= OptionalFields.HAS_NOTES;
+  if (invoice.tokenAddress) flags |= OptionalFields.HAS_TOKEN;
+  if (invoice.from.email) flags |= OptionalFields.HAS_SENDER_EMAIL;
+  if (invoice.from.physicalAddress) flags |= OptionalFields.HAS_SENDER_ADDRESS;
+  if (invoice.from.phone) flags |= OptionalFields.HAS_SENDER_PHONE;
+  if (invoice.client.walletAddress) flags |= OptionalFields.HAS_CLIENT_WALLET;
+  if (invoice.client.email) flags |= OptionalFields.HAS_CLIENT_EMAIL;
+  if (invoice.client.physicalAddress) flags |= OptionalFields.HAS_CLIENT_ADDRESS;
+  if (invoice.client.phone) flags |= OptionalFields.HAS_CLIENT_PHONE;
   if (invoice.tax) flags |= OptionalFields.HAS_TAX;
-  if (invoice.dsc) flags |= OptionalFields.HAS_DISCOUNT;
+  if (invoice.discount) flags |= OptionalFields.HAS_DISCOUNT;
 
   // We'll set TEXT_COMPRESSED bit later after collecting text
   const flagsOffset = buffer.length;
   buffer.push(0, 0); // Placeholder for flags (2 bytes)
 
   // 3. UUID -> 16 bytes
-  const uuidBytes = uuidToBytes(invoice.id);
+  const uuidBytes = uuidToBytes(invoice.invoiceId);
   buffer.push(...Array.from(uuidBytes));
 
   // 4. Issue timestamp -> 4 bytes (UInt32)
-  const iss = invoice.iss;
+  const iss = invoice.issuedAt;
   buffer.push((iss >>> 24) & 0xff);
   buffer.push((iss >>> 16) & 0xff);
   buffer.push((iss >>> 8) & 0xff);
   buffer.push(iss & 0xff);
 
   // 5. Delta encoding for due date (saves 2-3 bytes typically)
-  const delta = invoice.due - invoice.iss;
+  const delta = invoice.dueAt - invoice.issuedAt;
   writeVarInt(buffer, delta);
 
   // 6. Network ID -> varint
-  writeVarInt(buffer, invoice.net);
+  writeVarInt(buffer, invoice.networkId);
 
   // 7. Decimals -> varint
-  writeVarInt(buffer, invoice.dec);
+  writeVarInt(buffer, invoice.decimals);
 
   // 8. Token address (optional) with dictionary support
-  if (invoice.t) {
-    const tokenCode = TOKEN_DICT[invoice.t.toLowerCase()];
+  if (invoice.tokenAddress) {
+    const tokenCode = TOKEN_DICT[invoice.tokenAddress.toLowerCase()];
     if (tokenCode !== undefined) {
       buffer.push(0); // Dictionary token
       buffer.push(tokenCode);
     } else {
       buffer.push(1); // Custom token
-      const tokenBytes = addressToBytes(invoice.t);
+      const tokenBytes = addressToBytes(invoice.tokenAddress);
       buffer.push(...Array.from(tokenBytes));
     }
   }
 
   // 9. From wallet address -> 20 bytes
-  const fromAddressBytes = addressToBytes(invoice.f.a);
+  const fromAddressBytes = addressToBytes(invoice.from.walletAddress);
   buffer.push(...Array.from(fromAddressBytes));
 
   // 10. Client wallet address (optional) -> 20 bytes
-  if (invoice.c.a) {
-    const clientAddressBytes = addressToBytes(invoice.c.a);
+  if (invoice.client.walletAddress) {
+    const clientAddressBytes = addressToBytes(invoice.client.walletAddress);
     buffer.push(...Array.from(clientAddressBytes));
   }
 
   // 11. Line items count -> varint
-  writeVarInt(buffer, invoice.it.length);
+  writeVarInt(buffer, invoice.items.length);
 
   // Now collect all text fields to decide if compression is beneficial
   const textParts: string[] = [];
 
   // Currency (with dictionary support)
-  const currencyCode = CURRENCY_DICT[invoice.cur];
+  const currencyCode = CURRENCY_DICT[invoice.currency];
   if (currencyCode !== undefined) {
     textParts.push('\x01'); // Dict marker
     textParts.push(String.fromCharCode(currencyCode));
   } else {
     textParts.push('\x02'); // String marker
-    textParts.push(invoice.cur);
+    textParts.push(invoice.currency);
   }
 
   // Notes (optional)
-  if (invoice.nt) {
-    textParts.push(invoice.nt);
+  if (invoice.notes) {
+    textParts.push(invoice.notes);
   }
 
   // From fields
-  textParts.push(invoice.f.n);
-  if (invoice.f.e) textParts.push(invoice.f.e);
-  if (invoice.f.ads) textParts.push(invoice.f.ads);
-  if (invoice.f.ph) textParts.push(invoice.f.ph);
+  textParts.push(invoice.from.name);
+  if (invoice.from.email) textParts.push(invoice.from.email);
+  if (invoice.from.physicalAddress) textParts.push(invoice.from.physicalAddress);
+  if (invoice.from.phone) textParts.push(invoice.from.phone);
 
   // Client fields
-  textParts.push(invoice.c.n);
-  if (invoice.c.e) textParts.push(invoice.c.e);
-  if (invoice.c.ads) textParts.push(invoice.c.ads);
-  if (invoice.c.ph) textParts.push(invoice.c.ph);
+  textParts.push(invoice.client.name);
+  if (invoice.client.email) textParts.push(invoice.client.email);
+  if (invoice.client.physicalAddress) textParts.push(invoice.client.physicalAddress);
+  if (invoice.client.phone) textParts.push(invoice.client.phone);
 
   // Tax and Discount (optional)
   if (invoice.tax) textParts.push(invoice.tax);
-  if (invoice.dsc) textParts.push(invoice.dsc);
+  if (invoice.discount) textParts.push(invoice.discount);
 
   // Line items (all fields)
-  for (const item of invoice.it) {
-    textParts.push(item.d);
-    const qtyStr = typeof item.q === 'number' ? item.q.toString() : item.q;
+  for (const item of invoice.items) {
+    textParts.push(item.description);
+    const qtyStr = typeof item.quantity === 'number' ? item.quantity.toString() : item.quantity;
     textParts.push(qtyStr);
-    textParts.push(item.r);
+    textParts.push(item.rate);
   }
 
   // Join all text with null separator

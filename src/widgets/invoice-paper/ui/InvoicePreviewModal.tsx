@@ -51,7 +51,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
         >
           {/* Visually hidden title for accessibility */}
           <DialogTitle className="sr-only">
-            Invoice Preview {data.id ? `#${data.id}` : ''}
+            Invoice Preview {data.invoiceId ? `#${data.invoiceId}` : ''}
           </DialogTitle>
 
           {/* Close button positioned outside the invoice */}

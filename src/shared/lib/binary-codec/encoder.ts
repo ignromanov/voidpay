@@ -31,66 +31,66 @@ export function encodeBinary(invoice: InvoiceSchemaV1): string {
   const buffer: number[] = [];
 
   // 1. Version (1 byte)
-  buffer.push(invoice.v);
+  buffer.push(invoice.version);
 
   // 2. Invoice ID (UUID -> 16 bytes)
-  const idBytes = uuidToBytes(invoice.id);
+  const idBytes = uuidToBytes(invoice.invoiceId);
   buffer.push(...Array.from(idBytes));
 
   // 3. Issue Date (4 bytes, Unix timestamp)
-  writeUInt32(buffer, invoice.iss);
+  writeUInt32(buffer, invoice.issuedAt);
 
   // 4. Due Date (4 bytes, Unix timestamp)
-  writeUInt32(buffer, invoice.due);
+  writeUInt32(buffer, invoice.dueAt);
 
   // 5. Notes (optional string)
-  writeOptionalString(buffer, invoice.nt);
+  writeOptionalString(buffer, invoice.notes);
 
   // 6. Network Chain ID (varint - typically small like 1, 137)
-  writeVarInt(buffer, invoice.net);
+  writeVarInt(buffer, invoice.networkId);
 
   // 7. Currency Symbol (length-prefixed string)
-  writeString(buffer, invoice.cur);
+  writeString(buffer, invoice.currency);
 
   // 8. Token Address (optional 20 bytes)
-  writeOptionalAddress(buffer, invoice.t);
+  writeOptionalAddress(buffer, invoice.tokenAddress);
 
   // 9. Decimals (varint)
-  writeVarInt(buffer, invoice.dec);
+  writeVarInt(buffer, invoice.decimals);
 
   // 10. Sender Info
-  writeString(buffer, invoice.f.n);
-  const senderAddressBytes = addressToBytes(invoice.f.a);
+  writeString(buffer, invoice.from.name);
+  const senderAddressBytes = addressToBytes(invoice.from.walletAddress);
   buffer.push(...Array.from(senderAddressBytes));
-  writeOptionalString(buffer, invoice.f.e);
-  writeOptionalString(buffer, invoice.f.ads);
-  writeOptionalString(buffer, invoice.f.ph);
+  writeOptionalString(buffer, invoice.from.email);
+  writeOptionalString(buffer, invoice.from.physicalAddress);
+  writeOptionalString(buffer, invoice.from.phone);
 
   // 11. Client Info
-  writeString(buffer, invoice.c.n);
-  writeOptionalAddress(buffer, invoice.c.a);
-  writeOptionalString(buffer, invoice.c.e);
-  writeOptionalString(buffer, invoice.c.ads);
-  writeOptionalString(buffer, invoice.c.ph);
+  writeString(buffer, invoice.client.name);
+  writeOptionalAddress(buffer, invoice.client.walletAddress);
+  writeOptionalString(buffer, invoice.client.email);
+  writeOptionalString(buffer, invoice.client.physicalAddress);
+  writeOptionalString(buffer, invoice.client.phone);
 
   // 12. Line Items (count + items)
-  writeVarInt(buffer, invoice.it.length);
-  for (const item of invoice.it) {
-    writeString(buffer, item.d);
+  writeVarInt(buffer, invoice.items.length);
+  for (const item of invoice.items) {
+    writeString(buffer, item.description);
 
     // Quantity (as string or number, store as string)
-    const qtyStr = typeof item.q === 'number' ? item.q.toString() : item.q;
+    const qtyStr = typeof item.quantity === 'number' ? item.quantity.toString() : item.quantity;
     writeString(buffer, qtyStr);
 
     // Rate (string)
-    writeString(buffer, item.r);
+    writeString(buffer, item.rate);
   }
 
   // 13. Tax (optional string)
   writeOptionalString(buffer, invoice.tax);
 
   // 14. Discount (optional string)
-  writeOptionalString(buffer, invoice.dsc);
+  writeOptionalString(buffer, invoice.discount);
 
   // 15. Meta (skip for now - reserved for future)
   // 16. _future (skip for now - reserved for future)

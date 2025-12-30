@@ -131,9 +131,9 @@ export function decodeBinaryV2(encoded: string): InvoiceSchemaV1 {
   };
 
   // 1. Version (should be 2)
-  const v = bytes[offset++] ?? 0;
-  if (v !== 2) {
-    throw new Error(`Expected V2 schema, got version: ${v}`);
+  const version = bytes[offset++] ?? 0;
+  if (version !== 2) {
+    throw new Error(`Expected V2 schema, got version: ${version}`);
   }
 
   // 2. Bit flags (2 bytes)
@@ -143,93 +143,93 @@ export function decodeBinaryV2(encoded: string): InvoiceSchemaV1 {
 
   // 3. Invoice ID (16 bytes UUID)
   const idBytes = bytes.slice(offset, offset + 16);
-  const id = bytesToUuid(idBytes);
+  const invoiceId = bytesToUuid(idBytes);
   offset += 16;
 
   // 4. Issue Date (4 bytes)
-  const iss = read(() => readUInt32(bytes, offset));
+  const issuedAt = read(() => readUInt32(bytes, offset));
 
   // 5. Due Date as DELTA (varint)
   const dueDelta = read(() => readVarInt(bytes, offset));
-  const due = iss + dueDelta;
+  const dueAt = issuedAt + dueDelta;
 
   // 6. Notes (if flag set)
-  const nt = (flags & OptionalFields.HAS_NOTES)
+  const notes = (flags & OptionalFields.HAS_NOTES)
     ? read(() => readString(bytes, offset))
     : undefined;
 
   // 7. Network Chain ID (varint)
-  const net = read(() => readVarInt(bytes, offset));
+  const networkId = read(() => readVarInt(bytes, offset));
 
   // 8. Currency Symbol (with dictionary)
-  const cur = read(() => readStringWithDict(bytes, offset, CURRENCY_DICT_REVERSE));
+  const currency = read(() => readStringWithDict(bytes, offset, CURRENCY_DICT_REVERSE));
 
   // 9. Token Address (if flag set, with dictionary)
-  const t = (flags & OptionalFields.HAS_TOKEN)
+  const tokenAddress = (flags & OptionalFields.HAS_TOKEN)
     ? read(() => readOptionalAddressWithDict(bytes, offset))
     : undefined;
 
   // 10. Decimals (varint)
-  const dec = read(() => readVarInt(bytes, offset));
+  const decimals = read(() => readVarInt(bytes, offset));
 
   // 11. Sender Info
-  const f = {
-    n: read(() => readString(bytes, offset)),
-    a: bytesToAddress(bytes.slice(offset, offset + 20)),
-    e: undefined as string | undefined,
-    ads: undefined as string | undefined,
-    ph: undefined as string | undefined,
+  const from = {
+    name: read(() => readString(bytes, offset)),
+    walletAddress: bytesToAddress(bytes.slice(offset, offset + 20)),
+    email: undefined as string | undefined,
+    physicalAddress: undefined as string | undefined,
+    phone: undefined as string | undefined,
   };
   offset += 20;
 
   if (flags & OptionalFields.HAS_SENDER_EMAIL) {
-    f.e = read(() => readString(bytes, offset));
+    from.email = read(() => readString(bytes, offset));
   }
   if (flags & OptionalFields.HAS_SENDER_ADDRESS) {
-    f.ads = read(() => readString(bytes, offset));
+    from.physicalAddress = read(() => readString(bytes, offset));
   }
   if (flags & OptionalFields.HAS_SENDER_PHONE) {
-    f.ph = read(() => readString(bytes, offset));
+    from.phone = read(() => readString(bytes, offset));
   }
 
   // 12. Client Info
-  const c = {
-    n: read(() => readString(bytes, offset)),
-    a: undefined as string | undefined,
-    e: undefined as string | undefined,
-    ads: undefined as string | undefined,
-    ph: undefined as string | undefined,
+  const client = {
+    name: read(() => readString(bytes, offset)),
+    walletAddress: undefined as string | undefined,
+    email: undefined as string | undefined,
+    physicalAddress: undefined as string | undefined,
+    phone: undefined as string | undefined,
   };
 
   if (flags & OptionalFields.HAS_CLIENT_WALLET) {
-    c.a = bytesToAddress(bytes.slice(offset, offset + 20));
+    client.walletAddress = bytesToAddress(bytes.slice(offset, offset + 20));
     offset += 20;
   }
 
   if (flags & OptionalFields.HAS_CLIENT_EMAIL) {
-    c.e = read(() => readString(bytes, offset));
+    client.email = read(() => readString(bytes, offset));
   }
   if (flags & OptionalFields.HAS_CLIENT_ADDRESS) {
-    c.ads = read(() => readString(bytes, offset));
+    client.physicalAddress = read(() => readString(bytes, offset));
   }
   if (flags & OptionalFields.HAS_CLIENT_PHONE) {
-    c.ph = read(() => readString(bytes, offset));
+    client.phone = read(() => readString(bytes, offset));
   }
 
   // 13. Line Items (no dictionary for descriptions)
   const itemCount = read(() => readVarInt(bytes, offset));
-  const it: Array<{ d: string; q: string | number; r: string }> = [];
+  const items: Array<{ description: string; quantity: string | number; rate: string }> = [];
 
   for (let i = 0; i < itemCount; i++) {
-    const d = read(() => readString(bytes, offset));
+    const description = read(() => readString(bytes, offset));
     const qStr = read(() => readString(bytes, offset));
-    const r = read(() => readString(bytes, offset));
+    const rate = read(() => readString(bytes, offset));
 
     // Try to parse quantity as number if possible
     const qNum = parseFloat(qStr);
-    const q = !isNaN(qNum) && qNum.toString() === qStr ? qNum : qStr;
+    const quantity = !isNaN(qNum) && qNum.toString() === qStr ? qNum : qStr;
 
-    it.push({ d, q, r });
+    items.push({ description, quantity, rate });
   }
 
   // 14. Tax (if flag set)
@@ -238,26 +238,26 @@ export function decodeBinaryV2(encoded: string): InvoiceSchemaV1 {
     : undefined;
 
   // 15. Discount (if flag set)
-  const dsc = (flags & OptionalFields.HAS_DISCOUNT)
+  const discount = (flags & OptionalFields.HAS_DISCOUNT)
     ? read(() => readString(bytes, offset))
     : undefined;
 
   // Construct the invoice object (V1 compatible)
   const invoice: InvoiceSchemaV1 = {
-    v: 1, // Return as V1 for compatibility
-    id,
-    iss,
-    due,
-    nt,
-    net,
-    cur,
-    t,
-    dec,
-    f,
-    c,
-    it,
+    version: 1, // Return as V1 for compatibility
+    invoiceId,
+    issuedAt,
+    dueAt,
+    notes,
+    networkId,
+    currency,
+    tokenAddress,
+    decimals,
+    from,
+    client,
+    items,
     tax,
-    dsc,
+    discount,
   };
 
   return invoice;

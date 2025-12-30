@@ -1,36 +1,71 @@
 import type { InvoiceSchemaV1 } from '@/entities/invoice'
 import { getAppBaseUrl } from '@/shared/config'
-import { compress } from '@/shared/lib/compression'
+import { encodeBinaryV3 } from '@/shared/lib/binary-codec'
+import { encodeOGPreview } from './og-preview'
 
 /**
- * Encodes an invoice into a compressed string.
- *
- * @param invoice The invoice data to encode
- * @returns The compressed string
+ * URL generation options.
  */
-export const encodeInvoice = (invoice: InvoiceSchemaV1): string => {
-  const json = JSON.stringify(invoice)
-  return compress(json)
+export interface GenerateUrlOptions {
+  /** Base URL override (default: from NEXT_PUBLIC_APP_URL env) */
+  baseUrl?: string
+  /** Include OG preview data for social sharing (default: false) */
+  includeOG?: boolean
 }
 
 /**
- * Generates a shareable URL for the invoice.
+ * Encodes an invoice into a Binary V3 compressed string.
+ * Uses hybrid compression: binary packing + selective Deflate for text.
+ *
+ * @param invoice The invoice data to encode
+ * @returns The Base62-encoded binary string (prefixed with 'H')
+ */
+export const encodeInvoice = (invoice: InvoiceSchemaV1): string => {
+  return encodeBinaryV3(invoice)
+}
+
+/**
+ * Generates a shareable URL for the invoice using hash fragment.
+ * Hash fragments are never sent to the server (Privacy-First principle).
  * Validates that the final URL does not exceed 2000 bytes.
  *
  * @param invoice The invoice data to encode
- * @param baseUrl The base URL of the application (default: from NEXT_PUBLIC_APP_URL env or https://voidpay.com)
- * @returns The full URL with the compressed invoice data
+ * @param options URL generation options
+ * @returns The full URL with the compressed invoice data in hash fragment
  * @throws Error if the URL exceeds 2000 bytes
+ *
+ * @example
+ * ```ts
+ * // Simple URL (privacy-first)
+ * generateInvoiceUrl(invoice)
+ * // => "https://voidpay.xyz/pay#H4sI..."
+ *
+ * // With OG preview for social sharing
+ * generateInvoiceUrl(invoice, { includeOG: true })
+ * // => "https://voidpay.xyz/pay?og=a1b2c3d4_1250.00_USDC_arb_Acme#H4sI..."
+ * ```
  */
-export const generateInvoiceUrl = (invoice: InvoiceSchemaV1, baseUrl?: string): string => {
+export const generateInvoiceUrl = (
+  invoice: InvoiceSchemaV1,
+  options: GenerateUrlOptions | string = {}
+): string => {
+  // Support legacy signature: generateInvoiceUrl(invoice, baseUrl)
+  const opts: GenerateUrlOptions = typeof options === 'string' ? { baseUrl: options } : options
+
   const compressed = encodeInvoice(invoice)
+  const appUrl = opts.baseUrl || getAppBaseUrl()
 
-  // Use provided baseUrl, or fallback to centralized config
-  const appUrl = baseUrl || getAppBaseUrl()
-  const url = new URL(`${appUrl}/pay`)
-  url.searchParams.set('d', compressed)
+  let finalUrl: string
 
-  const finalUrl = url.toString()
+  if (opts.includeOG) {
+    // Hybrid format: ?og=preview#compressed
+    const ogData = encodeOGPreview(invoice)
+    finalUrl = `${appUrl}/pay?og=${ogData}#${compressed}`
+  } else {
+    // Pure hash fragment (maximum privacy)
+    finalUrl = `${appUrl}/pay#${compressed}`
+  }
+
   const byteSize = new TextEncoder().encode(finalUrl).length
 
   if (byteSize > 2000) {

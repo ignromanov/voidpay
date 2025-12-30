@@ -62,11 +62,11 @@ export function decodeBinaryV3(encoded: string): InvoiceSchemaV1 {
 
   // 5. UUID (16 bytes)
   const uuidBytes = bytes.slice(offset, offset + 16);
-  const id = bytesToUuid(uuidBytes);
+  const invoiceId = bytesToUuid(uuidBytes);
   offset += 16;
 
   // 6. Issue timestamp (4 bytes)
-  const iss =
+  const issuedAt =
     ((bytes[offset++] ?? 0) << 24) |
     ((bytes[offset++] ?? 0) << 16) |
     ((bytes[offset++] ?? 0) << 8) |
@@ -76,44 +76,44 @@ export function decodeBinaryV3(encoded: string): InvoiceSchemaV1 {
   const deltaResult = readVarInt(bytes, offset);
   const delta = deltaResult.value;
   offset += deltaResult.bytesRead;
-  const due = iss + delta;
+  const dueAt = issuedAt + delta;
 
   // 8. Network ID (varint)
   const netResult = readVarInt(bytes, offset);
-  const net = netResult.value;
+  const networkId = netResult.value;
   offset += netResult.bytesRead;
 
   // 9. Decimals (varint)
   const decResult = readVarInt(bytes, offset);
-  const dec = decResult.value;
+  const decimals = decResult.value;
   offset += decResult.bytesRead;
 
   // 10. Token address (optional, with dictionary support)
-  let t: string | undefined;
+  let tokenAddress: string | undefined;
   if (flags & OptionalFields.HAS_TOKEN) {
     const tokenFlag = bytes[offset++];
     if (tokenFlag === 0) {
       // Dictionary token
       const tokenCode = bytes[offset++];
-      t = TOKEN_DICT_REVERSE[tokenCode ?? 0];
+      tokenAddress = TOKEN_DICT_REVERSE[tokenCode ?? 0];
     } else {
       // Custom token
       const tokenBytes = bytes.slice(offset, offset + 20);
-      t = bytesToAddress(tokenBytes);
+      tokenAddress = bytesToAddress(tokenBytes);
       offset += 20;
     }
   }
 
   // 11. From wallet address (20 bytes)
   const fromAddressBytes = bytes.slice(offset, offset + 20);
-  const fromAddress = bytesToAddress(fromAddressBytes);
+  const fromWalletAddress = bytesToAddress(fromAddressBytes);
   offset += 20;
 
   // 12. Client wallet address (optional, 20 bytes)
-  let clientAddress: string | undefined;
+  let clientWalletAddress: string | undefined;
   if (flags & OptionalFields.HAS_CLIENT_WALLET) {
     const clientAddressBytes = bytes.slice(offset, offset + 20);
-    clientAddress = bytesToAddress(clientAddressBytes);
+    clientWalletAddress = bytesToAddress(clientAddressBytes);
     offset += 20;
   }
 
@@ -154,80 +154,80 @@ export function decodeBinaryV3(encoded: string): InvoiceSchemaV1 {
 
   // Currency (with dictionary support)
   const currencyMarker = textParts[textIdx++];
-  let cur: string;
+  let currency: string;
   if (currencyMarker === '\x01') {
     // Dictionary
     const currCode = textParts[textIdx++]?.charCodeAt(0);
-    cur = CURRENCY_DICT_REVERSE[currCode ?? 0] ?? 'UNKNOWN';
+    currency = CURRENCY_DICT_REVERSE[currCode ?? 0] ?? 'UNKNOWN';
   } else {
     // String
-    cur = textParts[textIdx++] ?? 'UNKNOWN';
+    currency = textParts[textIdx++] ?? 'UNKNOWN';
   }
 
   // Notes (optional)
-  let nt: string | undefined;
+  let notes: string | undefined;
   if (flags & OptionalFields.HAS_NOTES) {
-    nt = textParts[textIdx++];
+    notes = textParts[textIdx++];
   }
 
   // From fields
   const fromName = textParts[textIdx++] ?? '';
   const fromEmail = (flags & OptionalFields.HAS_SENDER_EMAIL) ? textParts[textIdx++] : undefined;
-  const fromAds = (flags & OptionalFields.HAS_SENDER_ADDRESS) ? textParts[textIdx++] : undefined;
-  const fromPh = (flags & OptionalFields.HAS_SENDER_PHONE) ? textParts[textIdx++] : undefined;
+  const fromPhysicalAddress = (flags & OptionalFields.HAS_SENDER_ADDRESS) ? textParts[textIdx++] : undefined;
+  const fromPhone = (flags & OptionalFields.HAS_SENDER_PHONE) ? textParts[textIdx++] : undefined;
 
   // Client fields
   const clientName = textParts[textIdx++] ?? '';
   const clientEmail = (flags & OptionalFields.HAS_CLIENT_EMAIL) ? textParts[textIdx++] : undefined;
-  const clientAds = (flags & OptionalFields.HAS_CLIENT_ADDRESS) ? textParts[textIdx++] : undefined;
-  const clientPh = (flags & OptionalFields.HAS_CLIENT_PHONE) ? textParts[textIdx++] : undefined;
+  const clientPhysicalAddress = (flags & OptionalFields.HAS_CLIENT_ADDRESS) ? textParts[textIdx++] : undefined;
+  const clientPhone = (flags & OptionalFields.HAS_CLIENT_PHONE) ? textParts[textIdx++] : undefined;
 
   // Tax and Discount (optional)
   const tax = (flags & OptionalFields.HAS_TAX) ? textParts[textIdx++] : undefined;
-  const dsc = (flags & OptionalFields.HAS_DISCOUNT) ? textParts[textIdx++] : undefined;
+  const discount = (flags & OptionalFields.HAS_DISCOUNT) ? textParts[textIdx++] : undefined;
 
   // Line items (all fields from text)
-  const it = [];
+  const items = [];
   for (let i = 0; i < itemCount; i++) {
     const description = textParts[textIdx++] ?? '';
     const qtyStr = textParts[textIdx++] ?? '0';
     const rate = textParts[textIdx++] ?? '0';
 
-    it.push({
-      d: description,
-      q: isNaN(Number(qtyStr)) ? qtyStr : Number(qtyStr),
-      r: rate,
+    items.push({
+      description,
+      quantity: isNaN(Number(qtyStr)) ? qtyStr : Number(qtyStr),
+      rate,
     });
   }
 
   // 19. Construct invoice
   const invoice: InvoiceSchemaV1 = {
-    v: 1,
-    id,
-    iss,
-    due,
-    nt,
-    net,
-    cur,
-    t,
-    dec,
-    f: {
-      n: fromName,
-      a: fromAddress,
-      e: fromEmail,
-      ads: fromAds,
-      ph: fromPh,
+    version: 1,
+    invoiceId,
+    issuedAt,
+    dueAt,
+    notes,
+    networkId,
+    currency,
+    tokenAddress,
+    decimals,
+    from: {
+      name: fromName,
+      walletAddress: fromWalletAddress,
+      email: fromEmail,
+      physicalAddress: fromPhysicalAddress,
+      phone: fromPhone,
     },
-    c: {
-      n: clientName,
-      a: clientAddress,
-      e: clientEmail,
-      ads: clientAds,
-      ph: clientPh,
+    client: {
+      name: clientName,
+      walletAddress: clientWalletAddress,
+      email: clientEmail,
+      physicalAddress: clientPhysicalAddress,
+      phone: clientPhone,
     },
-    it,
+    items,
     tax,
-    dsc,
+    discount,
   };
 
   return invoice;

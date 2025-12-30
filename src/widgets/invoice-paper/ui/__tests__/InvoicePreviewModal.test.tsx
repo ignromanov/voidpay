@@ -9,21 +9,21 @@ import { InvoiceSchemaV1 } from '@/entities/invoice'
 
 // Mock data
 const mockInvoiceData: Partial<InvoiceSchemaV1> = {
-  id: 'INV-001',
-  iss: 1704067200, // 2024-01-01
-  due: 1706745600, // 2024-02-01
-  net: 1,
-  cur: 'USDC',
-  dec: 6,
-  f: {
-    n: 'Acme Corp',
-    a: '0x1234567890abcdef1234567890abcdef12345678',
-    e: 'billing@acme.com',
+  invoiceId: 'INV-001',
+  issuedAt: 1704067200, // 2024-01-01
+  dueAt: 1706745600, // 2024-02-01
+  networkId: 1,
+  currency: 'USDC',
+  decimals: 6,
+  from: {
+    name: 'Acme Corp',
+    walletAddress: '0x1234567890abcdef1234567890abcdef12345678',
+    email: 'billing@acme.com',
   },
-  c: {
-    n: 'Client Inc',
+  client: {
+    name: 'Client Inc',
   },
-  it: [{ d: 'Development services', q: 10, r: '100' }],
+  items: [{ description: 'Development services', quantity: 10, rate: '100' }],
 }
 
 describe('InvoicePreviewModal', () => {

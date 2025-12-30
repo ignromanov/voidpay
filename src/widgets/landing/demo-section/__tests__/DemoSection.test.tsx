@@ -182,8 +182,9 @@ describe('DemoSection', () => {
       })
 
       const link = screen.getByRole('link', { name: /use this template/i })
-      // First invoice ID is "eth-inv-001"
-      expect(link).toHaveAttribute('href', '/create?template=eth-inv-001')
+      // Link should point to /create with encoded invoice data
+      const href = link.getAttribute('href')
+      expect(href).toMatch(/^\/create\?d=/)
     })
 
     it('should hide button on mouse leave', async () => {

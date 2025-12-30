@@ -31,103 +31,103 @@ export function decodeBinary(encoded: string): InvoiceSchemaV1 {
   };
 
   // 1. Version (1 byte)
-  const v = bytes[offset++] ?? 0;
-  if (v !== 1) {
-    throw new Error(`Unsupported binary schema version: ${v}`);
+  const version = bytes[offset++] ?? 0;
+  if (version !== 1) {
+    throw new Error(`Unsupported binary schema version: ${version}`);
   }
 
   // 2. Invoice ID (16 bytes UUID)
   const idBytes = bytes.slice(offset, offset + 16);
-  const id = bytesToUuid(idBytes);
+  const invoiceId = bytesToUuid(idBytes);
   offset += 16;
 
   // 3. Issue Date (4 bytes)
-  const iss = read(() => readUInt32(bytes, offset));
+  const issuedAt = read(() => readUInt32(bytes, offset));
 
   // 4. Due Date (4 bytes)
-  const due = read(() => readUInt32(bytes, offset));
+  const dueAt = read(() => readUInt32(bytes, offset));
 
   // 5. Notes (optional)
-  const nt = read(() => readOptionalString(bytes, offset));
+  const notes = read(() => readOptionalString(bytes, offset));
 
   // 6. Network Chain ID (varint)
-  const net = read(() => readVarInt(bytes, offset));
+  const networkId = read(() => readVarInt(bytes, offset));
 
   // 7. Currency Symbol (string)
-  const cur = read(() => readString(bytes, offset));
+  const currency = read(() => readString(bytes, offset));
 
   // 8. Token Address (optional)
-  const t = read(() => readOptionalAddress(bytes, offset));
+  const tokenAddress = read(() => readOptionalAddress(bytes, offset));
 
   // 9. Decimals (varint)
-  const dec = read(() => readVarInt(bytes, offset));
+  const decimals = read(() => readVarInt(bytes, offset));
 
   // 10. Sender Info
-  const f = {
-    n: read(() => readString(bytes, offset)),
-    a: bytesToAddress(bytes.slice(offset, offset + 20)),
-    e: undefined as string | undefined,
-    ads: undefined as string | undefined,
-    ph: undefined as string | undefined,
+  const from = {
+    name: read(() => readString(bytes, offset)),
+    walletAddress: bytesToAddress(bytes.slice(offset, offset + 20)),
+    email: undefined as string | undefined,
+    physicalAddress: undefined as string | undefined,
+    phone: undefined as string | undefined,
   };
   offset += 20;
 
-  f.e = read(() => readOptionalString(bytes, offset));
-  f.ads = read(() => readOptionalString(bytes, offset));
-  f.ph = read(() => readOptionalString(bytes, offset));
+  from.email = read(() => readOptionalString(bytes, offset));
+  from.physicalAddress = read(() => readOptionalString(bytes, offset));
+  from.phone = read(() => readOptionalString(bytes, offset));
 
   // 11. Client Info
-  const c = {
-    n: read(() => readString(bytes, offset)),
-    a: undefined as string | undefined,
-    e: undefined as string | undefined,
-    ads: undefined as string | undefined,
-    ph: undefined as string | undefined,
+  const client = {
+    name: read(() => readString(bytes, offset)),
+    walletAddress: undefined as string | undefined,
+    email: undefined as string | undefined,
+    physicalAddress: undefined as string | undefined,
+    phone: undefined as string | undefined,
   };
 
-  c.a = read(() => readOptionalAddress(bytes, offset));
-  c.e = read(() => readOptionalString(bytes, offset));
-  c.ads = read(() => readOptionalString(bytes, offset));
-  c.ph = read(() => readOptionalString(bytes, offset));
+  client.walletAddress = read(() => readOptionalAddress(bytes, offset));
+  client.email = read(() => readOptionalString(bytes, offset));
+  client.physicalAddress = read(() => readOptionalString(bytes, offset));
+  client.phone = read(() => readOptionalString(bytes, offset));
 
   // 12. Line Items
   const itemCount = read(() => readVarInt(bytes, offset));
-  const it: Array<{ d: string; q: string | number; r: string }> = [];
+  const items: Array<{ description: string; quantity: string | number; rate: string }> = [];
 
   for (let i = 0; i < itemCount; i++) {
-    const d = read(() => readString(bytes, offset));
+    const description = read(() => readString(bytes, offset));
     const qStr = read(() => readString(bytes, offset));
-    const r = read(() => readString(bytes, offset));
+    const rate = read(() => readString(bytes, offset));
 
     // Try to parse quantity as number if possible
     const qNum = parseFloat(qStr);
-    const q = !isNaN(qNum) && qNum.toString() === qStr ? qNum : qStr;
+    const quantity = !isNaN(qNum) && qNum.toString() === qStr ? qNum : qStr;
 
-    it.push({ d, q, r });
+    items.push({ description, quantity, rate });
   }
 
   // 13. Tax (optional)
   const tax = read(() => readOptionalString(bytes, offset));
 
   // 14. Discount (optional)
-  const dsc = read(() => readOptionalString(bytes, offset));
+  const discount = read(() => readOptionalString(bytes, offset));
 
   // Construct the invoice object
   const invoice: InvoiceSchemaV1 = {
-    v: 1,
-    id,
-    iss,
-    due,
-    nt,
-    net,
-    cur,
-    t,
-    dec,
-    f,
-    c,
-    it,
+    version: 1,
+    invoiceId,
+    issuedAt,
+    dueAt,
+    notes,
+    networkId,
+    currency,
+    tokenAddress,
+    decimals,
+    from,
+    client,
+    items,
     tax,
-    dsc,
+    discount,
   };
 
   return invoice;

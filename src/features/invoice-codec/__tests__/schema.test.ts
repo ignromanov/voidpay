@@ -19,55 +19,55 @@ import type { InvoiceSchemaV1 } from '@/entities/invoice'
 
 // Canonical test invoice - represents a real-world invoice with all fields populated
 const createTestInvoiceV1 = (): InvoiceSchemaV1 => ({
-  v: 1,
-  id: 'INV-2024-001',
-  iss: 1704067200, // 2024-01-01T00:00:00Z
-  due: 1706745600, // 2024-02-01T00:00:00Z
-  nt: 'Payment for web development services',
-  net: 1, // Ethereum mainnet
-  cur: 'USDC',
-  t: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC on Ethereum
-  dec: 6,
-  f: {
-    n: 'Acme Development LLC',
-    a: '0x1234567890123456789012345678901234567890',
-    e: 'billing@acme.dev',
-    ads: '123 Tech Street\nSan Francisco, CA 94105',
-    ph: '+1-555-123-4567',
+  version: 1,
+  invoiceId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', // Valid UUID format
+  issuedAt: 1704067200, // 2024-01-01T00:00:00Z
+  dueAt: 1706745600, // 2024-02-01T00:00:00Z
+  notes: 'Payment for web development services',
+  networkId: 1, // Ethereum mainnet
+  currency: 'USDC',
+  tokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC on Ethereum
+  decimals: 6,
+  from: {
+    name: 'Acme Development LLC',
+    walletAddress: '0x1234567890123456789012345678901234567890',
+    email: 'billing@acme.dev',
+    physicalAddress: '123 Tech Street\nSan Francisco, CA 94105',
+    phone: '+1-555-123-4567',
   },
-  c: {
-    n: 'Client Corporation',
-    a: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
-    e: 'accounts@client.com',
-    ads: '456 Business Ave\nNew York, NY 10001',
-    ph: '+1-555-987-6543',
+  client: {
+    name: 'Client Corporation',
+    walletAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+    email: 'accounts@client.com',
+    physicalAddress: '456 Business Ave\nNew York, NY 10001',
+    phone: '+1-555-987-6543',
   },
-  it: [
-    { d: 'Frontend Development', q: 40, r: '150000000' }, // $150/hr * 40 hrs
-    { d: 'Backend API Development', q: 60, r: '175000000' }, // $175/hr * 60 hrs
-    { d: 'Code Review & QA', q: 10, r: '125000000' }, // $125/hr * 10 hrs
+  items: [
+    { description: 'Frontend Development', quantity: 40, rate: '150000000' }, // $150/hr * 40 hrs
+    { description: 'Backend API Development', quantity: 60, rate: '175000000' }, // $175/hr * 60 hrs
+    { description: 'Code Review & QA', quantity: 10, rate: '125000000' }, // $125/hr * 10 hrs
   ],
   tax: '8.5%',
-  dsc: '5%',
+  discount: '5%',
 })
 
 // Minimal invoice - only required fields
 const createMinimalInvoiceV1 = (): InvoiceSchemaV1 => ({
-  v: 1,
-  id: 'INV-MIN-001',
-  iss: 1704067200,
-  due: 1706745600,
-  net: 137, // Polygon
-  cur: 'MATIC',
-  dec: 18, // Native token
-  f: {
-    n: 'Freelancer',
-    a: '0x1111111111111111111111111111111111111111',
+  version: 1,
+  invoiceId: 'b2c3d4e5-f6a7-8901-bcde-f23456789012', // Valid UUID format
+  issuedAt: 1704067200,
+  dueAt: 1706745600,
+  networkId: 137, // Polygon
+  currency: 'MATIC',
+  decimals: 18, // Native token
+  from: {
+    name: 'Freelancer',
+    walletAddress: '0x1111111111111111111111111111111111111111',
   },
-  c: {
-    n: 'Client',
+  client: {
+    name: 'Client',
   },
-  it: [{ d: 'Consulting', q: 1, r: '1000000000000000000' }], // 1 MATIC
+  items: [{ description: 'Consulting', quantity: 1, rate: '1000000000000000000' }], // 1 MATIC
 })
 
 describe('Invoice Schema V1 Encoding', () => {
@@ -121,54 +121,54 @@ describe('Invoice Schema V1 Encoding', () => {
       const decoded = decodeInvoice(encoded)
 
       // Verify optional fields are preserved
-      expect(decoded.nt).toBe(invoice.nt)
-      expect(decoded.t).toBe(invoice.t)
+      expect(decoded.notes).toBe(invoice.notes)
+      expect(decoded.tokenAddress).toBe(invoice.tokenAddress)
       expect(decoded.tax).toBe(invoice.tax)
-      expect(decoded.dsc).toBe(invoice.dsc)
-      expect(decoded.f.e).toBe(invoice.f.e)
-      expect(decoded.f.ads).toBe(invoice.f.ads)
-      expect(decoded.f.ph).toBe(invoice.f.ph)
-      expect(decoded.c.a).toBe(invoice.c.a)
-      expect(decoded.c.e).toBe(invoice.c.e)
-      expect(decoded.c.ads).toBe(invoice.c.ads)
-      expect(decoded.c.ph).toBe(invoice.c.ph)
+      expect(decoded.discount).toBe(invoice.discount)
+      expect(decoded.from.email).toBe(invoice.from.email)
+      expect(decoded.from.physicalAddress).toBe(invoice.from.physicalAddress)
+      expect(decoded.from.phone).toBe(invoice.from.phone)
+      expect(decoded.client.walletAddress).toBe(invoice.client.walletAddress)
+      expect(decoded.client.email).toBe(invoice.client.email)
+      expect(decoded.client.physicalAddress).toBe(invoice.client.physicalAddress)
+      expect(decoded.client.phone).toBe(invoice.client.phone)
     })
 
     it('should handle unicode characters in notes and names', () => {
       const invoice: InvoiceSchemaV1 = {
         ...createMinimalInvoiceV1(),
-        nt: 'Payment for services - Paiement pour services 支付服务费 🚀',
-        f: {
-          n: 'Développeur Фрилансер 开发者',
-          a: '0x1111111111111111111111111111111111111111',
+        notes: 'Payment for services - Paiement pour services 支付服务费 🚀',
+        from: {
+          name: 'Développeur Фрилансер 开发者',
+          walletAddress: '0x1111111111111111111111111111111111111111',
         },
-        c: {
-          n: 'Client 顧客 Клиент',
+        client: {
+          name: 'Client 顧客 Клиент',
         },
       }
 
       const encoded = encodeInvoice(invoice)
       const decoded = decodeInvoice(encoded)
 
-      expect(decoded.nt).toBe(invoice.nt)
-      expect(decoded.f.n).toBe(invoice.f.n)
-      expect(decoded.c.n).toBe(invoice.c.n)
+      expect(decoded.notes).toBe(invoice.notes)
+      expect(decoded.from.name).toBe(invoice.from.name)
+      expect(decoded.client.name).toBe(invoice.client.name)
     })
 
     it('should handle line items with various quantity formats', () => {
       const invoice: InvoiceSchemaV1 = {
         ...createMinimalInvoiceV1(),
-        it: [
-          { d: 'Integer quantity', q: 100, r: '1000000' },
-          { d: 'String quantity', q: '50.5', r: '2000000' },
-          { d: 'Large rate', q: 1, r: '999999999999999999' }, // Near BigInt max
+        items: [
+          { description: 'Integer quantity', quantity: 100, rate: '1000000' },
+          { description: 'String quantity', quantity: '50.5', rate: '2000000' },
+          { description: 'Large rate', quantity: 1, rate: '999999999999999999' }, // Near BigInt max
         ],
       }
 
       const encoded = encodeInvoice(invoice)
       const decoded = decodeInvoice(encoded)
 
-      expect(decoded.it).toEqual(invoice.it)
+      expect(decoded.items).toEqual(invoice.items)
     })
   })
 
@@ -178,7 +178,7 @@ describe('Invoice Schema V1 Encoding', () => {
       const encoded = encodeInvoice(invoice)
       const decoded = decodeInvoice(encoded)
 
-      expect(decoded.v).toBe(1)
+      expect(decoded.version).toBe(1)
     })
   })
 
@@ -189,21 +189,21 @@ describe('Invoice Schema V1 Encoding', () => {
 
     it('should throw on missing version field', () => {
       // This tests the decodeInvoice error path for missing version
-      const invalidInvoice = { id: 'test', net: 1 }
+      const invalidInvoice = { invoiceId: 'test', networkId: 1 }
       const encoded = encodeInvoice(invalidInvoice as unknown as InvoiceSchemaV1)
 
       expect(() => decodeInvoice(encoded)).toThrow('Missing or invalid version field')
     })
 
     it('should throw on unsupported schema version', () => {
-      const futureInvoice = { v: 999, id: 'test', net: 1 }
+      const futureInvoice = { version: 999, invoiceId: 'test', networkId: 1 }
       const encoded = encodeInvoice(futureInvoice as unknown as InvoiceSchemaV1)
 
       expect(() => decodeInvoice(encoded)).toThrow('Unsupported schema version: 999')
     })
 
     it('should throw on invalid version type', () => {
-      const invalidInvoice = { v: 'not-a-number', id: 'test', net: 1 }
+      const invalidInvoice = { version: 'not-a-number', invoiceId: 'test', networkId: 1 }
       const encoded = encodeInvoice(invalidInvoice as unknown as InvoiceSchemaV1)
 
       expect(() => decodeInvoice(encoded)).toThrow('Missing or invalid version field')
@@ -211,7 +211,7 @@ describe('Invoice Schema V1 Encoding', () => {
 
     it('should throw on invalid invoice data structure', () => {
       // Create a v1 invoice missing required fields
-      const incompleteInvoice = { v: 1, id: 'test' }
+      const incompleteInvoice = { version: 1, invoiceId: 'test' }
       const encoded = encodeInvoice(incompleteInvoice as unknown as InvoiceSchemaV1)
 
       expect(() => decodeInvoice(encoded)).toThrow(/Invalid invoice data/)
@@ -253,13 +253,13 @@ describe('Invoice Schema V1 Encoding', () => {
       // Create an invoice with very long notes to exceed URL limit
       const largeInvoice: InvoiceSchemaV1 = {
         ...createTestInvoiceV1(),
-        nt: 'A'.repeat(2000), // Very long notes
-        it: Array(50)
+        notes: 'A'.repeat(2000), // Very long notes
+        items: Array(50)
           .fill(null)
           .map((_, i) => ({
-            d: `Line item ${i} with a very long description that takes up a lot of space in the URL`,
-            q: i + 1,
-            r: '999999999999999999',
+            description: `Line item ${i} with a very long description that takes up a lot of space in the URL`,
+            quantity: i + 1,
+            rate: '999999999999999999',
           })),
       }
 
@@ -270,8 +270,8 @@ describe('Invoice Schema V1 Encoding', () => {
       // Unicode characters take more bytes than ASCII
       const invoice: InvoiceSchemaV1 = {
         ...createMinimalInvoiceV1(),
-        nt: '日本語テキスト',
-        f: { ...createMinimalInvoiceV1().f, n: '山田太郎' },
+        notes: '日本語テキスト',
+        from: { ...createMinimalInvoiceV1().from, name: '山田太郎' },
       }
 
       // Should not throw for reasonable unicode content
