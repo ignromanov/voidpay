@@ -40,38 +40,80 @@ const softwareSchema = {
   '@type': 'SoftwareApplication',
   name: 'VoidPay',
   applicationCategory: 'FinanceApplication',
+  applicationSubCategory: 'Crypto Invoicing',
   operatingSystem: 'Web',
+  browserRequirements: 'Requires JavaScript. Requires Web3 wallet.',
   offers: {
     '@type': 'Offer',
     price: '0',
     priceCurrency: 'USD',
   },
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '5',
-    ratingCount: '1',
-  },
+  featureList: [
+    'Zero-backend invoicing',
+    'Multi-chain support (Ethereum, Arbitrum, Optimism, Polygon)',
+    'PDF export',
+    'QR code generation',
+    'Privacy-first design',
+    'No KYC required',
+  ],
+}
+
+// JSON-LD: HowTo schema for rich snippets
+const howToSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'HowTo',
+  name: 'How to Create a Crypto Invoice with VoidPay',
+  description: 'Create and share crypto invoices in 3 simple steps without signup or servers.',
+  totalTime: 'PT30S',
+  step: [
+    {
+      '@type': 'HowToStep',
+      name: 'Create',
+      text: 'Add invoice details. Pick network and token.',
+      position: 1,
+    },
+    {
+      '@type': 'HowToStep',
+      name: 'Share',
+      text: 'Get a permanent URL. No attachments needed.',
+      position: 2,
+    },
+    {
+      '@type': 'HowToStep',
+      name: 'Get Paid',
+      text: 'Client connects wallet and pays. One click.',
+      position: 3,
+    },
+  ],
 }
 
 export const metadata: Metadata = {
-  title: 'VoidPay - Stateless Crypto Invoicing',
+  title: 'Free Crypto Invoice Generator | No KYC | VoidPay',
   description:
-    'Create crypto invoices without accounts or servers. Privacy-first, zero-backend invoicing for Ethereum, Arbitrum, and Optimism.',
+    'Create crypto invoices in 30 seconds. No accounts, no KYC, no servers. Your data lives in the URL, not our database. Works on ETH, ARB, OP.',
   keywords: [
     'crypto invoice',
+    'crypto invoicing',
     'web3 payments',
+    'web3 invoice',
     'stateless invoicing',
     'privacy-first',
+    'privacy-first payments',
+    'no-kyc payments',
+    'permissionless invoicing',
     'ethereum invoice',
     'arbitrum payments',
     'optimism payments',
+    'polygon payments',
     'crypto billing',
     'decentralized payments',
+    'freelancer invoice crypto',
+    'dao payments',
   ],
   openGraph: {
-    title: 'VoidPay - Stateless Crypto Invoicing',
+    title: 'VoidPay - Create Crypto Invoices Without Signup',
     description:
-      'Create crypto invoices without accounts or servers. Privacy-first, zero-backend invoicing.',
+      'Privacy-first invoicing for Web3. No accounts, no servers. Your invoice = your URL. Works on Ethereum, Arbitrum, Optimism.',
     url: APP_URLS.base,
     siteName: 'VoidPay',
     type: 'website',
@@ -79,9 +121,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'VoidPay - Stateless Crypto Invoicing',
+    title: 'Crypto Invoices in 30 Seconds - No KYC Required',
     description:
-      'Create crypto invoices without accounts or servers. Privacy-first, zero-backend invoicing.',
+      'Stateless invoicing for freelancers & DAOs. Generate a link, share it, get paid. Zero backend, zero tracking.',
   },
   robots: {
     index: true,
@@ -110,6 +152,12 @@ export default function LandingPage() {
         id="software-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+      />
+      {/* HowTo schema for rich snippets - safe: static data with JSON.stringify */}
+      <Script
+        id="howto-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
       />
 
       <main className="relative min-h-screen">

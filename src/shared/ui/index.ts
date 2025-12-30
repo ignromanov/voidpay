@@ -52,6 +52,7 @@ export type { NetworkTheme } from './constants/brand-tokens'
 // Critical path inline SVG icons (above-fold optimization)
 export {
   ArrowRightIcon,
+  ArrowLeftIcon,
   LockIcon,
   ServerOffIcon,
   GlobeIcon,

@@ -1,43 +1,54 @@
-import type { Invoice } from '@/entities/invoice'
+import type { InvoiceSchemaV1 } from '@/entities/invoice'
 import { invoiceSchema } from '@/entities/invoice'
-import { decodeBinaryV3 } from '@/shared/lib/binary-codec'
+import { decompress } from '@/shared/lib/compression'
 
 /**
- * Decodes a Binary V3 compressed string into an invoice object.
+ * Decodes a compressed string into an invoice object.
  * Supports version-specific parsing for backward compatibility.
  *
- * @param compressed The compressed string from the URL hash fragment
+ * @param compressed The compressed string from the URL
  * @returns The decoded invoice object
- * @throws Error if decoding fails or version is unsupported
+ * @throws Error if decompression, parsing, or unsupported version
  */
-export const decodeInvoice = (compressed: string): Invoice => {
-  // Binary V3 format starts with 'H' prefix
-  if (!compressed.startsWith('H')) {
-    throw new Error('Invalid invoice format: expected Binary V3 (H prefix)')
+export const decodeInvoice = (compressed: string): InvoiceSchemaV1 => {
+  const json = decompress(compressed)
+  if (!json) {
+    throw new Error('Failed to decompress invoice data')
   }
 
   try {
-    const invoice = decodeBinaryV3(compressed)
+    const data = JSON.parse(json)
 
-    // Validate against schema
-    return validateInvoice(invoice)
+    // Version detection
+    const version = data.version
+    if (typeof version !== 'number') {
+      throw new Error('Missing or invalid version field')
+    }
+
+    // Version-specific parsing (immutable parsers per Constitution Principle IV)
+    switch (version) {
+      case 1:
+        return parseV1(data)
+      default:
+        throw new Error(`Unsupported schema version: ${version}`)
+    }
   } catch (error) {
     if (error instanceof Error) {
       throw error
     }
-    throw new Error('Failed to decode invoice data')
+    throw new Error('Failed to parse invoice JSON')
   }
 }
 
 /**
- * Validates decoded invoice against schema.
- * Ensures data integrity after binary decoding.
+ * Immutable parser for InvoiceSchemaV1.
+ * This function MUST NOT be modified once deployed (Constitution Principle IV).
  *
- * @param data Decoded invoice data
- * @returns Validated Invoice object
+ * @param data Raw parsed JSON data
+ * @returns Validated InvoiceSchemaV1 object
  * @throws Error if validation fails
  */
-function validateInvoice(data: unknown): Invoice {
+function parseV1(data: unknown): InvoiceSchemaV1 {
   const result = invoiceSchema.safeParse(data)
 
   if (!result.success) {

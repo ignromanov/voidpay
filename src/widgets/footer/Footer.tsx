@@ -20,16 +20,23 @@ export function Footer() {
         {/* Left: Copyright */}
         <div className="flex items-center gap-3">
           <span>© 2025 VoidPay</span>
-          <a href="#" className="transition-colors hover:text-zinc-300">
+          <a href="/privacy" className="transition-colors hover:text-zinc-300">
             Privacy
           </a>
-          <a href="#" className="transition-colors hover:text-zinc-300">
+          <a href="/terms" className="transition-colors hover:text-zinc-300">
             Terms
           </a>
         </div>
 
-        {/* Right: Social */}
+        {/* Right: Social + Contact */}
         <div className="flex items-center gap-1">
+          <a
+            href="mailto:hello@voidpay.xyz"
+            className="rounded p-1.5 text-xs transition-colors hover:bg-zinc-800/50 hover:text-zinc-300"
+            aria-label="Contact"
+          >
+            Contact
+          </a>
           <a
             href={SOCIAL_URLS.github}
             target="_blank"

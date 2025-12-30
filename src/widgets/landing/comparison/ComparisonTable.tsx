@@ -91,10 +91,10 @@ export function ComparisonTable() {
   return (
     <section className="relative border-t border-zinc-900 bg-zinc-950/10 px-6 py-32 backdrop-blur-sm">
       <div className="mx-auto max-w-4xl">
-        {/* Section header */}
+        {/* Section header - SEO: competitor comparison keywords */}
         <div className="mb-16 text-center">
-          <Heading variant="h1" as="h2" className="mb-4">
-            How We Compare
+          <Heading variant="h1" as="h2" id="comparison-heading" className="mb-4">
+            VoidPay vs Request Network vs Traditional Invoicing
           </Heading>
           <Text variant="large" className="mx-auto max-w-xl text-zinc-400">
             An honest look at VoidPay vs. alternatives.
@@ -137,7 +137,7 @@ export function ComparisonTable() {
 
         {/* Disclaimer */}
         <Text variant="small" className="mt-6 text-center text-zinc-500">
-          Comparison based on public documentation as of December 2024. Features may vary.
+          Comparison based on public documentation as of December 2025. Features may vary.
         </Text>
       </div>
     </section>

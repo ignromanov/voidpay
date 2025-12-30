@@ -11,12 +11,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
-import {
-  invoiceItemsToLineItems,
-  type Invoice,
-  type DraftState,
-  type LineItem,
-} from '@/entities/invoice'
+import type { Invoice, DraftState, LineItem } from '@/entities/invoice'
 import type {
   CreatorStoreV1,
   InvoiceTemplate,
@@ -193,7 +188,7 @@ function createDefaultDraft(
       lastModified: new Date().toISOString(),
     },
     data: {
-      version: 2,
+      version: 1,
       invoiceId,
       issuedAt: nowUnix(),
       dueAt: daysFromNowUnix(30), // Default: 30 days from now
@@ -268,7 +263,7 @@ const migrate = (persistedState: any, version: number): CreatorStoreV1 => {
           lastModified: oldDraft.lastModified ?? new Date().toISOString(),
         },
         data: {
-          version: 2,
+          version: 1,
           invoiceId: oldDraft.invoiceId ?? '',
           issuedAt,
           dueAt,
@@ -662,7 +657,7 @@ export const useCreatorStore = create<CreatorStore>()(
         }
 
         // Create a new draft from the history entry
-        // Use full invoice data from history entry
+        // Note: We don't have full invoice data in history, so this is a simplified version
         const draftId = uuidv4()
 
         const newDraft: DraftState = {
@@ -671,21 +666,34 @@ export const useCreatorStore = create<CreatorStore>()(
             lastModified: new Date().toISOString(),
           },
           data: {
-            ...entry.invoice,
-            // Reset dates for new invoice
+            version: 1,
+            invoiceId: entry.invoiceId,
             issuedAt: nowUnix(),
             dueAt: daysFromNowUnix(30),
+            networkId: state.preferences.defaultNetworkId ?? 1,
+            currency: state.preferences.defaultCurrency ?? 'USDC',
+            decimals: 6,
+            from: {
+              name: state.preferences.defaultSenderName ?? '',
+              walletAddress: state.preferences.defaultSenderWallet ?? '',
+              ...(state.preferences.defaultSenderEmail && {
+                email: state.preferences.defaultSenderEmail,
+              }),
+              ...(state.preferences.defaultSenderAddress && {
+                physicalAddress: state.preferences.defaultSenderAddress,
+              }),
+            },
+            client: {
+              name: entry.recipientName,
+            },
+            items: [],
+            ...(state.preferences.defaultTaxRate && { tax: state.preferences.defaultTaxRate }),
           },
         }
 
-        // Convert invoice items to line items with IDs
-        const restoredLineItems = entry.invoice.items?.length
-          ? invoiceItemsToLineItems(entry.invoice.items)
-          : [createDefaultLineItem()]
-
         set({
           activeDraft: newDraft,
-          lineItems: restoredLineItems,
+          lineItems: [createDefaultLineItem()],
         })
 
         return draftId

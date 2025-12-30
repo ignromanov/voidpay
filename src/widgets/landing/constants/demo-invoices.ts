@@ -2,12 +2,8 @@
  * Demo invoice data for landing page rotation
  * Feature: 012-landing-page
  *
- * Each demo showcases different optional field combinations:
- * - ETH: Full profile (all fields) - shows complete invoice
- * - ARB: Minimal profile (email only) - shows lean freelancer invoice
- * - OP: Mixed (email, phone, taxId) - shows DAO/nonprofit style
- * - POLY: Mixed (address, taxId) - shows B2B international style
- *
+ * All fields of InvoiceSchemaV1 are populated to demonstrate full functionality.
+ * Each demo showcases a different invoice status and payment state.
  * Uses ViewedInvoice type from store for consistency.
  */
 
@@ -26,7 +22,7 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
     txHash: '0xabc123def456789abc123def456789abc123def456789abc123def456789abc1',
     txHashValidated: true,
     data: {
-      version: 2,
+      version: 1,
       invoiceId: 'eth-inv-001',
       issuedAt: BASE_TIMESTAMP,
       dueAt: BASE_TIMESTAMP + 86400 * 14,
@@ -40,7 +36,6 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
         email: 'billing@etherscale.io',
         physicalAddress: '548 Market St, Suite 23000\nSan Francisco, CA 94104\nUSA',
         phone: '+1 415 555 0142',
-        taxId: 'US 12-3456789',
       },
       client: {
         name: 'DeFi Frontiers DAO',
@@ -48,7 +43,6 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
         email: 'treasury@defifrontiers.xyz',
         physicalAddress: 'c/o Legal Entity\n123 Blockchain Ave\nZug, Switzerland',
         phone: '+41 41 555 0198',
-        taxId: 'CHE-123.456.789',
       },
       items: [
         { description: 'Smart Contract Security Audit (40 hours)', quantity: 40, rate: '0.125' },
@@ -59,7 +53,6 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
     },
   },
   // --- Arbitrum (42161) - Game Asset Design [PENDING] ---
-  // Minimal profile: freelancer with just email, client with just wallet
   {
     invoiceId: 'arb-inv-001',
     invoiceUrl:
@@ -67,7 +60,7 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
     viewedAt: '2024-01-03T09:30:00.000Z',
     status: 'pending',
     data: {
-      version: 2,
+      version: 1,
       invoiceId: 'arb-inv-001',
       issuedAt: BASE_TIMESTAMP + 86400 * 2,
       dueAt: BASE_TIMESTAMP + 86400 * 32,
@@ -80,12 +73,15 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
         name: 'L2 Design Studio',
         walletAddress: '0x3B5c26914569BdF2c8D4e27f0701831F41028751',
         email: 'invoices@l2design.studio',
-        // Minimal: no phone, address, taxId
+        physicalAddress: '789 Creative Blvd, Unit 4\nAustin, TX 78701\nUSA',
+        phone: '+1 512 555 0177',
       },
       client: {
         name: 'ArbGaming Inc.',
         walletAddress: '0x99283928B108B736021319727B2B4dD600021c2B',
-        // Minimal: no email, phone, address, taxId
+        email: 'payments@arbgaming.io',
+        physicalAddress: '456 Gaming Tower, Floor 12\nSingapore 018956',
+        phone: '+65 6555 0234',
       },
       items: [
         { description: 'Character Sprite Set (10 animations)', quantity: 1, rate: '1200' },
@@ -97,7 +93,6 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
     },
   },
   // --- Optimism (10) - Public Goods Grant [PAID + NOT VALIDATED] ---
-  // DAO style: email + phone + taxId (no physical address)
   {
     invoiceId: 'opt-inv-001',
     invoiceUrl:
@@ -107,7 +102,7 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
     txHash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
     txHashValidated: false, // Shows warning indicator
     data: {
-      version: 2,
+      version: 1,
       invoiceId: 'opt-inv-001',
       issuedAt: BASE_TIMESTAMP + 86400 * 5,
       dueAt: BASE_TIMESTAMP + 86400 * 35,
@@ -120,15 +115,15 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
         name: 'Optimistic Builders Collective',
         walletAddress: '0x4200000000000000000000000000000000000006',
         email: 'grants@optimisticbuilders.org',
+        physicalAddress: '1 Public Goods Way\nOptimism City, OP 10001\nDecentralized',
         phone: '+1 800 OPT GOOD',
-        taxId: 'US 55-1234567',
-        // DAO style: no physical address
       },
       client: {
         name: 'RetroPGF Foundation',
+        walletAddress: '0x2501c477D0A35545a387Aa4A3EEe4292A9a8B3F0',
         email: 'disbursements@retropgf.eth',
         physicalAddress: 'Optimism Foundation\n123 Collective Drive\nRemote',
-        // Foundation: email + address, no phone/taxId/wallet
+        phone: '+1 888 555 0100',
       },
       items: [
         { description: 'Public Goods Infrastructure Grant - Phase 1', quantity: 1, rate: '15000' },
@@ -140,7 +135,6 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
     },
   },
   // --- Polygon (137) - Data Analytics Service [OVERDUE] ---
-  // B2B international: address + taxId (no email/phone)
   {
     invoiceId: 'poly-inv-001',
     invoiceUrl:
@@ -148,7 +142,7 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
     viewedAt: '2024-01-02T16:45:00.000Z',
     status: 'overdue',
     data: {
-      version: 2,
+      version: 1,
       invoiceId: 'poly-inv-001',
       issuedAt: BASE_TIMESTAMP + 86400 * 1,
       dueAt: BASE_TIMESTAMP + 86400 * 15,
@@ -160,16 +154,16 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
       from: {
         name: 'PolyMarket Analytics Ltd.',
         walletAddress: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
+        email: 'billing@polymarketanalytics.com',
         physicalAddress: '42 Data Center Road\nMumbai, Maharashtra 400001\nIndia',
-        taxId: 'IN GSTIN29ABCDE1234F1Z5',
-        // B2B formal: address + taxId, no email/phone
+        phone: '+91 22 5555 0456',
       },
       client: {
         name: 'Prediction Protocol DAO',
         walletAddress: '0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6',
+        email: 'finance@predictiondao.io',
+        physicalAddress: 'DAO Multisig\nGlobal Decentralized Network',
         phone: '+44 20 5555 0789',
-        taxId: 'GB 123456789',
-        // Client: phone + taxId + wallet, no email/address
       },
       items: [
         { description: 'Market Data Feed - Premium Tier (Q1)', quantity: 3, rate: '1500' },

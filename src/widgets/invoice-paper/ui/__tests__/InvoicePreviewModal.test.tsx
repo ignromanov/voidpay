@@ -5,10 +5,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithUser, screen } from '@/shared/ui/__tests__/test-utils'
 import { InvoicePreviewModal } from '../InvoicePreviewModal'
-import { Invoice } from '@/entities/invoice'
+import { InvoiceSchemaV1 } from '@/entities/invoice'
 
 // Mock data
-const mockInvoiceData: Partial<Invoice> = {
+const mockInvoiceData: Partial<InvoiceSchemaV1> = {
   invoiceId: 'INV-001',
   issuedAt: 1704067200, // 2024-01-01
   dueAt: 1706745600, // 2024-02-01
@@ -19,11 +19,9 @@ const mockInvoiceData: Partial<Invoice> = {
     name: 'Acme Corp',
     walletAddress: '0x1234567890abcdef1234567890abcdef12345678',
     email: 'billing@acme.com',
-    taxId: 'US12-3456789',
   },
   client: {
     name: 'Client Inc',
-    taxId: 'DE987654321',
   },
   items: [{ description: 'Development services', quantity: 10, rate: '100' }],
 }

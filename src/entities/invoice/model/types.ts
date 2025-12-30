@@ -5,24 +5,32 @@
  * These types are used across the application for invoice creation and management.
  */
 
-import type { Invoice } from './schema'
-
-// Re-export Invoice for convenience
-export type { Invoice }
+import type { InvoiceSchemaV1 } from './schema'
 
 /**
- * LineItem (UI version with ID for React keys)
+ * Invoice
  *
- * Used in forms for tracking individual line items.
- * When encoding to Invoice, the `id` is stripped.
+ * Alias for InvoiceSchemaV1 - the canonical invoice type.
+ * Use this type throughout the application for invoice data.
+ */
+export type Invoice = InvoiceSchemaV1
+
+/**
+ * LineItem
+ *
+ * Represents an individual line item in an invoice with UI-specific id.
+ * The `id` field is for React keys and is NOT persisted to URL.
  */
 export interface LineItem {
-  /** Unique identifier for React key (UUID v4) */
+  /** Unique identifier for React keys (UUID v4) - NOT persisted to URL */
   id: string
+
   /** Item description */
   description: string
+
   /** Quantity (must be > 0) */
   quantity: number
+
   /** Rate per unit (decimal string) */
   rate: string
 }
@@ -30,12 +38,13 @@ export interface LineItem {
 /**
  * DraftMetadata
  *
- * Metadata for an in-progress invoice draft.
- * Stored separately from invoice data.
+ * UI-specific metadata for draft management.
+ * Stored alongside invoice data but NOT persisted to URL.
  */
 export interface DraftMetadata {
   /** Unique draft identifier (UUID v4) */
   draftId: string
+
   /** Last modification timestamp (ISO 8601) */
   lastModified: string
 }
@@ -43,13 +52,14 @@ export interface DraftMetadata {
 /**
  * DraftState
  *
- * Complete draft state combining metadata and partial invoice data.
- * The invoice data may be incomplete during editing.
+ * Combines draft metadata with partial invoice data.
+ * The `data` field contains invoice fields being edited.
  */
 export interface DraftState {
-  /** Draft metadata */
+  /** Draft metadata (UI-specific) */
   meta: DraftMetadata
-  /** Partial invoice data (may be incomplete) */
+
+  /** Partial invoice data being edited */
   data: Partial<Invoice>
 }
 
@@ -57,17 +67,19 @@ export interface DraftState {
  * InvoiceTemplate
  *
  * Saved invoice template for reuse.
- * Contains partial invoice data that can be loaded and completed.
  */
 export interface InvoiceTemplate {
   /** Unique template identifier (UUID v4) */
   templateId: string
+
   /** Template name (user-provided or auto-generated) */
   name: string
+
   /** Creation timestamp (ISO 8601) */
   createdAt: string
-  /** Invoice data (partial, merged with defaults when loaded) */
-  invoiceData: Partial<Omit<Invoice, 'version'>>
+
+  /** Full invoice data for template */
+  invoiceData: Partial<Invoice>
 }
 
 /**
@@ -78,14 +90,29 @@ export interface InvoiceTemplate {
 export interface CreationHistoryEntry {
   /** Unique entry identifier (UUID v4) */
   entryId: string
+
   /** Creation timestamp (ISO 8601) */
   createdAt: string
-  /** Full invoice data */
-  invoice: Invoice
+
+  // ========== Key Details ==========
+
+  /** Invoice ID (e.g., "INV-001") */
+  invoiceId: string
+
+  /** Recipient name for display */
+  recipientName: string
+
+  /** Total amount string with currency (e.g., "1250.50 USDC") */
+  totalAmount: string
+
   /** Full URL for quick access (contains compressed data) */
   invoiceUrl: string
+
+  // ========== Transaction Discovery ==========
+
   /** Transaction Hash (if discovered via polling) */
   txHash?: string
+
   /** Payment timestamp (if discovered via polling) */
   paidAt?: string
 }
@@ -98,74 +125,29 @@ export interface CreationHistoryEntry {
 export interface PaymentReceipt {
   /** Unique receipt identifier (UUID v4) */
   receiptId: string
+
   /** Payment timestamp (ISO 8601) */
   paidAt: string
+
+  // ========== Invoice Details ==========
+
   /** Invoice ID */
   invoiceId: string
+
   /** Recipient name */
   recipientName: string
+
   /** Payment amount string with currency (e.g., "1250.50 USDC") */
   paymentAmount: string
+
+  // ========== Transaction Details ==========
+
   /** Transaction Hash (0x...) */
   transactionHash: string
+
   /** Chain ID */
   chainId: number
+
   /** Original invoice URL (for reference) */
   invoiceUrl: string
-}
-
-// ============ Helpers ============
-
-/**
- * Convert LineItem[] (with IDs) to Invoice items format (without IDs)
- */
-export function lineItemsToInvoiceItems(lineItems: LineItem[]): Invoice['items'] {
-  return lineItems.map(({ description, quantity, rate }) => ({
-    description,
-    quantity,
-    rate,
-  }))
-}
-
-/**
- * Convert Invoice items to LineItem[] (adding IDs)
- */
-export function invoiceItemsToLineItems(items: Invoice['items']): LineItem[] {
-  return items.map((item) => ({
-    id: crypto.randomUUID(),
-    description: item.description,
-    quantity: typeof item.quantity === 'number' ? item.quantity : parseFloat(item.quantity),
-    rate: item.rate,
-  }))
-}
-
-/**
- * Calculate and format total amount from invoice
- * @returns Formatted string like "1250.50 USDC"
- */
-export function formatInvoiceTotal(invoice: Invoice): string {
-  const subtotal = invoice.items.reduce((sum, item) => {
-    const qty =
-      typeof item.quantity === 'number' ? item.quantity : parseFloat(String(item.quantity))
-    const rate = parseFloat(item.rate)
-    return sum + qty * rate
-  }, 0)
-
-  let total = subtotal
-
-  if (invoice.tax) {
-    const taxValue = invoice.tax.endsWith('%')
-      ? (subtotal * parseFloat(invoice.tax)) / 100
-      : parseFloat(invoice.tax)
-    total += taxValue
-  }
-
-  if (invoice.discount) {
-    const discountValue = invoice.discount.endsWith('%')
-      ? (subtotal * parseFloat(invoice.discount)) / 100
-      : parseFloat(invoice.discount)
-    total -= discountValue
-  }
-
-  return `${total.toFixed(2)} ${invoice.currency}`
 }

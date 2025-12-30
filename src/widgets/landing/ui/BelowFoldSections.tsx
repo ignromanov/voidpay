@@ -17,6 +17,7 @@
 import { HowItWorks } from '../how-it-works/HowItWorks'
 import { DemoSection } from '../demo-section/DemoSection'
 import { WhyVoidPay } from '../why-voidpay/WhyVoidPay'
+import { ComparisonTable } from '../comparison/ComparisonTable'
 import { AudienceSection } from '../audience-section/AudienceSection'
 import { FaqSection } from '../faq-section'
 import { FooterCta } from '../footer-cta/FooterCta'
@@ -27,6 +28,7 @@ export function BelowFoldSections() {
       <HowItWorks />
       <DemoSection />
       <WhyVoidPay />
+      <ComparisonTable />
       <AudienceSection />
       <FaqSection />
       <FooterCta />

@@ -41,6 +41,18 @@ export function ArrowRightIcon({ size = 24, ...props }: IconProps) {
 }
 
 /**
+ * ArrowLeft icon - Used in Privacy/Terms back button
+ */
+export function ArrowLeftIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <path d="M19 12H5" />
+      <path d="m12 19-7-7 7-7" />
+    </svg>
+  )
+}
+
+/**
  * Lock icon - Used in SocialProofStrip trust badge
  */
 export function LockIcon({ size = 24, ...props }: IconProps) {

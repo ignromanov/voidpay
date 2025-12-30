@@ -5,21 +5,18 @@
  * across the application following FSD public API conventions.
  */
 
-// Core Invoice type (from schema)
-export type { Invoice } from './model/schema'
-
 // Types (from model layer)
+export type { InvoiceSchemaV1 } from './model/schema'
+
 export type {
-  LineItem,
-  DraftMetadata,
+  Invoice,
   DraftState,
+  DraftMetadata,
   InvoiceTemplate,
+  LineItem,
   PaymentReceipt,
   CreationHistoryEntry,
 } from './model/types'
-
-// Helper functions for LineItem conversion and formatting
-export { lineItemsToInvoiceItems, invoiceItemsToLineItems, formatInvoiceTotal } from './model/types'
 
 // Validation (from lib layer)
 export { invoiceSchema } from './lib/validation'

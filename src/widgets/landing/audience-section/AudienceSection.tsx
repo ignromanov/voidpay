@@ -47,10 +47,10 @@ export function AudienceSection() {
       aria-labelledby="audience-section-heading"
     >
       <div className="mx-auto max-w-6xl">
-        {/* Section header */}
+        {/* Section header - SEO: web3 audience keyword */}
         <div className="mb-16 text-center">
           <Heading variant="h1" as="h2" id="audience-section-heading" className="mb-4">
-            Built For
+            Built For Web3 Freelancers, DAOs & Agencies
           </Heading>
           <Text variant="large" className="mx-auto max-w-2xl text-zinc-400">
             Whether you&apos;re a solo creator, a DAO treasurer, or running an agency — VoidPay

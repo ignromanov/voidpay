@@ -7,6 +7,7 @@
 
 export {
   ArrowRightIcon,
+  ArrowLeftIcon,
   LockIcon,
   ServerOffIcon,
   GlobeIcon,

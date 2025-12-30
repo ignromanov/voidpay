@@ -33,7 +33,7 @@ function TimelineStep({
           <Icon className="h-10 w-10 text-violet-400" aria-hidden="true" />
         </div>
         {/* Step number badge */}
-        <span className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white shadow-lg">
+        <span className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white shadow-lg">
           {step}
         </span>
       </div>
@@ -50,7 +50,7 @@ function TimelineStep({
 
       {/* Arrow to next step (hidden on mobile, shown on md+) */}
       {!isLast && (
-        <div className="absolute right-0 top-10 hidden translate-x-1/2 md:block">
+        <div className="absolute top-10 right-0 hidden translate-x-1/2 md:block">
           <ArrowRight className="h-6 w-6 text-zinc-600" aria-hidden="true" />
         </div>
       )}
@@ -66,10 +66,10 @@ export function HowItWorks() {
       aria-labelledby="how-it-works-heading"
     >
       <div className="mx-auto max-w-5xl space-y-16">
-        {/* Section header */}
+        {/* Section header - SEO: primary keyword in H2 */}
         <div className="space-y-4 text-center">
           <Heading variant="h1" as="h2" id="how-it-works-heading">
-            Three Steps to Get Paid
+            Create Crypto Invoices in 3 Steps
           </Heading>
           <Text variant="large" className="text-zinc-400">
             No accounts. No sign-ups. Just invoices.

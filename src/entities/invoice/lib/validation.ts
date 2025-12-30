@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Invoice } from '../model/schema'
+import { InvoiceSchemaV1 } from '../model/schema'
 import { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
 import { NUMERIC_STRING_REGEX } from './constants'
 
@@ -7,7 +7,7 @@ import { NUMERIC_STRING_REGEX } from './constants'
 export { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
 
 export const invoiceSchema = z.object({
-  version: z.literal(2),
+  version: z.literal(1),
   invoiceId: z.string().min(1),
   issuedAt: z.number().int().positive(),
   dueAt: z.number().int().positive(),
@@ -50,4 +50,4 @@ export const invoiceSchema = z.object({
 // Verify that the Zod schema matches the TypeScript interface
 // This is a type-level check
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type InvoiceSchemaCheck = z.infer<typeof invoiceSchema> extends Invoice ? true : false
+type InvoiceSchemaCheck = z.infer<typeof invoiceSchema> extends InvoiceSchemaV1 ? true : false

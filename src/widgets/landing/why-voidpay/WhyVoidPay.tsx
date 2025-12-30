@@ -43,20 +43,20 @@ function HeroFeatureCard({
 
 export function WhyVoidPay() {
   // Sort topCards to match TOP_FEATURES order
-  const topCards = TOP_FEATURES
-    .map((id) => FEATURE_CARDS.find((card) => card.id === id))
-    .filter((card): card is NonNullable<typeof card> => card !== undefined)
+  const topCards = TOP_FEATURES.map((id) => FEATURE_CARDS.find((card) => card.id === id)).filter(
+    (card): card is NonNullable<typeof card> => card !== undefined
+  )
 
   return (
     <section className="relative bg-transparent px-6 py-32" aria-labelledby="why-voidpay-heading">
       <div className="mx-auto max-w-6xl">
-        {/* Section header */}
+        {/* Section header - SEO: crypto invoicing keyword */}
         <div className="mb-16 text-center">
           <Heading variant="h1" as="h2" id="why-voidpay-heading" className="mb-4">
-            Why VoidPay?
+            Why Choose VoidPay for Crypto Invoicing
           </Heading>
           <Text variant="large" className="mx-auto max-w-2xl text-zinc-400">
-            Built for freelancers, DAOs, and agencies who demand privacy and speed.
+            The no-KYC crypto invoice platform for freelancers, DAOs, and agencies.
           </Text>
         </div>
 
