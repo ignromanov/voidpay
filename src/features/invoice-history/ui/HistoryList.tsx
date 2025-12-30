@@ -9,7 +9,7 @@
 
 import { useState } from 'react'
 import { useCreatorStore } from '@/entities/creator'
-import type { CreationHistoryEntry } from '@/entities/invoice'
+import { formatInvoiceTotal, type CreationHistoryEntry } from '@/entities/invoice'
 
 interface HistoryListProps {
   /** Optional CSS class name */
@@ -125,18 +125,20 @@ function HistoryEntryCard({
         {/* Left: Invoice Info */}
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-2">
-            <h3 className="truncate text-sm font-semibold text-gray-100">{entry.invoiceId}</h3>
+            <h3 className="truncate text-sm font-semibold text-gray-100">
+              {entry.invoice.invoiceId}
+            </h3>
             {entry.txHash && (
               <span className="inline-flex items-center rounded border border-green-800 bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-400">
                 Paid
               </span>
             )}
           </div>
-          <p className="mb-1 text-sm text-gray-300">{entry.recipientName}</p>
+          <p className="mb-1 text-sm text-gray-300">{entry.invoice.client?.name ?? 'Unknown'}</p>
           <div className="flex items-center gap-3 text-xs text-gray-400">
             <span>{formattedDate}</span>
             <span>•</span>
-            <span className="font-medium text-gray-300">{entry.totalAmount}</span>
+            <span className="font-medium text-gray-300">{formatInvoiceTotal(entry.invoice)}</span>
           </div>
         </div>
 

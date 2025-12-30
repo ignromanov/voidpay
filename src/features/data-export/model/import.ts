@@ -58,10 +58,8 @@ export const importUserData = (data: unknown): ImportResult => {
       const exists = creatorStore.history.some((h) => h.entryId === entry.entryId)
       if (!exists) {
         creatorStore.addHistoryEntry({
-          invoiceId: entry.invoiceId,
+          invoice: entry.invoice,
           invoiceUrl: entry.invoiceUrl,
-          recipientName: entry.recipientName,
-          totalAmount: entry.totalAmount,
         })
         historyAdded++
       }

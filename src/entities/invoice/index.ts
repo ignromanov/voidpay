@@ -18,8 +18,8 @@ export type {
   CreationHistoryEntry,
 } from './model/types'
 
-// Helper functions for LineItem conversion
-export { lineItemsToInvoiceItems, invoiceItemsToLineItems } from './model/types'
+// Helper functions for LineItem conversion and formatting
+export { lineItemsToInvoiceItems, invoiceItemsToLineItems, formatInvoiceTotal } from './model/types'
 
 // Validation (from lib layer)
 export { invoiceSchema } from './lib/validation'

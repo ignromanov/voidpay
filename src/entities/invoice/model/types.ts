@@ -80,12 +80,8 @@ export interface CreationHistoryEntry {
   entryId: string
   /** Creation timestamp (ISO 8601) */
   createdAt: string
-  /** Invoice ID (e.g., "INV-001") */
-  invoiceId: string
-  /** Recipient name for display */
-  recipientName: string
-  /** Total amount string with currency (e.g., "1250.50 USDC") */
-  totalAmount: string
+  /** Full invoice data */
+  invoice: Invoice
   /** Full URL for quick access (contains compressed data) */
   invoiceUrl: string
   /** Transaction Hash (if discovered via polling) */
@@ -141,4 +137,35 @@ export function invoiceItemsToLineItems(items: Invoice['items']): LineItem[] {
     quantity: typeof item.quantity === 'number' ? item.quantity : parseFloat(item.quantity),
     rate: item.rate,
   }))
+}
+
+/**
+ * Calculate and format total amount from invoice
+ * @returns Formatted string like "1250.50 USDC"
+ */
+export function formatInvoiceTotal(invoice: Invoice): string {
+  const subtotal = invoice.items.reduce((sum, item) => {
+    const qty =
+      typeof item.quantity === 'number' ? item.quantity : parseFloat(String(item.quantity))
+    const rate = parseFloat(item.rate)
+    return sum + qty * rate
+  }, 0)
+
+  let total = subtotal
+
+  if (invoice.tax) {
+    const taxValue = invoice.tax.endsWith('%')
+      ? (subtotal * parseFloat(invoice.tax)) / 100
+      : parseFloat(invoice.tax)
+    total += taxValue
+  }
+
+  if (invoice.discount) {
+    const discountValue = invoice.discount.endsWith('%')
+      ? (subtotal * parseFloat(invoice.discount)) / 100
+      : parseFloat(invoice.discount)
+    total -= discountValue
+  }
+
+  return `${total.toFixed(2)} ${invoice.currency}`
 }

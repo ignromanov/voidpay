@@ -4,12 +4,12 @@
  * Client-side search functionality for history entries.
  */
 
-import type { CreationHistoryEntry } from '@/entities/invoice'
+import { formatInvoiceTotal, type CreationHistoryEntry } from '@/entities/invoice'
 
 /**
  * Search history entries by query string
  *
- * Searches across: invoiceId, recipientName, totalAmount
+ * Searches across: invoiceId, client name, total amount
  *
  * @param history - Array of history entries
  * @param query - Search query (case-insensitive)
@@ -26,7 +26,11 @@ export function searchHistory(
   const normalizedQuery = query.toLowerCase().trim()
 
   return history.filter((entry) => {
-    const searchableText = [entry.invoiceId, entry.recipientName, entry.totalAmount]
+    const searchableText = [
+      entry.invoice.invoiceId,
+      entry.invoice.client?.name ?? '',
+      formatInvoiceTotal(entry.invoice),
+    ]
       .join(' ')
       .toLowerCase()
 
@@ -103,14 +107,15 @@ export function sortHistory(
       case 'date':
         comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         break
-      case 'amount':
-        // Extract numeric value from totalAmount string (e.g., "1250.50 USDC" -> 1250.50)
-        const amountA = parseFloat(a.totalAmount.split(' ')[0] || '0')
-        const amountB = parseFloat(b.totalAmount.split(' ')[0] || '0')
+      case 'amount': {
+        // Extract numeric value from formatted total
+        const amountA = parseFloat(formatInvoiceTotal(a.invoice).split(' ')[0] || '0')
+        const amountB = parseFloat(formatInvoiceTotal(b.invoice).split(' ')[0] || '0')
         comparison = amountA - amountB
         break
+      }
       case 'invoiceId':
-        comparison = a.invoiceId.localeCompare(b.invoiceId)
+        comparison = a.invoice.invoiceId.localeCompare(b.invoice.invoiceId)
         break
     }
 

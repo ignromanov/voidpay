@@ -5,7 +5,12 @@
  * This feature combines entities/invoice (data) with entities/creator (storage).
  */
 
-import type { Invoice, DraftState, LineItem } from '@/entities/invoice'
+import {
+  lineItemsToInvoiceItems,
+  type Invoice,
+  type DraftState,
+  type LineItem,
+} from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
 
 /**
@@ -50,27 +55,30 @@ export function calculateTotalAmount(invoice: Partial<Invoice>, lineItems: LineI
  *
  * This should be called after successfully generating an invoice URL.
  *
- * @param draft - Draft state with invoice data
- * @param lineItems - Line items for total calculation
+ * @param invoice - Full invoice data
  * @param invoiceUrl - Generated invoice URL
  *
  * @example
- * const url = await generateInvoiceUrl(draft)
- * addToHistory(draft, lineItems, url)
+ * const url = await generateInvoiceUrl(invoice)
+ * addToHistory(invoice, url)
  */
-export function addToHistory(draft: DraftState, lineItems: LineItem[], invoiceUrl: string): void {
+export function addToHistory(invoice: Invoice, invoiceUrl: string): void {
   const { addHistoryEntry } = useCreatorStore.getState()
 
-  const totalAmount = calculateTotalAmount(draft.data, lineItems)
-  const invoiceId = draft.data.invoiceId ?? ''
-  const recipientName = draft.data.client?.name ?? ''
-
   addHistoryEntry({
-    invoiceId,
-    recipientName,
-    totalAmount,
+    invoice,
     invoiceUrl,
   })
+}
+
+/**
+ * Build full Invoice from draft and line items
+ */
+export function buildInvoice(draft: DraftState, lineItems: LineItem[]): Invoice {
+  return {
+    ...draft.data,
+    items: lineItemsToInvoiceItems(lineItems),
+  } as Invoice
 }
 
 /**
@@ -96,8 +104,9 @@ export async function generateAndTrackInvoice(
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
   const invoiceUrl = `${baseUrl}/invoice?draft=${draft.meta.draftId}`
 
-  // Add to history
-  addToHistory(draft, lineItems, invoiceUrl)
+  // Build full invoice and add to history
+  const invoice = buildInvoice(draft, lineItems)
+  addToHistory(invoice, invoiceUrl)
 
   return invoiceUrl
 }
