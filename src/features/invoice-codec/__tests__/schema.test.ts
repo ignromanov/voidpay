@@ -20,7 +20,7 @@ import type { InvoiceSchemaV1 } from '@/entities/invoice'
 // Canonical test invoice - represents a real-world invoice with all fields populated
 const createTestInvoiceV1 = (): InvoiceSchemaV1 => ({
   version: 1,
-  invoiceId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', // Valid UUID format
+  invoiceId: 'INV-2024-001',
   issuedAt: 1704067200, // 2024-01-01T00:00:00Z
   dueAt: 1706745600, // 2024-02-01T00:00:00Z
   notes: 'Payment for web development services',
@@ -54,7 +54,7 @@ const createTestInvoiceV1 = (): InvoiceSchemaV1 => ({
 // Minimal invoice - only required fields
 const createMinimalInvoiceV1 = (): InvoiceSchemaV1 => ({
   version: 1,
-  invoiceId: 'b2c3d4e5-f6a7-8901-bcde-f23456789012', // Valid UUID format
+  invoiceId: 'INV-MIN-001',
   issuedAt: 1704067200,
   dueAt: 1706745600,
   networkId: 137, // Polygon
@@ -99,12 +99,24 @@ describe('Invoice Schema V1 Encoding', () => {
   })
 
   describe('Round-trip Tests - Encode/Decode Consistency', () => {
+    // Helper to normalize addresses for comparison (binary codec returns lowercase)
+    const normalizeAddresses = (inv: InvoiceSchemaV1): InvoiceSchemaV1 => ({
+      ...inv,
+      tokenAddress: inv.tokenAddress?.toLowerCase(),
+      from: { ...inv.from, walletAddress: inv.from.walletAddress.toLowerCase() },
+      client: {
+        ...inv.client,
+        walletAddress: inv.client.walletAddress?.toLowerCase(),
+      },
+    })
+
     it('should perfectly round-trip full invoice', () => {
       const original = createTestInvoiceV1()
       const encoded = encodeInvoice(original)
       const decoded = decodeInvoice(encoded)
 
-      expect(decoded).toEqual(original)
+      // Addresses are normalized to lowercase by binary codec
+      expect(normalizeAddresses(decoded)).toEqual(normalizeAddresses(original))
     })
 
     it('should perfectly round-trip minimal invoice', () => {
@@ -112,7 +124,7 @@ describe('Invoice Schema V1 Encoding', () => {
       const encoded = encodeInvoice(original)
       const decoded = decodeInvoice(encoded)
 
-      expect(decoded).toEqual(original)
+      expect(normalizeAddresses(decoded)).toEqual(normalizeAddresses(original))
     })
 
     it('should preserve all optional fields when present', () => {
@@ -120,15 +132,17 @@ describe('Invoice Schema V1 Encoding', () => {
       const encoded = encodeInvoice(invoice)
       const decoded = decodeInvoice(encoded)
 
-      // Verify optional fields are preserved
+      // Verify optional fields are preserved (addresses normalized to lowercase)
       expect(decoded.notes).toBe(invoice.notes)
-      expect(decoded.tokenAddress).toBe(invoice.tokenAddress)
+      expect(decoded.tokenAddress?.toLowerCase()).toBe(invoice.tokenAddress?.toLowerCase())
       expect(decoded.tax).toBe(invoice.tax)
       expect(decoded.discount).toBe(invoice.discount)
       expect(decoded.from.email).toBe(invoice.from.email)
       expect(decoded.from.physicalAddress).toBe(invoice.from.physicalAddress)
       expect(decoded.from.phone).toBe(invoice.from.phone)
-      expect(decoded.client.walletAddress).toBe(invoice.client.walletAddress)
+      expect(decoded.client.walletAddress?.toLowerCase()).toBe(
+        invoice.client.walletAddress?.toLowerCase()
+      )
       expect(decoded.client.email).toBe(invoice.client.email)
       expect(decoded.client.physicalAddress).toBe(invoice.client.physicalAddress)
       expect(decoded.client.phone).toBe(invoice.client.phone)
@@ -160,7 +174,7 @@ describe('Invoice Schema V1 Encoding', () => {
         ...createMinimalInvoiceV1(),
         items: [
           { description: 'Integer quantity', quantity: 100, rate: '1000000' },
-          { description: 'String quantity', quantity: '50.5', rate: '2000000' },
+          { description: 'Float quantity', quantity: 50.5, rate: '2000000' },
           { description: 'Large rate', quantity: 1, rate: '999999999999999999' }, // Near BigInt max
         ],
       }
@@ -168,6 +182,7 @@ describe('Invoice Schema V1 Encoding', () => {
       const encoded = encodeInvoice(invoice)
       const decoded = decodeInvoice(encoded)
 
+      // Decoder normalizes numeric string quantities to numbers
       expect(decoded.items).toEqual(invoice.items)
     })
   })
@@ -187,79 +202,82 @@ describe('Invoice Schema V1 Encoding', () => {
       expect(() => decodeInvoice('invalid-data-not-compressed')).toThrow()
     })
 
-    it('should throw on missing version field', () => {
-      // This tests the decodeInvoice error path for missing version
-      const invalidInvoice = { invoiceId: 'test', networkId: 1 }
-      const encoded = encodeInvoice(invalidInvoice as unknown as InvoiceSchemaV1)
-
-      expect(() => decodeInvoice(encoded)).toThrow('Missing or invalid version field')
+    it('should throw on missing H prefix', () => {
+      // Binary V3 requires 'H' prefix
+      expect(() => decodeInvoice('ABCD1234')).toThrow(/expected Binary V3/)
     })
 
-    it('should throw on unsupported schema version', () => {
-      const futureInvoice = { version: 999, invoiceId: 'test', networkId: 1 }
-      const encoded = encodeInvoice(futureInvoice as unknown as InvoiceSchemaV1)
-
-      expect(() => decodeInvoice(encoded)).toThrow('Unsupported schema version: 999')
+    it('should throw on corrupted base62 data', () => {
+      // Valid H prefix but corrupted data
+      expect(() => decodeInvoice('H!!!invalid!!!')).toThrow()
     })
 
-    it('should throw on invalid version type', () => {
-      const invalidInvoice = { version: 'not-a-number', invoiceId: 'test', networkId: 1 }
-      const encoded = encodeInvoice(invalidInvoice as unknown as InvoiceSchemaV1)
-
-      expect(() => decodeInvoice(encoded)).toThrow('Missing or invalid version field')
-    })
-
-    it('should throw on invalid invoice data structure', () => {
-      // Create a v1 invoice missing required fields
-      const incompleteInvoice = { version: 1, invoiceId: 'test' }
-      const encoded = encodeInvoice(incompleteInvoice as unknown as InvoiceSchemaV1)
-
-      expect(() => decodeInvoice(encoded)).toThrow(/Invalid invoice data/)
+    it('should throw on truncated binary data', () => {
+      // Valid H prefix but too short
+      expect(() => decodeInvoice('H1')).toThrow()
     })
   })
 
   describe('URL Generation', () => {
-    it('should generate valid URL with default base', () => {
+    it('should generate valid URL with hash fragment', () => {
       const invoice = createMinimalInvoiceV1()
       const url = generateInvoiceUrl(invoice)
 
-      expect(url).toContain('/pay?d=')
+      expect(url).toContain('/pay#H') // Binary V3 prefix
       expect(url).toMatch(/^https?:\/\//)
     })
 
     it('should generate URL with custom base URL', () => {
       const invoice = createMinimalInvoiceV1()
       const customBase = 'https://custom.voidpay.xyz'
-      const url = generateInvoiceUrl(invoice, customBase)
+      const url = generateInvoiceUrl(invoice, { baseUrl: customBase })
 
       expect(url.startsWith(customBase)).toBe(true)
-      expect(url).toContain('/pay?d=')
+      expect(url).toContain('/pay#H')
     })
 
     it('should generate URL that can be decoded back', () => {
       const invoice = createTestInvoiceV1()
-      const url = generateInvoiceUrl(invoice, 'https://voidpay.xyz')
+      const url = generateInvoiceUrl(invoice, { baseUrl: 'https://voidpay.xyz' })
 
-      // Extract the compressed data from the URL
-      const urlObj = new URL(url)
-      const compressed = urlObj.searchParams.get('d')
+      // Extract the compressed data from hash fragment
+      const hashIndex = url.indexOf('#')
+      const compressed = url.slice(hashIndex + 1)
 
       expect(compressed).toBeTruthy()
-      const decoded = decodeInvoice(compressed!)
-      expect(decoded).toEqual(invoice)
+      expect(compressed.startsWith('H')).toBe(true)
+      const decoded = decodeInvoice(compressed)
+
+      // Normalize addresses for comparison (binary codec returns lowercase)
+      const normalizeAddresses = (inv: InvoiceSchemaV1): InvoiceSchemaV1 => ({
+        ...inv,
+        tokenAddress: inv.tokenAddress?.toLowerCase(),
+        from: { ...inv.from, walletAddress: inv.from.walletAddress.toLowerCase() },
+        client: {
+          ...inv.client,
+          walletAddress: inv.client.walletAddress?.toLowerCase(),
+        },
+      })
+      expect(normalizeAddresses(decoded)).toEqual(normalizeAddresses(invoice))
     })
 
     it('should throw when URL exceeds 2000 bytes', () => {
-      // Create an invoice with very long notes to exceed URL limit
+      // Binary V3 with Deflate is very efficient, need diverse random data
+      // to prevent good compression ratios
+      const randomString = (len: number) =>
+        Array.from({ length: len }, () =>
+          String.fromCharCode(65 + Math.floor(Math.random() * 26))
+        ).join('')
+
       const largeInvoice: InvoiceSchemaV1 = {
         ...createTestInvoiceV1(),
-        notes: 'A'.repeat(2000), // Very long notes
-        items: Array(50)
+        notes: randomString(280), // Max notes length
+        items: Array(100)
           .fill(null)
           .map((_, i) => ({
-            description: `Line item ${i} with a very long description that takes up a lot of space in the URL`,
-            quantity: i + 1,
-            rate: '999999999999999999',
+            description: randomString(50) + i, // Random + unique to prevent compression
+            quantity: Math.random() * 1000,
+            rate: String(Math.floor(Math.random() * 1e18)),
           })),
       }
 
