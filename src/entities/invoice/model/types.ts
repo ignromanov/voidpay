@@ -28,7 +28,7 @@ export interface LineItem {
  * InvoiceDraft
  *
  * Represents the single active in-progress invoice.
- * This structure matches the InvoiceSchemaV1 from the URL state codec.
+ * This structure matches the InvoiceSchemaV2 from the URL state codec.
  */
 export interface InvoiceDraft {
   /** Unique draft identifier (UUID v4) */

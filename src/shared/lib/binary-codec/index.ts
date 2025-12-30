@@ -24,7 +24,7 @@
  * ```ts
  * import { encodeBinary, decodeBinary, encodeBinaryV2, decodeBinaryV2, encodeBinaryV3, decodeBinaryV3 } from '@/shared/lib/binary-codec';
  *
- * const invoice: InvoiceSchemaV1 = {...};
+ * const invoice: InvoiceSchemaV2 = {...};
  *
  * // V1: Basic binary encoding
  * const encoded = encodeBinary(invoice);
@@ -41,17 +41,17 @@
  */
 
 // V1 exports
-export { encodeBinary, getBinarySize } from './encoder';
-export { decodeBinary, decodeBinaryWithSteps, type DecodingStep } from './decoder';
+export { encodeBinary, getBinarySize } from './encoder'
+export { decodeBinary, decodeBinaryWithSteps, type DecodingStep } from './decoder'
 
 // V2 exports
-export { encodeBinaryV2, getBinarySizeV2 } from './encoder-v2';
-export { decodeBinaryV2 } from './decoder-v2';
+export { encodeBinaryV2, getBinarySizeV2 } from './encoder-v2'
+export { decodeBinaryV2 } from './decoder-v2'
 
 // V3 exports
-export { encodeBinaryV3 } from './encoder-v3';
-export { decodeBinaryV3 } from './decoder-v3';
+export { encodeBinaryV3 } from './encoder-v3'
+export { decodeBinaryV3 } from './decoder-v3'
 
 // Utilities
-export { encodeBase62, decodeBase62 } from './base62';
-export * from './dictionary';
+export { encodeBase62, decodeBase62 } from './base62'
+export * from './dictionary'

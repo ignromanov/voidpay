@@ -1,4 +1,4 @@
-import type { InvoiceSchemaV1 } from '@/entities/invoice'
+import type { InvoiceSchemaV2 } from '@/entities/invoice'
 import { getAppBaseUrl } from '@/shared/config'
 import { encodeBinaryV3 } from '@/shared/lib/binary-codec'
 import { encodeOGPreview } from './og-preview'
@@ -20,7 +20,7 @@ export interface GenerateUrlOptions {
  * @param invoice The invoice data to encode
  * @returns The Base62-encoded binary string (prefixed with 'H')
  */
-export const encodeInvoice = (invoice: InvoiceSchemaV1): string => {
+export const encodeInvoice = (invoice: InvoiceSchemaV2): string => {
   return encodeBinaryV3(invoice)
 }
 
@@ -46,7 +46,7 @@ export const encodeInvoice = (invoice: InvoiceSchemaV1): string => {
  * ```
  */
 export const generateInvoiceUrl = (
-  invoice: InvoiceSchemaV1,
+  invoice: InvoiceSchemaV2,
   options: GenerateUrlOptions | string = {}
 ): string => {
   // Support legacy signature: generateInvoiceUrl(invoice, baseUrl)

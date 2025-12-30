@@ -1,6 +1,6 @@
-export interface InvoiceSchemaV1 {
-  /** Schema Version (Fixed: 1) */
-  version: 1
+export interface InvoiceSchemaV2 {
+  /** Schema Version (Fixed: 2) */
+  version: 2
   /** Invoice ID (UUID or unique string) */
   invoiceId: string
   /** Issue Date (Unix Timestamp in seconds) */

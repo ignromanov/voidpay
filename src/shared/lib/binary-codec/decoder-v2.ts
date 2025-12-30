@@ -8,21 +8,11 @@
  * - Optional LZ decompression pass
  */
 
-import { InvoiceSchemaV1 } from '@/entities/invoice/model/schema';
-import { decodeBase62 } from './base62';
-import { decompress } from '@/shared/lib/compression';
-import {
-  bytesToUuid,
-  bytesToAddress,
-  readUInt32,
-  readVarInt,
-  readString,
-} from './utils';
-import {
-  CURRENCY_DICT_REVERSE,
-  TOKEN_DICT_REVERSE,
-  decodeDictString,
-} from './dictionary';
+import { InvoiceSchemaV2 } from '@/entities/invoice/model/schema-v2'
+import { decodeBase62 } from './base62'
+import { decompress } from '@/shared/lib/compression'
+import { bytesToUuid, bytesToAddress, readUInt32, readVarInt, readString } from './utils'
+import { CURRENCY_DICT_REVERSE, TOKEN_DICT_REVERSE, decodeDictString } from './dictionary'
 
 /**
  * Bit flags enum (must match encoder-v2.ts)
@@ -50,20 +40,20 @@ function readStringWithDict(
   offset: number,
   dict: Record<number, string>
 ): { value: string; bytesRead: number } {
-  const mode = bytes[offset] ?? 0;
+  const mode = bytes[offset] ?? 0
 
   if (mode === 0) {
     // Dictionary mode
-    const code = bytes[offset + 1] ?? 0;
-    const value = decodeDictString(code, dict);
+    const code = bytes[offset + 1] ?? 0
+    const value = decodeDictString(code, dict)
     if (value === null) {
-      throw new Error(`Invalid dictionary code: ${code}`);
+      throw new Error(`Invalid dictionary code: ${code}`)
     }
-    return { value, bytesRead: 2 };
+    return { value, bytesRead: 2 }
   } else {
     // Raw string mode
-    const result = readString(bytes, offset + 1);
-    return { value: result.value, bytesRead: result.bytesRead + 1 };
+    const result = readString(bytes, offset + 1)
+    return { value: result.value, bytesRead: result.bytesRead + 1 }
   }
 }
 
@@ -74,103 +64,102 @@ function readOptionalAddressWithDict(
   bytes: Uint8Array,
   offset: number
 ): { value: string; bytesRead: number } {
-  const mode = bytes[offset] ?? 0;
+  const mode = bytes[offset] ?? 0
 
   if (mode === 0) {
     // Dictionary mode
-    const code = bytes[offset + 1] ?? 0;
-    const value = TOKEN_DICT_REVERSE[code];
+    const code = bytes[offset + 1] ?? 0
+    const value = TOKEN_DICT_REVERSE[code]
     if (!value) {
-      throw new Error(`Invalid token dictionary code: ${code}`);
+      throw new Error(`Invalid token dictionary code: ${code}`)
     }
-    return { value, bytesRead: 2 };
+    return { value, bytesRead: 2 }
   } else {
     // Raw address mode
-    const addressBytes = bytes.slice(offset + 1, offset + 21);
-    const value = bytesToAddress(addressBytes);
-    return { value, bytesRead: 21 };
+    const addressBytes = bytes.slice(offset + 1, offset + 21)
+    const value = bytesToAddress(addressBytes)
+    return { value, bytesRead: 21 }
   }
 }
 
 /**
  * Decodes a V2 binary-encoded invoice
  */
-export function decodeBinaryV2(encoded: string): InvoiceSchemaV1 {
+export function decodeBinaryV2(encoded: string): InvoiceSchemaV2 {
   // Check prefix
-  const prefix = encoded[0];
-  const data = encoded.substring(1);
+  const prefix = encoded[0]
+  const data = encoded.substring(1)
 
-  let bytes: Uint8Array;
+  let bytes: Uint8Array
 
   if (prefix === 'L') {
     // LZ-compressed
-    const decompressed = decompress(data);
+    const decompressed = decompress(data)
     if (!decompressed) {
-      throw new Error('Failed to decompress V2 invoice data');
+      throw new Error('Failed to decompress V2 invoice data')
     }
     // Convert base64 back to bytes
-    const binaryString = atob(decompressed);
-    bytes = new Uint8Array(binaryString.length);
+    const binaryString = atob(decompressed)
+    bytes = new Uint8Array(binaryString.length)
     for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
+      bytes[i] = binaryString.charCodeAt(i)
     }
   } else if (prefix === 'B') {
     // Binary only
-    bytes = decodeBase62(data);
+    bytes = decodeBase62(data)
   } else {
-    throw new Error(`Invalid V2 prefix: ${prefix}`);
+    throw new Error(`Invalid V2 prefix: ${prefix}`)
   }
 
-  let offset = 0;
+  let offset = 0
 
   // Helper to advance offset
   const read = <T extends { bytesRead: number; value: any }>(fn: () => T): T['value'] => {
-    const result = fn();
-    offset += result.bytesRead;
-    return result.value;
-  };
+    const result = fn()
+    offset += result.bytesRead
+    return result.value
+  }
 
   // 1. Version (should be 2)
-  const version = bytes[offset++] ?? 0;
+  const version = bytes[offset++] ?? 0
   if (version !== 2) {
-    throw new Error(`Expected V2 schema, got version: ${version}`);
+    throw new Error(`Expected V2 schema, got version: ${version}`)
   }
 
   // 2. Bit flags (2 bytes)
-  const flagsHigh = bytes[offset++] ?? 0;
-  const flagsLow = bytes[offset++] ?? 0;
-  const flags = (flagsHigh << 8) | flagsLow;
+  const flagsHigh = bytes[offset++] ?? 0
+  const flagsLow = bytes[offset++] ?? 0
+  const flags = (flagsHigh << 8) | flagsLow
 
   // 3. Invoice ID (16 bytes UUID)
-  const idBytes = bytes.slice(offset, offset + 16);
-  const invoiceId = bytesToUuid(idBytes);
-  offset += 16;
+  const idBytes = bytes.slice(offset, offset + 16)
+  const invoiceId = bytesToUuid(idBytes)
+  offset += 16
 
   // 4. Issue Date (4 bytes)
-  const issuedAt = read(() => readUInt32(bytes, offset));
+  const issuedAt = read(() => readUInt32(bytes, offset))
 
   // 5. Due Date as DELTA (varint)
-  const dueDelta = read(() => readVarInt(bytes, offset));
-  const dueAt = issuedAt + dueDelta;
+  const dueDelta = read(() => readVarInt(bytes, offset))
+  const dueAt = issuedAt + dueDelta
 
   // 6. Notes (if flag set)
-  const notes = (flags & OptionalFields.HAS_NOTES)
-    ? read(() => readString(bytes, offset))
-    : undefined;
+  const notes = flags & OptionalFields.HAS_NOTES ? read(() => readString(bytes, offset)) : undefined
 
   // 7. Network Chain ID (varint)
-  const networkId = read(() => readVarInt(bytes, offset));
+  const networkId = read(() => readVarInt(bytes, offset))
 
   // 8. Currency Symbol (with dictionary)
-  const currency = read(() => readStringWithDict(bytes, offset, CURRENCY_DICT_REVERSE));
+  const currency = read(() => readStringWithDict(bytes, offset, CURRENCY_DICT_REVERSE))
 
   // 9. Token Address (if flag set, with dictionary)
-  const tokenAddress = (flags & OptionalFields.HAS_TOKEN)
-    ? read(() => readOptionalAddressWithDict(bytes, offset))
-    : undefined;
+  const tokenAddress =
+    flags & OptionalFields.HAS_TOKEN
+      ? read(() => readOptionalAddressWithDict(bytes, offset))
+      : undefined
 
   // 10. Decimals (varint)
-  const decimals = read(() => readVarInt(bytes, offset));
+  const decimals = read(() => readVarInt(bytes, offset))
 
   // 11. Sender Info
   const from = {
@@ -179,17 +168,17 @@ export function decodeBinaryV2(encoded: string): InvoiceSchemaV1 {
     email: undefined as string | undefined,
     physicalAddress: undefined as string | undefined,
     phone: undefined as string | undefined,
-  };
-  offset += 20;
+  }
+  offset += 20
 
   if (flags & OptionalFields.HAS_SENDER_EMAIL) {
-    from.email = read(() => readString(bytes, offset));
+    from.email = read(() => readString(bytes, offset))
   }
   if (flags & OptionalFields.HAS_SENDER_ADDRESS) {
-    from.physicalAddress = read(() => readString(bytes, offset));
+    from.physicalAddress = read(() => readString(bytes, offset))
   }
   if (flags & OptionalFields.HAS_SENDER_PHONE) {
-    from.phone = read(() => readString(bytes, offset));
+    from.phone = read(() => readString(bytes, offset))
   }
 
   // 12. Client Info
@@ -199,52 +188,49 @@ export function decodeBinaryV2(encoded: string): InvoiceSchemaV1 {
     email: undefined as string | undefined,
     physicalAddress: undefined as string | undefined,
     phone: undefined as string | undefined,
-  };
+  }
 
   if (flags & OptionalFields.HAS_CLIENT_WALLET) {
-    client.walletAddress = bytesToAddress(bytes.slice(offset, offset + 20));
-    offset += 20;
+    client.walletAddress = bytesToAddress(bytes.slice(offset, offset + 20))
+    offset += 20
   }
 
   if (flags & OptionalFields.HAS_CLIENT_EMAIL) {
-    client.email = read(() => readString(bytes, offset));
+    client.email = read(() => readString(bytes, offset))
   }
   if (flags & OptionalFields.HAS_CLIENT_ADDRESS) {
-    client.physicalAddress = read(() => readString(bytes, offset));
+    client.physicalAddress = read(() => readString(bytes, offset))
   }
   if (flags & OptionalFields.HAS_CLIENT_PHONE) {
-    client.phone = read(() => readString(bytes, offset));
+    client.phone = read(() => readString(bytes, offset))
   }
 
   // 13. Line Items (no dictionary for descriptions)
-  const itemCount = read(() => readVarInt(bytes, offset));
-  const items: Array<{ description: string; quantity: string | number; rate: string }> = [];
+  const itemCount = read(() => readVarInt(bytes, offset))
+  const items: Array<{ description: string; quantity: string | number; rate: string }> = []
 
   for (let i = 0; i < itemCount; i++) {
-    const description = read(() => readString(bytes, offset));
-    const qStr = read(() => readString(bytes, offset));
-    const rate = read(() => readString(bytes, offset));
+    const description = read(() => readString(bytes, offset))
+    const qStr = read(() => readString(bytes, offset))
+    const rate = read(() => readString(bytes, offset))
 
     // Try to parse quantity as number if possible
-    const qNum = parseFloat(qStr);
-    const quantity = !isNaN(qNum) && qNum.toString() === qStr ? qNum : qStr;
+    const qNum = parseFloat(qStr)
+    const quantity = !isNaN(qNum) && qNum.toString() === qStr ? qNum : qStr
 
-    items.push({ description, quantity, rate });
+    items.push({ description, quantity, rate })
   }
 
   // 14. Tax (if flag set)
-  const tax = (flags & OptionalFields.HAS_TAX)
-    ? read(() => readString(bytes, offset))
-    : undefined;
+  const tax = flags & OptionalFields.HAS_TAX ? read(() => readString(bytes, offset)) : undefined
 
   // 15. Discount (if flag set)
-  const discount = (flags & OptionalFields.HAS_DISCOUNT)
-    ? read(() => readString(bytes, offset))
-    : undefined;
+  const discount =
+    flags & OptionalFields.HAS_DISCOUNT ? read(() => readString(bytes, offset)) : undefined
 
-  // Construct the invoice object (V1 compatible)
-  const invoice: InvoiceSchemaV1 = {
-    version: 1, // Return as V1 for compatibility
+  // Construct the invoice object
+  const invoice: InvoiceSchemaV2 = {
+    version: 2,
     invoiceId,
     issuedAt,
     dueAt,
@@ -258,7 +244,7 @@ export function decodeBinaryV2(encoded: string): InvoiceSchemaV1 {
     items,
     tax,
     discount,
-  };
+  }
 
-  return invoice;
+  return invoice
 }

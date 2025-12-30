@@ -9,7 +9,7 @@
  * 5. Optimized line item encoding
  */
 
-import { InvoiceSchemaV1 } from '@/entities/invoice/model/schema'
+import { InvoiceSchemaV2 } from '@/entities/invoice/model/schema-v2'
 import { encodeBase62 } from './base62'
 import { compress } from '@/shared/lib/compression'
 import { uuidToBytes, addressToBytes, writeUInt32, writeVarInt, writeString } from './utils'
@@ -73,7 +73,7 @@ function writeOptionalAddressWithDict(buffer: number[], address: string | undefi
  * @param invoice Invoice to encode
  * @param useLzCompression Apply LZ compression pass (default: true)
  */
-export function encodeBinaryV2(invoice: InvoiceSchemaV1, useLzCompression = true): string {
+export function encodeBinaryV2(invoice: InvoiceSchemaV2, useLzCompression = true): string {
   const buffer: number[] = []
 
   // 1. Version (1 byte) - Version 2
@@ -146,7 +146,8 @@ export function encodeBinaryV2(invoice: InvoiceSchemaV1, useLzCompression = true
   }
 
   if (flags & OptionalFields.HAS_CLIENT_EMAIL) writeString(buffer, invoice.client.email!)
-  if (flags & OptionalFields.HAS_CLIENT_ADDRESS) writeString(buffer, invoice.client.physicalAddress!)
+  if (flags & OptionalFields.HAS_CLIENT_ADDRESS)
+    writeString(buffer, invoice.client.physicalAddress!)
   if (flags & OptionalFields.HAS_CLIENT_PHONE) writeString(buffer, invoice.client.phone!)
 
   // 13. Line Items (count + items)
@@ -192,7 +193,7 @@ export function encodeBinaryV2(invoice: InvoiceSchemaV1, useLzCompression = true
 /**
  * Get encoded size in bytes (for debugging/stats)
  */
-export function getBinarySizeV2(invoice: InvoiceSchemaV1, useLzCompression = true): number {
+export function getBinarySizeV2(invoice: InvoiceSchemaV2, useLzCompression = true): number {
   const encoded = encodeBinaryV2(invoice, useLzCompression)
   // Remove prefix and decode
   const withoutPrefix = encoded.substring(1)

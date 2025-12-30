@@ -1,4 +1,4 @@
-import type { InvoiceSchemaV1 } from '@/entities/invoice'
+import type { InvoiceSchemaV2 } from '@/entities/invoice'
 import { invoiceSchema } from '@/entities/invoice'
 import { decodeBinaryV3 } from '@/shared/lib/binary-codec'
 
@@ -10,7 +10,7 @@ import { decodeBinaryV3 } from '@/shared/lib/binary-codec'
  * @returns The decoded invoice object
  * @throws Error if decoding fails or version is unsupported
  */
-export const decodeInvoice = (compressed: string): InvoiceSchemaV1 => {
+export const decodeInvoice = (compressed: string): InvoiceSchemaV2 => {
   // Binary V3 format starts with 'H' prefix
   if (!compressed.startsWith('H')) {
     throw new Error('Invalid invoice format: expected Binary V3 (H prefix)')
@@ -34,10 +34,10 @@ export const decodeInvoice = (compressed: string): InvoiceSchemaV1 => {
  * Ensures data integrity after binary decoding.
  *
  * @param data Decoded invoice data
- * @returns Validated InvoiceSchemaV1 object
+ * @returns Validated InvoiceSchemaV2 object
  * @throws Error if validation fails
  */
-function validateInvoice(data: unknown): InvoiceSchemaV1 {
+function validateInvoice(data: unknown): InvoiceSchemaV2 {
   const result = invoiceSchema.safeParse(data)
 
   if (!result.success) {

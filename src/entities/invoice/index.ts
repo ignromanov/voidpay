@@ -6,7 +6,7 @@
  */
 
 // Types (from model layer)
-export type { InvoiceSchemaV1 } from './model/schema'
+export type { InvoiceSchemaV2 } from './model/schema-v2'
 
 export type {
   InvoiceDraft,

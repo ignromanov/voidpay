@@ -4,54 +4,54 @@
  * Generates random invoices for testing and demonstration purposes.
  */
 
-import { InvoiceSchemaV1 } from '@/entities/invoice/model/schema';
+import { InvoiceSchemaV2 } from '@/entities/invoice/model/schema-v2'
 
 /**
  * Generates a random UUID v4
  */
 function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
 }
 
 /**
  * Generates a random Ethereum address
  */
 function generateAddress(): string {
-  const chars = '0123456789abcdef';
-  let address = '0x';
+  const chars = '0123456789abcdef'
+  let address = '0x'
   for (let i = 0; i < 40; i++) {
-    address += chars[Math.floor(Math.random() * chars.length)];
+    address += chars[Math.floor(Math.random() * chars.length)]
   }
-  return address;
+  return address
 }
 
 /**
  * Random item from array
  */
 function randomItem<T>(arr: T[]): T {
-  const item = arr[Math.floor(Math.random() * arr.length)];
+  const item = arr[Math.floor(Math.random() * arr.length)]
   if (item === undefined) {
-    throw new Error('Array is empty or invalid index');
+    throw new Error('Array is empty or invalid index')
   }
-  return item;
+  return item
 }
 
 /**
  * Random number between min and max
  */
 function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
 /**
  * Random boolean with given probability (default 50%)
  */
 function randomBool(probability = 0.5): boolean {
-  return Math.random() < probability;
+  return Math.random() < probability
 }
 
 /**
@@ -74,12 +74,7 @@ const SAMPLE_DATA = {
     'Future Finance',
     'Digital Assets Fund',
   ],
-  emails: [
-    'info@example.com',
-    'contact@company.io',
-    'hello@startup.xyz',
-    'admin@business.com',
-  ],
+  emails: ['info@example.com', 'contact@company.io', 'hello@startup.xyz', 'admin@business.com'],
   addresses: [
     '123 Main Street\nSan Francisco, CA 94105\nUSA',
     '456 Tech Avenue\nNew York, NY 10001\nUSA',
@@ -108,49 +103,49 @@ const SAMPLE_DATA = {
     { id: 10, name: 'Optimism' },
     { id: 137, name: 'Polygon' },
   ],
-};
+}
 
 /**
  * Generates a random invoice with realistic data
  */
-export function generateRandomInvoice(): InvoiceSchemaV1 {
-  const currency = randomItem(SAMPLE_DATA.currencies);
-  const chainId = randomItem(SAMPLE_DATA.chainIds);
+export function generateRandomInvoice(): InvoiceSchemaV2 {
+  const currency = randomItem(SAMPLE_DATA.currencies)
+  const chainId = randomItem(SAMPLE_DATA.chainIds)
 
   // Generate timestamps
-  const now = Math.floor(Date.now() / 1000);
-  const iss = now - randomInt(0, 7 * 24 * 60 * 60); // Up to 7 days ago
-  const due = iss + randomInt(7, 60) * 24 * 60 * 60; // 7-60 days from issue
+  const now = Math.floor(Date.now() / 1000)
+  const iss = now - randomInt(0, 7 * 24 * 60 * 60) // Up to 7 days ago
+  const due = iss + randomInt(7, 60) * 24 * 60 * 60 // 7-60 days from issue
 
   // Generate line items (1-5 items)
-  const itemCount = randomInt(1, 5);
+  const itemCount = randomInt(1, 5)
   const it = Array.from({ length: itemCount }, () => {
-    const qty = randomInt(1, 100);
-    const rate = (randomInt(10, 5000) * Math.pow(10, currency.decimals)).toString();
+    const qty = randomInt(1, 100)
+    const rate = (randomInt(10, 5000) * Math.pow(10, currency.decimals)).toString()
 
     return {
       description: randomItem(SAMPLE_DATA.itemDescriptions),
       quantity: qty,
       rate: rate,
-    };
-  });
+    }
+  })
 
   // Optional fields (70% chance each)
-  const includeNotes = randomBool(0.7);
-  const includeTax = randomBool(0.7);
-  const includeDiscount = randomBool(0.3);
+  const includeNotes = randomBool(0.7)
+  const includeTax = randomBool(0.7)
+  const includeDiscount = randomBool(0.3)
 
-  const includeSenderEmail = randomBool(0.8);
-  const includeSenderAddress = randomBool(0.6);
-  const includeSenderPhone = randomBool(0.6);
+  const includeSenderEmail = randomBool(0.8)
+  const includeSenderAddress = randomBool(0.6)
+  const includeSenderPhone = randomBool(0.6)
 
-  const includeClientWallet = randomBool(0.5);
-  const includeClientEmail = randomBool(0.7);
-  const includeClientAddress = randomBool(0.5);
-  const includeClientPhone = randomBool(0.4);
+  const includeClientWallet = randomBool(0.5)
+  const includeClientEmail = randomBool(0.7)
+  const includeClientAddress = randomBool(0.5)
+  const includeClientPhone = randomBool(0.4)
 
-  const invoice: InvoiceSchemaV1 = {
-    version: 1,
+  const invoice: InvoiceSchemaV2 = {
+    version: 2,
     invoiceId: generateUUID(),
     issuedAt: iss,
     dueAt: due,
@@ -180,14 +175,14 @@ export function generateRandomInvoice(): InvoiceSchemaV1 {
     items: it,
     tax: includeTax ? randomInt(5, 25) + '%' : undefined,
     discount: includeDiscount ? randomInt(5, 20) + '%' : undefined,
-  };
+  }
 
-  return invoice;
+  return invoice
 }
 
 /**
  * Generates multiple random invoices
  */
-export function generateRandomInvoices(count: number): InvoiceSchemaV1[] {
-  return Array.from({ length: count }, () => generateRandomInvoice());
+export function generateRandomInvoices(count: number): InvoiceSchemaV2[] {
+  return Array.from({ length: count }, () => generateRandomInvoice())
 }

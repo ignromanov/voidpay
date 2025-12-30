@@ -5,7 +5,7 @@
  * Uses pako.inflate to decompress raw bytes (NO double decoding).
  */
 
-import { InvoiceSchemaV1 } from '@/entities/invoice/model/schema'
+import { InvoiceSchemaV2 } from '@/entities/invoice/model/schema-v2'
 import { bytesToAddress, readVarInt } from './utils'
 import { decodeBase62 } from './base62'
 import { CURRENCY_DICT_REVERSE, TOKEN_DICT_REVERSE } from './dictionary'
@@ -33,7 +33,7 @@ enum OptionalFields {
  * Decodes invoice from hybrid compressed format
  * Prefix: 'H' (Hybrid)
  */
-export function decodeBinaryV3(encoded: string): InvoiceSchemaV1 {
+export function decodeBinaryV3(encoded: string): InvoiceSchemaV2 {
   // 1. Check prefix
   if (!encoded.startsWith('H')) {
     throw new Error('Invalid V3 encoding: must start with H')
@@ -199,8 +199,8 @@ export function decodeBinaryV3(encoded: string): InvoiceSchemaV1 {
   }
 
   // 19. Construct invoice
-  const invoice: InvoiceSchemaV1 = {
-    version: 1,
+  const invoice: InvoiceSchemaV2 = {
+    version: 2,
     invoiceId,
     issuedAt,
     dueAt,

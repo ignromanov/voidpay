@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { InvoiceSchemaV1 } from '@/entities/invoice/model/schema';
+import { InvoiceSchemaV2 } from '@/entities/invoice/model/schema-v2';
 import { generateRandomInvoice } from '@/shared/lib/test-utils/invoice-generator';
 import { compress } from '@/shared/lib/compression';
 import { encodeBinary, decodeBinary, encodeBinaryV2, decodeBinaryV2, encodeBinaryV3, decodeBinaryV3 } from '@/shared/lib/binary-codec';
@@ -44,7 +44,7 @@ function useAnimatedCounter(target: number, duration = 800) {
 }
 
 export default function ComparePage() {
-  const [invoice, setInvoice] = useState<InvoiceSchemaV1 | null>(null);
+  const [invoice, setInvoice] = useState<InvoiceSchemaV2 | null>(null);
   const [lzStats, setLzStats] = useState<CompressionStats | null>(null);
   const [binaryStats, setBinaryStats] = useState<CompressionStats | null>(null);
   const [binaryV2Stats, setBinaryV2Stats] = useState<CompressionStats | null>(null);

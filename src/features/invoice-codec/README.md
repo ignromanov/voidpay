@@ -32,14 +32,14 @@ If not set, the system will fall back to `https://voidpay.com` as the default.
 ### Encoding an Invoice
 
 ```typescript
-import { generateInvoiceUrl, InvoiceSchemaV1 } from '@/features/invoice-codec'
+import { generateInvoiceUrl, InvoiceSchemaV2 } from '@/features/invoice-codec'
 
-const invoice: InvoiceSchemaV1 = {
-  v: 1,
-  id: 'inv_123',
-  iss: 1732070000,
-  due: 1732674800,
-  net: 1,
+const invoice: InvoiceSchemaV2 = {
+  version: 2,
+  invoiceId: 'inv_123',
+  issuedAt: 1732070000,
+  dueAt: 1732674800,
+  networkId: 1,
   cur: 'USDC',
   dec: 6,
   f: { n: 'Alice', a: '0x1234567890123456789012345678901234567890' },
@@ -80,7 +80,7 @@ if (compressedData) {
 Generates a shareable URL with compressed invoice data.
 
 - **Parameters**:
-  - `invoice: InvoiceSchemaV1` - Invoice data to encode
+  - `invoice: InvoiceSchemaV2` - Invoice data to encode
   - `baseUrl?: string` - Optional base URL override (default: uses `NEXT_PUBLIC_APP_URL` env or `https://voidpay.com`)
 - **Returns**: `string` - Full URL with compressed data (e.g., `https://voidpay.com/pay?d=...`)
 - **Throws**: Error if URL exceeds 2000 bytes
@@ -89,7 +89,7 @@ Generates a shareable URL with compressed invoice data.
 
 Encodes invoice into compressed string (without URL wrapping).
 
-- **Parameters**: `invoice: InvoiceSchemaV1`
+- **Parameters**: `invoice: InvoiceSchemaV2`
 - **Returns**: `string` - Compressed data string
 
 ### `decodeInvoice(compressed)`
@@ -97,15 +97,15 @@ Encodes invoice into compressed string (without URL wrapping).
 Decodes compressed string into validated invoice object.
 
 - **Parameters**: `compressed: string` - Compressed data from URL
-- **Returns**: `InvoiceSchemaV1` - Validated invoice object
+- **Returns**: `InvoiceSchemaV2` - Validated invoice object
 - **Throws**: Error if decompression, parsing, or validation fails
 
-## Schema Version 1
+## Schema Version 2
 
-The `InvoiceSchemaV1` interface uses abbreviated keys to minimize payload size:
+The `InvoiceSchemaV2` interface uses abbreviated keys to minimize payload size:
 
 ```typescript
-interface InvoiceSchemaV1 {
+interface InvoiceSchemaV2 {
   v: 1;              // Version
   id: string;        // Invoice ID
   iss: number;       // Issue date (Unix timestamp)
@@ -138,7 +138,7 @@ interface InvoiceSchemaV1 {
 ```
 src/
 ├── entities/invoice/
-│   ├── model/schema.ts       # InvoiceSchemaV1 interface
+│   ├── model/schema-v2.ts       # InvoiceSchemaV2 interface
 │   └── lib/validation.ts     # Zod validation schemas
 ├── features/invoice-codec/
 │   ├── lib/
@@ -180,7 +180,7 @@ Error: Failed to decompress invoice data
 
 - T001: Dependencies installed (lz-string, zod)
 - T002: Project structure created
-- T003: InvoiceSchemaV1 interface
+- T003: InvoiceSchemaV2 interface
 - T004: Zod validation schemas
 - T005: Compression utility
 - T006: URL encoding logic

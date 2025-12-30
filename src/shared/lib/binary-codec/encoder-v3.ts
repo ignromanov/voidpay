@@ -15,7 +15,7 @@
  * - Threshold: 100 bytes (deflate adds ~10 byte header)
  */
 
-import { InvoiceSchemaV1 } from '@/entities/invoice/model/schema'
+import { InvoiceSchemaV2 } from '@/entities/invoice/model/schema-v2'
 import { addressToBytes, writeVarInt } from './utils'
 import { encodeBase62 } from './base62'
 import { CURRENCY_DICT, TOKEN_DICT } from './dictionary'
@@ -44,7 +44,7 @@ enum OptionalFields {
  * Encodes invoice using hybrid compression strategy
  * Prefix: 'H' (Hybrid)
  */
-export function encodeBinaryV3(invoice: InvoiceSchemaV1): string {
+export function encodeBinaryV3(invoice: InvoiceSchemaV2): string {
   const buffer: number[] = []
 
   // 1. Version (1 byte) - Version 3
