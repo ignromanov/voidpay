@@ -36,7 +36,7 @@ describe('toast wrapper', () => {
     it('should persist error toast until manually dismissed', () => {
       toast.error('Critical error')
       const callArgs = vi.mocked(sonnerToast.error).mock.calls[0]
-      expect(callArgs[1]).toEqual({ duration: Infinity })
+      expect(callArgs?.[1]).toEqual({ duration: Infinity })
     })
   })
 

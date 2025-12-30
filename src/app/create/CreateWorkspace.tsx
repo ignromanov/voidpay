@@ -1,16 +1,16 @@
 'use client'
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Maximize2 } from 'lucide-react'
 
 import { decodeInvoice } from '@/features/invoice-codec'
 import { useCreatorStore } from '@/entities/creator'
+import { getNetworkTheme } from '@/entities/network'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { toast } from '@/shared/lib/toast'
-import { Text } from '@/shared/ui/typography'
+import { cn } from '@/shared/lib/utils'
+import { PageLayout, Text } from '@/shared/ui'
 import { InvoicePaper, InvoicePreviewModal } from '@/widgets/invoice-paper'
-import { PixiBackground } from '@/widgets/network-background'
-import type { NetworkTheme } from '@/widgets/network-background'
 
 /**
  * CreateWorkspace — Preview-only layout for /create route
@@ -27,6 +27,7 @@ export function CreateWorkspace() {
   const hash = useHashFragment()
   const [decodeError, setDecodeError] = useState<string | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
 
   const activeDraft = useCreatorStore((s) => s.activeDraft)
   const updateDraft = useCreatorStore((s) => s.updateDraft)
@@ -55,16 +56,10 @@ export function CreateWorkspace() {
   const invoiceData = activeDraft?.data
 
   // Map networkId to theme name
-  const networkTheme = useMemo((): NetworkTheme => {
-    if (!invoiceData?.networkId) return 'ethereum'
-    const networkMap: Record<number, NetworkTheme> = {
-      1: 'ethereum',
-      10: 'optimism',
-      137: 'polygon',
-      42161: 'arbitrum',
-    }
-    return networkMap[invoiceData.networkId] || 'ethereum'
-  }, [invoiceData?.networkId])
+  const networkTheme = useMemo(
+    () => getNetworkTheme(invoiceData?.networkId ?? 1),
+    [invoiceData?.networkId]
+  )
 
   const handlePreviewClick = useCallback(() => {
     if (invoiceData) {
@@ -73,10 +68,7 @@ export function CreateWorkspace() {
   }, [invoiceData])
 
   return (
-    <>
-      {/* Network-themed animated background */}
-      <PixiBackground theme={networkTheme} />
-
+    <PageLayout theme={networkTheme}>
       {/* Fullscreen preview modal */}
       {invoiceData && (
         <InvoicePreviewModal
@@ -87,16 +79,21 @@ export function CreateWorkspace() {
         />
       )}
 
-      <div className="min-h-screen pt-20 pb-8 px-4">
-        <div className="max-w-[1400px] mx-auto">
-          {/* Error Banner */}
-          {decodeError && <UrlErrorBanner error={decodeError} />}
+      {/* Content container */}
+      <div className="flex-1 flex flex-col max-w-[1400px] w-full mx-auto min-h-0">
+        {/* Error Banner */}
+        {decodeError && <UrlErrorBanner error={decodeError} />}
 
-          {/* Preview Area */}
-          <div className="flex items-center justify-center">
+        {/* Preview container */}
+        <div className="flex-1 flex items-center justify-center min-h-0">
+          {/* Preview wrapper with subtle bg */}
+          <div className="relative flex flex-col items-center justify-center rounded-2xl bg-zinc-950/30 p-4 sm:p-8 lg:p-12">
+            {/* Clickable area ONLY on invoice */}
             <div
-              className="cursor-zoom-in group relative"
+              className="relative cursor-zoom-in group"
               onClick={handlePreviewClick}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
@@ -105,32 +102,45 @@ export function CreateWorkspace() {
                 }
               }}
             >
-              {/* Click to expand badge */}
-              <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-900/80 backdrop-blur border border-zinc-800 text-zinc-400 text-[10px] font-mono py-1 px-3 rounded-full">
-                Click to expand
-              </div>
-
-              {/* Scaled preview with responsive breakpoints */}
-              <div className="scale-[0.45] md:scale-[0.55] 2xl:scale-[0.65] origin-center transition-transform">
+              {/* Responsive scale — larger on mobile for visibility */}
+              <div className="scale-[0.4] sm:scale-[0.5] md:scale-[0.6] lg:scale-[0.65] xl:scale-[0.75] 2xl:scale-[0.85] origin-center shadow-2xl transition-transform duration-300">
                 {invoiceData ? (
-                  <InvoicePaper data={invoiceData} status="draft" />
+                  <InvoicePaper data={invoiceData} status="draft" showGlow />
                 ) : (
                   <EmptyPreviewPlaceholder />
                 )}
               </div>
-            </div>
-          </div>
 
-          {/* Real-time Preview Indicator */}
-          <div className="flex justify-center mt-6">
-            <div className="bg-zinc-900/80 backdrop-blur border border-zinc-800 text-zinc-400 text-[10px] font-mono py-1 px-3 rounded-full flex items-center gap-2">
+              {/* Hover overlay with animation — only on invoice */}
+              <div
+                className={cn(
+                  'absolute inset-0 z-20 flex items-center justify-center transition-all duration-300 rounded-sm',
+                  isHovered ? 'opacity-100 bg-black/20' : 'opacity-0 bg-transparent'
+                )}
+              >
+                <button
+                  className={cn(
+                    'bg-zinc-900/95 backdrop-blur-md shadow-2xl text-sm font-medium text-violet-200 border border-violet-500/30 flex items-center gap-2 px-5 py-2.5 rounded-xl cursor-pointer transition-all duration-300',
+                    'hover:bg-zinc-800 hover:text-white hover:border-violet-500/50 hover:shadow-violet-500/20',
+                    isHovered ? 'scale-100 translate-y-0' : 'scale-90 translate-y-4'
+                  )}
+                  type="button"
+                >
+                  <Maximize2 className="w-5 h-5" />
+                  Click to expand
+                </button>
+              </div>
+            </div>
+
+            {/* Real-time Preview badge — below invoice, always visible */}
+            <div className="mt-6 bg-zinc-900/90 backdrop-blur border border-zinc-800 text-zinc-400 text-[10px] font-mono py-1.5 px-4 rounded-full flex items-center gap-2 shadow-lg whitespace-nowrap pointer-events-none">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
               Real-time Preview
             </div>
           </div>
         </div>
       </div>
-    </>
+    </PageLayout>
   )
 }
 

@@ -8,7 +8,7 @@ import { LineItemsTable } from './LineItemsTable'
 import { PaperTotals } from './PaperTotals'
 import { PaperFooter } from './PaperFooter'
 import { Watermark } from './Watermark'
-import { NETWORK_SHADOWS } from '@/entities/network/config/ui-config'
+import { NETWORK_GLOWS, NETWORK_SHADOWS } from '@/entities/network/config/ui-config'
 import { cn } from '@/shared/lib/utils'
 
 // Stable fallback objects (prevent new object creation on each render)
@@ -44,11 +44,14 @@ export const InvoicePaper = React.memo(
         responsive = false,
         showQR = true,
         showTexture = true,
+        showGlow = false,
         className,
         containerRef,
       },
       ref
     ) => {
+      // Get glow configuration for network
+      const glowConfig = data.networkId ? NETWORK_GLOWS[data.networkId] : null
       const totals = useMemo(
         () =>
           calculateTotals(data.items ?? EMPTY_ITEMS, {
@@ -77,7 +80,8 @@ export const InvoicePaper = React.memo(
       // Determine if QR should be shown based on variant
       const shouldShowQR = showQR && variant !== 'print'
 
-      return (
+      // Wrapper needed for glow effect (glow must be outside article for overflow)
+      const content = (
         <article
           ref={(node) => {
             if (typeof ref === 'function') ref(node)
@@ -92,7 +96,8 @@ export const InvoicePaper = React.memo(
             // Legacy scaling support (optional)
             !responsive && 'h-[1123px] min-h-[1123px] w-[794px] min-w-[794px]',
             responsive && 'origin-top-left',
-            className
+            // Only apply className when no glow wrapper
+            !showGlow && className
           )}
           role="document"
           aria-label={`Invoice ${data.invoiceId ?? 'draft'}`}
@@ -149,6 +154,27 @@ export const InvoicePaper = React.memo(
           </div>
         </article>
       )
+
+      // Wrap with glow effect if enabled
+      if (showGlow && glowConfig) {
+        return (
+          <div className={cn('relative', className)}>
+            {/* Network-colored glow effect */}
+            <div
+              className={cn(
+                'pointer-events-none absolute -inset-[30%] z-[-1] rounded-full opacity-60 blur-[100px] transition-all duration-500 print:hidden',
+                'bg-gradient-to-br',
+                glowConfig.from,
+                glowConfig.to
+              )}
+              aria-hidden="true"
+            />
+            {content}
+          </div>
+        )
+      }
+
+      return content
     }
   )
 )

@@ -117,3 +117,6 @@ export { HyperText, type HyperTextProps } from './hyper-text'
 // Use direct imports instead:
 // - import { LazyWalletButton } from '@/shared/ui/wallet-button-lazy' (recommended)
 // - import { WalletButton } from '@/shared/ui/wallet-button' (requires Web3Provider)
+
+// PageLayout (feature: 015-create-page-preview)
+export { PageLayout, type PageLayoutProps } from './page-layout'

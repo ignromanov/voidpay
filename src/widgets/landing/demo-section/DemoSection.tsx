@@ -9,6 +9,7 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
+import { getNetworkTheme } from '@/entities/network'
 import { Button, Heading, Text } from '@/shared/ui'
 import { InvoicePaper } from '@/widgets/invoice-paper'
 
@@ -16,7 +17,7 @@ import { useNetworkTheme } from '../context/network-theme-context'
 import { DEMO_INVOICES, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
 import { useDemoRotation } from '../hooks/use-demo-rotation'
 
-import { INVOICE_WIDTH, NETWORK_THEMES, getNetworkName } from './constants'
+import { INVOICE_WIDTH } from './constants'
 import { useInvoiceScale } from './hooks/use-invoice-scale'
 import { DemoPagination } from './ui/DemoPagination'
 
@@ -36,7 +37,7 @@ export function DemoSection() {
   useEffect(() => {
     const currentInvoice = DEMO_INVOICES[activeIndex]
     if (currentInvoice) {
-      setTheme(getNetworkName(currentInvoice.data.networkId))
+      setTheme(getNetworkTheme(currentInvoice.data.networkId))
     }
   }, [activeIndex, setTheme])
 
@@ -63,8 +64,6 @@ export function DemoSection() {
   if (!currentInvoice) {
     return <section className="py-32 text-center text-zinc-500">Demo content unavailable</section>
   }
-
-  const theme = NETWORK_THEMES[getNetworkName(currentInvoice.data.networkId)]
 
   return (
     <section
@@ -93,18 +92,6 @@ export function DemoSection() {
           } as React.CSSProperties
         }
       >
-        {/* Background glow - behind invoice, centered */}
-        <div
-          className={`pointer-events-none absolute z-10 rounded-full bg-gradient-to-br ${theme.glowFrom} ${theme.glowTo} opacity-60 blur-[120px] transition-all duration-500`}
-          style={{
-            width: `${Math.max(INVOICE_WIDTH * scale * 1.8, scaledHeight * 1.2)}px`,
-            height: `${Math.max(scaledHeight * 1.1, INVOICE_WIDTH * scale * 1.5)}px`,
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-          }}
-        />
-
         {/* Hover zone */}
         <div
           className="absolute top-0 left-1/2 z-20 -translate-x-1/2"
@@ -125,17 +112,16 @@ export function DemoSection() {
             className="absolute top-0 left-1/2 origin-top transition-transform duration-300 ease-out will-change-transform"
             style={{ transform: `translateX(-50%) scale(${scale})` }}
           >
-            <div className="rounded-sm shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]">
-              <InvoicePaper
-                data={currentInvoice.data}
-                status={currentInvoice.status}
-                {...(currentInvoice.txHash && { txHash: currentInvoice.txHash })}
-                {...(currentInvoice.txHashValidated !== undefined && {
-                  txHashValidated: currentInvoice.txHashValidated,
-                })}
-                className="border-none shadow-none"
-              />
-            </div>
+            <InvoicePaper
+              data={currentInvoice.data}
+              status={currentInvoice.status}
+              {...(currentInvoice.txHash && { txHash: currentInvoice.txHash })}
+              {...(currentInvoice.txHashValidated !== undefined && {
+                txHashValidated: currentInvoice.txHashValidated,
+              })}
+              showGlow
+              className="rounded-sm shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]"
+            />
           </div>
 
           {/* Hover CTA */}

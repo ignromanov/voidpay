@@ -44,12 +44,21 @@ describe('InvoicePreviewModal', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
 
-    it('renders invoice ID in accessible title', () => {
+    it('renders document preview title', () => {
       renderWithUser(
         <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => {}} />
       )
 
-      expect(screen.getByText(/Invoice Preview.*INV-001/)).toBeInTheDocument()
+      // v3 design uses "Document Preview" header title
+      expect(screen.getByText(/Document Preview/)).toBeInTheDocument()
+    })
+
+    it('renders reading mode badge', () => {
+      renderWithUser(
+        <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => {}} />
+      )
+
+      expect(screen.getByText(/Reading Mode/)).toBeInTheDocument()
     })
 
     it('renders close button', () => {
