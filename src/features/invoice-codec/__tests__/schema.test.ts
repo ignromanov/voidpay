@@ -15,10 +15,10 @@
 import { describe, it, expect } from 'vitest'
 import { encodeInvoice, generateInvoiceUrl } from '../lib/encode'
 import { decodeInvoice } from '../lib/decode'
-import type { InvoiceSchemaV2 } from '@/entities/invoice'
+import type { Invoice } from '@/entities/invoice'
 
 // Canonical test invoice - represents a real-world invoice with all fields populated
-const createTestInvoiceV1 = (): InvoiceSchemaV2 => ({
+const createTestInvoiceV1 = (): Invoice => ({
   version: 2,
   invoiceId: 'INV-2024-001',
   issuedAt: 1704067200, // 2024-01-01T00:00:00Z
@@ -52,7 +52,7 @@ const createTestInvoiceV1 = (): InvoiceSchemaV2 => ({
 })
 
 // Minimal invoice - only required fields
-const createMinimalInvoiceV1 = (): InvoiceSchemaV2 => ({
+const createMinimalInvoiceV1 = (): Invoice => ({
   version: 2,
   invoiceId: 'INV-MIN-001',
   issuedAt: 1704067200,
@@ -100,7 +100,7 @@ describe('Invoice Schema V1 Encoding', () => {
 
   describe('Round-trip Tests - Encode/Decode Consistency', () => {
     // Helper to normalize addresses for comparison (binary codec returns lowercase)
-    const normalizeAddresses = (inv: InvoiceSchemaV2): InvoiceSchemaV2 => ({
+    const normalizeAddresses = (inv: Invoice): Invoice => ({
       ...inv,
       tokenAddress: inv.tokenAddress?.toLowerCase(),
       from: { ...inv.from, walletAddress: inv.from.walletAddress.toLowerCase() },
@@ -149,7 +149,7 @@ describe('Invoice Schema V1 Encoding', () => {
     })
 
     it('should handle unicode characters in notes and names', () => {
-      const invoice: InvoiceSchemaV2 = {
+      const invoice: Invoice = {
         ...createMinimalInvoiceV1(),
         notes: 'Payment for services - Paiement pour services 支付服务费 🚀',
         from: {
@@ -170,7 +170,7 @@ describe('Invoice Schema V1 Encoding', () => {
     })
 
     it('should handle line items with various quantity formats', () => {
-      const invoice: InvoiceSchemaV2 = {
+      const invoice: Invoice = {
         ...createMinimalInvoiceV1(),
         items: [
           { description: 'Integer quantity', quantity: 100, rate: '1000000' },
@@ -249,7 +249,7 @@ describe('Invoice Schema V1 Encoding', () => {
       const decoded = decodeInvoice(compressed)
 
       // Normalize addresses for comparison (binary codec returns lowercase)
-      const normalizeAddresses = (inv: InvoiceSchemaV2): InvoiceSchemaV2 => ({
+      const normalizeAddresses = (inv: Invoice): Invoice => ({
         ...inv,
         tokenAddress: inv.tokenAddress?.toLowerCase(),
         from: { ...inv.from, walletAddress: inv.from.walletAddress.toLowerCase() },
@@ -269,7 +269,7 @@ describe('Invoice Schema V1 Encoding', () => {
           String.fromCharCode(65 + Math.floor(Math.random() * 26))
         ).join('')
 
-      const largeInvoice: InvoiceSchemaV2 = {
+      const largeInvoice: Invoice = {
         ...createTestInvoiceV1(),
         notes: randomString(280), // Max notes length
         items: Array(100)
@@ -286,7 +286,7 @@ describe('Invoice Schema V1 Encoding', () => {
 
     it('should calculate correct byte size for unicode characters', () => {
       // Unicode characters take more bytes than ASCII
-      const invoice: InvoiceSchemaV2 = {
+      const invoice: Invoice = {
         ...createMinimalInvoiceV1(),
         notes: '日本語テキスト',
         from: { ...createMinimalInvoiceV1().from, name: '山田太郎' },

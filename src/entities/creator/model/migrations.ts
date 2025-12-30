@@ -7,7 +7,22 @@
  * Constitution Principle IV: Backward Compatibility & Schema Versioning
  */
 
-import type { CreatorStoreV1 } from './types'
+import { v4 as uuidv4 } from 'uuid'
+import type { CreatorStoreV1, LineItem, DraftState } from './types'
+
+/**
+ * Get current Unix timestamp in seconds
+ */
+function nowUnix(): number {
+  return Math.floor(Date.now() / 1000)
+}
+
+/**
+ * Get Unix timestamp for a date N days from now
+ */
+function daysFromNowUnix(days: number): number {
+  return nowUnix() + days * 24 * 60 * 60
+}
 
 /**
  * Migrate persisted state to current version
@@ -18,17 +33,95 @@ import type { CreatorStoreV1 } from './types'
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function migrateCreatorStore(persistedState: any, version: number): CreatorStoreV1 {
-  // Version 0 (no version field) → Version 1
+  // Version 0 (no version field) -> Version 1
   if (version === 0 || !persistedState.version) {
     console.warn('[CreatorStore] Migrating from v0 to v1')
 
+    const oldDraft = persistedState.activeDraft
+    let newDraft: DraftState | null = null
+    let lineItems: LineItem[] = []
+
+    if (oldDraft) {
+      // Check if it's already in new format
+      if (oldDraft.meta && oldDraft.data) {
+        newDraft = oldDraft
+        lineItems = persistedState.lineItems ?? []
+      } else {
+        // Migrate from old InvoiceDraft format
+        lineItems = (oldDraft.lineItems ?? []).map(
+          (item: { id?: string; description: string; quantity: number; rate: string }) => ({
+            id: item.id ?? uuidv4(),
+            description: item.description,
+            quantity: item.quantity,
+            rate: item.rate,
+          })
+        )
+
+        // Convert dates from ISO to Unix timestamps
+        const issuedAt = oldDraft.issueDate
+          ? Math.floor(new Date(oldDraft.issueDate).getTime() / 1000)
+          : nowUnix()
+
+        const dueAt = oldDraft.dueDate
+          ? Math.floor(new Date(oldDraft.dueDate).getTime() / 1000)
+          : daysFromNowUnix(30)
+
+        newDraft = {
+          meta: {
+            draftId: oldDraft.draftId ?? uuidv4(),
+            lastModified: oldDraft.lastModified ?? new Date().toISOString(),
+          },
+          data: {
+            version: 2,
+            invoiceId: oldDraft.invoiceId ?? '',
+            issuedAt,
+            dueAt,
+            networkId: oldDraft.chainId ?? 1,
+            currency: oldDraft.currencySymbol ?? 'USDC',
+            tokenAddress: oldDraft.tokenAddress,
+            decimals: oldDraft.decimals ?? 6,
+            from: {
+              name: oldDraft.sender?.name ?? '',
+              walletAddress: oldDraft.sender?.wallet ?? '',
+              ...(oldDraft.sender?.email && { email: oldDraft.sender.email }),
+              ...(oldDraft.sender?.address && { physicalAddress: oldDraft.sender.address }),
+            },
+            client: {
+              name: oldDraft.recipient?.name ?? '',
+              ...(oldDraft.recipient?.wallet && { walletAddress: oldDraft.recipient.wallet }),
+              ...(oldDraft.recipient?.email && { email: oldDraft.recipient.email }),
+              ...(oldDraft.recipient?.address && { physicalAddress: oldDraft.recipient.address }),
+            },
+            items: lineItems.map(({ description, quantity, rate }) => ({
+              description,
+              quantity,
+              rate,
+            })),
+            ...(oldDraft.taxRate && oldDraft.taxRate !== '0' && { tax: oldDraft.taxRate }),
+            ...(oldDraft.discountAmount &&
+              oldDraft.discountAmount !== '0' && { discount: oldDraft.discountAmount }),
+            ...(oldDraft.notes && { notes: oldDraft.notes }),
+          },
+        }
+      }
+    }
+
+    // Migrate preferences (rename defaultChainId to defaultNetworkId)
+    const oldPrefs = persistedState.preferences ?? {}
+    const newPrefs = {
+      ...oldPrefs,
+      ...(oldPrefs.defaultChainId && { defaultNetworkId: oldPrefs.defaultChainId }),
+    }
+    delete newPrefs.defaultChainId
+
     return {
       version: 1,
-      activeDraft: persistedState.activeDraft || null,
-      templates: persistedState.templates || [],
-      history: persistedState.history || [],
-      preferences: persistedState.preferences || {},
-      idCounter: persistedState.idCounter || {
+      activeDraft: newDraft,
+      lineItems,
+      templates: persistedState.templates ?? [],
+      history: persistedState.history ?? [],
+      preferences: newPrefs,
+      idCounter: persistedState.idCounter ?? {
         currentValue: 1,
         prefix: 'INV',
       },
@@ -41,7 +134,7 @@ export function migrateCreatorStore(persistedState: any, version: number): Creat
   }
 
   // Future migrations go here
-  // Example: Version 1 → Version 2
+  // Example: Version 1 -> Version 2
   // if (version === 1) {
   //   console.warn('[CreatorStore] Migrating from v1 to v2');
   //   return {
@@ -72,6 +165,10 @@ export function validateCreatorStore(state: any): asserts state is CreatorStoreV
 
   if (state.version !== 1) {
     throw new Error(`Invalid version: expected 1, got ${state.version}`)
+  }
+
+  if (!Array.isArray(state.lineItems)) {
+    throw new Error('Invalid lineItems: must be an array')
   }
 
   if (!Array.isArray(state.templates)) {

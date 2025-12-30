@@ -100,6 +100,11 @@ function TemplateCard({
     day: 'numeric',
   })
 
+  // Extract display values from the new Invoice schema
+  const clientName = invoiceData.client?.name ?? 'N/A'
+  const currency = invoiceData.currency ?? 'USDC'
+  const itemsCount = invoiceData.items?.length ?? 0
+
   return (
     <div className="rounded-lg border border-gray-200 p-4 transition-colors hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600">
       <div className="flex items-start justify-between">
@@ -109,13 +114,13 @@ function TemplateCard({
 
           <div className="mt-3 space-y-1 text-sm text-gray-600 dark:text-gray-300">
             <p>
-              <span className="font-medium">Recipient:</span> {invoiceData.recipient.name || 'N/A'}
+              <span className="font-medium">Client:</span> {clientName}
             </p>
             <p>
-              <span className="font-medium">Currency:</span> {invoiceData.currencySymbol}
+              <span className="font-medium">Currency:</span> {currency}
             </p>
             <p>
-              <span className="font-medium">Items:</span> {invoiceData.lineItems.length}
+              <span className="font-medium">Items:</span> {itemsCount}
             </p>
           </div>
         </div>

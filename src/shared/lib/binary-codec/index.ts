@@ -1,5 +1,5 @@
 /**
- * Binary Codec for Invoice Compression
+ * Binary Codec for Invoice Compression (V3)
  *
  * Custom binary packing algorithm that achieves superior compression
  * compared to JSON + LZ-String by:
@@ -8,13 +8,7 @@
  * - Using varint encoding for small numbers
  * - Using Base62 encoding (URL-safe, more compact than Base64)
  *
- * V2 adds:
- * - Bit-packing for optional fields (2 bytes for all flags)
- * - Dictionary compression for common strings
- * - Delta encoding for dates
- * - Optional LZ compression pass (removed - increased size)
- *
- * V3 adds:
+ * V3 features:
  * - Hybrid compression strategy
  * - Binary format for structured data (UUID, addresses, numbers)
  * - Selective LZ compression only for text fields when beneficial (> 50 chars)
@@ -22,33 +16,15 @@
  *
  * Usage:
  * ```ts
- * import { encodeBinary, decodeBinary, encodeBinaryV2, decodeBinaryV2, encodeBinaryV3, decodeBinaryV3 } from '@/shared/lib/binary-codec';
+ * import { encodeBinaryV3, decodeBinaryV3 } from '@/shared/lib/binary-codec';
  *
- * const invoice: InvoiceSchemaV2 = {...};
- *
- * // V1: Basic binary encoding
- * const encoded = encodeBinary(invoice);
- * const decoded = decodeBinary(encoded);
- *
- * // V2: Enhanced with dictionary compression
- * const encodedV2 = encodeBinaryV2(invoice);
- * const decodedV2 = decodeBinaryV2(encodedV2);
- *
- * // V3: Hybrid strategy (recommended)
- * const encodedV3 = encodeBinaryV3(invoice);
- * const decodedV3 = decodeBinaryV3(encodedV3);
+ * const invoice: Invoice = {...};
+ * const encoded = encodeBinaryV3(invoice);
+ * const decoded = decodeBinaryV3(encoded);
  * ```
  */
 
-// V1 exports
-export { encodeBinary, getBinarySize } from './encoder'
-export { decodeBinary, decodeBinaryWithSteps, type DecodingStep } from './decoder'
-
-// V2 exports
-export { encodeBinaryV2, getBinarySizeV2 } from './encoder-v2'
-export { decodeBinaryV2 } from './decoder-v2'
-
-// V3 exports
+// V3 exports (only supported version)
 export { encodeBinaryV3 } from './encoder-v3'
 export { decodeBinaryV3 } from './decoder-v3'
 

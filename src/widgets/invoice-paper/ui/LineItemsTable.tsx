@@ -1,9 +1,9 @@
 import React from 'react'
-import { InvoiceSchemaV2 } from '@/entities/invoice'
+import { Invoice } from '@/entities/invoice'
 import { formatAmount, formatRate } from '../lib/format'
 
 interface LineItemsTableProps {
-  items: InvoiceSchemaV2['items']
+  items: Invoice['items']
 }
 
 export const LineItemsTable = React.memo<LineItemsTableProps>(({ items }) => {

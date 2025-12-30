@@ -4,4 +4,4 @@ export * from './lib/decode'
 export * from './lib/og-preview'
 
 // Re-export schema type for convenience (via public API)
-export type { InvoiceSchemaV2 } from '@/entities/invoice'
+export type { Invoice } from '@/entities/invoice'

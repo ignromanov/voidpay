@@ -5,13 +5,13 @@ import { X } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogClose } from '@/shared/ui'
 import { InvoicePaper } from './InvoicePaper'
 import { InvoiceStatus } from '../types'
-import { InvoiceSchemaV2 } from '@/entities/invoice'
+import { Invoice } from '@/entities/invoice'
 
 export interface InvoicePreviewModalProps {
   /**
    * Invoice data to display
    */
-  data: Partial<InvoiceSchemaV2>
+  data: Partial<Invoice>
 
   /**
    * Invoice status for watermark/badge

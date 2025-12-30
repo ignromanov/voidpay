@@ -7,6 +7,7 @@ import { generateAndTrackInvoice } from '@/features/generate-link'
 
 export default function CreateInvoicePage() {
   const activeDraft = useCreatorStore((s) => s.activeDraft)
+  const lineItems = useCreatorStore((s) => s.lineItems)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
   const clearDraft = useCreatorStore((s) => s.clearDraft)
 
@@ -14,13 +15,13 @@ export default function CreateInvoicePage() {
 
   const [showNewDialog, setShowNewDialog] = useState(false)
   const [localInvoiceId, setLocalInvoiceId] = useState('')
-  const [localRecipientName, setLocalRecipientName] = useState('')
+  const [localClientName, setLocalClientName] = useState('')
 
   // Restore draft on page load
   useEffect(() => {
     if (activeDraft) {
-      setLocalInvoiceId(activeDraft.invoiceId)
-      setLocalRecipientName(activeDraft.recipient.name)
+      setLocalInvoiceId(activeDraft.data.invoiceId ?? '')
+      setLocalClientName(activeDraft.data.client?.name ?? '')
     }
   }, [activeDraft])
 
@@ -36,15 +37,15 @@ export default function CreateInvoicePage() {
     // Update local state immediately (optimistic UI)
     if (field === 'invoiceId') {
       setLocalInvoiceId(value)
-    } else if (field === 'recipientName') {
-      setLocalRecipientName(value)
+    } else if (field === 'clientName') {
+      setLocalClientName(value)
     }
 
     // Debounced save to store
     if (field === 'invoiceId') {
       autoSave({ invoiceId: value })
-    } else if (field === 'recipientName') {
-      autoSave({ recipient: { name: value } })
+    } else if (field === 'clientName') {
+      autoSave({ client: { name: value } })
     }
   }
 
@@ -55,7 +56,7 @@ export default function CreateInvoicePage() {
     }
 
     try {
-      const url = await generateAndTrackInvoice(activeDraft)
+      const url = await generateAndTrackInvoice(activeDraft, lineItems)
       alert(`Invoice generated! URL: ${url}\n\nCheck the History page to see the entry.`)
       clearDraft()
     } catch (error) {
@@ -74,7 +75,7 @@ export default function CreateInvoicePage() {
           <div className="flex items-center space-x-2">
             {activeDraft && (
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                Draft ID: {activeDraft.draftId.slice(0, 8)}...
+                Draft ID: {activeDraft.meta.draftId.slice(0, 8)}...
               </span>
             )}
             {isPending() && (
@@ -107,12 +108,12 @@ export default function CreateInvoicePage() {
 
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Recipient Name
+              Client Name
             </label>
             <input
               type="text"
-              value={localRecipientName}
-              onChange={(e) => handleFieldChange('recipientName', e.target.value)}
+              value={localClientName}
+              onChange={(e) => handleFieldChange('clientName', e.target.value)}
               placeholder="Acme Corp"
               className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             />
@@ -120,11 +121,11 @@ export default function CreateInvoicePage() {
 
           <div className="pt-4">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              💡 Your draft is automatically saved every 500ms
+              Your draft is automatically saved every 500ms
             </p>
             {activeDraft && (
               <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-                Last modified: {new Date(activeDraft.lastModified).toLocaleString()}
+                Last modified: {new Date(activeDraft.meta.lastModified).toLocaleString()}
               </p>
             )}
           </div>
@@ -156,7 +157,7 @@ export default function CreateInvoicePage() {
           createNewDraft()
           setShowNewDialog(false)
           setLocalInvoiceId('')
-          setLocalRecipientName('')
+          setLocalClientName('')
         }}
       />
     </div>

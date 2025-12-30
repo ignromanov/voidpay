@@ -4,7 +4,7 @@
  * Generates random invoices for testing and demonstration purposes.
  */
 
-import { InvoiceSchemaV2 } from '@/entities/invoice/model/schema-v2'
+import { Invoice } from '@/entities/invoice/model/schema'
 
 /**
  * Generates a random UUID v4
@@ -108,7 +108,7 @@ const SAMPLE_DATA = {
 /**
  * Generates a random invoice with realistic data
  */
-export function generateRandomInvoice(): InvoiceSchemaV2 {
+export function generateRandomInvoice(): Invoice {
   const currency = randomItem(SAMPLE_DATA.currencies)
   const chainId = randomItem(SAMPLE_DATA.chainIds)
 
@@ -144,7 +144,7 @@ export function generateRandomInvoice(): InvoiceSchemaV2 {
   const includeClientAddress = randomBool(0.5)
   const includeClientPhone = randomBool(0.4)
 
-  const invoice: InvoiceSchemaV2 = {
+  const invoice: Invoice = {
     version: 2,
     invoiceId: generateUUID(),
     issuedAt: iss,
@@ -183,6 +183,6 @@ export function generateRandomInvoice(): InvoiceSchemaV2 {
 /**
  * Generates multiple random invoices
  */
-export function generateRandomInvoices(count: number): InvoiceSchemaV2[] {
+export function generateRandomInvoices(count: number): Invoice[] {
   return Array.from({ length: count }, () => generateRandomInvoice())
 }

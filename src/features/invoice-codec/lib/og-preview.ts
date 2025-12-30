@@ -1,4 +1,4 @@
-import type { InvoiceSchemaV2 } from '@/entities/invoice'
+import type { Invoice } from '@/entities/invoice'
 
 /**
  * Network chain ID to short code mapping for compact URLs.
@@ -49,7 +49,7 @@ export interface OGPreviewData {
  * // => "a1b2c3d4_1250.00_USDC_arb_Acme_1231"
  * ```
  */
-export function encodeOGPreview(invoice: InvoiceSchemaV2): string {
+export function encodeOGPreview(invoice: Invoice): string {
   const parts: string[] = []
 
   // 1. Shortened invoice ID (first 8 chars, remove dashes)
@@ -134,7 +134,7 @@ export function getNetworkIdFromCode(code: string): number | undefined {
  * Calculates total invoice amount from line items.
  * Returns formatted string with 2 decimal places.
  */
-function calculateTotal(invoice: InvoiceSchemaV2): string {
+function calculateTotal(invoice: Invoice): string {
   let total = 0
 
   for (const item of invoice.items) {

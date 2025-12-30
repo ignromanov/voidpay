@@ -1,4 +1,4 @@
-export interface InvoiceSchemaV2 {
+export interface Invoice {
   /** Schema Version (Fixed: 2) */
   version: 2
   /** Invoice ID (UUID or unique string) */

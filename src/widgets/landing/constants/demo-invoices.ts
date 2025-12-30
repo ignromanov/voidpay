@@ -2,7 +2,7 @@
  * Demo invoice data for landing page rotation
  * Feature: 012-landing-page
  *
- * All fields of InvoiceSchemaV2 are populated to demonstrate full functionality.
+ * All fields of Invoice are populated to demonstrate full functionality.
  * Each demo showcases a different invoice status and payment state.
  * Uses ViewedInvoice type from store for consistency.
  */

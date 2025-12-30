@@ -5,10 +5,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithUser, screen } from '@/shared/ui/__tests__/test-utils'
 import { InvoicePreviewModal } from '../InvoicePreviewModal'
-import { InvoiceSchemaV2 } from '@/entities/invoice'
+import { Invoice } from '@/entities/invoice'
 
 // Mock data
-const mockInvoiceData: Partial<InvoiceSchemaV2> = {
+const mockInvoiceData: Partial<Invoice> = {
   invoiceId: 'INV-001',
   issuedAt: 1704067200, // 2024-01-01
   dueAt: 1706745600, // 2024-02-01
@@ -30,7 +30,7 @@ describe('InvoicePreviewModal', () => {
   describe('rendering', () => {
     it('renders when open', () => {
       renderWithUser(
-        <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => { }} />
+        <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => {}} />
       )
 
       expect(screen.getByRole('dialog')).toBeInTheDocument()
@@ -38,7 +38,7 @@ describe('InvoicePreviewModal', () => {
 
     it('does not render content when closed', () => {
       renderWithUser(
-        <InvoicePreviewModal data={mockInvoiceData} open={false} onOpenChange={() => { }} />
+        <InvoicePreviewModal data={mockInvoiceData} open={false} onOpenChange={() => {}} />
       )
 
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
@@ -46,7 +46,7 @@ describe('InvoicePreviewModal', () => {
 
     it('renders invoice ID in accessible title', () => {
       renderWithUser(
-        <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => { }} />
+        <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => {}} />
       )
 
       expect(screen.getByText(/Invoice Preview.*INV-001/)).toBeInTheDocument()
@@ -54,7 +54,7 @@ describe('InvoicePreviewModal', () => {
 
     it('renders close button', () => {
       renderWithUser(
-        <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => { }} />
+        <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => {}} />
       )
 
       expect(screen.getByLabelText(/close preview/i)).toBeInTheDocument()
@@ -88,7 +88,7 @@ describe('InvoicePreviewModal', () => {
   describe('status handling', () => {
     it('renders with default pending status', () => {
       renderWithUser(
-        <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => { }} />
+        <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => {}} />
       )
 
       // Status is pending by default, no badge shown
@@ -101,7 +101,7 @@ describe('InvoicePreviewModal', () => {
           data={mockInvoiceData}
           status="paid"
           open={true}
-          onOpenChange={() => { }}
+          onOpenChange={() => {}}
         />
       )
 

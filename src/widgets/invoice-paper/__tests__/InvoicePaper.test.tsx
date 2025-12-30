@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { InvoicePaper } from '../ui/InvoicePaper'
-import { InvoiceSchemaV2 } from '@/entities/invoice'
+import { Invoice } from '@/entities/invoice'
 
 describe('InvoicePaper Integration', () => {
-  const mockData: Partial<InvoiceSchemaV2> = {
+  const mockData: Partial<Invoice> = {
     invoiceId: 'INV-2024-001',
     issuedAt: 1735296000, // Dec 27
     dueAt: 1735382400, // Dec 28

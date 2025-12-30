@@ -8,7 +8,7 @@
 import { useCallback } from 'react'
 import { useDebouncedCallback } from 'use-debounce'
 import { useCreatorStore } from '@/entities/creator'
-import type { InvoiceDraft } from '@/entities/invoice'
+import type { Invoice } from '@/entities/invoice'
 import { AUTO_SAVE_DEBOUNCE_MS } from '@/shared/lib/debounce'
 
 /**
@@ -20,11 +20,11 @@ import { AUTO_SAVE_DEBOUNCE_MS } from '@/shared/lib/debounce'
  * function InvoiceEditor() {
  *   const { autoSave, isPending } = useAutoSave();
  *
- *   const handleFieldChange = (field: string, value: any) => {
+ *   const handleFieldChange = (field: keyof Invoice, value: unknown) => {
  *     // Update local state immediately (optimistic UI)
  *     setLocalDraft({ ...localDraft, [field]: value });
  *     // Debounced save to store
- *     autoSave({ ...localDraft, [field]: value });
+ *     autoSave({ [field]: value });
  *   };
  *
  *   return (
@@ -39,8 +39,8 @@ export function useAutoSave() {
   const updateDraft = useCreatorStore((s) => s.updateDraft)
 
   const debouncedSave = useDebouncedCallback(
-    (draft: Partial<InvoiceDraft>) => {
-      updateDraft(draft)
+    (data: Partial<Invoice>) => {
+      updateDraft(data)
     },
     AUTO_SAVE_DEBOUNCE_MS,
     {
@@ -50,8 +50,8 @@ export function useAutoSave() {
   )
 
   const autoSave = useCallback(
-    (draft: Partial<InvoiceDraft>) => {
-      debouncedSave(draft)
+    (data: Partial<Invoice>) => {
+      debouncedSave(data)
     },
     [debouncedSave]
   )
@@ -88,7 +88,7 @@ export function useAutoSave() {
  * function InvoiceEditor() {
  *   const { autoSave, saveNow } = useAutoSaveWithManual();
  *
- *   const handleFieldChange = (field: string, value: any) => {
+ *   const handleFieldChange = (field: keyof Invoice, value: unknown) => {
  *     autoSave({ [field]: value });
  *   };
  *
@@ -103,13 +103,13 @@ export function useAutoSaveWithManual() {
   const updateDraft = useCreatorStore((s) => s.updateDraft)
 
   const saveNow = useCallback(
-    (draft?: Partial<InvoiceDraft>) => {
+    (data?: Partial<Invoice>) => {
       // Flush any pending debounced saves
       flush()
 
-      // If draft provided, save it immediately
-      if (draft) {
-        updateDraft(draft)
+      // If data provided, save it immediately
+      if (data) {
+        updateDraft(data)
       }
     },
     [flush, updateDraft]
