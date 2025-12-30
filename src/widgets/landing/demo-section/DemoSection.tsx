@@ -148,7 +148,7 @@ export function DemoSection() {
               className="rounded-full bg-violet-600 px-8 py-4"
               asChild
             >
-              <Link href={`/create${new URL(currentInvoice.invoiceUrl).search}` as '/create'}>
+              <Link href={`/create#${currentInvoice.createHash}`}>
                 Use This Template
               </Link>
             </Button>

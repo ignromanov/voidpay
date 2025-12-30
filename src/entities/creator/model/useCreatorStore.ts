@@ -366,16 +366,26 @@ export const useCreatorStore = create<CreatorStore>()(
             const invoiceId = state.generateNextInvoiceId()
             const newDraft = createDefaultDraft(draftId, invoiceId, state.preferences)
 
+            // Sync lineItems if items provided (for URL hash decoding)
+            const lineItems = data.items?.length
+              ? invoiceItemsToLineItems(data.items)
+              : [createDefaultLineItem()]
+
             return {
               activeDraft: {
                 ...newDraft,
                 data: { ...newDraft.data, ...data },
               },
-              lineItems: [createDefaultLineItem()],
+              lineItems,
             }
           }
 
           // Update existing draft
+          // Also sync lineItems if items provided
+          const newLineItems = data.items?.length
+            ? invoiceItemsToLineItems(data.items)
+            : state.lineItems
+
           return {
             activeDraft: {
               meta: {
@@ -387,6 +397,7 @@ export const useCreatorStore = create<CreatorStore>()(
                 ...data,
               },
             },
+            lineItems: newLineItems,
           }
         })
       },

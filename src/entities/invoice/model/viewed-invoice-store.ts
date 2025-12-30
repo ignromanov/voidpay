@@ -33,6 +33,8 @@ export interface ViewedInvoice {
   txHashValidated?: boolean
   /** ISO 8601 timestamp when invoice was viewed */
   viewedAt: string
+  /** Pre-generated hash for /create# template link (optional, for demo invoices) */
+  createHash?: string
 }
 
 /**

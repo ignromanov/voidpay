@@ -182,9 +182,9 @@ describe('DemoSection', () => {
       })
 
       const link = screen.getByRole('link', { name: /use this template/i })
-      // Link should point to /create with encoded invoice data
+      // Link should point to /create with encoded invoice hash
       const href = link.getAttribute('href')
-      expect(href).toMatch(/^\/create\?d=/)
+      expect(href).toMatch(/^\/create#/)
     })
 
     it('should hide button on mouse leave', async () => {

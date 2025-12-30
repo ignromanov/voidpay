@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { Navigation } from '@/widgets/navigation/Navigation'
 import { Footer } from '@/widgets/footer'
+import { Toaster } from '@/shared/ui/toaster'
 import './globals.css'
 
 /**
@@ -47,6 +48,7 @@ export default function RootLayout({
         <Navigation />
         <main className="pt-16 pb-10">{children}</main>
         <Footer />
+        <Toaster />
       </body>
     </html>
   )

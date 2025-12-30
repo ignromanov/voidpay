@@ -4,14 +4,20 @@
  *
  * All fields of Invoice are populated to demonstrate full functionality.
  * Each demo showcases a different invoice status and payment state.
- * Uses ViewedInvoice type from store for consistency.
+ *
+ * IMPORTANT: createHash is computed at build time (SSG).
+ * encodeInvoice runs during `next build`, not on client.
  */
 
+import { encodeInvoice } from '@/features/invoice-codec'
 import type { ViewedInvoice } from '@/entities/invoice'
 
 const BASE_TIMESTAMP = 1704067200 // 2024-01-01 00:00:00 UTC
 
-export const DEMO_INVOICES: ViewedInvoice[] = [
+/**
+ * Raw demo data without computed hashes
+ */
+const RAW_DEMO_INVOICES: Omit<ViewedInvoice, 'createHash'>[] = [
   // --- Ethereum (1) - Smart Contract Audit [PAID + VALIDATED] ---
   {
     invoiceId: 'eth-inv-001',
@@ -180,5 +186,14 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
     },
   },
 ]
+
+/**
+ * Demo invoices with pre-computed createHash for /create page navigation
+ * Hash is computed at module load time (build time for SSG)
+ */
+export const DEMO_INVOICES: ViewedInvoice[] = RAW_DEMO_INVOICES.map((invoice) => ({
+  ...invoice,
+  createHash: encodeInvoice(invoice.data),
+}))
 
 export const ROTATION_INTERVAL_MS = 60_000 // 60 seconds for viewing animations
