@@ -1,4 +1,4 @@
-import type { AnimatedShape, Viewport } from './types'
+import type { AnimatedShape } from './types'
 import { ANIMATION_DEFAULTS } from '../constants'
 
 const { FADE_IN_DURATION_S, FADE_OUT_DURATION_S, FADE_DELAY_MULTIPLIER } = ANIMATION_DEFAULTS
@@ -55,40 +55,12 @@ function animateFadeIn(shape: AnimatedShape, deltaTime: number): boolean {
 }
 
 /**
- * Calculate mass multiplier - larger shapes move slower
+ * Calculate mass multiplier - larger shapes breathe slower
  * Mass is proportional to size (sizeVh)
  */
 function getMassMultiplier(sizeVh: number): number {
-  // Gentle scaling: 0.25 -> 1.0, 0.5 -> 1.25, 0.6 -> 1.35
-  // Smaller coefficient for subtler effect
+  // Gentle scaling: 0.25 -> 1.0, 0.5 -> 1.25, 0.7 -> 1.45
   return 1 + (sizeVh - 0.25) * 1
-}
-
-/**
- * Animate position with one-directional movement (horizontal + optional vertical)
- * Shape moves from start to (start + amplitude) and back
- * Uses (1 - cos(phase)) / 2 for smooth 0→1→0 oscillation
- *
- * If amplitudeY != 0, creates diagonal movement path
- */
-function animatePosition(shape: AnimatedShape, deltaTime: number, _viewport: Viewport): void {
-  const { data, amplitude, amplitudeY, startX, startY } = shape
-
-  // Position speed based on duration * shape-specific multiplier * mass
-  // Larger shapes (higher mass) move slower
-  const massMultiplier = getMassMultiplier(data.sizeVh)
-  const posSpeed = (2 * Math.PI) / (data.duration * data.positionMultiplier * massMultiplier)
-  shape.phase += deltaTime * posSpeed
-
-  // One-directional oscillation: 0 → 1 → 0
-  // At phase=0: (1 - cos(0)) / 2 = 0 → shape at start
-  // At phase=π: (1 - cos(π)) / 2 = 1 → shape at start + amplitude
-  // At phase=2π: (1 - cos(2π)) / 2 = 0 → shape back at start
-  const posProgress = (1 - Math.cos(shape.phase)) / 2
-
-  // Apply position: horizontal + optional vertical (diagonal path)
-  shape.container.x = startX + posProgress * amplitude
-  shape.container.y = startY + posProgress * amplitudeY
 }
 
 /**
@@ -115,10 +87,10 @@ function animateBreathing(shape: AnimatedShape, deltaTime: number): void {
 }
 
 /**
- * Animate a single shape for one frame
+ * Animate a single shape for one frame (breathing only, static position)
  * Returns true if shape is still active, false if should be removed
  */
-export function animateShape(shape: AnimatedShape, deltaTime: number, viewport: Viewport): boolean {
+export function animateShape(shape: AnimatedShape, deltaTime: number): boolean {
   // Handle fade-out for exiting shapes
   if (shape.isExiting) {
     return animateFadeOut(shape, deltaTime)
@@ -130,8 +102,8 @@ export function animateShape(shape: AnimatedShape, deltaTime: number, viewport: 
     return true
   }
 
-  // Animate position and breathing
-  animatePosition(shape, deltaTime, viewport)
+  // Animate breathing only (position is static for GPU optimization)
+  // Movement removed: blur is calculated once and cached by GPU
   animateBreathing(shape, deltaTime)
 
   return true
@@ -142,7 +114,7 @@ export function animateShape(shape: AnimatedShape, deltaTime: number, viewport: 
  * Uses shape-specific opacity range
  * Position is at start coordinates (beginning of animation track)
  */
-export function setStaticPosition(shape: AnimatedShape, _viewport: Viewport): void {
+export function setStaticPosition(shape: AnimatedShape): void {
   const { data, startX, startY } = shape
   // Use shape-specific opacity for static position (midpoint of range)
   const staticOpacity = (data.opacityMin + data.opacityMax) / 2

@@ -139,17 +139,16 @@ export function PixiBackground({ theme = 'ethereum', className }: PixiBackground
     []
   )
 
-  // Animation loop
+  // Animation loop (breathing only, static positions)
   const animate = useCallback((ticker: Ticker) => {
     const deltaTime = ticker.deltaMS / 1000
-    const viewport = { width: window.innerWidth, height: window.innerHeight }
 
-    // Animate active shapes
-    shapesRef.current.forEach((shape) => animateShape(shape, deltaTime, viewport))
+    // Animate active shapes (breathing only)
+    shapesRef.current.forEach((shape) => animateShape(shape, deltaTime))
 
     // Animate exiting shapes and remove completed ones
     exitingShapesRef.current = exitingShapesRef.current.filter((shape) => {
-      const stillAnimating = animateShape(shape, deltaTime, viewport)
+      const stillAnimating = animateShape(shape, deltaTime)
       if (!stillAnimating) {
         shape.container.destroy()
       }
@@ -177,8 +176,8 @@ export function PixiBackground({ theme = 'ethereum', className }: PixiBackground
         tickerCallbackRef.current = callback
         app.ticker.add(callback)
       } else {
-        const viewport = { width: window.innerWidth, height: window.innerHeight }
-        shapesRef.current.forEach((shape) => setStaticPosition(shape, viewport))
+        // Reduced motion: set static opacity (no animation)
+        shapesRef.current.forEach((shape) => setStaticPosition(shape))
       }
     }
 

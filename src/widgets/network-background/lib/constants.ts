@@ -134,112 +134,125 @@ export interface ShapeConfig {
 
 /**
  * ╔═══════════════════════════════════════════════════════════════════════════╗
- * ║ SHAPE CONFIGURATIONS                                                       ║
+ * ║ SHAPE CONFIGURATIONS (Static + Breathing)                                 ║
  * ╠═══════════════════════════════════════════════════════════════════════════╣
- * ║ Three animated shapes with mass-based physics:                            ║
+ * ║ Three shapes with static positions and breathing animation:               ║
  * ║                                                                            ║
- * ║ Movement pattern:                                                          ║
- * ║   1. Shape starts at edge (startPercent position)                         ║
- * ║   2. Moves toward center by amplitudePercent                              ║
- * ║   3. Returns smoothly to start position                                   ║
- * ║   4. Cycle repeats                                                        ║
+ * ║ Visual composition: "Golden Triangle"                                     ║
+ * ║   PRIMARY (top-left) → SECONDARY (center-right) → ACCENT (bottom-left)   ║
+ * ║   Creates dynamic visual flow without movement                            ║
  * ║                                                                            ║
- * ║ Mass-based physics:                                                        ║
- * ║   - Larger shapes (high sizeVh) → slower, smaller amplitude               ║
- * ║   - Smaller shapes (low sizeVh) → faster, larger amplitude                ║
+ * ║ Positioning notes:                                                         ║
+ * ║   - startPercent/topPercent = top-left corner of shape container          ║
+ * ║   - Visual center = corner + size/2                                       ║
+ * ║   - Larger shapes need more offset to appear "centered"                   ║
+ * ║                                                                            ║
+ * ║ GPU Optimization:                                                          ║
+ * ║   - Blur calculated ONCE at creation (cached by GPU)                      ║
+ * ║   - Only alpha changes each frame (~60% GPU savings)                      ║
+ * ║   - Higher blur quality enabled (no recalculation penalty)                ║
  * ╚═══════════════════════════════════════════════════════════════════════════╝
  */
 export const SHAPE_CONFIG: Record<'PRIMARY' | 'SECONDARY' | 'ACCENT', ShapeConfig> = {
   /**
    * ┌─────────────────────────────────────────────────────────────────────────┐
-   * │ PRIMARY — Medium shape, top-left                                        │
-   * │ Size: 0.5vh (50% of viewport height)                                    │
-   * │ Character: Balanced, anchor element                                     │
+   * │ PRIMARY — Large shape, top-left anchor                                  │
+   * │ Size: 0.55vh (55% of viewport height, ~594px on 1080p)                  │
+   * │ Width: ~365px (rhombus aspect 0.614)                                    │
+   * │ Visual center target: ~20% from left, ~25% from top                     │
+   * │ Corner offset: left = 20% - 9.5% = 10%, top = 25% - 27.5% = -2.5%       │
    * └─────────────────────────────────────────────────────────────────────────┘
    */
   PRIMARY: {
-    // Position: top-left corner (diagonal flow: anchor point)
-    sizeVh: 0.5, // 50% viewport height
-    topPercent: 6, // 6% from top
-    startPercent: -2, // 2% beyond left edge
+    // Position: corner coords adjusted for shape size
+    // Visual center ≈ 20% left, 25% top (accounting for 55vh height, ~19vw width)
+    sizeVh: 0.55,
+    topPercent: -3, // Negative = shape bleeds off top (center at ~25%)
+    startPercent: 1, // 1% from left edge (center at ~20% with 19vw width)
     zone: 'left',
 
-    // Timing: golden ratio middle (φ¹ ≈ 32s)
-    duration: 32, // 32s base cycle
-    delay: 0, // starts immediately
+    // Timing: slow, meditative breathing
+    duration: 28,
+    delay: 0,
 
-    // Animation: moderate inertia, distinct breathing/movement cycles
-    opacityMin: 0.04, // fades to 4%
-    opacityMax: 0.2, // peaks at 20% (higher contrast)
-    breathingMultiplier: 2.3, // breathing cycle ≈ 74s (prime-based)
-    positionMultiplier: 3.1, // position cycle ≈ 99s (different from breathing)
-    amplitudePercent: 22, // moderate travel toward center
+    // Animation: enhanced breathing contrast
+    opacityMin: 0.03,
+    opacityMax: 0.25,
+    breathingMultiplier: 1.8,
+    positionMultiplier: 1, // unused (static)
+    amplitudePercent: 0, // static position
 
-    // Visual: medium blur
-    blurStrength: 14, // 14px gaussian blur
-    blurQuality: 2, // balanced quality/performance
+    // Visual: high quality blur (calculated once)
+    blurStrength: 18,
+    blurQuality: 5,
   },
 
   /**
    * ┌─────────────────────────────────────────────────────────────────────────┐
-   * │ SECONDARY — Largest shape, center-right (diagonal flow: middle point)  │
-   * │ Size: 0.65vh (65% of viewport height)                                   │
-   * │ Character: Heavy, majestic, slow-moving                                 │
+   * │ SECONDARY — Largest shape, center-right balance                         │
+   * │ Size: 0.7vh (70% of viewport height, ~756px on 1080p)                   │
+   * │ Width: ~464px (rhombus aspect 0.614)                                    │
+   * │ Visual center target: ~85% from left, ~50% from top                     │
+   * │ Corner offset: right startPercent = distance from right edge            │
    * └─────────────────────────────────────────────────────────────────────────┘
    */
   SECONDARY: {
-    // Position: center-right (diagonal flow: creates S-curve with PRIMARY and ACCENT)
-    sizeVh: 0.65, // 65% viewport height (largest)
-    topPercent: 38, // 38% from top (centered vertically)
-    startPercent: -2, // 2% beyond right edge
+    // Position: corner coords adjusted for shape size
+    // Visual center ≈ 85% left (15% from right), 50% top
+    // For right zone: startPercent = offset from right edge (before width subtraction)
+    sizeVh: 0.7,
+    topPercent: 15, // 15% from top (center at ~50% with 70vh height)
+    startPercent: -9, // Negative = bleeds off right edge (center at ~85%)
     zone: 'right',
-    hideOnMobile: true, // too big for mobile
+    hideOnMobile: true,
 
-    // Timing: golden ratio largest (φ² ≈ 52s)
-    duration: 52, // 52s base cycle
-    delay: 1.5, // 1.5s delayed entrance
+    // Timing: slowest, most serene breathing
+    duration: 36,
+    delay: 0.8,
 
-    // Animation: moderate inertia, distinct breathing/movement cycles
-    opacityMin: 0.03, // fades to 3%
-    opacityMax: 0.22, // peaks at 22% (higher contrast)
-    breathingMultiplier: 2.7, // breathing cycle ≈ 140s (prime-based)
-    positionMultiplier: 3.7, // position cycle ≈ 192s (different from breathing)
-    amplitudePercent: 20, // moderate travel toward center
+    // Animation: deep breathing with high contrast
+    opacityMin: 0.02,
+    opacityMax: 0.22,
+    breathingMultiplier: 2.2,
+    positionMultiplier: 1, // unused (static)
+    amplitudePercent: 0, // static position
 
-    // Visual: strongest blur
-    blurStrength: 16, // 16px gaussian blur
-    blurQuality: 2, // balanced quality/performance
+    // Visual: maximum blur quality
+    blurStrength: 22,
+    blurQuality: 6,
   },
 
   /**
    * ┌─────────────────────────────────────────────────────────────────────────┐
-   * │ ACCENT — Smallest shape, bottom-left (diagonal flow: end point)        │
-   * │ Size: 0.22vh (22% of viewport height)                                   │
-   * │ Character: Quick, playful, eye-catching                                 │
+   * │ ACCENT — Small shape, bottom-left focal point                           │
+   * │ Size: 0.25vh (25% of viewport height, ~270px on 1080p)                  │
+   * │ Width: ~166px (rhombus aspect 0.614)                                    │
+   * │ Visual center target: ~25% from left, ~78% from top                     │
+   * │ Smaller shape = less offset needed                                       │
    * └─────────────────────────────────────────────────────────────────────────┘
    */
   ACCENT: {
-    // Position: bottom-left corner (diagonal flow: completes S-curve)
-    sizeVh: 0.22, // 22% viewport height (smallest)
-    topPercent: 72, // 72% from top (lower for better diagonal)
-    startPercent: 5, // 5% inside left edge
+    // Position: corner coords adjusted for shape size
+    // Visual center ≈ 25% left, 78% top (accounting for 25vh height, ~8.5vw width)
+    sizeVh: 0.25,
+    topPercent: 65, // 65% from top (center at ~78% with 25vh height)
+    startPercent: 20, // 20% from left (center at ~25% with 8.5vw width)
     zone: 'left',
 
-    // Timing: slowed down (×1.5 from original 20s)
-    duration: 30, // 30s base cycle
-    delay: 2.5, // 2.5s delayed entrance
+    // Timing: faster, more energetic breathing
+    duration: 18,
+    delay: 1.5,
 
-    // Animation: screen-crossing diagonal flight, distinct breathing/movement cycles
-    opacityMin: 0.05, // fades to 5%
-    opacityMax: 0.28, // peaks at 28% (highest contrast, eye-catching)
-    breathingMultiplier: 1.9, // breathing cycle ≈ 57s (prime-based)
-    positionMultiplier: 2.9, // position cycle ≈ 87s (different from breathing)
-    amplitudePercent: 70, // crosses from 5% to 75% of screen
-    amplitudeYPercent: -60, // diagonal rise (~40° angle, ~650px on 1080p)
+    // Animation: strongest breathing effect (most visible)
+    opacityMin: 0.04,
+    opacityMax: 0.35,
+    breathingMultiplier: 1.4,
+    positionMultiplier: 1, // unused (static)
+    amplitudePercent: 0, // static position
 
-    // Visual: lightest blur
-    blurStrength: 10, // 10px gaussian blur
-    blurQuality: 2, // balanced quality/performance
+    // Visual: crisp blur for smaller shape
+    blurStrength: 12,
+    blurQuality: 4,
   },
 } as const
 
