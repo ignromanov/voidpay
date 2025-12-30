@@ -2,7 +2,7 @@
  * Demo invoice data for landing page rotation
  * Feature: 012-landing-page
  *
- * All fields of InvoiceSchemaV1 are populated to demonstrate full functionality.
+ * All fields of Invoice are populated to demonstrate full functionality.
  * Each demo showcases a different invoice status and payment state.
  * Uses ViewedInvoice type from store for consistency.
  */
@@ -22,7 +22,7 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
     txHash: '0xabc123def456789abc123def456789abc123def456789abc123def456789abc1',
     txHashValidated: true,
     data: {
-      version: 1,
+      version: 2,
       invoiceId: 'eth-inv-001',
       issuedAt: BASE_TIMESTAMP,
       dueAt: BASE_TIMESTAMP + 86400 * 14,
@@ -60,7 +60,7 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
     viewedAt: '2024-01-03T09:30:00.000Z',
     status: 'pending',
     data: {
-      version: 1,
+      version: 2,
       invoiceId: 'arb-inv-001',
       issuedAt: BASE_TIMESTAMP + 86400 * 2,
       dueAt: BASE_TIMESTAMP + 86400 * 32,
@@ -102,7 +102,7 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
     txHash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
     txHashValidated: false, // Shows warning indicator
     data: {
-      version: 1,
+      version: 2,
       invoiceId: 'opt-inv-001',
       issuedAt: BASE_TIMESTAMP + 86400 * 5,
       dueAt: BASE_TIMESTAMP + 86400 * 35,
@@ -142,7 +142,7 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
     viewedAt: '2024-01-02T16:45:00.000Z',
     status: 'overdue',
     data: {
-      version: 1,
+      version: 2,
       invoiceId: 'poly-inv-001',
       issuedAt: BASE_TIMESTAMP + 86400 * 1,
       dueAt: BASE_TIMESTAMP + 86400 * 15,

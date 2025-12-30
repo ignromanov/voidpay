@@ -5,10 +5,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithUser, screen } from '@/shared/ui/__tests__/test-utils'
 import { InvoicePreviewModal } from '../InvoicePreviewModal'
-import { InvoiceSchemaV1 } from '@/entities/invoice'
+import { Invoice } from '@/entities/invoice'
 
 // Mock data
-const mockInvoiceData: Partial<InvoiceSchemaV1> = {
+const mockInvoiceData: Partial<Invoice> = {
   invoiceId: 'INV-001',
   issuedAt: 1704067200, // 2024-01-01
   dueAt: 1706745600, // 2024-02-01

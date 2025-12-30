@@ -1,6 +1,8 @@
-export interface InvoiceSchemaV1 {
-  /** Schema Version (Fixed: 1) */
-  version: 1
+import type { Address } from 'viem'
+
+export interface Invoice {
+  /** Schema Version (Fixed: 2) */
+  version: 2
   /** Invoice ID (UUID or unique string) */
   invoiceId: string
   /** Issue Date (Unix Timestamp in seconds) */
@@ -14,7 +16,7 @@ export interface InvoiceSchemaV1 {
   /** Currency Symbol (e.g., "USDC", "ETH") */
   currency: string
   /** Token Address (Optional, undefined for native) */
-  tokenAddress?: string | undefined
+  tokenAddress?: Address | undefined
   /** Token Decimals (Required for precision) */
   decimals: number
   /** Sender Info */
@@ -22,7 +24,7 @@ export interface InvoiceSchemaV1 {
     /** Name */
     name: string
     /** Wallet Address */
-    walletAddress: string
+    walletAddress: Address
     /** Email (Optional) */
     email?: string | undefined
     /** Physical Address (Optional, multi-line allowed) */
@@ -37,7 +39,7 @@ export interface InvoiceSchemaV1 {
     /** Name */
     name: string
     /** Wallet Address (Optional) */
-    walletAddress?: string | undefined
+    walletAddress?: Address | undefined
     /** Email (Optional) */
     email?: string | undefined
     /** Physical Address (Optional, multi-line allowed) */

@@ -17,7 +17,7 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
           class="text-zinc-100 text-3xl md:text-4xl font-black tracking-tighter"
           id="how-it-works-heading"
         >
-          Three Steps to Get Paid
+          Create Crypto Invoices in 3 Steps
         </h2>
         <p
           class="text-lg md:text-xl leading-relaxed text-zinc-400"
@@ -68,7 +68,7 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
               </svg>
             </div>
             <span
-              class="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white shadow-lg"
+              class="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white shadow-lg"
             >
               1
             </span>
@@ -84,7 +84,7 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
             Add invoice details. Pick network and token.
           </p>
           <div
-            class="absolute right-0 top-10 hidden translate-x-1/2 md:block"
+            class="absolute top-10 right-0 hidden translate-x-1/2 md:block"
           >
             <svg
               aria-hidden="true"
@@ -160,7 +160,7 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
               </svg>
             </div>
             <span
-              class="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white shadow-lg"
+              class="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white shadow-lg"
             >
               2
             </span>
@@ -176,7 +176,7 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
             Get a permanent URL. No attachments needed.
           </p>
           <div
-            class="absolute right-0 top-10 hidden translate-x-1/2 md:block"
+            class="absolute top-10 right-0 hidden translate-x-1/2 md:block"
           >
             <svg
               aria-hidden="true"
@@ -231,7 +231,7 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
               </svg>
             </div>
             <span
-              class="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white shadow-lg"
+              class="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm font-bold text-white shadow-lg"
             >
               3
             </span>

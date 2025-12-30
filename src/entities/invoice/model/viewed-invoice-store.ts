@@ -8,7 +8,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { INVOICE_VIEW_STORE_KEY } from '@/shared/config'
-import type { Invoice } from './schema'
+import type { Invoice } from './types'
 
 /**
  * Status of a viewed invoice

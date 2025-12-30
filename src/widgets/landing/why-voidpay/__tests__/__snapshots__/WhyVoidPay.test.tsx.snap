@@ -16,12 +16,12 @@ exports[`WhyVoidPay > T023-test: Snapshot > should match snapshot 1`] = `
           class="text-zinc-100 text-3xl md:text-4xl font-black tracking-tighter mb-4"
           id="why-voidpay-heading"
         >
-          Why VoidPay?
+          Why Choose VoidPay for Crypto Invoicing
         </h2>
         <p
           class="text-lg md:text-xl leading-relaxed mx-auto max-w-2xl text-zinc-400"
         >
-          Built for freelancers, DAOs, and agencies who demand privacy and speed.
+          The no-KYC crypto invoice platform for freelancers, DAOs, and agencies.
         </p>
       </div>
       <div

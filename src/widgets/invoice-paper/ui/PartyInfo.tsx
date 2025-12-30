@@ -1,12 +1,12 @@
 import React from 'react'
 import { Mail, Phone, MapPin, Wallet } from 'lucide-react'
-import { InvoiceSchemaV1 } from '@/entities/invoice'
+import { Invoice } from '@/entities/invoice'
 import { CopyButton } from '@/shared/ui'
 import { InvoicePaperVariant } from '../types'
 
 interface PartyInfoProps {
-  from: InvoiceSchemaV1['from']
-  client: InvoiceSchemaV1['client']
+  from: Invoice['from']
+  client: Invoice['client']
   variant?: InvoicePaperVariant
 }
 

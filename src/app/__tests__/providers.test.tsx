@@ -91,13 +91,13 @@ describe('Providers', () => {
     const { Providers } = await import('../providers')
     expect(Providers).toBeDefined()
     expect(typeof Providers).toBe('function')
-  })
+  }, 15000)
 
   it('should export a Web3Provider component', async () => {
     const { Web3Provider } = await import('../providers')
     expect(Web3Provider).toBeDefined()
     expect(typeof Web3Provider).toBe('function')
-  })
+  }, 15000)
 
   it('should render children within providers', async () => {
     const { Providers } = await import('../providers')

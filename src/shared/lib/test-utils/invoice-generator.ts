@@ -4,7 +4,8 @@
  * Generates random invoices for testing and demonstration purposes.
  */
 
-import { Invoice } from '@/entities/invoice/model/schema'
+import type { Invoice } from '@/entities/invoice'
+import type { Address } from 'viem'
 
 /**
  * Generates a random UUID v4
@@ -20,13 +21,13 @@ function generateUUID(): string {
 /**
  * Generates a random Ethereum address
  */
-function generateAddress(): string {
+function generateAddress(): Address {
   const chars = '0123456789abcdef'
   let address = '0x'
   for (let i = 0; i < 40; i++) {
     address += chars[Math.floor(Math.random() * chars.length)]
   }
-  return address
+  return address as Address
 }
 
 /**
@@ -92,9 +93,21 @@ const SAMPLE_DATA = {
     'Security Assessment',
   ],
   currencies: [
-    { symbol: 'USDC', decimals: 6, address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' },
-    { symbol: 'USDT', decimals: 6, address: '0xdac17f958d2ee523a2206206994597c13d831ec7' },
-    { symbol: 'DAI', decimals: 18, address: '0x6b175474e89094c44da98b954eedeac495271d0f' },
+    {
+      symbol: 'USDC',
+      decimals: 6,
+      address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as Address,
+    },
+    {
+      symbol: 'USDT',
+      decimals: 6,
+      address: '0xdac17f958d2ee523a2206206994597c13d831ec7' as Address,
+    },
+    {
+      symbol: 'DAI',
+      decimals: 18,
+      address: '0x6b175474e89094c44da98b954eedeac495271d0f' as Address,
+    },
     { symbol: 'ETH', decimals: 18, address: undefined },
   ],
   chainIds: [

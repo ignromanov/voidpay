@@ -24,6 +24,7 @@ const config = [
       'worktrees/**',
       'assets/**',
       'specs/**',
+      '.ai/**',
     ],
   },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),

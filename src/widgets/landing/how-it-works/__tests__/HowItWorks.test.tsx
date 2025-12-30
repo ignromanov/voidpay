@@ -51,7 +51,8 @@ describe('HowItWorks', () => {
       render(<HowItWorks />)
 
       expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
-      expect(screen.getByText('Three Steps to Get Paid')).toBeInTheDocument()
+      // SEO-optimized heading
+      expect(screen.getByText('Create Crypto Invoices in 3 Steps')).toBeInTheDocument()
     })
 
     it('should render 3 timeline steps', () => {

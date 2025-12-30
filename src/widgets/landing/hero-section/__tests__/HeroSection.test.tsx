@@ -89,14 +89,9 @@ describe('HeroSection', () => {
     it('should render value proposition', () => {
       render(<HeroSection />)
 
-      // Main value proposition
-      expect(screen.getByText(/No servers.*No accounts/i)).toBeInTheDocument()
-    })
-
-    it('should render key message about invoice durability', () => {
-      render(<HeroSection />)
-
-      expect(screen.getByText(/If we disappear.*invoices don't/i)).toBeInTheDocument()
+      // Main value proposition - SEO: stateless web3 invoicing
+      expect(screen.getByText(/Stateless web3 invoicing/i)).toBeInTheDocument()
+      expect(screen.getByText(/no servers, no accounts, no tracking/i)).toBeInTheDocument()
     })
   })
 

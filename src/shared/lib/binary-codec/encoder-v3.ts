@@ -15,7 +15,7 @@
  * - Threshold: 100 bytes (deflate adds ~10 byte header)
  */
 
-import { Invoice } from '@/entities/invoice/model/schema'
+import type { Invoice } from '@/entities/invoice'
 import { addressToBytes, writeVarInt } from './utils'
 import { encodeBase62 } from './base62'
 import { CURRENCY_DICT, TOKEN_DICT } from './dictionary'

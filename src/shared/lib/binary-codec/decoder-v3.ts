@@ -5,7 +5,8 @@
  * Uses pako.inflate to decompress raw bytes (NO double decoding).
  */
 
-import { Invoice } from '@/entities/invoice/model/schema'
+import type { Invoice } from '@/entities/invoice'
+import type { Address } from 'viem'
 import { bytesToAddress, readVarInt } from './utils'
 import { decodeBase62 } from './base62'
 import { CURRENCY_DICT_REVERSE, TOKEN_DICT_REVERSE } from './dictionary'
@@ -207,18 +208,18 @@ export function decodeBinaryV3(encoded: string): Invoice {
     notes,
     networkId,
     currency,
-    tokenAddress,
+    tokenAddress: tokenAddress as Address | undefined,
     decimals,
     from: {
       name: fromName,
-      walletAddress: fromWalletAddress,
+      walletAddress: fromWalletAddress as Address,
       email: fromEmail,
       physicalAddress: fromPhysicalAddress,
       phone: fromPhone,
     },
     client: {
       name: clientName,
-      walletAddress: clientWalletAddress,
+      walletAddress: clientWalletAddress as Address | undefined,
       email: clientEmail,
       physicalAddress: clientPhysicalAddress,
       phone: clientPhone,

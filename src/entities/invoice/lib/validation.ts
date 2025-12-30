@@ -1,24 +1,34 @@
 import { z } from 'zod'
-import { InvoiceSchemaV1 } from '../model/schema'
+import type { Address } from 'viem'
+import type { Invoice } from '../model/schema'
 import { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
 import { NUMERIC_STRING_REGEX } from './constants'
 
 // Re-export for backwards compatibility
 export { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
 
+/**
+ * Custom Zod type for Ethereum addresses
+ * Validates format and returns Address type from viem
+ */
+const addressSchema = z.custom<Address>(
+  (val): val is Address => typeof val === 'string' && ETH_ADDRESS_REGEX.test(val),
+  { message: 'Invalid Ethereum address format' }
+)
+
 export const invoiceSchema = z.object({
-  version: z.literal(1),
+  version: z.literal(2),
   invoiceId: z.string().min(1),
   issuedAt: z.number().int().positive(),
   dueAt: z.number().int().positive(),
   notes: z.string().max(280).optional(),
   networkId: z.number().int().positive(),
   currency: z.string().min(1),
-  tokenAddress: z.string().regex(ETH_ADDRESS_REGEX, 'Invalid token address').optional(),
+  tokenAddress: addressSchema.optional(),
   decimals: z.number().int().nonnegative(),
   from: z.object({
     name: z.string().min(1),
-    walletAddress: z.string().regex(ETH_ADDRESS_REGEX, 'Invalid sender address'),
+    walletAddress: addressSchema,
     email: z.string().email().optional(),
     physicalAddress: z.string().optional(),
     phone: z.string().optional(),
@@ -26,7 +36,7 @@ export const invoiceSchema = z.object({
   }),
   client: z.object({
     name: z.string().min(1),
-    walletAddress: z.string().regex(ETH_ADDRESS_REGEX, 'Invalid client address').optional(),
+    walletAddress: addressSchema.optional(),
     email: z.string().email().optional(),
     physicalAddress: z.string().optional(),
     phone: z.string().optional(),
@@ -50,4 +60,4 @@ export const invoiceSchema = z.object({
 // Verify that the Zod schema matches the TypeScript interface
 // This is a type-level check
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type InvoiceSchemaCheck = z.infer<typeof invoiceSchema> extends InvoiceSchemaV1 ? true : false
+type InvoiceSchemaCheck = z.infer<typeof invoiceSchema> extends Invoice ? true : false

@@ -14,44 +14,91 @@ type ComparisonRow = {
   feature: string
   voidpay: ComparisonValue
   requestNetwork: ComparisonValue
+  basenode: ComparisonValue
   traditional: ComparisonValue
 }
 
+/**
+ * Comparison data based on market research (December 2025)
+ * Sources: Request Finance docs, Basenode.io pricing, industry reports
+ * Order: VoidPay → Request → Basenode → Traditional (last)
+ */
 const COMPARISON_DATA: ComparisonRow[] = [
   {
     feature: 'Sign-up Required',
     voidpay: 'no',
     requestNetwork: 'yes',
+    basenode: 'yes',
+    traditional: 'yes',
+  },
+  {
+    feature: 'KYC Required',
+    voidpay: 'no',
+    requestNetwork: 'partial',
+    basenode: 'no',
     traditional: 'yes',
   },
   {
     feature: 'Data Storage',
     voidpay: 'None (URL)',
     requestNetwork: 'IPFS',
+    basenode: 'Server',
     traditional: 'Server',
   },
   {
-    feature: 'Cost',
-    voidpay: 'Free',
-    requestNetwork: 'Gas + Fees',
-    traditional: 'Subscription',
+    feature: 'Platform Fee',
+    voidpay: '$0',
+    requestNetwork: '1-2%',
+    basenode: 'Freemium',
+    traditional: '~6.6%',
   },
   {
-    feature: 'Privacy Level',
-    voidpay: 'Maximum',
+    feature: 'Free Invoices',
+    voidpay: 'Unlimited',
     requestNetwork: 'partial',
-    traditional: 'no',
+    basenode: '12/year',
+    traditional: 'partial',
+  },
+  {
+    feature: 'Settlement Time',
+    voidpay: 'Seconds',
+    requestNetwork: 'Seconds',
+    basenode: 'Seconds',
+    traditional: '3-5 days',
   },
   {
     feature: 'Setup Time',
     voidpay: '30 seconds',
     requestNetwork: '~5 minutes',
+    basenode: '~2 minutes',
     traditional: '1+ day',
+  },
+  {
+    feature: 'Privacy Level',
+    voidpay: 'Maximum',
+    requestNetwork: 'partial',
+    basenode: 'partial',
+    traditional: 'no',
+  },
+  {
+    feature: 'Works Offline',
+    voidpay: 'yes',
+    requestNetwork: 'no',
+    basenode: 'no',
+    traditional: 'no',
+  },
+  {
+    feature: 'Self-Hostable',
+    voidpay: 'yes',
+    requestNetwork: 'no',
+    basenode: 'no',
+    traditional: 'no',
   },
   {
     feature: 'Multi-Chain',
     voidpay: 'yes',
     requestNetwork: 'yes',
+    basenode: 'yes',
     traditional: 'no',
   },
 ]
@@ -94,21 +141,22 @@ export function ComparisonTable() {
         {/* Section header - SEO: competitor comparison keywords */}
         <div className="mb-16 text-center">
           <Heading variant="h1" as="h2" id="comparison-heading" className="mb-4">
-            VoidPay vs Request Network vs Traditional Invoicing
+            Crypto Invoice Tools Compared
           </Heading>
           <Text variant="large" className="mx-auto max-w-xl text-zinc-400">
-            An honest look at VoidPay vs. alternatives.
+            VoidPay vs Request Finance vs Basenode vs Traditional Invoicing
           </Text>
         </div>
 
         {/* Comparison table - horizontally scrollable on mobile */}
         <div className="overflow-x-auto rounded-2xl border border-zinc-800 bg-zinc-900/30">
-          <div className="min-w-[500px]">
+          <div className="min-w-[640px]">
             {/* Table header */}
-            <div className="grid grid-cols-4 gap-4 border-b border-zinc-800 bg-zinc-900/50 px-4 py-4 md:px-6">
+            <div className="grid grid-cols-5 gap-2 border-b border-zinc-800 bg-zinc-900/50 px-4 py-4 md:gap-4 md:px-6">
               <div className="text-left text-sm font-medium text-zinc-400">Feature</div>
               <div className="text-center text-sm font-bold text-violet-400">VoidPay</div>
               <div className="text-center text-sm font-medium text-zinc-400">Request</div>
+              <div className="text-center text-sm font-medium text-zinc-400">Basenode</div>
               <div className="text-center text-sm font-medium text-zinc-400">Traditional</div>
             </div>
 
@@ -116,7 +164,7 @@ export function ComparisonTable() {
             {COMPARISON_DATA.map((row, index) => (
               <div
                 key={row.feature}
-                className={`grid grid-cols-4 items-center gap-4 px-4 py-4 md:px-6 ${
+                className={`grid grid-cols-5 items-center gap-2 px-4 py-4 md:gap-4 md:px-6 ${
                   index < COMPARISON_DATA.length - 1 ? 'border-b border-zinc-800/50' : ''
                 }`}
               >
@@ -126,6 +174,9 @@ export function ComparisonTable() {
                 </div>
                 <div className="text-center">
                   <ValueCell value={row.requestNetwork} />
+                </div>
+                <div className="text-center">
+                  <ValueCell value={row.basenode} />
                 </div>
                 <div className="text-center">
                   <ValueCell value={row.traditional} />

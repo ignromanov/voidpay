@@ -11,7 +11,13 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
-import type { Invoice, DraftState, LineItem } from '@/entities/invoice'
+import {
+  invoiceItemsToLineItems,
+  type Invoice,
+  type DraftState,
+  type LineItem,
+} from '@/entities/invoice'
+import type { Address } from 'viem'
 import type {
   CreatorStoreV1,
   InvoiceTemplate,
@@ -188,7 +194,7 @@ function createDefaultDraft(
       lastModified: new Date().toISOString(),
     },
     data: {
-      version: 1,
+      version: 2,
       invoiceId,
       issuedAt: nowUnix(),
       dueAt: daysFromNowUnix(30), // Default: 30 days from now
@@ -197,7 +203,8 @@ function createDefaultDraft(
       decimals: 6, // Default for USDC
       from: {
         name: preferences.defaultSenderName ?? '',
-        walletAddress: preferences.defaultSenderWallet ?? '',
+        walletAddress: (preferences.defaultSenderWallet ??
+          '0x0000000000000000000000000000000000000000') as Address,
         ...(preferences.defaultSenderEmail && { email: preferences.defaultSenderEmail }),
         ...(preferences.defaultSenderAddress && {
           physicalAddress: preferences.defaultSenderAddress,
@@ -263,7 +270,7 @@ const migrate = (persistedState: any, version: number): CreatorStoreV1 => {
           lastModified: oldDraft.lastModified ?? new Date().toISOString(),
         },
         data: {
-          version: 1,
+          version: 2,
           invoiceId: oldDraft.invoiceId ?? '',
           issuedAt,
           dueAt,
@@ -657,7 +664,7 @@ export const useCreatorStore = create<CreatorStore>()(
         }
 
         // Create a new draft from the history entry
-        // Note: We don't have full invoice data in history, so this is a simplified version
+        // Use full invoice data from history entry
         const draftId = uuidv4()
 
         const newDraft: DraftState = {
@@ -666,34 +673,21 @@ export const useCreatorStore = create<CreatorStore>()(
             lastModified: new Date().toISOString(),
           },
           data: {
-            version: 1,
-            invoiceId: entry.invoiceId,
+            ...entry.invoice,
+            // Reset dates for new invoice
             issuedAt: nowUnix(),
             dueAt: daysFromNowUnix(30),
-            networkId: state.preferences.defaultNetworkId ?? 1,
-            currency: state.preferences.defaultCurrency ?? 'USDC',
-            decimals: 6,
-            from: {
-              name: state.preferences.defaultSenderName ?? '',
-              walletAddress: state.preferences.defaultSenderWallet ?? '',
-              ...(state.preferences.defaultSenderEmail && {
-                email: state.preferences.defaultSenderEmail,
-              }),
-              ...(state.preferences.defaultSenderAddress && {
-                physicalAddress: state.preferences.defaultSenderAddress,
-              }),
-            },
-            client: {
-              name: entry.recipientName,
-            },
-            items: [],
-            ...(state.preferences.defaultTaxRate && { tax: state.preferences.defaultTaxRate }),
           },
         }
 
+        // Convert invoice items to line items with IDs
+        const restoredLineItems = entry.invoice.items?.length
+          ? invoiceItemsToLineItems(entry.invoice.items)
+          : [createDefaultLineItem()]
+
         set({
           activeDraft: newDraft,
-          lineItems: [createDefaultLineItem()],
+          lineItems: restoredLineItems,
         })
 
         return draftId

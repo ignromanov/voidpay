@@ -1,4 +1,5 @@
 import React, { useMemo, forwardRef } from 'react'
+import type { Address } from 'viem'
 import { InvoicePaperProps } from '../types'
 import { calculateTotals } from '../lib/calculate-totals'
 import { PaperHeader } from './PaperHeader'
@@ -11,7 +12,9 @@ import { NETWORK_SHADOWS } from '@/entities/network/config/ui-config'
 import { cn } from '@/shared/lib/utils'
 
 // Stable fallback objects (prevent new object creation on each render)
-const EMPTY_PARTY = { name: '', walletAddress: '' } as const
+// Uses zero address as fallback for draft invoices
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as Address
+const EMPTY_PARTY = { name: '', walletAddress: ZERO_ADDRESS } as const
 const EMPTY_CLIENT = { name: '' } as const
 const EMPTY_ITEMS: never[] = []
 

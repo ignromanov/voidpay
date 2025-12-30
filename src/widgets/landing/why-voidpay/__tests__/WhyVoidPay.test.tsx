@@ -40,7 +40,8 @@ describe('WhyVoidPay', () => {
       render(<WhyVoidPay />)
 
       expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
-      expect(screen.getByText('Why VoidPay?')).toBeInTheDocument()
+      // SEO-optimized heading
+      expect(screen.getByText('Why Choose VoidPay for Crypto Invoicing')).toBeInTheDocument()
     })
 
     it('should render 3 cards with backdrop blur', () => {

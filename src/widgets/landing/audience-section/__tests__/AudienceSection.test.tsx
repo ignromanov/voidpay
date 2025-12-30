@@ -11,9 +11,10 @@ describe('AudienceSection', () => {
       expect(container.querySelector('section')).toBeInTheDocument()
     })
 
-    it('should render section heading "Built For"', () => {
+    it('should render section heading', () => {
       render(<AudienceSection />)
-      expect(screen.getByText('Built For')).toBeInTheDocument()
+      // SEO-optimized heading
+      expect(screen.getByText('Built For Web3 Freelancers, DAOs & Agencies')).toBeInTheDocument()
     })
 
     it('should render section description', () => {
@@ -91,7 +92,8 @@ describe('AudienceSection', () => {
     it('should have proper heading hierarchy', () => {
       render(<AudienceSection />)
 
-      const heading = screen.getByText('Built For')
+      // SEO-optimized heading
+      const heading = screen.getByText('Built For Web3 Freelancers, DAOs & Agencies')
       expect(heading.tagName).toBe('H2')
       expect(heading).toHaveAttribute('id', 'audience-section-heading')
     })
@@ -145,9 +147,7 @@ describe('AudienceCard', () => {
     })
 
     it('should apply custom icon color', () => {
-      const { container } = render(
-        <AudienceCard {...defaultProps} iconColor="text-emerald-500" />
-      )
+      const { container } = render(<AudienceCard {...defaultProps} iconColor="text-emerald-500" />)
 
       const icon = container.querySelector('[aria-hidden="true"]')
       expect(icon).toHaveClass('text-emerald-500')

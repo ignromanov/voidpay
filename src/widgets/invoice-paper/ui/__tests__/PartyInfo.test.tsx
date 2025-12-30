@@ -1,21 +1,11 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { PartyInfo } from '../PartyInfo'
+import { TEST_PARTIES } from '@/shared/lib/test-utils'
 
 describe('PartyInfo', () => {
-  const mockFrom = {
-    name: 'Sender Company',
-    walletAddress: '0xsender',
-    email: 'sender@example.com',
-    physicalAddress: '123 Sender St',
-  }
-
-  const mockClient = {
-    name: 'Client Name',
-    walletAddress: '0x123...456',
-    email: 'client@example.com',
-    physicalAddress: '123 Street\nCity, Country',
-  }
+  const mockFrom = TEST_PARTIES.sender.full
+  const mockClient = TEST_PARTIES.client.full
 
   it('renders both From and Bill To labels', () => {
     render(<PartyInfo from={mockFrom} client={mockClient} />)
@@ -25,17 +15,17 @@ describe('PartyInfo', () => {
 
   it('renders sender name', () => {
     render(<PartyInfo from={mockFrom} client={mockClient} />)
-    expect(screen.getByText('Sender Company')).toBeDefined()
+    expect(screen.getByText(mockFrom.name)).toBeDefined()
   })
 
   it('renders client name', () => {
     render(<PartyInfo from={mockFrom} client={mockClient} />)
-    expect(screen.getByText('Client Name')).toBeDefined()
+    expect(screen.getByText(mockClient.name)).toBeDefined()
   })
 
   it('renders physical addresses', () => {
     render(<PartyInfo from={mockFrom} client={mockClient} />)
-    expect(screen.getByText(/123 Sender St/)).toBeDefined()
-    expect(screen.getByText(/123 Street/)).toBeDefined()
+    expect(screen.getByText(/123 Tech Street/)).toBeDefined()
+    expect(screen.getByText(/456 Business Ave/)).toBeDefined()
   })
 })

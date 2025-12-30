@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { InvoicePaper } from '../ui/InvoicePaper'
-import type { InvoiceSchemaV1 } from '@/entities/invoice'
+import type { Invoice } from '@/entities/invoice'
 
 describe('InvoicePaper Preview Mode', () => {
   it('renders placeholder for empty items', () => {
@@ -10,7 +10,7 @@ describe('InvoicePaper Preview Mode', () => {
       client: { name: 'Bob', walletAddress: '0x2' },
       items: [],
       currency: 'USDC',
-    } as unknown as InvoiceSchemaV1
+    } as unknown as Invoice
     render(<InvoicePaper data={emptyData} />)
     expect(screen.getByText(/No line items/i)).toBeDefined()
   })
@@ -19,7 +19,7 @@ describe('InvoicePaper Preview Mode', () => {
     const minimalData = {
       from: { name: 'Alice' },
       client: { name: 'Bob' },
-    } as unknown as InvoiceSchemaV1
+    } as unknown as Invoice
     render(<InvoicePaper data={minimalData} />)
     expect(screen.getByText(/Alice/i)).toBeDefined()
     expect(screen.getByText(/Bob/i)).toBeDefined()
@@ -31,7 +31,7 @@ describe('InvoicePaper Preview Mode', () => {
     const minimalData = {
       from: { name: 'Alice' },
       client: { name: 'Bob' },
-    } as unknown as InvoiceSchemaV1
+    } as unknown as Invoice
     render(<InvoicePaper data={minimalData} />)
     expect(screen.getByText(/Thank you for your business/i)).toBeDefined()
   })
