@@ -50,13 +50,7 @@ export { useReducedMotion } from './hooks/use-reduced-motion'
 export type { NetworkTheme } from './constants/brand-tokens'
 
 // Critical path inline SVG icons (above-fold optimization)
-export {
-  ArrowRightIcon,
-  LockIcon,
-  ServerOffIcon,
-  GlobeIcon,
-  GithubIcon,
-} from './icons'
+export { ArrowRightIcon, LockIcon, ServerOffIcon, GlobeIcon, GithubIcon } from './icons'
 
 // Popover (existing)
 export { Popover, PopoverTrigger, PopoverContent } from './popover'
@@ -80,6 +74,9 @@ export { Textarea, type TextareaProps } from './textarea'
 
 // Badge (new)
 export { Badge, badgeVariants, type BadgeProps } from './badge'
+
+// CopyButton (feature: 014-invoice-paper-widget)
+export { CopyButton, copyButtonVariants, type CopyButtonProps } from './copy-button'
 
 // Typography (new)
 export {

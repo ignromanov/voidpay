@@ -43,7 +43,8 @@ describe('FooterCta', () => {
 
       const heading = document.querySelector('h2')
       expect(heading).toBeInTheDocument()
-      expect(screen.getByText(/Your Invoice.*Your Link/i)).toBeInTheDocument()
+      expect(screen.getByText(/Your Invoice\./i)).toBeInTheDocument()
+      expect(screen.getByText(/Your Link\./i)).toBeInTheDocument()
     })
 
     it('should render aurora text "Your Rules"', () => {

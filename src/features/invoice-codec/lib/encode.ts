@@ -1,4 +1,5 @@
 import type { InvoiceSchemaV1 } from '@/entities/invoice'
+import { getAppBaseUrl } from '@/shared/config'
 import { compress } from '@/shared/lib/compression'
 
 /**
@@ -24,8 +25,8 @@ export const encodeInvoice = (invoice: InvoiceSchemaV1): string => {
 export const generateInvoiceUrl = (invoice: InvoiceSchemaV1, baseUrl?: string): string => {
   const compressed = encodeInvoice(invoice)
 
-  // Use provided baseUrl, or env variable, or fallback to default
-  const appUrl = baseUrl || process.env.NEXT_PUBLIC_APP_URL || 'https://voidpay.com'
+  // Use provided baseUrl, or fallback to centralized config
+  const appUrl = baseUrl || getAppBaseUrl()
   const url = new URL(`${appUrl}/pay`)
   url.searchParams.set('d', compressed)
 

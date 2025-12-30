@@ -6,6 +6,7 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 
+import { APP_URLS, SOCIAL_URLS } from '@/shared/config'
 import { LandingContent, FAQ_ITEMS } from '@/widgets/landing'
 
 // JSON-LD: FAQPage schema for rich snippets
@@ -27,10 +28,10 @@ const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'VoidPay',
-  url: 'https://voidpay.xyz',
-  logo: 'https://voidpay.xyz/logo.png',
+  url: APP_URLS.base,
+  logo: APP_URLS.logo,
   description: 'Privacy-first, stateless crypto invoicing platform',
-  sameAs: ['https://github.com/ignromanov/voidpay', 'https://twitter.com/voidpay'],
+  sameAs: [SOCIAL_URLS.github, SOCIAL_URLS.twitter],
 }
 
 // JSON-LD: SoftwareApplication schema
@@ -71,7 +72,7 @@ export const metadata: Metadata = {
     title: 'VoidPay - Stateless Crypto Invoicing',
     description:
       'Create crypto invoices without accounts or servers. Privacy-first, zero-backend invoicing.',
-    url: 'https://voidpay.xyz',
+    url: APP_URLS.base,
     siteName: 'VoidPay',
     type: 'website',
     locale: 'en_US',
@@ -87,7 +88,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: {
-    canonical: 'https://voidpay.xyz',
+    canonical: APP_URLS.base,
   },
 }
 

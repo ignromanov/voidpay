@@ -6,9 +6,7 @@
  */
 
 // Types (from model layer)
-export type {
-  InvoiceSchemaV1,
-} from './model/schema'
+export type { InvoiceSchemaV1 } from './model/schema'
 
 export type {
   InvoiceDraft,
@@ -24,3 +22,7 @@ export { invoiceSchema } from './lib/validation'
 // Constants - re-export for backwards compatibility
 // Note: ETH_ADDRESS_REGEX now lives in shared/lib/validation
 export { ETH_ADDRESS_REGEX, NUMERIC_STRING_REGEX } from './lib/constants'
+
+// Invoice view store (from model layer)
+export { useInvoiceViewStore } from './model/viewed-invoice-store'
+export type { ViewedInvoice, ViewedInvoiceStatus } from './model/viewed-invoice-store'

@@ -21,9 +21,15 @@ export const CREATOR_STORE_KEY = `${STORAGE_NAMESPACE}:creator` as const
 export const PAYER_STORE_KEY = `${STORAGE_NAMESPACE}:payer` as const
 
 /**
+ * Invoice view store key (viewed invoices history)
+ */
+export const INVOICE_VIEW_STORE_KEY = `${STORAGE_NAMESPACE}:invoices` as const
+
+/**
  * All storage keys used by the application
  */
 export const STORAGE_KEYS = {
   CREATOR: CREATOR_STORE_KEY,
   PAYER: PAYER_STORE_KEY,
+  INVOICES: INVOICE_VIEW_STORE_KEY,
 } as const

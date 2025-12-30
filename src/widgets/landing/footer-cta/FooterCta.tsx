@@ -10,24 +10,22 @@
 import { Github, Twitter } from 'lucide-react'
 import Link from 'next/link'
 
+import { SOCIAL_URLS } from '@/shared/config'
 import { AuroraText, Button, Heading, Text } from '@/shared/ui'
-
-// Placeholder URLs - to be replaced with actual links
-const SOCIAL_LINKS = {
-  github: 'https://github.com/voidpay',
-  twitter: 'https://twitter.com/voidpay',
-} as const
 
 export function FooterCta() {
   return (
     <section
-      className="relative border-t border-zinc-800/50 bg-gradient-to-b from-transparent to-violet-950/30 px-6 py-40"
+      className="relative border-t border-zinc-800/50 bg-gradient-to-b from-transparent to-violet-950/30 px-6 pt-40 pb-20"
       aria-labelledby="footer-cta-heading"
     >
       <div className="mx-auto max-w-4xl space-y-10 text-center">
         <Heading variant="hero" as="h2" id="footer-cta-heading" className="text-4xl md:text-6xl">
-          Your Invoice. Your Link.{' '}
-          <AuroraText className="drop-shadow-2xl">Your Rules.</AuroraText>
+          <span className="whitespace-nowrap">Your Invoice.</span>
+          <br />
+          <span className="whitespace-nowrap">Your Link.</span>
+          <br />
+          <AuroraText className="whitespace-nowrap drop-shadow-2xl">Your Rules.</AuroraText>
         </Heading>
 
         <Text variant="large" className="mx-auto max-w-xl text-zinc-400">
@@ -44,15 +42,13 @@ export function FooterCta() {
               Get Paid Now
             </Button>
           </Link>
-          <span className="mt-3 text-sm text-zinc-400">
-            No signup. No fees. Just results.
-          </span>
+          <span className="mt-3 text-sm text-zinc-400">No signup. No fees. Just results.</span>
         </div>
 
         {/* Social links */}
         <div className="flex items-center justify-center gap-6 pt-8">
           <a
-            href={SOCIAL_LINKS.github}
+            href={SOCIAL_URLS.githubOrg}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub"
@@ -61,7 +57,7 @@ export function FooterCta() {
             <Github className="h-6 w-6" />
           </a>
           <a
-            href={SOCIAL_LINKS.twitter}
+            href={SOCIAL_URLS.twitter}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Twitter"

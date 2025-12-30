@@ -54,3 +54,40 @@ export const NETWORK_CONFIG: NetworkConfig[] = [
     colorClass: 'text-purple-400',
   },
 ]
+
+/**
+ * Network badge configuration with brand colors
+ */
+export const NETWORK_BADGES: Record<
+  number,
+  {
+    variant: 'default' | 'secondary' | 'outline' | 'destructive'
+    /** Tailwind classes for network-specific coloring */
+    colorClass: string
+  }
+> = {
+  1: { variant: 'secondary', colorClass: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
+  42161: { variant: 'default', colorClass: 'bg-blue-100 text-blue-700 border-blue-200' },
+  10: { variant: 'destructive', colorClass: 'bg-red-100 text-red-700 border-red-200' },
+  137: { variant: 'outline', colorClass: 'bg-purple-100 text-purple-700 border-purple-200' },
+}
+
+/**
+ * Block explorers for each chain
+ */
+export const BLOCK_EXPLORERS: Record<number, { name: string; url: string }> = {
+  1: { name: 'Etherscan', url: 'https://etherscan.io' },
+  42161: { name: 'Arbiscan', url: 'https://arbiscan.io' },
+  10: { name: 'Optimism Etherscan', url: 'https://optimistic.etherscan.io' },
+  137: { name: 'Polygonscan', url: 'https://polygonscan.com' },
+}
+
+/**
+ * Network-specific shadows for the invoice paper
+ */
+export const NETWORK_SHADOWS: Record<number, string> = {
+  1: 'shadow-indigo-500/20',
+  42161: 'shadow-blue-500/20',
+  10: 'shadow-red-500/20',
+  137: 'shadow-purple-500/20',
+}

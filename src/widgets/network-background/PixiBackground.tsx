@@ -87,31 +87,34 @@ export function PixiBackground({ theme = 'ethereum', className }: PixiBackground
   const initPixi = useCallback(async () => {
     if (!containerRef.current || appRef.current) return
 
-    const app = new Application()
+    try {
+      const app = new Application()
 
-    await app.init({
-      resizeTo: window,
-      backgroundAlpha: 0,
-      antialias: true,
-      resolution: Math.min(window.devicePixelRatio, PIXI_CONFIG.MAX_RESOLUTION),
-      autoDensity: true,
-      preference: PIXI_CONFIG.PREFERENCE,
-    })
+      await app.init({
+        resizeTo: window,
+        backgroundAlpha: 0,
+        antialias: true,
+        resolution: Math.min(window.devicePixelRatio, PIXI_CONFIG.MAX_RESOLUTION),
+        autoDensity: true,
+        preference: PIXI_CONFIG.PREFERENCE,
+      })
 
-    app.canvas.style.position = 'absolute'
-    app.canvas.style.top = '0'
-    app.canvas.style.left = '0'
-    app.canvas.style.width = '100%'
-    app.canvas.style.height = '100%'
+      // Configure ticker FPS for GPU optimization
+      app.ticker.maxFPS = PIXI_CONFIG.MAX_FPS
+      app.ticker.minFPS = PIXI_CONFIG.MIN_FPS
 
-    // Configure ticker FPS for GPU optimization
-    app.ticker.maxFPS = PIXI_CONFIG.MAX_FPS
-    app.ticker.minFPS = PIXI_CONFIG.MIN_FPS
+      containerRef.current.appendChild(app.canvas)
+      appRef.current = app
 
-    containerRef.current.appendChild(app.canvas)
-    appRef.current = app
-
-    return app
+      return app
+    } catch (error) {
+      // WebGL initialization can fail on older devices or browsers with GPU issues
+      // Gracefully degrade to CSS-only background (no shapes, just noise texture)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[PixiBackground] WebGL initialization failed:', error)
+      }
+      return null
+    }
   }, [])
 
   // Create and position shapes
@@ -189,9 +192,21 @@ export function PixiBackground({ theme = 'ethereum', className }: PixiBackground
     }
     window.addEventListener('resize', handleResize)
 
+    // Pause animations when tab is hidden (saves GPU when in background)
+    const handleVisibilityChange = () => {
+      if (!appRef.current) return
+      if (document.hidden) {
+        appRef.current.ticker.stop()
+      } else {
+        appRef.current.ticker.start()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
     return () => {
       mounted = false
       window.removeEventListener('resize', handleResize)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
 
       if (appRef.current) {
         if (tickerCallbackRef.current) {
