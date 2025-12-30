@@ -11,4 +11,9 @@ export {
   ServerOffIcon,
   GlobeIcon,
   GithubIcon,
+  MailIcon,
+  PhoneIcon,
+  MapPinIcon,
+  WalletIcon,
+  HashIcon,
 } from './critical-icons'

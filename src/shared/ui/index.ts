@@ -50,7 +50,18 @@ export { useReducedMotion } from './hooks/use-reduced-motion'
 export type { NetworkTheme } from './constants/brand-tokens'
 
 // Critical path inline SVG icons (above-fold optimization)
-export { ArrowRightIcon, LockIcon, ServerOffIcon, GlobeIcon, GithubIcon } from './icons'
+export {
+  ArrowRightIcon,
+  LockIcon,
+  ServerOffIcon,
+  GlobeIcon,
+  GithubIcon,
+  MailIcon,
+  PhoneIcon,
+  MapPinIcon,
+  WalletIcon,
+  HashIcon,
+} from './icons'
 
 // Popover (existing)
 export { Popover, PopoverTrigger, PopoverContent } from './popover'

@@ -19,9 +19,11 @@ const mockInvoiceData: Partial<Invoice> = {
     name: 'Acme Corp',
     walletAddress: '0x1234567890abcdef1234567890abcdef12345678',
     email: 'billing@acme.com',
+    taxId: 'US12-3456789',
   },
   client: {
     name: 'Client Inc',
+    taxId: 'DE987654321',
   },
   items: [{ description: 'Development services', quantity: 10, rate: '100' }],
 }
