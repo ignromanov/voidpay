@@ -36,6 +36,7 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
         email: 'billing@etherscale.io',
         physicalAddress: '548 Market St, Suite 23000\nSan Francisco, CA 94104\nUSA',
         phone: '+1 415 555 0142',
+        taxId: 'US 12-3456789',
       },
       client: {
         name: 'DeFi Frontiers DAO',
@@ -43,6 +44,7 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
         email: 'treasury@defifrontiers.xyz',
         physicalAddress: 'c/o Legal Entity\n123 Blockchain Ave\nZug, Switzerland',
         phone: '+41 41 555 0198',
+        taxId: 'CHE-123.456.789',
       },
       items: [
         { description: 'Smart Contract Security Audit (40 hours)', quantity: 40, rate: '0.125' },
@@ -117,6 +119,7 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
         email: 'grants@optimisticbuilders.org',
         physicalAddress: '1 Public Goods Way\nOptimism City, OP 10001\nDecentralized',
         phone: '+1 800 OPT GOOD',
+        taxId: 'US 55-1234567',
       },
       client: {
         name: 'RetroPGF Foundation',
@@ -157,6 +160,7 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
         email: 'billing@polymarketanalytics.com',
         physicalAddress: '42 Data Center Road\nMumbai, Maharashtra 400001\nIndia',
         phone: '+91 22 5555 0456',
+        taxId: 'IN GSTIN29ABCDE1234F1Z5',
       },
       client: {
         name: 'Prediction Protocol DAO',
@@ -164,6 +168,7 @@ export const DEMO_INVOICES: ViewedInvoice[] = [
         email: 'finance@predictiondao.io',
         physicalAddress: 'DAO Multisig\nGlobal Decentralized Network',
         phone: '+44 20 5555 0789',
+        taxId: 'GB 123456789',
       },
       items: [
         { description: 'Market Data Feed - Premium Tier (Q1)', quantity: 3, rate: '1500' },
