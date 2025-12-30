@@ -103,7 +103,12 @@ export function PixiBackground({ theme = 'ethereum', className }: PixiBackground
       app.ticker.maxFPS = PIXI_CONFIG.MAX_FPS
       app.ticker.minFPS = PIXI_CONFIG.MIN_FPS
 
-      containerRef.current.appendChild(app.canvas)
+      // Insert canvas before noise div for correct z-order
+      if (containerRef.current.firstChild) {
+        containerRef.current.insertBefore(app.canvas, containerRef.current.firstChild)
+      } else {
+        containerRef.current.appendChild(app.canvas)
+      }
       appRef.current = app
 
       return app
@@ -179,6 +184,9 @@ export function PixiBackground({ theme = 'ethereum', className }: PixiBackground
         // Reduced motion: set static opacity (no animation)
         shapesRef.current.forEach((shape) => setStaticPosition(shape))
       }
+
+      // Force initial render to display shapes immediately
+      app.render()
     }
 
     setup()
