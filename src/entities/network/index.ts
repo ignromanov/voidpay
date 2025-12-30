@@ -6,7 +6,7 @@
  */
 
 // Network chain configuration (from config layer)
-export { NETWORKS } from './config/networks'
+export { NETWORKS, NETWORK_CODES, NETWORK_CODES_REVERSE } from './config/networks'
 export type { NetworkId } from './config/networks'
 
 // Network UI configuration (from config layer)

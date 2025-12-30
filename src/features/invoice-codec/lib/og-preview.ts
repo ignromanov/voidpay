@@ -1,21 +1,5 @@
 import type { Invoice } from '@/entities/invoice'
-
-/**
- * Network chain ID to short code mapping for compact URLs.
- */
-const NETWORK_CODES: Record<number, string> = {
-  1: 'eth',
-  42161: 'arb',
-  10: 'op',
-  137: 'poly',
-}
-
-const NETWORK_CODES_REVERSE: Record<string, number> = {
-  eth: 1,
-  arb: 42161,
-  op: 10,
-  poly: 137,
-}
+import { NETWORK_CODES, NETWORK_CODES_REVERSE, type NetworkId } from '@/entities/network'
 
 /**
  * OG Preview data structure for social sharing.
@@ -64,7 +48,7 @@ export function encodeOGPreview(invoice: Invoice): string {
   parts.push(invoice.currency)
 
   // 4. Network short code
-  const networkCode = NETWORK_CODES[invoice.networkId] ?? String(invoice.networkId)
+  const networkCode = NETWORK_CODES[invoice.networkId as NetworkId] ?? String(invoice.networkId)
   parts.push(networkCode)
 
   // 5. Sender name (optional, truncate to 20 chars, URL-safe)
