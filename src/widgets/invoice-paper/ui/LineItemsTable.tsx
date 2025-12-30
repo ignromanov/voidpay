@@ -12,7 +12,7 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items }) => {
       <div className="-mx-4 overflow-x-auto px-4">
         <table className="w-full min-w-[500px] border-collapse text-left">
           <thead>
-            <tr className="border-b-2 border-zinc-900">
+            <tr className="border-b-2 border-zinc-700">
               <th className="w-8 py-3 text-xs font-bold tracking-widest text-black uppercase">#</th>
               <th className="w-1/2 py-3 text-xs font-bold tracking-widest text-black uppercase">
                 Description

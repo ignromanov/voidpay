@@ -30,9 +30,9 @@ describe('PaperTotals', () => {
     expect(screen.getByText('1,050.00')).toBeDefined()
   })
 
-  it('renders payment ID with magic dust', () => {
+  it('renders unique amount with magic dust', () => {
     render(<PaperTotals {...baseProps} />)
-    expect(screen.getByText(/Payment ID/i)).toBeDefined()
+    expect(screen.getByText(/Unique Amount/i)).toBeDefined()
     expect(screen.getByText(/1050\.000/)).toBeDefined()
   })
 

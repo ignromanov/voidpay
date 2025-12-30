@@ -1,13 +1,15 @@
-import { InvoiceSchemaV1 } from '@/entities/invoice'
+import { InvoiceSchemaV1, ViewedInvoiceStatus as InvoiceStatus } from '@/entities/invoice'
 
 /**
  * Visual status of the invoice document
+ * Re-exported from entities/invoice for consistency across the app.
+ *
  * - draft: Invoice being created (editable, not yet generated)
  * - pending: Invoice created, awaiting payment
  * - paid: Payment confirmed on-chain
  * - overdue: Payment deadline passed
  */
-export type InvoiceStatus = 'draft' | 'pending' | 'paid' | 'overdue'
+export type { InvoiceStatus }
 
 /**
  * Invoice paper display variant

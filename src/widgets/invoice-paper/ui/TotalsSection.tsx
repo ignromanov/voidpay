@@ -11,7 +11,7 @@ interface TotalsSectionProps {
   taxPercent?: string | undefined
   /** Discount percentage label (e.g., "5%") */
   discountPercent?: string | undefined
-  /** Whether to show the magic dust payment ID */
+  /** Whether to show the unique amount (magic dust) */
   showMagicDust?: boolean
 }
 
@@ -56,7 +56,7 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
           )}
         </div>
 
-        <div className="my-2 h-px bg-black"></div>
+        <div className="my-2 border-t border-zinc-200" />
 
         <div className="flex items-baseline justify-between gap-4">
           <span className="text-lg font-bold tracking-tight text-black">Total</span>
@@ -69,8 +69,11 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
         </div>
 
         {showMagicDust && totals.magicDust > 0 && (
-          <div className="mt-1 text-right" title="Unique micro-amount for payment identification">
-            <span className="text-[9px] tracking-wide text-zinc-400 uppercase">Payment ID: </span>
+          <div
+            className="-mt-0.5 text-right"
+            title="Unique micro-amount for payment identification"
+          >
+            <span className="text-[9px] text-zinc-400">Unique Amount: </span>
             <span className="font-mono text-[10px] text-zinc-500 tabular-nums">
               {totals.total.toFixed(6)}
             </span>

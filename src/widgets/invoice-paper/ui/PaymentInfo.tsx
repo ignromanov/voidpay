@@ -7,7 +7,7 @@ import { getExplorerUrl, getNetworkName } from '@/entities/network'
 import { APP_URLS } from '@/shared/config'
 import { cn } from '@/shared/lib/utils'
 import { CopyButton } from '@/shared/ui'
-import { InvoicePaperVariant } from '../types'
+import { InvoicePaperVariant, InvoiceStatus } from '../types'
 
 interface PaymentInfoProps {
   /** Network chain ID */
@@ -29,7 +29,7 @@ interface PaymentInfoProps {
   /** Display variant - 'full' enables interactive elements */
   variant?: InvoicePaperVariant
   /** Invoice status - used to determine if QR should be hidden */
-  status?: 'pending' | 'paid' | 'overdue' | 'draft' | undefined
+  status?: InvoiceStatus | undefined
 }
 
 export const PaymentInfo = React.memo<PaymentInfoProps>(

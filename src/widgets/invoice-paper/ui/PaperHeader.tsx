@@ -45,7 +45,7 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
     }, [hasLink, invoiceUrl])
 
     return (
-      <header className="relative flex items-start justify-between gap-4 border-b-2 border-zinc-900 pb-6">
+      <header className="relative flex items-start justify-between gap-4 border-b-2 border-zinc-700 pb-6">
         {/* Large INVOICE title with ID - Left */}
         <div className="flex min-w-0 items-center gap-2">
           <h1
