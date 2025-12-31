@@ -1,3 +1,6 @@
+// Print styles for invoice (FSD: widget-scoped)
+import './invoice-paper.css'
+
 export * from './types'
 export { InvoicePaper } from './ui/InvoicePaper'
 export { InvoicePreviewModal, type InvoicePreviewModalProps } from './ui/InvoicePreviewModal'
@@ -6,6 +9,7 @@ export {
   useInvoiceScale,
   INVOICE_BASE_WIDTH,
   INVOICE_BASE_HEIGHT,
+  type ScalePreset,
   type UseInvoiceScaleOptions,
   type UseInvoiceScaleResult,
 } from './lib/use-invoice-scale'

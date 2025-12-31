@@ -21,6 +21,7 @@ const config = [
       '**/*.min.js',
       '**/.claude/',
       '**/next-env.d.ts',
+      '**/.tsbuild/',
       'worktrees/**',
       'assets/**',
       'specs/**',

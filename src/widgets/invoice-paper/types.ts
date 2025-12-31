@@ -37,13 +37,6 @@ interface InvoicePaperBaseProps {
   variant?: InvoicePaperVariant | undefined
 
   /**
-   * Enable responsive scaling for mobile devices.
-   * When true, the invoice scales down on smaller screens.
-   * @default false
-   */
-  responsive?: boolean | undefined
-
-  /**
    * Whether to show the QR code in the footer.
    * @default true
    */

@@ -8,7 +8,7 @@ interface LineItemsTableProps {
 
 export const LineItemsTable = React.memo<LineItemsTableProps>(({ items }) => {
   return (
-    <section className="flex-1 print:flex-none">
+    <section className="flex-1">
       <div className="-mx-4 overflow-x-auto px-4">
         <table className="w-full min-w-[500px] border-collapse text-left">
           <thead>

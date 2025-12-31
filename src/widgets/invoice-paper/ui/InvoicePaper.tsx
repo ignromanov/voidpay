@@ -75,7 +75,6 @@ export const InvoicePaper = React.memo(
         txHash,
         txHashValidated = true,
         variant = 'default',
-        responsive = false,
         showQR = true,
         showTexture = true,
         showGlow = false,
@@ -133,16 +132,12 @@ export const InvoicePaper = React.memo(
             if (containerRef) containerRef.current = node
           }}
           className={cn(
-            // Base styles - responsive by default with aspect-ratio
+            // Fixed A4 dimensions (794×1123px) — scaling handled by ScaledInvoicePreview
             // cursor-default on paper background, content container overrides for variant="full"
-            'group/paper relative flex aspect-[794/1123] w-full max-w-[794px] origin-top cursor-default flex-col overflow-hidden bg-white text-black transition-shadow duration-500',
-            'shadow-2xl print:aspect-auto print:h-auto print:min-h-0 print:w-full print:max-w-none print:scale-100 print:shadow-none',
-            // Print class for visibility control (see globals.css @media print)
-            'print-invoice',
+            'group/paper relative flex h-[1123px] min-h-[1123px] w-[794px] min-w-[794px] cursor-default flex-col overflow-hidden bg-white text-black transition-shadow duration-500',
+            // Print overrides — full size to enable flex layout (mt-auto needs height constraint)
+            'shadow-2xl print:!h-full print:!min-h-0 print:!w-full print:!max-w-none print:!min-w-0 print:shadow-none print:transition-none',
             shadowClass,
-            // Legacy scaling support (optional)
-            !responsive && 'h-[1123px] min-h-[1123px] w-[794px] min-w-[794px]',
-            responsive && 'origin-top-left',
             // Only apply className when no glow wrapper
             !showGlow && className
           )}
@@ -222,7 +217,7 @@ export const InvoicePaper = React.memo(
       // Wrap with glow effect if enabled
       if (showGlow && glowConfig) {
         return (
-          <div className={cn('relative', className)}>
+          <div className={cn('relative print:!flex print:!h-full print:!flex-col', className)}>
             {/* Network-colored glow effect */}
             <div
               className={cn(

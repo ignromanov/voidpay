@@ -86,15 +86,14 @@ export function CreateWorkspace() {
         {decodeError && <UrlErrorBanner error={decodeError} />}
 
         {/* Preview container — fills remaining space, centers invoice */}
-        <div className="relative flex flex-1 items-center justify-center overflow-visible print:block print:overflow-visible">
-          {/* Screen version: scaled preview */}
+        <div className="relative flex flex-1 items-center justify-center overflow-visible print:hidden">
+          {/* Screen-only scaled preview (hidden during print to avoid flicker) */}
           <ScaledInvoicePreview
-            containerHeight="calc(100vh - 140px)"
+            preset="editor"
             onClick={handlePreviewClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            scaleOptions={{ maxScale: 0.85 }}
-            className="cursor-zoom-in print:hidden"
+            className="cursor-zoom-in"
             overlay={
               invoiceData && (
                 <div
@@ -117,25 +116,18 @@ export function CreateWorkspace() {
             <InvoicePaper data={invoiceData} status="draft" showGlow />
           </ScaledInvoicePreview>
 
-          {/* Print version: full-size invoice without scaling */}
-          <div className="print-invoice hidden print:block">
-            <InvoicePaper
-              data={invoiceData}
-              status="draft"
-              variant="print"
-              showGlow={false}
-              showTexture={false}
-              responsive
-            />
-          </div>
-
-          {/* Floating Live Preview badge — hovering above invoice (hidden on print) */}
-          <div className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2 print:hidden">
+          {/* Floating Live Preview badge */}
+          <div className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2">
             <div className="flex items-center gap-2 rounded-full border border-zinc-600/50 bg-zinc-800/80 px-3 py-1.5 font-mono text-[10px] whitespace-nowrap text-zinc-300 shadow-xl backdrop-blur-md">
               <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
               Live Preview
             </div>
           </div>
+        </div>
+
+        {/* Print-only invoice (hidden on screen, full-size for print) */}
+        <div className="invoice-print-target hidden print:block">
+          <InvoicePaper data={invoiceData} status="draft" />
         </div>
       </div>
     </>

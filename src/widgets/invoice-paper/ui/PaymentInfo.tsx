@@ -91,7 +91,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
           {shouldShowQR && (
             <div className="flex flex-col items-center justify-center gap-1 border-r border-zinc-200 p-3">
               <div
-                className="flex aspect-square w-24 items-center justify-center rounded border border-zinc-200 bg-white p-1 print:w-32"
+                className="flex aspect-square w-24 items-center justify-center rounded border border-zinc-200 bg-white p-1"
                 role="img"
                 aria-label="QR code linking to this invoice"
                 title={`QR Code: ${qrUrl}`}

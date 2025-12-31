@@ -2,13 +2,19 @@
 
 import {
   forwardRef,
+  useCallback,
   type ReactNode,
   type MouseEventHandler,
   type KeyboardEvent,
   type MouseEvent,
 } from 'react'
 import { cn } from '@/shared/lib/utils'
-import { useInvoiceScale, type UseInvoiceScaleOptions } from '../lib/use-invoice-scale'
+import {
+  useInvoiceScale,
+  PRESET_CONFIGS,
+  type ScalePreset,
+  type UseInvoiceScaleOptions,
+} from '../lib/use-invoice-scale'
 
 /**
  * Union type for click handlers that support both mouse and keyboard activation.
@@ -18,38 +24,69 @@ import { useInvoiceScale, type UseInvoiceScaleOptions } from '../lib/use-invoice
 type ClickHandler = MouseEventHandler<HTMLDivElement> | (() => void)
 
 export interface ScaledInvoicePreviewProps {
-  /** Invoice content (will be scaled) */
+  /** Invoice content (will be scaled on screen, full-size on print) */
   children: ReactNode
-  /** Overlay content (NOT scaled, positioned absolute) */
+
+  /** Overlay content (NOT scaled, positioned absolute, hidden on print) */
   overlay?: ReactNode
+
   /**
-   * Container height for scale calculation.
-   * Can be CSS value like '75vh', '600px', or number (pixels).
-   * @default '75vh'
+   * Preset configuration for common use cases (recommended).
+   * - demo: Landing page (fit both dimensions)
+   * - editor: Create page (fit, maxScale 0.85)
+   * - modal: Fullscreen modal (width-only scaling, allow scroll)
    */
-  containerHeight?: string | number
+  preset?: ScalePreset
+
   /**
-   * Options for dynamic scaling
+   * Custom scale options (alternative to preset).
+   * Use when you need fine-grained control.
+   * Ignored when preset is provided.
    */
-  scaleOptions?: UseInvoiceScaleOptions
+  scaleOptions?: Omit<UseInvoiceScaleOptions, 'preset'>
+
+  /**
+   * Enable print mode — adds .invoice-print-target class.
+   * When true, this container becomes the printable invoice.
+   * @default false
+   */
+  printable?: boolean
+
   /**
    * Click handler supporting both mouse events and keyboard activation.
    * When triggered via keyboard (Enter/Space), called without event argument.
    * Cursor style should be controlled via className.
    */
   onClick?: ClickHandler
+
   onMouseEnter?: MouseEventHandler<HTMLDivElement>
   onMouseLeave?: MouseEventHandler<HTMLDivElement>
+
   className?: string
 }
 
+/**
+ * Container for scaled invoice preview.
+ *
+ * Handles responsive scaling of InvoicePaper based on container size.
+ * Uses CSS transform for smooth scaling without layout thrashing.
+ *
+ * With printable=true, becomes the print target (no scaling in print).
+ *
+ * @example
+ * // Screen + print in one component
+ * <ScaledInvoicePreview preset="editor" printable>
+ *   <InvoicePaper data={data} />
+ * </ScaledInvoicePreview>
+ */
 export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePreviewProps>(
   function ScaledInvoicePreview(
     {
       children,
       overlay,
-      containerHeight = '75vh',
+      preset,
       scaleOptions,
+      printable = false,
       onClick,
       onMouseEnter,
       onMouseLeave,
@@ -57,24 +94,28 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
     },
     ref
   ) {
-    const { containerRef, scale, scaledWidth, scaledHeight } = useInvoiceScale(scaleOptions)
+    // Build hook options: preset takes precedence over scaleOptions
+    const hookOptions: UseInvoiceScaleOptions = preset ? { preset } : (scaleOptions ?? {})
 
-    // Merge refs if external ref provided
-    const setRefs = (node: HTMLDivElement | null) => {
-      // Set internal ref
-      if (containerRef && 'current' in containerRef) {
-        ;(containerRef as React.MutableRefObject<HTMLDivElement | null>).current = node
-      }
-      // Set external ref
-      if (typeof ref === 'function') {
-        ref(node)
-      } else if (ref) {
-        ref.current = node
-      }
-    }
+    const { setContainerRef, scale, scaledWidth, scaledHeight } = useInvoiceScale(hookOptions)
 
-    const heightStyle =
-      typeof containerHeight === 'number' ? `${containerHeight}px` : containerHeight
+    // Get container height class from preset (or empty if using scaleOptions)
+    const containerHeightClass = preset ? PRESET_CONFIGS[preset].containerHeightClass : ''
+
+    // Merge callback ref with forwarded ref
+    const mergedRef = useCallback(
+      (node: HTMLDivElement | null) => {
+        // Set internal callback ref (for hook)
+        setContainerRef(node)
+        // Set external ref
+        if (typeof ref === 'function') {
+          ref(node)
+        } else if (ref) {
+          ref.current = node
+        }
+      },
+      [setContainerRef, ref]
+    )
 
     // Keyboard handler for accessibility (Enter/Space triggers click)
     const handleKeyDown = onClick
@@ -82,7 +123,6 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
             // Call onClick without event for keyboard activation
-            // This avoids unsafe type casting of KeyboardEvent to MouseEvent
             ;(onClick as () => void)()
           }
         }
@@ -97,9 +137,16 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
 
     return (
       <div
-        ref={setRefs}
-        className={cn('relative flex w-full items-center justify-center', className)}
-        style={{ minHeight: heightStyle }}
+        ref={mergedRef}
+        className={cn(
+          // w-full for width, height from preset config
+          'relative flex w-full items-center justify-center',
+          // Preset-specific height class (min-h-[75vh] for demo, h-full for editor/modal)
+          containerHeightClass,
+          // Print: position for print target
+          'print:block print:h-auto',
+          className
+        )}
         onClick={handleClick}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
@@ -109,7 +156,11 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
       >
         {/* Scaled invoice wrapper — overflow-visible for glow effect */}
         <div
-          className="relative overflow-visible rounded-sm transition-[width,height] duration-200 ease-out"
+          className={cn(
+            'relative overflow-visible rounded-sm transition-[width,height] duration-200 ease-out',
+            // Print: reset all sizing/positioning to let invoice-print-target handle layout
+            'print:!static print:!h-auto print:!w-auto print:!overflow-visible print:rounded-none print:transition-none'
+          )}
           style={{
             width: `${scaledWidth}px`,
             height: `${scaledHeight}px`,
@@ -117,15 +168,22 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           }}
         >
           {/* Invoice with CSS scale — origin top-left to align with container */}
+          {/* Print target is HERE so InvoicePaper (article) is direct child */}
           <div
-            className="absolute top-0 left-0 origin-top-left transition-transform duration-200 ease-out"
+            className={cn(
+              'absolute top-0 left-0 origin-top-left transition-transform duration-200 ease-out',
+              // Print: no transform, static positioning, full size
+              'print:static print:!transform-none print:transition-none',
+              // Apply print target class — InvoicePaper is direct child
+              printable && 'invoice-print-target'
+            )}
             style={{ transform: `scale(${scale})` }}
           >
             {children}
           </div>
 
-          {/* Overlay (not scaled, inside invoice bounds) */}
-          {overlay}
+          {/* Overlay (not scaled, inside invoice bounds, hidden on print) */}
+          {overlay && <div className="print:hidden">{overlay}</div>}
         </div>
       </div>
     )

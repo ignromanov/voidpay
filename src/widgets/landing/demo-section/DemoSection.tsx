@@ -79,7 +79,7 @@ export function DemoSection() {
       {/* Invoice container */}
       <div className="relative flex w-full max-w-[1400px] justify-center px-4 pb-10">
         <ScaledInvoicePreview
-          containerHeight="75vh"
+          preset="demo"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           className="shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]"
@@ -93,9 +93,7 @@ export function DemoSection() {
                 className="rounded-full bg-violet-600 px-8 py-4"
                 asChild
               >
-                <Link href={`/create#${currentInvoice.createHash}`}>
-                  Use This Template
-                </Link>
+                <Link href={`/create#${currentInvoice.createHash}`}>Use This Template</Link>
               </Button>
             </div>
           }
