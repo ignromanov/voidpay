@@ -166,7 +166,7 @@ export const InvoicePaper = React.memo(
           ) : (
             <>
               {/* Content Container */}
-              <div className={cn('relative z-10 flex h-full print:h-auto flex-col', VARIANT_STYLES[variant])}>
+              <div className={cn('relative z-10 flex h-full flex-col', VARIANT_STYLES[variant])}>
                 <PaperHeader
                   invoiceId={data.invoiceId ?? ''}
                   iss={data.issuedAt ?? 0}
@@ -184,22 +184,25 @@ export const InvoicePaper = React.memo(
 
                 <LineItemsTable items={items} />
 
-                <PaperTotals
-                  totals={totals}
-                  currency={data.currency ?? ''}
-                  taxPercent={data.tax}
-                  discountPercent={data.discount}
-                  showQR={shouldShowQR}
-                  networkId={data.networkId ?? 1}
-                  senderAddress={from.walletAddress}
-                  tokenAddress={data.tokenAddress}
-                  txHash={txHash}
-                  txHashValidated={txHashValidated}
-                  variant={variant}
-                  status={status}
-                />
+                {/* Bottom section wrapper - mt-auto pushes Totals+Footer to bottom */}
+                <div className="mt-auto">
+                  <PaperTotals
+                    totals={totals}
+                    currency={data.currency ?? ''}
+                    taxPercent={data.tax}
+                    discountPercent={data.discount}
+                    showQR={shouldShowQR}
+                    networkId={data.networkId ?? 1}
+                    senderAddress={from.walletAddress}
+                    tokenAddress={data.tokenAddress}
+                    txHash={txHash}
+                    txHashValidated={txHashValidated}
+                    variant={variant}
+                    status={status}
+                  />
 
-                <PaperFooter notes={data.notes} />
+                  <PaperFooter notes={data.notes} />
+                </div>
               </div>
 
               <Watermark status={status} date={paidDate} />

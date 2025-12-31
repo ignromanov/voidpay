@@ -162,11 +162,15 @@
     left: 0 !important;
     top: 0 !important;
     width: 100% !important;
-    height: auto !important;
+    /* A4 height (297mm) minus page margins (10mm × 2) = 277mm */
+    height: calc(297mm - 20mm) !important;
     max-width: none !important;
     transform: none !important;
     box-shadow: none !important;
     page-break-inside: avoid;
+    /* Ensure flexbox works for sticky footer */
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   /* Remove backgrounds and decorations */
