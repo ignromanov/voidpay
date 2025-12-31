@@ -4,6 +4,7 @@ import React, { useMemo } from 'react'
 import { X } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogClose, Badge } from '@/shared/ui'
 import { InvoicePaper } from './InvoicePaper'
+import { ScaledInvoicePreview } from './ScaledInvoicePreview'
 import { InvoiceStatus } from '../types'
 import { Invoice } from '@/entities/invoice'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
@@ -69,10 +70,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             <div className="flex items-center gap-2">
               {/* DialogTitle for accessibility — visible per v3 */}
               <DialogTitle className="text-sm font-bold text-white sm:text-base">Document Preview</DialogTitle>
-              <Badge
-                variant="outline"
-                className="hidden border-violet-500/30 text-violet-300 sm:flex"
-              >
+              <Badge variant="outline" className="hidden border-violet-500/30 text-violet-300 sm:flex">
                 Reading Mode
               </Badge>
             </div>
@@ -85,9 +83,19 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             </DialogClose>
           </div>
 
-          {/* Invoice Paper container — horizontal scroll on mobile, centered on desktop */}
-          <div className="flex flex-1 cursor-zoom-out items-start justify-start overflow-auto p-2 sm:justify-center sm:p-4 md:p-8">
-            <div className="origin-top-left scale-[0.48] sm:origin-top sm:scale-[0.6] md:scale-[0.75] lg:scale-100">
+          {/* Invoice Paper container — dynamic x2 scaling with scroll */}
+          <div
+            className="flex flex-1 cursor-zoom-out items-start justify-start overflow-auto p-2 sm:justify-center sm:p-4 md:p-8"
+            onClick={() => onOpenChange(false)}
+          >
+            <ScaledInvoicePreview
+              scaleOptions={{
+                scaleMultiplier: 2,
+                maxScale: 1,
+                heightFraction: 0.85,
+              }}
+              className="shrink-0"
+            >
               <InvoicePaper
                 data={data}
                 status={status}
@@ -96,7 +104,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
                 variant="full"
                 invoiceUrl={invoiceUrl}
               />
-            </div>
+            </ScaledInvoicePreview>
           </div>
         </DialogContent>
       </Dialog>

@@ -11,19 +11,17 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { getNetworkTheme } from '@/entities/network'
 import { Button, Heading, Text } from '@/shared/ui'
-import { InvoicePaper } from '@/widgets/invoice-paper'
+import { InvoicePaper, useInvoiceScale } from '@/widgets/invoice-paper'
 
 import { useNetworkTheme } from '../context/network-theme-context'
 import { DEMO_INVOICES, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
 import { useDemoRotation } from '../hooks/use-demo-rotation'
 
-import { INVOICE_WIDTH } from './constants'
-import { useInvoiceScale } from './hooks/use-invoice-scale'
 import { DemoPagination } from './ui/DemoPagination'
 
 export function DemoSection() {
   const { setTheme } = useNetworkTheme()
-  const { containerRef, scale, scaledHeight } = useInvoiceScale()
+  const { containerRef, scale, scaledWidth, scaledHeight } = useInvoiceScale()
 
   const [isHovered, setIsHovered] = useState(false)
 
@@ -97,7 +95,7 @@ export function DemoSection() {
           className="absolute top-0 left-1/2 z-20 -translate-x-1/2"
           style={
             {
-              '--hover-width': `${INVOICE_WIDTH * scale}px`,
+              '--hover-width': `${scaledWidth}px`,
               '--hover-height': `${scaledHeight}px`,
               width: 'var(--hover-width)',
               height: 'var(--hover-height)',

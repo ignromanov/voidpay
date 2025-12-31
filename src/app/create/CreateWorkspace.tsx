@@ -11,7 +11,7 @@ import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
 import { Text } from '@/shared/ui'
 import { PageLayout } from '@/widgets/network-background'
-import { InvoicePaper, InvoicePreviewModal } from '@/widgets/invoice-paper'
+import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widgets/invoice-paper'
 
 /**
  * CreateWorkspace — Preview-only layout for /create route
@@ -95,52 +95,33 @@ export function CreateWorkspace() {
 
         {/* Preview container — fills remaining space, centers invoice */}
         <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden">
-          {/* Scaled wrapper with explicit dimensions matching scale */}
-          {/* Invoice base: 794×1123px, scaled to fit viewport */}
-          <div
-            className={cn(
-              'relative cursor-zoom-in overflow-hidden rounded-sm',
-              // Width: 794 × scale
-              'w-[357px] sm:w-[397px] md:w-[437px] lg:w-[476px] xl:w-[556px]',
-              // Height: 1123 × scale
-              'h-[505px] sm:h-[562px] md:h-[618px] lg:h-[674px] xl:h-[786px]'
-            )}
+          <ScaledInvoicePreview
             onClick={handlePreviewClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                handlePreviewClick()
-              }
-            }}
-          >
-            {/* Invoice with CSS scale — origin top-left to align with container */}
-            <div className="absolute top-0 left-0 origin-top-left scale-[0.45] sm:scale-[0.5] md:scale-[0.55] lg:scale-[0.6] xl:scale-[0.7]">
-              {invoiceData ? (
-                <InvoicePaper data={invoiceData} status="draft" showGlow />
-              ) : (
-                <EmptyPreviewPlaceholder />
-              )}
-            </div>
-
-            {/* Hover overlay with Expand button */}
-            <div
-              className={cn(
-                'absolute inset-0 z-20 flex items-end justify-end p-3 transition-opacity duration-200',
-                isHovered ? 'opacity-100' : 'opacity-0'
-              )}
-            >
-              <button
-                className="bg-zinc-900/90 backdrop-blur-sm shadow-lg text-[11px] font-medium text-zinc-300 border border-zinc-700/50 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md cursor-pointer transition-colors hover:bg-zinc-800 hover:text-white hover:border-zinc-600"
-                type="button"
+            overlay={
+              <div
+                className={cn(
+                  'absolute inset-0 z-20 flex items-end justify-end p-3 transition-opacity duration-200',
+                  isHovered ? 'opacity-100' : 'opacity-0'
+                )}
               >
-                <Maximize2 className="w-3 h-3" />
-                Expand
-              </button>
-            </div>
-          </div>
+                <button
+                  className="bg-zinc-900/90 backdrop-blur-sm shadow-lg text-[11px] font-medium text-zinc-300 border border-zinc-700/50 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md cursor-pointer transition-colors hover:bg-zinc-800 hover:text-white hover:border-zinc-600"
+                  type="button"
+                >
+                  <Maximize2 className="w-3 h-3" />
+                  Expand
+                </button>
+              </div>
+            }
+          >
+            {invoiceData ? (
+              <InvoicePaper data={invoiceData} status="draft" showGlow />
+            ) : (
+              <EmptyPreviewPlaceholder />
+            )}
+          </ScaledInvoicePreview>
         </div>
       </div>
     </PageLayout>

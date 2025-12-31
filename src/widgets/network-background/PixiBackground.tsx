@@ -191,11 +191,15 @@ export function PixiBackground({ theme = 'ethereum', className }: PixiBackground
 
     setup()
 
+    // Debounced resize handler (300ms) — createShapes is expensive
+    let resizeTimeout: ReturnType<typeof setTimeout> | null = null
     const handleResize = () => {
-      if (appRef.current) {
-        // Use ref for current theme config
-        createShapes(appRef.current, themeConfigRef.current)
-      }
+      if (resizeTimeout) clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(() => {
+        if (appRef.current) {
+          createShapes(appRef.current, themeConfigRef.current)
+        }
+      }, 300)
     }
     window.addEventListener('resize', handleResize)
 
@@ -212,6 +216,7 @@ export function PixiBackground({ theme = 'ethereum', className }: PixiBackground
 
     return () => {
       mounted = false
+      if (resizeTimeout) clearTimeout(resizeTimeout)
       window.removeEventListener('resize', handleResize)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
 
