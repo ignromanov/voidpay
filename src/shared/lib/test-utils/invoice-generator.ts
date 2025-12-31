@@ -4,7 +4,7 @@
  * Generates random invoices for testing and demonstration purposes.
  */
 
-import type { Invoice } from '@/entities/invoice'
+import type { Invoice } from '@/shared/lib/invoice-types'
 import type { Address } from 'viem'
 
 /**

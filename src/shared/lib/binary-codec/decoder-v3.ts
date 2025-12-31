@@ -5,7 +5,7 @@
  * Uses pako.inflate to decompress raw bytes (NO double decoding).
  */
 
-import type { Invoice } from '@/entities/invoice'
+import type { Invoice } from '@/shared/lib/invoice-types'
 import type { Address } from 'viem'
 import { bytesToAddress, readVarInt } from './utils'
 import { decodeBase62 } from './base62'
