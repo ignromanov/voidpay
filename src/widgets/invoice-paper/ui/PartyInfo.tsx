@@ -117,7 +117,7 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
             <div className="mt-3 flex items-center gap-2 md:flex-row-reverse">
               <WalletIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
               <span
-                className="font-mono text-xs break-all text-zinc-800"
+                className="min-w-0 flex-1 truncate font-mono text-xs text-zinc-800"
                 title={client.walletAddress}
               >
                 {client.walletAddress}
@@ -126,6 +126,7 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
                 <CopyButton
                   value={client.walletAddress}
                   size="xs"
+                  className="flex-shrink-0"
                   aria-label="Copy client wallet address"
                 />
               )}

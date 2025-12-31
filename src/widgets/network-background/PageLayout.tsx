@@ -1,8 +1,8 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { PixiBackground } from '@/widgets/network-background'
-import type { NetworkTheme } from '@/widgets/network-background'
+import { PixiBackground } from './PixiBackground'
+import type { NetworkTheme } from '@/shared/ui/constants/brand-tokens'
 import { cn } from '@/shared/lib/utils'
 
 export interface PageLayoutProps {
@@ -30,7 +30,7 @@ export interface PageLayoutProps {
 }
 
 /**
- * PageLayout — Shared layout for app pages with NetworkBackground
+ * PageLayout — Layout wrapper for app pages with NetworkBackground
  *
  * Features:
  * - Static background fallback (zinc-950 with gradients)

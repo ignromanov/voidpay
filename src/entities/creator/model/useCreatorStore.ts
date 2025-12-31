@@ -233,9 +233,20 @@ function createDefaultLineItem(): LineItem {
 
 /**
  * Migration function for future schema versions
+ * Wrapped in try-catch for robustness against corrupted localStorage
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const migrate = (persistedState: any, version: number): CreatorStoreV1 => {
+  try {
+    return migrateInternal(persistedState, version)
+  } catch (error) {
+    console.error('[CreatorStore] Migration failed, resetting to initial state:', error)
+    return initialState
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const migrateInternal = (persistedState: any, version: number): CreatorStoreV1 => {
   // Version 0 (no version) -> Version 1
   if (version === 0 || !persistedState.version) {
     // Migrate from old InvoiceDraft format to new DraftState format

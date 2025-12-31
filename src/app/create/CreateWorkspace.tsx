@@ -9,7 +9,8 @@ import { getNetworkTheme } from '@/entities/network'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
-import { PageLayout, Text } from '@/shared/ui'
+import { Text } from '@/shared/ui'
+import { PageLayout } from '@/widgets/network-background'
 import { InvoicePaper, InvoicePreviewModal } from '@/widgets/invoice-paper'
 
 /**
@@ -80,62 +81,64 @@ export function CreateWorkspace() {
       )}
 
       {/* Content container */}
-      <div className="flex-1 flex flex-col max-w-[1400px] w-full mx-auto min-h-0">
+      <div className="flex-1 flex flex-col max-w-[1400px] w-full mx-auto min-h-0 px-2 sm:px-4">
         {/* Error Banner */}
         {decodeError && <UrlErrorBanner error={decodeError} />}
 
-        {/* Preview container */}
-        <div className="flex-1 flex items-center justify-center min-h-0">
-          {/* Preview wrapper with subtle bg */}
-          <div className="relative flex flex-col items-center justify-center rounded-2xl bg-zinc-950/30 p-4 sm:p-8 lg:p-12">
-            {/* Clickable area ONLY on invoice */}
-            <div
-              className="relative cursor-zoom-in group"
-              onClick={handlePreviewClick}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  handlePreviewClick()
-                }
-              }}
-            >
-              {/* Responsive scale — larger on mobile for visibility */}
-              <div className="scale-[0.4] sm:scale-[0.5] md:scale-[0.6] lg:scale-[0.65] xl:scale-[0.75] 2xl:scale-[0.85] origin-center shadow-2xl transition-transform duration-300">
-                {invoiceData ? (
-                  <InvoicePaper data={invoiceData} status="draft" showGlow />
-                ) : (
-                  <EmptyPreviewPlaceholder />
-                )}
-              </div>
+        {/* Real-time Preview badge — small, top */}
+        <div className="flex justify-center py-2 shrink-0">
+          <div className="bg-zinc-900/80 backdrop-blur border border-zinc-800 text-zinc-500 text-[10px] font-mono py-1 px-3 rounded-full flex items-center gap-1.5 whitespace-nowrap">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            Live Preview
+          </div>
+        </div>
 
-              {/* Hover overlay with animation — only on invoice */}
-              <div
-                className={cn(
-                  'absolute inset-0 z-20 flex items-center justify-center transition-all duration-300 rounded-sm',
-                  isHovered ? 'opacity-100 bg-black/20' : 'opacity-0 bg-transparent'
-                )}
-              >
-                <button
-                  className={cn(
-                    'bg-zinc-900/95 backdrop-blur-md shadow-2xl text-sm font-medium text-violet-200 border border-violet-500/30 flex items-center gap-2 px-5 py-2.5 rounded-xl cursor-pointer transition-all duration-300',
-                    'hover:bg-zinc-800 hover:text-white hover:border-violet-500/50 hover:shadow-violet-500/20',
-                    isHovered ? 'scale-100 translate-y-0' : 'scale-90 translate-y-4'
-                  )}
-                  type="button"
-                >
-                  <Maximize2 className="w-5 h-5" />
-                  Click to expand
-                </button>
-              </div>
+        {/* Preview container — fills remaining space, centers invoice */}
+        <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden">
+          {/* Scaled wrapper with explicit dimensions matching scale */}
+          {/* Invoice base: 794×1123px, scaled to fit viewport */}
+          <div
+            className={cn(
+              'relative cursor-zoom-in overflow-hidden rounded-sm',
+              // Width: 794 × scale
+              'w-[357px] sm:w-[397px] md:w-[437px] lg:w-[476px] xl:w-[556px]',
+              // Height: 1123 × scale
+              'h-[505px] sm:h-[562px] md:h-[618px] lg:h-[674px] xl:h-[786px]'
+            )}
+            onClick={handlePreviewClick}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                handlePreviewClick()
+              }
+            }}
+          >
+            {/* Invoice with CSS scale — origin top-left to align with container */}
+            <div className="absolute top-0 left-0 origin-top-left scale-[0.45] sm:scale-[0.5] md:scale-[0.55] lg:scale-[0.6] xl:scale-[0.7]">
+              {invoiceData ? (
+                <InvoicePaper data={invoiceData} status="draft" showGlow />
+              ) : (
+                <EmptyPreviewPlaceholder />
+              )}
             </div>
 
-            {/* Real-time Preview badge — below invoice, always visible */}
-            <div className="mt-6 bg-zinc-900/90 backdrop-blur border border-zinc-800 text-zinc-400 text-[10px] font-mono py-1.5 px-4 rounded-full flex items-center gap-2 shadow-lg whitespace-nowrap pointer-events-none">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              Real-time Preview
+            {/* Hover overlay with Expand button */}
+            <div
+              className={cn(
+                'absolute inset-0 z-20 flex items-end justify-end p-3 transition-opacity duration-200',
+                isHovered ? 'opacity-100' : 'opacity-0'
+              )}
+            >
+              <button
+                className="bg-zinc-900/90 backdrop-blur-sm shadow-lg text-[11px] font-medium text-zinc-300 border border-zinc-700/50 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md cursor-pointer transition-colors hover:bg-zinc-800 hover:text-white hover:border-zinc-600"
+                type="button"
+              >
+                <Maximize2 className="w-3 h-3" />
+                Expand
+              </button>
             </div>
           </div>
         </div>

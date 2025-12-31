@@ -83,6 +83,12 @@ export interface InvoicePaperProps {
   showGlow?: boolean | undefined
 
   /**
+   * Invoice URL for sharing/linking.
+   * When provided with variant='full', the invoice title becomes a clickable link.
+   */
+  invoiceUrl?: string | undefined
+
+  /**
    * Additional CSS classes for the container.
    */
   className?: string | undefined

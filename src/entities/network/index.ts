@@ -10,7 +10,13 @@ export { NETWORKS, NETWORK_CODES, NETWORK_CODES_REVERSE } from './config/network
 export type { NetworkId } from './config/networks'
 
 // Network UI configuration (from config layer)
-export { NETWORK_CONFIG, getNetworkTheme } from './config/ui-config'
+export {
+  NETWORK_CONFIG,
+  NETWORK_GLOWS,
+  NETWORK_SHADOWS,
+  NETWORK_BADGES,
+  getNetworkTheme,
+} from './config/ui-config'
 export type { NetworkConfig, NetworkName } from './config/ui-config'
 
 // Network helper functions (from lib layer)

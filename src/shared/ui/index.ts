@@ -118,5 +118,5 @@ export { HyperText, type HyperTextProps } from './hyper-text'
 // - import { LazyWalletButton } from '@/shared/ui/wallet-button-lazy' (recommended)
 // - import { WalletButton } from '@/shared/ui/wallet-button' (requires Web3Provider)
 
-// PageLayout (feature: 015-create-page-preview)
-export { PageLayout, type PageLayoutProps } from './page-layout'
+// PageLayout moved to widgets/network-background (FSD: can't import widgets from shared)
+// Use: import { PageLayout } from '@/widgets/network-background'

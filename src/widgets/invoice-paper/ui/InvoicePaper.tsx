@@ -8,7 +8,7 @@ import { LineItemsTable } from './LineItemsTable'
 import { PaperTotals } from './PaperTotals'
 import { PaperFooter } from './PaperFooter'
 import { Watermark } from './Watermark'
-import { NETWORK_GLOWS, NETWORK_SHADOWS } from '@/entities/network/config/ui-config'
+import { NETWORK_GLOWS, NETWORK_SHADOWS } from '@/entities/network'
 import { cn } from '@/shared/lib/utils'
 
 // Stable fallback objects (prevent new object creation on each render)
@@ -45,6 +45,7 @@ export const InvoicePaper = React.memo(
         showQR = true,
         showTexture = true,
         showGlow = false,
+        invoiceUrl,
         className,
         containerRef,
       },
@@ -118,6 +119,8 @@ export const InvoicePaper = React.memo(
               due={data.dueAt ?? 0}
               status={status}
               txHashValidated={txHashValidated}
+              invoiceUrl={invoiceUrl}
+              variant={variant}
             />
 
             {/* Parties Section - From and Bill To */}

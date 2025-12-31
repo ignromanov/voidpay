@@ -191,9 +191,20 @@ const RAW_DEMO_INVOICES: Omit<ViewedInvoice, 'createHash'>[] = [
  * Demo invoices with pre-computed createHash for /create page navigation
  * Hash is computed at module load time (build time for SSG)
  */
-export const DEMO_INVOICES: ViewedInvoice[] = RAW_DEMO_INVOICES.map((invoice) => ({
-  ...invoice,
-  createHash: encodeInvoice(invoice.data),
-}))
+export const DEMO_INVOICES: ViewedInvoice[] = RAW_DEMO_INVOICES.map((invoice) => {
+  try {
+    return {
+      ...invoice,
+      createHash: encodeInvoice(invoice.data),
+    }
+  } catch (error) {
+    // Graceful degradation: button won't work but page loads
+    console.error('[DEMO_INVOICES] Failed to encode:', invoice.invoiceId, error)
+    return {
+      ...invoice,
+      createHash: '',
+    }
+  }
+})
 
 export const ROTATION_INTERVAL_MS = 60_000 // 60 seconds for viewing animations

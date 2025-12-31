@@ -183,8 +183,9 @@ export function encodeBinaryV3(invoice: Invoice): string {
         // Compression didn't help
         finalTextBytes = rawTextBytes
       }
-    } catch {
-      // Fallback to raw if compression fails
+    } catch (error) {
+      // Fallback to raw if compression fails (log for debugging)
+      console.warn('[encoder-v3] Compression failed, using uncompressed text:', error)
       finalTextBytes = rawTextBytes
     }
   } else {
