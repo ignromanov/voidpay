@@ -1,6 +1,6 @@
 'use client'
 
-import { forwardRef, type ReactNode } from 'react'
+import { forwardRef, type ReactNode, type MouseEventHandler } from 'react'
 import { cn } from '@/shared/lib/utils'
 import {
   useInvoiceScale,
@@ -38,9 +38,13 @@ export interface ScaledInvoicePreviewProps {
    * Options for dynamic scaling (ignored when fixedScale is set)
    */
   scaleOptions?: UseInvoiceScaleOptions
-  onClick?: () => void
-  onMouseEnter?: () => void
-  onMouseLeave?: () => void
+  /**
+   * Click handler with access to mouse event.
+   * Cursor style should be controlled via className (no auto cursor-zoom-in).
+   */
+  onClick?: MouseEventHandler<HTMLDivElement>
+  onMouseEnter?: MouseEventHandler<HTMLDivElement>
+  onMouseLeave?: MouseEventHandler<HTMLDivElement>
   className?: string
 }
 
@@ -65,7 +69,6 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
         ref={isFixed ? ref : containerRef}
         className={cn(
           'relative overflow-hidden rounded-sm transition-[width,height] duration-200 ease-out',
-          onClick && 'cursor-zoom-in',
           className
         )}
         style={
@@ -85,7 +88,15 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
         onKeyDown={
           onClick
             ? (e) => {
-                if (e.key === 'Enter' || e.key === ' ') onClick()
+                if (e.key === 'Enter' || e.key === ' ') {
+                  // Create minimal event-like object for keyboard activation
+                  const syntheticEvent = {
+                    stopPropagation: () => {},
+                    preventDefault: () => {},
+                    currentTarget: e.currentTarget,
+                  } as React.MouseEvent<HTMLDivElement>
+                  onClick(syntheticEvent)
+                }
               }
             : undefined
         }

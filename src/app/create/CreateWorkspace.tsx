@@ -99,28 +99,28 @@ export function CreateWorkspace() {
             onClick={handlePreviewClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            scaleOptions={{ maxScale: 1 }}
+            className="cursor-zoom-in"
             overlay={
-              <div
-                className={cn(
-                  'absolute inset-0 z-20 flex items-end justify-end p-3 transition-opacity duration-200',
-                  isHovered ? 'opacity-100' : 'opacity-0'
-                )}
-              >
-                <button
-                  className="bg-zinc-900/90 backdrop-blur-sm shadow-lg text-[11px] font-medium text-zinc-300 border border-zinc-700/50 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md cursor-pointer transition-colors hover:bg-zinc-800 hover:text-white hover:border-zinc-600"
-                  type="button"
+              invoiceData && (
+                <div
+                  className={cn(
+                    'absolute inset-0 z-20 flex items-end justify-end p-3 transition-opacity duration-200',
+                    isHovered ? 'opacity-100' : 'opacity-0'
+                  )}
                 >
-                  <Maximize2 className="w-3 h-3" />
-                  Expand
-                </button>
-              </div>
+                  <button
+                    className="bg-zinc-900/90 backdrop-blur-sm shadow-lg text-[11px] font-medium text-zinc-300 border border-zinc-700/50 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md cursor-pointer transition-colors hover:bg-zinc-800 hover:text-white hover:border-zinc-600"
+                    type="button"
+                  >
+                    <Maximize2 className="w-3 h-3" />
+                    Expand
+                  </button>
+                </div>
+              )
             }
           >
-            {invoiceData ? (
-              <InvoicePaper data={invoiceData} status="draft" showGlow />
-            ) : (
-              <EmptyPreviewPlaceholder />
-            )}
+            <InvoicePaper data={invoiceData} status="draft" showGlow />
           </ScaledInvoicePreview>
         </div>
       </div>
@@ -147,15 +147,3 @@ function UrlErrorBanner({ error }: { error: string }) {
   )
 }
 
-/**
- * Placeholder shown when no invoice data exists
- */
-function EmptyPreviewPlaceholder() {
-  return (
-    <div className="w-[794px] h-[1123px] bg-white rounded-sm flex items-center justify-center">
-      <Text variant="body" className="text-zinc-400">
-        No invoice data. Start creating or load from URL.
-      </Text>
-    </div>
-  )
-}

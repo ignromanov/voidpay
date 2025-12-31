@@ -16,6 +16,12 @@ export type {
   InvoiceTemplate,
   PaymentReceipt,
   CreationHistoryEntry,
+  // Generic utilities
+  DeepPartial,
+  PartialInvoice,
+  PartialParty,
+  PartialClient,
+  PartialItem,
 } from './model/types'
 
 // Helper functions for LineItem conversion and formatting

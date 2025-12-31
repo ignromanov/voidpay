@@ -10,6 +10,46 @@ import type { Invoice } from './schema'
 // Re-export Invoice for convenience
 export type { Invoice }
 
+// ============ Deep Partial Generic ============
+
+/**
+ * DeepPartial<T> — Makes all nested properties optional recursively.
+ *
+ * Useful for UI forms where data is filled in gradually.
+ * Unlike Partial<T>, this works on nested objects too.
+ *
+ * Special handling:
+ * - Arrays: elements become DeepPartial but array itself stays as array
+ * - Objects: all properties become optional with DeepPartial values
+ * - Primitives: unchanged
+ *
+ * @example
+ * type PartialInvoice = DeepPartial<Invoice>
+ * // { from?: { name?: string; walletAddress?: string }; items?: { description?: string }[]; ... }
+ */
+export type DeepPartial<T> = T extends (infer U)[]
+  ? DeepPartial<U>[]
+  : T extends object
+    ? { [P in keyof T]?: DeepPartial<T[P]> }
+    : T
+
+/**
+ * PartialInvoice — Deep partial invoice type for UI components.
+ *
+ * Used throughout the interface where invoice data may be incomplete:
+ * - Invoice editor forms
+ * - Preview components (InvoicePaper)
+ * - Draft states
+ */
+export type PartialInvoice = DeepPartial<Invoice>
+
+/**
+ * Partial types for invoice sub-objects (for component props)
+ */
+export type PartialParty = DeepPartial<Invoice['from']>
+export type PartialClient = DeepPartial<Invoice['client']>
+export type PartialItem = DeepPartial<Invoice['items'][number]>
+
 /**
  * LineItem (UI version with ID for React keys)
  *
@@ -50,7 +90,7 @@ export interface DraftState {
   /** Draft metadata */
   meta: DraftMetadata
   /** Partial invoice data (may be incomplete) */
-  data: Partial<Invoice>
+  data: PartialInvoice
 }
 
 /**
@@ -66,8 +106,8 @@ export interface InvoiceTemplate {
   name: string
   /** Creation timestamp (ISO 8601) */
   createdAt: string
-  /** Invoice data (partial, merged with defaults when loaded) */
-  invoiceData: Partial<Omit<Invoice, 'version'>>
+  /** Invoice data (deep partial, merged with defaults when loaded) */
+  invoiceData: DeepPartial<Omit<Invoice, 'version'>>
 }
 
 /**
@@ -129,14 +169,18 @@ export function lineItemsToInvoiceItems(lineItems: LineItem[]): Invoice['items']
 
 /**
  * Convert Invoice items to LineItem[] (adding IDs)
+ * Accepts partial items from PartialInvoice for UI editing
  */
-export function invoiceItemsToLineItems(items: Invoice['items']): LineItem[] {
-  return items.map((item) => ({
-    id: crypto.randomUUID(),
-    description: item.description,
-    quantity: typeof item.quantity === 'number' ? item.quantity : parseFloat(item.quantity),
-    rate: item.rate,
-  }))
+export function invoiceItemsToLineItems(items: PartialItem[]): LineItem[] {
+  return items.map((item) => {
+    const rawQty = item.quantity ?? 0
+    return {
+      id: crypto.randomUUID(),
+      description: item.description ?? '',
+      quantity: typeof rawQty === 'number' ? rawQty : parseFloat(rawQty),
+      rate: item.rate ?? '0',
+    }
+  })
 }
 
 /**

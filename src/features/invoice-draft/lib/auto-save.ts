@@ -8,7 +8,7 @@
 import { useCallback } from 'react'
 import { useDebouncedCallback } from 'use-debounce'
 import { useCreatorStore } from '@/entities/creator'
-import type { Invoice } from '@/entities/invoice'
+import type { PartialInvoice } from '@/entities/invoice'
 import { AUTO_SAVE_DEBOUNCE_MS } from '@/shared/lib/debounce'
 
 /**
@@ -39,7 +39,7 @@ export function useAutoSave() {
   const updateDraft = useCreatorStore((s) => s.updateDraft)
 
   const debouncedSave = useDebouncedCallback(
-    (data: Partial<Invoice>) => {
+    (data: PartialInvoice) => {
       updateDraft(data)
     },
     AUTO_SAVE_DEBOUNCE_MS,
@@ -50,7 +50,7 @@ export function useAutoSave() {
   )
 
   const autoSave = useCallback(
-    (data: Partial<Invoice>) => {
+    (data: PartialInvoice) => {
       debouncedSave(data)
     },
     [debouncedSave]
@@ -103,7 +103,7 @@ export function useAutoSaveWithManual() {
   const updateDraft = useCreatorStore((s) => s.updateDraft)
 
   const saveNow = useCallback(
-    (data?: Partial<Invoice>) => {
+    (data?: PartialInvoice) => {
       // Flush any pending debounced saves
       flush()
 

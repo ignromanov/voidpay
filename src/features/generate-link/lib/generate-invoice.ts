@@ -8,6 +8,7 @@
 import {
   lineItemsToInvoiceItems,
   type Invoice,
+  type PartialInvoice,
   type DraftState,
   type LineItem,
 } from '@/entities/invoice'
@@ -20,7 +21,7 @@ import { useCreatorStore } from '@/entities/creator'
  * @param lineItems - Line items with UI ids
  * @returns Total amount as decimal string with currency symbol
  */
-export function calculateTotalAmount(invoice: Partial<Invoice>, lineItems: LineItem[]): string {
+export function calculateTotalAmount(invoice: PartialInvoice, lineItems: LineItem[]): string {
   const currency = invoice.currency ?? 'USDC'
 
   // Calculate subtotal from line items

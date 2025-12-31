@@ -12,8 +12,13 @@ import type { Invoice } from './types'
 
 /**
  * Status of a viewed invoice
+ * - pending: Awaiting payment
+ * - paid: Payment confirmed
+ * - overdue: Past due date
+ * - draft: Being edited
+ * - empty: No invoice data (placeholder)
  */
-export type ViewedInvoiceStatus = 'pending' | 'paid' | 'overdue' | 'draft'
+export type ViewedInvoiceStatus = 'pending' | 'paid' | 'overdue' | 'draft' | 'empty'
 
 /**
  * A viewed invoice entry

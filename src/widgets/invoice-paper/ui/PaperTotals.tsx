@@ -14,7 +14,7 @@ interface PaperTotalsProps {
   invoiceUrl?: string
   // Payment details props
   networkId: number
-  senderAddress: string
+  senderAddress?: string | undefined
   tokenAddress?: string | undefined
   txHash?: string | undefined
   txHashValidated?: boolean | undefined

@@ -1,11 +1,12 @@
 import React from 'react'
-import { Invoice } from '@/entities/invoice'
+import { PartialParty, PartialClient } from '@/entities/invoice'
 import { CopyButton, MailIcon, PhoneIcon, MapPinIcon, WalletIcon, HashIcon } from '@/shared/ui'
+import { cn } from '@/shared/lib/utils'
 import { InvoicePaperVariant } from '../types'
 
 interface PartyInfoProps {
-  from: Invoice['from']
-  client: Invoice['client']
+  from: PartialParty
+  client: PartialClient
   variant?: InvoicePaperVariant
 }
 
@@ -21,7 +22,14 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
       {/* FROM Section - Order: Name → Email → Phone → Address → Wallet */}
       <div className="flex flex-col">
         <p className="mb-3 text-xs font-bold tracking-widest text-zinc-400 uppercase">From</p>
-        {from.name && <p className="mb-3 text-lg font-bold text-black">{from.name}</p>}
+        <p
+          className={cn(
+            'mb-3 text-lg font-bold',
+            from.name ? 'text-black' : 'text-zinc-300 italic'
+          )}
+        >
+          {from.name || 'Company / Sender Name'}
+        </p>
         <div className="space-y-2">
           {from.email && (
             <div className="flex items-center gap-2">
@@ -70,9 +78,14 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
         <p className="mb-3 text-xs font-bold tracking-widest text-zinc-400 uppercase md:text-right">
           Bill To
         </p>
-        {client.name && (
-          <p className="mb-3 text-lg font-bold text-black md:text-right">{client.name}</p>
-        )}
+        <p
+          className={cn(
+            'mb-3 text-lg font-bold md:text-right',
+            client.name ? 'text-black' : 'text-zinc-300 italic'
+          )}
+        >
+          {client.name || 'Client / Recipient Name'}
+        </p>
         <div className="space-y-2 md:text-right">
           {client.email && (
             <div className="flex items-center gap-2 md:flex-row-reverse">

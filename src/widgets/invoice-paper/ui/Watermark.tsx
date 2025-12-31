@@ -7,6 +7,7 @@ interface WatermarkProps {
 }
 
 export const Watermark = React.memo<WatermarkProps>(({ status, date }) => {
+  // No watermark for pending invoices
   if (status === 'pending') return null
 
   const WATERMARK_CONFIG = {
@@ -27,6 +28,12 @@ export const Watermark = React.memo<WatermarkProps>(({ status, date }) => {
       color: 'text-zinc-400',
       border: 'border-zinc-400',
       dateColor: 'text-zinc-500',
+    },
+    empty: {
+      text: 'PREVIEW',
+      color: 'text-violet-500',
+      border: 'border-violet-500',
+      dateColor: 'text-violet-600',
     },
   } as const
 

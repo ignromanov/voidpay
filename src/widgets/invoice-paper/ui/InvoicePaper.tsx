@@ -1,5 +1,6 @@
 import React, { useMemo, forwardRef } from 'react'
 import type { Address } from 'viem'
+import { FileText } from 'lucide-react'
 import { InvoicePaperProps } from '../types'
 import { calculateTotals } from '../lib/calculate-totals'
 import { PaperHeader } from './PaperHeader'
@@ -32,6 +33,37 @@ const VARIANT_STYLES = {
   print: 'p-8 print:p-6', // Print-optimized
 } as const
 
+/**
+ * Empty state content shown when data is undefined
+ */
+function EmptyStateContent() {
+  return (
+    <div className="flex h-full flex-col items-center justify-center p-12">
+      <div className="flex flex-col items-center gap-6 text-center">
+        {/* Icon */}
+        <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-zinc-100">
+          <FileText className="h-12 w-12 text-zinc-400" strokeWidth={1.5} />
+        </div>
+
+        {/* Text */}
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold text-zinc-700">No Invoice Data</h2>
+          <p className="max-w-[280px] text-sm text-zinc-500">
+            Start creating your invoice or load one from a URL to see the preview here.
+          </p>
+        </div>
+
+        {/* Hint */}
+        <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3">
+          <p className="text-xs text-zinc-500">
+            Fill in the form on the left to generate your invoice
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export const InvoicePaper = React.memo(
   forwardRef<HTMLElement, InvoicePaperProps>(
     (
@@ -51,31 +83,40 @@ export const InvoicePaper = React.memo(
       },
       ref
     ) => {
-      // Get glow configuration for network
-      const glowConfig = data.networkId ? NETWORK_GLOWS[data.networkId] : null
+      // Check if data is empty (undefined or no meaningful content)
+      const isEmpty = !data
+
+      // Override status to 'empty' when no data
+      const effectiveStatus = isEmpty ? 'empty' : status
+
+      // Get glow configuration for network (default to Ethereum for empty state)
+      const networkId = data?.networkId ?? 1
+      const glowConfig = showGlow ? NETWORK_GLOWS[networkId] : null
+      const shadowClass = NETWORK_SHADOWS[networkId] ?? 'shadow-black/20'
+
       const totals = useMemo(
         () =>
-          calculateTotals(data.items ?? EMPTY_ITEMS, {
-            tax: data.tax,
-            discount: data.discount,
-          }),
-        [data.items, data.tax, data.discount]
+          isEmpty
+            ? { subtotal: 0, taxAmount: 0, discountAmount: 0, total: 0, magicDust: 0 }
+            : calculateTotals(data.items ?? EMPTY_ITEMS, {
+                tax: data.tax,
+                discount: data.discount,
+              }),
+        [isEmpty, data?.items, data?.tax, data?.discount]
       )
 
-      const shadowClass = data.networkId ? NETWORK_SHADOWS[data.networkId] : 'shadow-black/20'
-
       // Memoize stable props to prevent child re-renders
-      const from = data.from ?? EMPTY_PARTY
-      const client = data.client ?? EMPTY_CLIENT
-      const items = data.items ?? EMPTY_ITEMS
+      const from = data?.from ?? EMPTY_PARTY
+      const client = data?.client ?? EMPTY_CLIENT
+      const items = data?.items ?? EMPTY_ITEMS
 
       // Format date for watermark if paid
       const paidDate = useMemo(
         () =>
-          status === 'paid' && data.issuedAt
+          status === 'paid' && data?.issuedAt
             ? dateFormatter.format(new Date(data.issuedAt * 1000)).toUpperCase()
             : undefined,
-        [status, data.issuedAt]
+        [status, data?.issuedAt]
       )
 
       // Determine if QR should be shown based on variant
@@ -101,7 +142,7 @@ export const InvoicePaper = React.memo(
             !showGlow && className
           )}
           role="document"
-          aria-label={`Invoice ${data.invoiceId ?? 'draft'}`}
+          aria-label={isEmpty ? 'Empty invoice placeholder' : `Invoice ${data?.invoiceId ?? 'draft'}`}
         >
           {/* Texture Layer - self-hosted for stateless operation */}
           {showTexture && (
@@ -111,50 +152,60 @@ export const InvoicePaper = React.memo(
             />
           )}
 
-          {/* Content Container */}
-          <div className={cn('relative z-10 flex h-full flex-col', VARIANT_STYLES[variant])}>
-            <PaperHeader
-              invoiceId={data.invoiceId ?? ''}
-              iss={data.issuedAt ?? 0}
-              due={data.dueAt ?? 0}
-              status={status}
-              txHashValidated={txHashValidated}
-              invoiceUrl={invoiceUrl}
-              variant={variant}
-            />
+          {/* Content - Empty state or invoice data */}
+          {isEmpty ? (
+            <>
+              <EmptyStateContent />
+              <Watermark status={effectiveStatus} />
+            </>
+          ) : (
+            <>
+              {/* Content Container */}
+              <div className={cn('relative z-10 flex h-full flex-col', VARIANT_STYLES[variant])}>
+                <PaperHeader
+                  invoiceId={data.invoiceId ?? ''}
+                  iss={data.issuedAt ?? 0}
+                  due={data.dueAt ?? 0}
+                  status={status}
+                  txHashValidated={txHashValidated}
+                  invoiceUrl={invoiceUrl}
+                  variant={variant}
+                />
 
-            {/* Parties Section - From and Bill To */}
-            <section className="py-6 md:py-8" aria-label="Invoice parties">
-              <PartyInfo from={from} client={client} variant={variant} />
-            </section>
+                {/* Parties Section - From and Bill To */}
+                <section className="py-6 md:py-8" aria-label="Invoice parties">
+                  <PartyInfo from={from} client={client} variant={variant} />
+                </section>
 
-            <LineItemsTable items={items} />
+                <LineItemsTable items={items} />
 
-            <PaperTotals
-              totals={totals}
-              currency={data.currency ?? ''}
-              taxPercent={data.tax}
-              discountPercent={data.discount}
-              showQR={shouldShowQR}
-              networkId={data.networkId ?? 1}
-              senderAddress={from.walletAddress}
-              tokenAddress={data.tokenAddress}
-              txHash={txHash}
-              txHashValidated={txHashValidated}
-              variant={variant}
-              status={status}
-            />
+                <PaperTotals
+                  totals={totals}
+                  currency={data.currency ?? ''}
+                  taxPercent={data.tax}
+                  discountPercent={data.discount}
+                  showQR={shouldShowQR}
+                  networkId={data.networkId ?? 1}
+                  senderAddress={from.walletAddress}
+                  tokenAddress={data.tokenAddress}
+                  txHash={txHash}
+                  txHashValidated={txHashValidated}
+                  variant={variant}
+                  status={status}
+                />
 
-            <PaperFooter notes={data.notes} />
-          </div>
+                <PaperFooter notes={data.notes} />
+              </div>
 
-          <Watermark status={status} date={paidDate} />
+              <Watermark status={status} date={paidDate} />
 
-          {/* Screen reader status announcement */}
-          <div className="sr-only" role="status" aria-live="polite">
-            Invoice status: {status}
-            {status === 'paid' && paidDate && `, paid on ${paidDate}`}
-          </div>
+              {/* Screen reader status announcement */}
+              <div className="sr-only" role="status" aria-live="polite">
+                Invoice status: {status}
+                {status === 'paid' && paidDate && `, paid on ${paidDate}`}
+              </div>
+            </>
+          )}
         </article>
       )
 

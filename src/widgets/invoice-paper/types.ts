@@ -1,4 +1,4 @@
-import { Invoice, ViewedInvoiceStatus as InvoiceStatus } from '@/entities/invoice'
+import { PartialInvoice, ViewedInvoiceStatus as InvoiceStatus } from '@/entities/invoice'
 
 /**
  * Visual status of the invoice document
@@ -25,9 +25,10 @@ export type InvoicePaperVariant = 'full' | 'default' | 'print'
 export interface InvoicePaperProps {
   /**
    * Invoice data following Schema V1.
-   * Can be partial for 'draft' status preview.
+   * Can be deep-partial for 'draft' status preview (nested fields may be incomplete).
+   * When undefined, renders an empty placeholder state with 'empty' status.
    */
-  data: Partial<Invoice>
+  data: PartialInvoice | undefined
 
   /**
    * Current status of the invoice.

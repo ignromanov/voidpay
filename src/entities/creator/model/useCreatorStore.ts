@@ -13,7 +13,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
 import {
   invoiceItemsToLineItems,
-  type Invoice,
+  type PartialInvoice,
   type DraftState,
   type LineItem,
 } from '@/entities/invoice'
@@ -35,7 +35,7 @@ interface CreatorStoreActions {
   /**
    * Update the active draft data (debounced in UI layer)
    */
-  updateDraft: (data: Partial<Invoice>) => void
+  updateDraft: (data: PartialInvoice) => void
 
   /**
    * Clear the active draft (called after URL generation)
@@ -581,7 +581,7 @@ export const useCreatorStore = create<CreatorStore>()(
         const templateName = name ?? `${clientName} - ${dateStr}`
 
         // Include line items in template data
-        const templateData: Partial<Invoice> = {
+        const templateData: PartialInvoice = {
           ...activeDraft.data,
           items: lineItems.map(({ description, quantity, rate }) => ({
             description,
@@ -614,13 +614,16 @@ export const useCreatorStore = create<CreatorStore>()(
 
         const draftId = uuidv4()
 
-        // Convert template items to LineItems with ids
-        const lineItems: LineItem[] = (template.invoiceData.items ?? []).map((item) => ({
-          id: uuidv4(),
-          description: item.description,
-          quantity: typeof item.quantity === 'string' ? parseFloat(item.quantity) : item.quantity,
-          rate: item.rate,
-        }))
+        // Convert template items to LineItems with ids (handle partial items)
+        const lineItems: LineItem[] = (template.invoiceData.items ?? []).map((item) => {
+          const rawQty = item.quantity ?? 0
+          return {
+            id: uuidv4(),
+            description: item.description ?? '',
+            quantity: typeof rawQty === 'string' ? parseFloat(rawQty) : rawQty,
+            rate: item.rate ?? '0',
+          }
+        })
 
         const newDraft: DraftState = {
           meta: {

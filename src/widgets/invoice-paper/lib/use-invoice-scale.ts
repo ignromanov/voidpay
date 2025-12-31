@@ -105,7 +105,8 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
     if (container) {
       observer = new ResizeObserver((entries) => {
         for (const entry of entries) {
-          updateSize(entry.contentRect.width, window.innerHeight)
+          // Use container's actual dimensions, not window height
+          updateSize(entry.contentRect.width, entry.contentRect.height)
         }
       })
       observer.observe(container)

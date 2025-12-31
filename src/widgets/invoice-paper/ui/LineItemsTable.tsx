@@ -1,9 +1,9 @@
 import React from 'react'
-import { Invoice } from '@/entities/invoice'
+import { PartialItem } from '@/entities/invoice'
 import { formatAmount, formatRate } from '../lib/format'
 
 interface LineItemsTableProps {
-  items: Invoice['items']
+  items: PartialItem[]
 }
 
 export const LineItemsTable = React.memo<LineItemsTableProps>(({ items }) => {
@@ -30,9 +30,9 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items }) => {
           </thead>
           <tbody className="text-sm">
             {items.map((item, idx) => {
-              const qty =
-                typeof item.quantity === 'string' ? parseFloat(item.quantity) : item.quantity
-              const rate = parseFloat(item.rate)
+              const quantity = item.quantity ?? 0
+              const qty = typeof quantity === 'string' ? parseFloat(quantity) : quantity
+              const rate = parseFloat(item.rate ?? '0')
               const amount = isNaN(qty) || isNaN(rate) ? 0 : qty * rate
 
               return (
@@ -41,10 +41,10 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items }) => {
                   className="group border-b border-zinc-200 transition-colors last:border-0 even:bg-zinc-50/50 hover:bg-zinc-100/50"
                 >
                   <td className="py-4 font-mono text-zinc-400">{idx + 1}</td>
-                  <td className="py-4 font-medium text-zinc-900">{item.description}</td>
-                  <td className="py-4 text-center font-mono text-zinc-700">{item.quantity}</td>
+                  <td className="py-4 font-medium text-zinc-900">{item.description ?? ''}</td>
+                  <td className="py-4 text-center font-mono text-zinc-700">{quantity}</td>
                   <td className="py-4 text-right font-mono text-zinc-700">
-                    {formatRate(item.rate)}
+                    {formatRate(item.rate ?? '0')}
                   </td>
                   <td className="py-4 text-right font-mono font-bold text-black">
                     {formatAmount(amount)}

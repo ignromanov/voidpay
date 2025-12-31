@@ -6,14 +6,14 @@ import { Dialog, DialogContent, DialogTitle, DialogClose, Badge } from '@/shared
 import { InvoicePaper } from './InvoicePaper'
 import { ScaledInvoicePreview } from './ScaledInvoicePreview'
 import { InvoiceStatus } from '../types'
-import { Invoice } from '@/entities/invoice'
+import { Invoice, PartialInvoice } from '@/entities/invoice'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
 
 export interface InvoicePreviewModalProps {
   /**
    * Invoice data to display
    */
-  data: Partial<Invoice>
+  data: PartialInvoice
 
   /**
    * Invoice status for watermark/badge
@@ -84,6 +84,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
           </div>
 
           {/* Invoice Paper container — dynamic x2 scaling with scroll */}
+          {/* Click outside invoice closes modal (cursor-zoom-out), click on invoice does not */}
           <div
             className="flex flex-1 cursor-zoom-out items-start justify-start overflow-auto p-2 sm:justify-center sm:p-4 md:p-8"
             onClick={() => onOpenChange(false)}
@@ -94,7 +95,8 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
                 maxScale: 1,
                 heightFraction: 0.85,
               }}
-              className="shrink-0"
+              className="shrink-0 cursor-default"
+              onClick={(e) => e.stopPropagation()}
             >
               <InvoicePaper
                 data={data}
