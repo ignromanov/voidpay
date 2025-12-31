@@ -76,7 +76,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             </div>
             {/* Close button in header per v3 */}
             <DialogClose
-              className="rounded-full bg-zinc-800 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none"
+              className="cursor-pointer rounded-full bg-zinc-800 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none"
               aria-label="Close preview"
             >
               <X className="h-5 w-5" />
@@ -95,7 +95,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
                 maxScale: 1,
                 heightFraction: 0.85,
               }}
-              className="shrink-0 cursor-default"
+              className="shrink-0"
               onClick={(e) => e.stopPropagation()}
             >
               <InvoicePaper

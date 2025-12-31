@@ -21,7 +21,7 @@ import { DemoPagination } from './ui/DemoPagination'
 
 export function DemoSection() {
   const { setTheme } = useNetworkTheme()
-  const { containerRef, scale, scaledWidth, scaledHeight } = useInvoiceScale()
+  const { containerRef, scale, scaledWidth, scaledHeight } = useInvoiceScale({ heightFraction: 0.75 })
 
   const [isHovered, setIsHovered] = useState(false)
 

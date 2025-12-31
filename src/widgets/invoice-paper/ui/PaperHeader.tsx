@@ -47,29 +47,33 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
     return (
       <header className="relative flex items-start justify-between gap-4 border-b-2 border-zinc-700 pb-6">
         {/* Large INVOICE title with ID - Left */}
-        <div className="flex min-w-0 items-center gap-2">
-          <h1
-            onClick={handleTitleClick}
-            className={cn(
-              'text-4xl leading-none font-black tracking-tighter whitespace-nowrap text-zinc-400 uppercase',
-              hasLink && 'cursor-pointer transition-colors hover:text-zinc-500'
-            )}
-            role={hasLink ? 'link' : undefined}
-            tabIndex={hasLink ? 0 : undefined}
-            onKeyDown={hasLink ? (e) => e.key === 'Enter' && handleTitleClick() : undefined}
-            title={hasLink ? 'Click to open invoice in new tab' : undefined}
-          >
-            Invoice{' '}
+        <div className="flex min-w-0 items-center gap-3">
+          <h1 className="flex items-center gap-1.5 text-4xl leading-none font-black tracking-tighter whitespace-nowrap uppercase text-zinc-400">
+            <span>Invoice</span>
             {invoiceId ? (
-              <span className="text-zinc-900">#{invoiceId}</span>
+              <span
+                onClick={hasLink ? handleTitleClick : undefined}
+                onKeyDown={hasLink ? (e) => e.key === 'Enter' && handleTitleClick() : undefined}
+                role={hasLink ? 'link' : undefined}
+                tabIndex={hasLink ? 0 : undefined}
+                title={hasLink ? 'Click to open invoice in new tab' : undefined}
+                className={cn(
+                  'transition-colors',
+                  hasLink
+                    ? '!cursor-pointer text-zinc-800 hover:text-violet-600'
+                    : 'text-zinc-900'
+                )}
+              >
+                #{invoiceId}
+              </span>
             ) : (
               <span className="text-zinc-300 italic">#ID</span>
             )}
             {hasLink && (
-              <LinkIcon className="ml-2 inline-block h-5 w-5 text-zinc-400" aria-hidden="true" />
+              <LinkIcon className="h-5 w-5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
             )}
           </h1>
-          {hasLink && <CopyButton value={invoiceUrl} size="sm" aria-label="Copy invoice URL" />}
+          {hasLink && <CopyButton value={invoiceUrl} size="sm" className="flex-shrink-0" aria-label="Copy invoice URL" />}
         </div>
 
         {/* Invoice meta - Right */}

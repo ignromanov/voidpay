@@ -137,7 +137,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
               <div className="flex items-center gap-1">
                 <div
                   className={cn(
-                    'flex-1 rounded border border-zinc-200 bg-white px-2 py-1.5 font-mono text-[10px] leading-relaxed font-medium',
+                    'flex-1 rounded border border-zinc-200 bg-white px-2 py-1.5 font-mono text-[10px] leading-relaxed font-medium cursor-text',
                     senderAddress ? 'text-zinc-950' : 'text-zinc-400 italic'
                   )}
                   title={senderAddress}

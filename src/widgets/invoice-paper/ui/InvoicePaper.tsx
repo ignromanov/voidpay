@@ -27,9 +27,10 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
 })
 
 // Variant-specific styles
+// For full variant: cursor-text on text elements, cursor-pointer on links
 const VARIANT_STYLES = {
-  full: 'p-12', // Interactive mode
-  default: 'p-12', // Standard mode
+  full: 'p-12 [&_p]:cursor-text [&_span]:cursor-text [&_td]:cursor-text [&_th]:cursor-text [&_address]:cursor-text [&_a]:cursor-pointer',
+  default: 'p-12', // Standard mode (inherits cursor from parent)
   print: 'p-8 print:p-6', // Print-optimized
 } as const
 
@@ -38,24 +39,24 @@ const VARIANT_STYLES = {
  */
 function EmptyStateContent() {
   return (
-    <div className="flex h-full flex-col items-center justify-center p-12">
-      <div className="flex flex-col items-center gap-6 text-center">
-        {/* Icon */}
-        <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-zinc-100">
-          <FileText className="h-12 w-12 text-zinc-400" strokeWidth={1.5} />
+    <div className="flex h-full flex-col items-center justify-center p-16">
+      <div className="flex flex-col items-center gap-10 text-center">
+        {/* Icon — larger for scale compensation */}
+        <div className="flex h-36 w-36 items-center justify-center rounded-3xl bg-zinc-100">
+          <FileText className="h-20 w-20 text-zinc-400" strokeWidth={1.5} />
         </div>
 
-        {/* Text */}
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-zinc-700">No Invoice Data</h2>
-          <p className="max-w-[280px] text-sm text-zinc-500">
+        {/* Text — larger for scale compensation */}
+        <div className="space-y-3">
+          <h2 className="text-3xl font-semibold text-zinc-700">No Invoice Data</h2>
+          <p className="max-w-[420px] text-lg text-zinc-500">
             Start creating your invoice or load one from a URL to see the preview here.
           </p>
         </div>
 
-        {/* Hint */}
-        <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3">
-          <p className="text-xs text-zinc-500">
+        {/* Hint — larger for scale compensation */}
+        <div className="mt-6 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-4">
+          <p className="text-base text-zinc-500">
             Fill in the form on the left to generate your invoice
           </p>
         </div>
@@ -132,7 +133,8 @@ export const InvoicePaper = React.memo(
           }}
           className={cn(
             // Base styles - responsive by default with aspect-ratio
-            'group/paper relative flex aspect-[794/1123] w-full max-w-[794px] origin-top flex-col overflow-hidden bg-white text-black transition-shadow duration-500',
+            // cursor-default on paper background, content container overrides for variant="full"
+            'group/paper relative flex aspect-[794/1123] w-full max-w-[794px] origin-top flex-col overflow-hidden bg-white text-black transition-shadow duration-500 cursor-default',
             'shadow-2xl print:aspect-auto print:h-full print:min-h-0 print:w-full print:min-w-0 print:scale-100 print:shadow-none',
             shadowClass,
             // Legacy scaling support (optional)

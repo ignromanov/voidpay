@@ -48,7 +48,7 @@ export interface UseInvoiceScaleResult {
  * Uses RAF-throttled resize handling for smooth performance.
  */
 export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoiceScaleResult {
-  const { scaleMultiplier = 1, minScale = 0.25, maxScale = 1, heightFraction = 0.75 } = options
+  const { scaleMultiplier = 1, minScale = 0.25, maxScale = 1, heightFraction = 0.98 } = options
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(0.45)
@@ -57,9 +57,9 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
     (width: number, height: number): number => {
       if (width === 0 || height === 0) return minScale
 
-      const paddingX = width < 768 ? 24 : 48
+      const paddingX = width < 768 ? 16 : 24
       const availableWidth = Math.max(width - paddingX, 280)
-      const targetHeight = Math.max(height * heightFraction, 400)
+      const targetHeight = Math.max(height * heightFraction, 300)
 
       const widthRatio = availableWidth / INVOICE_BASE_WIDTH
       const heightRatio = targetHeight / INVOICE_BASE_HEIGHT
@@ -91,25 +91,37 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
       })
     }
 
-    // Initial measurement
-    updateSize(window.innerWidth, window.innerHeight)
-
-    // Window resize handler (throttled)
-    const handleResize = () => {
+    // Initial measurement using parent container (avoids circular dependency)
+    const container = containerRef.current
+    const parent = container?.parentElement
+    if (parent) {
+      const rect = parent.getBoundingClientRect()
+      updateSize(rect.width, rect.height)
+    } else {
       updateSize(window.innerWidth, window.innerHeight)
     }
 
-    // Container resize observer (throttled)
-    const container = containerRef.current
+    // Window resize handler (throttled)
+    const handleResize = () => {
+      const parent = containerRef.current?.parentElement
+      if (parent) {
+        const rect = parent.getBoundingClientRect()
+        updateSize(rect.width, rect.height)
+      } else {
+        updateSize(window.innerWidth, window.innerHeight)
+      }
+    }
+
+    // Observe PARENT container to avoid circular dependency
+    // (ScaledInvoicePreview sets its own size based on scale)
     let observer: ResizeObserver | null = null
-    if (container) {
+    if (parent) {
       observer = new ResizeObserver((entries) => {
         for (const entry of entries) {
-          // Use container's actual dimensions, not window height
           updateSize(entry.contentRect.width, entry.contentRect.height)
         }
       })
-      observer.observe(container)
+      observer.observe(parent)
     }
 
     window.addEventListener('resize', handleResize)
