@@ -15,14 +15,24 @@
 export { Web3Provider, Web3ScopeProvider, useWeb3Scope, withWeb3Scope } from './providers'
 
 // Config exports (safe for SSR)
-export { MAINNET_CHAINS, TESTNET_CHAINS, getSupportedChains, getChainById, isTestnetChain } from '@/shared/config'
+export {
+  MAINNET_CHAINS,
+  TESTNET_CHAINS,
+  getSupportedChains,
+  getChainById,
+  isTestnetChain,
+} from '@/shared/config'
 export { voidPayTheme, VOIDPAY_ACCENT_COLOR, createVoidPayTheme } from './config/rainbowkit-theme'
 
 // UI exports
 export { ConnectWalletButton, truncateAddress, DefaultConnectButton } from './ui/ConnectButton'
 
 // Lib exports (from shared)
-export { createCustomTransport, createChainTransport, createTransportsForChains } from '@/shared/lib'
+export {
+  createCustomTransport,
+  createChainTransport,
+  createTransportsForChains,
+} from '@/shared/lib'
 export { useNetworkSwitch, canSwitchNetwork } from './lib/network-switch'
 export { detectNetworkMismatch, useNetworkMismatch } from './lib/network-mismatch'
 export {
@@ -50,3 +60,8 @@ export {
 // Additional UI exports
 export { TestnetBanner, useIsTestnet } from './ui/TestnetBanner'
 export { NetworkSelect, type NetworkSelectProps } from './ui/NetworkSelect'
+
+// WalletButton exports (lazy-loaded)
+// NOTE: Use LazyWalletButton for performance - it delays Web3 bundle loading until user click
+export { WalletButton } from './ui/WalletButton'
+export { LazyWalletButton, WalletButtonLazy } from './ui/LazyWalletButton'

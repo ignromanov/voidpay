@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "src/shared" },
+    { "path": "src/entities" },
+    { "path": "src/features" },
+    { "path": "src/widgets" },
+    { "path": "src/app" }
+  ]
+}

@@ -1,6 +1,12 @@
 'use client'
 
-import { forwardRef, type ReactNode, type MouseEventHandler, type KeyboardEvent, type MouseEvent } from 'react'
+import {
+  forwardRef,
+  type ReactNode,
+  type MouseEventHandler,
+  type KeyboardEvent,
+  type MouseEvent,
+} from 'react'
 import { cn } from '@/shared/lib/utils'
 import { useInvoiceScale, type UseInvoiceScaleOptions } from '../lib/use-invoice-scale'
 
@@ -67,7 +73,8 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
       }
     }
 
-    const heightStyle = typeof containerHeight === 'number' ? `${containerHeight}px` : containerHeight
+    const heightStyle =
+      typeof containerHeight === 'number' ? `${containerHeight}px` : containerHeight
 
     // Keyboard handler for accessibility (Enter/Space triggers click)
     const handleKeyDown = onClick
@@ -100,9 +107,9 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
         tabIndex={onClick ? 0 : undefined}
         onKeyDown={handleKeyDown}
       >
-        {/* Scaled invoice wrapper */}
+        {/* Scaled invoice wrapper — overflow-visible for glow effect */}
         <div
-          className="relative overflow-hidden rounded-sm transition-[width,height] duration-200 ease-out"
+          className="relative overflow-visible rounded-sm transition-[width,height] duration-200 ease-out"
           style={{
             width: `${scaledWidth}px`,
             height: `${scaledHeight}px`,

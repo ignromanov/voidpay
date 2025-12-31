@@ -65,10 +65,9 @@ export function PageLayout({
       <div
         className={cn(
           'fixed inset-0 z-10 flex flex-col overflow-hidden',
-          'py-14 px-2',
-          'sm:py-14 sm:px-4',
-          'lg:py-16',
-          'print:static print:p-0 print:overflow-visible',
+          'px-2 pt-16 pb-10',
+          'sm:px-4',
+          'print:static print:overflow-visible print:p-0',
           className
         )}
       >
@@ -97,8 +96,15 @@ function StaticBackground({ theme }: { theme: NetworkTheme }) {
     <div className="fixed inset-0 z-[0] bg-zinc-950 print:hidden">
       {/* Gradient glow matching network theme */}
       <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/50 via-transparent to-transparent" />
-      <div className={cn('absolute left-1/4 top-1/4 h-96 w-96 rounded-full blur-3xl', colors.primary)} />
-      <div className={cn('absolute right-1/4 bottom-1/4 h-96 w-96 rounded-full blur-3xl', colors.secondary)} />
+      <div
+        className={cn('absolute top-1/4 left-1/4 h-96 w-96 rounded-full blur-3xl', colors.primary)}
+      />
+      <div
+        className={cn(
+          'absolute right-1/4 bottom-1/4 h-96 w-96 rounded-full blur-3xl',
+          colors.secondary
+        )}
+      />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { AlertCircle, Maximize2 } from 'lucide-react'
 
 import { decodeInvoice } from '@/features/invoice-codec'
@@ -10,7 +10,6 @@ import { useHashFragment } from '@/shared/lib/hooks'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
 import { Text } from '@/shared/ui'
-import { PageLayout } from '@/widgets/network-background'
 import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widgets/invoice-paper'
 
 /**
@@ -20,7 +19,7 @@ import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widge
  * - Display invoice from useCreatorStore or URL hash
  * - URL hash decoding (e.g., /create#H4sI...)
  * - Fullscreen preview modal on click
- * - Network-themed background based on invoice networkId
+ * - Sets network theme in store for dynamic background
  *
  * Note: Editor form is NOT included (separate feature P0.10.2)
  */
@@ -32,6 +31,7 @@ export function CreateWorkspace() {
 
   const activeDraft = useCreatorStore((s) => s.activeDraft)
   const updateDraft = useCreatorStore((s) => s.updateDraft)
+  const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
 
   // Decode URL hash on mount/change
   useEffect(() => {
@@ -56,11 +56,11 @@ export function CreateWorkspace() {
 
   const invoiceData = activeDraft?.data
 
-  // Map networkId to theme name
-  const networkTheme = useMemo(
-    () => getNetworkTheme(invoiceData?.networkId ?? 1),
-    [invoiceData?.networkId]
-  )
+  // Update network theme when invoice networkId changes
+  useEffect(() => {
+    const theme = getNetworkTheme(invoiceData?.networkId ?? 1)
+    setNetworkTheme(theme)
+  }, [invoiceData?.networkId, setNetworkTheme])
 
   const handlePreviewClick = useCallback(() => {
     if (invoiceData) {
@@ -69,7 +69,7 @@ export function CreateWorkspace() {
   }, [invoiceData])
 
   return (
-    <PageLayout theme={networkTheme}>
+    <>
       {/* Fullscreen preview modal */}
       {invoiceData && (
         <InvoicePreviewModal
@@ -81,44 +81,44 @@ export function CreateWorkspace() {
       )}
 
       {/* Content container */}
-      <div className="flex-1 flex flex-col max-w-[1400px] w-full mx-auto min-h-0 px-2 sm:px-4 print:max-w-none print:p-0">
+      <div className="mx-auto flex h-[calc(100vh-104px)] w-full max-w-[1400px] flex-col px-2 sm:px-4 print:h-auto print:max-w-none print:p-0">
         {/* Error Banner (hidden on print) */}
         {decodeError && <UrlErrorBanner error={decodeError} />}
 
         {/* Preview container — fills remaining space, centers invoice */}
-        <div className="flex-1 flex items-center justify-center overflow-hidden relative print:block print:overflow-visible">
+        <div className="relative flex flex-1 items-center justify-center overflow-visible print:block print:overflow-visible">
           {/* Screen version: scaled preview */}
           <ScaledInvoicePreview
-            containerHeight="92vh"
+            containerHeight="calc(100vh - 140px)"
             onClick={handlePreviewClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            scaleOptions={{ maxScale: 1 }}
+            scaleOptions={{ maxScale: 0.85 }}
             className="cursor-zoom-in print:hidden"
-              overlay={
-                invoiceData && (
-                  <div
-                    className={cn(
-                      'absolute inset-0 z-20 flex items-end justify-start p-3 transition-opacity duration-200',
-                      isHovered ? 'opacity-100' : 'opacity-0'
-                    )}
+            overlay={
+              invoiceData && (
+                <div
+                  className={cn(
+                    'absolute inset-0 z-20 flex items-end justify-start p-3 transition-opacity duration-200',
+                    isHovered ? 'opacity-100' : 'opacity-0'
+                  )}
+                >
+                  <button
+                    className="flex cursor-pointer items-center gap-2 rounded-full border border-zinc-600/50 bg-zinc-800/80 px-3 py-1.5 font-mono text-[10px] whitespace-nowrap text-zinc-300 shadow-xl backdrop-blur-md transition-colors hover:border-zinc-500 hover:bg-zinc-700 hover:text-zinc-100"
+                    type="button"
                   >
-                    <button
-                      className="bg-zinc-800/80 backdrop-blur-md border border-zinc-600/50 text-zinc-300 text-[10px] font-mono py-1.5 px-3 rounded-full flex items-center gap-2 whitespace-nowrap shadow-xl cursor-pointer transition-colors hover:bg-zinc-700 hover:text-zinc-100 hover:border-zinc-500"
-                      type="button"
-                    >
-                      <Maximize2 className="w-3 h-3" />
-                      Expand
-                    </button>
-                  </div>
-                )
-              }
+                    <Maximize2 className="h-3 w-3" />
+                    Expand
+                  </button>
+                </div>
+              )
+            }
           >
             <InvoicePaper data={invoiceData} status="draft" showGlow />
           </ScaledInvoicePreview>
 
           {/* Print version: full-size invoice without scaling */}
-          <div className="hidden print:block print-invoice">
+          <div className="print-invoice hidden print:block">
             <InvoicePaper
               data={invoiceData}
               status="draft"
@@ -130,15 +130,15 @@ export function CreateWorkspace() {
           </div>
 
           {/* Floating Live Preview badge — hovering above invoice (hidden on print) */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 print:hidden">
-            <div className="bg-zinc-800/80 backdrop-blur-md border border-zinc-600/50 text-zinc-300 text-[10px] font-mono py-1.5 px-3 rounded-full flex items-center gap-2 whitespace-nowrap shadow-xl">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2 print:hidden">
+            <div className="flex items-center gap-2 rounded-full border border-zinc-600/50 bg-zinc-800/80 px-3 py-1.5 font-mono text-[10px] whitespace-nowrap text-zinc-300 shadow-xl backdrop-blur-md">
+              <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
               Live Preview
             </div>
           </div>
         </div>
       </div>
-    </PageLayout>
+    </>
   )
 }
 
@@ -149,7 +149,7 @@ function UrlErrorBanner({ error }: { error: string }) {
   return (
     <div className="mb-6 rounded-lg border border-rose-500/20 bg-rose-500/10 p-4 print:hidden">
       <div className="flex items-center gap-3">
-        <AlertCircle className="h-5 w-5 text-rose-500 shrink-0" />
+        <AlertCircle className="h-5 w-5 shrink-0 text-rose-500" />
         <div>
           <Text className="font-medium text-rose-400">Invalid Invoice URL</Text>
           <Text variant="small" className="text-zinc-400">
@@ -160,4 +160,3 @@ function UrlErrorBanner({ error }: { error: string }) {
     </div>
   )
 }
-

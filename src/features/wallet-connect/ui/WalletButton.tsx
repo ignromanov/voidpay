@@ -9,24 +9,17 @@
  * - Connected → chain selector + account button
  *
  * NOTE: This component MUST be rendered inside Web3Provider context.
- * For lazy-loaded usage, use LazyWalletButton from wallet-button-lazy.tsx
+ * For lazy-loaded usage, use LazyWalletButton from LazyWalletButton.tsx
  */
 
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { Wallet, ChevronDown } from 'lucide-react'
-import { Button } from './button'
+import { Button } from '@/shared/ui'
 
 export function WalletButton() {
   return (
     <ConnectButton.Custom>
-      {({
-        account,
-        chain,
-        openAccountModal,
-        openChainModal,
-        openConnectModal,
-        mounted,
-      }) => {
+      {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted }) => {
         const ready = mounted
         const connected = ready && account && chain
 
@@ -71,12 +64,7 @@ export function WalletButton() {
 
               return (
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5"
-                    onClick={openChainModal}
-                  >
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={openChainModal}>
                     {chain.hasIcon && chain.iconUrl && (
                       /* eslint-disable-next-line @next/next/no-img-element -- Dynamic URL from RainbowKit */
                       <img

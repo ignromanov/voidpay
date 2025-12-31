@@ -17,7 +17,7 @@ import { Plus, Github, ShieldAlert } from 'lucide-react'
 import { SOCIAL_URLS } from '@/shared/config'
 import { VoidLogo } from '@/shared/ui/void-logo'
 import { Button } from '@/shared/ui/button'
-import { LazyWalletButton as WalletButton } from '@/shared/ui/wallet-button-lazy'
+import { LazyWalletButton as WalletButton } from '@/features/wallet-connect'
 
 export function Navigation() {
   const pathname = usePathname()

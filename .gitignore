@@ -45,6 +45,9 @@ public/robots.txt
 build/
 dist/
 
+# TypeScript build cache (project references)
+.tsbuild/
+
 # Misc
 *.pem
 

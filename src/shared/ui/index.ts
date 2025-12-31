@@ -113,10 +113,8 @@ export { AuroraText, type AuroraTextProps } from './aurora-text'
 // HyperText (feature: 011-brand-visual-components)
 export { HyperText, type HyperTextProps } from './hyper-text'
 
-// WalletButton - NOT exported from barrel to prevent Web3 bundle inclusion
-// Use direct imports instead:
-// - import { LazyWalletButton } from '@/shared/ui/wallet-button-lazy' (recommended)
-// - import { WalletButton } from '@/shared/ui/wallet-button' (requires Web3Provider)
+// WalletButton - Moved to features/wallet-connect (FSD: depends on Web3 feature)
+// Use: import { LazyWalletButton, WalletButton } from '@/features/wallet-connect'
 
 // PageLayout moved to widgets/network-background (FSD: can't import widgets from shared)
 // Use: import { PageLayout } from '@/widgets/network-background'

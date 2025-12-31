@@ -20,6 +20,7 @@ import {
   createPreferencesSlice,
   createIdCounterSlice,
   createUtilitySlice,
+  createUiSlice,
   type CreatorStore,
 } from './slices'
 
@@ -170,6 +171,7 @@ const migrateInternal = (persistedState: any, version: number): Partial<CreatorS
  * - preferencesSlice: User preferences
  * - idCounterSlice: Invoice ID generation
  * - utilitySlice: Global utility actions
+ * - uiSlice: Transient UI state (not persisted)
  *
  * @example
  * // Select specific state
@@ -199,13 +201,14 @@ export const useCreatorStore = create<CreatorStore>()(
       ...createPreferencesSlice(...a),
       ...createIdCounterSlice(...a),
       ...createUtilitySlice(...a),
+      ...createUiSlice(...a),
     }),
     {
       name: CREATOR_STORE_KEY,
       storage: createJSONStorage(() => localStorage),
       version: 1,
       migrate,
-      // Partialize to exclude computed fields if needed
+      // Partialize: only persist these fields (excludes transient UI state like networkTheme)
       partialize: (state) => ({
         version: state.version,
         activeDraft: state.activeDraft,
@@ -214,6 +217,7 @@ export const useCreatorStore = create<CreatorStore>()(
         history: state.history,
         preferences: state.preferences,
         idCounter: state.idCounter,
+        // Note: networkTheme is intentionally excluded (transient UI state)
       }),
     }
   )

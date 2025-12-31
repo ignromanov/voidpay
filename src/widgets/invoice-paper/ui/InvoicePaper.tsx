@@ -135,7 +135,7 @@ export const InvoicePaper = React.memo(
           className={cn(
             // Base styles - responsive by default with aspect-ratio
             // cursor-default on paper background, content container overrides for variant="full"
-            'group/paper relative flex aspect-[794/1123] w-full max-w-[794px] origin-top flex-col overflow-hidden bg-white text-black transition-shadow duration-500 cursor-default',
+            'group/paper relative flex aspect-[794/1123] w-full max-w-[794px] origin-top cursor-default flex-col overflow-hidden bg-white text-black transition-shadow duration-500',
             'shadow-2xl print:aspect-auto print:h-auto print:min-h-0 print:w-full print:max-w-none print:scale-100 print:shadow-none',
             // Print class for visibility control (see globals.css @media print)
             'print-invoice',
@@ -147,7 +147,9 @@ export const InvoicePaper = React.memo(
             !showGlow && className
           )}
           role="document"
-          aria-label={isEmpty ? 'Empty invoice placeholder' : `Invoice ${data?.invoiceId ?? 'draft'}`}
+          aria-label={
+            isEmpty ? 'Empty invoice placeholder' : `Invoice ${data?.invoiceId ?? 'draft'}`
+          }
         >
           {/* Texture Layer - self-hosted for stateless operation */}
           {showTexture && (
@@ -224,7 +226,7 @@ export const InvoicePaper = React.memo(
             {/* Network-colored glow effect */}
             <div
               className={cn(
-                'pointer-events-none absolute -inset-[30%] z-[-1] rounded-full opacity-60 blur-[100px] transition-all duration-500 print:hidden',
+                'pointer-events-none absolute -inset-[30%] z-[-1] rounded-full opacity-40 blur-[100px] transition-all duration-500 print:hidden',
                 'bg-gradient-to-br',
                 glowConfig.from,
                 glowConfig.to

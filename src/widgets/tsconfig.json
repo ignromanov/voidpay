@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "rootDir": ".",
+    "outDir": "../../.tsbuild/widgets",
+    "tsBuildInfoFile": "../../.tsbuild/widgets.tsbuildinfo"
+  },
+  "include": ["./**/*.ts", "./**/*.tsx"],
+  "exclude": ["**/*.test.ts", "**/*.test.tsx", "**/test-utils/**", "**/__tests__/**"],
+  "references": [{ "path": "../shared" }, { "path": "../entities" }, { "path": "../features" }]
+}
