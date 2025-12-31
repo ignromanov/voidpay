@@ -8,6 +8,7 @@ import { ScaledInvoicePreview } from './ScaledInvoicePreview'
 import { InvoiceStatus, InvoicePaperProps } from '../types'
 import { Invoice, PartialInvoice } from '@/entities/invoice'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
+import { toast } from '@/shared/lib/toast'
 
 export interface InvoicePreviewModalProps {
   /**
@@ -53,8 +54,9 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
       }
       try {
         return generateInvoiceUrl(data as Invoice)
-      } catch {
-        // Silently fail if URL generation fails (e.g., too large)
+      } catch (error) {
+        console.error('URL generation failed:', error)
+        toast.error('Failed to generate invoice URL')
         return undefined
       }
     }, [data])
@@ -62,15 +64,20 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="flex h-[100dvh] w-screen max-w-none flex-col overflow-hidden border-none bg-zinc-900/90 p-0 shadow-2xl backdrop-blur-xl print:hidden sm:h-[95vh] sm:max-w-[95vw] md:max-w-[850px] [&>button]:hidden"
+          className="flex h-[100dvh] w-screen max-w-none flex-col overflow-hidden border-none bg-zinc-900/90 p-0 shadow-2xl backdrop-blur-xl sm:h-[95vh] sm:max-w-[95vw] md:max-w-[850px] print:hidden [&>button]:hidden"
           aria-describedby={undefined}
         >
           {/* Sticky header per v3 design */}
           <div className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b border-white/10 bg-zinc-800/80 px-3 py-3 backdrop-blur-md sm:p-4">
             <div className="flex items-center gap-2">
               {/* DialogTitle for accessibility — visible per v3 */}
-              <DialogTitle className="text-sm font-bold text-white sm:text-base">Document Preview</DialogTitle>
-              <Badge variant="outline" className="hidden border-violet-500/30 text-violet-300 sm:flex">
+              <DialogTitle className="text-sm font-bold text-white sm:text-base">
+                Document Preview
+              </DialogTitle>
+              <Badge
+                variant="outline"
+                className="hidden border-violet-500/30 text-violet-300 sm:flex"
+              >
                 Reading Mode
               </Badge>
             </div>

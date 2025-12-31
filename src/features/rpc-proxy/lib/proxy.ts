@@ -60,7 +60,8 @@ export async function proxyRequest(request: JsonRpcRequest): Promise<ProxyResult
       provider: 'primary',
       requestId,
     }
-  } catch {
+  } catch (primaryError) {
+    console.error('RPC provider primary failed:', primaryError)
     // Primary failed - try fallback (Infura)
     try {
       const response = await fetchProvider(
@@ -74,7 +75,8 @@ export async function proxyRequest(request: JsonRpcRequest): Promise<ProxyResult
         provider: 'fallback',
         requestId,
       }
-    } catch {
+    } catch (fallbackError) {
+      console.error('RPC provider fallback failed:', fallbackError)
       // Both providers failed
       return {
         response: {

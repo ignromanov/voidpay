@@ -2,7 +2,8 @@
  * Rate Limiting for RPC Proxy
  * Feature: 004-rpc-proxy-failover
  *
- * Uses Vercel KV (Redis) with @upstash/ratelimit for distributed rate limiting
+ * Uses Vercel KV (Redis) with @upstash/ratelimit for distributed rate limiting.
+ * Falls back to in-memory rate limiting when KV is unavailable.
  */
 
 import { Ratelimit } from '@upstash/ratelimit'
@@ -12,6 +13,16 @@ import type { RateLimitResult } from '../model/types'
 // Initialize rate limiter with sliding window algorithm
 // 100 requests per 60 seconds per IP
 let rateLimiter: Ratelimit | null = null
+
+// In-memory fallback when KV is unavailable
+interface MemoryRecord {
+  count: number
+  resetAt: number
+}
+
+const memoryStore = new Map<string, MemoryRecord>()
+const WINDOW_MS = 60 * 1000 // 1 minute
+const MAX_REQUESTS = 100
 
 function getRateLimiter(): Ratelimit | null {
   // Only initialize if KV credentials are available
@@ -29,6 +40,54 @@ function getRateLimiter(): Ratelimit | null {
   }
 
   return rateLimiter
+}
+
+/**
+ * In-memory rate limiter fallback
+ * Used when Vercel KV is unavailable
+ */
+function memoryRateLimit(identifier: string): RateLimitResult {
+  const now = Date.now()
+  const record = memoryStore.get(identifier)
+
+  // No record or window expired - reset
+  if (!record || now > record.resetAt) {
+    memoryStore.set(identifier, { count: 1, resetAt: now + WINDOW_MS })
+    return {
+      allowed: true,
+      remaining: MAX_REQUESTS - 1,
+      limit: MAX_REQUESTS,
+    }
+  }
+
+  // Rate limit exceeded
+  if (record.count >= MAX_REQUESTS) {
+    return {
+      allowed: false,
+      remaining: 0,
+      limit: MAX_REQUESTS,
+    }
+  }
+
+  // Increment counter
+  record.count++
+  return {
+    allowed: true,
+    remaining: MAX_REQUESTS - record.count,
+    limit: MAX_REQUESTS,
+  }
+}
+
+// Cleanup old entries periodically (every minute) to prevent memory leaks
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now()
+    memoryStore.forEach((value, key) => {
+      if (now > value.resetAt) {
+        memoryStore.delete(key)
+      }
+    })
+  }, 60 * 1000)
 }
 
 /**
@@ -64,13 +123,9 @@ export function extractIpAddress(headers: Headers): string {
 export async function checkRateLimit(identifier: string): Promise<RateLimitResult> {
   const limiter = getRateLimiter()
 
-  // Fail-open: if KV is not configured, allow the request
+  // Use in-memory fallback if KV is not configured
   if (!limiter) {
-    return {
-      allowed: true,
-      remaining: 100,
-      limit: 100,
-    }
+    return memoryRateLimit(identifier)
   }
 
   try {
@@ -81,13 +136,9 @@ export async function checkRateLimit(identifier: string): Promise<RateLimitResul
       remaining: result.remaining,
       limit: result.limit,
     }
-  } catch {
-    // Fail-open: if KV is unreachable, allow the request
-    // This prevents blocking legitimate users during infrastructure issues
-    return {
-      allowed: true,
-      remaining: 100,
-      limit: 100,
-    }
+  } catch (error) {
+    // Fallback to in-memory rate limiting if KV is unreachable
+    console.error('KV rate limiter failed, using in-memory fallback:', error)
+    return memoryRateLimit(identifier)
   }
 }

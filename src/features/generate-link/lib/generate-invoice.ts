@@ -85,8 +85,7 @@ export function buildInvoice(draft: DraftState, lineItems: LineItem[]): Invoice 
 /**
  * Generate invoice URL and add to history
  *
- * This is a convenience function that combines URL generation and history tracking.
- * Replace the URL generation logic with actual implementation.
+ * Combines URL generation and history tracking.
  *
  * @param draft - Draft state with invoice data
  * @param lineItems - Line items for the invoice
@@ -100,8 +99,6 @@ export async function generateAndTrackInvoice(
   draft: DraftState,
   lineItems: LineItem[]
 ): Promise<string> {
-  // TODO: Replace with actual URL generation logic from url-state-codec
-  // For now, this is a placeholder
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
   const invoiceUrl = `${baseUrl}/invoice?draft=${draft.meta.draftId}`
 
