@@ -36,6 +36,7 @@ export type ScalePreset = 'demo' | 'editor' | 'modal'
 
 interface PresetConfig {
   maxScale: number
+  minScale?: number
   scaleBy: 'fit' | 'width'
   /** CSS class for container height */
   containerHeightClass: string
@@ -44,7 +45,7 @@ interface PresetConfig {
 export const PRESET_CONFIGS: Record<ScalePreset, PresetConfig> = {
   demo: { maxScale: 1, scaleBy: 'fit', containerHeightClass: 'min-h-[75vh]' },
   editor: { maxScale: 0.85, scaleBy: 'fit', containerHeightClass: 'h-full' },
-  modal: { maxScale: 1, scaleBy: 'width', containerHeightClass: 'h-full' },
+  modal: { maxScale: 1, minScale: 0.65, scaleBy: 'width', containerHeightClass: 'h-auto' },
 }
 
 export interface UseInvoiceScaleOptions {
@@ -59,6 +60,13 @@ export interface UseInvoiceScaleOptions {
    * Ignored when preset is provided.
    */
   maxScale?: number
+
+  /**
+   * Minimum allowed scale (default: 0.25)
+   * Useful for ensuring readability on small screens.
+   * Ignored when preset is provided.
+   */
+  minScale?: number
 
   /**
    * How to calculate scale:
@@ -92,7 +100,7 @@ export interface UseInvoiceScaleResult {
 export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoiceScaleResult {
   // Resolve preset or use individual options
   const config = options.preset ? PRESET_CONFIGS[options.preset] : options
-  const { maxScale = 1, scaleBy = 'fit' } = config
+  const { maxScale = 1, minScale = MIN_SCALE, scaleBy = 'fit' } = config
 
   const [container, setContainer] = useState<HTMLDivElement | null>(null)
   const [scale, setScale] = useState(INITIAL_SCALE)
@@ -103,7 +111,7 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
   // Memoized scale calculation
   const calculateScale = useCallback(
     (width: number, height: number): number => {
-      if (width === 0 || height === 0) return MIN_SCALE
+      if (width === 0 || height === 0) return minScale
 
       const paddingX = width < 768 ? 16 : 24
       const availableWidth = Math.max(width - paddingX, 280)
@@ -116,9 +124,9 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
       // 'fit' mode: fit both dimensions (no scroll needed)
       const baseScale = scaleBy === 'width' ? widthRatio : Math.min(widthRatio, heightRatio)
 
-      return Math.min(Math.max(baseScale, MIN_SCALE), maxScale)
+      return Math.min(Math.max(baseScale, minScale), maxScale)
     },
-    [maxScale, scaleBy]
+    [maxScale, minScale, scaleBy]
   )
 
   // Callback ref — called when DOM node mounts/unmounts
