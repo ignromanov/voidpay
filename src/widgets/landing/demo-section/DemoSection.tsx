@@ -11,7 +11,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { getNetworkTheme } from '@/entities/network'
 import { Button, Heading, Text } from '@/shared/ui'
-import { InvoicePaper, ScaledInvoicePreview } from '@/widgets/invoice-paper'
+import { InvoicePaper, ScaledInvoicePreview, InvoicePaperProps } from '@/widgets/invoice-paper'
 
 import { useNetworkTheme } from '../context/network-theme-context'
 import { DEMO_INVOICES, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
@@ -100,14 +100,16 @@ export function DemoSection() {
             </div>
           }
         >
+          {/* Type assertion needed because DEMO_INVOICES status is runtime value.
+              Discriminated union correctly enforces txHash when status='paid'. */}
           <InvoicePaper
-            data={currentInvoice.data}
-            status={currentInvoice.status}
-            {...(currentInvoice.txHash && { txHash: currentInvoice.txHash })}
-            {...(currentInvoice.txHashValidated !== undefined && {
+            {...({
+              data: currentInvoice.data,
+              status: currentInvoice.status,
+              txHash: currentInvoice.txHash,
               txHashValidated: currentInvoice.txHashValidated,
-            })}
-            showGlow
+              showGlow: true,
+            } as InvoicePaperProps)}
           />
         </ScaledInvoicePreview>
       </div>

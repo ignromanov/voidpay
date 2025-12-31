@@ -40,7 +40,8 @@ describe('InvoicePaper Integration', () => {
   })
 
   it('renders watermark for paid status', () => {
-    render(<InvoicePaper data={mockData} status="paid" />)
+    // Discriminated union requires txHash when status='paid'
+    render(<InvoicePaper data={mockData} status="paid" txHash="0x123abc" />)
     expect(screen.getByText('PAID')).toBeDefined()
   })
 })

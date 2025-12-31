@@ -20,35 +20,15 @@ export type { InvoiceStatus }
 export type InvoicePaperVariant = 'full' | 'default' | 'print'
 
 /**
- * Props for the InvoicePaper widget
+ * Base props shared by all invoice paper variants
  */
-export interface InvoicePaperProps {
+interface InvoicePaperBaseProps {
   /**
    * Invoice data following Schema V1.
    * Can be deep-partial for 'draft' status preview (nested fields may be incomplete).
    * When undefined, renders an empty placeholder state with 'empty' status.
    */
   data: PartialInvoice | undefined
-
-  /**
-   * Current status of the invoice.
-   * Affects watermarks and badges.
-   * @default 'pending'
-   */
-  status?: InvoiceStatus
-
-  /**
-   * Transaction hash for 'paid' status.
-   * Used to generate block explorer links.
-   */
-  txHash?: string
-
-  /**
-   * Whether the transaction hash has been validated on-chain.
-   * When false, a warning indicator is shown.
-   * @default true (for backward compatibility)
-   */
-  txHashValidated?: boolean | undefined
 
   /**
    * Display variant of the invoice paper.
@@ -100,3 +80,58 @@ export interface InvoicePaperProps {
    */
   containerRef?: React.RefObject<HTMLElement | null> | undefined
 }
+
+/**
+ * Props when invoice is NOT paid (draft, pending, overdue)
+ * txHash is optional (may not exist yet)
+ */
+interface InvoicePaperNotPaidProps extends InvoicePaperBaseProps {
+  /**
+   * Current status of the invoice.
+   * @default 'pending'
+   */
+  status?: 'draft' | 'pending' | 'overdue' | 'empty'
+
+  /**
+   * Transaction hash (optional for non-paid statuses).
+   */
+  txHash?: string | undefined
+
+  /**
+   * Whether the transaction hash has been validated on-chain.
+   * @default true
+   */
+  txHashValidated?: boolean | undefined
+}
+
+/**
+ * Props when invoice is paid
+ * txHash is REQUIRED when status is 'paid'
+ */
+interface InvoicePaperPaidProps extends InvoicePaperBaseProps {
+  /**
+   * Status is 'paid' - invoice has been paid
+   */
+  status: 'paid'
+
+  /**
+   * Transaction hash REQUIRED for paid status.
+   * Used to generate block explorer links.
+   */
+  txHash: string
+
+  /**
+   * Whether the transaction hash has been validated on-chain.
+   * When false, a warning indicator is shown.
+   * @default true
+   */
+  txHashValidated?: boolean | undefined
+}
+
+/**
+ * Props for the InvoicePaper widget
+ *
+ * Discriminated union ensuring txHash is required when status is 'paid'.
+ * This provides compile-time safety for payment verification flows.
+ */
+export type InvoicePaperProps = InvoicePaperNotPaidProps | InvoicePaperPaidProps

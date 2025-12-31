@@ -139,7 +139,8 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
                 <CopyButton
                   value={client.walletAddress}
                   size="xs"
-                  className="flex-shrink-0 print:hidden"
+                  className="flex-shrink-0"
+                  data-print-hide
                   aria-label="Copy client wallet address"
                 />
               )}

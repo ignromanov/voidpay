@@ -1,8 +1,15 @@
 'use client'
 
-import { forwardRef, type ReactNode, type MouseEventHandler } from 'react'
+import { forwardRef, type ReactNode, type MouseEventHandler, type KeyboardEvent, type MouseEvent } from 'react'
 import { cn } from '@/shared/lib/utils'
 import { useInvoiceScale, type UseInvoiceScaleOptions } from '../lib/use-invoice-scale'
+
+/**
+ * Union type for click handlers that support both mouse and keyboard activation.
+ * - MouseEventHandler: For mouse click events
+ * - () => void: For simple callbacks (e.g., from keyboard activation)
+ */
+type ClickHandler = MouseEventHandler<HTMLDivElement> | (() => void)
 
 export interface ScaledInvoicePreviewProps {
   /** Invoice content (will be scaled) */
@@ -20,10 +27,11 @@ export interface ScaledInvoicePreviewProps {
    */
   scaleOptions?: UseInvoiceScaleOptions
   /**
-   * Click handler with access to mouse event.
+   * Click handler supporting both mouse events and keyboard activation.
+   * When triggered via keyboard (Enter/Space), called without event argument.
    * Cursor style should be controlled via className.
    */
-  onClick?: MouseEventHandler<HTMLDivElement>
+  onClick?: ClickHandler
   onMouseEnter?: MouseEventHandler<HTMLDivElement>
   onMouseLeave?: MouseEventHandler<HTMLDivElement>
   className?: string
@@ -61,26 +69,36 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
 
     const heightStyle = typeof containerHeight === 'number' ? `${containerHeight}px` : containerHeight
 
+    // Keyboard handler for accessibility (Enter/Space triggers click)
+    const handleKeyDown = onClick
+      ? (e: KeyboardEvent<HTMLDivElement>) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            // Call onClick without event for keyboard activation
+            // This avoids unsafe type casting of KeyboardEvent to MouseEvent
+            ;(onClick as () => void)()
+          }
+        }
+      : undefined
+
+    // Mouse click handler (passes event if handler accepts it)
+    const handleClick = onClick
+      ? (e: MouseEvent<HTMLDivElement>) => {
+          onClick(e)
+        }
+      : undefined
+
     return (
       <div
         ref={setRefs}
         className={cn('relative flex w-full items-center justify-center', className)}
         style={{ minHeight: heightStyle }}
-        onClick={onClick}
+        onClick={handleClick}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         role={onClick ? 'button' : undefined}
         tabIndex={onClick ? 0 : undefined}
-        onKeyDown={
-          onClick
-            ? (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  onClick(e as unknown as React.MouseEvent<HTMLDivElement>)
-                }
-              }
-            : undefined
-        }
+        onKeyDown={handleKeyDown}
       >
         {/* Scaled invoice wrapper */}
         <div
