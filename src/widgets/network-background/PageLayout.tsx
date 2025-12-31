@@ -65,9 +65,9 @@ export function PageLayout({
       <div
         className={cn(
           'fixed inset-0 z-10 flex flex-col overflow-hidden',
-          'pt-16 pb-12 px-2',
-          'sm:pt-16 sm:px-4',
-          'lg:pt-16 lg:pb-14',
+          'py-14 px-2',
+          'sm:py-14 sm:px-4',
+          'lg:py-16',
           'print:static print:p-0 print:overflow-visible',
           className
         )}

@@ -86,15 +86,15 @@ export function CreateWorkspace() {
         {decodeError && <UrlErrorBanner error={decodeError} />}
 
         {/* Preview container — fills remaining space, centers invoice */}
-        <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden relative print:block print:overflow-visible">
+        <div className="flex-1 flex items-center justify-center overflow-hidden relative print:block print:overflow-visible">
           {/* Screen version: scaled preview */}
-          <div className="print:hidden">
-            <ScaledInvoicePreview
-              onClick={handlePreviewClick}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              scaleOptions={{ maxScale: 1 }}
-              className="cursor-zoom-in"
+          <ScaledInvoicePreview
+            containerHeight="92vh"
+            onClick={handlePreviewClick}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            scaleOptions={{ maxScale: 1 }}
+            className="cursor-zoom-in print:hidden"
               overlay={
                 invoiceData && (
                   <div
@@ -113,10 +113,9 @@ export function CreateWorkspace() {
                   </div>
                 )
               }
-            >
-              <InvoicePaper data={invoiceData} status="draft" showGlow />
-            </ScaledInvoicePreview>
-          </div>
+          >
+            <InvoicePaper data={invoiceData} status="draft" showGlow />
+          </ScaledInvoicePreview>
 
           {/* Print version: full-size invoice without scaling */}
           <div className="hidden print:block print-invoice">

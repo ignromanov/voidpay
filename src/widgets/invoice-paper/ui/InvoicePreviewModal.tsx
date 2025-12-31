@@ -90,11 +90,8 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             onClick={() => onOpenChange(false)}
           >
             <ScaledInvoicePreview
-              scaleOptions={{
-                scaleMultiplier: 2,
-                maxScale: 1,
-                heightFraction: 0.85,
-              }}
+              containerHeight="85vh"
+              scaleOptions={{ maxScale: 1 }}
               className="shrink-0"
               onClick={(e) => e.stopPropagation()}
             >

@@ -2,27 +2,7 @@
 
 import { forwardRef, type ReactNode, type MouseEventHandler } from 'react'
 import { cn } from '@/shared/lib/utils'
-import {
-  useInvoiceScale,
-  INVOICE_BASE_WIDTH,
-  INVOICE_BASE_HEIGHT,
-  type UseInvoiceScaleOptions,
-} from '../lib/use-invoice-scale'
-
-/**
- * Fixed scale presets for special cases (print, thumbnails, etc.)
- * Based on 794×1123px base (A4 aspect ratio)
- */
-const SCALE_PRESETS = {
-  xs: { scale: 0.35, width: 278, height: 393 },
-  sm: { scale: 0.45, width: 357, height: 505 },
-  md: { scale: 0.55, width: 437, height: 618 },
-  lg: { scale: 0.7, width: 556, height: 786 },
-  xl: { scale: 0.9, width: 715, height: 1011 },
-  full: { scale: 1, width: INVOICE_BASE_WIDTH, height: INVOICE_BASE_HEIGHT },
-} as const
-
-export type InvoiceScalePreset = keyof typeof SCALE_PRESETS
+import { useInvoiceScale, type UseInvoiceScaleOptions } from '../lib/use-invoice-scale'
 
 export interface ScaledInvoicePreviewProps {
   /** Invoice content (will be scaled) */
@@ -30,17 +10,18 @@ export interface ScaledInvoicePreviewProps {
   /** Overlay content (NOT scaled, positioned absolute) */
   overlay?: ReactNode
   /**
-   * Fixed scale preset for special cases (print, thumbnails).
-   * When not provided, uses dynamic viewport-based scaling.
+   * Container height for scale calculation.
+   * Can be CSS value like '75vh', '600px', or number (pixels).
+   * @default '75vh'
    */
-  fixedScale?: InvoiceScalePreset
+  containerHeight?: string | number
   /**
-   * Options for dynamic scaling (ignored when fixedScale is set)
+   * Options for dynamic scaling
    */
   scaleOptions?: UseInvoiceScaleOptions
   /**
    * Click handler with access to mouse event.
-   * Cursor style should be controlled via className (no auto cursor-zoom-in).
+   * Cursor style should be controlled via className.
    */
   onClick?: MouseEventHandler<HTMLDivElement>
   onMouseEnter?: MouseEventHandler<HTMLDivElement>
@@ -50,36 +31,41 @@ export interface ScaledInvoicePreviewProps {
 
 export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePreviewProps>(
   function ScaledInvoicePreview(
-    { children, overlay, fixedScale, scaleOptions, onClick, onMouseEnter, onMouseLeave, className },
+    {
+      children,
+      overlay,
+      containerHeight = '75vh',
+      scaleOptions,
+      onClick,
+      onMouseEnter,
+      onMouseLeave,
+      className,
+    },
     ref
   ) {
-    // Dynamic scaling (default behavior)
-    const { containerRef, scale: dynamicScale, scaledWidth, scaledHeight } = useInvoiceScale(scaleOptions)
+    const { containerRef, scale, scaledWidth, scaledHeight } = useInvoiceScale(scaleOptions)
 
-    // Use fixed preset if specified, otherwise dynamic
-    const isFixed = fixedScale !== undefined
-    const preset = isFixed ? SCALE_PRESETS[fixedScale] : null
+    // Merge refs if external ref provided
+    const setRefs = (node: HTMLDivElement | null) => {
+      // Set internal ref
+      if (containerRef && 'current' in containerRef) {
+        ;(containerRef as React.MutableRefObject<HTMLDivElement | null>).current = node
+      }
+      // Set external ref
+      if (typeof ref === 'function') {
+        ref(node)
+      } else if (ref) {
+        ref.current = node
+      }
+    }
 
-    const currentScale = isFixed ? preset!.scale : dynamicScale
-    const currentWidth = isFixed ? preset!.width : scaledWidth
-    const currentHeight = isFixed ? preset!.height : scaledHeight
+    const heightStyle = typeof containerHeight === 'number' ? `${containerHeight}px` : containerHeight
 
     return (
       <div
-        ref={isFixed ? ref : containerRef}
-        className={cn(
-          'relative overflow-hidden rounded-sm transition-[width,height] duration-200 ease-out',
-          className
-        )}
-        style={
-          isFixed
-            ? { width: currentWidth, height: currentHeight }
-            : {
-                width: `${currentWidth}px`,
-                height: `${currentHeight}px`,
-                willChange: 'width, height',
-              }
-        }
+        ref={setRefs}
+        className={cn('relative flex w-full items-center justify-center', className)}
+        style={{ minHeight: heightStyle }}
         onClick={onClick}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
@@ -89,28 +75,33 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           onClick
             ? (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
-                  // Create minimal event-like object for keyboard activation
-                  const syntheticEvent = {
-                    stopPropagation: () => {},
-                    preventDefault: () => {},
-                    currentTarget: e.currentTarget,
-                  } as React.MouseEvent<HTMLDivElement>
-                  onClick(syntheticEvent)
+                  e.preventDefault()
+                  onClick(e as unknown as React.MouseEvent<HTMLDivElement>)
                 }
               }
             : undefined
         }
       >
-        {/* Invoice with CSS scale — origin top-left to align with container */}
+        {/* Scaled invoice wrapper */}
         <div
-          className="absolute top-0 left-0 origin-top-left transition-transform duration-200 ease-out"
-          style={{ transform: `scale(${currentScale})` }}
+          className="relative overflow-hidden rounded-sm transition-[width,height] duration-200 ease-out"
+          style={{
+            width: `${scaledWidth}px`,
+            height: `${scaledHeight}px`,
+            willChange: 'width, height',
+          }}
         >
-          {children}
-        </div>
+          {/* Invoice with CSS scale — origin top-left to align with container */}
+          <div
+            className="absolute top-0 left-0 origin-top-left transition-transform duration-200 ease-out"
+            style={{ transform: `scale(${scale})` }}
+          >
+            {children}
+          </div>
 
-        {/* Overlay (not scaled) */}
-        {overlay}
+          {/* Overlay (not scaled, inside invoice bounds) */}
+          {overlay}
+        </div>
       </div>
     )
   }

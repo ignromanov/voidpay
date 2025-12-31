@@ -1,11 +1,7 @@
 export * from './types'
 export { InvoicePaper } from './ui/InvoicePaper'
 export { InvoicePreviewModal, type InvoicePreviewModalProps } from './ui/InvoicePreviewModal'
-export {
-  ScaledInvoicePreview,
-  type ScaledInvoicePreviewProps,
-  type InvoiceScalePreset,
-} from './ui/ScaledInvoicePreview'
+export { ScaledInvoicePreview, type ScaledInvoicePreviewProps } from './ui/ScaledInvoicePreview'
 export {
   useInvoiceScale,
   INVOICE_BASE_WIDTH,

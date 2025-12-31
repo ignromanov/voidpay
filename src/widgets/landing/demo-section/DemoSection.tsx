@@ -11,7 +11,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { getNetworkTheme } from '@/entities/network'
 import { Button, Heading, Text } from '@/shared/ui'
-import { InvoicePaper, useInvoiceScale } from '@/widgets/invoice-paper'
+import { InvoicePaper, ScaledInvoicePreview } from '@/widgets/invoice-paper'
 
 import { useNetworkTheme } from '../context/network-theme-context'
 import { DEMO_INVOICES, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
@@ -21,8 +21,6 @@ import { DemoPagination } from './ui/DemoPagination'
 
 export function DemoSection() {
   const { setTheme } = useNetworkTheme()
-  const { containerRef, scale, scaledWidth, scaledHeight } = useInvoiceScale({ heightFraction: 0.75 })
-
   const [isHovered, setIsHovered] = useState(false)
 
   const { activeIndex, pause, resume, goTo } = useDemoRotation({
@@ -79,65 +77,39 @@ export function DemoSection() {
       </header>
 
       {/* Invoice container */}
-      <div
-        ref={containerRef}
-        className="relative flex w-full max-w-[1400px] justify-center px-4 transition-[height] duration-200 ease-linear"
-        style={
-          {
-            '--scaled-height': `${scaledHeight + 40}px`,
-            height: 'var(--scaled-height)',
-            willChange: 'height',
-          } as React.CSSProperties
-        }
-      >
-        {/* Hover zone */}
-        <div
-          className="absolute top-0 left-1/2 z-20 -translate-x-1/2"
-          style={
-            {
-              '--hover-width': `${scaledWidth}px`,
-              '--hover-height': `${scaledHeight}px`,
-              width: 'var(--hover-width)',
-              height: 'var(--hover-height)',
-              willChange: 'width, height',
-            } as React.CSSProperties
-          }
+      <div className="relative flex w-full max-w-[1400px] justify-center px-4 pb-10">
+        <ScaledInvoicePreview
+          containerHeight="75vh"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-        >
-          {/* Scaled invoice */}
-          <div
-            className="absolute top-0 left-1/2 origin-top transition-transform duration-300 ease-out will-change-transform"
-            style={{ transform: `translateX(-50%) scale(${scale})` }}
-          >
-            <InvoicePaper
-              data={currentInvoice.data}
-              status={currentInvoice.status}
-              {...(currentInvoice.txHash && { txHash: currentInvoice.txHash })}
-              {...(currentInvoice.txHashValidated !== undefined && {
-                txHashValidated: currentInvoice.txHashValidated,
-              })}
-              showGlow
-              className="rounded-sm shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]"
-            />
-          </div>
-
-          {/* Hover CTA */}
-          <div
-            className={`absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
-          >
-            <Button
-              variant="glow"
-              size="default"
-              className="rounded-full bg-violet-600 px-8 py-4"
-              asChild
+          className="shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]"
+          overlay={
+            <div
+              className={`absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
             >
-              <Link href={`/create#${currentInvoice.createHash}`}>
-                Use This Template
-              </Link>
-            </Button>
-          </div>
-        </div>
+              <Button
+                variant="glow"
+                size="default"
+                className="rounded-full bg-violet-600 px-8 py-4"
+                asChild
+              >
+                <Link href={`/create#${currentInvoice.createHash}`}>
+                  Use This Template
+                </Link>
+              </Button>
+            </div>
+          }
+        >
+          <InvoicePaper
+            data={currentInvoice.data}
+            status={currentInvoice.status}
+            {...(currentInvoice.txHash && { txHash: currentInvoice.txHash })}
+            {...(currentInvoice.txHashValidated !== undefined && {
+              txHashValidated: currentInvoice.txHashValidated,
+            })}
+            showGlow
+          />
+        </ScaledInvoicePreview>
       </div>
 
       {/* Pagination */}

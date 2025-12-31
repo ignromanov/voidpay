@@ -3,11 +3,14 @@
 /**
  * useInvoiceScale — Dynamic responsive scaling for invoice preview
  *
- * Calculates optimal scale based on viewport size using RAF-throttled updates.
+ * Calculates optimal scale based on container size using RAF-throttled updates.
  * Base invoice: 794×1123px (A4 aspect ratio)
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useLayoutEffect, useEffect, useRef, useState, useCallback } from 'react'
+
+// Use useLayoutEffect on client, useEffect on server
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 /** Base invoice dimensions (A4 at 96 DPI) */
 export const INVOICE_BASE_WIDTH = 794
@@ -30,8 +33,8 @@ export interface UseInvoiceScaleOptions {
    */
   maxScale?: number
   /**
-   * Fraction of viewport height to target
-   * @default 0.75
+   * Fraction of container height to use for scaling
+   * @default 0.95
    */
   heightFraction?: number
 }
@@ -44,14 +47,21 @@ export interface UseInvoiceScaleResult {
 }
 
 /**
- * Calculates responsive scale for invoice paper based on container/viewport size.
+ * Calculates responsive scale for invoice paper based on container size.
  * Uses RAF-throttled resize handling for smooth performance.
+ *
+ * Note: Container must have explicit dimensions (e.g., minHeight) to avoid
+ * circular dependency where container size depends on scale.
  */
 export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoiceScaleResult {
-  const { scaleMultiplier = 1, minScale = 0.25, maxScale = 1, heightFraction = 0.98 } = options
+  const { scaleMultiplier = 1, minScale = 0.25, maxScale = 1, heightFraction = 0.95 } = options
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(0.45)
+
+  // Refs to avoid stale closures in RAF callback
+  const isScheduledRef = useRef(false)
+  const lastScaleRef = useRef(0.45)
 
   const calculateScale = useCallback(
     (width: number, height: number): number => {
@@ -72,58 +82,52 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
     [scaleMultiplier, minScale, maxScale, heightFraction]
   )
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     let rafId: number | null = null
-    let isScheduled = false
-    let lastScale = 0.45
 
     const updateSize = (width: number, height: number) => {
-      if (isScheduled) return
-      isScheduled = true
+      if (isScheduledRef.current) return
+      isScheduledRef.current = true
       rafId = requestAnimationFrame(() => {
         const newScale = calculateScale(width, height)
         // Only update if scale actually changed (avoid unnecessary re-renders)
-        if (Math.abs(newScale - lastScale) > 0.001) {
-          lastScale = newScale
+        if (Math.abs(newScale - lastScaleRef.current) > 0.001) {
+          lastScaleRef.current = newScale
           setScale(newScale)
         }
-        isScheduled = false
+        isScheduledRef.current = false
       })
     }
 
-    // Initial measurement using parent container (avoids circular dependency)
+    // Initial measurement using the container itself
     const container = containerRef.current
-    const parent = container?.parentElement
-    if (parent) {
-      const rect = parent.getBoundingClientRect()
+    if (container) {
+      const rect = container.getBoundingClientRect()
       updateSize(rect.width, rect.height)
     } else {
+      // Fallback to viewport if container not mounted
       updateSize(window.innerWidth, window.innerHeight)
     }
 
-    // Window resize handler (throttled)
-    const handleResize = () => {
-      const parent = containerRef.current?.parentElement
-      if (parent) {
-        const rect = parent.getBoundingClientRect()
-        updateSize(rect.width, rect.height)
-      } else {
-        updateSize(window.innerWidth, window.innerHeight)
-      }
-    }
-
-    // Observe PARENT container to avoid circular dependency
-    // (ScaledInvoicePreview sets its own size based on scale)
+    // Observe container for size changes
     let observer: ResizeObserver | null = null
-    if (parent) {
+    if (container) {
       observer = new ResizeObserver((entries) => {
         for (const entry of entries) {
           updateSize(entry.contentRect.width, entry.contentRect.height)
         }
       })
-      observer.observe(parent)
+      observer.observe(container)
     }
 
+    // Window resize as fallback
+    const handleResize = () => {
+      const container = containerRef.current
+      if (container) {
+        const rect = container.getBoundingClientRect()
+        updateSize(rect.width, rect.height)
+      }
+    }
     window.addEventListener('resize', handleResize)
 
     return () => {
