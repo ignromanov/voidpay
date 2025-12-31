@@ -13,6 +13,7 @@ export type { NetworkId } from './config/networks'
 export {
   NETWORK_CONFIG,
   NETWORK_GLOWS,
+  NETWORK_GLOW_SHADOWS,
   NETWORK_SHADOWS,
   NETWORK_BADGES,
   getNetworkTheme,

@@ -8,6 +8,7 @@ import { InvoicePaper } from './InvoicePaper'
 import { ScaledInvoicePreview } from './ScaledInvoicePreview'
 import { InvoiceStatus, InvoicePaperProps } from '../types'
 import { Invoice, PartialInvoice } from '@/entities/invoice'
+import { NETWORK_GLOW_SHADOWS } from '@/entities/network'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
@@ -40,13 +41,7 @@ const actionBarVariants = {
   },
 }
 
-// Network-specific glow colors
-const NETWORK_GLOW: Record<number, string> = {
-  1: 'before:from-violet-500/5', // Ethereum
-  42161: 'before:from-blue-500/5', // Arbitrum
-  10: 'before:from-red-500/5', // Optimism
-  137: 'before:from-purple-500/5', // Polygon
-}
+// Network glow now handled by ScaledInvoicePreview via NETWORK_GLOW_SHADOWS
 
 export interface InvoicePreviewModalProps {
   /**
@@ -98,9 +93,6 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
         return undefined
       }
     }, [data])
-
-    // Network glow class
-    const networkGlow = data.networkId ? NETWORK_GLOW[data.networkId] : undefined
 
     // Print handler
     const handlePrint = useCallback(() => {
@@ -184,22 +176,17 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             </DialogClose>
           </motion.div>
 
-          {/* Invoice container with network-specific glow */}
+          {/* Invoice container — glow handled by ScaledInvoicePreview */}
           <motion.div
             variants={invoiceVariants}
             initial="hidden"
             animate="visible"
-            className={cn(
-              'flex flex-1 cursor-zoom-out items-start justify-center overflow-auto px-1 py-4 sm:p-4 md:p-8',
-              // Network-specific ambient glow
-              networkGlow &&
-                'before:bg-gradient-radial relative before:pointer-events-none before:absolute before:inset-0 before:via-transparent before:to-transparent',
-              networkGlow
-            )}
+            className="flex flex-1 cursor-zoom-out items-start justify-center overflow-auto px-1 py-4 sm:p-4 md:p-8"
             onClick={() => onOpenChange(false)}
           >
             <ScaledInvoicePreview
               preset="modal"
+              glowClassName={NETWORK_GLOW_SHADOWS[data.networkId ?? 1]}
               className={cn(
                 'shrink-0 transition-all duration-300',
                 'hover:drop-shadow-[0_0_30px_rgba(124,58,237,0.12)]'

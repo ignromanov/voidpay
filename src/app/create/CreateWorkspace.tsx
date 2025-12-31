@@ -5,7 +5,7 @@ import { AlertCircle, Maximize2 } from 'lucide-react'
 
 import { decodeInvoice } from '@/features/invoice-codec'
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkTheme } from '@/entities/network'
+import { getNetworkTheme, NETWORK_GLOW_SHADOWS } from '@/entities/network'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
@@ -80,8 +80,8 @@ export function CreateWorkspace() {
         />
       )}
 
-      {/* Content container */}
-      <div className="mx-auto flex h-[calc(100vh-104px)] w-full max-w-[1400px] flex-col px-2 sm:px-4 print:h-auto print:max-w-none print:p-0">
+      {/* Content container — overflow-clip prevents glow from creating scroll */}
+      <div className="mx-auto flex h-[calc(100vh-104px)] w-full max-w-[1400px] flex-col overflow-clip px-2 sm:px-4 print:h-auto print:max-w-none print:overflow-visible print:p-0">
         {/* Error Banner (hidden on print) */}
         {decodeError && <UrlErrorBanner error={decodeError} />}
 
@@ -90,6 +90,7 @@ export function CreateWorkspace() {
           {/* Screen-only scaled preview (hidden during print to avoid flicker) */}
           <ScaledInvoicePreview
             preset="editor"
+            glowClassName={NETWORK_GLOW_SHADOWS[invoiceData?.networkId ?? 1]}
             onClick={handlePreviewClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}

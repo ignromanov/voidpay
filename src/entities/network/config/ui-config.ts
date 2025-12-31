@@ -90,10 +90,16 @@ export const NETWORK_BADGES: Record<
     colorClass: string
   }
 > = {
-  [mainnet.id]: { variant: 'secondary', colorClass: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
+  [mainnet.id]: {
+    variant: 'secondary',
+    colorClass: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+  },
   [arbitrum.id]: { variant: 'default', colorClass: 'bg-blue-100 text-blue-700 border-blue-200' },
   [optimism.id]: { variant: 'destructive', colorClass: 'bg-red-100 text-red-700 border-red-200' },
-  [polygon.id]: { variant: 'outline', colorClass: 'bg-purple-100 text-purple-700 border-purple-200' },
+  [polygon.id]: {
+    variant: 'outline',
+    colorClass: 'bg-purple-100 text-purple-700 border-purple-200',
+  },
 }
 
 /**
@@ -119,10 +125,34 @@ export const NETWORK_SHADOWS: Record<number, string> = {
 /**
  * Network-specific glow gradients for invoice background effect
  * Uses Tailwind gradient classes (from-X to-Y)
+ * @deprecated Use NETWORK_GLOW_SHADOWS instead (box-shadow doesn't affect layout)
  */
 export const NETWORK_GLOWS: Record<number, { from: string; to: string }> = {
   [mainnet.id]: { from: 'from-indigo-600/40', to: 'to-blue-600/40' },
   [arbitrum.id]: { from: 'from-cyan-600/40', to: 'to-blue-600/40' },
   [optimism.id]: { from: 'from-red-600/40', to: 'to-orange-600/40' },
   [polygon.id]: { from: 'from-purple-600/40', to: 'to-violet-600/40' },
+}
+
+/**
+ * Network-specific glow using CSS pseudo-element (::before)
+ * Pseudo-element doesn't affect layout calculations
+ * Uses elliptical shape with large blur for soft ambient effect
+ *
+ * Base classes (applied in InvoicePaper):
+ * - before:absolute before:-inset-[40%] before:z-[-1] before:rounded-full
+ * - before:blur-[120px] before:opacity-50 before:bg-gradient-to-br
+ * - print:before:hidden
+ *
+ * This config provides network-specific gradient colors
+ */
+export const NETWORK_GLOW_SHADOWS: Record<number, string> = {
+  // Indigo → Blue elliptical glow
+  [mainnet.id]: 'before:from-indigo-500/60 before:to-blue-500/40',
+  // Cyan → Blue elliptical glow
+  [arbitrum.id]: 'before:from-cyan-500/60 before:to-blue-500/40',
+  // Red → Orange elliptical glow
+  [optimism.id]: 'before:from-red-500/60 before:to-orange-500/40',
+  // Purple → Violet elliptical glow
+  [polygon.id]: 'before:from-purple-500/60 before:to-violet-500/40',
 }

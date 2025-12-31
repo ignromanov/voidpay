@@ -9,7 +9,7 @@ import { LineItemsTable } from './LineItemsTable'
 import { PaperTotals } from './PaperTotals'
 import { PaperFooter } from './PaperFooter'
 import { Watermark } from './Watermark'
-import { NETWORK_GLOWS, NETWORK_SHADOWS } from '@/entities/network'
+import { NETWORK_SHADOWS } from '@/entities/network'
 import { cn } from '@/shared/lib/utils'
 
 // Stable fallback objects (prevent new object creation on each render)
@@ -77,7 +77,7 @@ export const InvoicePaper = React.memo(
         variant = 'default',
         showQR = true,
         showTexture = true,
-        showGlow = false,
+        showGlow: _showGlow = false,
         invoiceUrl,
         className,
         containerRef,
@@ -90,9 +90,9 @@ export const InvoicePaper = React.memo(
       // Override status to 'empty' when no data
       const effectiveStatus = isEmpty ? 'empty' : status
 
-      // Get glow configuration for network (default to Ethereum for empty state)
+      // Get shadow configuration for network (default to Ethereum for empty state)
+      // Note: Glow effect is handled by ScaledInvoicePreview via glowClassName prop
       const networkId = data?.networkId ?? 1
-      const glowConfig = showGlow ? NETWORK_GLOWS[networkId] : null
       const shadowClass = NETWORK_SHADOWS[networkId] ?? 'shadow-black/20'
 
       const totals = useMemo(
@@ -137,9 +137,9 @@ export const InvoicePaper = React.memo(
             'group/paper relative flex h-[1123px] min-h-[1123px] w-[794px] min-w-[794px] cursor-default flex-col overflow-hidden bg-white text-black transition-shadow duration-500',
             // Print overrides — full size to enable flex layout (mt-auto needs height constraint)
             'shadow-2xl print:!h-full print:!min-h-0 print:!w-full print:!max-w-none print:!min-w-0 print:shadow-none print:transition-none',
+            // Standard shadow for depth (glow handled by ScaledInvoicePreview)
             shadowClass,
-            // Only apply className when no glow wrapper
-            !showGlow && className
+            className
           )}
           role="document"
           aria-label={
@@ -214,25 +214,7 @@ export const InvoicePaper = React.memo(
         </article>
       )
 
-      // Wrap with glow effect if enabled
-      if (showGlow && glowConfig) {
-        return (
-          <div className={cn('relative print:!flex print:!h-full print:!flex-col', className)}>
-            {/* Network-colored glow effect */}
-            <div
-              className={cn(
-                'pointer-events-none absolute -inset-[30%] z-[-1] rounded-full opacity-40 blur-[100px] transition-all duration-500 print:hidden',
-                'bg-gradient-to-br',
-                glowConfig.from,
-                glowConfig.to
-              )}
-              aria-hidden="true"
-            />
-            {content}
-          </div>
-        )
-      }
-
+      // Glow is now applied via box-shadow on article (doesn't need wrapper)
       return content
     }
   )

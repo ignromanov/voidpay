@@ -9,7 +9,7 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
-import { getNetworkTheme } from '@/entities/network'
+import { getNetworkTheme, NETWORK_GLOW_SHADOWS } from '@/entities/network'
 import { Button, Heading, Text } from '@/shared/ui'
 import { InvoicePaper, ScaledInvoicePreview, InvoicePaperProps } from '@/widgets/invoice-paper'
 
@@ -80,6 +80,7 @@ export function DemoSection() {
       <div className="relative flex w-full max-w-[1400px] justify-center px-4 pb-10">
         <ScaledInvoicePreview
           preset="demo"
+          glowClassName={NETWORK_GLOW_SHADOWS[currentInvoice.data.networkId]}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           className="shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]"

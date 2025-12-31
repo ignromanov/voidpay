@@ -53,6 +53,14 @@ export interface ScaledInvoicePreviewProps {
   printable?: boolean
 
   /**
+   * Network-specific glow gradient classes.
+   * Applied to ::before pseudo-element for elliptical ambient glow.
+   * Example: "before:from-indigo-500/60 before:to-blue-500/40"
+   * Use NETWORK_GLOW_SHADOWS[networkId] from @/entities/network
+   */
+  glowClassName?: string | undefined
+
+  /**
    * Click handler supporting both mouse events and keyboard activation.
    * When triggered via keyboard (Enter/Space), called without event argument.
    * Cursor style should be controlled via className.
@@ -87,6 +95,7 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
       preset,
       scaleOptions,
       printable = false,
+      glowClassName,
       onClick,
       onMouseEnter,
       onMouseLeave,
@@ -159,7 +168,17 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           className={cn(
             'relative overflow-visible rounded-sm transition-[width,height] duration-200 ease-out',
             // Print: reset all sizing/positioning to let invoice-print-target handle layout
-            'print:!static print:!h-auto print:!w-auto print:!overflow-visible print:rounded-none print:transition-none'
+            'print:!static print:!h-auto print:!w-auto print:!overflow-visible print:rounded-none print:transition-none',
+            // Elliptical ambient glow via ::before (matches invoice shape)
+            glowClassName && [
+              // Ellipse matching invoice proportions with soft blur
+              'before:pointer-events-none before:absolute before:-inset-[25%] before:z-[-1] before:rounded-full',
+              // Soft glow with large blur extending beyond bounds
+              'before:bg-gradient-to-br before:opacity-40 before:blur-[100px]',
+              'before:transition-opacity before:duration-500 print:before:hidden',
+              // Network-specific gradient colors
+              glowClassName,
+            ]
           )}
           style={{
             width: `${scaledWidth}px`,
