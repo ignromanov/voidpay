@@ -15,7 +15,7 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
 
   return (
     <div
-      className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12"
+      className="grid grid-cols-2 gap-12"
       role="region"
       aria-label="Invoice parties information"
     >
@@ -74,21 +74,21 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
       </div>
 
       {/* BILL TO Section - Order: Name → Email → Phone → Address → Wallet */}
-      <div className="flex flex-col md:items-end">
-        <p className="mb-3 text-xs font-bold tracking-widest text-zinc-400 uppercase md:text-right">
+      <div className="flex flex-col items-end">
+        <p className="mb-3 text-xs font-bold tracking-widest text-zinc-400 uppercase text-right">
           Bill To
         </p>
         <p
           className={cn(
-            'mb-3 text-lg font-bold md:text-right',
+            'mb-3 text-lg font-bold text-right',
             client.name ? 'text-black' : 'text-zinc-300 italic'
           )}
         >
           {client.name || 'Client / Recipient Name'}
         </p>
-        <div className="space-y-2 md:text-right">
+        <div className="space-y-2 text-right">
           {client.email && (
-            <div className="flex items-center gap-2 md:flex-row-reverse">
+            <div className="flex items-center gap-2 flex-row-reverse">
               <MailIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
               <a
                 href={`mailto:${client.email}`}
@@ -99,7 +99,7 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
             </div>
           )}
           {client.phone && (
-            <div className="flex items-center gap-2 md:flex-row-reverse">
+            <div className="flex items-center gap-2 flex-row-reverse">
               <PhoneIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
               <a
                 href={`tel:${client.phone}`}
@@ -110,13 +110,13 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
             </div>
           )}
           {client.taxId && (
-            <div className="flex items-center gap-2 md:flex-row-reverse">
+            <div className="flex items-center gap-2 flex-row-reverse">
               <HashIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
               <span className="text-sm text-zinc-800">{client.taxId}</span>
             </div>
           )}
           {client.physicalAddress && (
-            <div className="mt-3 flex items-start gap-2 md:flex-row-reverse">
+            <div className="mt-3 flex items-start gap-2 flex-row-reverse">
               <MapPinIcon
                 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-zinc-400"
                 aria-hidden="true"
@@ -127,7 +127,7 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
             </div>
           )}
           {client.walletAddress && (
-            <div className="mt-3 flex items-center gap-2 md:flex-row-reverse">
+            <div className="mt-3 flex items-center gap-2 flex-row-reverse">
               <WalletIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
               <span
                 className="min-w-0 flex-1 truncate font-mono text-xs text-zinc-800"
@@ -139,7 +139,7 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
                 <CopyButton
                   value={client.walletAddress}
                   size="xs"
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 print:hidden"
                   aria-label="Copy client wallet address"
                 />
               )}

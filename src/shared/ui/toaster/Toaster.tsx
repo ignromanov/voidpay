@@ -6,6 +6,7 @@ export function Toaster() {
   return (
     <SonnerToaster
       position="bottom-right"
+      className="print:hidden"
       toastOptions={{
         unstyled: true,
         classNames: {

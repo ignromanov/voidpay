@@ -146,7 +146,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                   {senderAddress || '0x... (wallet address)'}
                 </div>
                 {isInteractive && senderAddress && (
-                  <CopyButton value={senderAddress} size="sm" aria-label="Copy wallet address" />
+                  <CopyButton value={senderAddress} size="sm" className="print:hidden" aria-label="Copy wallet address" />
                 )}
               </div>
             </div>

@@ -53,21 +53,22 @@ export function PageLayout({
 }: PageLayoutProps) {
   return (
     <>
-      {/* Layer 0: Static fallback background */}
+      {/* Layer 0: Static fallback background (hidden on print) */}
       <StaticBackground theme={theme} />
 
-      {/* Layer 1: Animated network background */}
+      {/* Layer 1: Animated network background (hidden on print) */}
       {showBackground && (
-        <PixiBackground theme={theme} className="fixed inset-0 z-[1]" />
+        <PixiBackground theme={theme} className="fixed inset-0 z-[1] print:hidden" />
       )}
 
       {/* Layer 10: Page content */}
       <div
         className={cn(
           'fixed inset-0 z-10 flex flex-col overflow-hidden',
-          'pt-16 pb-4 px-2',
-          'sm:pt-20 sm:px-4',
-          'lg:pt-24 lg:pb-8',
+          'pt-16 pb-12 px-2',
+          'sm:pt-16 sm:px-4',
+          'lg:pt-16 lg:pb-14',
+          'print:static print:p-0 print:overflow-visible',
           className
         )}
       >
@@ -93,7 +94,7 @@ function StaticBackground({ theme }: { theme: NetworkTheme }) {
   const colors = accentColors[theme] || accentColors.ethereum
 
   return (
-    <div className="fixed inset-0 z-[0] bg-zinc-950">
+    <div className="fixed inset-0 z-[0] bg-zinc-950 print:hidden">
       {/* Gradient glow matching network theme */}
       <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/50 via-transparent to-transparent" />
       <div className={cn('absolute left-1/4 top-1/4 h-96 w-96 rounded-full blur-3xl', colors.primary)} />

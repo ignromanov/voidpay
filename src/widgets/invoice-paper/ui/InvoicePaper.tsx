@@ -28,10 +28,11 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
 
 // Variant-specific styles
 // For full variant: cursor-text on text elements, cursor-pointer on links
+// Print overrides: reduced padding for A4 margins
 const VARIANT_STYLES = {
-  full: 'p-12 [&_p]:cursor-text [&_span]:cursor-text [&_td]:cursor-text [&_th]:cursor-text [&_address]:cursor-text [&_a]:cursor-pointer',
-  default: 'p-12', // Standard mode (inherits cursor from parent)
-  print: 'p-8 print:p-6', // Print-optimized
+  full: 'p-12 print:p-8 [&_p]:cursor-text [&_span]:cursor-text [&_td]:cursor-text [&_th]:cursor-text [&_address]:cursor-text [&_a]:cursor-pointer',
+  default: 'p-12 print:p-8', // Standard mode with print padding
+  print: 'p-8 print:p-6', // Print-optimized (even smaller padding)
 } as const
 
 /**
@@ -135,7 +136,9 @@ export const InvoicePaper = React.memo(
             // Base styles - responsive by default with aspect-ratio
             // cursor-default on paper background, content container overrides for variant="full"
             'group/paper relative flex aspect-[794/1123] w-full max-w-[794px] origin-top flex-col overflow-hidden bg-white text-black transition-shadow duration-500 cursor-default',
-            'shadow-2xl print:aspect-auto print:h-full print:min-h-0 print:w-full print:min-w-0 print:scale-100 print:shadow-none',
+            'shadow-2xl print:aspect-auto print:h-auto print:min-h-0 print:w-full print:max-w-none print:scale-100 print:shadow-none',
+            // Print class for visibility control (see globals.css @media print)
+            'print-invoice',
             shadowClass,
             // Legacy scaling support (optional)
             !responsive && 'h-[1123px] min-h-[1123px] w-[794px] min-w-[794px]',
@@ -163,7 +166,7 @@ export const InvoicePaper = React.memo(
           ) : (
             <>
               {/* Content Container */}
-              <div className={cn('relative z-10 flex h-full flex-col', VARIANT_STYLES[variant])}>
+              <div className={cn('relative z-10 flex h-full print:h-auto flex-col', VARIANT_STYLES[variant])}>
                 <PaperHeader
                   invoiceId={data.invoiceId ?? ''}
                   iss={data.issuedAt ?? 0}
@@ -175,7 +178,7 @@ export const InvoicePaper = React.memo(
                 />
 
                 {/* Parties Section - From and Bill To */}
-                <section className="py-6 md:py-8" aria-label="Invoice parties">
+                <section className="py-8" aria-label="Invoice parties">
                   <PartyInfo from={from} client={client} variant={variant} />
                 </section>
 

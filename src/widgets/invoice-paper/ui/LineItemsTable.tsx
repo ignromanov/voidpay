@@ -8,7 +8,7 @@ interface LineItemsTableProps {
 
 export const LineItemsTable = React.memo<LineItemsTableProps>(({ items }) => {
   return (
-    <section className="flex-1">
+    <section className="flex-1 print:flex-none">
       <div className="-mx-4 overflow-x-auto px-4">
         <table className="w-full min-w-[500px] border-collapse text-left">
           <thead>
@@ -38,7 +38,7 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items }) => {
               return (
                 <tr
                   key={idx}
-                  className="group border-b border-zinc-200 transition-colors last:border-0 even:bg-zinc-50/50 hover:bg-zinc-100/50"
+                  className="group border-b border-zinc-200 transition-colors last:border-0 even:bg-zinc-50/50 hover:bg-zinc-100/50 print:even:bg-transparent print:hover:bg-transparent"
                 >
                   <td className="py-4 font-mono text-zinc-400">{idx + 1}</td>
                   <td className="py-4 font-medium text-zinc-900">{item.description ?? ''}</td>

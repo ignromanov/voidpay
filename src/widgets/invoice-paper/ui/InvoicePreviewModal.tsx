@@ -62,7 +62,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="flex h-[100dvh] w-screen max-w-none flex-col overflow-hidden border-none bg-zinc-900/90 p-0 shadow-2xl backdrop-blur-xl sm:h-[95vh] sm:max-w-[95vw] md:max-w-[850px] [&>button]:hidden"
+          className="flex h-[100dvh] w-screen max-w-none flex-col overflow-hidden border-none bg-zinc-900/90 p-0 shadow-2xl backdrop-blur-xl print:hidden sm:h-[95vh] sm:max-w-[95vw] md:max-w-[850px] [&>button]:hidden"
           aria-describedby={undefined}
         >
           {/* Sticky header per v3 design */}

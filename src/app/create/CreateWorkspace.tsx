@@ -81,47 +81,62 @@ export function CreateWorkspace() {
       )}
 
       {/* Content container */}
-      <div className="flex-1 flex flex-col max-w-[1400px] w-full mx-auto min-h-0 px-2 sm:px-4">
-        {/* Error Banner */}
+      <div className="flex-1 flex flex-col max-w-[1400px] w-full mx-auto min-h-0 px-2 sm:px-4 print:max-w-none print:p-0">
+        {/* Error Banner (hidden on print) */}
         {decodeError && <UrlErrorBanner error={decodeError} />}
 
-        {/* Real-time Preview badge — small, top */}
-        <div className="flex justify-center py-2 shrink-0">
-          <div className="bg-zinc-900/80 backdrop-blur border border-zinc-800 text-zinc-500 text-[10px] font-mono py-1 px-3 rounded-full flex items-center gap-1.5 whitespace-nowrap">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            Live Preview
-          </div>
-        </div>
-
         {/* Preview container — fills remaining space, centers invoice */}
-        <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden">
-          <ScaledInvoicePreview
-            onClick={handlePreviewClick}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            scaleOptions={{ maxScale: 1 }}
-            className="cursor-zoom-in"
-            overlay={
-              invoiceData && (
-                <div
-                  className={cn(
-                    'absolute inset-0 z-20 flex items-end justify-end p-3 transition-opacity duration-200',
-                    isHovered ? 'opacity-100' : 'opacity-0'
-                  )}
-                >
-                  <button
-                    className="bg-zinc-900/90 backdrop-blur-sm shadow-lg text-[11px] font-medium text-zinc-300 border border-zinc-700/50 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md cursor-pointer transition-colors hover:bg-zinc-800 hover:text-white hover:border-zinc-600"
-                    type="button"
+        <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden relative print:block print:overflow-visible">
+          {/* Screen version: scaled preview */}
+          <div className="print:hidden">
+            <ScaledInvoicePreview
+              onClick={handlePreviewClick}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              scaleOptions={{ maxScale: 1 }}
+              className="cursor-zoom-in"
+              overlay={
+                invoiceData && (
+                  <div
+                    className={cn(
+                      'absolute inset-0 z-20 flex items-end justify-start p-3 transition-opacity duration-200',
+                      isHovered ? 'opacity-100' : 'opacity-0'
+                    )}
                   >
-                    <Maximize2 className="w-3 h-3" />
-                    Expand
-                  </button>
-                </div>
-              )
-            }
-          >
-            <InvoicePaper data={invoiceData} status="draft" showGlow />
-          </ScaledInvoicePreview>
+                    <button
+                      className="bg-zinc-800/80 backdrop-blur-md border border-zinc-600/50 text-zinc-300 text-[10px] font-mono py-1.5 px-3 rounded-full flex items-center gap-2 whitespace-nowrap shadow-xl cursor-pointer transition-colors hover:bg-zinc-700 hover:text-zinc-100 hover:border-zinc-500"
+                      type="button"
+                    >
+                      <Maximize2 className="w-3 h-3" />
+                      Expand
+                    </button>
+                  </div>
+                )
+              }
+            >
+              <InvoicePaper data={invoiceData} status="draft" showGlow />
+            </ScaledInvoicePreview>
+          </div>
+
+          {/* Print version: full-size invoice without scaling */}
+          <div className="hidden print:block print-invoice">
+            <InvoicePaper
+              data={invoiceData}
+              status="draft"
+              variant="print"
+              showGlow={false}
+              showTexture={false}
+              responsive
+            />
+          </div>
+
+          {/* Floating Live Preview badge — hovering above invoice (hidden on print) */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 print:hidden">
+            <div className="bg-zinc-800/80 backdrop-blur-md border border-zinc-600/50 text-zinc-300 text-[10px] font-mono py-1.5 px-3 rounded-full flex items-center gap-2 whitespace-nowrap shadow-xl">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live Preview
+            </div>
+          </div>
         </div>
       </div>
     </PageLayout>
@@ -129,11 +144,11 @@ export function CreateWorkspace() {
 }
 
 /**
- * Error banner for invalid URL hash
+ * Error banner for invalid URL hash (hidden on print)
  */
 function UrlErrorBanner({ error }: { error: string }) {
   return (
-    <div className="mb-6 rounded-lg border border-rose-500/20 bg-rose-500/10 p-4">
+    <div className="mb-6 rounded-lg border border-rose-500/20 bg-rose-500/10 p-4 print:hidden">
       <div className="flex items-center gap-3">
         <AlertCircle className="h-5 w-5 text-rose-500 shrink-0" />
         <div>

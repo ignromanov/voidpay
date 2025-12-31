@@ -70,10 +70,10 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
               <span className="text-zinc-300 italic">#ID</span>
             )}
             {hasLink && (
-              <LinkIcon className="h-5 w-5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
+              <LinkIcon className="h-5 w-5 flex-shrink-0 text-zinc-400 print:hidden" aria-hidden="true" />
             )}
           </h1>
-          {hasLink && <CopyButton value={invoiceUrl} size="sm" className="flex-shrink-0" aria-label="Copy invoice URL" />}
+          {hasLink && <CopyButton value={invoiceUrl} size="sm" className="flex-shrink-0 print:hidden" aria-label="Copy invoice URL" />}
         </div>
 
         {/* Invoice meta - Right */}
