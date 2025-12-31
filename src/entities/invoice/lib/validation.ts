@@ -46,7 +46,7 @@ export const invoiceSchema = z.object({
     .array(
       z.object({
         description: z.string().min(1),
-        quantity: z.union([z.string().regex(NUMERIC_STRING_REGEX), z.number().positive()]),
+        quantity: z.number().positive(),
         rate: z.string().regex(NUMERIC_STRING_REGEX, 'Invalid rate'),
       })
     )

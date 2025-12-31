@@ -10,6 +10,7 @@ export type { Invoice } from './model/schema'
 
 // Types (from model layer)
 export type {
+  InvoiceItem,
   LineItem,
   DraftMetadata,
   DraftState,

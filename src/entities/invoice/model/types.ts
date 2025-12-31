@@ -51,20 +51,19 @@ export type PartialClient = DeepPartial<Invoice['client']>
 export type PartialItem = DeepPartial<Invoice['items'][number]>
 
 /**
- * LineItem (UI version with ID for React keys)
- *
- * Used in forms for tracking individual line items.
- * When encoding to Invoice, the `id` is stripped.
+ * InvoiceItem — extracted from Invoice for type reuse
  */
-export interface LineItem {
+export type InvoiceItem = Invoice['items'][number]
+
+/**
+ * LineItem — UI version with ID for React keys
+ *
+ * Extends InvoiceItem (DRY), adding only `id` for React key prop.
+ * When encoding to Invoice, strip the `id` field.
+ */
+export type LineItem = InvoiceItem & {
   /** Unique identifier for React key (UUID v4) */
   id: string
-  /** Item description */
-  description: string
-  /** Quantity (must be > 0) */
-  quantity: number
-  /** Rate per unit (decimal string) */
-  rate: string
 }
 
 /**
@@ -172,15 +171,12 @@ export function lineItemsToInvoiceItems(lineItems: LineItem[]): Invoice['items']
  * Accepts partial items from PartialInvoice for UI editing
  */
 export function invoiceItemsToLineItems(items: PartialItem[]): LineItem[] {
-  return items.map((item) => {
-    const rawQty = item.quantity ?? 0
-    return {
-      id: crypto.randomUUID(),
-      description: item.description ?? '',
-      quantity: typeof rawQty === 'number' ? rawQty : parseFloat(rawQty),
-      rate: item.rate ?? '0',
-    }
-  })
+  return items.map((item) => ({
+    id: crypto.randomUUID(),
+    description: item.description ?? '',
+    quantity: item.quantity ?? 0,
+    rate: item.rate ?? '0',
+  }))
 }
 
 /**
@@ -189,10 +185,8 @@ export function invoiceItemsToLineItems(items: PartialItem[]): LineItem[] {
  */
 export function formatInvoiceTotal(invoice: Invoice): string {
   const subtotal = invoice.items.reduce((sum, item) => {
-    const qty =
-      typeof item.quantity === 'number' ? item.quantity : parseFloat(String(item.quantity))
     const rate = parseFloat(item.rate)
-    return sum + qty * rate
+    return sum + item.quantity * rate
   }, 0)
 
   let total = subtotal

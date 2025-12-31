@@ -91,7 +91,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
           {shouldShowQR && (
             <div className="flex flex-col items-center justify-center gap-1 border-r border-zinc-200 p-3">
               <div
-                className="flex aspect-square w-24 items-center justify-center rounded border border-zinc-200 bg-white p-1"
+                className="flex aspect-square w-24 items-center justify-center rounded border border-zinc-200 bg-white p-1 print:w-32"
                 role="img"
                 aria-label="QR code linking to this invoice"
                 title={`QR Code: ${qrUrl}`}
@@ -137,16 +137,23 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
               <div className="flex items-center gap-1">
                 <div
                   className={cn(
-                    'flex-1 rounded border border-zinc-200 bg-white px-2 py-1.5 font-mono text-[10px] leading-relaxed font-medium cursor-text',
+                    'flex-1 cursor-text rounded border border-zinc-200 bg-white px-2 py-1.5 font-mono text-[10px] leading-relaxed font-medium',
                     senderAddress ? 'text-zinc-950' : 'text-zinc-400 italic'
                   )}
                   title={senderAddress}
-                  aria-label={senderAddress ? `Wallet address: ${senderAddress}` : 'Wallet address not set'}
+                  aria-label={
+                    senderAddress ? `Wallet address: ${senderAddress}` : 'Wallet address not set'
+                  }
                 >
                   {senderAddress || '0x... (wallet address)'}
                 </div>
                 {isInteractive && senderAddress && (
-                  <CopyButton value={senderAddress} size="sm" data-print-hide aria-label="Copy wallet address" />
+                  <CopyButton
+                    value={senderAddress}
+                    size="sm"
+                    data-print-hide
+                    aria-label="Copy wallet address"
+                  />
                 )}
               </div>
             </div>

@@ -194,7 +194,7 @@ export function decodeBinaryV3(encoded: string): Invoice {
 
     items.push({
       description,
-      quantity: isNaN(Number(qtyStr)) ? qtyStr : Number(qtyStr),
+      quantity: isNaN(Number(qtyStr)) ? 0 : Number(qtyStr),
       rate,
     })
   }

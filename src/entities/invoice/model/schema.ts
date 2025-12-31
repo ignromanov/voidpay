@@ -53,8 +53,8 @@ export interface Invoice {
   items: Array<{
     /** Description */
     description: string
-    /** Quantity (BigInt string or number) */
-    quantity: string | number
+    /** Quantity (positive number) */
+    quantity: number
     /** Rate/Price (BigInt string) */
     rate: string
   }>

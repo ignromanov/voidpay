@@ -1,4 +1,5 @@
 import React from 'react'
+import { cn } from '@/shared/lib/utils'
 import { InvoiceStatus } from '../types'
 
 interface WatermarkProps {
@@ -42,14 +43,22 @@ export const Watermark = React.memo<WatermarkProps>(({ status, date }) => {
   return (
     <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center overflow-hidden select-none">
       <div
-        className={`flex -rotate-12 flex-col items-center justify-center rounded-xl border-[8px] p-6 opacity-15 mix-blend-multiply print:opacity-20 print:mix-blend-normal ${config.border} ${config.color}`}
+        className={cn(
+          'flex -rotate-12 flex-col items-center justify-center rounded-xl border-[8px] p-6 opacity-15 mix-blend-multiply print:opacity-30 print:mix-blend-normal',
+          config.border,
+          config.color
+        )}
       >
         <span className="mb-2 font-mono text-7xl leading-none font-black tracking-widest">
           {config.text}
         </span>
         {date && status === 'paid' && (
           <span
-            className={`border-t-2 pt-1 font-mono text-xl font-bold tracking-wider ${config.border} ${config.dateColor}`}
+            className={cn(
+              'border-t-2 pt-1 font-mono text-xl font-bold tracking-wider',
+              config.border,
+              config.dateColor
+            )}
           >
             {date}
           </span>
