@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { Link as LinkIcon, AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
 import { CopyButton } from '@/shared/ui'
 import { cn } from '@/shared/lib/utils'
@@ -48,7 +48,7 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
       <header className="relative flex items-start justify-between gap-4 border-b-2 border-zinc-700 pb-6">
         {/* Large INVOICE title with ID - Left */}
         <div className="flex min-w-0 items-center gap-3">
-          <h1 className="flex items-center gap-1.5 text-4xl leading-none font-black tracking-tighter whitespace-nowrap uppercase text-zinc-400">
+          <h1 className="flex items-center gap-1.5 text-4xl leading-none font-black tracking-tighter whitespace-nowrap text-zinc-400 uppercase">
             <span>Invoice</span>
             {invoiceId ? (
               <span
@@ -59,9 +59,7 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
                 title={hasLink ? 'Click to open invoice in new tab' : undefined}
                 className={cn(
                   'transition-colors',
-                  hasLink
-                    ? '!cursor-pointer text-zinc-800 hover:text-violet-600'
-                    : 'text-zinc-900'
+                  hasLink ? '!cursor-pointer text-zinc-800 hover:text-violet-600' : 'text-zinc-900'
                 )}
               >
                 #{invoiceId}
@@ -69,11 +67,16 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
             ) : (
               <span className="text-zinc-300 italic">#ID</span>
             )}
-            {hasLink && (
-              <LinkIcon className="h-5 w-5 flex-shrink-0 text-zinc-400" data-print-hide aria-hidden="true" />
-            )}
           </h1>
-          {hasLink && <CopyButton value={invoiceUrl} size="sm" className="flex-shrink-0" data-print-hide aria-label="Copy invoice URL" />}
+          {hasLink && (
+            <CopyButton
+              value={invoiceUrl}
+              size="sm"
+              className="flex-shrink-0"
+              data-print-hide
+              aria-label="Copy invoice URL"
+            />
+          )}
         </div>
 
         {/* Invoice meta - Right */}
@@ -82,9 +85,7 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
             <span className="pt-0.5 text-xs font-bold tracking-wider text-zinc-400 uppercase">
               Issued
             </span>
-            <span
-              className={cn('font-mono font-medium', !iss && 'text-zinc-300 italic')}
-            >
+            <span className={cn('font-mono font-medium', !iss && 'text-zinc-300 italic')}>
               {iss ? formatDate(iss) : 'Date'}
             </span>
           </div>
@@ -92,9 +93,7 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
             <span className="pt-0.5 text-xs font-bold tracking-wider text-zinc-400 uppercase">
               Due
             </span>
-            <span
-              className={cn('font-mono font-medium', !due && 'text-zinc-300 italic')}
-            >
+            <span className={cn('font-mono font-medium', !due && 'text-zinc-300 italic')}>
               {due ? formatDate(due) : 'Date'}
             </span>
           </div>

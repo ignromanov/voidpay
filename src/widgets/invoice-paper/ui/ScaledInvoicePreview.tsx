@@ -61,6 +61,14 @@ export interface ScaledInvoicePreviewProps {
   glowClassName?: string | undefined
 
   /**
+   * Border styling classes applied directly to invoice wrapper.
+   * Use for ring/shadow effects on fullscreen modal.
+   * Example: "ring-1 ring-indigo-500/40 shadow-[0_0_30px_rgba(99,102,241,0.25)]"
+   * Use NETWORK_GLOW_BORDERS[networkId] from @/entities/network
+   */
+  borderClassName?: string | undefined
+
+  /**
    * Click handler supporting both mouse events and keyboard activation.
    * When triggered via keyboard (Enter/Space), called without event argument.
    * Cursor style should be controlled via className.
@@ -96,6 +104,7 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
       scaleOptions,
       printable = false,
       glowClassName,
+      borderClassName,
       onClick,
       onMouseEnter,
       onMouseLeave,
@@ -156,20 +165,17 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           'print:block print:h-auto',
           className
         )}
-        onClick={handleClick}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-        role={onClick ? 'button' : undefined}
-        tabIndex={onClick ? 0 : undefined}
-        onKeyDown={handleKeyDown}
       >
-        {/* Scaled invoice wrapper — overflow-visible for glow effect */}
+        {/* Scaled invoice wrapper — exact invoice dimensions, glow via ::before */}
+        {/* Event handlers HERE for precise hit area (glow has pointer-events-none) */}
         <div
           className={cn(
             'relative overflow-visible rounded-sm transition-[width,height] duration-200 ease-out',
             // Print: reset all sizing/positioning to let invoice-print-target handle layout
             'print:!static print:!h-auto print:!w-auto print:!overflow-visible print:rounded-none print:transition-none',
-            // Elliptical ambient glow via ::before (matches invoice shape)
+            // Cursor style for interactive invoice (zoom-in for expand action)
+            onClick && 'cursor-zoom-in',
+            // Elliptical ambient glow via ::before (pointer-events-none = won't capture clicks)
             glowClassName && [
               // Ellipse matching invoice proportions with soft blur
               'before:pointer-events-none before:absolute before:-inset-[25%] before:z-[-1] before:rounded-full',
@@ -178,16 +184,23 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
               'before:transition-opacity before:duration-500 print:before:hidden',
               // Network-specific gradient colors
               glowClassName,
-            ]
+            ],
+            // Border glow for fullscreen modal (ring + shadow, applied directly)
+            borderClassName && ['print:shadow-none print:ring-0', borderClassName]
           )}
           style={{
             width: `${scaledWidth}px`,
             height: `${scaledHeight}px`,
             willChange: 'width, height',
           }}
+          onClick={handleClick}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          role={onClick ? 'button' : undefined}
+          tabIndex={onClick ? 0 : undefined}
+          onKeyDown={handleKeyDown}
         >
           {/* Invoice with CSS scale — origin top-left to align with container */}
-          {/* Print target is HERE so InvoicePaper (article) is direct child */}
           <div
             className={cn(
               'absolute top-0 left-0 origin-top-left transition-transform duration-200 ease-out',

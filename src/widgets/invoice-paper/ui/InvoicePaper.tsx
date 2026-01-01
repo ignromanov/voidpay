@@ -149,7 +149,7 @@ export const InvoicePaper = React.memo(
           {/* Texture Layer - self-hosted for stateless operation */}
           {showTexture && (
             <div
-              className="pointer-events-none absolute inset-0 z-0 bg-[url('/textures/cream-pixels.png')] opacity-[0.08] mix-blend-multiply print:hidden"
+              className="pointer-events-none absolute inset-0 z-0 bg-[url('/textures/cream-pixels.png')] opacity-[0.15] mix-blend-multiply print:hidden"
               aria-hidden="true"
             />
           )}

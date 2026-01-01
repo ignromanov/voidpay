@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { AlertCircle, Maximize2 } from 'lucide-react'
+import { Maximize2 } from 'lucide-react'
 
 import { decodeInvoice } from '@/features/invoice-codec'
 import { useCreatorStore } from '@/entities/creator'
@@ -9,7 +9,6 @@ import { getNetworkTheme, NETWORK_GLOW_SHADOWS } from '@/entities/network'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
-import { Text } from '@/shared/ui'
 import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widgets/invoice-paper'
 
 /**
@@ -25,7 +24,6 @@ import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widge
  */
 export function CreateWorkspace() {
   const hash = useHashFragment()
-  const [decodeError, setDecodeError] = useState<string | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 
@@ -35,20 +33,15 @@ export function CreateWorkspace() {
 
   // Decode URL hash on mount/change
   useEffect(() => {
-    if (!hash) {
-      setDecodeError(null)
-      return
-    }
+    if (!hash) return
 
     try {
       const decoded = decodeInvoice(hash)
       // updateDraft auto-syncs lineItems when items provided
       updateDraft(decoded)
-      setDecodeError(null)
       // Silent success - no toast per spec (avoid notification fatigue)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to decode invoice'
-      setDecodeError(errorMessage)
       toast.error(errorMessage)
       // Do NOT clear store on error (per spec edge case)
     }
@@ -82,9 +75,6 @@ export function CreateWorkspace() {
 
       {/* Content container — overflow-clip prevents glow from creating scroll */}
       <div className="mx-auto flex h-[calc(100vh-104px)] w-full max-w-[1400px] flex-col overflow-clip px-2 sm:px-4 print:h-auto print:max-w-none print:overflow-visible print:p-0">
-        {/* Error Banner (hidden on print) */}
-        {decodeError && <UrlErrorBanner error={decodeError} />}
-
         {/* Preview container — fills remaining space, centers invoice */}
         <div className="relative flex flex-1 items-center justify-center overflow-visible print:hidden">
           {/* Screen-only scaled preview (hidden during print to avoid flicker) */}
@@ -94,7 +84,6 @@ export function CreateWorkspace() {
             onClick={handlePreviewClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="cursor-zoom-in"
             overlay={
               invoiceData && (
                 <div
@@ -132,24 +121,5 @@ export function CreateWorkspace() {
         </div>
       </div>
     </>
-  )
-}
-
-/**
- * Error banner for invalid URL hash (hidden on print)
- */
-function UrlErrorBanner({ error }: { error: string }) {
-  return (
-    <div className="mb-6 rounded-lg border border-rose-500/20 bg-rose-500/10 p-4 print:hidden">
-      <div className="flex items-center gap-3">
-        <AlertCircle className="h-5 w-5 shrink-0 text-rose-500" />
-        <div>
-          <Text className="font-medium text-rose-400">Invalid Invoice URL</Text>
-          <Text variant="small" className="text-zinc-400">
-            {error}. You can create a new invoice instead.
-          </Text>
-        </div>
-      </div>
-    </div>
   )
 }

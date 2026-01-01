@@ -8,10 +8,9 @@ import { InvoicePaper } from './InvoicePaper'
 import { ScaledInvoicePreview } from './ScaledInvoicePreview'
 import { InvoiceStatus, InvoicePaperProps } from '../types'
 import { Invoice, PartialInvoice } from '@/entities/invoice'
-import { NETWORK_GLOW_SHADOWS } from '@/entities/network'
+import { NETWORK_GLOW_BORDERS } from '@/entities/network'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
 import { toast } from '@/shared/lib/toast'
-import { cn } from '@/shared/lib/utils'
 
 // Animation variants for smooth enter/exit
 const headerVariants = {
@@ -169,7 +168,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               </div>
             </div>
             <DialogClose
-              className="cursor-pointer rounded-full bg-zinc-800 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none"
+              className="cursor-pointer rounded-full bg-zinc-800 p-1.5 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none sm:p-2"
               aria-label="Close preview"
             >
               <X className="h-5 w-5" />
@@ -181,16 +180,13 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             variants={invoiceVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-1 cursor-zoom-out items-start justify-center overflow-auto px-1 py-4 sm:p-4 md:p-8"
+            className="flex flex-1 cursor-zoom-out items-start justify-center overflow-auto px-0 py-2 sm:p-2 md:p-4"
             onClick={() => onOpenChange(false)}
           >
             <ScaledInvoicePreview
               preset="modal"
-              glowClassName={NETWORK_GLOW_SHADOWS[data.networkId ?? 1]}
-              className={cn(
-                'shrink-0 transition-all duration-300',
-                'hover:drop-shadow-[0_0_30px_rgba(124,58,237,0.12)]'
-              )}
+              borderClassName={NETWORK_GLOW_BORDERS[data.networkId ?? 1]}
+              className="shrink-0"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Type assertion needed because status comes from runtime prop.
@@ -222,7 +218,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               className="gap-2 text-zinc-300 hover:text-white"
               onClick={handleDownloadPdf}
             >
-              <Download className="h-4 w-4" />
+              <Download className="h-5 w-5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Download PDF</span>
               <span className="sm:hidden">PDF</span>
             </Button>
@@ -232,7 +228,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               className="gap-2 text-zinc-300 hover:text-white"
               onClick={handlePrint}
             >
-              <Printer className="h-4 w-4" />
+              <Printer className="h-5 w-5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Print</span>
             </Button>
 

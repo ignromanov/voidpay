@@ -156,3 +156,20 @@ export const NETWORK_GLOW_SHADOWS: Record<number, string> = {
   // Purple → Violet elliptical glow
   [polygon.id]: 'before:from-purple-500/60 before:to-violet-500/40',
 }
+
+/**
+ * Network-specific glowing border for fullscreen modal
+ * Uses ring (border) + box-shadow for glow effect
+ *
+ * RGB values for shadow colors:
+ * - Indigo-500: 99, 102, 241
+ * - Cyan-500: 6, 182, 212
+ * - Red-500: 239, 68, 68
+ * - Purple-500: 168, 85, 247
+ */
+export const NETWORK_GLOW_BORDERS: Record<number, string> = {
+  [mainnet.id]: 'ring-1 ring-indigo-500/40 shadow-[0_0_30px_rgba(99,102,241,0.25)]',
+  [arbitrum.id]: 'ring-1 ring-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.25)]',
+  [optimism.id]: 'ring-1 ring-red-500/40 shadow-[0_0_30px_rgba(239,68,68,0.25)]',
+  [polygon.id]: 'ring-1 ring-purple-500/40 shadow-[0_0_30px_rgba(168,85,247,0.25)]',
+}

@@ -21,7 +21,7 @@ describe('toast wrapper', () => {
   describe('toast.success', () => {
     it('should call sonner success with message', () => {
       toast.success('Operation successful')
-      expect(sonnerToast.success).toHaveBeenCalledWith('Operation successful')
+      expect(sonnerToast.success).toHaveBeenCalledWith('Operation successful', undefined)
     })
   })
 
@@ -43,7 +43,7 @@ describe('toast wrapper', () => {
   describe('toast.loading', () => {
     it('should call sonner loading with message', () => {
       toast.loading('Processing...')
-      expect(sonnerToast.loading).toHaveBeenCalledWith('Processing...')
+      expect(sonnerToast.loading).toHaveBeenCalledWith('Processing...', undefined)
     })
   })
 
