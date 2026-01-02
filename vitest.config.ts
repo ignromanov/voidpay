@@ -15,48 +15,36 @@ export default defineConfig({
     environment: 'happy-dom',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
+    root: __dirname,
 
-    // Isolation and determinism for CI compatibility
-    pool: 'forks',
-    isolate: true, // Enable isolation to reset state between test files
-    sequence: {
-      shuffle: false, // Deterministic test order
-    },
-    fileParallelism: true, // Keep parallel but isolated
+    // Isolation
+    isolate: true,
+    sequence: { shuffle: false },
+    fileParallelism: true,
 
-    // Exclude worktrees from test runs (they have their own test setup)
-    exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/worktrees/**', // Exclude worktrees - they should be tested in their own context
-      '**/assets/**',
-    ],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/worktrees/**', '**/assets/**'],
 
-    // Auto-mock configuration
-    // When a module is imported and __mocks__/<module>.ts exists, use the mock
     alias: {
       'framer-motion': path.resolve(__dirname, '__mocks__/framer-motion.tsx'),
       sonner: path.resolve(__dirname, '__mocks__/sonner.tsx'),
     },
 
-    // Coverage configuration
+    // MINIMAL coverage config
     coverage: {
-      provider: 'v8',
+      provider: 'istanbul',
       reporter: ['text', 'json', 'html'],
-      include: ['src/**/*.{ts,tsx}'],
+      reportsDirectory: './coverage',
+      // Simple pattern without **/ prefix
+      include: ['src/**/*.ts', 'src/**/*.tsx'],
       exclude: [
-        'node_modules/',
-        'dist/',
-        'worktrees/',
-        '__mocks__/',
-        '**/*.config.*',
+        'node_modules/**',
         '**/*.d.ts',
-        '**/types.ts',
+        '**/*.test.ts',
+        '**/*.test.tsx',
+        '**/*.spec.ts',
+        '**/*.spec.tsx',
         '**/index.ts',
         '**/index.tsx',
-        '**/__tests__/**',
-        '**/*.test.*',
-        '**/*.spec.*',
       ],
     },
   },
