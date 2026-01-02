@@ -111,6 +111,33 @@ const config = [
       ],
     },
   },
+
+  // Allow console in scripts (CLI tools)
+  {
+    files: ['scripts/**/*.ts', 'scripts/**/*.js'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
+
+  // Relaxed rules for test files
+  {
+    files: ['**/*.test.ts', '**/*.test.tsx', '**/__tests__/**/*.ts', '**/__tests__/**/*.tsx'],
+    rules: {
+      // Allow any in tests (mocks, stubs, partial objects)
+      '@typescript-eslint/no-explicit-any': 'off',
+      // Allow unused vars in tests (setup variables, destructuring)
+      '@typescript-eslint/no-unused-vars': 'off',
+      // Allow non-null assertions in tests (we know test data structure)
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      // Allow empty functions in tests (mock implementations)
+      '@typescript-eslint/no-empty-function': 'off',
+      // Allow require imports in tests (dynamic imports for mocks)
+      '@typescript-eslint/no-require-imports': 'off',
+      // Allow console in tests (debugging)
+      'no-console': 'off',
+    },
+  },
 ]
 
 export default config
