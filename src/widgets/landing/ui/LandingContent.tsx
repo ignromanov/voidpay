@@ -4,10 +4,12 @@
  * LandingContent - Client-side wrapper for landing page content
  * Feature: 012-landing-page
  *
+ * Background: Uses NetworkBackground from layout.tsx (unified across all pages).
+ * Sets 'ethereum' theme on mount via useCreatorStore.
+ *
  * Performance Strategy (optimized for LCP < 2.5s):
  * 1. Above-fold (immediate): HeroSection + SocialProofStrip
  *    - No Framer Motion imports (uses CSS animations)
- *    - Static gradient background (no motion dependency)
  *    - Synchronous hydration
  *
  * 2. Below-fold (deferred with useEffect + dynamic import):
@@ -20,26 +22,10 @@
  */
 
 import { useState, useEffect, type ComponentType } from 'react'
-import { NetworkThemeProvider } from '../context/network-theme-context'
+import { useCreatorStore } from '@/entities/creator'
 import { HeroSection } from '../hero-section/HeroSection'
 import { SocialProofStrip } from '../social-proof'
 import { BelowFoldLoader } from './BelowFoldLoader'
-
-/**
- * Static background gradient - shown immediately, no JS required
- * Matches the visual style of animated background but without motion
- * z-[0] places it above body background but below animated NetworkBackground
- */
-function StaticBackground() {
-  return (
-    <div className="fixed inset-0 z-[0] bg-zinc-950">
-      {/* Gradient glow matching ethereum theme */}
-      <div className="absolute inset-0 bg-gradient-to-b from-violet-950/20 via-transparent to-transparent" />
-      <div className="absolute left-1/4 top-1/4 h-96 w-96 rounded-full bg-violet-600/5 blur-3xl" />
-      <div className="absolute right-1/4 bottom-1/4 h-96 w-96 rounded-full bg-indigo-600/5 blur-3xl" />
-    </div>
-  )
-}
 
 /**
  * SEO-friendly placeholder for below-fold content.
@@ -60,29 +46,6 @@ function BelowFoldPlaceholder() {
       </section>
     </div>
   )
-}
-
-/**
- * LazyAnimatedBackground - Loads NetworkBackground ONLY after mount
- * Dynamic import inside useEffect prevents webpack static analysis
- */
-function LazyAnimatedBackground() {
-  const [Component, setComponent] = useState<ComponentType<object> | null>(null)
-
-  useEffect(() => {
-    // Dynamic import INSIDE useEffect - webpack can't statically analyze this
-    import('./AnimatedBackground')
-      .then((m) => {
-        setComponent(() => m.AnimatedBackground)
-      })
-      .catch((error) => {
-        // Silent fallback - static background remains visible
-        console.error('[LazyAnimatedBackground] Failed to load:', error)
-      })
-  }, [])
-
-  if (!Component) return null
-  return <Component />
 }
 
 /**
@@ -122,6 +85,13 @@ function LazyBelowFold() {
 }
 
 export function LandingContent() {
+  const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
+
+  // Set ethereum theme on mount (landing page uses default ethereum branding)
+  useEffect(() => {
+    setNetworkTheme('ethereum')
+  }, [setNetworkTheme])
+
   // Preload bundles after initial paint for smoother scrolling
   useEffect(() => {
     // Use requestIdleCallback for preloading (setTimeout fallback for Safari)
@@ -157,14 +127,8 @@ export function LandingContent() {
   }, [])
 
   return (
-    <NetworkThemeProvider defaultTheme="ethereum">
-      {/* Static background - immediate, no motion (z-0) */}
-      <StaticBackground />
-
-      {/* Animated background - loads after mount via useEffect (z-1) */}
-      <LazyAnimatedBackground />
-
-      {/* Content wrapper - above all backgrounds (z-10) */}
+    <>
+      {/* Content wrapper - above NetworkBackground from layout (z-10) */}
       <div className="relative z-10">
         {/* Above-fold: Immediate render, no motion dependencies */}
         <HeroSection />
@@ -175,6 +139,6 @@ export function LandingContent() {
           <LazyBelowFold />
         </BelowFoldLoader>
       </div>
-    </NetworkThemeProvider>
+    </>
   )
 }

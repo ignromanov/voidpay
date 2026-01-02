@@ -155,8 +155,8 @@ describe('DemoSection', () => {
   })
 
   describe('T029-test: Use This Template button on hover', () => {
-    // Helper to find the hover zone container
-    const getHoverZone = () => document.querySelector('[class*="z-20"][class*="absolute"]')
+    // Helper to find the hover zone container (z-30 overlay inside ScaledInvoicePreview)
+    const getHoverZone = () => document.querySelector('[class*="z-30"][class*="absolute"]')
 
     it('should show "Use This Template" button on hover', async () => {
       renderWithProviders(<DemoSection />)

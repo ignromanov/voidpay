@@ -9,18 +9,17 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
+import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme, NETWORK_GLOW_SHADOWS } from '@/entities/network'
 import { Button, Heading, Text } from '@/shared/ui'
 import { InvoicePaper, ScaledInvoicePreview, InvoicePaperProps } from '@/widgets/invoice-paper'
-
-import { useNetworkTheme } from '../context/network-theme-context'
 import { DEMO_INVOICES, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
 import { useDemoRotation } from '../hooks/use-demo-rotation'
 
 import { DemoPagination } from './ui/DemoPagination'
 
 export function DemoSection() {
-  const { setTheme } = useNetworkTheme()
+  const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const [isHovered, setIsHovered] = useState(false)
 
   const { activeIndex, pause, resume, goTo } = useDemoRotation({
@@ -33,9 +32,9 @@ export function DemoSection() {
   useEffect(() => {
     const currentInvoice = DEMO_INVOICES[activeIndex]
     if (currentInvoice) {
-      setTheme(getNetworkTheme(currentInvoice.data.networkId))
+      setNetworkTheme(getNetworkTheme(currentInvoice.data.networkId))
     }
-  }, [activeIndex, setTheme])
+  }, [activeIndex, setNetworkTheme])
 
   const currentInvoice = DEMO_INVOICES[activeIndex]
 
@@ -76,14 +75,13 @@ export function DemoSection() {
         </Text>
       </header>
 
-      {/* Invoice container */}
-      <div className="relative flex w-full max-w-[1400px] justify-center px-4 pb-10">
+      {/* Invoice container with pagination */}
+      <div className="relative flex w-full max-w-[1400px] flex-col items-center px-4">
         <ScaledInvoicePreview
           preset="demo"
           glowClassName={NETWORK_GLOW_SHADOWS[currentInvoice.data.networkId]}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          className="shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]"
           overlay={
             <div
               className={`absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
@@ -111,10 +109,10 @@ export function DemoSection() {
             } as InvoicePaperProps)}
           />
         </ScaledInvoicePreview>
-      </div>
 
-      {/* Pagination */}
-      <DemoPagination items={DEMO_INVOICES} activeIndex={activeIndex} onSelect={handleDotSelect} />
+        {/* Pagination inside container for glow effect coverage */}
+        <DemoPagination items={DEMO_INVOICES} activeIndex={activeIndex} onSelect={handleDotSelect} />
+      </div>
     </section>
   )
 }

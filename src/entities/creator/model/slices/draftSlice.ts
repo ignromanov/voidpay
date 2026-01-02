@@ -104,8 +104,7 @@ function createDefaultDraft(
       decimals: 6, // Default for USDC
       from: {
         name: preferences.defaultSenderName ?? '',
-        walletAddress: (preferences.defaultSenderWallet ??
-          '0x0000000000000000000000000000000000000000') as Address,
+        walletAddress: preferences.defaultSenderWallet as Address,
         ...(preferences.defaultSenderEmail && { email: preferences.defaultSenderEmail }),
         ...(preferences.defaultSenderAddress && {
           physicalAddress: preferences.defaultSenderAddress,

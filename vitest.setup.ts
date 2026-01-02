@@ -31,8 +31,23 @@ vi.hoisted(() => {
  * Mock window.matchMedia for prefers-reduced-motion
  * Must be hoisted because some libraries read it on import
  *
+ * Note: happy-dom creates its own window object, so we need to mock both
+ * globalThis AND window. The vi.hoisted runs before happy-dom sets up window,
+ * so we also apply the mock in beforeAll.
+ *
  * @see https://rebeccamdeprey.com/blog/mock-windowmatchmedia-in-vitest
  */
+const createMatchMediaMock = () => (query: string) => ({
+  matches: query === '(prefers-reduced-motion: reduce)',
+  media: query,
+  onchange: null,
+  addListener: () => {},
+  removeListener: () => {},
+  addEventListener: () => {},
+  removeEventListener: () => {},
+  dispatchEvent: () => false,
+})
+
 vi.hoisted(() => {
   Object.defineProperty(globalThis, 'matchMedia', {
     writable: true,
@@ -151,8 +166,20 @@ beforeEach(() => {
 
 /**
  * Mock pointer capture methods for Radix UI components (happy-dom compatibility)
+ * Also apply matchMedia mock to window (happy-dom creates its own window after vi.hoisted)
  */
 beforeAll(() => {
+  // Apply matchMedia mock to window (happy-dom's window, not globalThis)
+  // happy-dom's matchMedia exists but returns null for queries, causing
+  // "Cannot read properties of null (reading 'matches')" errors
+  if (typeof window !== 'undefined') {
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      configurable: true,
+      value: createMatchMediaMock(),
+    })
+  }
+
   if (!Element.prototype.hasPointerCapture) {
     Element.prototype.hasPointerCapture = () => false
   }

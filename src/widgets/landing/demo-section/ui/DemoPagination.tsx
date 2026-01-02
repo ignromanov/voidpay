@@ -14,7 +14,7 @@ interface DemoPaginationProps {
 export const DemoPagination = React.memo<DemoPaginationProps>(
   ({ items, activeIndex, onSelect }) => {
     return (
-      <div className="mt-6 flex justify-center gap-3">
+      <div className="mt-4 flex justify-center gap-3">
         {items.map((item, index) => (
           <button
             key={item.invoiceId}

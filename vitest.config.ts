@@ -4,7 +4,13 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import path from 'path'
 
 export default defineConfig({
-  plugins: [react(), tsconfigPaths()],
+  plugins: [
+    react(),
+    tsconfigPaths({
+      root: __dirname,
+      projects: ['./tsconfig.test.json'],
+    }),
+  ],
   test: {
     environment: 'happy-dom',
     globals: true,
@@ -30,12 +36,14 @@ export default defineConfig({
     // When a module is imported and __mocks__/<module>.ts exists, use the mock
     alias: {
       'framer-motion': path.resolve(__dirname, '__mocks__/framer-motion.tsx'),
+      sonner: path.resolve(__dirname, '__mocks__/sonner.tsx'),
     },
 
     // Coverage configuration
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'node_modules/',
         'dist/',
@@ -44,6 +52,8 @@ export default defineConfig({
         '**/*.config.*',
         '**/*.d.ts',
         '**/types.ts',
+        '**/index.ts',
+        '**/index.tsx',
         '**/__tests__/**',
         '**/*.test.*',
         '**/*.spec.*',
