@@ -21,8 +21,16 @@ import { createTransportsForChains } from '@/shared/lib'
 /**
  * WalletConnect Project ID from environment
  * Required for WalletConnect v2 connections
+ *
+ * FALLBACK: Uses a placeholder during build/SSR when env var is not set.
+ * This allows static generation to complete without crashing.
+ * The placeholder won't work for actual wallet connections in production -
+ * a real projectId must be set via NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID.
+ *
+ * @see https://cloud.walletconnect.com/
  */
-const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? ''
+const walletConnectProjectId =
+  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'placeholder-build-key'
 
 /**
  * Get chains configuration
