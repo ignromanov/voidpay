@@ -8,7 +8,7 @@
 // Core Invoice type (from schema)
 export type { Invoice } from './model/schema'
 
-// Types (from model layer)
+// Types (from shared layer - centralized invoice types)
 export type {
   InvoiceItem,
   LineItem,
@@ -23,10 +23,14 @@ export type {
   PartialParty,
   PartialClient,
   PartialItem,
-} from './model/types'
+} from '@/shared/lib/invoice-types'
 
 // Helper functions for LineItem conversion and formatting
-export { lineItemsToInvoiceItems, invoiceItemsToLineItems, formatInvoiceTotal } from './model/types'
+export {
+  lineItemsToInvoiceItems,
+  invoiceItemsToLineItems,
+  formatInvoiceTotal,
+} from '@/shared/lib/invoice-types'
 
 // Validation (from lib layer)
 export { invoiceSchema } from './lib/validation'

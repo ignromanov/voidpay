@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useLayoutEffect, useEffect, useState, useCallback } from 'react'
 import { Maximize2 } from 'lucide-react'
 
-import { decodeInvoice } from '@/features/invoice-codec'
+import { parseInvoiceHash } from '@/features/invoice-codec'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme, NETWORK_GLOW_SHADOWS } from '@/entities/network'
 import { useHashFragment } from '@/shared/lib/hooks'
@@ -31,18 +31,17 @@ export function CreateWorkspace() {
   const updateDraft = useCreatorStore((s) => s.updateDraft)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
 
-  // Decode URL hash on mount/change
-  useEffect(() => {
+  // Decode URL hash on mount/change (useLayoutEffect for no visual flicker)
+  useLayoutEffect(() => {
     if (!hash) return
 
-    try {
-      const decoded = decodeInvoice(hash)
+    const result = parseInvoiceHash(hash)
+    if (result.success) {
       // updateDraft auto-syncs lineItems when items provided
-      updateDraft(decoded)
+      updateDraft(result.data)
       // Silent success - no toast per spec (avoid notification fatigue)
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to decode invoice'
-      toast.error(errorMessage)
+    } else {
+      toast.error(result.error.message)
       // Do NOT clear store on error (per spec edge case)
     }
   }, [hash, updateDraft])
