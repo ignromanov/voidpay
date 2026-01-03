@@ -17,8 +17,24 @@ interface CreateErrorProps {
  */
 export default function CreateError({ error, reset }: CreateErrorProps) {
   useEffect(() => {
-    // Log error for debugging (production would send to error tracking)
+    // Always log to console for debugging
     console.error('[CreateError]', error)
+
+    // In production, send structured data for log aggregators
+    if (process.env.NODE_ENV === 'production') {
+      // TODO: Integrate with Sentry when ready
+      // Sentry.captureException(error, { extra: { digest: error.digest } })
+
+      // Structured log for Vercel/log aggregators
+      console.error(
+        JSON.stringify({
+          type: 'create_page_error',
+          message: error.message,
+          digest: error.digest,
+          timestamp: new Date().toISOString(),
+        })
+      )
+    }
   }, [error])
 
   return (
@@ -36,8 +52,8 @@ export default function CreateError({ error, reset }: CreateErrorProps) {
 
         {/* Error description */}
         <Text className="mb-6 text-zinc-400">
-          Unable to load the invoice editor. This might be due to corrupted data or a
-          temporary issue.
+          Unable to load the invoice editor. This might be due to corrupted data or a temporary
+          issue.
         </Text>
 
         {/* Error details (dev only) */}

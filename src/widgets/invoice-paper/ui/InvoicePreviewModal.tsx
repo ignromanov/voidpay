@@ -6,7 +6,7 @@ import { X, Printer, Download } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogClose, Badge, Button } from '@/shared/ui'
 import { InvoicePaper } from './InvoicePaper'
 import { ScaledInvoicePreview } from './ScaledInvoicePreview'
-import { InvoiceStatus, InvoicePaperProps } from '../types'
+import { InvoiceStatus } from '../types'
 import { Invoice, PartialInvoice } from '@/entities/invoice'
 import { NETWORK_GLOW_BORDERS } from '@/entities/network'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
@@ -189,19 +189,26 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               className="shrink-0"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Type assertion needed because status comes from runtime prop.
-                    Discriminated union requires txHash when status='paid',
-                    which is guaranteed by InvoicePreviewModalProps contract. */}
-              <InvoicePaper
-                {...({
-                  data,
-                  status,
-                  txHash,
-                  txHashValidated,
-                  variant: 'full',
-                  invoiceUrl,
-                } as InvoicePaperProps)}
-              />
+              {/* Conditional rendering preserves discriminated union type safety */}
+              {status === 'paid' && txHash ? (
+                <InvoicePaper
+                  data={data}
+                  status="paid"
+                  txHash={txHash}
+                  txHashValidated={txHashValidated}
+                  variant="full"
+                  invoiceUrl={invoiceUrl}
+                />
+              ) : (
+                <InvoicePaper
+                  data={data}
+                  status={status === 'paid' ? 'pending' : status}
+                  txHash={txHash}
+                  txHashValidated={txHashValidated}
+                  variant="full"
+                  invoiceUrl={invoiceUrl}
+                />
+              )}
             </ScaledInvoicePreview>
           </motion.div>
 

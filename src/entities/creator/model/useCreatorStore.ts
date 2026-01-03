@@ -43,13 +43,28 @@ const initialState = {
 /**
  * Migration function for future schema versions
  * Wrapped in try-catch for robustness against corrupted localStorage
+ *
+ * Re-throws code bugs (TypeError, RangeError) to surface development issues.
+ * Only catches data-related errors (corrupted localStorage, invalid schema).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const migrate = (persistedState: any, version: number): Partial<CreatorStore> => {
   try {
     return migrateInternal(persistedState, version)
   } catch (error) {
-    console.error('[CreatorStore] Migration failed, resetting to initial state:', error)
+    // Re-throw code bugs to surface them during development
+    if (error instanceof TypeError || error instanceof RangeError) {
+      throw error
+    }
+
+    // Log with context for debugging data-related issues
+    console.error('[CreatorStore] Migration failed:', {
+      error,
+      version,
+      persistedStateKeys: Object.keys(persistedState ?? {}),
+    })
+
+    // Return initial state for data corruption
     return initialState
   }
 }

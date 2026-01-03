@@ -137,8 +137,19 @@ export async function checkRateLimit(identifier: string): Promise<RateLimitResul
       limit: result.limit,
     }
   } catch (error) {
-    // Fallback to in-memory rate limiting if KV is unreachable
-    console.error('KV rate limiter failed, using in-memory fallback:', error)
+    // Structured logging for monitoring/alerting
+    console.error('[CRITICAL] KV rate limiter unavailable:', {
+      error: error instanceof Error ? error.message : String(error),
+      identifier: identifier.substring(0, 8) + '...',
+      timestamp: new Date().toISOString(),
+    })
+
+    // Warn about reduced effectiveness in serverless
+    console.warn(
+      '[rate-limit] Using in-memory fallback - rate limiting is per-instance only. ' +
+        'This may lead to rate limit evasion in serverless environments.'
+    )
+
     return memoryRateLimit(identifier)
   }
 }

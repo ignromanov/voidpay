@@ -65,7 +65,7 @@ describe('toast wrapper', () => {
   })
 
   describe('toast.promise', () => {
-    it('should call sonner promise with promise and messages', async () => {
+    it('should call sonner promise with promise and transformed messages', async () => {
       const testPromise = Promise.resolve('result')
       const messages = {
         loading: 'Sending transaction...',
@@ -75,20 +75,65 @@ describe('toast wrapper', () => {
 
       toast.promise(testPromise, messages)
 
-      expect(sonnerToast.promise).toHaveBeenCalledWith(testPromise, messages)
+      expect(sonnerToast.promise).toHaveBeenCalledWith(testPromise, {
+        loading: 'Sending transaction...',
+        success: 'Transaction confirmed!',
+        error: expect.any(Function), // String error is wrapped in function
+      })
     })
 
-    it('should support Web3 transaction flow', async () => {
+    it('should wrap string error message in function that appends error details', async () => {
+      const testPromise = Promise.resolve('result')
+      const messages = {
+        loading: 'Loading...',
+        success: 'Done!',
+        error: 'Operation failed',
+      }
+
+      toast.promise(testPromise, messages)
+
+      // Get the error function that was passed
+      const callArgs = vi.mocked(sonnerToast.promise).mock.calls[0]
+      const errorFn = callArgs?.[1]?.error as (err: Error) => string
+
+      // Verify it appends error message
+      const result = errorFn(new Error('Network timeout'))
+      expect(result).toBe('Operation failed: Network timeout')
+    })
+
+    it('should pass function error handler as-is', async () => {
+      const testPromise = Promise.resolve('result')
+      const customErrorHandler = (err: Error) => `Custom: ${err.message}`
+      const messages = {
+        loading: 'Loading...',
+        success: 'Done!',
+        error: customErrorHandler,
+      }
+
+      toast.promise(testPromise, messages)
+
+      expect(sonnerToast.promise).toHaveBeenCalledWith(testPromise, {
+        loading: 'Loading...',
+        success: 'Done!',
+        error: customErrorHandler,
+      })
+    })
+
+    it('should support Web3 transaction flow with dynamic errors', async () => {
       const txPromise = new Promise((resolve) => setTimeout(resolve, 100))
       const web3Messages = {
         loading: 'Waiting for wallet confirmation...',
         success: 'Payment sent successfully!',
-        error: 'Payment failed',
+        error: (err: Error) => `Payment failed: ${err.message}`,
       }
 
       toast.promise(txPromise, web3Messages)
 
-      expect(sonnerToast.promise).toHaveBeenCalledWith(txPromise, web3Messages)
+      expect(sonnerToast.promise).toHaveBeenCalledWith(txPromise, {
+        loading: 'Waiting for wallet confirmation...',
+        success: 'Payment sent successfully!',
+        error: web3Messages.error,
+      })
     })
   })
 })
