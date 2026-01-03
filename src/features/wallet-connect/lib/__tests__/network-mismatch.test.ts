@@ -26,14 +26,10 @@ describe('network-mismatch', () => {
   })
 
   describe('detectNetworkMismatch', () => {
-    it(
-      'should export detectNetworkMismatch function',
-      async () => {
-        const { detectNetworkMismatch } = await import('../network-mismatch')
-        expect(detectNetworkMismatch).toBeDefined()
-      },
-      20000
-    ) // Increase timeout for dynamic import
+    it('should export detectNetworkMismatch function', async () => {
+      const { detectNetworkMismatch } = await import('../network-mismatch')
+      expect(detectNetworkMismatch).toBeDefined()
+    }, 60000) // Increase timeout for dynamic import with coverage
 
     it('should return false when networks match', async () => {
       const { detectNetworkMismatch } = await import('../network-mismatch')
