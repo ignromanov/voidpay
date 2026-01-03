@@ -10,20 +10,20 @@
  */
 
 import { encodeInvoice } from '@/features/invoice-codec'
-import type { ViewedInvoice } from '@/entities/invoice'
+import type { RichInvoice } from '@/entities/invoice'
 
 const BASE_TIMESTAMP = 1704067200 // 2024-01-01 00:00:00 UTC
 
 /**
  * Raw demo data without computed hashes
  */
-const RAW_DEMO_INVOICES: Omit<ViewedInvoice, 'createHash'>[] = [
+const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
   // --- Ethereum (1) - Smart Contract Audit [PAID + VALIDATED] ---
   {
     invoiceId: 'eth-inv-001',
     invoiceUrl:
       'https://voidpay.xyz/pay?d=N4IgZglgNgpgziAXKADgQwE4GMAWBaEaRGBNAGhDQwDsVcQBrAeQCUQBfAXUJKpAGNEyACYB7FABsALgDVaYgJoCSLdgE8+AwcNESpMuUq59BQkWvlSZauPIBMzNBizsGLMxxQAVB',
-    viewedAt: '2024-01-01T12:00:00.000Z',
+    createdAt: '2024-01-01T12:00:00.000Z',
     status: 'paid',
     txHash: '0xabc123def456789abc123def456789abc123def456789abc123def456789abc1',
     txHashValidated: true,
@@ -65,7 +65,7 @@ const RAW_DEMO_INVOICES: Omit<ViewedInvoice, 'createHash'>[] = [
     invoiceId: 'arb-inv-001',
     invoiceUrl:
       'https://voidpay.xyz/pay?d=N4IgZglgNgpgziAXKADgQwE4GMAWBaEaRGBNAGhDQwDsVcQBrAeQCUQBfAXUJKpAGNEyACYB7FABsALgDVaYgJoCSLdgE8+AwcNESpMuUq59BQkWvlSZauPIBMzNBizsGLMxxQAVC',
-    viewedAt: '2024-01-03T09:30:00.000Z',
+    createdAt: '2024-01-03T09:30:00.000Z',
     status: 'pending',
     data: {
       version: 2,
@@ -105,7 +105,7 @@ const RAW_DEMO_INVOICES: Omit<ViewedInvoice, 'createHash'>[] = [
     invoiceId: 'opt-inv-001',
     invoiceUrl:
       'https://voidpay.xyz/pay?d=N4IgZglgNgpgziAXKADgQwE4GMAWBaEaRGBNAGhDQwDsVcQBrAeQCUQBfAXUJKpAGNEyACYB7FABsALgDVaYgJoCSLdgE8+AwcNESpMuUq59BQkWvlSZauPIBMzNBizsGLMxxQAVD',
-    viewedAt: '2024-01-06T14:15:00.000Z',
+    createdAt: '2024-01-06T14:15:00.000Z',
     status: 'paid',
     txHash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
     txHashValidated: false, // Shows warning indicator
@@ -148,7 +148,7 @@ const RAW_DEMO_INVOICES: Omit<ViewedInvoice, 'createHash'>[] = [
     invoiceId: 'poly-inv-001',
     invoiceUrl:
       'https://voidpay.xyz/pay?d=N4IgZglgNgpgziAXKADgQwE4GMAWBaEaRGBNAGhDQwDsVcQBrAeQCUQBfAXUJKpAGNEyACYB7FABsALgDVaYgJoCSLdgE8+AwcNESpMuUq59BQkWvlSZauPIBMzNBizsGLMxxQAVE',
-    viewedAt: '2024-01-02T16:45:00.000Z',
+    createdAt: '2024-01-02T16:45:00.000Z',
     status: 'overdue',
     data: {
       version: 2,
@@ -191,7 +191,7 @@ const RAW_DEMO_INVOICES: Omit<ViewedInvoice, 'createHash'>[] = [
  * Demo invoices with pre-computed createHash for /create page navigation
  * Hash is computed at module load time (build time for SSG)
  */
-export const DEMO_INVOICES: ViewedInvoice[] = RAW_DEMO_INVOICES.map((invoice) => {
+export const DEMO_INVOICES: RichInvoice[] = RAW_DEMO_INVOICES.map((invoice) => {
   try {
     return {
       ...invoice,

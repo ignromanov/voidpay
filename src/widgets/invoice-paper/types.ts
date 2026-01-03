@@ -1,4 +1,4 @@
-import { PartialInvoice, ViewedInvoiceStatus as InvoiceStatus } from '@/entities/invoice'
+import { PartialInvoice, RichInvoiceStatus as InvoiceStatus } from '@/entities/invoice'
 
 /**
  * Visual status of the invoice document

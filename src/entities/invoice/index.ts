@@ -40,5 +40,5 @@ export { invoiceSchema } from './lib/validation'
 export { ETH_ADDRESS_REGEX, NUMERIC_STRING_REGEX } from './lib/constants'
 
 // Invoice view store (from model layer)
-export { useInvoiceViewStore } from './model/viewed-invoice-store'
-export type { ViewedInvoice, ViewedInvoiceStatus } from './model/viewed-invoice-store'
+export { useRichInvoiceStore } from './model/rich-invoice-store'
+export type { RichInvoice, RichInvoiceStatus } from './model/rich-invoice-store'
