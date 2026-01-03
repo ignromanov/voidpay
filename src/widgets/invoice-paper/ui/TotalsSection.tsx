@@ -1,4 +1,5 @@
 import React from 'react'
+import { cn } from '@/shared/lib/utils'
 import { Totals } from '../lib/calculate-totals'
 import { formatAmount } from '../lib/format'
 
@@ -6,7 +7,7 @@ interface TotalsSectionProps {
   /** Calculated totals object */
   totals: Totals
   /** Currency symbol (e.g., USDC, ETH) */
-  currency: string
+  currency?: string | undefined
   /** Tax percentage label (e.g., "10%") */
   taxPercent?: string | undefined
   /** Discount percentage label (e.g., "5%") */
@@ -17,6 +18,9 @@ interface TotalsSectionProps {
 
 export const TotalsSection = React.memo<TotalsSectionProps>(
   ({ totals, currency, taxPercent, discountPercent, showMagicDust = true }) => {
+    const currencyDisplay = currency || 'TOKEN'
+    const currencyClass = currency ? '' : 'text-zinc-300 italic'
+
     return (
       <div className="ml-auto flex-shrink-0">
         {/* Grid for consistent alignment: label | amount | currency */}
@@ -25,18 +29,18 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
           <span className="text-right font-mono text-zinc-600 tabular-nums">
             {formatAmount(totals.subtotal)}
           </span>
-          <span className="font-mono text-zinc-600">{currency}</span>
+          <span className={cn('font-mono text-zinc-600', currencyClass)}>{currencyDisplay}</span>
 
           {totals.taxAmount > 0 && (
             <>
               <span className="text-zinc-600">Tax{taxPercent ? ` (${taxPercent})` : ''}</span>
               <span
                 className="text-right font-mono text-red-800 tabular-nums"
-                aria-label={`Plus ${formatAmount(totals.taxAmount)} ${currency} tax`}
+                aria-label={`Plus ${formatAmount(totals.taxAmount)} ${currencyDisplay} tax`}
               >
                 +{formatAmount(totals.taxAmount)}
               </span>
-              <span className="font-mono text-red-800">{currency}</span>
+              <span className={cn('font-mono text-red-800', currencyClass)}>{currencyDisplay}</span>
             </>
           )}
 
@@ -47,11 +51,11 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
               </span>
               <span
                 className="text-right font-mono text-emerald-600 tabular-nums"
-                aria-label={`Minus ${formatAmount(totals.discountAmount)} ${currency} discount`}
+                aria-label={`Minus ${formatAmount(totals.discountAmount)} ${currencyDisplay} discount`}
               >
                 -{formatAmount(totals.discountAmount)}
               </span>
-              <span className="font-mono text-emerald-600">{currency}</span>
+              <span className={cn('font-mono text-emerald-600', currencyClass)}>{currencyDisplay}</span>
             </>
           )}
         </div>
@@ -64,7 +68,9 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
             <span className="font-mono text-2xl font-black tracking-tighter text-violet-600 tabular-nums">
               {formatAmount(totals.total)}
             </span>
-            <span className="text-base font-bold text-violet-500">{currency}</span>
+            <span className={cn('text-base font-bold text-violet-500', currencyClass)}>
+              {currencyDisplay}
+            </span>
           </div>
         </div>
 

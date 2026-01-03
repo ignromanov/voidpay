@@ -8,18 +8,29 @@
 // Core Invoice type (from schema)
 export type { Invoice } from './model/schema'
 
-// Types (from model layer)
+// Types (from shared layer - centralized invoice types)
 export type {
+  InvoiceItem,
   LineItem,
   DraftMetadata,
   DraftState,
   InvoiceTemplate,
   PaymentReceipt,
   CreationHistoryEntry,
-} from './model/types'
+  // Generic utilities
+  DeepPartial,
+  PartialInvoice,
+  PartialParty,
+  PartialClient,
+  PartialItem,
+} from '@/shared/lib/invoice-types'
 
 // Helper functions for LineItem conversion and formatting
-export { lineItemsToInvoiceItems, invoiceItemsToLineItems, formatInvoiceTotal } from './model/types'
+export {
+  lineItemsToInvoiceItems,
+  invoiceItemsToLineItems,
+  formatInvoiceTotal,
+} from '@/shared/lib/invoice-types'
 
 // Validation (from lib layer)
 export { invoiceSchema } from './lib/validation'
@@ -29,5 +40,5 @@ export { invoiceSchema } from './lib/validation'
 export { ETH_ADDRESS_REGEX, NUMERIC_STRING_REGEX } from './lib/constants'
 
 // Invoice view store (from model layer)
-export { useInvoiceViewStore } from './model/viewed-invoice-store'
-export type { ViewedInvoice, ViewedInvoiceStatus } from './model/viewed-invoice-store'
+export { useRichInvoiceStore } from './model/rich-invoice-store'
+export type { RichInvoice, RichInvoiceStatus } from './model/rich-invoice-store'

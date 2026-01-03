@@ -9,21 +9,17 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
+import { useCreatorStore } from '@/entities/creator'
+import { getNetworkTheme, NETWORK_GLOW_SHADOWS } from '@/entities/network'
 import { Button, Heading, Text } from '@/shared/ui'
-import { InvoicePaper } from '@/widgets/invoice-paper'
-
-import { useNetworkTheme } from '../context/network-theme-context'
+import { InvoicePaper, ScaledInvoicePreview, InvoicePaperProps } from '@/widgets/invoice-paper'
 import { DEMO_INVOICES, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
 import { useDemoRotation } from '../hooks/use-demo-rotation'
 
-import { INVOICE_WIDTH, NETWORK_THEMES, getNetworkName } from './constants'
-import { useInvoiceScale } from './hooks/use-invoice-scale'
 import { DemoPagination } from './ui/DemoPagination'
 
 export function DemoSection() {
-  const { setTheme } = useNetworkTheme()
-  const { containerRef, scale, scaledHeight } = useInvoiceScale()
-
+  const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const [isHovered, setIsHovered] = useState(false)
 
   const { activeIndex, pause, resume, goTo } = useDemoRotation({
@@ -36,9 +32,9 @@ export function DemoSection() {
   useEffect(() => {
     const currentInvoice = DEMO_INVOICES[activeIndex]
     if (currentInvoice) {
-      setTheme(getNetworkName(currentInvoice.data.networkId))
+      setNetworkTheme(getNetworkTheme(currentInvoice.data.networkId))
     }
-  }, [activeIndex, setTheme])
+  }, [activeIndex, setNetworkTheme])
 
   const currentInvoice = DEMO_INVOICES[activeIndex]
 
@@ -64,8 +60,6 @@ export function DemoSection() {
     return <section className="py-32 text-center text-zinc-500">Demo content unavailable</section>
   }
 
-  const theme = NETWORK_THEMES[getNetworkName(currentInvoice.data.networkId)]
-
   return (
     <section
       className="relative flex w-full flex-col items-center justify-center overflow-visible py-32"
@@ -81,83 +75,44 @@ export function DemoSection() {
         </Text>
       </header>
 
-      {/* Invoice container */}
-      <div
-        ref={containerRef}
-        className="relative flex w-full max-w-[1400px] justify-center px-4 transition-[height] duration-200 ease-linear"
-        style={
-          {
-            '--scaled-height': `${scaledHeight + 40}px`,
-            height: 'var(--scaled-height)',
-            willChange: 'height',
-          } as React.CSSProperties
-        }
-      >
-        {/* Background glow - behind invoice, centered */}
-        <div
-          className={`pointer-events-none absolute z-10 rounded-full bg-gradient-to-br ${theme.glowFrom} ${theme.glowTo} opacity-60 blur-[120px] transition-all duration-500`}
-          style={{
-            width: `${Math.max(INVOICE_WIDTH * scale * 1.8, scaledHeight * 1.2)}px`,
-            height: `${Math.max(scaledHeight * 1.1, INVOICE_WIDTH * scale * 1.5)}px`,
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-          }}
-        />
-
-        {/* Hover zone */}
-        <div
-          className="absolute top-0 left-1/2 z-20 -translate-x-1/2"
-          style={
-            {
-              '--hover-width': `${INVOICE_WIDTH * scale}px`,
-              '--hover-height': `${scaledHeight}px`,
-              width: 'var(--hover-width)',
-              height: 'var(--hover-height)',
-              willChange: 'width, height',
-            } as React.CSSProperties
-          }
+      {/* Invoice container with pagination */}
+      <div className="relative flex w-full max-w-[1400px] flex-col items-center px-4">
+        <ScaledInvoicePreview
+          preset="demo"
+          glowClassName={NETWORK_GLOW_SHADOWS[currentInvoice.data.networkId]}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-        >
-          {/* Scaled invoice */}
-          <div
-            className="absolute top-0 left-1/2 origin-top transition-transform duration-300 ease-out will-change-transform"
-            style={{ transform: `translateX(-50%) scale(${scale})` }}
-          >
-            <div className="rounded-sm shadow-[0_50px_150px_-30px_rgba(0,0,0,0.8)]">
-              <InvoicePaper
-                data={currentInvoice.data}
-                status={currentInvoice.status}
-                {...(currentInvoice.txHash && { txHash: currentInvoice.txHash })}
-                {...(currentInvoice.txHashValidated !== undefined && {
-                  txHashValidated: currentInvoice.txHashValidated,
-                })}
-                className="border-none shadow-none"
-              />
-            </div>
-          </div>
-
-          {/* Hover CTA */}
-          <div
-            className={`absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
-          >
-            <Button
-              variant="glow"
-              size="default"
-              className="rounded-full bg-violet-600 px-8 py-4"
-              asChild
+          overlay={
+            <div
+              className={`absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
             >
-              <Link href={`/create${new URL(currentInvoice.invoiceUrl).search}` as '/create'}>
-                Use This Template
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </div>
+              <Button
+                variant="glow"
+                size="default"
+                className="rounded-full bg-violet-600 px-8 py-4"
+                asChild
+              >
+                <Link href={`/create#${currentInvoice.createHash}`}>Use This Template</Link>
+              </Button>
+            </div>
+          }
+        >
+          {/* Type assertion needed because DEMO_INVOICES status is runtime value.
+              Discriminated union correctly enforces txHash when status='paid'. */}
+          <InvoicePaper
+            {...({
+              data: currentInvoice.data,
+              status: currentInvoice.status,
+              txHash: currentInvoice.txHash,
+              txHashValidated: currentInvoice.txHashValidated,
+              showGlow: true,
+            } as InvoicePaperProps)}
+          />
+        </ScaledInvoicePreview>
 
-      {/* Pagination */}
-      <DemoPagination items={DEMO_INVOICES} activeIndex={activeIndex} onSelect={handleDotSelect} />
+        {/* Pagination inside container for glow effect coverage */}
+        <DemoPagination items={DEMO_INVOICES} activeIndex={activeIndex} onSelect={handleDotSelect} />
+      </div>
     </section>
   )
 }

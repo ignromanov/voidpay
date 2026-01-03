@@ -15,7 +15,7 @@ import { SOCIAL_URLS } from '@/shared/config'
 
 export function Footer() {
   return (
-    <footer className="fixed right-0 bottom-0 left-0 z-40 border-t border-zinc-800/30 bg-zinc-950/60 backdrop-blur-xl">
+    <footer className="fixed right-0 bottom-0 left-0 z-40 border-t border-zinc-800/30 bg-zinc-950/60 backdrop-blur-xl print:hidden">
       <div className="mx-auto flex h-10 max-w-7xl items-center justify-between px-4 text-xs text-zinc-400">
         {/* Left: Copyright */}
         <div className="flex items-center gap-3">

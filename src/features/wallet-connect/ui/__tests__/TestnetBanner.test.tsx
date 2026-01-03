@@ -22,14 +22,10 @@ describe('TestnetBanner', () => {
     vi.resetModules()
   })
 
-  it(
-    'should export TestnetBanner component',
-    async () => {
-      const { TestnetBanner } = await import('../TestnetBanner')
-      expect(TestnetBanner).toBeDefined()
-    },
-    20000
-  ) // Increase timeout for dynamic import
+  it('should export TestnetBanner component', async () => {
+    const { TestnetBanner } = await import('../TestnetBanner')
+    expect(TestnetBanner).toBeDefined()
+  }, 60000) // Increase timeout for dynamic import with coverage
 
   it('should not render when on mainnet', async () => {
     vi.mocked((await import('wagmi')).useChainId).mockReturnValue(1)
@@ -47,8 +43,9 @@ describe('TestnetBanner', () => {
     const { TestnetBanner } = await import('../TestnetBanner')
     render(<TestnetBanner />)
 
-    // Should show testnet warning
-    expect(screen.getByText(/testnet/i)).toBeInTheDocument()
+    // Should show testnet warning (may have multiple matches)
+    const testnetElements = screen.getAllByText(/testnet/i)
+    expect(testnetElements.length).toBeGreaterThan(0)
   })
 
   it('should include warning about test funds', async () => {

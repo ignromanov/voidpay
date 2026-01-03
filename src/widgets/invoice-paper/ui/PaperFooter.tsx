@@ -9,7 +9,7 @@ interface PaperFooterProps {
 export const PaperFooter = React.memo<PaperFooterProps>(({ notes }) => {
   return (
     <footer
-      className="mt-12 flex items-start justify-between border-t border-dashed border-zinc-300 pt-6"
+      className="mt-6 flex items-start justify-between border-t border-dashed border-zinc-300 pt-6"
       role="contentinfo"
       aria-label="Invoice footer with notes and branding"
     >

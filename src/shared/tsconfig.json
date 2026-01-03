@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "rootDir": ".",
+    "outDir": "../../.tsbuild/shared",
+    "tsBuildInfoFile": "../../.tsbuild/shared.tsbuildinfo"
+  },
+  "include": ["./**/*.ts", "./**/*.tsx"],
+  "exclude": ["**/*.test.ts", "**/*.test.tsx", "**/test-utils/**", "**/__tests__/**"]
+}

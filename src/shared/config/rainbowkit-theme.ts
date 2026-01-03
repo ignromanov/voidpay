@@ -51,8 +51,12 @@ export const voidPayTheme: ThemeVars = darkTheme({
 })
 
 // Override specific theme values for VoidPay styling
-voidPayTheme.colors.modalBackground = VOIDPAY_COLORS.modalBackground
-voidPayTheme.fonts.body = 'var(--font-geist-sans), system-ui, sans-serif'
+if (voidPayTheme.colors) {
+  voidPayTheme.colors.modalBackground = VOIDPAY_COLORS.modalBackground
+}
+if (voidPayTheme.fonts) {
+  voidPayTheme.fonts.body = 'var(--font-geist-sans), system-ui, sans-serif'
+}
 
 /**
  * Create a customized VoidPay theme with optional overrides

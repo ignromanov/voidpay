@@ -8,21 +8,20 @@ import Link from 'next/link'
 
 import { ArrowLeftIcon, Button, Heading, Text } from '@/shared/ui'
 
+import { termsContent } from './content'
+
 export const metadata: Metadata = {
-  title: 'Terms of Service | VoidPay',
-  description:
-    'VoidPay terms of service. Free, open-source crypto invoicing tool provided as-is with no warranties.',
-  robots: {
-    index: true,
-    follow: true,
-  },
+  title: termsContent.meta.title,
+  description: termsContent.meta.description,
+  robots: { index: true, follow: true },
 }
 
 export default function TermsPage() {
+  const { meta, sections } = termsContent
+
   return (
-    <main className="min-h-screen bg-zinc-950 px-4 py-20">
+    <main className="min-h-screen px-4 py-20">
       <div className="mx-auto max-w-3xl">
-        {/* Back button */}
         <Link href="/" className="mb-8 inline-block">
           <Button variant="ghost" size="sm">
             <ArrowLeftIcon size={16} />
@@ -35,123 +34,107 @@ export default function TermsPage() {
             Terms of Service
           </Heading>
           <Text variant="small" className="mb-8 text-zinc-500">
-            Last updated: December 2025
+            Last updated: {meta.lastUpdated}
           </Text>
 
-          <section className="space-y-6">
-            <div>
-              <Heading variant="h2" as="h2" className="mb-3 text-xl">
-                Service Description
-              </Heading>
-              <Text className="text-zinc-400">
-                VoidPay is a free, open-source tool for creating and sharing crypto invoices. We
-                provide the interface; you handle your own payments directly on the blockchain.
-              </Text>
-            </div>
+          <section className="space-y-8">
+            {sections.map((section) => (
+              <div key={section.id}>
+                <Heading variant="h2" as="h2" className="mb-3 text-xl">
+                  {section.title}
+                </Heading>
 
-            <div>
-              <Heading variant="h2" as="h2" className="mb-3 text-xl">
-                No Account Required
-              </Heading>
-              <Text className="text-zinc-400">
-                VoidPay doesn&apos;t require registration. There&apos;s no user account to manage or
-                terms to sign up for. You use the tool, and that&apos;s it.
-              </Text>
-            </div>
+                {'disclaimer' in section && (
+                  <div className="mb-4 rounded-lg border border-amber-800/50 bg-amber-950/30 p-4">
+                    <Text className="font-medium text-amber-200">{section.disclaimer.title}</Text>
+                    <Text className="mt-2 text-sm text-amber-100/80">
+                      {section.disclaimer.content}
+                    </Text>
+                  </div>
+                )}
 
-            <div>
-              <Heading variant="h2" as="h2" className="mb-3 text-xl">
-                Your Responsibility
-              </Heading>
-              <ul className="list-disc space-y-2 pl-6 text-zinc-400">
-                <li>Verify recipient wallet addresses before sending payments</li>
-                <li>Ensure you&apos;re on the correct network before transacting</li>
-                <li>Keep your invoice URLs secure if they contain sensitive information</li>
-                <li>Comply with applicable laws in your jurisdiction</li>
-              </ul>
-            </div>
+                {'content' in section && (
+                  <Text className="mb-4 text-zinc-400">{section.content}</Text>
+                )}
 
-            <div>
-              <Heading variant="h2" as="h2" className="mb-3 text-xl">
-                No Warranties
-              </Heading>
-              <Text className="text-zinc-400">
-                VoidPay is provided &quot;as is&quot; without warranties of any kind. We&apos;re not
-                responsible for lost funds, incorrect payments, or any damages arising from use of
-                this tool.
-              </Text>
-            </div>
+                {'legalText' in section && (
+                  <div className="rounded-lg border border-zinc-700 bg-zinc-900 p-4">
+                    <Text className="text-sm tracking-wide text-zinc-300 uppercase">
+                      {section.legalText}
+                    </Text>
+                    {'liabilityItems' in section && (
+                      <ul className="mt-3 list-disc space-y-1 pl-6 text-sm text-zinc-400">
+                        {section.liabilityItems.map((item, i) => (
+                          <li key={i}>{item}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
 
-            <div>
-              <Heading variant="h2" as="h2" className="mb-3 text-xl">
-                No Custody
-              </Heading>
-              <Text className="text-zinc-400">
-                VoidPay never holds, transmits, or has access to your funds. All transactions occur
-                directly between wallets on the blockchain. We&apos;re not a money transmitter or
-                financial service.
-              </Text>
-            </div>
+                {'items' in section && (
+                  <ul className="list-disc space-y-2 pl-6 text-zinc-400">
+                    {section.items.map((item, i) => (
+                      <li key={i}>
+                        {'label' in item && <strong className="text-zinc-200">{item.label}</strong>}
+                        {'label' in item && item.description && ' — '}
+                        {item.description}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
-            <div>
-              <Heading variant="h2" as="h2" className="mb-3 text-xl">
-                Prohibited Use
-              </Heading>
-              <Text className="text-zinc-400">
-                Don&apos;t use VoidPay for illegal activities, fraud, money laundering, or any
-                purpose that violates applicable laws. We reserve the right to block abusive usage
-                patterns.
-              </Text>
-            </div>
+                {'note' in section && (
+                  <Text className="mt-4 text-zinc-400">
+                    <strong className="text-zinc-200">
+                      {section.id === 'payment-verification' ? 'Important: ' : ''}
+                    </strong>
+                    {section.note}
+                  </Text>
+                )}
 
-            <div>
-              <Heading variant="h2" as="h2" className="mb-3 text-xl">
-                Open Source
-              </Heading>
-              <Text className="text-zinc-400">
-                VoidPay is open source under the MIT License. You&apos;re free to fork, modify, and
-                self-host. See our{' '}
-                <a
-                  href="https://github.com/ignromanov/voidpay"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-violet-400 hover:text-violet-300"
-                >
-                  GitHub repository
-                </a>{' '}
-                for details.
-              </Text>
-            </div>
+                {'github' in section && (
+                  <div className="mt-4">
+                    <a
+                      href={section.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-violet-400 hover:text-violet-300"
+                    >
+                      View the source code on GitHub →
+                    </a>
+                  </div>
+                )}
 
-            <div>
-              <Heading variant="h2" as="h2" className="mb-3 text-xl">
-                Changes to Terms
-              </Heading>
-              <Text className="text-zinc-400">
-                We may update these terms occasionally. Since there&apos;s no account system,
-                we&apos;ll post updates here and on our GitHub.
-              </Text>
-            </div>
-
-            <div>
-              <Heading variant="h2" as="h2" className="mb-3 text-xl">
-                Contact
-              </Heading>
-              <Text className="text-zinc-400">
-                Questions? Open an issue on GitHub or reach out on{' '}
-                <a
-                  href="https://twitter.com/voidpay_xyz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-violet-400 hover:text-violet-300"
-                >
-                  Twitter
-                </a>
-                .
-              </Text>
-            </div>
+                {'links' in section && (
+                  <ul className="mt-4 list-none space-y-2 pl-0 text-zinc-400">
+                    {section.links.map((link) => (
+                      <li key={link.url}>
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-violet-400 hover:text-violet-300"
+                        >
+                          {link.text}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
           </section>
         </article>
+
+        <div className="mt-12 flex gap-6 border-t border-zinc-800 pt-8">
+          <Link href="/privacy" className="text-sm text-zinc-500 hover:text-zinc-300">
+            Privacy Policy
+          </Link>
+          <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-300">
+            Back to Home
+          </Link>
+        </div>
       </div>
     </main>
   )

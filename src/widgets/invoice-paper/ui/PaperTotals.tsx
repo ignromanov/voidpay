@@ -14,7 +14,7 @@ interface PaperTotalsProps {
   invoiceUrl?: string
   // Payment details props
   networkId: number
-  senderAddress: string
+  senderAddress?: string | undefined
   tokenAddress?: string | undefined
   txHash?: string | undefined
   txHashValidated?: boolean | undefined
@@ -41,7 +41,7 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
     status,
   }) => {
     return (
-      <section className="mt-auto border-t-2 border-zinc-700 pt-4">
+      <section className="border-t-2 border-zinc-700 pt-4">
         <div className="flex items-start gap-4">
           <PaymentInfo
             networkId={networkId}

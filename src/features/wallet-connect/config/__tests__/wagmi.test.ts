@@ -5,7 +5,7 @@
  * Verifies Constitutional compliance (Principle VI - RPC Key Protection).
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 import type { Config } from 'wagmi'
 
 // Mock environment variables before importing the module
@@ -15,35 +15,27 @@ vi.stubEnv('NEXT_PUBLIC_ENABLE_TESTNETS', 'false')
 describe('wagmi configuration', () => {
   let wagmiConfig: Config
 
-  beforeEach(async () => {
-    // Dynamic import to ensure mocks are applied
+  beforeAll(async () => {
+    // Dynamic import to ensure mocks are applied (one-time initialization)
     const { wagmiConfig: config } = await import('../wagmi')
     wagmiConfig = config
-  }, 30000) // 30s timeout for WalletConnect initialization
+  }, 60000) // 60s timeout for WalletConnect initialization
 
-  afterEach(() => {
+  afterAll(() => {
     vi.resetModules()
   })
 
   describe('config structure', () => {
-    it(
-      'should export a valid Wagmi config',
-      () => {
-        expect(wagmiConfig).toBeDefined()
-        expect(wagmiConfig.state).toBeDefined()
-      },
-      20000
-    ) // Increase timeout for WalletConnect initialization
+    it('should export a valid Wagmi config', () => {
+      expect(wagmiConfig).toBeDefined()
+      expect(wagmiConfig.state).toBeDefined()
+    })
 
-    it(
-      'should include supported chains',
-      () => {
-        const chains = wagmiConfig.chains
-        expect(chains).toBeDefined()
-        expect(chains.length).toBeGreaterThanOrEqual(4) // At least 4 mainnet chains
-      },
-      20000
-    ) // Increase timeout for WalletConnect initialization
+    it('should include supported chains', () => {
+      const chains = wagmiConfig.chains
+      expect(chains).toBeDefined()
+      expect(chains.length).toBeGreaterThanOrEqual(4) // At least 4 mainnet chains
+    })
 
     it('should have Ethereum mainnet as a supported chain', () => {
       const chains = wagmiConfig.chains
@@ -126,7 +118,7 @@ describe('wagmi config with testnets', () => {
     // Check for testnet chains (Sepolia)
     const hasTestnet = chains.some((c) => c.testnet === true)
     expect(hasTestnet).toBe(true)
-  })
+  }, 60000)
 
   it('should exclude testnet chains when NEXT_PUBLIC_ENABLE_TESTNETS is false', async () => {
     vi.stubEnv('NEXT_PUBLIC_ENABLE_TESTNETS', 'false')
@@ -140,5 +132,5 @@ describe('wagmi config with testnets', () => {
     // No testnets should be present
     const hasTestnet = chains.some((c) => c.testnet === true)
     expect(hasTestnet).toBe(false)
-  })
+  }, 60000)
 })

@@ -21,8 +21,27 @@ import { createTransportsForChains } from '@/shared/lib'
 /**
  * WalletConnect Project ID from environment
  * Required for WalletConnect v2 connections
+ *
+ * FALLBACK: Uses a placeholder during build/SSR when env var is not set.
+ * This allows static generation to complete without crashing.
+ * The placeholder won't work for actual wallet connections in production -
+ * a real projectId must be set via NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID.
+ *
+ * @see https://cloud.walletconnect.com/
  */
-const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? ''
+const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
+
+// Warn if using fallback (build-time only, won't work for actual connections)
+if (!walletConnectProjectId) {
+  console.warn(
+    '[wagmi] NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set. ' +
+      'WalletConnect connections will not work. ' +
+      'Get a project ID from https://cloud.walletconnect.com/'
+  )
+}
+
+// Use placeholder for build, empty string would cause RainbowKit to throw
+const projectIdForConfig = walletConnectProjectId ?? 'placeholder-build-key'
 
 /**
  * Get chains configuration
@@ -46,7 +65,7 @@ const transports = createTransportsForChains([...ALL_CHAIN_IDS])
  */
 export const wagmiConfig = getDefaultConfig({
   appName: 'VoidPay',
-  projectId: walletConnectProjectId,
+  projectId: projectIdForConfig,
   chains,
   transports,
   ssr: true,

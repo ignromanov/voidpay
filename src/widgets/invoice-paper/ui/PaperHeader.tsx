@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { Link as LinkIcon, AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
 import { CopyButton } from '@/shared/ui'
 import { cn } from '@/shared/lib/utils'
@@ -7,9 +7,9 @@ import { cn } from '@/shared/lib/utils'
 import { InvoiceStatus, InvoicePaperVariant } from '../types'
 
 interface PaperHeaderProps {
-  invoiceId: string
-  iss: number
-  due: number
+  invoiceId?: string | undefined
+  iss?: number | undefined
+  due?: number | undefined
   status?: InvoiceStatus | undefined
   /** Whether payment transaction has been validated on-chain */
   txHashValidated?: boolean | undefined
@@ -47,24 +47,36 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
     return (
       <header className="relative flex items-start justify-between gap-4 border-b-2 border-zinc-700 pb-6">
         {/* Large INVOICE title with ID - Left */}
-        <div className="flex min-w-0 items-center gap-2">
-          <h1
-            onClick={handleTitleClick}
-            className={cn(
-              'text-4xl leading-none font-black tracking-tighter whitespace-nowrap text-zinc-400 uppercase',
-              hasLink && 'cursor-pointer transition-colors hover:text-zinc-500'
-            )}
-            role={hasLink ? 'link' : undefined}
-            tabIndex={hasLink ? 0 : undefined}
-            onKeyDown={hasLink ? (e) => e.key === 'Enter' && handleTitleClick() : undefined}
-            title={hasLink ? 'Click to open invoice in new tab' : undefined}
-          >
-            Invoice {invoiceId && <span className="text-zinc-900">#{invoiceId}</span>}
-            {hasLink && (
-              <LinkIcon className="ml-2 inline-block h-5 w-5 text-zinc-400" aria-hidden="true" />
+        <div className="flex min-w-0 items-center gap-3">
+          <h1 className="flex items-center gap-1.5 text-4xl leading-none font-black tracking-tighter whitespace-nowrap text-zinc-400 uppercase">
+            <span>Invoice</span>
+            {invoiceId ? (
+              <span
+                onClick={hasLink ? handleTitleClick : undefined}
+                onKeyDown={hasLink ? (e) => e.key === 'Enter' && handleTitleClick() : undefined}
+                role={hasLink ? 'link' : undefined}
+                tabIndex={hasLink ? 0 : undefined}
+                title={hasLink ? 'Click to open invoice in new tab' : undefined}
+                className={cn(
+                  'transition-colors',
+                  hasLink ? '!cursor-pointer text-zinc-800 hover:text-violet-600' : 'text-zinc-900'
+                )}
+              >
+                #{invoiceId}
+              </span>
+            ) : (
+              <span className="text-zinc-300 italic">#ID</span>
             )}
           </h1>
-          {hasLink && <CopyButton value={invoiceUrl} size="sm" aria-label="Copy invoice URL" />}
+          {hasLink && (
+            <CopyButton
+              value={invoiceUrl}
+              size="sm"
+              className="flex-shrink-0"
+              data-print-hide
+              aria-label="Copy invoice URL"
+            />
+          )}
         </div>
 
         {/* Invoice meta - Right */}
@@ -73,13 +85,17 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
             <span className="pt-0.5 text-xs font-bold tracking-wider text-zinc-400 uppercase">
               Issued
             </span>
-            <span className="font-mono font-medium">{formatDate(iss)}</span>
+            <span className={cn('font-mono font-medium', !iss && 'text-zinc-300 italic')}>
+              {iss ? formatDate(iss) : 'Date'}
+            </span>
           </div>
           <div className="flex justify-end gap-4 text-sm">
             <span className="pt-0.5 text-xs font-bold tracking-wider text-zinc-400 uppercase">
               Due
             </span>
-            <span className="font-mono font-medium">{formatDate(due)}</span>
+            <span className={cn('font-mono font-medium', !due && 'text-zinc-300 italic')}>
+              {due ? formatDate(due) : 'Date'}
+            </span>
           </div>
           {status && (
             <div className="flex items-center justify-end gap-4 pt-1">

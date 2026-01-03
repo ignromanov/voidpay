@@ -8,31 +8,42 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { INVOICE_VIEW_STORE_KEY } from '@/shared/config'
-import type { Invoice } from './types'
+import type { Invoice } from './schema'
 
 /**
  * Status of a viewed invoice
+ * - pending: Awaiting payment
+ * - paid: Payment confirmed
+ * - overdue: Past due date
+ * - draft: Being edited
+ * - empty: No invoice data (placeholder)
  */
-export type ViewedInvoiceStatus = 'pending' | 'paid' | 'overdue' | 'draft'
+export type RichInvoiceStatus = 'pending' | 'paid' | 'overdue' | 'draft' | 'empty'
 
 /**
  * A viewed invoice entry
  */
-export interface ViewedInvoice {
+export interface RichInvoice {
   /** Unique invoice ID from the invoice data */
   invoiceId: string
   /** Generated URL for sharing */
   invoiceUrl: string
-  /** Original invoice data */
+  /** Full invoice data */
   data: Invoice
   /** Current payment status */
-  status: ViewedInvoiceStatus
+  status: RichInvoiceStatus
   /** Transaction hash (if paid) */
   txHash?: string
   /** Whether txHash has been validated on-chain */
   txHashValidated?: boolean
-  /** ISO 8601 timestamp when invoice was viewed */
-  viewedAt: string
+  /** ISO 8601 timestamp when entry was created */
+  createdAt: string
+  /** ISO 8601 timestamp when invoice was last viewed */
+  viewedAt?: string
+  /** ISO 8601 timestamp when invoice was paid */
+  paidAt?: string
+  /** Pre-generated hash for /create# template link (optional, for demo invoices) */
+  createHash?: string
 }
 
 /**
@@ -40,34 +51,34 @@ export interface ViewedInvoice {
  */
 const MAX_INVOICES = 50
 
-interface InvoiceViewState {
+interface RichInvoiceState {
   /** Schema version for future migrations */
   version: 1
-  /** List of viewed invoices, sorted by viewedAt desc */
-  invoices: ViewedInvoice[]
+  /** List of invoices, sorted by createdAt desc */
+  invoices: RichInvoice[]
 }
 
-interface InvoiceViewActions {
+interface RichInvoiceActions {
   /** Add a new invoice to the store */
-  addInvoice: (invoice: Omit<ViewedInvoice, 'viewedAt'>) => void
+  addInvoice: (invoice: Omit<RichInvoice, 'createdAt'>) => void
   /** Update the status of an existing invoice */
-  updateStatus: (invoiceId: string, status: ViewedInvoiceStatus) => void
+  updateStatus: (invoiceId: string, status: RichInvoiceStatus) => void
   /** Set transaction hash for an invoice */
   setTxHash: (invoiceId: string, txHash: string, validated?: boolean) => void
   /** Remove an invoice from the store */
   removeInvoice: (invoiceId: string) => void
   /** Get an invoice by ID */
-  getInvoice: (invoiceId: string) => ViewedInvoice | undefined
+  getInvoice: (invoiceId: string) => RichInvoice | undefined
   /** Clear all invoices */
   clearAll: () => void
 }
 
-type InvoiceViewStore = InvoiceViewState & InvoiceViewActions
+type RichInvoiceStore = RichInvoiceState & RichInvoiceActions
 
 /**
  * Hook to access viewed invoices store
  */
-export const useInvoiceViewStore = create<InvoiceViewStore>()(
+export const useRichInvoiceStore = create<RichInvoiceStore>()(
   persist(
     (set, get) => ({
       version: 1,
@@ -80,12 +91,12 @@ export const useInvoiceViewStore = create<InvoiceViewStore>()(
             (inv) => inv.invoiceId === invoice.invoiceId
           )
 
-          const newInvoice: ViewedInvoice = {
+          const newInvoice: RichInvoice = {
             ...invoice,
-            viewedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
           }
 
-          let updatedInvoices: ViewedInvoice[]
+          let updatedInvoices: RichInvoice[]
 
           if (existingIndex >= 0) {
             // Update existing invoice and move to top

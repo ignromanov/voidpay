@@ -25,7 +25,7 @@
 
 import { useState, useCallback, useEffect, type ReactNode, type ComponentType } from 'react'
 import { Wallet, Loader2 } from 'lucide-react'
-import { Button } from './button'
+import { Button } from '@/shared/ui'
 
 type LoadingState = 'idle' | 'loading' | 'ready' | 'error'
 type ErrorType = 'network' | 'unknown'
@@ -38,13 +38,7 @@ type ProviderProps = { children: ReactNode }
  */
 function PlaceholderButton({ onClick, isLoading }: { onClick: () => void; isLoading: boolean }) {
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="gap-1.5"
-      onClick={onClick}
-      disabled={isLoading}
-    >
+    <Button variant="outline" size="sm" className="gap-1.5" onClick={onClick} disabled={isLoading}>
       {isLoading ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -70,8 +64,9 @@ export function LazyWalletButton() {
   const [state, setState] = useState<LoadingState>('idle')
   const [errorType, setErrorType] = useState<ErrorType | null>(null)
   const [Web3Provider, setWeb3Provider] = useState<ComponentType<ProviderProps> | null>(null)
-  const [WalletButtonComponent, setWalletButtonComponent] =
-    useState<ComponentType<object> | null>(null)
+  const [WalletButtonComponent, setWalletButtonComponent] = useState<ComponentType<object> | null>(
+    null
+  )
 
   const handleActivate = useCallback(() => {
     if (state === 'idle') {
@@ -91,7 +86,7 @@ export function LazyWalletButton() {
         // This ensures webpack doesn't include them in initial bundle
         const [providersModule, walletModule] = await Promise.all([
           import('@/features/wallet-connect/providers'),
-          import('./wallet-button'),
+          import('./WalletButton'),
         ])
 
         if (cancelled) return

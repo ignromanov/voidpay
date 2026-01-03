@@ -1,5 +1,5 @@
 # AI Artifacts (private repo in .ai/)
-.ai/
+.ai
 .specify
 .serena
 .claude
@@ -44,6 +44,9 @@ public/robots.txt
 # Production
 build/
 dist/
+
+# TypeScript build cache (project references)
+.tsbuild/
 
 # Misc
 *.pem

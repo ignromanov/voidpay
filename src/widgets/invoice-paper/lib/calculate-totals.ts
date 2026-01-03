@@ -10,8 +10,8 @@ export interface Totals {
 }
 
 interface Item {
-  quantity: string | number
-  rate: string
+  quantity?: string | number
+  rate?: string
 }
 
 interface Options {
@@ -23,8 +23,9 @@ export const MAGIC_DUST = 0.000001
 
 export function calculateTotals(items: Item[], options: Options = {}): Totals {
   const subtotal = items.reduce((acc, item) => {
-    const qty = typeof item.quantity === 'string' ? parseFloat(item.quantity) : item.quantity
-    const rate = parseFloat(item.rate)
+    const rawQty = item.quantity ?? 0
+    const qty = typeof rawQty === 'string' ? parseFloat(rawQty) : rawQty
+    const rate = parseFloat(item.rate ?? '0')
     return acc + (isNaN(qty) || isNaN(rate) ? 0 : qty * rate)
   }, 0)
 

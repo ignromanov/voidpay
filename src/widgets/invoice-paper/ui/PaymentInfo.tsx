@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { Hexagon, Hash, ExternalLink, AlertTriangle } from 'lucide-react'
 import { formatShortAddress } from '../lib/format'
-import { NETWORK_BADGES } from '@/entities/network/config/ui-config'
+import { NETWORK_BADGES } from '@/entities/network'
 import { getExplorerUrl, getNetworkName } from '@/entities/network'
 import { APP_URLS } from '@/shared/config'
 import { cn } from '@/shared/lib/utils'
@@ -13,7 +13,7 @@ interface PaymentInfoProps {
   /** Network chain ID */
   networkId: number
   /** Recipient wallet address */
-  senderAddress: string
+  senderAddress?: string | undefined
   /** Currency symbol (e.g., USDC, ETH) */
   currency: string
   /** Token contract address (optional for native tokens) */
@@ -136,14 +136,24 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
               </span>
               <div className="flex items-center gap-1">
                 <div
-                  className="flex-1 rounded border border-zinc-200 bg-white px-2 py-1.5 font-mono text-[10px] leading-relaxed font-medium text-zinc-950"
+                  className={cn(
+                    'flex-1 cursor-text rounded border border-zinc-200 bg-white px-2 py-1.5 font-mono text-[10px] leading-relaxed font-medium',
+                    senderAddress ? 'text-zinc-950' : 'text-zinc-400 italic'
+                  )}
                   title={senderAddress}
-                  aria-label={`Wallet address: ${senderAddress}`}
+                  aria-label={
+                    senderAddress ? `Wallet address: ${senderAddress}` : 'Wallet address not set'
+                  }
                 >
-                  {senderAddress || '0x...'}
+                  {senderAddress || '0x... (wallet address)'}
                 </div>
                 {isInteractive && senderAddress && (
-                  <CopyButton value={senderAddress} size="sm" aria-label="Copy wallet address" />
+                  <CopyButton
+                    value={senderAddress}
+                    size="sm"
+                    data-print-hide
+                    aria-label="Copy wallet address"
+                  />
                 )}
               </div>
             </div>

@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   /* Font families - Geist fonts */
@@ -18,8 +18,13 @@
 }
 
 @keyframes aurora {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 /* Respect reduced motion preference - stop all custom animations */
@@ -32,17 +37,27 @@
 }
 
 @keyframes accretion-idle {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes crescent-pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 @keyframes blackhole-pulse {
-  0%, 100% {
+  0%,
+  100% {
     filter: drop-shadow(0 0 4px rgba(124, 58, 237, 0.3));
   }
   50% {
@@ -78,13 +93,22 @@
 }
 
 @keyframes hero-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes hero-scroll-bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(8px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
+  }
 }
 
 /* Hero animation classes with staggered delays */
@@ -132,3 +156,9 @@
     animation: none !important;
   }
 }
+
+/* ============================================
+   Print Styles
+   Invoice-specific print styles moved to:
+   widgets/invoice-paper/invoice-paper.css (FSD)
+   ============================================ */

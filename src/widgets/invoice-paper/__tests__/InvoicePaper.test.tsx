@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { InvoicePaper } from '../ui/InvoicePaper'
-import { Invoice } from '@/entities/invoice'
+import { PartialInvoice } from '@/entities/invoice'
 
 describe('InvoicePaper Integration', () => {
-  const mockData: Partial<Invoice> = {
+  const mockData: PartialInvoice = {
     invoiceId: 'INV-2024-001',
     issuedAt: 1735296000, // Dec 27
     dueAt: 1735382400, // Dec 28
@@ -40,7 +40,8 @@ describe('InvoicePaper Integration', () => {
   })
 
   it('renders watermark for paid status', () => {
-    render(<InvoicePaper data={mockData} status="paid" />)
+    // Discriminated union requires txHash when status='paid'
+    render(<InvoicePaper data={mockData} status="paid" txHash="0x123abc" />)
     expect(screen.getByText('PAID')).toBeDefined()
   })
 })

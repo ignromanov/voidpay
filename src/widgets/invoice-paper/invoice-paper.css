@@ -1,0 +1,156 @@
+/**
+ * Invoice Paper Print Styles
+ *
+ * FSD Location: widgets/invoice-paper/invoice-paper.css
+ * Purpose: Print-specific styles for invoice document
+ *
+ * Usage:
+ * 1. Import in invoice-paper/index.ts
+ * 2. Apply .invoice-print-target class to the printable invoice container
+ *
+ * Print Architecture:
+ * - @layer invoice-print-base: Hide all content by default
+ * - @layer invoice-print-show: Show only the invoice
+ * - @layer invoice-print-hide: Hide specific elements (buttons, dialogs)
+ * - Unlayered rules: Override Tailwind/inline styles with !important
+ */
+
+@layer invoice-print-base, invoice-print-show, invoice-print-hide;
+
+@media print {
+  /* Page setup — minimal margins for more content space */
+  @page {
+    size: A4;
+    margin: 5mm;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+   * UNLAYERED RULES — Higher specificity to override Tailwind/inline
+   * ═══════════════════════════════════════════════════════════════ */
+
+  /* Force white background — override Tailwind bg-zinc-950 and inline styles */
+  html,
+  body {
+    background: white !important;
+    background-color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Disable ALL transitions/animations to prevent glitches when print dialog opens */
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+
+  /* Reset cursors for print */
+  * {
+    cursor: default;
+  }
+
+  /* Remove hover/focus states */
+  a:hover,
+  a:focus,
+  button:hover,
+  button:focus {
+    color: inherit;
+    background-color: inherit;
+    text-decoration: none;
+  }
+
+  /* Ensure links look like text */
+  a {
+    text-decoration: none;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+   * LAYERED RULES — For cascade organization
+   * ═══════════════════════════════════════════════════════════════ */
+
+  @layer invoice-print-base {
+    /* Hide everything by default */
+    body * {
+      visibility: hidden;
+    }
+  }
+
+  @layer invoice-print-show {
+    /* Show only the printable invoice */
+    .invoice-print-target,
+    .invoice-print-target * {
+      visibility: visible;
+    }
+
+    /* Position invoice for print — absolute to escape normal flow */
+    .invoice-print-target {
+      position: absolute;
+      left: 0;
+      top: 0;
+      /* A4 printable area (210mm - 10mm margins = 200mm) */
+      width: calc(210mm - 10mm);
+      /* Explicit height for flexbox to work (mt-auto needs constraint) */
+      height: calc(297mm - 10mm);
+      max-width: none;
+      transform: none !important;
+      box-shadow: none;
+      page-break-inside: avoid;
+      /* Reset transitions/animations for print */
+      transition: none !important;
+      /* Flexbox for sticky footer */
+      display: flex;
+      flex-direction: column;
+      /* Full color printing */
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Glow wrapper (if present) — fill container, pass flex to article */
+    .invoice-print-target > div {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Invoice article — fill the print target, enable flex layout */
+    /* Handles both: direct child (no glow) and nested (with glow wrapper) */
+    .invoice-print-target > article,
+    .invoice-print-target > div > article {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+  }
+
+  @layer invoice-print-hide {
+    /* Hide elements with data-print-hide attribute */
+    [data-print-hide],
+    button {
+      display: none;
+    }
+
+    /* Reset cursor styling without display:none (keeps layout intact) */
+    .cursor-zoom-in {
+      cursor: default;
+    }
+
+    /* Hide Radix Dialog overlay */
+    [data-radix-popper-content-wrapper],
+    [role='dialog'],
+    [data-state='open'][role='dialog'] {
+      display: none;
+    }
+
+    /* Hide Sonner toasts */
+    [data-sonner-toaster] {
+      display: none;
+    }
+  }
+}

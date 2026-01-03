@@ -174,18 +174,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         ...rateLimitHeaders,
       },
     })
-  } catch {
-    // No logging - privacy-preserving
+  } catch (error) {
+    console.error('RPC proxy error:', error)
     return NextResponse.json(
       {
         jsonrpc: '2.0',
         error: {
-          code: -32700,
-          message: 'Parse error: Invalid JSON',
+          code: -32603,
+          message: error instanceof Error ? error.message : 'Internal error',
         },
         id: null,
       } as JsonRpcResponse,
-      { status: 400 }
+      { status: 500 }
     )
   }
 }

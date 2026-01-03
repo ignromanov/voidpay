@@ -1,30 +1,69 @@
 /**
- * Invoice Entity Types
+ * Invoice Helper Types - Shared Layer
  *
- * Base TypeScript types for invoice-related entities.
- * These types are used across the application for invoice creation and management.
+ * Utility types, partial types, and helper functions for invoice data.
+ * These are used across the application for invoice creation and management.
+ *
+ * Location: shared/lib (not entities/) to allow imports from shared layer
+ * following FSD layer rules.
  */
 
 import type { Invoice } from './schema'
 
-// Re-export Invoice for convenience
-export type { Invoice }
+// ============ Deep Partial Generic ============
 
 /**
- * LineItem (UI version with ID for React keys)
+ * DeepPartial<T> — Makes all nested properties optional recursively.
  *
- * Used in forms for tracking individual line items.
- * When encoding to Invoice, the `id` is stripped.
+ * Useful for UI forms where data is filled in gradually.
+ * Unlike Partial<T>, this works on nested objects too.
+ *
+ * Special handling:
+ * - Arrays: elements become DeepPartial but array itself stays as array
+ * - Objects: all properties become optional with DeepPartial values
+ * - Primitives: unchanged
+ *
+ * @example
+ * type PartialInvoice = DeepPartial<Invoice>
+ * // { from?: { name?: string; walletAddress?: string }; items?: { description?: string }[]; ... }
  */
-export interface LineItem {
+export type DeepPartial<T> = T extends (infer U)[]
+  ? DeepPartial<U>[]
+  : T extends object
+    ? { [P in keyof T]?: DeepPartial<T[P]> }
+    : T
+
+/**
+ * PartialInvoice — Deep partial invoice type for UI components.
+ *
+ * Used throughout the interface where invoice data may be incomplete:
+ * - Invoice editor forms
+ * - Preview components (InvoicePaper)
+ * - Draft states
+ */
+export type PartialInvoice = DeepPartial<Invoice>
+
+/**
+ * Partial types for invoice sub-objects (for component props)
+ */
+export type PartialParty = DeepPartial<Invoice['from']>
+export type PartialClient = DeepPartial<Invoice['client']>
+export type PartialItem = DeepPartial<Invoice['items'][number]>
+
+/**
+ * InvoiceItem — extracted from Invoice for type reuse
+ */
+export type InvoiceItem = Invoice['items'][number]
+
+/**
+ * LineItem — UI version with ID for React keys
+ *
+ * Extends InvoiceItem (DRY), adding only `id` for React key prop.
+ * When encoding to Invoice, strip the `id` field.
+ */
+export type LineItem = InvoiceItem & {
   /** Unique identifier for React key (UUID v4) */
   id: string
-  /** Item description */
-  description: string
-  /** Quantity (must be > 0) */
-  quantity: number
-  /** Rate per unit (decimal string) */
-  rate: string
 }
 
 /**
@@ -50,7 +89,7 @@ export interface DraftState {
   /** Draft metadata */
   meta: DraftMetadata
   /** Partial invoice data (may be incomplete) */
-  data: Partial<Invoice>
+  data: PartialInvoice
 }
 
 /**
@@ -66,8 +105,8 @@ export interface InvoiceTemplate {
   name: string
   /** Creation timestamp (ISO 8601) */
   createdAt: string
-  /** Invoice data (partial, merged with defaults when loaded) */
-  invoiceData: Partial<Omit<Invoice, 'version'>>
+  /** Invoice data (deep partial, merged with defaults when loaded) */
+  invoiceData: DeepPartial<Omit<Invoice, 'version'>>
 }
 
 /**
@@ -129,13 +168,14 @@ export function lineItemsToInvoiceItems(lineItems: LineItem[]): Invoice['items']
 
 /**
  * Convert Invoice items to LineItem[] (adding IDs)
+ * Accepts partial items from PartialInvoice for UI editing
  */
-export function invoiceItemsToLineItems(items: Invoice['items']): LineItem[] {
+export function invoiceItemsToLineItems(items: PartialItem[]): LineItem[] {
   return items.map((item) => ({
     id: crypto.randomUUID(),
-    description: item.description,
-    quantity: typeof item.quantity === 'number' ? item.quantity : parseFloat(item.quantity),
-    rate: item.rate,
+    description: item.description ?? '',
+    quantity: item.quantity ?? 0,
+    rate: item.rate ?? '0',
   }))
 }
 
@@ -145,10 +185,8 @@ export function invoiceItemsToLineItems(items: Invoice['items']): LineItem[] {
  */
 export function formatInvoiceTotal(invoice: Invoice): string {
   const subtotal = invoice.items.reduce((sum, item) => {
-    const qty =
-      typeof item.quantity === 'number' ? item.quantity : parseFloat(String(item.quantity))
     const rate = parseFloat(item.rate)
-    return sum + qty * rate
+    return sum + item.quantity * rate
   }, 0)
 
   let total = subtotal

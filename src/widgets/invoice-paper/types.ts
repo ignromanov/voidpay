@@ -1,4 +1,4 @@
-import { Invoice, ViewedInvoiceStatus as InvoiceStatus } from '@/entities/invoice'
+import { PartialInvoice, RichInvoiceStatus as InvoiceStatus } from '@/entities/invoice'
 
 /**
  * Visual status of the invoice document
@@ -20,47 +20,21 @@ export type { InvoiceStatus }
 export type InvoicePaperVariant = 'full' | 'default' | 'print'
 
 /**
- * Props for the InvoicePaper widget
+ * Base props shared by all invoice paper variants
  */
-export interface InvoicePaperProps {
+interface InvoicePaperBaseProps {
   /**
    * Invoice data following Schema V1.
-   * Can be partial for 'draft' status preview.
+   * Can be deep-partial for 'draft' status preview (nested fields may be incomplete).
+   * When undefined, renders an empty placeholder state with 'empty' status.
    */
-  data: Partial<Invoice>
-
-  /**
-   * Current status of the invoice.
-   * Affects watermarks and badges.
-   * @default 'pending'
-   */
-  status?: InvoiceStatus
-
-  /**
-   * Transaction hash for 'paid' status.
-   * Used to generate block explorer links.
-   */
-  txHash?: string
-
-  /**
-   * Whether the transaction hash has been validated on-chain.
-   * When false, a warning indicator is shown.
-   * @default true (for backward compatibility)
-   */
-  txHashValidated?: boolean | undefined
+  data: PartialInvoice | undefined
 
   /**
    * Display variant of the invoice paper.
    * @default 'default'
    */
   variant?: InvoicePaperVariant | undefined
-
-  /**
-   * Enable responsive scaling for mobile devices.
-   * When true, the invoice scales down on smaller screens.
-   * @default false
-   */
-  responsive?: boolean | undefined
 
   /**
    * Whether to show the QR code in the footer.
@@ -76,6 +50,19 @@ export interface InvoicePaperProps {
   showTexture?: boolean | undefined
 
   /**
+   * Whether to show the network-colored glow effect around the invoice.
+   * Creates a soft ambient glow matching the blockchain network color.
+   * @default false
+   */
+  showGlow?: boolean | undefined
+
+  /**
+   * Invoice URL for sharing/linking.
+   * When provided with variant='full', the invoice title becomes a clickable link.
+   */
+  invoiceUrl?: string | undefined
+
+  /**
    * Additional CSS classes for the container.
    */
   className?: string | undefined
@@ -86,3 +73,58 @@ export interface InvoicePaperProps {
    */
   containerRef?: React.RefObject<HTMLElement | null> | undefined
 }
+
+/**
+ * Props when invoice is NOT paid (draft, pending, overdue)
+ * txHash is optional (may not exist yet)
+ */
+interface InvoicePaperNotPaidProps extends InvoicePaperBaseProps {
+  /**
+   * Current status of the invoice.
+   * @default 'pending'
+   */
+  status?: 'draft' | 'pending' | 'overdue' | 'empty'
+
+  /**
+   * Transaction hash (optional for non-paid statuses).
+   */
+  txHash?: string | undefined
+
+  /**
+   * Whether the transaction hash has been validated on-chain.
+   * @default true
+   */
+  txHashValidated?: boolean | undefined
+}
+
+/**
+ * Props when invoice is paid
+ * txHash is REQUIRED when status is 'paid'
+ */
+interface InvoicePaperPaidProps extends InvoicePaperBaseProps {
+  /**
+   * Status is 'paid' - invoice has been paid
+   */
+  status: 'paid'
+
+  /**
+   * Transaction hash REQUIRED for paid status.
+   * Used to generate block explorer links.
+   */
+  txHash: string
+
+  /**
+   * Whether the transaction hash has been validated on-chain.
+   * When false, a warning indicator is shown.
+   * @default true
+   */
+  txHashValidated?: boolean | undefined
+}
+
+/**
+ * Props for the InvoicePaper widget
+ *
+ * Discriminated union ensuring txHash is required when status is 'paid'.
+ * This provides compile-time safety for payment verification flows.
+ */
+export type InvoicePaperProps = InvoicePaperNotPaidProps | InvoicePaperPaidProps

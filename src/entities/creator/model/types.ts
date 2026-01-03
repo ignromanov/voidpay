@@ -5,6 +5,7 @@
  * These types are used by the CreatorStore (Zustand).
  */
 
+import type { Address } from 'viem'
 import type {
   DraftState,
   LineItem,
@@ -25,7 +26,7 @@ export interface UserPreferences {
   defaultSenderName?: string
 
   /** Default sender wallet address (must be valid Ethereum address) */
-  defaultSenderWallet?: string
+  defaultSenderWallet?: Address
 
   /** Default sender email */
   defaultSenderEmail?: string

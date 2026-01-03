@@ -1,5 +1,6 @@
 import React, { useMemo, forwardRef } from 'react'
 import type { Address } from 'viem'
+import { FileText } from 'lucide-react'
 import { InvoicePaperProps } from '../types'
 import { calculateTotals } from '../lib/calculate-totals'
 import { PaperHeader } from './PaperHeader'
@@ -8,7 +9,7 @@ import { LineItemsTable } from './LineItemsTable'
 import { PaperTotals } from './PaperTotals'
 import { PaperFooter } from './PaperFooter'
 import { Watermark } from './Watermark'
-import { NETWORK_SHADOWS } from '@/entities/network/config/ui-config'
+import { NETWORK_SHADOWS } from '@/entities/network'
 import { cn } from '@/shared/lib/utils'
 
 // Stable fallback objects (prevent new object creation on each render)
@@ -26,11 +27,44 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
 })
 
 // Variant-specific styles
+// For full variant: cursor-text on text elements, cursor-pointer on links
+// Print overrides: reduced padding for A4 margins
 const VARIANT_STYLES = {
-  full: 'p-12', // Interactive mode
-  default: 'p-12', // Standard mode
-  print: 'p-8 print:p-6', // Print-optimized
+  full: 'p-12 print:p-8 [&_p]:cursor-text [&_span]:cursor-text [&_td]:cursor-text [&_th]:cursor-text [&_address]:cursor-text [&_a]:cursor-pointer',
+  default: 'p-12 print:p-8', // Standard mode with print padding
+  print: 'p-8 print:p-6', // Print-optimized (even smaller padding)
 } as const
+
+/**
+ * Empty state content shown when data is undefined
+ */
+function EmptyStateContent() {
+  return (
+    <div className="flex h-full flex-col items-center justify-center p-16">
+      <div className="flex flex-col items-center gap-10 text-center">
+        {/* Icon — larger for scale compensation */}
+        <div className="flex h-36 w-36 items-center justify-center rounded-3xl bg-zinc-100">
+          <FileText className="h-20 w-20 text-zinc-400" strokeWidth={1.5} />
+        </div>
+
+        {/* Text — larger for scale compensation */}
+        <div className="space-y-3">
+          <h2 className="text-3xl font-semibold text-zinc-700">No Invoice Data</h2>
+          <p className="max-w-[420px] text-lg text-zinc-500">
+            Start creating your invoice or load one from a URL to see the preview here.
+          </p>
+        </div>
+
+        {/* Hint — larger for scale compensation */}
+        <div className="mt-6 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-4">
+          <p className="text-base text-zinc-500">
+            Fill in the form on the left to generate your invoice
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export const InvoicePaper = React.memo(
   forwardRef<HTMLElement, InvoicePaperProps>(
@@ -41,43 +75,56 @@ export const InvoicePaper = React.memo(
         txHash,
         txHashValidated = true,
         variant = 'default',
-        responsive = false,
         showQR = true,
         showTexture = true,
+        showGlow: _showGlow = false,
+        invoiceUrl,
         className,
         containerRef,
       },
       ref
     ) => {
+      // Check if data is empty (undefined or no meaningful content)
+      const isEmpty = !data
+
+      // Override status to 'empty' when no data
+      const effectiveStatus = isEmpty ? 'empty' : status
+
+      // Get shadow configuration for network (default to Ethereum for empty state)
+      // Note: Glow effect is handled by ScaledInvoicePreview via glowClassName prop
+      const networkId = data?.networkId ?? 1
+      const shadowClass = NETWORK_SHADOWS[networkId] ?? 'shadow-black/20'
+
       const totals = useMemo(
         () =>
-          calculateTotals(data.items ?? EMPTY_ITEMS, {
-            tax: data.tax,
-            discount: data.discount,
-          }),
-        [data.items, data.tax, data.discount]
+          isEmpty
+            ? { subtotal: 0, taxAmount: 0, discountAmount: 0, total: 0, magicDust: 0 }
+            : calculateTotals(data.items ?? EMPTY_ITEMS, {
+                tax: data.tax,
+                discount: data.discount,
+              }),
+        [isEmpty, data?.items, data?.tax, data?.discount]
       )
 
-      const shadowClass = data.networkId ? NETWORK_SHADOWS[data.networkId] : 'shadow-black/20'
-
       // Memoize stable props to prevent child re-renders
-      const from = data.from ?? EMPTY_PARTY
-      const client = data.client ?? EMPTY_CLIENT
-      const items = data.items ?? EMPTY_ITEMS
+      const from = data?.from ?? EMPTY_PARTY
+      const client = data?.client ?? EMPTY_CLIENT
+      const items = data?.items ?? EMPTY_ITEMS
 
       // Format date for watermark if paid
       const paidDate = useMemo(
         () =>
-          status === 'paid' && data.issuedAt
+          status === 'paid' && data?.issuedAt
             ? dateFormatter.format(new Date(data.issuedAt * 1000)).toUpperCase()
             : undefined,
-        [status, data.issuedAt]
+        [status, data?.issuedAt]
       )
 
       // Determine if QR should be shown based on variant
       const shouldShowQR = showQR && variant !== 'print'
 
-      return (
+      // Wrapper needed for glow effect (glow must be outside article for overflow)
+      const content = (
         <article
           ref={(node) => {
             if (typeof ref === 'function') ref(node)
@@ -85,70 +132,90 @@ export const InvoicePaper = React.memo(
             if (containerRef) containerRef.current = node
           }}
           className={cn(
-            // Base styles - responsive by default with aspect-ratio
-            'group/paper relative flex aspect-[794/1123] w-full max-w-[794px] origin-top flex-col overflow-hidden bg-white text-black transition-shadow duration-500',
-            'shadow-2xl print:aspect-auto print:h-full print:min-h-0 print:w-full print:min-w-0 print:scale-100 print:shadow-none',
+            // Fixed A4 dimensions (794×1123px) — scaling handled by ScaledInvoicePreview
+            // cursor-default on paper background, content container overrides for variant="full"
+            'group/paper relative flex h-[1123px] min-h-[1123px] w-[794px] min-w-[794px] cursor-default flex-col overflow-hidden bg-white text-black transition-shadow duration-500',
+            // Print overrides — full size to enable flex layout (mt-auto needs height constraint)
+            'shadow-2xl print:!h-full print:!min-h-0 print:!w-full print:!max-w-none print:!min-w-0 print:shadow-none print:transition-none',
+            // Standard shadow for depth (glow handled by ScaledInvoicePreview)
             shadowClass,
-            // Legacy scaling support (optional)
-            !responsive && 'h-[1123px] min-h-[1123px] w-[794px] min-w-[794px]',
-            responsive && 'origin-top-left',
             className
           )}
           role="document"
-          aria-label={`Invoice ${data.invoiceId ?? 'draft'}`}
+          aria-label={
+            isEmpty ? 'Empty invoice placeholder' : `Invoice ${data?.invoiceId ?? 'draft'}`
+          }
         >
           {/* Texture Layer - self-hosted for stateless operation */}
           {showTexture && (
             <div
-              className="pointer-events-none absolute inset-0 z-0 bg-[url('/textures/cream-pixels.png')] opacity-[0.08] mix-blend-multiply print:hidden"
+              className="pointer-events-none absolute inset-0 z-0 bg-[url('/textures/cream-pixels.png')] opacity-[0.15] mix-blend-multiply print:hidden"
               aria-hidden="true"
             />
           )}
 
-          {/* Content Container */}
-          <div className={cn('relative z-10 flex h-full flex-col', VARIANT_STYLES[variant])}>
-            <PaperHeader
-              invoiceId={data.invoiceId ?? ''}
-              iss={data.issuedAt ?? 0}
-              due={data.dueAt ?? 0}
-              status={status}
-              txHashValidated={txHashValidated}
-            />
+          {/* Content - Empty state or invoice data */}
+          {isEmpty ? (
+            <>
+              <EmptyStateContent />
+              <Watermark status={effectiveStatus} />
+            </>
+          ) : (
+            <>
+              {/* Content Container */}
+              <div className={cn('relative z-10 flex h-full flex-col', VARIANT_STYLES[variant])}>
+                <PaperHeader
+                  invoiceId={data.invoiceId ?? ''}
+                  iss={data.issuedAt ?? 0}
+                  due={data.dueAt ?? 0}
+                  status={status}
+                  txHashValidated={txHashValidated}
+                  invoiceUrl={invoiceUrl}
+                  variant={variant}
+                />
 
-            {/* Parties Section - From and Bill To */}
-            <section className="py-6 md:py-8" aria-label="Invoice parties">
-              <PartyInfo from={from} client={client} variant={variant} />
-            </section>
+                {/* Parties Section - From and Bill To */}
+                <section className="py-8" aria-label="Invoice parties">
+                  <PartyInfo from={from} client={client} variant={variant} />
+                </section>
 
-            <LineItemsTable items={items} />
+                <LineItemsTable items={items} />
 
-            <PaperTotals
-              totals={totals}
-              currency={data.currency ?? ''}
-              taxPercent={data.tax}
-              discountPercent={data.discount}
-              showQR={shouldShowQR}
-              networkId={data.networkId ?? 1}
-              senderAddress={from.walletAddress}
-              tokenAddress={data.tokenAddress}
-              txHash={txHash}
-              txHashValidated={txHashValidated}
-              variant={variant}
-              status={status}
-            />
+                {/* Bottom section wrapper - mt-auto pushes Totals+Footer to bottom */}
+                <div className="mt-auto">
+                  <PaperTotals
+                    totals={totals}
+                    currency={data.currency ?? ''}
+                    taxPercent={data.tax}
+                    discountPercent={data.discount}
+                    showQR={shouldShowQR}
+                    networkId={data.networkId ?? 1}
+                    senderAddress={from.walletAddress}
+                    tokenAddress={data.tokenAddress}
+                    txHash={txHash}
+                    txHashValidated={txHashValidated}
+                    variant={variant}
+                    status={status}
+                  />
 
-            <PaperFooter notes={data.notes} />
-          </div>
+                  <PaperFooter notes={data.notes} />
+                </div>
+              </div>
 
-          <Watermark status={status} date={paidDate} />
+              <Watermark status={status} date={paidDate} />
 
-          {/* Screen reader status announcement */}
-          <div className="sr-only" role="status" aria-live="polite">
-            Invoice status: {status}
-            {status === 'paid' && paidDate && `, paid on ${paidDate}`}
-          </div>
+              {/* Screen reader status announcement */}
+              <div className="sr-only" role="status" aria-live="polite">
+                Invoice status: {status}
+                {status === 'paid' && paidDate && `, paid on ${paidDate}`}
+              </div>
+            </>
+          )}
         </article>
       )
+
+      // Glow is now applied via box-shadow on article (doesn't need wrapper)
+      return content
     }
   )
 )

@@ -8,7 +8,7 @@
  * import { TEST_INVOICES, TEST_ADDRESSES, TEST_PARTIES } from '@/shared/lib/test-utils'
  */
 
-import type { Invoice } from '@/entities/invoice'
+import type { Invoice } from '@/shared/lib/invoice-types'
 import type { Address } from 'viem'
 
 // ============================================================================

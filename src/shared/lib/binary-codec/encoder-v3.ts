@@ -15,7 +15,7 @@
  * - Threshold: 100 bytes (deflate adds ~10 byte header)
  */
 
-import type { Invoice } from '@/entities/invoice'
+import type { Invoice } from '@/shared/lib/invoice-types'
 import { addressToBytes, writeVarInt } from './utils'
 import { encodeBase62 } from './base62'
 import { CURRENCY_DICT, TOKEN_DICT } from './dictionary'
@@ -183,8 +183,9 @@ export function encodeBinaryV3(invoice: Invoice): string {
         // Compression didn't help
         finalTextBytes = rawTextBytes
       }
-    } catch {
-      // Fallback to raw if compression fails
+    } catch (error) {
+      // Fallback to raw if compression fails (log for debugging)
+      console.warn('[encoder-v3] Compression failed, using uncompressed text:', error)
       finalTextBytes = rawTextBytes
     }
   } else {
