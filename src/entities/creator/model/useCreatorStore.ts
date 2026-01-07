@@ -220,9 +220,49 @@ export const useCreatorStore = create<CreatorStore>()(
     }),
     {
       name: CREATOR_STORE_KEY,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => ({
+        getItem: (name) => {
+          // SSR guard: localStorage is not available on server
+          if (typeof window === 'undefined') return null
+          try {
+            const value = localStorage.getItem(name)
+            return value ? JSON.parse(value) : null
+          } catch (error) {
+            console.warn('[CreatorStore] Failed to read from localStorage:', error)
+            return null
+          }
+        },
+        setItem: (name, value) => {
+          // SSR guard: localStorage is not available on server
+          if (typeof window === 'undefined') return
+          try {
+            localStorage.setItem(name, JSON.stringify(value))
+          } catch (error) {
+            // Handle quota exceeded and other storage errors
+            if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+              console.warn('[CreatorStore] localStorage quota exceeded. Draft auto-save disabled.')
+            } else {
+              console.warn('[CreatorStore] Failed to write to localStorage:', error)
+            }
+          }
+        },
+        removeItem: (name) => {
+          // SSR guard: localStorage is not available on server
+          if (typeof window === 'undefined') return
+          try {
+            localStorage.removeItem(name)
+          } catch (error) {
+            console.warn('[CreatorStore] Failed to remove from localStorage:', error)
+          }
+        },
+      })),
       version: 1,
       migrate,
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.warn('[CreatorStore] Failed to rehydrate store:', error)
+        }
+      },
       // Partialize: only persist these fields (excludes transient UI state like networkTheme)
       partialize: (state) => ({
         version: state.version,
