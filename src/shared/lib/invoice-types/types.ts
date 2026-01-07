@@ -77,8 +77,6 @@ export interface DraftMetadata {
   draftId: string
   /** Last modification timestamp (ISO 8601) */
   lastModified: string
-  /** Generated invoice URL (only when data is valid) */
-  invoiceUrl?: string
 }
 
 /**

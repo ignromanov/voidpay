@@ -7,15 +7,13 @@
 
 import { v4 as uuidv4 } from 'uuid'
 import type { StateCreator } from 'zustand'
-import { isAddress, type Address } from 'viem'
+import type { Address } from 'viem'
 import {
   invoiceItemsToLineItems,
   type PartialInvoice,
   type DraftState,
   type LineItem,
-  type Invoice,
 } from '@/entities/invoice'
-import { generateInvoiceUrl } from '@/features/invoice-codec'
 import type { UserPreferences } from '../types'
 import type { CreatorStore } from './types'
 

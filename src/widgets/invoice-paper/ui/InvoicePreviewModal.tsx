@@ -1,14 +1,13 @@
 'use client'
 
-import React, { useMemo, useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { X, Printer, Download } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogClose, Badge, Button } from '@/shared/ui'
-import { isAddress } from 'viem'
 import { InvoicePaper } from './InvoicePaper'
 import { ScaledInvoicePreview } from './ScaledInvoicePreview'
 import { InvoiceStatus } from '../types'
-import { Invoice, PartialInvoice } from '@/entities/invoice'
+import { PartialInvoice, invoiceSchema } from '@/entities/invoice'
 import { NETWORK_GLOW_BORDERS } from '@/entities/network'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
 
@@ -78,23 +77,17 @@ export interface InvoicePreviewModalProps {
 
 export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
   ({ data, status = 'pending', txHash, txHashValidated = true, open, onOpenChange }) => {
-    // Generate invoice URL for linking (only if data is complete and valid)
+    // Generate invoice URL only when data passes full schema validation
+    // Uses Zod safeParse — no errors thrown, no toasts, silent fail
     const invoiceUrl = useMemo(() => {
-      // Need minimum required fields with valid values to generate URL
-      const fromAddress = data.from?.walletAddress
-      if (
-        !data.invoiceId ||
-        !fromAddress ||
-        !isAddress(fromAddress) ||
-        !data.networkId
-      ) {
+      const result = invoiceSchema.safeParse(data)
+      if (!result.success) {
         return undefined
       }
       try {
-        return generateInvoiceUrl(data as Invoice)
+        return generateInvoiceUrl(result.data)
       } catch {
-        // Silent fail — invalid data during editing is expected
-        // URL will be generated once data becomes valid
+        // Silent fail — encoder error (shouldn't happen after Zod validation)
         return undefined
       }
     }, [data])
