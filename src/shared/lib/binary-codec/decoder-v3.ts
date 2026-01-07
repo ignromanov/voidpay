@@ -7,7 +7,7 @@
 
 import type { Invoice } from '@/shared/lib/invoice-types'
 import type { Address } from 'viem'
-import { bytesToAddress, readVarInt } from './utils'
+import { bytesToAddress, readVarInt, readBigIntVarInt } from './utils'
 import { decodeBase62 } from './base62'
 import { CURRENCY_DICT_REVERSE, TOKEN_DICT_REVERSE } from './dictionary'
 import pako from 'pako'
@@ -28,6 +28,8 @@ enum OptionalFields {
   HAS_TAX = 1 << 9,
   HAS_DISCOUNT = 1 << 10,
   TEXT_COMPRESSED = 1 << 11,
+  HAS_TOTAL = 1 << 12,
+  HAS_MAGIC_DUST = 1 << 13,
 }
 
 /**
@@ -116,7 +118,31 @@ export function decodeBinaryV3(encoded: string): Invoice {
   const itemCount = itemCountResult.value
   offset += itemCountResult.bytesRead
 
-  // 14. Read text data length (varint)
+  // 14. Read rates as BigInt varints
+  const rates: string[] = []
+  for (let i = 0; i < itemCount; i++) {
+    const rateResult = readBigIntVarInt(bytes, offset)
+    rates.push(rateResult.value.toString())
+    offset += rateResult.bytesRead
+  }
+
+  // 15. Read total if HAS_TOTAL flag set
+  let total: string | undefined
+  if (flags & OptionalFields.HAS_TOTAL) {
+    const totalResult = readBigIntVarInt(bytes, offset)
+    total = totalResult.value.toString()
+    offset += totalResult.bytesRead
+  }
+
+  // 16. Read magicDust if HAS_MAGIC_DUST flag set
+  let magicDust: string | undefined
+  if (flags & OptionalFields.HAS_MAGIC_DUST) {
+    const magicDustResult = readVarInt(bytes, offset)
+    magicDust = magicDustResult.value.toString()
+    offset += magicDustResult.bytesRead
+  }
+
+  // 17. Read text data length (varint)
   const textLengthResult = readVarInt(bytes, offset)
   const textLength = textLengthResult.value
   offset += textLengthResult.bytesRead
@@ -185,12 +211,13 @@ export function decodeBinaryV3(encoded: string): Invoice {
   const tax = flags & OptionalFields.HAS_TAX ? textParts[textIdx++] : undefined
   const discount = flags & OptionalFields.HAS_DISCOUNT ? textParts[textIdx++] : undefined
 
-  // Line items (all fields from text)
+  // Line items (description + quantity from text, rate from binary section)
   const items = []
   for (let i = 0; i < itemCount; i++) {
     const description = textParts[textIdx++] ?? ''
     const qtyStr = textParts[textIdx++] ?? '0'
-    const rate = textParts[textIdx++] ?? '0'
+    // Rate comes from binary section (step 14)
+    const rate = rates[i] ?? '0'
 
     items.push({
       description,
@@ -227,6 +254,8 @@ export function decodeBinaryV3(encoded: string): Invoice {
     items,
     tax,
     discount,
+    total,
+    magicDust,
   }
 
   return invoice

@@ -1,10 +1,9 @@
 import React from 'react'
 import { cn } from '@/shared/lib/utils'
 import { Totals } from '../lib/calculate-totals'
-import { formatAmount } from '../lib/format'
 
 interface TotalsSectionProps {
-  /** Calculated totals object */
+  /** Calculated totals object (all values are pre-formatted strings) */
   totals: Totals
   /** Currency symbol (e.g., USDC, ETH) */
   currency?: string | undefined
@@ -14,6 +13,16 @@ interface TotalsSectionProps {
   discountPercent?: string | undefined
   /** Whether to show the unique amount (magic dust) */
   showMagicDust?: boolean
+}
+
+/**
+ * Check if an amount string represents a non-zero value
+ * Handles formats like "0.00", "0", "0.000000"
+ */
+function isNonZero(amount: string | null | undefined): boolean {
+  if (!amount) return false
+  const num = parseFloat(amount.replace(/,/g, ''))
+  return !isNaN(num) && num > 0
 }
 
 export const TotalsSection = React.memo<TotalsSectionProps>(
@@ -27,33 +36,33 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
         <div className="grid grid-cols-[auto_1fr_auto] items-baseline gap-x-3 gap-y-1 text-sm">
           <span className="text-zinc-600">Subtotal</span>
           <span className="text-right font-mono text-zinc-600 tabular-nums">
-            {formatAmount(totals.subtotal)}
+            {totals.subtotal}
           </span>
           <span className={cn('font-mono text-zinc-600', currencyClass)}>{currencyDisplay}</span>
 
-          {totals.taxAmount > 0 && (
+          {isNonZero(totals.taxAmount) && (
             <>
               <span className="text-zinc-600">Tax{taxPercent ? ` (${taxPercent})` : ''}</span>
               <span
                 className="text-right font-mono text-red-800 tabular-nums"
-                aria-label={`Plus ${formatAmount(totals.taxAmount)} ${currencyDisplay} tax`}
+                aria-label={`Plus ${totals.taxAmount} ${currencyDisplay} tax`}
               >
-                +{formatAmount(totals.taxAmount)}
+                +{totals.taxAmount}
               </span>
               <span className={cn('font-mono text-red-800', currencyClass)}>{currencyDisplay}</span>
             </>
           )}
 
-          {totals.discountAmount > 0 && (
+          {isNonZero(totals.discountAmount) && (
             <>
               <span className="text-zinc-600">
                 Discount{discountPercent ? ` (${discountPercent})` : ''}
               </span>
               <span
                 className="text-right font-mono text-emerald-600 tabular-nums"
-                aria-label={`Minus ${formatAmount(totals.discountAmount)} ${currencyDisplay} discount`}
+                aria-label={`Minus ${totals.discountAmount} ${currencyDisplay} discount`}
               >
-                -{formatAmount(totals.discountAmount)}
+                -{totals.discountAmount}
               </span>
               <span className={cn('font-mono text-emerald-600', currencyClass)}>{currencyDisplay}</span>
             </>
@@ -66,7 +75,7 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
           <span className="text-lg font-bold tracking-tight text-black">Total</span>
           <div className="flex items-baseline gap-1">
             <span className="font-mono text-2xl font-black tracking-tighter text-violet-600 tabular-nums">
-              {formatAmount(totals.total)}
+              {totals.total}
             </span>
             <span className={cn('text-base font-bold text-violet-500', currencyClass)}>
               {currencyDisplay}
@@ -74,14 +83,14 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
           </div>
         </div>
 
-        {showMagicDust && totals.magicDust > 0 && (
+        {showMagicDust && totals.magicDust && (
           <div
             className="-mt-0.5 text-right"
             title="Unique micro-amount for payment identification"
           >
             <span className="text-[9px] text-zinc-400">Unique Amount: </span>
             <span className="font-mono text-[10px] text-zinc-500 tabular-nums">
-              {totals.total.toFixed(6)}
+              {totals.magicDust}
             </span>
           </div>
         )}

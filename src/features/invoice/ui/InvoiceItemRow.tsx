@@ -7,21 +7,25 @@ import { Input } from '@/shared/ui/input'
 import { Button } from '@/shared/ui/button'
 import type { LineItem } from '@/entities/invoice'
 import { cn } from '@/shared/lib/utils'
+import { parseAmount, formatAmount } from '@/shared/lib/amount-utils'
 
 /**
  * InvoiceItemRow Component Props
  *
  * Constitutional Principle VII: Web3 Safety
  * - Validates quantity > 0
- * - Validates rate as decimal string
- * - Calculates line total accurately
+ * - Validates rate as atomic units string
+ * - Calculates line total accurately using BigInt
  */
 export interface InvoiceItemRowProps {
-  /** Line item data */
+  /** Line item data (rate in atomic units) */
   item: LineItem
 
   /** Currency symbol for display (e.g., "USDC") */
   currencySymbol: string
+
+  /** Token decimals for amount conversion (default: 6 for USDC) */
+  decimals?: number
 
   /** Item update handler */
   onUpdate: (item: LineItem) => void
@@ -52,20 +56,32 @@ export interface InvoiceItemRowProps {
 export function InvoiceItemRow({
   item,
   currencySymbol,
+  decimals = 6,
   onUpdate,
   onRemove,
   index = 0,
 }: InvoiceItemRowProps) {
-  // Calculate line total
+  // Local state for human-readable rate input
+  const [rateInput, setRateInput] = React.useState(() => {
+    if (item.rate && item.rate !== '0') {
+      return formatAmount(item.rate, decimals)
+    }
+    return ''
+  })
+
+  // Calculate line total using BigInt
   const lineTotal = React.useMemo(() => {
-    const qty = Number(item.quantity)
-    const rate = Number(item.rate)
+    const ZERO = BigInt(0)
+    const scale = BigInt(Math.pow(10, decimals))
+    const rate = BigInt(item.rate || '0')
 
-    if (isNaN(qty) || isNaN(rate)) return '0.00'
+    if (rate === ZERO) return '0.00'
 
-    const total = qty * rate
-    return total.toFixed(2)
-  }, [item.quantity, item.rate])
+    const qtyScaled = BigInt(Math.round(item.quantity * Number(scale)))
+    const total = (qtyScaled * rate) / scale
+
+    return formatAmount(total.toString(), decimals)
+  }, [item.quantity, item.rate, decimals])
 
   // Update handlers
   const handleDescriptionChange = React.useCallback(
@@ -98,16 +114,40 @@ export function InvoiceItemRow({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
 
-      // Validate decimal format
-      if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      // Allow empty input
+      if (value === '') {
+        setRateInput('')
         onUpdate({
           ...item,
-          rate: value,
+          rate: '0',
         })
+        return
       }
+
+      // Validate decimal format (human-readable)
+      if (!/^\d*\.?\d*$/.test(value)) {
+        return // Reject invalid input
+      }
+
+      // Update local input state
+      setRateInput(value)
+
+      // Convert to atomic units and update parent
+      const atomicRate = parseAmount(value, decimals)
+      onUpdate({
+        ...item,
+        rate: atomicRate,
+      })
     },
-    [item, onUpdate]
+    [item, onUpdate, decimals]
   )
+
+  // Handle blur - format the input properly
+  const handleRateBlur = React.useCallback(() => {
+    if (item.rate && item.rate !== '0') {
+      setRateInput(formatAmount(item.rate, decimals))
+    }
+  }, [item.rate, decimals])
 
   return (
     <motion.div
@@ -144,12 +184,14 @@ export function InvoiceItemRow({
           />
         </div>
 
-        {/* Rate */}
+        {/* Rate (human-readable input, stored as atomic units) */}
         <div className="col-span-2">
           <Input
             type="text"
-            value={item.rate}
+            inputMode="decimal"
+            value={rateInput}
             onChange={handleRateChange}
+            onBlur={handleRateBlur}
             placeholder="0.00"
             className="h-9 font-mono"
           />

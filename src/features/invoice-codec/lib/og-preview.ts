@@ -1,5 +1,6 @@
 import type { Invoice } from '@/entities/invoice'
 import { NETWORK_CODES, NETWORK_CODES_REVERSE, type NetworkId } from '@/entities/network'
+import { calculateTotalsBigInt, formatAmount } from '@/shared/lib/amount-utils'
 
 /**
  * OG Preview data structure for social sharing.
@@ -115,44 +116,34 @@ export function getNetworkIdFromCode(code: string): number | undefined {
 }
 
 /**
- * Calculates total invoice amount from line items.
+ * Calculates total invoice amount from line items using BigInt precision.
  * Returns formatted string with 2 decimal places.
+ *
+ * Rates are stored as atomic units (e.g., "150000000" = $150.00 for 6 decimals).
+ * Uses BigInt arithmetic to avoid floating-point precision issues.
  */
 function calculateTotal(invoice: Invoice): string {
-  let total = 0
+  const decimals = invoice.decimals ?? 6
 
-  for (const item of invoice.items) {
-    const qty = typeof item.quantity === 'number' ? item.quantity : parseFloat(item.quantity)
-    const rate = parseFloat(item.rate)
+  // OG preview URLs should NOT use thousand separators (avoid URL parsing issues)
+  const formatOpts = { useGrouping: false }
 
-    if (!isNaN(qty) && !isNaN(rate)) {
-      total += qty * rate
-    }
+  // Use pre-calculated total if available (from URL)
+  if (invoice.total) {
+    return formatAmount(invoice.total, decimals, formatOpts)
   }
 
-  // Apply tax if present
-  if (invoice.tax) {
-    const taxValue = parseTaxOrDiscount(invoice.tax, total)
-    total += taxValue
-  }
+  // Calculate using BigInt arithmetic
+  const items = invoice.items.map((item) => ({
+    quantity: typeof item.quantity === 'number' ? item.quantity : parseFloat(String(item.quantity)) || 0,
+    rate: item.rate || '0',
+  }))
 
-  // Apply discount if present
-  if (invoice.discount) {
-    const discountValue = parseTaxOrDiscount(invoice.discount, total)
-    total -= discountValue
-  }
+  // Extract tax/discount percentages (strip % suffix if present)
+  const tax = invoice.tax?.endsWith('%') ? invoice.tax.slice(0, -1) : invoice.tax
+  const discount = invoice.discount?.endsWith('%') ? invoice.discount.slice(0, -1) : invoice.discount
 
-  return total.toFixed(2)
-}
+  const result = calculateTotalsBigInt(items, { tax, discount, decimals })
 
-/**
- * Parses tax/discount string (percentage or fixed amount).
- */
-function parseTaxOrDiscount(value: string, base: number): number {
-  if (value.endsWith('%')) {
-    const percent = parseFloat(value.slice(0, -1))
-    return isNaN(percent) ? 0 : (base * percent) / 100
-  }
-  const fixed = parseFloat(value)
-  return isNaN(fixed) ? 0 : fixed
+  return formatAmount(result.total, decimals, formatOpts)
 }

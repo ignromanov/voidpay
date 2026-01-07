@@ -30,13 +30,21 @@ export function useFormValidation(draft: DraftState | null, lineItems: LineItem[
       data.from?.walletAddress && isAddress(data.from.walletAddress)
     )
 
-    // Line items validation (min 1, each must have description and price > 0)
+    // Line items validation (min 1, each must have description and rate > 0)
+    // Rate is stored as atomic units (e.g., "150000000" = $150.00)
     const hasValidLineItems =
       lineItems.length >= 1 &&
       lineItems.length <= 5 &&
-      lineItems.every(
-        (item) => item.description && item.description.length > 0 && parseFloat(item.rate) > 0
-      )
+      lineItems.every((item) => {
+        if (!item.description || item.description.length === 0) return false
+        // Validate rate is a valid atomic units string > 0
+        try {
+          const rateBigInt = BigInt(item.rate || '0')
+          return rateBigInt > BigInt(0)
+        } catch {
+          return false
+        }
+      })
 
     // Network and token validation
     const hasNetwork = Boolean(data.networkId && data.networkId > 0)
@@ -81,9 +89,15 @@ export function useFormValidation(draft: DraftState | null, lineItems: LineItem[
       lineItems:
         lineItems.length >= 1 &&
         lineItems.length <= 5 &&
-        lineItems.every(
-          (item) => item.description && item.description.length > 0 && parseFloat(item.rate) > 0
-        ),
+        lineItems.every((item) => {
+          if (!item.description || item.description.length === 0) return false
+          try {
+            const rateBigInt = BigInt(item.rate || '0')
+            return rateBigInt > BigInt(0)
+          } catch {
+            return false
+          }
+        }),
       network: Boolean(data.networkId && data.networkId > 0),
       token: Boolean(data.currency && data.currency.length > 0),
     }

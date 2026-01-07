@@ -9,8 +9,11 @@
  * The shared layer can be imported by any higher layer without violating FSD.
  */
 
-// Schema and base type
-export { invoiceSchema, type Invoice } from './schema'
+// Schemas and base types
+export { invoiceSchema, invoiceFormSchema, type Invoice, type InvoiceFormValues } from './schema'
+
+// Field limits (single source of truth for form and schema validation)
+export { FIELD_LIMITS, type FieldLimits } from './limits'
 
 // Helper types
 export type {

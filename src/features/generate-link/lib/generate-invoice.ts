@@ -13,42 +13,37 @@ import {
   type LineItem,
 } from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
+import { calculateTotalsBigInt, formatAmount } from '@/shared/lib/amount-utils'
 
 /**
- * Calculate total amount from invoice data
+ * Calculate total amount from invoice data using BigInt precision.
+ *
+ * Rates are stored as atomic units (e.g., "150000000" = $150.00 for 6 decimals).
+ * Uses BigInt arithmetic to avoid floating-point precision issues.
  *
  * @param invoice - Partial invoice data
- * @param lineItems - Line items with UI ids
- * @returns Total amount as decimal string with currency symbol
+ * @param lineItems - Line items with UI ids (rates in atomic units)
+ * @returns Total amount as formatted string with currency symbol (e.g., "1250.50 USDC")
  */
 export function calculateTotalAmount(invoice: PartialInvoice, lineItems: LineItem[]): string {
   const currency = invoice.currency ?? 'USDC'
+  const decimals = invoice.decimals ?? 6
 
-  // Calculate subtotal from line items
-  const subtotal = lineItems.reduce((sum, item) => {
-    const itemTotal = parseFloat(item.rate) * item.quantity
-    return sum + itemTotal
-  }, 0)
+  // Map line items for BigInt calculation
+  const items = lineItems.map((item) => ({
+    quantity: item.quantity,
+    rate: item.rate || '0',
+  }))
 
-  // Apply tax
-  let total = subtotal
-  if (invoice.tax) {
-    const taxValue = invoice.tax.endsWith('%')
-      ? (subtotal * parseFloat(invoice.tax)) / 100
-      : parseFloat(invoice.tax)
-    total += taxValue
-  }
+  // Extract tax/discount percentages (strip % suffix if present)
+  const tax = invoice.tax?.endsWith('%') ? invoice.tax.slice(0, -1) : invoice.tax
+  const discount = invoice.discount?.endsWith('%') ? invoice.discount.slice(0, -1) : invoice.discount
 
-  // Apply discount
-  if (invoice.discount) {
-    const discountValue = invoice.discount.endsWith('%')
-      ? (subtotal * parseFloat(invoice.discount)) / 100
-      : parseFloat(invoice.discount)
-    total -= discountValue
-  }
+  // Calculate using BigInt arithmetic
+  const result = calculateTotalsBigInt(items, { tax, discount, decimals })
 
   // Format with currency symbol
-  return `${total.toFixed(2)} ${currency}`
+  return `${formatAmount(result.total, decimals)} ${currency}`
 }
 
 /**

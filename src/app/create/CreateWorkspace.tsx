@@ -135,7 +135,7 @@ export function CreateWorkspace() {
         <Card
           variant="glass"
           className={cn(
-            'w-full lg:w-[420px] lg:shrink-0 flex flex-col overflow-hidden lg:max-h-full',
+            'w-full lg:w-[400px] xl:w-[440px] 2xl:w-[480px] lg:shrink-0 flex flex-col overflow-hidden lg:max-h-full',
             mobileTab === 'preview' ? 'hidden lg:flex' : 'flex'
           )}
         >

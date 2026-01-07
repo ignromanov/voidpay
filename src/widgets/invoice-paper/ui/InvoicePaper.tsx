@@ -98,12 +98,16 @@ export const InvoicePaper = React.memo(
       const totals = useMemo(
         () =>
           isEmpty
-            ? { subtotal: 0, taxAmount: 0, discountAmount: 0, total: 0, magicDust: 0 }
-            : calculateTotals(data.items ?? EMPTY_ITEMS, {
+            ? { subtotal: '0.00', taxAmount: '0.00', discountAmount: '0.00', total: '0.00', magicDust: null }
+            : calculateTotals({
+                items: data.items ?? EMPTY_ITEMS,
                 tax: data.tax,
                 discount: data.discount,
+                decimals: data.decimals ?? 6,
+                total: data.total,
+                magicDust: data.magicDust,
               }),
-        [isEmpty, data?.items, data?.tax, data?.discount]
+        [isEmpty, data?.items, data?.tax, data?.discount, data?.decimals, data?.total, data?.magicDust]
       )
 
       // Memoize stable props to prevent child re-renders
@@ -179,7 +183,7 @@ export const InvoicePaper = React.memo(
                   <PartyInfo from={from} client={client} variant={variant} />
                 </section>
 
-                <LineItemsTable items={items} />
+                <LineItemsTable items={items} decimals={data.decimals ?? 6} />
 
                 {/* Bottom section wrapper - mt-auto pushes Totals+Footer to bottom */}
                 <div className="mt-auto">

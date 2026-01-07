@@ -21,6 +21,13 @@ export interface AddressInputProps extends Omit<InputProps, 'type' | 'icon' | 'i
 
   /** Optional callback when validity changes */
   onValidChange?: (isValid: boolean) => void
+
+  /**
+   * Whether the field has been touched (blurred at least once).
+   * Passed through to Input for soft/full error display.
+   * Accepts undefined for react-hook-form's touchedFields compatibility.
+   */
+  touched?: boolean | undefined
 }
 
 /**
@@ -41,7 +48,7 @@ export interface AddressInputProps extends Omit<InputProps, 'type' | 'icon' | 'i
  * ```
  */
 export const AddressInput = React.forwardRef<HTMLInputElement, AddressInputProps>(
-  ({ value, onChange, onValidChange, ...props }, ref) => {
+  ({ value, onChange, onValidChange, touched, ...props }, ref) => {
     const isValid = React.useMemo(() => {
       return ETH_ADDRESS_REGEX.test(value)
     }, [value])
@@ -70,6 +77,7 @@ export const AddressInput = React.forwardRef<HTMLInputElement, AddressInputProps
         type="text"
         value={value}
         onChange={onChange}
+        touched={touched}
         icon={blockieIcon}
         iconPosition="trailing"
         {...props}

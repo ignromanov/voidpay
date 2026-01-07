@@ -10,51 +10,15 @@
 import { useEffect, useCallback, useRef } from 'react'
 import { useForm, type UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { useCreatorStore } from '@/entities/creator'
-import { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
+import { invoiceFormSchema, type InvoiceFormValues } from '@/shared/lib/invoice-types'
+import { ETH_ADDRESS_REGEX, isValidAddress } from '@/shared/lib/validation'
 
 /** Debounce delay for syncing form → store */
 const SYNC_DEBOUNCE_MS = 300
 
-/**
- * Form schema - more lenient than Invoice schema for draft editing
- * All fields optional during editing, validation on generate
- */
-export const invoiceFormSchema = z.object({
-  invoiceId: z.string().optional(),
-  issuedAt: z.number().optional(),
-  dueAt: z.number().optional(),
-  notes: z.string().max(280).optional(),
-  networkId: z.number().optional(),
-  currency: z.string().optional(),
-  tokenAddress: z.string().optional(),
-  decimals: z.number().optional(),
-  tax: z.string().optional(),
-  discount: z.string().optional(),
-  from: z
-    .object({
-      name: z.string().optional(),
-      walletAddress: z.string().optional(),
-      email: z.string().optional(),
-      physicalAddress: z.string().optional(),
-      phone: z.string().optional(),
-      taxId: z.string().optional(),
-    })
-    .optional(),
-  client: z
-    .object({
-      name: z.string().optional(),
-      walletAddress: z.string().optional(),
-      email: z.string().optional(),
-      physicalAddress: z.string().optional(),
-      phone: z.string().optional(),
-      taxId: z.string().optional(),
-    })
-    .optional(),
-})
-
-export type InvoiceFormValues = z.infer<typeof invoiceFormSchema>
+// Re-export schema and type for widget consumers
+export { invoiceFormSchema, type InvoiceFormValues }
 
 /**
  * Field validation for required fields
@@ -73,6 +37,8 @@ export function validateRequiredFields(values: InvoiceFormValues) {
 export interface UseInvoiceFormReturn {
   form: UseFormReturn<InvoiceFormValues>
   fieldValidation: ReturnType<typeof validateRequiredFields>
+  /** Form state including touchedFields for soft/full error display */
+  formState: UseFormReturn<InvoiceFormValues>['formState']
   canGenerate: boolean
 }
 
@@ -163,7 +129,7 @@ export function useInvoiceForm(): UseInvoiceFormReturn {
           ...(data.notes !== undefined && { notes: data.notes }),
           ...(data.networkId !== undefined && { networkId: data.networkId }),
           ...(data.currency !== undefined && { currency: data.currency }),
-          ...(data.tokenAddress !== undefined && {
+          ...(data.tokenAddress && isValidAddress(data.tokenAddress) && {
             tokenAddress: data.tokenAddress as `0x${string}`,
           }),
           ...(data.decimals !== undefined && { decimals: data.decimals }),
@@ -172,7 +138,9 @@ export function useInvoiceForm(): UseInvoiceFormReturn {
           ...(data.from && {
             from: {
               name: data.from.name ?? '',
-              walletAddress: (data.from.walletAddress ?? '') as `0x${string}`,
+              ...(data.from.walletAddress && isValidAddress(data.from.walletAddress) && {
+                walletAddress: data.from.walletAddress as `0x${string}`,
+              }),
               ...(data.from.email && { email: data.from.email }),
               ...(data.from.physicalAddress && { physicalAddress: data.from.physicalAddress }),
               ...(data.from.phone && { phone: data.from.phone }),
@@ -182,7 +150,7 @@ export function useInvoiceForm(): UseInvoiceFormReturn {
           ...(data.client && {
             client: {
               name: data.client.name ?? '',
-              ...(data.client.walletAddress && {
+              ...(data.client.walletAddress && isValidAddress(data.client.walletAddress) && {
                 walletAddress: data.client.walletAddress as `0x${string}`,
               }),
               ...(data.client.email && { email: data.client.email }),
@@ -266,5 +234,5 @@ export function useInvoiceForm(): UseInvoiceFormReturn {
     }
   }, [])
 
-  return { form, fieldValidation, canGenerate }
+  return { form, fieldValidation, formState: form.formState, canGenerate }
 }

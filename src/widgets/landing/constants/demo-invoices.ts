@@ -53,8 +53,9 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
         taxId: 'CHE-123.456.789',
       },
       items: [
-        { description: 'Smart Contract Security Audit (40 hours)', quantity: 40, rate: '0.125' },
-        { description: 'Gas Optimization Consulting (8 hours)', quantity: 8, rate: '0.1' },
+        // ETH has 18 decimals: 0.125 ETH = 125000000000000000 atomic units
+        { description: 'Smart Contract Security Audit (40 hours)', quantity: 40, rate: '125000000000000000' },
+        { description: 'Gas Optimization Consulting (8 hours)', quantity: 8, rate: '100000000000000000' },
       ],
       tax: '0',
       discount: '5%',
@@ -92,12 +93,13 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
         phone: '+65 6555 0234',
       },
       items: [
-        { description: 'Character Sprite Set (10 animations)', quantity: 1, rate: '1200' },
-        { description: 'UI Animation Pack (menus, buttons)', quantity: 1, rate: '800' },
-        { description: 'Sound Effects Integration', quantity: 1, rate: '400' },
+        // USDC has 6 decimals: $1200 = 1200000000 atomic units
+        { description: 'Character Sprite Set (10 animations)', quantity: 1, rate: '1200000000' },
+        { description: 'UI Animation Pack (menus, buttons)', quantity: 1, rate: '800000000' },
+        { description: 'Sound Effects Integration', quantity: 1, rate: '400000000' },
       ],
-      tax: '8%',
-      discount: '200',
+      tax: '8',
+      discount: '200000000', // $200 in atomic units
     },
   },
   // --- Optimism (10) - Public Goods Grant [PAID + NOT VALIDATED] ---
@@ -135,9 +137,10 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
         phone: '+1 888 555 0100',
       },
       items: [
-        { description: 'Public Goods Infrastructure Grant - Phase 1', quantity: 1, rate: '15000' },
-        { description: 'Community Tooling Development', quantity: 1, rate: '8000' },
-        { description: 'Documentation & Onboarding', quantity: 1, rate: '2000' },
+        // OP has 18 decimals: 15000 OP = 15000000000000000000000 atomic units
+        { description: 'Public Goods Infrastructure Grant - Phase 1', quantity: 1, rate: '15000000000000000000000' },
+        { description: 'Community Tooling Development', quantity: 1, rate: '8000000000000000000000' },
+        { description: 'Documentation & Onboarding', quantity: 1, rate: '2000000000000000000000' },
       ],
       tax: '0',
       discount: '0',
@@ -177,12 +180,13 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
         taxId: 'GB 123456789',
       },
       items: [
-        { description: 'Market Data Feed - Premium Tier (Q1)', quantity: 3, rate: '1500' },
-        { description: 'API Access - Unlimited Calls', quantity: 1, rate: '500' },
-        { description: 'Custom Dashboard Setup', quantity: 1, rate: '750' },
+        // USDC has 6 decimals: $1500 = 1500000000 atomic units
+        { description: 'Market Data Feed - Premium Tier (Q1)', quantity: 3, rate: '1500000000' },
+        { description: 'API Access - Unlimited Calls', quantity: 1, rate: '500000000' },
+        { description: 'Custom Dashboard Setup', quantity: 1, rate: '750000000' },
       ],
-      tax: '18%',
-      discount: '10%',
+      tax: '18',
+      discount: '10',
     },
   },
 ]

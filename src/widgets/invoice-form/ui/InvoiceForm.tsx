@@ -6,10 +6,12 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { toast } from 'sonner'
 
 import { useCreatorStore } from '@/entities/creator'
+import { getNetworkTheme } from '@/entities/network'
 import { Input, AddressInput, Text, Heading, Button, Textarea } from '@/shared/ui'
 import { NetworkSelect } from '@/features/wallet-connect'
 import { TokenSelect, type TokenInfo } from '@/features/invoice'
 import { cn } from '@/shared/lib/utils'
+import { FIELD_LIMITS } from '@/shared/lib/invoice-types'
 
 import { useInvoiceForm } from '../lib/use-invoice-form'
 import { InvoiceItemRow } from './InvoiceItemRow'
@@ -33,10 +35,12 @@ export interface InvoiceFormProps {
  */
 export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
   // Form with debounced store sync
-  const { form, fieldValidation, canGenerate } = useInvoiceForm()
-  const { register, setValue, watch } = form
+  const { form, fieldValidation, formState, canGenerate } = useInvoiceForm()
+  const { register, setValue, watch, trigger } = form
+  const { touchedFields, errors } = formState
 
   // Watch values for controlled components (selects, dates)
+  // Note: Multiple watch() calls are intentional for controlled components that need re-render
   const networkId = watch('networkId')
   const currency = watch('currency')
   const tokenAddress = watch('tokenAddress')
@@ -56,14 +60,8 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
   const handleNetworkChange = useCallback(
     (chainId: number) => {
       setValue('networkId', chainId)
-      const themeMap: Record<number, 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'> = {
-        1: 'ethereum',
-        42161: 'arbitrum',
-        10: 'optimism',
-        137: 'polygon',
-      }
-      const theme = themeMap[chainId]
-      if (theme) setNetworkTheme(theme)
+      const theme = getNetworkTheme(chainId)
+      setNetworkTheme(theme)
     },
     [setValue, setNetworkTheme]
   )
@@ -98,7 +96,7 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
   // Notes handler with maxLength
   const handleNotesChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const value = e.target.value.slice(0, 280)
+      const value = e.target.value.slice(0, FIELD_LIMITS.notes)
       setValue('notes', value)
     },
     [setValue]
@@ -123,17 +121,29 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
     [setValue]
   )
 
-  // Validation error messages (returns empty string if no error for exactOptionalPropertyTypes)
-  const getError = (field: keyof typeof fieldValidation, message: string): string => {
-    const fieldMap: Record<keyof typeof fieldValidation, string> = {
-      senderName: 'from.name',
-      senderWallet: 'from.walletAddress',
-      clientName: 'client.name',
-      invoiceId: 'invoiceId',
+  // Blur handlers for controlled fields (mark as touched for validation display)
+  const handleSenderWalletBlur = useCallback(() => {
+    trigger('from.walletAddress')
+  }, [trigger])
+
+  const handleClientWalletBlur = useCallback(() => {
+    trigger('client.walletAddress')
+  }, [trigger])
+
+  // Helper to get error message from Zod validation or required field check
+  // Returns empty string if no error (for exactOptionalPropertyTypes compatibility)
+  const getFieldError = (
+    zodError: { message?: string } | undefined,
+    requiredField?: keyof typeof fieldValidation,
+    requiredMessage?: string
+  ): string => {
+    // Zod validation errors (max length, format, etc.)
+    if (zodError?.message) return zodError.message
+    // Required field validation
+    if (requiredField && requiredMessage && !fieldValidation[requiredField]) {
+      return requiredMessage
     }
-    const value = watch(fieldMap[field] as 'from.name' | 'from.walletAddress' | 'client.name' | 'invoiceId')
-    const hasValue = Boolean(value && (typeof value === 'string' ? value.length > 0 : true))
-    return hasValue && !fieldValidation[field] ? message : ''
+    return ''
   }
 
   return (
@@ -145,7 +155,9 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
           {...register('invoiceId')}
           className="font-mono"
           placeholder="INV-001"
-          error={getError('invoiceId', 'Invoice number is required')}
+          maxLength={FIELD_LIMITS.invoiceId}
+          error={getFieldError(errors.invoiceId, 'invoiceId', 'Invoice number is required')}
+          touched={touchedFields.invoiceId}
         />
 
         <div className="space-y-1.5">
@@ -184,29 +196,58 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
           label="Your Name / Company *"
           {...register('from.name')}
           placeholder="Your Company Inc."
-          error={getError('senderName', 'Sender name is required')}
+          maxLength={FIELD_LIMITS.name}
+          error={getFieldError(errors.from?.name, 'senderName', 'Sender name is required')}
+          touched={touchedFields.from?.name}
         />
 
         <AddressInput
           label="Your Wallet Address *"
           value={senderWallet || ''}
           onChange={handleSenderWalletChange}
+          onBlur={handleSenderWalletBlur}
           placeholder="0x..."
-          error={getError('senderWallet', 'Valid wallet address required')}
+          error={getFieldError(errors.from?.walletAddress, 'senderWallet', 'Valid wallet address required')}
+          touched={touchedFields.from?.walletAddress}
         />
 
         <CollapsibleSection title="Add Contact Info (Optional)">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Input label="Email" type="email" placeholder="you@example.com" {...register('from.email')} />
-            <Input label="Phone" type="tel" placeholder="+1..." {...register('from.phone')} />
+            <Input
+              label="Email"
+              type="email"
+              placeholder="you@example.com"
+              maxLength={FIELD_LIMITS.email}
+              error={getFieldError(errors.from?.email)}
+              touched={touchedFields.from?.email}
+              {...register('from.email')}
+            />
+            <Input
+              label="Phone"
+              type="tel"
+              placeholder="+1..."
+              maxLength={FIELD_LIMITS.phone}
+              error={getFieldError(errors.from?.phone)}
+              touched={touchedFields.from?.phone}
+              {...register('from.phone')}
+            />
           </div>
           <Textarea
             label="Physical Address"
             placeholder="123 Block St, Crypto City"
             {...register('from.physicalAddress')}
+            maxLength={FIELD_LIMITS.address}
+            showCount
             className="min-h-[60px]"
           />
-          <Input label="Tax ID" placeholder="Tax ID / VAT Number" {...register('from.taxId')} />
+          <Input
+            label="Tax ID"
+            placeholder="Tax ID / VAT Number"
+            maxLength={FIELD_LIMITS.taxId}
+            error={getFieldError(errors.from?.taxId)}
+            touched={touchedFields.from?.taxId}
+            {...register('from.taxId')}
+          />
         </CollapsibleSection>
       </div>
 
@@ -225,23 +266,58 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
           label="Client Name *"
           type="text"
           placeholder="Acme Corp"
+          maxLength={FIELD_LIMITS.name}
           {...register('client.name')}
-          error={getError('clientName', 'Client name is required')}
+          error={getFieldError(errors.client?.name, 'clientName', 'Client name is required')}
+          touched={touchedFields.client?.name}
         />
 
         <CollapsibleSection title="Add Client Details (Optional)">
-          <AddressInput label="Client Wallet" value={clientWallet || ''} onChange={handleClientWalletChange} placeholder="0x..." />
+          <AddressInput
+            label="Client Wallet"
+            value={clientWallet || ''}
+            onChange={handleClientWalletChange}
+            onBlur={handleClientWalletBlur}
+            placeholder="0x..."
+            error={getFieldError(errors.client?.walletAddress)}
+            touched={touchedFields.client?.walletAddress}
+          />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Input label="Client Email" type="email" placeholder="billing@client.com" {...register('client.email')} />
-            <Input label="Client Phone" type="tel" placeholder="+1..." {...register('client.phone')} />
+            <Input
+              label="Client Email"
+              type="email"
+              placeholder="billing@client.com"
+              maxLength={FIELD_LIMITS.email}
+              error={getFieldError(errors.client?.email)}
+              touched={touchedFields.client?.email}
+              {...register('client.email')}
+            />
+            <Input
+              label="Client Phone"
+              type="tel"
+              placeholder="+1..."
+              maxLength={FIELD_LIMITS.phone}
+              error={getFieldError(errors.client?.phone)}
+              touched={touchedFields.client?.phone}
+              {...register('client.phone')}
+            />
           </div>
           <Textarea
             label="Client Address"
             placeholder="456 Chain Ln, Web3 Valley"
             {...register('client.physicalAddress')}
+            maxLength={FIELD_LIMITS.address}
+            showCount
             className="min-h-[60px]"
           />
-          <Input label="Client Tax ID" placeholder="Tax ID / VAT Number" {...register('client.taxId')} />
+          <Input
+            label="Client Tax ID"
+            placeholder="Tax ID / VAT Number"
+            maxLength={FIELD_LIMITS.taxId}
+            error={getFieldError(errors.client?.taxId)}
+            touched={touchedFields.client?.taxId}
+            {...register('client.taxId')}
+          />
         </CollapsibleSection>
       </div>
 
@@ -280,7 +356,7 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
               <InvoiceItemRow
                 key={item.id}
                 item={item}
-                currency={currency || 'USDC'}
+                decimals={decimals ?? 6}
                 onUpdate={(updates) => updateLineItem(item.id, updates)}
                 onRemove={() => removeLineItem(item.id)}
                 canRemove={lineItems.length > 1}
@@ -294,16 +370,26 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="mb-1 block text-xs text-zinc-500">Tax (%)</label>
-          <Input type="number" min="0" max="100" step="0.01" placeholder="0" {...register('tax')} className="text-sm" />
+          <Input
+            type="text"
+            inputMode="decimal"
+            placeholder="0"
+            maxLength={FIELD_LIMITS.percentage}
+            error={getFieldError(errors.tax)}
+            touched={touchedFields.tax}
+            {...register('tax')}
+            className="text-sm"
+          />
         </div>
         <div>
           <label className="mb-1 block text-xs text-zinc-500">Discount (%)</label>
           <Input
-            type="number"
-            min="0"
-            max="100"
-            step="0.01"
+            type="text"
+            inputMode="decimal"
             placeholder="0"
+            maxLength={FIELD_LIMITS.percentage}
+            error={getFieldError(errors.discount)}
+            touched={touchedFields.discount}
             {...register('discount')}
             className="text-sm"
           />
@@ -348,18 +434,14 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
       {/* Notes Section */}
       <div className="border-t border-zinc-800/50 pt-4">
         <CollapsibleSection title="Add Notes / Memo (Optional)" defaultOpen>
-          <div className="relative">
-            <Textarea
-              value={notes || ''}
-              onChange={handleNotesChange}
-              placeholder="Additional information for the invoice..."
-              className="min-h-[80px] resize-none pr-16"
-              maxLength={280}
-            />
-            <div className="pointer-events-none absolute right-2 bottom-2 font-mono text-[10px] text-zinc-500">
-              {notes?.length || 0}/280
-            </div>
-          </div>
+          <Textarea
+            value={notes || ''}
+            onChange={handleNotesChange}
+            placeholder="Additional information for the invoice..."
+            className="min-h-[80px] resize-none"
+            maxLength={FIELD_LIMITS.notes}
+            showCount
+          />
         </CollapsibleSection>
       </div>
 

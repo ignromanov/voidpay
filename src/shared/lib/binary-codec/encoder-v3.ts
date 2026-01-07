@@ -16,7 +16,7 @@
  */
 
 import type { Invoice } from '@/shared/lib/invoice-types'
-import { addressToBytes, writeVarInt } from './utils'
+import { addressToBytes, writeVarInt, writeBigIntVarInt } from './utils'
 import { encodeBase62 } from './base62'
 import { CURRENCY_DICT, TOKEN_DICT } from './dictionary'
 import pako from 'pako'
@@ -37,7 +37,9 @@ enum OptionalFields {
   HAS_TAX = 1 << 9,
   HAS_DISCOUNT = 1 << 10,
   TEXT_COMPRESSED = 1 << 11, // If set, text fields are Deflate-compressed
-  // Bits 12-15 reserved for future use
+  HAS_TOTAL = 1 << 12, // If set, total is stored in binary section
+  HAS_MAGIC_DUST = 1 << 13, // If set, magicDust is stored in binary section
+  // Bits 14-15 reserved for future use
 }
 
 /**
@@ -63,6 +65,8 @@ export function encodeBinaryV3(invoice: Invoice): string {
   if (invoice.client.phone) flags |= OptionalFields.HAS_CLIENT_PHONE
   if (invoice.tax) flags |= OptionalFields.HAS_TAX
   if (invoice.discount) flags |= OptionalFields.HAS_DISCOUNT
+  if (invoice.total) flags |= OptionalFields.HAS_TOTAL
+  if (invoice.magicDust) flags |= OptionalFields.HAS_MAGIC_DUST
 
   // We'll set TEXT_COMPRESSED bit later after collecting text
   const flagsOffset = buffer.length
@@ -113,6 +117,21 @@ export function encodeBinaryV3(invoice: Invoice): string {
   // 11. Line items count -> varint
   writeVarInt(buffer, invoice.items.length)
 
+  // 12. Write rates as BigInt varints (more efficient than text)
+  for (const item of invoice.items) {
+    writeBigIntVarInt(buffer, BigInt(item.rate || '0'))
+  }
+
+  // 13. Write total if present (atomic units as BigInt varint)
+  if (invoice.total) {
+    writeBigIntVarInt(buffer, BigInt(invoice.total))
+  }
+
+  // 14. Write magicDust if present (1-999, regular varint is sufficient)
+  if (invoice.magicDust) {
+    writeVarInt(buffer, Number(invoice.magicDust))
+  }
+
   // Now collect all text fields to decide if compression is beneficial
   const textParts: string[] = []
 
@@ -150,12 +169,12 @@ export function encodeBinaryV3(invoice: Invoice): string {
   if (invoice.tax) textParts.push(invoice.tax)
   if (invoice.discount) textParts.push(invoice.discount)
 
-  // Line items (all fields)
+  // Line items (description + quantity only, rate is in binary section)
   for (const item of invoice.items) {
     textParts.push(item.description)
     const qtyStr = typeof item.quantity === 'number' ? item.quantity.toString() : item.quantity
     textParts.push(qtyStr)
-    textParts.push(item.rate)
+    // Note: rate is encoded as BigInt varint in binary section (step 12)
   }
 
   // Join all text with null separator
@@ -184,8 +203,12 @@ export function encodeBinaryV3(invoice: Invoice): string {
         finalTextBytes = rawTextBytes
       }
     } catch (error) {
-      // Fallback to raw if compression fails (log for debugging)
-      console.warn('[encoder-v3] Compression failed, using uncompressed text:', error)
+      // Fallback to raw if compression fails
+      // Note: This is logged at error level because uncompressed text may exceed URL limits
+      console.error('[encoder-v3] Compression failed, using uncompressed text:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        originalLength: rawTextBytes.length,
+      })
       finalTextBytes = rawTextBytes
     }
   } else {

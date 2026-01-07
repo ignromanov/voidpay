@@ -1,6 +1,8 @@
 /**
  * TotalsSection Component Tests
  * Tests for invoice totals display
+ *
+ * All amounts are formatted strings (e.g., "1,000.00" not 1000)
  */
 
 import { describe, it, expect } from 'vitest'
@@ -10,11 +12,11 @@ import type { Totals } from '../../lib/calculate-totals'
 
 describe('TotalsSection', () => {
   const baseTotals: Totals = {
-    subtotal: 1000,
-    taxAmount: 0,
-    discountAmount: 0,
-    total: 1000,
-    magicDust: 0,
+    subtotal: '1,000.00',
+    taxAmount: '0.00',
+    discountAmount: '0.00',
+    total: '1,000.00',
+    magicDust: null,
   }
 
   describe('Basic rendering', () => {
@@ -52,8 +54,8 @@ describe('TotalsSection', () => {
     it('shows tax row when taxAmount > 0', () => {
       const totals: Totals = {
         ...baseTotals,
-        taxAmount: 100,
-        total: 1100,
+        taxAmount: '100.00',
+        total: '1,100.00',
       }
       render(<TotalsSection totals={totals} />)
 
@@ -64,8 +66,8 @@ describe('TotalsSection', () => {
     it('shows tax percentage label when provided', () => {
       const totals: Totals = {
         ...baseTotals,
-        taxAmount: 100,
-        total: 1100,
+        taxAmount: '100.00',
+        total: '1,100.00',
       }
       render(<TotalsSection totals={totals} taxPercent="10%" />)
 
@@ -81,8 +83,8 @@ describe('TotalsSection', () => {
     it('has accessible label for tax amount', () => {
       const totals: Totals = {
         ...baseTotals,
-        taxAmount: 100,
-        total: 1100,
+        taxAmount: '100.00',
+        total: '1,100.00',
       }
       render(<TotalsSection totals={totals} currency="USDC" />)
 
@@ -94,8 +96,8 @@ describe('TotalsSection', () => {
     it('shows discount row when discountAmount > 0', () => {
       const totals: Totals = {
         ...baseTotals,
-        discountAmount: 50,
-        total: 950,
+        discountAmount: '50.00',
+        total: '950.00',
       }
       render(<TotalsSection totals={totals} />)
 
@@ -106,8 +108,8 @@ describe('TotalsSection', () => {
     it('shows discount percentage label when provided', () => {
       const totals: Totals = {
         ...baseTotals,
-        discountAmount: 50,
-        total: 950,
+        discountAmount: '50.00',
+        total: '950.00',
       }
       render(<TotalsSection totals={totals} discountPercent="5%" />)
 
@@ -123,8 +125,8 @@ describe('TotalsSection', () => {
     it('has accessible label for discount amount', () => {
       const totals: Totals = {
         ...baseTotals,
-        discountAmount: 50,
-        total: 950,
+        discountAmount: '50.00',
+        total: '950.00',
       }
       render(<TotalsSection totals={totals} currency="USDC" />)
 
@@ -136,27 +138,27 @@ describe('TotalsSection', () => {
     it('shows magic dust when present and enabled', () => {
       const totals: Totals = {
         ...baseTotals,
-        magicDust: 0.000042,
-        total: 1000.000042,
+        magicDust: '0.000042',
+        total: '1,000.000042',
       }
       render(<TotalsSection totals={totals} showMagicDust={true} />)
 
       expect(screen.getByText('Unique Amount:')).toBeInTheDocument()
-      expect(screen.getByText('1000.000042')).toBeInTheDocument()
+      expect(screen.getByText('0.000042')).toBeInTheDocument()
     })
 
     it('hides magic dust when showMagicDust is false', () => {
       const totals: Totals = {
         ...baseTotals,
-        magicDust: 0.000042,
-        total: 1000.000042,
+        magicDust: '0.000042',
+        total: '1,000.000042',
       }
       render(<TotalsSection totals={totals} showMagicDust={false} />)
 
       expect(screen.queryByText('Unique Amount:')).not.toBeInTheDocument()
     })
 
-    it('hides magic dust when magicDust is 0', () => {
+    it('hides magic dust when magicDust is null', () => {
       render(<TotalsSection totals={baseTotals} showMagicDust={true} />)
 
       expect(screen.queryByText('Unique Amount:')).not.toBeInTheDocument()
@@ -165,8 +167,8 @@ describe('TotalsSection', () => {
     it('shows magic dust by default (showMagicDust defaults to true)', () => {
       const totals: Totals = {
         ...baseTotals,
-        magicDust: 0.000042,
-        total: 1000.000042,
+        magicDust: '0.000042',
+        total: '1,000.000042',
       }
       render(<TotalsSection totals={totals} />)
 
@@ -177,11 +179,11 @@ describe('TotalsSection', () => {
   describe('Complex calculations', () => {
     it('displays correct totals with tax and discount', () => {
       const totals: Totals = {
-        subtotal: 1000,
-        taxAmount: 100,
-        discountAmount: 50,
-        total: 1050,
-        magicDust: 0,
+        subtotal: '1,000.00',
+        taxAmount: '100.00',
+        discountAmount: '50.00',
+        total: '1,050.00',
+        magicDust: null,
       }
       render(
         <TotalsSection totals={totals} currency="USDC" taxPercent="10%" discountPercent="5%" />

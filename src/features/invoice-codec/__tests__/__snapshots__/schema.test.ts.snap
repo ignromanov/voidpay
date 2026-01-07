@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode full invoice to stable compressed format > full-invoice-v1-encoded 1`] = `"H6a04fLaE11pvj6yXIJiCQvF123L2rNpnqW17RgcGf3dRwaUegQQvdiF69FwpCrGqUZbGfuDG4Zi8kbvh3rXHeptRPms15GWgMLtOGWE44PJ9hRxZ7fdTzHzo6LFRYmXzh3OVCtIvUMI184FG6dm6F8jCOVH1NfDEaCIRG1xfjhnbEIzzhrGL91V8RsaOapER7iVkqtWXFwZFtsE8RMbmOZdwo3FDW9qfMLyk01GZ7BTr4ng1TvBBxjqkDycggyIiW3LTiYhEyiNefBcztwGFOl1Jwmm91GBVigIwa7rkPWdaRWw6r7zJBsnUTcphkWbU4YiG4LxDfLhGBqbCq06WsvjYOUZAQOo3rCyLyB2rHe6l6Zd2nb9Lt0tmTZybexaPwE3f6ljaaRF5uBYZBk9Z5lsRK6IJebSQ"`;
+exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode full invoice to stable compressed format > full-invoice-v1-encoded 1`] = `"H1H2HuwPI0yJ5RzJwhhvK0StthWa94fYffkXZ51gYIzYrrRgYZ7LuNQLBhh3cVPhdkip07FvRrGoGTPsQ0u4P4cMkBG8NQjQacIYmTk6EbXw3CbYDFqc3Cca0Bn9lVuLCOSRLkWcUdQ5hD9YoQNxGrneOdaxEgfiomsq6IODQ0fJ8BDsnO0YAFfxmLRWswgc6AjjuSdj1se59J2bbXdyT8T2xseU7mOJI2Qqq6PnMLTVjBw2PkQHsNz6NYazhNFh2Ghgnw9oVYsKV85rwjEukyNUO3ZScDMCF0obslPkPVa3rd0A6DaMvkiv9tkCtGKQHoDRCCSEDANqzDTamXZMU8K6mjpPxyNf06QrqKfIZnkZXGaJ9h7JxFHn25dkbJHw1A0rTAclgALh5mByzPVOCUV0drSJ5SVD6ZaF"`;
 
-exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode minimal invoice to stable compressed format > minimal-invoice-v1-encoded 1`] = `"HSvExNNUXEFuuATe8bgOc4u2mw1p67UDSJzTbVviHOikOvGgZr3HbhpZu5JhbgCqiR3VjTKHWkm9La1APvxHchOHipvPaynGqxJPtzEMSZm1iRTDgDopqOks91c4xXdHaFvPa4hLG"`;
+exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode minimal invoice to stable compressed format > minimal-invoice-v1-encoded 1`] = `"H2bqGApJYO6Kye1cuFdMh5O3uM1hfWytNl4q3ZbajIKguEmwp44Qh2SsiDS8Q6wjwdEXgt5hJN7V52w9ulBTQR2mjH6ime7FvZG6mBdPnUqaBBj2yId7FtIPCud"`;
 
 exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should preserve exact JSON structure in encoding > full-invoice-v1-structure 1`] = `
 {
@@ -45,10 +45,12 @@ San Francisco, CA 94105",
       "rate": "125000000",
     },
   ],
+  "magicDust": undefined,
   "networkId": 1,
   "notes": "Payment for web development services",
   "tax": "8.5%",
   "tokenAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  "total": undefined,
   "version": 2,
 }
 `;

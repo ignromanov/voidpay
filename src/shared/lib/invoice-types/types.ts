@@ -9,6 +9,7 @@
  */
 
 import type { Invoice } from './schema'
+import { calculateTotalsBigInt, formatAmount } from '../amount-utils'
 
 // ============ Deep Partial Generic ============
 
@@ -180,30 +181,34 @@ export function invoiceItemsToLineItems(items: PartialItem[]): LineItem[] {
 }
 
 /**
- * Calculate and format total amount from invoice
+ * Calculate and format total amount from invoice using BigInt precision.
+ *
+ * Rates are stored as atomic units (e.g., "150000000" = $150.00 for 6 decimals).
+ * Uses BigInt arithmetic to avoid floating-point precision issues.
+ *
+ * @param invoice - Complete invoice data
  * @returns Formatted string like "1250.50 USDC"
  */
 export function formatInvoiceTotal(invoice: Invoice): string {
-  const subtotal = invoice.items.reduce((sum, item) => {
-    const rate = parseFloat(item.rate)
-    return sum + item.quantity * rate
-  }, 0)
+  const decimals = invoice.decimals ?? 6
 
-  let total = subtotal
-
-  if (invoice.tax) {
-    const taxValue = invoice.tax.endsWith('%')
-      ? (subtotal * parseFloat(invoice.tax)) / 100
-      : parseFloat(invoice.tax)
-    total += taxValue
+  // If invoice has pre-calculated total, use it
+  if (invoice.total) {
+    return `${formatAmount(invoice.total, decimals)} ${invoice.currency}`
   }
 
-  if (invoice.discount) {
-    const discountValue = invoice.discount.endsWith('%')
-      ? (subtotal * parseFloat(invoice.discount)) / 100
-      : parseFloat(invoice.discount)
-    total -= discountValue
-  }
+  // Map items for BigInt calculation
+  const items = invoice.items.map((item) => ({
+    quantity: item.quantity,
+    rate: item.rate || '0',
+  }))
 
-  return `${total.toFixed(2)} ${invoice.currency}`
+  // Extract tax/discount percentages (strip % suffix if present)
+  const tax = invoice.tax?.endsWith('%') ? invoice.tax.slice(0, -1) : invoice.tax
+  const discount = invoice.discount?.endsWith('%') ? invoice.discount.slice(0, -1) : invoice.discount
+
+  // Calculate using BigInt arithmetic
+  const result = calculateTotalsBigInt(items, { tax, discount, decimals })
+
+  return `${formatAmount(result.total, decimals)} ${invoice.currency}`
 }

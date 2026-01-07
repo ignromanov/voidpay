@@ -12,8 +12,9 @@ vi.mock('@/features/invoice-codec', () => ({
   generateInvoiceUrl: vi.fn(),
 }))
 
-// Mock data
+// Mock data with atomic units ($100 = 100000000 with 6 decimals)
 const mockInvoiceData: PartialInvoice = {
+  version: 2, // Required by schema
   invoiceId: 'INV-001',
   issuedAt: 1704067200, // 2024-01-01
   dueAt: 1706745600, // 2024-02-01
@@ -28,7 +29,7 @@ const mockInvoiceData: PartialInvoice = {
   client: {
     name: 'Client Inc',
   },
-  items: [{ description: 'Development services', quantity: 10, rate: '100' }],
+  items: [{ description: 'Development services', quantity: 10, rate: '100000000' }], // $100/hr × 10 = $1000
 }
 
 describe('InvoicePreviewModal', () => {
@@ -208,7 +209,7 @@ describe('InvoicePreviewModal', () => {
     it('skips URL generation when required fields missing', async () => {
       const incompleteData: PartialInvoice = {
         // Missing invoiceId, from.walletAddress, networkId
-        items: [{ description: 'Test', quantity: 1, rate: '100' }],
+        items: [{ description: 'Test', quantity: 1, rate: '100000000' }], // $100 in atomic units
       }
 
       renderWithUser(
