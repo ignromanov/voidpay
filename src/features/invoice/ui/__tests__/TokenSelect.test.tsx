@@ -11,6 +11,16 @@ import { userEvent } from '@testing-library/user-event'
 import { TokenSelect } from '../TokenSelect'
 import { NETWORK_TOKENS } from '../../model/tokens'
 
+// Mock useTokenMetadata hook to avoid WagmiProvider requirement
+vi.mock('@/entities/token/lib/use-token-metadata', () => ({
+  useTokenMetadata: vi.fn(() => ({
+    data: null,
+    isLoading: false,
+    isError: false,
+    error: null,
+  })),
+}))
+
 describe('TokenSelect - Token Filtering by Chain', () => {
   it('should display tokens for Ethereum (chainId: 1)', () => {
     const onChange = vi.fn()
@@ -112,7 +122,7 @@ describe('TokenSelect - Custom Token Support', () => {
     const trigger = screen.getByRole('combobox')
     await user.click(trigger)
 
-    expect(screen.getByText('Custom Token')).toBeInTheDocument()
+    expect(screen.getByText('Add Custom Token')).toBeInTheDocument()
   })
 
   it('should hide custom token option when allowCustom=false', async () => {
@@ -124,7 +134,7 @@ describe('TokenSelect - Custom Token Support', () => {
     const trigger = screen.getByRole('combobox')
     await user.click(trigger)
 
-    expect(screen.queryByText('Custom Token')).not.toBeInTheDocument()
+    expect(screen.queryByText('Add Custom Token')).not.toBeInTheDocument()
   })
 })
 

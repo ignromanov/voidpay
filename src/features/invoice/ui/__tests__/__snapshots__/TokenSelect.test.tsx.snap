@@ -55,9 +55,13 @@ exports[`TokenSelect - Snapshots > should match snapshot with selected token 1`]
       <div
         class="h-5 w-5 rounded-full bg-blue-500"
       />
-      <span>
-        USDC
-      </span>
+      <div
+        class="flex items-center gap-1.5"
+      >
+        <span>
+          USDC
+        </span>
+      </div>
     </div>
   </span>
   <svg
