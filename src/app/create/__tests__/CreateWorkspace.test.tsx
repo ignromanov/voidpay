@@ -3,7 +3,7 @@
  * Feature: 015-create-page-preview
  */
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@/shared/test-utils/render'
 import userEvent from '@testing-library/user-event'
 import type React from 'react'
 import { CreateWorkspace } from '../CreateWorkspace'
