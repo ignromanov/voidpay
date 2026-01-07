@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { Calendar, Wallet, Users, Coins, Plus, Share2, ArrowRight } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { toast } from 'sonner'
@@ -11,8 +11,7 @@ import { NetworkSelect } from '@/features/wallet-connect'
 import { TokenSelect, type TokenInfo } from '@/features/invoice'
 import { cn } from '@/shared/lib/utils'
 
-import { useFormValidation } from '../lib/use-form-validation'
-import { useDebouncedDraftUpdate } from '../lib/use-debounced-draft-update'
+import { useInvoiceForm } from '../lib/use-invoice-form'
 import { InvoiceItemRow } from './InvoiceItemRow'
 import { CollapsibleSection } from './CollapsibleSection'
 
@@ -24,80 +23,39 @@ export interface InvoiceFormProps {
 /**
  * InvoiceForm Widget
  *
- * Main form for creating invoices. Implements US1: Create Basic Invoice.
- * Renders metadata, sender, recipient, line items, and payment sections.
+ * Main form for creating invoices using react-hook-form for performant input handling.
+ * Form has its own internal state (uncontrolled inputs) and syncs to Zustand store with debounce.
  *
- * @example
- * ```tsx
- * <InvoiceForm onGenerate={() => toast('Coming soon')} />
- * ```
+ * Architecture:
+ * - useInvoiceForm: manages form state + debounced sync to store
+ * - register(): uncontrolled inputs = no re-render on keystroke
+ * - LineItems: managed separately via updateLineItem (direct store calls)
  */
 export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
-  // Store selectors
-  const activeDraft = useCreatorStore((s) => s.activeDraft)
+  // Form with debounced store sync
+  const { form, fieldValidation, canGenerate } = useInvoiceForm()
+  const { register, setValue, watch } = form
+
+  // Watch values for controlled components (selects, dates)
+  const networkId = watch('networkId')
+  const currency = watch('currency')
+  const tokenAddress = watch('tokenAddress')
+  const decimals = watch('decimals')
+  const issuedAt = watch('issuedAt')
+  const dueAt = watch('dueAt')
+  const notes = watch('notes')
+
+  // Store selectors for line items (managed separately)
   const lineItems = useCreatorStore((s) => s.lineItems)
   const addLineItem = useCreatorStore((s) => s.addLineItem)
   const updateLineItem = useCreatorStore((s) => s.updateLineItem)
   const removeLineItem = useCreatorStore((s) => s.removeLineItem)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
 
-  // Debounced draft updates (500ms delay to prevent excessive localStorage writes)
-  const updateDraft = useDebouncedDraftUpdate()
-
-  // Validation
-  const { canGenerate, fieldValidation } = useFormValidation(activeDraft, lineItems)
-
-  // Validation error messages (only show for invalid filled fields)
-  const getFieldError = useCallback(
-    (
-      fieldKey: keyof typeof fieldValidation,
-      value: unknown,
-      message: string
-    ): string | undefined => {
-      // Only show error if field has been touched (has value) but is invalid
-      const hasValue = Boolean(value && (typeof value === 'string' ? value.length > 0 : true))
-      const isValid = fieldValidation[fieldKey]
-      return hasValue && !isValid ? message : undefined
-    },
-    [fieldValidation]
-  )
-
-  // Field handlers with store updates
-  const handleFieldChange = useCallback(
-    (field: string, value: unknown) => {
-      updateDraft({ [field]: value })
-    },
-    [updateDraft]
-  )
-
-  const handleFromChange = useCallback(
-    (field: string, value: string) => {
-      updateDraft({
-        from: {
-          ...activeDraft?.data.from,
-          [field]: value,
-        },
-      })
-    },
-    [activeDraft?.data.from, updateDraft]
-  )
-
-  const handleClientChange = useCallback(
-    (field: string, value: string) => {
-      updateDraft({
-        client: {
-          ...activeDraft?.data.client,
-          [field]: value,
-        },
-      })
-    },
-    [activeDraft?.data.client, updateDraft]
-  )
-
+  // Network change handler (also updates theme)
   const handleNetworkChange = useCallback(
     (chainId: number) => {
-      updateDraft({ networkId: chainId })
-      // Sync network theme for NetworkBackground
+      setValue('networkId', chainId)
       const themeMap: Record<number, 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'> = {
         1: 'ethereum',
         42161: 'arbitrum',
@@ -107,41 +65,76 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
       const theme = themeMap[chainId]
       if (theme) setNetworkTheme(theme)
     },
-    [updateDraft, setNetworkTheme]
+    [setValue, setNetworkTheme]
   )
 
+  // Token change handler
   const handleTokenChange = useCallback(
     (token: TokenInfo) => {
-      updateDraft({
-        currency: token.symbol,
-        tokenAddress: token.address ? (token.address as `0x${string}`) : undefined,
-        decimals: token.decimals,
-      })
+      setValue('currency', token.symbol)
+      setValue('tokenAddress', token.address ?? undefined)
+      setValue('decimals', token.decimals)
     },
-    [updateDraft]
+    [setValue]
   )
 
-  const data = activeDraft?.data
+  // Date change handlers (unix timestamps)
+  const handleIssuedAtChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const unix = e.target.value ? Math.floor(new Date(e.target.value).getTime() / 1000) : undefined
+      setValue('issuedAt', unix)
+    },
+    [setValue]
+  )
 
-  // Memoize validation errors to avoid repetitive checks
-  const validationErrors = useMemo(() => {
-    return {
-      invoiceId: getFieldError('invoiceId', data?.invoiceId, 'Invoice number is required'),
-      senderName: getFieldError('senderName', data?.from?.name, 'Sender name is required'),
-      senderWallet: getFieldError(
-        'senderWallet',
-        data?.from?.walletAddress,
-        'Valid wallet address required'
-      ),
-      clientName: getFieldError('clientName', data?.client?.name, 'Client name is required'),
+  const handleDueAtChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const unix = e.target.value ? Math.floor(new Date(e.target.value).getTime() / 1000) : undefined
+      setValue('dueAt', unix)
+    },
+    [setValue]
+  )
+
+  // Notes handler with maxLength
+  const handleNotesChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const value = e.target.value.slice(0, 280)
+      setValue('notes', value)
+    },
+    [setValue]
+  )
+
+  // Watch wallet addresses for controlled AddressInput components
+  const senderWallet = watch('from.walletAddress')
+  const clientWallet = watch('client.walletAddress')
+
+  // Wallet address change handlers
+  const handleSenderWalletChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setValue('from.walletAddress', e.target.value)
+    },
+    [setValue]
+  )
+
+  const handleClientWalletChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setValue('client.walletAddress', e.target.value)
+    },
+    [setValue]
+  )
+
+  // Validation error messages (returns empty string if no error for exactOptionalPropertyTypes)
+  const getError = (field: keyof typeof fieldValidation, message: string): string => {
+    const fieldMap: Record<keyof typeof fieldValidation, string> = {
+      senderName: 'from.name',
+      senderWallet: 'from.walletAddress',
+      clientName: 'client.name',
+      invoiceId: 'invoiceId',
     }
-  }, [
-    data?.invoiceId,
-    data?.from?.name,
-    data?.from?.walletAddress,
-    data?.client?.name,
-    getFieldError,
-  ])
+    const value = watch(fieldMap[field] as 'from.name' | 'from.walletAddress' | 'client.name' | 'invoiceId')
+    const hasValue = Boolean(value && (typeof value === 'string' ? value.length > 0 : true))
+    return hasValue && !fieldValidation[field] ? message : ''
+  }
 
   return (
     <div className={cn('space-y-8', className)}>
@@ -149,11 +142,10 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
       <div className="space-y-4 rounded-xl border border-zinc-800/50 bg-zinc-900/50 p-4">
         <Input
           label="Invoice No. *"
-          value={data?.invoiceId || ''}
-          onChange={(e) => handleFieldChange('invoiceId', e.target.value)}
+          {...register('invoiceId')}
           className="font-mono"
           placeholder="INV-001"
-          {...(validationErrors.invoiceId && { error: validationErrors.invoiceId })}
+          error={getError('invoiceId', 'Invoice number is required')}
         />
 
         <div className="space-y-1.5">
@@ -163,26 +155,14 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
           <div className="grid grid-cols-2 gap-2">
             <input
               type="date"
-              value={
-                data?.issuedAt ? new Date(data.issuedAt * 1000).toISOString().split('T')[0] : ''
-              }
-              onChange={(e) => {
-                const unix = e.target.value
-                  ? Math.floor(new Date(e.target.value).getTime() / 1000)
-                  : undefined
-                handleFieldChange('issuedAt', unix)
-              }}
+              value={issuedAt ? new Date(issuedAt * 1000).toISOString().split('T')[0] : ''}
+              onChange={handleIssuedAtChange}
               className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-2 py-2.5 font-mono text-xs text-zinc-300 transition-shadow outline-none focus:text-white focus:shadow-[0_0_15px_rgba(124,58,237,0.3)]"
             />
             <input
               type="date"
-              value={data?.dueAt ? new Date(data.dueAt * 1000).toISOString().split('T')[0] : ''}
-              onChange={(e) => {
-                const unix = e.target.value
-                  ? Math.floor(new Date(e.target.value).getTime() / 1000)
-                  : undefined
-                handleFieldChange('dueAt', unix)
-              }}
+              value={dueAt ? new Date(dueAt * 1000).toISOString().split('T')[0] : ''}
+              onChange={handleDueAtChange}
               className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-2 py-2.5 font-mono text-xs text-zinc-300 transition-shadow outline-none focus:text-white focus:shadow-[0_0_15px_rgba(124,58,237,0.3)]"
             />
           </div>
@@ -202,50 +182,31 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
 
         <Input
           label="Your Name / Company *"
-          value={data?.from?.name || ''}
-          onChange={(e) => handleFromChange('name', e.target.value)}
+          {...register('from.name')}
           placeholder="Your Company Inc."
-          {...(validationErrors.senderName && { error: validationErrors.senderName })}
+          error={getError('senderName', 'Sender name is required')}
         />
 
         <AddressInput
           label="Your Wallet Address *"
-          value={data?.from?.walletAddress || ''}
-          onChange={(e) => handleFromChange('walletAddress', e.target.value)}
+          value={senderWallet || ''}
+          onChange={handleSenderWalletChange}
           placeholder="0x..."
-          {...(validationErrors.senderWallet && { error: validationErrors.senderWallet })}
+          error={getError('senderWallet', 'Valid wallet address required')}
         />
 
         <CollapsibleSection title="Add Contact Info (Optional)">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Input
-              label="Email"
-              type="email"
-              placeholder="you@example.com"
-              value={data?.from?.email || ''}
-              onChange={(e) => handleFromChange('email', e.target.value)}
-            />
-            <Input
-              label="Phone"
-              type="tel"
-              placeholder="+1..."
-              value={data?.from?.phone || ''}
-              onChange={(e) => handleFromChange('phone', e.target.value)}
-            />
+            <Input label="Email" type="email" placeholder="you@example.com" {...register('from.email')} />
+            <Input label="Phone" type="tel" placeholder="+1..." {...register('from.phone')} />
           </div>
           <Textarea
             label="Physical Address"
             placeholder="123 Block St, Crypto City"
-            value={data?.from?.physicalAddress || ''}
-            onChange={(e) => handleFromChange('physicalAddress', e.target.value)}
+            {...register('from.physicalAddress')}
             className="min-h-[60px]"
           />
-          <Input
-            label="Tax ID"
-            placeholder="Tax ID / VAT Number"
-            value={data?.from?.taxId || ''}
-            onChange={(e) => handleFromChange('taxId', e.target.value)}
-          />
+          <Input label="Tax ID" placeholder="Tax ID / VAT Number" {...register('from.taxId')} />
         </CollapsibleSection>
       </div>
 
@@ -264,47 +225,23 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
           label="Client Name *"
           type="text"
           placeholder="Acme Corp"
-          value={data?.client?.name || ''}
-          onChange={(e) => handleClientChange('name', e.target.value)}
-          {...(validationErrors.clientName && { error: validationErrors.clientName })}
+          {...register('client.name')}
+          error={getError('clientName', 'Client name is required')}
         />
 
         <CollapsibleSection title="Add Client Details (Optional)">
-          <AddressInput
-            label="Client Wallet"
-            value={data?.client?.walletAddress || ''}
-            onChange={(e) => handleClientChange('walletAddress', e.target.value)}
-            placeholder="0x..."
-          />
+          <AddressInput label="Client Wallet" value={clientWallet || ''} onChange={handleClientWalletChange} placeholder="0x..." />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Input
-              label="Client Email"
-              type="email"
-              placeholder="billing@client.com"
-              value={data?.client?.email || ''}
-              onChange={(e) => handleClientChange('email', e.target.value)}
-            />
-            <Input
-              label="Client Phone"
-              type="tel"
-              placeholder="+1..."
-              value={data?.client?.phone || ''}
-              onChange={(e) => handleClientChange('phone', e.target.value)}
-            />
+            <Input label="Client Email" type="email" placeholder="billing@client.com" {...register('client.email')} />
+            <Input label="Client Phone" type="tel" placeholder="+1..." {...register('client.phone')} />
           </div>
           <Textarea
             label="Client Address"
             placeholder="456 Chain Ln, Web3 Valley"
-            value={data?.client?.physicalAddress || ''}
-            onChange={(e) => handleClientChange('physicalAddress', e.target.value)}
+            {...register('client.physicalAddress')}
             className="min-h-[60px]"
           />
-          <Input
-            label="Client Tax ID"
-            placeholder="Tax ID / VAT Number"
-            value={data?.client?.taxId || ''}
-            onChange={(e) => handleClientChange('taxId', e.target.value)}
-          />
+          <Input label="Client Tax ID" placeholder="Tax ID / VAT Number" {...register('client.taxId')} />
         </CollapsibleSection>
       </div>
 
@@ -329,13 +266,21 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
           </motion.div>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2">
+          {/* Table Header */}
+          <div className="grid grid-cols-12 gap-2 px-2 text-[10px] font-medium uppercase tracking-wide text-zinc-500">
+            <div className="col-span-6">Description</div>
+            <div className="col-span-2 text-center">Qty</div>
+            <div className="col-span-3 text-right">Price</div>
+            <div className="col-span-1" />
+          </div>
+
           <AnimatePresence>
             {lineItems.map((item) => (
               <InvoiceItemRow
                 key={item.id}
                 item={item}
-                currency={data?.currency || 'USDC'}
+                currency={currency || 'USDC'}
                 onUpdate={(updates) => updateLineItem(item.id, updates)}
                 onRemove={() => removeLineItem(item.id)}
                 canRemove={lineItems.length > 1}
@@ -349,16 +294,7 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="mb-1 block text-xs text-zinc-500">Tax (%)</label>
-          <Input
-            type="number"
-            min="0"
-            max="100"
-            step="0.01"
-            placeholder="0"
-            value={data?.tax || ''}
-            onChange={(e) => updateDraft({ tax: e.target.value || undefined })}
-            className="text-sm"
-          />
+          <Input type="number" min="0" max="100" step="0.01" placeholder="0" {...register('tax')} className="text-sm" />
         </div>
         <div>
           <label className="mb-1 block text-xs text-zinc-500">Discount (%)</label>
@@ -368,8 +304,7 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
             max="100"
             step="0.01"
             placeholder="0"
-            value={data?.discount || ''}
-            onChange={(e) => updateDraft({ discount: e.target.value || undefined })}
+            {...register('discount')}
             className="text-sm"
           />
         </div>
@@ -385,29 +320,21 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-xs font-medium tracking-wide text-zinc-400 uppercase">
-            Network
-          </label>
-          <NetworkSelect
-            value={data?.networkId || 42161}
-            onChange={handleNetworkChange}
-            className="w-full"
-          />
+          <label className="block text-xs font-medium tracking-wide text-zinc-400 uppercase">Network</label>
+          <NetworkSelect value={networkId || 42161} onChange={handleNetworkChange} className="w-full" />
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-xs font-medium tracking-wide text-zinc-400 uppercase">
-            Token
-          </label>
+          <label className="block text-xs font-medium tracking-wide text-zinc-400 uppercase">Token</label>
           <TokenSelect
-            chainId={data?.networkId || 42161}
+            chainId={networkId || 42161}
             value={
-              data?.currency
+              currency
                 ? {
-                    symbol: data.currency,
-                    address: data.tokenAddress ?? null,
-                    decimals: data.decimals || 18,
-                    name: data.currency,
+                    symbol: currency,
+                    address: tokenAddress ?? null,
+                    decimals: decimals || 18,
+                    name: currency,
                     iconColor: 'bg-violet-500',
                   }
                 : null
@@ -420,20 +347,17 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
 
       {/* Notes Section */}
       <div className="border-t border-zinc-800/50 pt-4">
-        <CollapsibleSection title="Add Notes / Memo (Optional)">
+        <CollapsibleSection title="Add Notes / Memo (Optional)" defaultOpen>
           <div className="relative">
             <Textarea
-              value={data?.notes || ''}
-              onChange={(e) => {
-                const value = e.target.value.slice(0, 280)
-                handleFieldChange('notes', value)
-              }}
+              value={notes || ''}
+              onChange={handleNotesChange}
               placeholder="Additional information for the invoice..."
               className="min-h-[80px] resize-none pr-16"
               maxLength={280}
             />
             <div className="pointer-events-none absolute right-2 bottom-2 font-mono text-[10px] text-zinc-500">
-              {data?.notes?.length || 0}/280
+              {notes?.length || 0}/280
             </div>
           </div>
         </CollapsibleSection>

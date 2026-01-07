@@ -4,13 +4,13 @@ import React, { useMemo, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { X, Printer, Download } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogClose, Badge, Button } from '@/shared/ui'
+import { isAddress } from 'viem'
 import { InvoicePaper } from './InvoicePaper'
 import { ScaledInvoicePreview } from './ScaledInvoicePreview'
 import { InvoiceStatus } from '../types'
 import { Invoice, PartialInvoice } from '@/entities/invoice'
 import { NETWORK_GLOW_BORDERS } from '@/entities/network'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
-import { toast } from '@/shared/lib/toast'
 
 // Animation variants for smooth enter/exit
 const headerVariants = {
@@ -78,17 +78,23 @@ export interface InvoicePreviewModalProps {
 
 export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
   ({ data, status = 'pending', txHash, txHashValidated = true, open, onOpenChange }) => {
-    // Generate invoice URL for linking (only if data is complete enough)
+    // Generate invoice URL for linking (only if data is complete and valid)
     const invoiceUrl = useMemo(() => {
-      // Need minimum required fields to generate URL
-      if (!data.invoiceId || !data.from?.walletAddress || !data.networkId) {
+      // Need minimum required fields with valid values to generate URL
+      const fromAddress = data.from?.walletAddress
+      if (
+        !data.invoiceId ||
+        !fromAddress ||
+        !isAddress(fromAddress) ||
+        !data.networkId
+      ) {
         return undefined
       }
       try {
         return generateInvoiceUrl(data as Invoice)
-      } catch (error) {
-        console.error('URL generation failed:', error)
-        toast.error('Failed to generate invoice URL')
+      } catch {
+        // Silent fail — invalid data during editing is expected
+        // URL will be generated once data becomes valid
         return undefined
       }
     }, [data])

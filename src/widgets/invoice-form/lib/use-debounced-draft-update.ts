@@ -2,62 +2,79 @@ import { useCallback, useRef, useEffect } from 'react'
 import { useCreatorStore } from '@/entities/creator'
 import type { PartialInvoice } from '@/shared/lib/invoice-types'
 
+/** Delay before showing "synced" status (debounces rapid changes) */
+const SYNCING_DEBOUNCE_MS = 500
+
+/** Duration to show "synced" status before returning to "idle" */
+const SYNCED_DISPLAY_MS = 2000
+
 /**
- * Debounced Draft Update Hook
+ * Draft Update Hook with Sync Status
  *
- * Provides a debounced version of updateDraft to prevent excessive localStorage writes.
- * Uses 500ms delay as specified in US6 - Auto-Save Draft.
+ * Updates the store IMMEDIATELY (synchronous) for reactive UI,
+ * but debounces the sync status badge to avoid flickering:
+ * - 'syncing': User is actively editing (shown immediately, stays until debounce)
+ * - 'synced': Changes are complete (shown after SYNCING_DEBOUNCE_MS of inactivity)
+ * - 'idle': No recent changes (shown after SYNCED_DISPLAY_MS)
  *
- * @returns Debounced updateDraft function
+ * @returns updateDraft function that syncs both store and status
  *
  * @example
  * ```tsx
  * const updateDraft = useDebouncedDraftUpdate()
- * // Multiple rapid calls will be batched
- * updateDraft({ invoiceId: 'INV-001' })
- * updateDraft({ currency: 'USDC' }) // Only this final value writes after 500ms
+ * updateDraft({ invoiceId: 'INV-001' }) // Store updates immediately, badge shows "syncing"
+ * // After 500ms of no changes: badge shows "synced"
+ * // After 2s more: badge shows "idle"
  * ```
  */
 export function useDebouncedDraftUpdate() {
   const storeUpdateDraft = useCreatorStore((s) => s.updateDraft)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const pendingUpdatesRef = useRef<PartialInvoice>({})
+  const setDraftSyncStatus = useCreatorStore((s) => s.setDraftSyncStatus)
+  const syncingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const idleTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-        // Flush pending updates on unmount
-        if (Object.keys(pendingUpdatesRef.current).length > 0) {
-          storeUpdateDraft(pendingUpdatesRef.current)
-        }
+      if (syncingTimeoutRef.current) {
+        clearTimeout(syncingTimeoutRef.current)
+      }
+      if (idleTimeoutRef.current) {
+        clearTimeout(idleTimeoutRef.current)
       }
     }
-  }, [storeUpdateDraft])
+  }, [])
 
-  const debouncedUpdate = useCallback(
+  const updateDraft = useCallback(
     (updates: PartialInvoice) => {
-      // Merge updates
-      pendingUpdatesRef.current = {
-        ...pendingUpdatesRef.current,
-        ...updates,
+      // 1. Update store IMMEDIATELY (sync) - UI stays reactive
+      storeUpdateDraft(updates)
+
+      // 2. Show "syncing" status immediately
+      setDraftSyncStatus('syncing')
+
+      // 3. Clear any pending "synced" or "idle" transitions
+      if (syncingTimeoutRef.current) {
+        clearTimeout(syncingTimeoutRef.current)
+      }
+      if (idleTimeoutRef.current) {
+        clearTimeout(idleTimeoutRef.current)
       }
 
-      // Clear existing timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
+      // 4. After user stops typing for SYNCING_DEBOUNCE_MS, show "synced"
+      syncingTimeoutRef.current = setTimeout(() => {
+        setDraftSyncStatus('synced')
+        syncingTimeoutRef.current = null
 
-      // Set new timeout
-      timeoutRef.current = setTimeout(() => {
-        storeUpdateDraft(pendingUpdatesRef.current)
-        pendingUpdatesRef.current = {}
-        timeoutRef.current = null
-      }, 500)
+        // 5. After SYNCED_DISPLAY_MS, return to "idle"
+        idleTimeoutRef.current = setTimeout(() => {
+          setDraftSyncStatus('idle')
+          idleTimeoutRef.current = null
+        }, SYNCED_DISPLAY_MS)
+      }, SYNCING_DEBOUNCE_MS)
     },
-    [storeUpdateDraft]
+    [storeUpdateDraft, setDraftSyncStatus]
   )
 
-  return debouncedUpdate
+  return updateDraft
 }

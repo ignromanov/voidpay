@@ -5,7 +5,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with default state 1`
   aria-autocomplete="none"
   aria-controls="radix-_r_20_"
   aria-expanded="false"
-  class="flex items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 h-9 w-[200px]"
+  class="flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all h-10 py-2.5 border-zinc-800 bg-zinc-900/50 text-zinc-200 hover:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 w-[200px]"
   data-state="closed"
   dir="ltr"
   role="combobox"
@@ -15,33 +15,39 @@ exports[`NetworkSelect - Snapshots > should match snapshot with default state 1`
     style="pointer-events: none;"
   >
     <div
-      class="flex items-center gap-2"
+      class="flex items-center gap-2.5"
     >
-      <svg
-        aria-hidden="true"
-        class="lucide lucide-hexagon h-4 w-4 text-indigo-400"
-        fill="none"
-        height="24"
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-        width="24"
-        xmlns="http://www.w3.org/2000/svg"
+      <div
+        class="flex items-center justify-center text-indigo-400"
       >
-        <path
-          d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
-        />
-      </svg>
-      <span>
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-hexagon h-4 w-4"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+          />
+        </svg>
+      </div>
+      <span
+        class="font-bold"
+      >
         Ethereum
       </span>
     </div>
   </span>
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"
@@ -64,7 +70,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with different networ
   aria-autocomplete="none"
   aria-controls="radix-_r_2a_"
   aria-expanded="false"
-  class="flex items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 h-9 w-[200px]"
+  class="flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all h-10 py-2.5 border-zinc-800 bg-zinc-900/50 text-zinc-200 hover:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 w-[200px]"
   data-state="closed"
   dir="ltr"
   role="combobox"
@@ -74,33 +80,39 @@ exports[`NetworkSelect - Snapshots > should match snapshot with different networ
     style="pointer-events: none;"
   >
     <div
-      class="flex items-center gap-2"
+      class="flex items-center gap-2.5"
     >
-      <svg
-        aria-hidden="true"
-        class="lucide lucide-hexagon h-4 w-4 text-purple-400 fill-current"
-        fill="none"
-        height="24"
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-        width="24"
-        xmlns="http://www.w3.org/2000/svg"
+      <div
+        class="flex items-center justify-center text-purple-400"
       >
-        <path
-          d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
-        />
-      </svg>
-      <span>
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-hexagon h-4 w-4 fill-current"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+          />
+        </svg>
+      </div>
+      <span
+        class="font-bold"
+      >
         Polygon
       </span>
     </div>
   </span>
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"
@@ -123,7 +135,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with disabled state 1
   aria-autocomplete="none"
   aria-controls="radix-_r_25_"
   aria-expanded="false"
-  class="flex items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 h-9 w-[200px]"
+  class="flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all h-10 py-2.5 border-zinc-800 bg-zinc-900/50 text-zinc-200 hover:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 w-[200px]"
   data-disabled=""
   data-state="closed"
   dir="ltr"
@@ -135,33 +147,39 @@ exports[`NetworkSelect - Snapshots > should match snapshot with disabled state 1
     style="pointer-events: none;"
   >
     <div
-      class="flex items-center gap-2"
+      class="flex items-center gap-2.5"
     >
-      <svg
-        aria-hidden="true"
-        class="lucide lucide-triangle h-4 w-4 text-blue-400 fill-current"
-        fill="none"
-        height="24"
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-        width="24"
-        xmlns="http://www.w3.org/2000/svg"
+      <div
+        class="flex items-center justify-center text-blue-400"
       >
-        <path
-          d="M13.73 4a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"
-        />
-      </svg>
-      <span>
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-triangle h-4 w-4 fill-current"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13.73 4a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"
+          />
+        </svg>
+      </div>
+      <span
+        class="font-bold"
+      >
         Arbitrum
       </span>
     </div>
   </span>
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"

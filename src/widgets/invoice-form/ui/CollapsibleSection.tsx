@@ -40,7 +40,7 @@ export function CollapsibleSection({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="group flex items-center gap-1.5 focus:outline-none"
+        className="group flex cursor-pointer items-center gap-1.5 focus:outline-none"
       >
         <div
           className={cn(

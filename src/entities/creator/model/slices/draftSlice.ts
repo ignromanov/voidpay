@@ -7,15 +7,25 @@
 
 import { v4 as uuidv4 } from 'uuid'
 import type { StateCreator } from 'zustand'
-import type { Address } from 'viem'
+import { isAddress, type Address } from 'viem'
 import {
   invoiceItemsToLineItems,
   type PartialInvoice,
   type DraftState,
   type LineItem,
+  type Invoice,
 } from '@/entities/invoice'
+import { generateInvoiceUrl } from '@/features/invoice-codec'
 import type { UserPreferences } from '../types'
 import type { CreatorStore } from './types'
+
+/**
+ * Sync status for draft updates (used by Live Preview badge)
+ * - idle: No pending changes
+ * - syncing: Changes are being debounced (user is typing)
+ * - synced: Changes have been written to store/localStorage
+ */
+export type DraftSyncStatus = 'idle' | 'syncing' | 'synced'
 
 /**
  * Draft Slice State
@@ -26,6 +36,16 @@ export interface DraftSlice {
 
   /** Line items for current draft (separate for UI with ids for React keys) */
   lineItems: LineItem[]
+
+  /** Sync status for Live Preview badge feedback */
+  draftSyncStatus: DraftSyncStatus
+
+  // ========== Sync Status ==========
+
+  /**
+   * Set draft sync status (called by useDebouncedDraftUpdate hook)
+   */
+  setDraftSyncStatus: (status: DraftSyncStatus) => void
 
   // ========== Draft Management ==========
 
@@ -99,7 +119,7 @@ function createDefaultDraft(
       invoiceId,
       issuedAt: nowUnix(),
       dueAt: daysFromNowUnix(30), // Default: 30 days from now
-      networkId: preferences.defaultNetworkId ?? 1,
+      networkId: preferences.defaultNetworkId ?? 42161, // Default: Arbitrum
       currency: preferences.defaultCurrency ?? 'USDC',
       decimals: 6, // Default for USDC
       from: {
@@ -127,7 +147,7 @@ function createDefaultLineItem(): LineItem {
     id: uuidv4(),
     description: '',
     quantity: 1,
-    rate: '0',
+    rate: '',
   }
 }
 
@@ -138,6 +158,13 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
   // ========== State ==========
   activeDraft: null,
   lineItems: [],
+  draftSyncStatus: 'idle',
+
+  // ========== Sync Status ==========
+
+  setDraftSyncStatus: (status) => {
+    set({ draftSyncStatus: status })
+  },
 
   // ========== Draft Management ==========
 

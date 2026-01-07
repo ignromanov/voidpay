@@ -44,7 +44,8 @@ interface PresetConfig {
 
 export const PRESET_CONFIGS: Record<ScalePreset, PresetConfig> = {
   demo: { maxScale: 1, scaleBy: 'fit', containerHeightClass: 'min-h-[75vh]' },
-  editor: { maxScale: 0.85, scaleBy: 'fit', containerHeightClass: 'h-full' },
+  // Editor: fit to container, allow full scale for maximum readability
+  editor: { maxScale: 1, scaleBy: 'fit', containerHeightClass: 'h-full' },
   // minScale 0.8 ensures readable text on mobile (635px width vs 516px at 0.65)
   modal: { maxScale: 1, minScale: 0.8, scaleBy: 'width', containerHeightClass: 'h-auto' },
 }

@@ -5,7 +5,7 @@ exports[`TokenSelect - Snapshots > should match snapshot with default state 1`] 
   aria-autocomplete="none"
   aria-controls="radix-_r_27_"
   aria-expanded="false"
-  class="flex items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 h-9 w-[200px]"
+  class="flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all h-10 py-2.5 border-zinc-800 bg-zinc-900/50 text-zinc-200 hover:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 w-[200px]"
   data-placeholder=""
   data-state="closed"
   dir="ltr"
@@ -17,7 +17,7 @@ exports[`TokenSelect - Snapshots > should match snapshot with default state 1`] 
   />
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"
@@ -40,7 +40,7 @@ exports[`TokenSelect - Snapshots > should match snapshot with selected token 1`]
   aria-autocomplete="none"
   aria-controls="radix-_r_2d_"
   aria-expanded="false"
-  class="flex items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 h-9 w-[200px]"
+  class="flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all h-10 py-2.5 border-zinc-800 bg-zinc-900/50 text-zinc-200 hover:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 w-[200px]"
   data-state="closed"
   dir="ltr"
   role="combobox"
@@ -50,23 +50,36 @@ exports[`TokenSelect - Snapshots > should match snapshot with selected token 1`]
     style="pointer-events: none;"
   >
     <div
-      class="flex items-center gap-2"
+      class="flex items-center gap-3"
     >
       <div
-        class="h-5 w-5 rounded-full bg-blue-500"
-      />
-      <div
-        class="flex items-center gap-1.5"
+        class="flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-bold shadow-sm bg-blue-500"
       >
-        <span>
-          USDC
+        U
+      </div>
+      <div
+        class="flex flex-col items-start"
+      >
+        <div
+          class="flex items-center gap-1.5"
+        >
+          <span
+            class="leading-none font-bold"
+          >
+            USDC
+          </span>
+        </div>
+        <span
+          class="mt-1 font-mono text-[10px] leading-none text-zinc-500"
+        >
+          0xa0b8...eb48
         </span>
       </div>
     </div>
   </span>
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"
@@ -89,7 +102,7 @@ exports[`TokenSelect - Snapshots > should match snapshot without custom token op
   aria-autocomplete="none"
   aria-controls="radix-_r_2j_"
   aria-expanded="false"
-  class="flex items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 h-9 w-[200px]"
+  class="flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all h-10 py-2.5 border-zinc-800 bg-zinc-900/50 text-zinc-200 hover:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 w-[200px]"
   data-placeholder=""
   data-state="closed"
   dir="ltr"
@@ -101,7 +114,7 @@ exports[`TokenSelect - Snapshots > should match snapshot without custom token op
   />
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"
