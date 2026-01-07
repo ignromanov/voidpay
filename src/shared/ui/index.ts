@@ -110,6 +110,12 @@ export { VoidLogo, type VoidLogoProps } from './void-logo'
 // AuroraText (feature: 011-brand-visual-components)
 export { AuroraText, type AuroraTextProps } from './aurora-text'
 
+// Switch (feature: 016-invoice-form-workspace)
+export { Switch, type SwitchProps } from './switch'
+
+// MobileTabBar (feature: 016-invoice-form-workspace)
+export { MobileTabBar, type MobileTabBarProps, type TabItem } from './mobile-tab-bar'
+
 // HyperText (feature: 011-brand-visual-components)
 export { HyperText, type HyperTextProps } from './hyper-text'
 
