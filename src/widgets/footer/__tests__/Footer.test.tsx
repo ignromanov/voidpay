@@ -8,7 +8,7 @@ describe('Footer', () => {
     it('renders the copyright text', () => {
       render(<Footer />)
 
-      expect(screen.getByText('© 2025 VoidPay')).toBeInTheDocument()
+      expect(screen.getByText('© 2026 VoidPay')).toBeInTheDocument()
     })
 
     it('renders privacy and terms links', () => {

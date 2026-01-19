@@ -19,7 +19,7 @@ export function Footer() {
       <div className="mx-auto flex h-10 max-w-7xl items-center justify-between px-4 text-xs text-zinc-400">
         {/* Left: Copyright */}
         <div className="flex items-center gap-3">
-          <span>© 2025 VoidPay</span>
+          <span>© 2026 VoidPay</span>
           <a href="/privacy" className="transition-colors hover:text-zinc-300">
             Privacy
           </a>
