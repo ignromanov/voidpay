@@ -31,17 +31,18 @@ export function AnalyticsToggle() {
   if (!hydrated) {
     return (
       <div className="flex items-center gap-1.5">
-        <span className="text-zinc-500">Analytics</span>
-        <div className="h-4 w-8 rounded-full bg-zinc-700" />
+        <span className="text-zinc-600">Analytics</span>
+        <div className="h-4 w-8 rounded-full bg-zinc-800" />
       </div>
     )
   }
 
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-zinc-500">Analytics</span>
+      <span className="text-zinc-600">Analytics</span>
       <Switch
         size="sm"
+        variant="subtle"
         checked={enabled}
         onCheckedChange={handleChange}
         aria-label={enabled ? 'Disable analytics tracking' : 'Enable analytics tracking'}

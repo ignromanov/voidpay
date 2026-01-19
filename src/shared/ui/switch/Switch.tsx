@@ -7,10 +7,22 @@ export interface SwitchProps extends Omit<ComponentPropsWithoutRef<'button'>, 'o
   checked?: boolean
   onCheckedChange?: (checked: boolean) => void
   size?: 'sm' | 'default'
+  variant?: 'default' | 'subtle'
 }
 
 export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
-  ({ checked = false, onCheckedChange, size = 'default', className, disabled, ...props }, ref) => {
+  (
+    {
+      checked = false,
+      onCheckedChange,
+      size = 'default',
+      variant = 'default',
+      className,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
     const handleClick = () => {
       if (!disabled && onCheckedChange) {
         onCheckedChange(!checked)
@@ -32,6 +44,21 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
 
     const { track, thumb, translate } = sizeClasses[size]
 
+    const variantClasses = {
+      default: {
+        checked: 'bg-violet-600',
+        unchecked: 'bg-zinc-700',
+        thumb: 'bg-white',
+      },
+      subtle: {
+        checked: 'bg-zinc-600',
+        unchecked: 'bg-zinc-800',
+        thumb: 'bg-zinc-400',
+      },
+    }
+
+    const { checked: checkedBg, unchecked: uncheckedBg, thumb: thumbBg } = variantClasses[variant]
+
     return (
       <button
         ref={ref}
@@ -44,7 +71,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
           track,
           'relative rounded-full transition-colors duration-200 ease-in-out',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900',
-          checked ? 'bg-violet-600' : 'bg-zinc-700',
+          checked ? checkedBg : uncheckedBg,
           disabled && 'cursor-not-allowed opacity-50',
           className
         )}
@@ -52,8 +79,9 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
       >
         <span
           className={cn(
-            'absolute top-0.5 left-0.5 rounded-full bg-white shadow-sm transition-transform duration-200',
+            'absolute top-0.5 left-0.5 rounded-full shadow-sm transition-transform duration-200',
             thumb,
+            thumbBg,
             checked ? translate : 'translate-x-0'
           )}
         />
