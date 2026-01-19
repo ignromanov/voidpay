@@ -1,0 +1,65 @@
+'use client'
+
+import { forwardRef, type ComponentPropsWithoutRef } from 'react'
+import { cn } from '@/shared/lib/utils'
+
+export interface SwitchProps extends Omit<ComponentPropsWithoutRef<'button'>, 'onChange'> {
+  checked?: boolean
+  onCheckedChange?: (checked: boolean) => void
+  size?: 'sm' | 'default'
+}
+
+export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
+  ({ checked = false, onCheckedChange, size = 'default', className, disabled, ...props }, ref) => {
+    const handleClick = () => {
+      if (!disabled && onCheckedChange) {
+        onCheckedChange(!checked)
+      }
+    }
+
+    const sizeClasses = {
+      sm: {
+        track: 'w-8 h-4',
+        thumb: 'w-3 h-3',
+        translate: 'translate-x-4',
+      },
+      default: {
+        track: 'w-10 h-5',
+        thumb: 'w-4 h-4',
+        translate: 'translate-x-5',
+      },
+    }
+
+    const { track, thumb, translate } = sizeClasses[size]
+
+    return (
+      <button
+        ref={ref}
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        disabled={disabled}
+        onClick={handleClick}
+        className={cn(
+          track,
+          'relative rounded-full transition-colors duration-200 ease-in-out',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900',
+          checked ? 'bg-violet-600' : 'bg-zinc-700',
+          disabled && 'cursor-not-allowed opacity-50',
+          className
+        )}
+        {...props}
+      >
+        <span
+          className={cn(
+            'absolute top-0.5 left-0.5 rounded-full bg-white shadow-sm transition-transform duration-200',
+            thumb,
+            checked ? translate : 'translate-x-0'
+          )}
+        />
+      </button>
+    )
+  }
+)
+
+Switch.displayName = 'Switch'

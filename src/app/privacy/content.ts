@@ -38,7 +38,8 @@ export const privacyContent = {
         { label: 'User accounts', description: 'we have no registration or authentication' },
         {
           label: 'Analytics or telemetry',
-          description: 'no Google Analytics, no Sentry, no tracking pixels',
+          description:
+            'we use privacy-focused Umami analytics on the landing page only — you can opt out via the footer toggle. No data is collected on /create or /pay pages',
         },
         { label: 'Cookies for tracking', description: 'we use no cookies whatsoever' },
       ],

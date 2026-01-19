@@ -11,6 +11,7 @@
 
 import { Github, Twitter } from 'lucide-react'
 
+import { AnalyticsToggle } from '@/features/analytics'
 import { SOCIAL_URLS } from '@/shared/config'
 
 export function Footer() {
@@ -26,6 +27,8 @@ export function Footer() {
           <a href="/terms" className="transition-colors hover:text-zinc-300">
             Terms
           </a>
+          <span className="text-zinc-600">|</span>
+          <AnalyticsToggle />
         </div>
 
         {/* Right: Social + Contact */}
