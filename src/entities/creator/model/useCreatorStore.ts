@@ -221,12 +221,13 @@ export const useCreatorStore = create<CreatorStore>()(
     {
       name: CREATOR_STORE_KEY,
       storage: createJSONStorage(() => ({
+        // Note: createJSONStorage handles JSON.parse/stringify internally
+        // Custom storage should return raw strings, not parsed objects
         getItem: (name) => {
           // SSR guard: localStorage is not available on server
           if (typeof window === 'undefined') return null
           try {
-            const value = localStorage.getItem(name)
-            return value ? JSON.parse(value) : null
+            return localStorage.getItem(name)
           } catch (error) {
             console.warn('[CreatorStore] Failed to read from localStorage:', error)
             return null
@@ -236,7 +237,7 @@ export const useCreatorStore = create<CreatorStore>()(
           // SSR guard: localStorage is not available on server
           if (typeof window === 'undefined') return
           try {
-            localStorage.setItem(name, JSON.stringify(value))
+            localStorage.setItem(name, value)
           } catch (error) {
             // Handle quota exceeded and other storage errors
             if (error instanceof DOMException && error.name === 'QuotaExceededError') {
