@@ -64,6 +64,35 @@ const migrate = (persistedState: any, version: number): Partial<CreatorStore> =>
       persistedStateKeys: Object.keys(persistedState ?? {}),
     })
 
+    // Try to backup corrupted data before losing it
+    if (typeof window !== 'undefined' && persistedState) {
+      try {
+        const backupKey = `${CREATOR_STORE_KEY}:backup`
+        const backupData = JSON.stringify({
+          data: persistedState,
+          backupAt: new Date().toISOString(),
+          reason: 'migration-failed',
+          version,
+        })
+        localStorage.setItem(backupKey, backupData)
+      } catch {
+        // Backup failure shouldn't break the app
+      }
+    }
+
+    // Dispatch event for UI to handle
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('store-migration-failed', {
+          detail: {
+            store: 'creator',
+            version,
+            error: error instanceof Error ? error.message : String(error),
+          },
+        })
+      )
+    }
+
     // Return initial state for data corruption
     return initialState
   }
@@ -241,9 +270,23 @@ export const useCreatorStore = create<CreatorStore>()(
           } catch (error) {
             // Handle quota exceeded and other storage errors
             if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-              console.warn('[CreatorStore] localStorage quota exceeded. Draft auto-save disabled.')
+              console.error('[CreatorStore] localStorage quota exceeded. Draft auto-save disabled.')
+              window.dispatchEvent(
+                new CustomEvent('storage-quota-exceeded', {
+                  detail: { store: 'creator', key: name },
+                })
+              )
             } else {
-              console.warn('[CreatorStore] Failed to write to localStorage:', error)
+              console.error('[CreatorStore] Failed to write to localStorage:', error)
+              window.dispatchEvent(
+                new CustomEvent('storage-write-failed', {
+                  detail: {
+                    store: 'creator',
+                    key: name,
+                    error: error instanceof Error ? error.message : String(error),
+                  },
+                })
+              )
             }
           }
         },
@@ -261,7 +304,17 @@ export const useCreatorStore = create<CreatorStore>()(
       migrate,
       onRehydrateStorage: () => (state, error) => {
         if (error) {
-          console.warn('[CreatorStore] Failed to rehydrate store:', error)
+          console.error('[CreatorStore] Failed to rehydrate store:', error)
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('store-rehydration-failed', {
+                detail: {
+                  store: 'creator',
+                  error: error instanceof Error ? error.message : String(error),
+                },
+              })
+            )
+          }
         }
       },
       // Partialize: only persist these fields (excludes transient UI state like networkTheme)

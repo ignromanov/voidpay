@@ -41,7 +41,12 @@ export function useFormValidation(draft: DraftState | null, lineItems: LineItem[
         try {
           const rateBigInt = BigInt(item.rate || '0')
           return rateBigInt > BigInt(0)
-        } catch {
+        } catch (error) {
+          console.warn('[useFormValidation] Invalid rate format:', {
+            itemId: item.id,
+            rate: item.rate,
+            error: error instanceof Error ? error.message : 'Unknown',
+          })
           return false
         }
       })
@@ -94,7 +99,12 @@ export function useFormValidation(draft: DraftState | null, lineItems: LineItem[
           try {
             const rateBigInt = BigInt(item.rate || '0')
             return rateBigInt > BigInt(0)
-          } catch {
+          } catch (error) {
+            console.warn('[useFormValidation] Invalid rate format:', {
+              itemId: item.id,
+              rate: item.rate,
+              error: error instanceof Error ? error.message : 'Unknown',
+            })
             return false
           }
         }),

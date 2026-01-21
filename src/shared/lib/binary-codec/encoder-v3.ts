@@ -209,6 +209,15 @@ export function encodeBinaryV3(invoice: Invoice): string {
         error: error instanceof Error ? error.message : 'Unknown error',
         originalLength: rawTextBytes.length,
       })
+
+      // Check if uncompressed size exceeds safe limit (1500 bytes leaves room for binary header + Base62 overhead)
+      const SAFE_UNCOMPRESSED_LIMIT = 1500
+      if (rawTextBytes.length > SAFE_UNCOMPRESSED_LIMIT) {
+        throw new Error(
+          'Invoice data is too large and compression failed. Please reduce notes or item descriptions.'
+        )
+      }
+
       finalTextBytes = rawTextBytes
     }
   } else {

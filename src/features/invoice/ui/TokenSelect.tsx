@@ -11,7 +11,7 @@ import {
 } from '@/shared/ui/select'
 import { NETWORK_TOKENS, type TokenInfo } from '../model/tokens'
 import { cn } from '@/shared/lib/utils'
-import { useTokenMetadata } from '@/entities/token/lib/use-token-metadata'
+import { useTokenMetadata } from '@/entities/token'
 import { Input } from '@/shared/ui/input'
 import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'

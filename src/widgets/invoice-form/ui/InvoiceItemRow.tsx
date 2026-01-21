@@ -53,16 +53,19 @@ export function InvoiceItemRow({
         return
       }
 
+      // Try to clean pasted values like "$150.00" or "150,00"
+      const cleaned = value.replace(/[$€£]/g, '').replace(',', '.')
+
       // Validate input format (allow numbers with optional decimal)
-      if (!/^\d*\.?\d*$/.test(value)) {
+      if (!/^\d*\.?\d*$/.test(cleaned)) {
         return // Reject invalid input
       }
 
-      // Update local input state
-      setRateInput(value)
+      // Update local input state with cleaned value
+      setRateInput(cleaned)
 
       // Convert to atomic units and update parent
-      const atomicRate = parseAmount(value, decimals)
+      const atomicRate = parseAmount(cleaned, decimals)
       onUpdate({ rate: atomicRate })
     },
     [decimals, onUpdate]

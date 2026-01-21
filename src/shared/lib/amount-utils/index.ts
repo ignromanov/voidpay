@@ -38,8 +38,12 @@ export function parseAmount(humanAmount: string, decimals: number): string {
   try {
     const atomic = parseUnits(trimmed, decimals)
     return atomic.toString()
-  } catch {
-    // Invalid input - return '0'
+  } catch (error) {
+    console.error('[parseAmount] Failed to parse amount:', {
+      humanAmount,
+      decimals,
+      error: error instanceof Error ? error.message : String(error),
+    })
     return '0'
   }
 }
@@ -96,7 +100,12 @@ export function formatAmount(
       maximumFractionDigits: Math.min(effectiveDecimals, tokenDecimals),
       useGrouping,
     })
-  } catch {
+  } catch (error) {
+    console.error('[formatAmount] Failed to format amount:', {
+      atomicAmount,
+      tokenDecimals,
+      error: error instanceof Error ? error.message : String(error),
+    })
     return '0.00'
   }
 }

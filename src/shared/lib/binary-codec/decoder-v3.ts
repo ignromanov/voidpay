@@ -158,7 +158,16 @@ export function decodeBinaryV3(encoded: string): Invoice {
       // Key improvement: pako.inflate expects raw Uint8Array and returns raw Uint8Array
       rawTextBytes = pako.inflate(textDataBytes)
     } catch (error) {
-      throw new Error('Failed to decompress text data: ' + (error as Error).message)
+      // Log details for debugging before throwing user-friendly error
+      console.error('[decoder-v3] Text decompression failed:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        textDataLength: textDataBytes.length,
+        flags: flags.toString(2).padStart(16, '0'),
+        isCompressedFlag: Boolean(flags & OptionalFields.TEXT_COMPRESSED),
+      })
+      throw new Error(
+        'Failed to decode invoice: data may be corrupted or incomplete. Please request a new invoice link.'
+      )
     }
   } else {
     rawTextBytes = textDataBytes
