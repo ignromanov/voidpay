@@ -8,7 +8,7 @@ import type { SVGProps } from 'react'
 
 import { ArrowRight } from 'lucide-react'
 
-import { Heading, Text } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui/typography'
 
 import { WORKFLOW_STEPS } from '../constants/features'
 

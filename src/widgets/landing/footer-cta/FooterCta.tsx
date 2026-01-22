@@ -11,7 +11,9 @@ import { Github, Twitter } from 'lucide-react'
 import Link from 'next/link'
 
 import { SOCIAL_URLS } from '@/shared/config'
-import { AuroraText, Button, Heading, Text } from '@/shared/ui'
+import { AuroraText } from '@/shared/ui/aurora-text'
+import { Button } from '@/shared/ui/button'
+import { Heading, Text } from '@/shared/ui/typography'
 
 export function FooterCta() {
   return (

@@ -1,9 +1,12 @@
 'use client'
 
+import { useCallback } from 'react'
 import { Image as ImageIcon, HelpCircle } from 'lucide-react'
+import { useShallow } from 'zustand/shallow'
 
 import { useCreatorStore } from '@/entities/creator'
-import { Switch, Text } from '@/shared/ui'
+import { Switch } from '@/shared/ui/switch'
+import { Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
 
 export interface OgImageCheckboxProps {
@@ -20,12 +23,20 @@ export interface OgImageCheckboxProps {
  * Persisted via preferencesSlice.includeOgImage in localStorage.
  */
 export function OgImageCheckbox({ className }: OgImageCheckboxProps) {
-  const includeOgImage = useCreatorStore((s) => s.preferences.includeOgImage ?? true)
-  const updatePreferences = useCreatorStore((s) => s.updatePreferences)
+  // Use shallow comparison to prevent re-renders from unrelated preference changes
+  const { includeOgImage, updatePreferences } = useCreatorStore(
+    useShallow((s) => ({
+      includeOgImage: s.preferences.includeOgImage ?? true,
+      updatePreferences: s.updatePreferences,
+    }))
+  )
 
-  const handleChange = (enabled: boolean) => {
-    updatePreferences({ includeOgImage: enabled })
-  }
+  const handleChange = useCallback(
+    (enabled: boolean) => {
+      updatePreferences({ includeOgImage: enabled })
+    },
+    [updatePreferences]
+  )
 
   return (
     <div className={cn('rounded-lg border border-zinc-800/50 bg-zinc-900/50 p-3', className)}>

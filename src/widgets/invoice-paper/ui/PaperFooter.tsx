@@ -1,6 +1,6 @@
 import React from 'react'
 import { APP_URLS } from '@/shared/config'
-import { VoidLogo } from '@/shared/ui'
+import { VoidLogo } from '@/shared/ui/void-logo'
 
 interface PaperFooterProps {
   notes?: string | undefined

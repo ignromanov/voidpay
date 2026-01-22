@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { Trash2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
-import { Button } from '@/shared/ui'
+import { Button } from '@/shared/ui/button'
 import { type LineItem, FIELD_LIMITS } from '@/shared/lib/invoice-types'
 import { parseAmount, formatAmount } from '@/shared/lib/amount-utils'
 

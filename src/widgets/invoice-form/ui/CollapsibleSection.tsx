@@ -1,10 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronUp, Plus } from 'lucide-react'
 
-import { Text } from '@/shared/ui'
+import { Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
 
 export interface CollapsibleSectionProps {
@@ -17,7 +16,8 @@ export interface CollapsibleSectionProps {
 /**
  * CollapsibleSection Component
  *
- * Expandable section with smooth Framer Motion animations.
+ * Expandable section with smooth CSS animations (no Framer Motion).
+ * Uses the grid-template-rows trick for animating height to/from auto.
  * Used for optional fields in InvoiceForm (contact info, notes).
  *
  * @example
@@ -41,6 +41,7 @@ export function CollapsibleSection({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="group flex cursor-pointer items-center gap-1.5 focus:outline-none"
+        aria-expanded={isOpen}
       >
         <div
           className={cn(
@@ -61,18 +62,17 @@ export function CollapsibleSection({
           {title}
         </Text>
       </button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="space-y-4 overflow-hidden pt-1 pl-1"
-          >
-            {children}
-          </motion.div>
+      {/* CSS grid-template-rows animation: 0fr → 1fr enables height: auto animation */}
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows,opacity] duration-200 ease-out',
+          isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
         )}
-      </AnimatePresence>
+      >
+        <div className="overflow-hidden">
+          <div className="space-y-4 pt-1 pl-1">{children}</div>
+        </div>
+      </div>
     </div>
   )
 }

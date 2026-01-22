@@ -56,14 +56,26 @@ export const ALL_CHAIN_IDS = [
 ] as const
 
 /**
+ * Pre-computed Set for O(1) testnet chain ID lookup
+ */
+const TESTNET_CHAIN_IDS_SET = new Set<number>(SUPPORTED_CHAIN_IDS.testnet)
+
+/**
+ * Pre-computed Map for O(1) chain lookup by ID
+ */
+const CHAIN_BY_ID = new Map<number, Chain>(
+  [...MAINNET_CHAINS, ...TESTNET_CHAINS].map((chain) => [chain.id, chain])
+)
+
+/**
  * Get a chain by its ID
+ * Uses pre-computed Map for O(1) lookup instead of O(n) array search
  *
  * @param chainId - The chain ID to look up
  * @returns The chain configuration or undefined if not found
  */
 export function getChainById(chainId: number): Chain | undefined {
-  const allChains = [...MAINNET_CHAINS, ...TESTNET_CHAINS]
-  return allChains.find((chain) => chain.id === chainId)
+  return CHAIN_BY_ID.get(chainId)
 }
 
 /**
@@ -86,12 +98,13 @@ export function getSupportedChains(): [Chain, ...Chain[]] {
 
 /**
  * Check if a chain ID is a testnet
+ * Uses pre-computed Set for O(1) lookup instead of O(n) array includes
  *
  * @param chainId - The chain ID to check
  * @returns True if the chain is a testnet
  */
 export function isTestnetChain(chainId: number): boolean {
-  return (SUPPORTED_CHAIN_IDS.testnet as readonly number[]).includes(chainId)
+  return TESTNET_CHAIN_IDS_SET.has(chainId)
 }
 
 /**

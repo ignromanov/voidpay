@@ -1,9 +1,12 @@
 'use client'
 
+import { useCallback } from 'react'
 import { Fingerprint, AlertCircle } from 'lucide-react'
+import { useShallow } from 'zustand/shallow'
 
 import { useCreatorStore } from '@/entities/creator'
-import { Switch, Text } from '@/shared/ui'
+import { Switch } from '@/shared/ui/switch'
+import { Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
 
 export interface MagicDustToggleProps {
@@ -20,12 +23,20 @@ export interface MagicDustToggleProps {
  * Persisted via preferencesSlice.magicDustEnabled in localStorage.
  */
 export function MagicDustToggle({ className }: MagicDustToggleProps) {
-  const magicDustEnabled = useCreatorStore((s) => s.preferences.magicDustEnabled ?? true)
-  const updatePreferences = useCreatorStore((s) => s.updatePreferences)
+  // Use shallow comparison to prevent re-renders from unrelated preference changes
+  const { magicDustEnabled, updatePreferences } = useCreatorStore(
+    useShallow((s) => ({
+      magicDustEnabled: s.preferences.magicDustEnabled ?? true,
+      updatePreferences: s.updatePreferences,
+    }))
+  )
 
-  const setMagicDustEnabled = (enabled: boolean) => {
-    updatePreferences({ magicDustEnabled: enabled })
-  }
+  const setMagicDustEnabled = useCallback(
+    (enabled: boolean) => {
+      updatePreferences({ magicDustEnabled: enabled })
+    },
+    [updatePreferences]
+  )
 
   return (
     <div className={cn('rounded-lg border border-zinc-800/50 bg-zinc-900/50 p-3', className)}>

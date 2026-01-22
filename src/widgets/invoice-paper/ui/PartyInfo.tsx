@@ -1,14 +1,8 @@
 import React from 'react'
 import { PartialParty, PartialClient } from '@/entities/invoice'
-import {
-  CopyButton,
-  MailIcon,
-  PhoneIcon,
-  MapPinIcon,
-  WalletIcon,
-  HashIcon,
-  AddressAvatar,
-} from '@/shared/ui'
+import { CopyButton } from '@/shared/ui/copy-button'
+import { AddressAvatar } from '@/shared/ui/address-avatar'
+import { MailIcon, PhoneIcon, MapPinIcon, WalletIcon, HashIcon } from '@/shared/ui/icons'
 import { cn } from '@/shared/lib/utils'
 import { InvoicePaperVariant } from '../types'
 import { isAddress } from 'viem'
