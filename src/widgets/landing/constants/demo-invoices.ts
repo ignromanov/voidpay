@@ -38,7 +38,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
       decimals: 18,
       from: {
         name: 'EtherScale Solutions',
-        walletAddress: '0x0000000000000000000000000000000000000001',
+        walletAddress: '0xdead000000000000000000000000000000000001',
         email: 'billing@etherscale.io',
         physicalAddress: '548 Market St, Suite 23000\nSan Francisco, CA 94104\nUSA',
         phone: '+1 415 555 0142',
@@ -46,7 +46,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
       },
       client: {
         name: 'DeFi Frontiers DAO',
-        walletAddress: '0x0000000000000000000000000000000000000002',
+        walletAddress: '0xbeeF000000000000000000000000000000000002',
         email: 'treasury@defifrontiers.xyz',
         physicalAddress: 'c/o Legal Entity\n123 Blockchain Ave\nZug, Switzerland',
         phone: '+41 41 555 0198',
@@ -80,14 +80,14 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
       decimals: 6,
       from: {
         name: 'L2 Design Studio',
-        walletAddress: '0x0000000000000000000000000000000000000003',
+        walletAddress: '0xcAFe000000000000000000000000000000000003',
         email: 'invoices@l2design.studio',
         physicalAddress: '789 Creative Blvd, Unit 4\nAustin, TX 78701\nUSA',
         phone: '+1 512 555 0177',
       },
       client: {
         name: 'ArbGaming Inc.',
-        walletAddress: '0x0000000000000000000000000000000000000004',
+        walletAddress: '0xFaCE000000000000000000000000000000000004',
         email: 'payments@arbgaming.io',
         physicalAddress: '456 Gaming Tower, Floor 12\nSingapore 018956',
         phone: '+65 6555 0234',
@@ -123,7 +123,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
       decimals: 18,
       from: {
         name: 'Optimistic Builders Collective',
-        walletAddress: '0x4200000000000000000000000000000000000006',
+        walletAddress: '0xBABe000000000000000000000000000000000005',
         email: 'grants@optimisticbuilders.org',
         physicalAddress: '1 Public Goods Way\nOptimism City, OP 10001\nDecentralized',
         phone: '+1 800 OPT GOOD',
@@ -131,7 +131,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
       },
       client: {
         name: 'RetroPGF Foundation',
-        walletAddress: '0x2501c477D0A35545a387Aa4A3EEe4292A9a8B3F0',
+        walletAddress: '0xC0DE000000000000000000000000000000000006',
         email: 'disbursements@retropgf.eth',
         physicalAddress: 'Optimism Foundation\n123 Collective Drive\nRemote',
         phone: '+1 888 555 0100',
@@ -165,7 +165,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
       decimals: 6,
       from: {
         name: 'PolyMarket Analytics Ltd.',
-        walletAddress: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
+        walletAddress: '0xf00D000000000000000000000000000000000007',
         email: 'billing@polymarketanalytics.com',
         physicalAddress: '42 Data Center Road\nMumbai, Maharashtra 400001\nIndia',
         phone: '+91 22 5555 0456',
@@ -173,7 +173,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
       },
       client: {
         name: 'Prediction Protocol DAO',
-        walletAddress: '0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6',
+        walletAddress: '0xfEED000000000000000000000000000000000008',
         email: 'finance@predictiondao.io',
         physicalAddress: 'DAO Multisig\nGlobal Decentralized Network',
         phone: '+44 20 5555 0789',
