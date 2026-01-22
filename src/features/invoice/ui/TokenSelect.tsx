@@ -17,22 +17,8 @@ import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'
 import { TokenIcon } from '@/shared/ui/token-icon'
 import { Loader2, Search, AlertCircle } from 'lucide-react'
-import { type Address, isAddressEqual } from 'viem'
-
-/**
- * Compare token addresses (case-insensitive)
- * Handles null (native token) and checksummed addresses
- */
-function addressesMatch(a: string | null | undefined, b: string | null | undefined): boolean {
-  if (a === null && b === null) return true
-  if (a === undefined && b === undefined) return true
-  if (!a || !b) return false
-  try {
-    return isAddressEqual(a as Address, b as Address)
-  } catch {
-    return false
-  }
-}
+import { addressesMatch } from '@/shared/lib/validation'
+import { type Address } from 'viem'
 
 /**
  * TokenSelect Component Props
