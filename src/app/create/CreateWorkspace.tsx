@@ -124,13 +124,14 @@ export function CreateWorkspace() {
         />
       )}
 
-      {/* Mobile Tab Bar */}
-      <div className="lg:hidden sticky top-0 z-20 px-4 pt-4">
+      {/* Mobile Tab Bar - fixed above footer (h-10 = 40px), outside document flow */}
+      <div className="lg:hidden fixed bottom-12 left-0 right-0 z-30 px-4">
         <MobileTabBar tabs={tabs} activeTab={mobileTab} onTabChange={setMobileTab} />
       </div>
 
       {/* Main Workspace Container - form and invoice centered together */}
-      <div className="mx-auto flex h-[calc(100vh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 lg:py-6 print:h-auto print:max-w-none print:overflow-visible print:p-0">
+      {/* Mobile: pb-20 accounts for fixed tab bar (56px + safe area) */}
+      <div className="mx-auto flex h-[calc(100vh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 pb-20 lg:pb-6 lg:py-6 print:h-auto print:max-w-none print:overflow-visible print:p-0">
         {/* LEFT: Editor Pane (form sticks to invoice) */}
         <Card
           variant="glass"

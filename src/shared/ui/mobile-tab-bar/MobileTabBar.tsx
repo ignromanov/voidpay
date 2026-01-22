@@ -20,7 +20,8 @@ export function MobileTabBar({ tabs, activeTab, onTabChange, className }: Mobile
   return (
     <div
       className={cn(
-        'sticky top-0 z-20 mx-auto mb-4 flex w-full max-w-xl rounded-xl border border-zinc-800 bg-zinc-900/50 p-1 backdrop-blur-md lg:hidden',
+        // Positioning handled by parent (fixed/sticky) - this is just the visual container
+        'mx-auto mb-2 flex w-full max-w-xl rounded-xl border border-zinc-800 bg-zinc-900/80 p-1 shadow-lg backdrop-blur-md lg:hidden',
         className
       )}
     >
