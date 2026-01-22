@@ -29,7 +29,7 @@ export function MobileTabBar({ tabs, activeTab, onTabChange, className }: Mobile
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
           className={cn(
-            'flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-bold transition-all',
+            'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-2 text-sm font-bold transition-all',
             activeTab === tab.id
               ? 'bg-zinc-800 text-white shadow-sm'
               : 'text-zinc-500 hover:text-zinc-300'

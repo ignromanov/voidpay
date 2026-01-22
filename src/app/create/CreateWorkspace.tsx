@@ -169,9 +169,9 @@ export function CreateWorkspace() {
         {/* RIGHT: Preview Pane - stretches to fill available height */}
         <div
           className={cn(
-            'relative flex items-center justify-center print:hidden',
-            // Fill height from parent (items-stretch), min-width for invoice
-            'h-full min-w-[320px] sm:min-w-[400px] lg:min-w-[480px]',
+            'relative flex items-start justify-center print:hidden',
+            // Fill available space, let ScaledInvoicePreview handle sizing
+            'h-full min-w-[300px] sm:min-w-[400px] lg:min-w-[580px]',
             // Same padding as form (p-4 sm:p-5 lg:p-6)
             'p-4 sm:p-5 lg:p-6',
             mobileTab === 'editor' ? 'hidden lg:flex' : 'flex'
@@ -207,7 +207,7 @@ export function CreateWorkspace() {
           </ScaledInvoicePreview>
 
           {/* Floating Live Preview badge with sync status */}
-          <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none">
+          <div className="absolute bottom-6 sm:bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none">
             <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
               {SYNC_STATUS_CONFIG[draftSyncStatus].icon === 'loader' ? (
                 <Loader2 className="h-3 w-3 animate-spin text-amber-500" />
