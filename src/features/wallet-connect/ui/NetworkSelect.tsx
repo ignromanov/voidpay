@@ -65,8 +65,8 @@ export function NetworkSelect({
       <SelectTrigger variant="glass" className={cn('w-[200px]', className)}>
         <SelectValue>
           {selectedNetwork && (
-            <div className="flex items-center gap-2.5">
-              <NetworkIcon chainId={selectedNetwork.chainId} size={20} />
+            <div className="flex items-center gap-3">
+              <NetworkIcon chainId={selectedNetwork.chainId} size={24} />
               <span className="font-bold">{selectedNetwork.name}</span>
             </div>
           )}
@@ -76,7 +76,7 @@ export function NetworkSelect({
         {NETWORK_CONFIG.map((network) => (
           <SelectItem key={network.chainId} value={network.chainId.toString()}>
             <div className="flex items-center gap-2">
-              <NetworkIcon chainId={network.chainId} size={20} />
+              <NetworkIcon chainId={network.chainId} size={24} />
               <span>{network.name}</span>
             </div>
           </SelectItem>
