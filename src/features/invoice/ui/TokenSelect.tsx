@@ -17,7 +17,22 @@ import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'
 import { TokenIcon } from '@/shared/ui/token-icon'
 import { Loader2, Search, AlertCircle } from 'lucide-react'
-import { type Address } from 'viem'
+import { type Address, isAddressEqual } from 'viem'
+
+/**
+ * Compare token addresses (case-insensitive)
+ * Handles null (native token) and checksummed addresses
+ */
+function addressesMatch(a: string | null | undefined, b: string | null | undefined): boolean {
+  if (a === null && b === null) return true
+  if (a === undefined && b === undefined) return true
+  if (!a || !b) return false
+  try {
+    return isAddressEqual(a as Address, b as Address)
+  } catch {
+    return false
+  }
+}
 
 /**
  * TokenSelect Component Props
@@ -97,7 +112,7 @@ export function TokenSelect({
 
       try {
         const { symbol, address } = JSON.parse(value)
-        const token = availableTokens.find((t) => t.symbol === symbol && t.address === address)
+        const token = availableTokens.find((t) => t.symbol === symbol && addressesMatch(t.address, address))
         return token || null
       } catch {
         return null
@@ -144,9 +159,9 @@ export function TokenSelect({
 
   const selectedValue = serializeToken(value)
 
-  // Check if current value is a custom token
+  // Check if current value is a custom token (case-insensitive address comparison)
   const isCustomToken =
-    value && !availableTokens.find((t) => t.symbol === value.symbol && t.address === value.address)
+    value && !availableTokens.find((t) => t.symbol === value.symbol && addressesMatch(t.address, value.address))
 
   if (isCustomMode) {
     return (

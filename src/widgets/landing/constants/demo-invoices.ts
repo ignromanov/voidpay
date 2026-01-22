@@ -25,7 +25,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
       'https://voidpay.xyz/pay?d=N4IgZglgNgpgziAXKADgQwE4GMAWBaEaRGBNAGhDQwDsVcQBrAeQCUQBfAXUJKpAGNEyACYB7FABsALgDVaYgJoCSLdgE8+AwcNESpMuUq59BQkWvlSZauPIBMzNBizsGLMxxQAVB',
     createdAt: '2024-01-01T12:00:00.000Z',
     status: 'paid',
-    txHash: '0xabc123def456789abc123def456789abc123def456789abc123def456789abc1',
+    txHash: '0x0000000000000000000000000000000000000000000000000000000000000001',
     txHashValidated: true,
     data: {
       version: 2,
@@ -38,7 +38,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
       decimals: 18,
       from: {
         name: 'EtherScale Solutions',
-        walletAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
+        walletAddress: '0x0000000000000000000000000000000000000001',
         email: 'billing@etherscale.io',
         physicalAddress: '548 Market St, Suite 23000\nSan Francisco, CA 94104\nUSA',
         phone: '+1 415 555 0142',
@@ -46,7 +46,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
       },
       client: {
         name: 'DeFi Frontiers DAO',
-        walletAddress: '0x2546BcD3c84621e976D8185a91A922aE77ECEc30',
+        walletAddress: '0x0000000000000000000000000000000000000002',
         email: 'treasury@defifrontiers.xyz',
         physicalAddress: 'c/o Legal Entity\n123 Blockchain Ave\nZug, Switzerland',
         phone: '+41 41 555 0198',
@@ -80,14 +80,14 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
       decimals: 6,
       from: {
         name: 'L2 Design Studio',
-        walletAddress: '0x3B5c26914569BdF2c8D4e27f0701831F41028751',
+        walletAddress: '0x0000000000000000000000000000000000000003',
         email: 'invoices@l2design.studio',
         physicalAddress: '789 Creative Blvd, Unit 4\nAustin, TX 78701\nUSA',
         phone: '+1 512 555 0177',
       },
       client: {
         name: 'ArbGaming Inc.',
-        walletAddress: '0x99283928B108B736021319727B2B4dD600021c2B',
+        walletAddress: '0x0000000000000000000000000000000000000004',
         email: 'payments@arbgaming.io',
         physicalAddress: '456 Gaming Tower, Floor 12\nSingapore 018956',
         phone: '+65 6555 0234',
@@ -109,7 +109,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
       'https://voidpay.xyz/pay?d=N4IgZglgNgpgziAXKADgQwE4GMAWBaEaRGBNAGhDQwDsVcQBrAeQCUQBfAXUJKpAGNEyACYB7FABsALgDVaYgJoCSLdgE8+AwcNESpMuUq59BQkWvlSZauPIBMzNBizsGLMxxQAVD',
     createdAt: '2024-01-06T14:15:00.000Z',
     status: 'paid',
-    txHash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+    txHash: '0x0000000000000000000000000000000000000000000000000000000000000002',
     txHashValidated: false, // Shows warning indicator
     data: {
       version: 2,
