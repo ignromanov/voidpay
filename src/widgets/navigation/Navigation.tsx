@@ -13,8 +13,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Plus, Github, ShieldAlert } from 'lucide-react'
-import { SOCIAL_URLS } from '@/shared/config'
+import { Plus, ShieldAlert } from 'lucide-react'
 import { VoidLogo } from '@/shared/ui/void-logo'
 import { Button } from '@/shared/ui/button'
 import { LazyWalletButton as WalletButton } from '@/features/wallet-connect'
@@ -37,56 +36,47 @@ export function Navigation() {
             <span className="text-lg font-semibold text-zinc-50">VoidPay</span>
           </Link>
 
-          {/* Center Navigation */}
-          <div className="flex items-center gap-1">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-zinc-800 text-zinc-50'
-                      : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-50'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
+          {/* Center Navigation - Dev only */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="flex items-center gap-1">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-zinc-800 text-zinc-50'
+                        : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-50'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              })}
 
-            {/* Blocked link with warning style */}
-            <a
-              href="#"
-              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-zinc-800/50 hover:text-red-300"
-            >
-              <ShieldAlert className="h-4 w-4" />
-              Blocked
-            </a>
+              {/* Blocked link with warning style */}
+              <a
+                href="#"
+                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-zinc-800/50 hover:text-red-300"
+              >
+                <ShieldAlert className="h-4 w-4" />
+                Blocked
+              </a>
 
-            {/* Separator */}
-            <div className="mx-2 h-6 w-px bg-zinc-800" />
+              {/* Separator */}
+              <div className="mx-2 h-6 w-px bg-zinc-800" />
 
-            {/* Create Button */}
-            <Link href="/create">
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <Plus className="h-4 w-4" />
-                Create
-              </Button>
-            </Link>
-
-            {/* GitHub Link */}
-            <a
-              href={SOCIAL_URLS.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="GitHub repository"
-              className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-800/50 hover:text-zinc-50"
-            >
-              <Github className="h-5 w-5" />
-            </a>
-          </div>
+              {/* Create Button */}
+              <Link href="/create">
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <Plus className="h-4 w-4" />
+                  Create
+                </Button>
+              </Link>
+            </div>
+          )}
 
           {/* Connect Wallet Button */}
           <WalletButton />

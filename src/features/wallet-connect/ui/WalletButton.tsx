@@ -14,7 +14,7 @@
 
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { Wallet, ChevronDown } from 'lucide-react'
-import { Button } from '@/shared/ui'
+import { Button } from '@/shared/ui/button'
 
 export function WalletButton() {
   return (

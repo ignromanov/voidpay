@@ -1,12 +1,15 @@
 import React, { useMemo } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { Hexagon, Hash, ExternalLink, AlertTriangle } from 'lucide-react'
+import { Hash, ExternalLink, AlertTriangle } from 'lucide-react'
 import { formatShortAddress } from '../lib/format'
-import { NETWORK_BADGES } from '@/entities/network'
 import { getExplorerUrl, getNetworkName } from '@/entities/network'
 import { APP_URLS } from '@/shared/config'
 import { cn } from '@/shared/lib/utils'
-import { CopyButton } from '@/shared/ui'
+import { CopyButton } from '@/shared/ui/copy-button'
+import { NetworkIcon } from '@/shared/ui/network-icon'
+import { TokenIcon } from '@/shared/ui/token-icon'
+import { AddressAvatar } from '@/shared/ui/address-avatar'
+import { isAddress } from 'viem'
 import { InvoicePaperVariant, InvoiceStatus } from '../types'
 
 interface PaymentInfoProps {
@@ -59,15 +62,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
       return typeof window !== 'undefined' ? window.location.href : APP_URLS.base
     }, [invoiceUrl])
 
-    const badgeConfig = NETWORK_BADGES[networkId] || {
-      variant: 'outline' as const,
-      colorClass: 'bg-zinc-100 text-zinc-700 border-zinc-200',
-    }
-
-    const networkBadgeClass = cn(
-      'text-[9px] font-bold px-1.5 py-0.5 rounded border capitalize',
-      badgeConfig.colorClass
-    )
+    const networkTextClass = 'text-[9px] font-semibold text-zinc-700 capitalize'
 
     const networkName = getNetworkName(networkId)
 
@@ -82,7 +77,6 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
           <span className="text-[9px] font-bold tracking-widest text-zinc-500 uppercase">
             Payment Info
           </span>
-          <Hexagon className="h-3 w-3 text-zinc-400" aria-hidden="true" />
         </div>
 
         {/* Content: QR + Details side by side */}
@@ -109,24 +103,30 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
             {/* Network row */}
             <div className="flex items-center justify-between gap-2">
               <span className="text-[8px] font-bold text-zinc-400 uppercase">Network</span>
-              <span className={networkBadgeClass}>{networkName}</span>
+              <div className="flex items-center gap-2">
+                <NetworkIcon chainId={networkId} size={18} />
+                <span className={networkTextClass}>{networkName}</span>
+              </div>
             </div>
 
             {/* Token row */}
             <div className="flex items-center justify-between gap-2">
               <span className="text-[8px] font-bold text-zinc-400 uppercase">Token</span>
-              <span
-                className="font-mono text-[9px] font-bold whitespace-nowrap text-zinc-700"
-                title={tokenAddress}
-              >
-                {currency}
-                {tokenAddress && (
-                  <span className="font-normal text-zinc-400">
-                    {' '}
-                    ({formatShortAddress(tokenAddress)})
-                  </span>
-                )}
-              </span>
+              <div className="flex items-center gap-2">
+                <TokenIcon symbol={currency} size={18} />
+                <span
+                  className="font-mono text-[9px] font-bold whitespace-nowrap text-zinc-700"
+                  title={tokenAddress}
+                >
+                  {currency}
+                  {tokenAddress && (
+                    <span className="font-normal text-zinc-400">
+                      {' '}
+                      ({formatShortAddress(tokenAddress)})
+                    </span>
+                  )}
+                </span>
+              </div>
             </div>
 
             {/* Wallet Address - prominent */}
@@ -135,6 +135,13 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                 Recipient Wallet
               </span>
               <div className="flex items-center gap-1">
+                {senderAddress && isAddress(senderAddress) && (
+                  <AddressAvatar
+                    address={senderAddress as `0x${string}`}
+                    size={24}
+                    className="flex-shrink-0"
+                  />
+                )}
                 <div
                   className={cn(
                     'flex-1 cursor-text rounded border border-zinc-200 bg-white px-2 py-1.5 font-mono text-[10px] leading-relaxed font-medium',

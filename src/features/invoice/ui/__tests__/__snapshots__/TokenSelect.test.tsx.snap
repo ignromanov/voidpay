@@ -5,7 +5,7 @@ exports[`TokenSelect - Snapshots > should match snapshot with default state 1`] 
   aria-autocomplete="none"
   aria-controls="radix-_r_27_"
   aria-expanded="false"
-  class="flex items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 h-9 w-[200px]"
+  class="flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all h-10 py-2.5 border-zinc-800 bg-zinc-900/50 text-zinc-200 hover:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 w-[200px]"
   data-placeholder=""
   data-state="closed"
   dir="ltr"
@@ -17,7 +17,7 @@ exports[`TokenSelect - Snapshots > should match snapshot with default state 1`] 
   />
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"
@@ -40,7 +40,7 @@ exports[`TokenSelect - Snapshots > should match snapshot with selected token 1`]
   aria-autocomplete="none"
   aria-controls="radix-_r_2d_"
   aria-expanded="false"
-  class="flex items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 h-9 w-[200px]"
+  class="flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all h-10 py-2.5 border-zinc-800 bg-zinc-900/50 text-zinc-200 hover:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 w-[200px]"
   data-state="closed"
   dir="ltr"
   role="combobox"
@@ -50,19 +50,56 @@ exports[`TokenSelect - Snapshots > should match snapshot with selected token 1`]
     style="pointer-events: none;"
   >
     <div
-      class="flex items-center gap-2"
+      class="flex items-center gap-3"
     >
-      <div
-        class="h-5 w-5 rounded-full bg-blue-500"
-      />
-      <span>
-        USDC
+      <span
+        class="inline-flex items-center justify-center"
+      >
+        <svg
+          class="web3icons flex-shrink-0"
+          fill="none"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18"
+            fill="#0B53BF"
+          />
+          <path
+            d="M13.62 5.45v1.159a5.64 5.64 0 0 1 4.005 5.394 5.64 5.64 0 0 1-4.005 5.394v1.16a6.74 6.74 0 0 0 5.13-6.554 6.74 6.74 0 0 0-5.13-6.553m-7.245 6.553a5.64 5.64 0 0 1 4.005-5.394V5.45a6.74 6.74 0 0 0-5.13 6.553 6.74 6.74 0 0 0 5.13 6.553v-1.159a5.63 5.63 0 0 1-4.005-5.394"
+            fill="#fff"
+          />
+          <path
+            d="M14.419 13.258c0-2.301-3.606-1.356-3.606-2.627 0-.456.366-.748 1.063-.748.833 0 1.12.405 1.21.95h1.147c-.102-1.024-.69-1.67-1.67-1.863v-.904h-1.125v.872c-1.075.137-1.75.762-1.75 1.693 0 2.312 3.611 1.445 3.611 2.694 0 .472-.455.787-1.226.787-1.007 0-1.339-.444-1.462-1.057H9.49c.073 1.122.764 1.823 1.947 1.999v.886h1.125v-.875c1.153-.149 1.856-.82 1.856-1.807"
+            fill="#fff"
+          />
+        </svg>
       </span>
+      <div
+        class="flex flex-col items-start"
+      >
+        <div
+          class="flex items-center gap-1.5"
+        >
+          <span
+            class="leading-none font-bold"
+          >
+            USDC
+          </span>
+        </div>
+        <span
+          class="mt-1 font-mono text-[10px] leading-none text-zinc-500"
+        >
+          0xa0b8...eb48
+        </span>
+      </div>
     </div>
   </span>
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"
@@ -85,7 +122,7 @@ exports[`TokenSelect - Snapshots > should match snapshot without custom token op
   aria-autocomplete="none"
   aria-controls="radix-_r_2j_"
   aria-expanded="false"
-  class="flex items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 h-9 w-[200px]"
+  class="flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all h-10 py-2.5 border-zinc-800 bg-zinc-900/50 text-zinc-200 hover:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 w-[200px]"
   data-placeholder=""
   data-state="closed"
   dir="ltr"
@@ -97,7 +134,7 @@ exports[`TokenSelect - Snapshots > should match snapshot without custom token op
   />
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"

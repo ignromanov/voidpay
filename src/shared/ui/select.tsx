@@ -14,17 +14,23 @@ const SelectGroup = SelectPrimitive.Group
 const SelectValue = SelectPrimitive.Value
 
 const selectTriggerVariants = cva(
-  'flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
+  'flex w-full cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all',
   {
     variants: {
       size: {
-        default: 'h-9',
-        sm: 'h-8 text-xs',
-        lg: 'h-10',
+        default: 'h-10 py-2.5',
+        sm: 'h-8 py-2 text-xs',
+        lg: 'h-11 py-3',
+      },
+      variant: {
+        default: 'border-input bg-transparent shadow-sm focus:ring-1 focus:ring-ring',
+        glass:
+          'border-zinc-800 bg-zinc-900/50 text-zinc-200 hover:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50',
       },
     },
     defaultVariants: {
       size: 'default',
+      variant: 'default',
     },
   }
 )
@@ -36,15 +42,17 @@ interface SelectTriggerProps
 const SelectTrigger = React.forwardRef<
   React.ComponentRef<typeof SelectPrimitive.Trigger>,
   SelectTriggerProps
->(({ className, children, size, ...props }, ref) => (
+>(({ className, children, size, variant, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
-    className={cn(selectTriggerVariants({ size }), className)}
+    className={cn(selectTriggerVariants({ size, variant }), className)}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown
+        className={cn('h-4 w-4 transition-transform', variant === 'glass' ? 'text-zinc-500' : 'opacity-50')}
+      />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ))
@@ -86,9 +94,10 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border shadow-md',
+        'relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-200 shadow-2xl',
+        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
         position === 'popper' &&
-          'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
+          'data-[side=bottom]:translate-y-1.5 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
         className
       )}
       position={position}
@@ -129,17 +138,20 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      'relative flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm outline-none select-none transition-colors',
+      'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200',
+      'data-[state=checked]:bg-violet-500/10 data-[state=checked]:text-white data-[state=checked]:font-medium',
+      'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className
     )}
     {...props}
   >
-    <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    <span className="ml-auto flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
+        <Check className="h-4 w-4 text-violet-500" />
       </SelectPrimitive.ItemIndicator>
     </span>
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
   </SelectPrimitive.Item>
 ))
 SelectItem.displayName = SelectPrimitive.Item.displayName

@@ -1,31 +1,35 @@
 /**
  * OG Preview Tests
  * Tests for Open Graph preview encoding/decoding
+ *
+ * All rates are in atomic units (e.g., $1000 with 6 decimals = "1000000000")
  */
 
 import { describe, it, expect } from 'vitest'
 import { encodeOGPreview, decodeOGPreview, getNetworkIdFromCode } from '../og-preview'
 import type { Invoice } from '@/entities/invoice'
 
-// Mock invoice factory
+// Mock invoice factory with atomic units
 function createMockInvoice(overrides: Partial<Invoice> = {}): Invoice {
   return {
     version: 3,
     invoiceId: '550e8400-e29b-41d4-a716-446655440000',
-    createdAt: Math.floor(Date.now() / 1000),
+    issuedAt: Math.floor(Date.now() / 1000),
     networkId: 42161, // Arbitrum
     currency: 'USDC',
+    decimals: 6, // USDC has 6 decimals
     from: {
       name: 'Acme Inc',
+      walletAddress: '0x1234567890123456789012345678901234567890',
     },
-    to: {
+    client: {
       name: 'Client Corp',
     },
     items: [
       {
         description: 'Service',
         quantity: 1,
-        rate: '1000.00',
+        rate: '1000000000', // $1000 in atomic units (6 decimals)
       },
     ],
     ...overrides,
@@ -39,13 +43,15 @@ describe('og-preview', () => {
       const result = encodeOGPreview(invoice)
 
       expect(result).toContain('550e8400') // shortened ID
-      expect(result).toContain('1000.00') // amount
+      expect(result).toContain('1000.00') // formatted amount
       expect(result).toContain('USDC') // currency
       expect(result).toContain('arb') // network code
     })
 
     it('includes sender name when present', () => {
-      const invoice = createMockInvoice({ from: { name: 'Acme Inc' } })
+      const invoice = createMockInvoice({
+        from: { name: 'Acme Inc', walletAddress: '0x1234567890123456789012345678901234567890' },
+      })
       const result = encodeOGPreview(invoice)
 
       expect(result).toContain('Acme Inc')
@@ -53,7 +59,10 @@ describe('og-preview', () => {
 
     it('truncates long sender names to 20 chars', () => {
       const invoice = createMockInvoice({
-        from: { name: 'Very Long Company Name That Exceeds Limit' },
+        from: {
+          name: 'Very Long Company Name That Exceeds Limit',
+          walletAddress: '0x1234567890123456789012345678901234567890',
+        },
       })
       const result = encodeOGPreview(invoice)
 
@@ -62,7 +71,9 @@ describe('og-preview', () => {
     })
 
     it('removes unsafe URL characters from sender name', () => {
-      const invoice = createMockInvoice({ from: { name: 'Test & Co' } })
+      const invoice = createMockInvoice({
+        from: { name: 'Test & Co', walletAddress: '0x1234567890123456789012345678901234567890' },
+      })
       const result = encodeOGPreview(invoice)
 
       expect(result).not.toContain('&')
@@ -80,8 +91,8 @@ describe('og-preview', () => {
     it('calculates total correctly with multiple items', () => {
       const invoice = createMockInvoice({
         items: [
-          { description: 'Item 1', quantity: 2, rate: '100.00' },
-          { description: 'Item 2', quantity: 1, rate: '50.00' },
+          { description: 'Item 1', quantity: 2, rate: '100000000' }, // $100 × 2 = $200
+          { description: 'Item 2', quantity: 1, rate: '50000000' }, // $50 × 1 = $50
         ],
       })
       const result = encodeOGPreview(invoice)
@@ -91,8 +102,8 @@ describe('og-preview', () => {
 
     it('applies tax to total', () => {
       const invoice = createMockInvoice({
-        items: [{ description: 'Service', quantity: 1, rate: '100.00' }],
-        tax: '10%',
+        items: [{ description: 'Service', quantity: 1, rate: '100000000' }], // $100
+        tax: '10', // 10%
       })
       const result = encodeOGPreview(invoice)
 
@@ -101,12 +112,12 @@ describe('og-preview', () => {
 
     it('applies discount to total', () => {
       const invoice = createMockInvoice({
-        items: [{ description: 'Service', quantity: 1, rate: '100.00' }],
-        discount: '10',
+        items: [{ description: 'Service', quantity: 1, rate: '100000000' }], // $100
+        discount: '10', // 10%
       })
       const result = encodeOGPreview(invoice)
 
-      expect(result).toContain('90.00') // 100 - 10 discount
+      expect(result).toContain('90.00') // 100 - 10% discount
     })
   })
 
@@ -186,7 +197,10 @@ describe('og-preview', () => {
   describe('roundtrip encoding', () => {
     it('encodes and decodes correctly', () => {
       const invoice = createMockInvoice({
-        from: { name: 'TestCo' },
+        from: {
+          name: 'TestCo',
+          walletAddress: '0x1234567890123456789012345678901234567890',
+        },
         // June 15, 2024 at noon UTC (avoid timezone edge cases)
         dueAt: Math.floor(Date.UTC(2024, 5, 15, 12, 0, 0) / 1000),
       })

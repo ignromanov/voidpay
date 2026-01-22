@@ -5,6 +5,7 @@ export type { CreatorStoreV1, InvoiceIDCounter, UserPreferences } from './model/
 // Export slice types for selective subscriptions
 export type {
   DraftSlice,
+  DraftSyncStatus,
   TemplateSlice,
   HistorySlice,
   PreferencesSlice,

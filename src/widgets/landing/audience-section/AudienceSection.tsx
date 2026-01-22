@@ -6,7 +6,7 @@
 
 import { Briefcase, Building2, Users } from 'lucide-react'
 
-import { Heading, Text } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui/typography'
 
 import { AudienceCard } from './AudienceCard'
 

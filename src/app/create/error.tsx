@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
-import { Button, Text, Heading } from '@/shared/ui'
+import { Button } from '@/shared/ui/button'
+import { Heading, Text } from '@/shared/ui/typography'
 
 interface CreateErrorProps {
   error: Error & { digest?: string }

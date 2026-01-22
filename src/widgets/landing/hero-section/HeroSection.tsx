@@ -10,7 +10,10 @@
 
 import Link from 'next/link'
 
-import { ArrowRightIcon, AuroraText, Button, Heading, Text } from '@/shared/ui'
+import { ArrowRightIcon } from '@/shared/ui/icons'
+import { AuroraText } from '@/shared/ui/aurora-text'
+import { Button } from '@/shared/ui/button'
+import { Heading, Text } from '@/shared/ui/typography'
 
 export function HeroSection() {
   return (

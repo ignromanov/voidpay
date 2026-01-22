@@ -7,7 +7,7 @@
 import type { SVGProps } from 'react'
 
 import { cn } from '@/shared/lib/utils'
-import { Heading, Text } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui/typography'
 
 import { FEATURE_CARDS } from '../constants/features'
 

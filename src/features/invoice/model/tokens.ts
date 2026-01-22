@@ -21,13 +21,16 @@ export interface TokenInfo {
   name: string
 
   /** Contract address, null for native tokens */
-  address: `0x${string}` | null
+  address: `0x${string}` | null | string
 
   /** Token decimals (e.g., 6 for USDC, 18 for ETH) */
   decimals: number
 
   /** Tailwind color class for icon background */
   iconColor: string
+
+  /** Whether this is a custom/unverified token (optional) */
+  isCustom?: boolean
 }
 
 /**

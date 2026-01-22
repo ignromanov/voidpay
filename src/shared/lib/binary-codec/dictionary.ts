@@ -54,17 +54,25 @@ export const TOKEN_DICT_REVERSE: Record<number, string> = Object.fromEntries(
 );
 
 /**
+ * Pre-computed lowercase Maps for O(1) dictionary lookup
+ * Computed once at module initialization instead of O(n) iteration per call
+ */
+const CURRENCY_DICT_LOWER = new Map<string, number>(
+  Object.entries(CURRENCY_DICT).map(([k, v]) => [k.toLowerCase(), v])
+);
+
+const TOKEN_DICT_LOWER = new Map<string, number>(
+  Object.entries(TOKEN_DICT).map(([k, v]) => [k.toLowerCase(), v])
+);
+
+/**
  * Encodes a string using dictionary if available, otherwise returns null
+ * Uses pre-computed Map for O(1) lookup instead of O(n) iteration
  */
 export function encodeDictString(str: string, dict: Record<string, number>): number | null {
-  // Case-insensitive lookup
-  const lower = str.toLowerCase();
-  for (const [key, value] of Object.entries(dict)) {
-    if (key.toLowerCase() === lower) {
-      return value;
-    }
-  }
-  return null;
+  // Select the pre-computed lowercase Map based on which dict was passed
+  const lowerMap = dict === CURRENCY_DICT ? CURRENCY_DICT_LOWER : TOKEN_DICT_LOWER;
+  return lowerMap.get(str.toLowerCase()) ?? null;
 }
 
 /**

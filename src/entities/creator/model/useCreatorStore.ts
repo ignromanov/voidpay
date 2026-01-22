@@ -64,6 +64,35 @@ const migrate = (persistedState: any, version: number): Partial<CreatorStore> =>
       persistedStateKeys: Object.keys(persistedState ?? {}),
     })
 
+    // Try to backup corrupted data before losing it
+    if (typeof window !== 'undefined' && persistedState) {
+      try {
+        const backupKey = `${CREATOR_STORE_KEY}:backup`
+        const backupData = JSON.stringify({
+          data: persistedState,
+          backupAt: new Date().toISOString(),
+          reason: 'migration-failed',
+          version,
+        })
+        localStorage.setItem(backupKey, backupData)
+      } catch {
+        // Backup failure shouldn't break the app
+      }
+    }
+
+    // Dispatch event for UI to handle
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('store-migration-failed', {
+          detail: {
+            store: 'creator',
+            version,
+            error: error instanceof Error ? error.message : String(error),
+          },
+        })
+      )
+    }
+
     // Return initial state for data corruption
     return initialState
   }
@@ -220,9 +249,74 @@ export const useCreatorStore = create<CreatorStore>()(
     }),
     {
       name: CREATOR_STORE_KEY,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => ({
+        // Note: createJSONStorage handles JSON.parse/stringify internally
+        // Custom storage should return raw strings, not parsed objects
+        getItem: (name) => {
+          // SSR guard: localStorage is not available on server
+          if (typeof window === 'undefined') return null
+          try {
+            return localStorage.getItem(name)
+          } catch (error) {
+            console.warn('[CreatorStore] Failed to read from localStorage:', error)
+            return null
+          }
+        },
+        setItem: (name, value) => {
+          // SSR guard: localStorage is not available on server
+          if (typeof window === 'undefined') return
+          try {
+            localStorage.setItem(name, value)
+          } catch (error) {
+            // Handle quota exceeded and other storage errors
+            if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+              console.error('[CreatorStore] localStorage quota exceeded. Draft auto-save disabled.')
+              window.dispatchEvent(
+                new CustomEvent('storage-quota-exceeded', {
+                  detail: { store: 'creator', key: name },
+                })
+              )
+            } else {
+              console.error('[CreatorStore] Failed to write to localStorage:', error)
+              window.dispatchEvent(
+                new CustomEvent('storage-write-failed', {
+                  detail: {
+                    store: 'creator',
+                    key: name,
+                    error: error instanceof Error ? error.message : String(error),
+                  },
+                })
+              )
+            }
+          }
+        },
+        removeItem: (name) => {
+          // SSR guard: localStorage is not available on server
+          if (typeof window === 'undefined') return
+          try {
+            localStorage.removeItem(name)
+          } catch (error) {
+            console.warn('[CreatorStore] Failed to remove from localStorage:', error)
+          }
+        },
+      })),
       version: 1,
       migrate,
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('[CreatorStore] Failed to rehydrate store:', error)
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('store-rehydration-failed', {
+                detail: {
+                  store: 'creator',
+                  error: error instanceof Error ? error.message : String(error),
+                },
+              })
+            )
+          }
+        }
+      },
       // Partialize: only persist these fields (excludes transient UI state like networkTheme)
       partialize: (state) => ({
         version: state.version,

@@ -6,26 +6,15 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { renderWithUser, screen } from '@/shared/ui/__tests__/test-utils'
 import { InvoicePreviewModal } from '../InvoicePreviewModal'
 import { PartialInvoice } from '@/entities/invoice'
-import { toast } from '@/shared/lib/toast'
-
-// Mock toast module
-vi.mock('@/shared/lib/toast', () => ({
-  toast: {
-    error: vi.fn(),
-    success: vi.fn(),
-    loading: vi.fn(),
-    dismiss: vi.fn(),
-    promise: vi.fn(),
-  },
-}))
 
 // Mock generateInvoiceUrl
 vi.mock('@/features/invoice-codec', () => ({
   generateInvoiceUrl: vi.fn(),
 }))
 
-// Mock data
+// Mock data with atomic units ($100 = 100000000 with 6 decimals)
 const mockInvoiceData: PartialInvoice = {
+  version: 2, // Required by schema
   invoiceId: 'INV-001',
   issuedAt: 1704067200, // 2024-01-01
   dueAt: 1706745600, // 2024-02-01
@@ -40,7 +29,7 @@ const mockInvoiceData: PartialInvoice = {
   client: {
     name: 'Client Inc',
   },
-  items: [{ description: 'Development services', quantity: 10, rate: '100' }],
+  items: [{ description: 'Development services', quantity: 10, rate: '100000000' }], // $100/hr × 10 = $1000
 }
 
 describe('InvoicePreviewModal', () => {
@@ -188,7 +177,7 @@ describe('InvoicePreviewModal', () => {
       vi.clearAllMocks()
     })
 
-    it('shows error toast when URL generation fails', async () => {
+    it('silently handles URL generation errors', async () => {
       // Import the mock to control its behavior
       const { generateInvoiceUrl } = await import('@/features/invoice-codec')
       const mockGenerateInvoiceUrl = vi.mocked(generateInvoiceUrl)
@@ -196,15 +185,15 @@ describe('InvoicePreviewModal', () => {
         throw new Error('Encoding failed')
       })
 
-      renderWithUser(
-        <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => {}} />
-      )
-
-      // Toast should be called with error message
-      expect(toast.error).toHaveBeenCalledWith('Failed to generate invoice URL')
+      // Should not throw - component handles errors gracefully via try/catch
+      expect(() => {
+        renderWithUser(
+          <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => {}} />
+        )
+      }).not.toThrow()
     })
 
-    it('does not show error when URL is generated successfully', async () => {
+    it('generates URL when data is valid', async () => {
       const { generateInvoiceUrl } = await import('@/features/invoice-codec')
       const mockGenerateInvoiceUrl = vi.mocked(generateInvoiceUrl)
       mockGenerateInvoiceUrl.mockReturnValue('https://voidpay.xyz/pay#abc123')
@@ -213,13 +202,14 @@ describe('InvoicePreviewModal', () => {
         <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => {}} />
       )
 
-      expect(toast.error).not.toHaveBeenCalled()
+      // generateInvoiceUrl should be called with valid data
+      expect(mockGenerateInvoiceUrl).toHaveBeenCalled()
     })
 
-    it('handles missing required fields gracefully', async () => {
+    it('skips URL generation when required fields missing', async () => {
       const incompleteData: PartialInvoice = {
         // Missing invoiceId, from.walletAddress, networkId
-        items: [{ description: 'Test', quantity: 1, rate: '100' }],
+        items: [{ description: 'Test', quantity: 1, rate: '100000000' }], // $100 in atomic units
       }
 
       renderWithUser(
@@ -229,8 +219,6 @@ describe('InvoicePreviewModal', () => {
       // Should not call generateInvoiceUrl at all
       const { generateInvoiceUrl } = await import('@/features/invoice-codec')
       expect(generateInvoiceUrl).not.toHaveBeenCalled()
-      // And should not show error toast for expected case
-      expect(toast.error).not.toHaveBeenCalled()
     })
   })
 

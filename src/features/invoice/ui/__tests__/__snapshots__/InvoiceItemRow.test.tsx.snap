@@ -59,6 +59,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
           <input
             class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
             id="test-id"
+            inputmode="decimal"
             placeholder="0.00"
             type="text"
             value="75.25"
@@ -72,7 +73,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
       <div
         class="flex h-9 w-full items-center rounded-lg border border-zinc-800 bg-zinc-950/50 px-3 font-mono text-sm text-zinc-400"
       >
-        188.13
+        188.125
          
         USDC
       </div>
@@ -174,6 +175,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
           <input
             class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
             id="test-id"
+            inputmode="decimal"
             placeholder="0.00"
             type="text"
             value="100.50"
@@ -187,7 +189,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
       <div
         class="flex h-9 w-full items-center rounded-lg border border-zinc-800 bg-zinc-950/50 px-3 font-mono text-sm text-zinc-400"
       >
-        1005.00
+        1,005.00
          
         USDC
       </div>
@@ -289,6 +291,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
           <input
             class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
             id="test-id"
+            inputmode="decimal"
             placeholder="0.00"
             type="text"
             value=""

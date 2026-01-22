@@ -36,7 +36,10 @@ export const createPreferencesSlice: StateCreator<CreatorStore, [], [], Preferen
   set
 ) => ({
   // ========== State ==========
-  preferences: {},
+  preferences: {
+    includeOgImage: true,
+    magicDustEnabled: true,
+  },
 
   // ========== Preferences Management ==========
 
@@ -50,6 +53,11 @@ export const createPreferencesSlice: StateCreator<CreatorStore, [], [], Preferen
   },
 
   resetPreferences: () => {
-    set({ preferences: {} })
+    set({
+      preferences: {
+        includeOgImage: true,
+        magicDustEnabled: true,
+      }
+    })
   },
 })

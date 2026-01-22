@@ -76,9 +76,9 @@ describe('useInvoiceScale', () => {
       expect(PRESET_CONFIGS.demo.maxScale).toBe(1)
     })
 
-    it('editor preset has fit scaling with lower max', () => {
+    it('editor preset has fit scaling with full max', () => {
       expect(PRESET_CONFIGS.editor.scaleBy).toBe('fit')
-      expect(PRESET_CONFIGS.editor.maxScale).toBe(0.85)
+      expect(PRESET_CONFIGS.editor.maxScale).toBe(1.5)
     })
 
     it('modal preset has width-only scaling', () => {
@@ -215,8 +215,8 @@ describe('useInvoiceScale', () => {
         result.current.setContainerRef(container)
       })
 
-      // Editor preset has maxScale of 0.85
-      expect(result.current.scale).toBeLessThanOrEqual(0.85)
+      // Editor preset has maxScale of 1.5 (scales up to 150% on larger screens)
+      expect(result.current.scale).toBeLessThanOrEqual(1.5)
     })
   })
 

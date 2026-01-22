@@ -1,16 +1,17 @@
 'use client'
 
-import React, { useMemo, useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { X, Printer, Download } from 'lucide-react'
-import { Dialog, DialogContent, DialogTitle, DialogClose, Badge, Button } from '@/shared/ui'
+import { Dialog, DialogContent, DialogTitle, DialogClose } from '@/shared/ui/dialog'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
 import { InvoicePaper } from './InvoicePaper'
 import { ScaledInvoicePreview } from './ScaledInvoicePreview'
 import { InvoiceStatus } from '../types'
-import { Invoice, PartialInvoice } from '@/entities/invoice'
+import { PartialInvoice, invoiceSchema } from '@/entities/invoice'
 import { NETWORK_GLOW_BORDERS } from '@/entities/network'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
-import { toast } from '@/shared/lib/toast'
 
 // Animation variants for smooth enter/exit
 const headerVariants = {
@@ -78,17 +79,21 @@ export interface InvoicePreviewModalProps {
 
 export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
   ({ data, status = 'pending', txHash, txHashValidated = true, open, onOpenChange }) => {
-    // Generate invoice URL for linking (only if data is complete enough)
+    // Generate invoice URL only when data passes full schema validation
+    // Uses Zod safeParse — no errors thrown, no toasts, silent fail
     const invoiceUrl = useMemo(() => {
-      // Need minimum required fields to generate URL
-      if (!data.invoiceId || !data.from?.walletAddress || !data.networkId) {
+      const result = invoiceSchema.safeParse(data)
+      if (!result.success) {
         return undefined
       }
       try {
-        return generateInvoiceUrl(data as Invoice)
+        return generateInvoiceUrl(result.data)
       } catch (error) {
-        console.error('URL generation failed:', error)
-        toast.error('Failed to generate invoice URL')
+        // Log encoder errors for debugging (shouldn't happen after Zod validation)
+        console.error('[InvoicePreviewModal] URL generation failed:', {
+          invoiceId: result.data.invoiceId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        })
         return undefined
       }
     }, [data])

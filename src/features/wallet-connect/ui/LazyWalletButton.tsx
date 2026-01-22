@@ -25,7 +25,7 @@
 
 import { useState, useCallback, useEffect, type ReactNode, type ComponentType } from 'react'
 import { Wallet, Loader2 } from 'lucide-react'
-import { Button } from '@/shared/ui'
+import { Button } from '@/shared/ui/button'
 
 type LoadingState = 'idle' | 'loading' | 'ready' | 'error'
 type ErrorType = 'network' | 'unknown'

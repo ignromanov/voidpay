@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
-import { CopyButton } from '@/shared/ui'
+import { CopyButton } from '@/shared/ui/copy-button'
 import { cn } from '@/shared/lib/utils'
 
 import { InvoiceStatus, InvoicePaperVariant } from '../types'
@@ -19,6 +19,25 @@ interface PaperHeaderProps {
   variant?: InvoicePaperVariant | undefined
 }
 
+/**
+ * Hoisted DateTimeFormat instance for performance
+ * Created once at module load instead of on every render
+ */
+const DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+})
+
+/**
+ * Format a Unix timestamp to display date
+ * Uses hoisted formatter for better performance
+ */
+function formatDate(timestamp: number): string {
+  if (!timestamp) return '---'
+  return DATE_FORMATTER.format(new Date(timestamp * 1000)).toUpperCase()
+}
+
 export const PaperHeader = React.memo<PaperHeaderProps>(
   ({ invoiceId, iss, due, status, txHashValidated = true, invoiceUrl, variant = 'default' }) => {
     const isInteractive = variant === 'full'
@@ -26,17 +45,6 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
 
     // Determine if paid status shows unverified warning
     const isPaidUnverified = status === 'paid' && !txHashValidated
-
-    const formatDate = (timestamp: number) => {
-      if (!timestamp) return '---'
-      return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
-        .format(new Date(timestamp * 1000))
-        .toUpperCase()
-    }
 
     const handleTitleClick = useCallback(() => {
       if (hasLink) {

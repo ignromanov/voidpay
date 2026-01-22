@@ -10,7 +10,7 @@ import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
-import { Heading, Text } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui/typography'
 import { AnimatePresence, motion } from '@/shared/ui/motion'
 
 import { FAQ_ITEMS, type FaqItem } from '../constants/faq'

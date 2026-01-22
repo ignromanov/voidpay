@@ -108,7 +108,7 @@ describe('Select Component', () => {
 describe('selectTriggerVariants', () => {
   it('should return default size class', () => {
     const classes = selectTriggerVariants()
-    expect(classes).toContain('h-9')
+    expect(classes).toContain('h-10')
   })
 
   it('should return sm size class', () => {
@@ -119,7 +119,7 @@ describe('selectTriggerVariants', () => {
 
   it('should return lg size class', () => {
     const classes = selectTriggerVariants({ size: 'lg' })
-    expect(classes).toContain('h-10')
+    expect(classes).toContain('h-11')
   })
 
   it('should include base classes', () => {
@@ -127,7 +127,7 @@ describe('selectTriggerVariants', () => {
     expect(classes).toContain('flex')
     expect(classes).toContain('w-full')
     expect(classes).toContain('items-center')
-    expect(classes).toContain('rounded-md')
+    expect(classes).toContain('rounded-lg')
     expect(classes).toContain('border')
   })
 })

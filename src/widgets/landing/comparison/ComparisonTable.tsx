@@ -6,7 +6,7 @@
 
 import { Check, X, Minus } from 'lucide-react'
 
-import { Heading, Text } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui/typography'
 
 type ComparisonValue = 'yes' | 'no' | 'partial' | string
 
