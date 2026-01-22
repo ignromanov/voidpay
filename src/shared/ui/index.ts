@@ -119,6 +119,15 @@ export { MobileTabBar, type MobileTabBarProps, type TabItem } from './mobile-tab
 // HyperText (feature: 011-brand-visual-components)
 export { HyperText, type HyperTextProps } from './hyper-text'
 
+// AddressAvatar (feature: 016-invoice-form-workspace)
+export { AddressAvatar, type AddressAvatarProps } from './address-avatar'
+
+// TokenIcon (feature: 016-invoice-form-workspace)
+export { TokenIcon, type TokenIconProps } from './token-icon'
+
+// NetworkIcon (feature: 016-invoice-form-workspace)
+export { NetworkIcon, type NetworkIconProps } from './network-icon'
+
 // WalletButton - Moved to features/wallet-connect (FSD: depends on Web3 feature)
 // Use: import { LazyWalletButton, WalletButton } from '@/features/wallet-connect'
 

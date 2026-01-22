@@ -1,8 +1,17 @@
 import React from 'react'
 import { PartialParty, PartialClient } from '@/entities/invoice'
-import { CopyButton, MailIcon, PhoneIcon, MapPinIcon, WalletIcon, HashIcon } from '@/shared/ui'
+import {
+  CopyButton,
+  MailIcon,
+  PhoneIcon,
+  MapPinIcon,
+  WalletIcon,
+  HashIcon,
+  AddressAvatar,
+} from '@/shared/ui'
 import { cn } from '@/shared/lib/utils'
 import { InvoicePaperVariant } from '../types'
+import { isAddress } from 'viem'
 
 interface PartyInfoProps {
   from: PartialParty
@@ -124,7 +133,15 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
           )}
           {client.walletAddress && (
             <div className="mt-3 flex flex-row-reverse items-center gap-2">
-              <WalletIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
+              {isAddress(client.walletAddress) ? (
+                <AddressAvatar
+                  address={client.walletAddress as `0x${string}`}
+                  size="sm"
+                  className="flex-shrink-0"
+                />
+              ) : (
+                <WalletIcon className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
+              )}
               <span
                 className="min-w-0 flex-1 truncate font-mono text-xs text-zinc-800"
                 title={client.walletAddress}

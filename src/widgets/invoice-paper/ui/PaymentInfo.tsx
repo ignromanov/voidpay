@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { Hexagon, Hash, ExternalLink, AlertTriangle } from 'lucide-react'
+import { Hash, ExternalLink, AlertTriangle } from 'lucide-react'
 import { formatShortAddress } from '../lib/format'
 import { NETWORK_BADGES } from '@/entities/network'
 import { getExplorerUrl, getNetworkName } from '@/entities/network'
 import { APP_URLS } from '@/shared/config'
 import { cn } from '@/shared/lib/utils'
-import { CopyButton } from '@/shared/ui'
+import { CopyButton, NetworkIcon, TokenIcon, AddressAvatar } from '@/shared/ui'
+import { isAddress } from 'viem'
 import { InvoicePaperVariant, InvoiceStatus } from '../types'
 
 interface PaymentInfoProps {
@@ -82,7 +83,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
           <span className="text-[9px] font-bold tracking-widest text-zinc-500 uppercase">
             Payment Info
           </span>
-          <Hexagon className="h-3 w-3 text-zinc-400" aria-hidden="true" />
+          <NetworkIcon chainId={networkId} size={12} />
         </div>
 
         {/* Content: QR + Details side by side */}
@@ -109,24 +110,30 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
             {/* Network row */}
             <div className="flex items-center justify-between gap-2">
               <span className="text-[8px] font-bold text-zinc-400 uppercase">Network</span>
-              <span className={networkBadgeClass}>{networkName}</span>
+              <div className="flex items-center gap-1.5">
+                <NetworkIcon chainId={networkId} size={14} />
+                <span className={networkBadgeClass}>{networkName}</span>
+              </div>
             </div>
 
             {/* Token row */}
             <div className="flex items-center justify-between gap-2">
               <span className="text-[8px] font-bold text-zinc-400 uppercase">Token</span>
-              <span
-                className="font-mono text-[9px] font-bold whitespace-nowrap text-zinc-700"
-                title={tokenAddress}
-              >
-                {currency}
-                {tokenAddress && (
-                  <span className="font-normal text-zinc-400">
-                    {' '}
-                    ({formatShortAddress(tokenAddress)})
-                  </span>
-                )}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <TokenIcon symbol={currency} size={14} />
+                <span
+                  className="font-mono text-[9px] font-bold whitespace-nowrap text-zinc-700"
+                  title={tokenAddress}
+                >
+                  {currency}
+                  {tokenAddress && (
+                    <span className="font-normal text-zinc-400">
+                      {' '}
+                      ({formatShortAddress(tokenAddress)})
+                    </span>
+                  )}
+                </span>
+              </div>
             </div>
 
             {/* Wallet Address - prominent */}
@@ -135,6 +142,13 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                 Recipient Wallet
               </span>
               <div className="flex items-center gap-1">
+                {senderAddress && isAddress(senderAddress) && (
+                  <AddressAvatar
+                    address={senderAddress as `0x${string}`}
+                    size={24}
+                    className="flex-shrink-0"
+                  />
+                )}
                 <div
                   className={cn(
                     'flex-1 cursor-text rounded border border-zinc-200 bg-white px-2 py-1.5 font-mono text-[10px] leading-relaxed font-medium',

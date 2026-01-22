@@ -15,6 +15,7 @@ import { useTokenMetadata } from '@/entities/token'
 import { Input } from '@/shared/ui/input'
 import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'
+import { TokenIcon } from '@/shared/ui/token-icon'
 import { Loader2, Search, AlertCircle } from 'lucide-react'
 import { type Address } from 'viem'
 
@@ -267,14 +268,7 @@ export function TokenSelect({
                   ?
                 </div>
               ) : (
-                <div
-                  className={cn(
-                    'flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-bold shadow-sm',
-                    value.iconColor || 'bg-zinc-700 text-white'
-                  )}
-                >
-                  {value.symbol.substring(0, 1)}
-                </div>
+                <TokenIcon symbol={value.symbol} size={24} />
               )}
               <div className="flex flex-col items-start">
                 <div className="flex items-center gap-1.5">
@@ -304,7 +298,7 @@ export function TokenSelect({
           return (
             <SelectItem key={tokenValue} value={tokenValue}>
               <div className="flex items-center gap-2">
-                <div className={cn('h-5 w-5 rounded-full', token.iconColor)} />
+                <TokenIcon symbol={token.symbol} size={24} />
                 <div className="flex flex-col">
                   <span className="font-medium">{token.symbol}</span>
                   <span className="text-xs text-zinc-500">{token.name}</span>

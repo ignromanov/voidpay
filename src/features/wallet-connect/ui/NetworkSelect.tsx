@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { NETWORK_CONFIG } from '@/entities/network'
+import { NetworkIcon } from '@/shared/ui/network-icon'
 import { cn } from '@/shared/lib/utils'
 
 /**
@@ -65,11 +66,7 @@ export function NetworkSelect({
         <SelectValue>
           {selectedNetwork && (
             <div className="flex items-center gap-2.5">
-              <div className={cn('flex items-center justify-center', selectedNetwork.colorClass)}>
-                <selectedNetwork.icon
-                  className={cn('h-4 w-4', selectedNetwork.iconFilled && 'fill-current')}
-                />
-              </div>
+              <NetworkIcon chainId={selectedNetwork.chainId} size={20} />
               <span className="font-bold">{selectedNetwork.name}</span>
             </div>
           )}
@@ -79,9 +76,7 @@ export function NetworkSelect({
         {NETWORK_CONFIG.map((network) => (
           <SelectItem key={network.chainId} value={network.chainId.toString()}>
             <div className="flex items-center gap-2">
-              <network.icon
-                className={cn('h-4 w-4', network.colorClass, network.iconFilled && 'fill-current')}
-              />
+              <NetworkIcon chainId={network.chainId} size={20} />
               <span>{network.name}</span>
             </div>
           </SelectItem>

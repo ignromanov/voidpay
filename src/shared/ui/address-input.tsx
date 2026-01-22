@@ -2,8 +2,8 @@
 
 import * as React from 'react'
 import { Input, type InputProps } from './input'
+import { AddressAvatar } from './address-avatar'
 import { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
-import { getBlockieColor } from '@/shared/lib/utils'
 
 /**
  * AddressInput Component Props
@@ -60,15 +60,9 @@ export const AddressInput = React.forwardRef<HTMLInputElement, AddressInputProps
       }
     }, [isValid, onValidChange])
 
-    // Blockie color for valid addresses
-    const blockieColor = React.useMemo(() => {
-      if (!isValid) return null
-      return getBlockieColor(value)
-    }, [value, isValid])
-
-    // Blockie icon element
-    const blockieIcon = blockieColor ? (
-      <div className={`h-5 w-5 rounded-full ${blockieColor}`} aria-label="Address blockie" />
+    // Blockie identicon for valid addresses
+    const blockieIcon = isValid ? (
+      <AddressAvatar address={value as `0x${string}`} size={20} />
     ) : null
 
     return (
