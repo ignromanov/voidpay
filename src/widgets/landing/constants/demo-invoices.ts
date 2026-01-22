@@ -58,7 +58,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
         { description: 'Gas Optimization Consulting (8 hours)', quantity: 8, rate: '100000000000000000' },
       ],
       tax: '0',
-      discount: '5%',
+      discount: '5',
     },
   },
   // --- Arbitrum (42161) - Game Asset Design [PENDING] ---
@@ -99,7 +99,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
         { description: 'Sound Effects Integration', quantity: 1, rate: '400000000' },
       ],
       tax: '8',
-      discount: '200000000', // $200 in atomic units
+      discount: '8', // 8% discount (~$192)
     },
   },
   // --- Optimism (10) - Public Goods Grant [PAID + NOT VALIDATED] ---
