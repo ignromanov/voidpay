@@ -169,13 +169,13 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
               type="date"
               value={issuedAt ? new Date(issuedAt * 1000).toISOString().split('T')[0] : ''}
               onChange={handleIssuedAtChange}
-              className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-2 py-2.5 font-mono text-xs text-zinc-300 transition-shadow outline-none focus:text-white focus:shadow-[0_0_15px_rgba(124,58,237,0.3)]"
+              className="w-full cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900/50 px-2 py-2.5 font-mono text-xs text-zinc-300 transition-shadow outline-none focus:text-white focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:transition-opacity hover:[&::-webkit-calendar-picker-indicator]:opacity-100"
             />
             <input
               type="date"
               value={dueAt ? new Date(dueAt * 1000).toISOString().split('T')[0] : ''}
               onChange={handleDueAtChange}
-              className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-2 py-2.5 font-mono text-xs text-zinc-300 transition-shadow outline-none focus:text-white focus:shadow-[0_0_15px_rgba(124,58,237,0.3)]"
+              className="w-full cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900/50 px-2 py-2.5 font-mono text-xs text-zinc-300 transition-shadow outline-none focus:text-white focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:transition-opacity hover:[&::-webkit-calendar-picker-indicator]:opacity-100"
             />
           </div>
         </div>
