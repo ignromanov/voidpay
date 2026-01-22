@@ -9,7 +9,7 @@ import {
   TokenWBTC,
   TokenMATIC,
   TokenOP,
-  TokenARB,
+  NetworkArbitrumOne,
 } from '@web3icons/react'
 import { cn } from '@/shared/lib/utils'
 
@@ -27,7 +27,7 @@ const TOKEN_ICONS: Record<string, React.ComponentType<{ className?: string; size
   MATIC: TokenMATIC,
   POL: TokenMATIC, // Polygon renamed MATIC to POL
   OP: TokenOP,
-  ARB: TokenARB,
+  ARB: NetworkArbitrumOne, // TokenARB has outdated icon, using network icon instead
 }
 
 /**
