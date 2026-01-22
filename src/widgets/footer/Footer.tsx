@@ -9,23 +9,33 @@
  * - Single line: copyright, links, social
  */
 
+import { usePathname } from 'next/navigation'
 import { Github, Twitter } from 'lucide-react'
 
+import { AnalyticsToggle } from '@/features/analytics'
 import { SOCIAL_URLS } from '@/shared/config'
 
 export function Footer() {
+  const pathname = usePathname()
   return (
     <footer className="fixed right-0 bottom-0 left-0 z-40 border-t border-zinc-800/30 bg-zinc-950/60 backdrop-blur-xl print:hidden">
       <div className="mx-auto flex h-10 max-w-7xl items-center justify-between px-4 text-xs text-zinc-400">
         {/* Left: Copyright */}
         <div className="flex items-center gap-3">
-          <span>© 2025 VoidPay</span>
+          <span>© 2026 VoidPay</span>
           <a href="/privacy" className="transition-colors hover:text-zinc-300">
             Privacy
           </a>
           <a href="/terms" className="transition-colors hover:text-zinc-300">
             Terms
           </a>
+          {/* Analytics toggle only on landing page (where analytics runs) */}
+          {pathname === '/' && (
+            <>
+              <span className="text-zinc-600">|</span>
+              <AnalyticsToggle />
+            </>
+          )}
         </div>
 
         {/* Right: Social + Contact */}

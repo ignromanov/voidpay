@@ -6,6 +6,7 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 
+import { UmamiScript } from '@/features/analytics'
 import { APP_URLS, SOCIAL_URLS } from '@/shared/config'
 import { LandingContent, FAQ_ITEMS } from '@/widgets/landing'
 
@@ -159,6 +160,9 @@ export default function LandingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
       />
+
+      {/* Privacy-focused analytics (landing page only, opt-out via footer) */}
+      <UmamiScript />
 
       <main className="relative min-h-screen">
         <LandingContent />
