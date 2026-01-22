@@ -100,15 +100,16 @@ describe('TokenSelect - Selection Logic', () => {
     expect(screen.getByText('USDC')).toBeInTheDocument()
   })
 
-  it('should render token icon with correct color', () => {
+  it('should render token icon', () => {
     const onChange = vi.fn()
     const ethTokens = NETWORK_TOKENS[1]!
     const usdc = ethTokens.find((t) => t.symbol === 'USDC')!
 
     const { container } = render(<TokenSelect chainId={1} value={usdc} onChange={onChange} />)
 
-    const icon = container.querySelector('.bg-blue-500')
-    expect(icon).toBeInTheDocument()
+    // TokenIcon renders either a web3icons SVG or a fallback colored circle
+    const svgIcon = container.querySelector('svg')
+    expect(svgIcon).toBeInTheDocument()
   })
 })
 
