@@ -1,5 +1,5 @@
 {
-  "name": "stateless-invoicing-platform",
+  "name": "voidpay",
   "version": "1.0.0",
   "description": "VoidPay - Privacy-first stateless crypto invoicing platform with URL-based state",
   "main": "index.js",
