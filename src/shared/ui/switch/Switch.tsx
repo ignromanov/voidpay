@@ -69,10 +69,10 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
         onClick={handleClick}
         className={cn(
           track,
-          'relative rounded-full transition-colors duration-200 ease-in-out',
+          'relative cursor-pointer rounded-full transition-colors duration-200 ease-in-out',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900',
           checked ? checkedBg : uncheckedBg,
-          disabled && 'cursor-not-allowed opacity-50',
+          disabled && 'cursor-not-allowed! opacity-50',
           className
         )}
         {...props}

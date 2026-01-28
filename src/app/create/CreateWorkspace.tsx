@@ -19,7 +19,7 @@ import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { Heading, Text } from '@/shared/ui/typography'
 import { MobileTabBar, type TabItem } from '@/shared/ui/mobile-tab-bar'
-import { InvoiceForm, MagicDustToggle, OgImageCheckbox } from '@/widgets/invoice-form'
+import { InvoiceForm } from '@/widgets/invoice-form'
 import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widgets/invoice-paper'
 import { ShareModal } from '@/widgets/share-modal'
 
@@ -51,7 +51,7 @@ const SYNC_STATUS_CONFIG: Record<
  * CreateWorkspace — Split-pane invoice creation interface
  *
  * Features:
- * - Left pane: InvoiceForm + MagicDustToggle
+ * - Left pane: InvoiceForm with toggles and Generate button
  * - Right pane: Live preview with ScaledInvoicePreview
  * - Mobile: Tab bar to switch between editor and preview
  * - URL hash decoding (e.g., /create#H4sI...)
@@ -265,8 +265,6 @@ export function CreateWorkspace() {
             </div>
 
             <InvoiceForm onGenerate={handleGenerateLink} />
-            <MagicDustToggle />
-            <OgImageCheckbox />
           </div>
         </Card>
 

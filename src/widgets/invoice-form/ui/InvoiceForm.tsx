@@ -20,6 +20,8 @@ import { FIELD_LIMITS } from '@/shared/lib/invoice-types'
 import { useInvoiceForm } from '../lib/use-invoice-form'
 import { InvoiceItemRow } from './InvoiceItemRow'
 import { CollapsibleSection } from './CollapsibleSection'
+import { MagicDustToggle } from './MagicDustToggle'
+import { OgImageCheckbox } from './OgImageCheckbox'
 
 export interface InvoiceFormProps {
   className?: string
@@ -449,8 +451,14 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
         </CollapsibleSection>
       </div>
 
+      {/* Link Options */}
+      <div className="space-y-3 border-t border-zinc-800/50 pt-4">
+        <MagicDustToggle />
+        <OgImageCheckbox />
+      </div>
+
       {/* Generate Button */}
-      <div className="pt-6">
+      <div className="pt-4">
         <Button
           onClick={() => {
             if (onGenerate) {
@@ -463,7 +471,7 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
           }}
           disabled={!canGenerate}
           variant="glow"
-          className="h-14 w-full text-base"
+          className="h-14 w-full cursor-pointer text-base"
         >
           <Share2 className="mr-2 h-5 w-5" />
           Generate Invoice Link
