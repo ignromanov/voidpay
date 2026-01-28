@@ -13,3 +13,4 @@ export {
   type FormFieldStates,
   DEFAULT_FIELD_STATES,
 } from './types'
+export { getFieldError, type RequiredFieldsValidation } from './get-field-error'
