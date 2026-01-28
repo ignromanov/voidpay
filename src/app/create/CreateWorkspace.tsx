@@ -4,8 +4,14 @@ import { useLayoutEffect, useEffect, useState, useCallback, useMemo } from 'reac
 import { Edit3, Eye, Maximize2, RotateCcw, Check, Loader2 } from 'lucide-react'
 
 import { parseInvoiceHash } from '@/features/invoice-codec'
+import {
+  validateInvoiceForGeneration,
+  generateAndTrackInvoice,
+  UrlSizeError,
+} from '@/features/generate-link'
 import { useCreatorStore, type DraftSyncStatus } from '@/entities/creator'
 import { getNetworkTheme, NETWORK_GLOW_SHADOWS } from '@/entities/network'
+import type { Invoice } from '@/shared/lib/invoice-types'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
@@ -13,8 +19,9 @@ import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { Heading, Text } from '@/shared/ui/typography'
 import { MobileTabBar, type TabItem } from '@/shared/ui/mobile-tab-bar'
-import { InvoiceForm, MagicDustToggle } from '@/widgets/invoice-form'
+import { InvoiceForm, MagicDustToggle, OgImageCheckbox } from '@/widgets/invoice-form'
 import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widgets/invoice-paper'
+import { ShareModal } from '@/widgets/share-modal'
 
 /** Live Preview badge configuration based on sync status */
 const SYNC_STATUS_CONFIG: Record<
@@ -57,7 +64,15 @@ export function CreateWorkspace() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 
+  // ShareModal state
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
+  const [generatedInvoice, setGeneratedInvoice] = useState<Invoice | null>(null)
+  const [isGenerating, setIsGenerating] = useState(false)
+
   const activeDraft = useCreatorStore((s) => s.activeDraft)
+  const lineItems = useCreatorStore((s) => s.lineItems)
+  const preferences = useCreatorStore((s) => s.preferences)
   const updateDraft = useCreatorStore((s) => s.updateDraft)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
@@ -115,8 +130,92 @@ export function CreateWorkspace() {
     })
   }, [createNewDraft])
 
+  /**
+   * Handle "Generate Invoice Link" button click
+   *
+   * 1. Validate invoice data
+   * 2. Generate URL with Binary V3 encoding
+   * 3. Add to history
+   * 4. Open ShareModal
+   */
+  const handleGenerateLink = useCallback(async () => {
+    if (!activeDraft || isGenerating) return
+
+    // Validate before generation
+    const validation = validateInvoiceForGeneration(activeDraft.data, lineItems)
+
+    if (!validation.isValid) {
+      // Show first error as toast (most important)
+      const firstError = validation.errors[0]
+      toast.error('Cannot generate link', {
+        description: firstError?.message ?? 'Please fill in all required fields',
+      })
+
+      // If multiple errors, show count
+      if (validation.errors.length > 1) {
+        toast.error(`${validation.errors.length - 1} more issue(s) found`, {
+          description: 'Check the form for other missing fields',
+        })
+      }
+      return
+    }
+
+    // Show size warning if applicable (edge case, not blocking)
+    if (validation.sizeWarning) {
+      // Use error style to draw attention to potential issue
+      toast.error('URL size approaching limit', {
+        description: 'Consider reducing notes or line items if generation fails.',
+      })
+    }
+
+    setIsGenerating(true)
+
+    try {
+      // Generate URL with OG preview based on user preference
+      const url = await generateAndTrackInvoice(activeDraft, lineItems, {
+        includeOG: preferences.includeOgImage ?? false,
+      })
+
+      // Build invoice for ShareModal display
+      const invoice: Invoice = {
+        ...activeDraft.data,
+        items: lineItems.map(({ id: _id, ...item }) => item),
+      } as Invoice
+
+      setGeneratedUrl(url)
+      setGeneratedInvoice(invoice)
+      setIsShareModalOpen(true)
+
+      toast.success('Invoice link generated!', {
+        description: 'Share it with your client to get paid',
+      })
+    } catch (error) {
+      if (error instanceof UrlSizeError) {
+        toast.error('Invoice URL is too large', {
+          description: `${error.size} bytes exceeds the ${error.limit} byte limit. Try reducing notes or line items.`,
+        })
+      } else {
+        toast.error('Failed to generate link', {
+          description: error instanceof Error ? error.message : 'Unknown error',
+        })
+      }
+    } finally {
+      setIsGenerating(false)
+    }
+  }, [activeDraft, lineItems, preferences.includeOgImage, isGenerating])
+
   return (
     <>
+      {/* ShareModal for generated invoice URL */}
+      {generatedUrl && generatedInvoice && (
+        <ShareModal
+          url={generatedUrl}
+          invoice={generatedInvoice}
+          open={isShareModalOpen}
+          onOpenChange={setIsShareModalOpen}
+        />
+      )}
+
       {/* Fullscreen preview modal */}
       {invoiceData && (
         <InvoicePreviewModal
@@ -165,8 +264,9 @@ export function CreateWorkspace() {
               </Button>
             </div>
 
-            <InvoiceForm />
+            <InvoiceForm onGenerate={handleGenerateLink} />
             <MagicDustToggle />
+            <OgImageCheckbox />
           </div>
         </Card>
 

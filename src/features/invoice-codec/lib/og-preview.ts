@@ -57,7 +57,9 @@ export function encodeOGPreview(invoice: Invoice): string {
     const safeName = invoice.from.name
       .slice(0, 20)
       .replace(/[_#?&=%]/g, '') // Remove URL-unsafe chars and delimiter
-      .trim()
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Collapse multiple hyphens
+      .replace(/^-|-$/g, '') // Trim leading/trailing hyphens
     if (safeName) {
       parts.push(safeName)
     }

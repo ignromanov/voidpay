@@ -13,7 +13,9 @@ import {
   type LineItem,
 } from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
+import { generateInvoiceUrl } from '@/features/invoice-codec'
 import { calculateTotalsBigInt, formatAmount } from '@/shared/lib/amount-utils'
+import type { GenerateOptions } from './types'
 
 /**
  * Calculate total amount from invoice data using BigInt precision.
@@ -77,28 +79,64 @@ export function buildInvoice(draft: DraftState, lineItems: LineItem[]): Invoice 
   } as Invoice
 }
 
+/** URL size limit in bytes */
+const URL_SIZE_LIMIT = 2000
+
+/**
+ * Error thrown when URL exceeds size limit
+ */
+export class UrlSizeError extends Error {
+  constructor(
+    public readonly size: number,
+    public readonly limit: number = URL_SIZE_LIMIT
+  ) {
+    super(`Invoice URL is too large (${size} bytes). Maximum allowed is ${limit} bytes. Try reducing notes or line items.`)
+    this.name = 'UrlSizeError'
+  }
+}
+
 /**
  * Generate invoice URL and add to history
  *
  * Combines URL generation and history tracking.
+ * Uses Binary V3 encoding for compact, privacy-preserving URLs.
  *
  * @param draft - Draft state with invoice data
  * @param lineItems - Line items for the invoice
+ * @param options - Generation options (OG preview, etc.)
  * @returns Generated invoice URL
+ * @throws UrlSizeError if URL exceeds 2000 bytes
  *
  * @example
- * const url = await generateAndTrackInvoice(draft, lineItems)
+ * const url = await generateAndTrackInvoice(draft, lineItems, { includeOG: true })
  * router.push(url)
  */
 export async function generateAndTrackInvoice(
   draft: DraftState,
-  lineItems: LineItem[]
+  lineItems: LineItem[],
+  options: GenerateOptions = {}
 ): Promise<string> {
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  const invoiceUrl = `${baseUrl}/invoice?draft=${draft.meta.draftId}`
-
-  // Build full invoice and add to history
+  // Build full invoice from draft and line items
   const invoice = buildInvoice(draft, lineItems)
+
+  // Generate URL with Binary V3 encoding
+  // generateInvoiceUrl throws if URL > 2000 bytes
+  let invoiceUrl: string
+  try {
+    invoiceUrl = generateInvoiceUrl(invoice, {
+      includeOG: options.includeOG ?? false,
+    })
+  } catch (error) {
+    // Re-throw with user-friendly message
+    if (error instanceof Error && error.message.includes('URL size')) {
+      const sizeMatch = error.message.match(/\((\d+) bytes\)/)
+      const size = sizeMatch?.[1] ? parseInt(sizeMatch[1], 10) : 0
+      throw new UrlSizeError(size)
+    }
+    throw error
+  }
+
+  // Add to history for later retrieval
   addToHistory(invoice, invoiceUrl)
 
   return invoiceUrl

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
-import { Image as ImageIcon, HelpCircle } from 'lucide-react'
+import { Image as ImageIcon, EyeOff } from 'lucide-react'
 import { useShallow } from 'zustand/shallow'
 
 import { useCreatorStore } from '@/entities/creator'
@@ -49,15 +49,25 @@ export function OgImageCheckbox({ className }: OgImageCheckboxProps) {
           <Text variant="tiny" className="font-bold text-zinc-300">
             Social Media Preview
           </Text>
-          <div className="group relative">
-            <HelpCircle className="h-3 w-3 cursor-help text-zinc-600" />
-            <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-48 -translate-x-1/2 rounded border border-zinc-800 bg-zinc-900 p-2 text-center font-sans text-[10px] text-zinc-300 opacity-0 shadow-xl transition-opacity group-hover:opacity-100">
-              Disabling hides invoice preview in social media shares (Twitter, Telegram, etc). More
-              private but less visual.
-            </div>
-          </div>
         </div>
         <Switch checked={includeOgImage} onCheckedChange={handleChange} />
+      </div>
+
+      <div className="mt-2 border-t border-zinc-800/50 pt-2">
+        {includeOgImage ? (
+          <Text variant="tiny" className="leading-tight">
+            Shows invoice preview when sharing on{' '}
+            <strong className="text-zinc-400">Twitter, Telegram, etc</strong>. Includes minimal
+            public metadata.
+          </Text>
+        ) : (
+          <div className="flex items-start gap-2">
+            <EyeOff className="mt-0.5 h-3 w-3 shrink-0 text-zinc-500" />
+            <Text variant="tiny" className="leading-tight text-zinc-500">
+              No preview card when sharing. More private, but less visual appeal in social feeds.
+            </Text>
+          </div>
+        )}
       </div>
     </div>
   )
