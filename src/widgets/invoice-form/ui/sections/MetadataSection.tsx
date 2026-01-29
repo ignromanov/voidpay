@@ -1,11 +1,11 @@
 'use client'
 
 import { useCallback } from 'react'
-import { Calendar } from 'lucide-react'
 import type { UseFormReturn } from 'react-hook-form'
 
 import { Input } from '@/shared/ui/input'
 import { Text } from '@/shared/ui/typography'
+import { CalendarIcon } from '@/shared/ui/icons'
 import { FIELD_LIMITS } from '@/shared/lib/invoice-types'
 
 import type { InvoiceFormValues } from '../../lib/use-invoice-form'
@@ -59,7 +59,7 @@ export function MetadataSection({ form, fieldValidation }: MetadataSectionProps)
 
       <div className="space-y-1.5">
         <Text variant="label" className="flex items-center gap-1.5 text-zinc-400">
-          <Calendar className="h-3 w-3" /> Dates (Issue / Due) *
+          <CalendarIcon size={12} /> Dates (Issue / Due) *
         </Text>
         <div className="grid grid-cols-2 gap-2">
           <DateInput value={issuedAt} onChange={handleIssuedAtChange} aria-label="Issue date" />

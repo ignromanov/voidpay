@@ -7,28 +7,46 @@
  * Design reference: assets/aistudio/v3/features/invoice/ui/ShareModal.tsx
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import dynamic from 'next/dynamic'
 import {
-  CheckCircle,
-  X,
-  Check,
-  Copy,
-  Send,
-  Twitter,
-  ArrowRight,
-  QrCode,
-  Link as LinkIcon,
-  Download,
-} from 'lucide-react'
-import { QRCodeSVG } from 'qrcode.react'
+  CheckCircleIcon,
+  XIcon,
+  CheckIcon,
+  CopyIcon,
+  SendIcon,
+  TwitterIcon,
+  ArrowRightIcon,
+  QrCodeIcon,
+  LinkIcon,
+  DownloadIcon,
+} from '@/shared/ui/icons'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
+
+const QRCodeSVG = dynamic(
+  () => import('qrcode.react').then((m) => m.QRCodeSVG),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-64 h-64 bg-zinc-800 animate-pulse rounded-lg" />
+    )
+  }
+)
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
 import { toast } from '@/shared/lib/toast'
 import type { ShareModalProps, ShareTab } from '../lib/types'
 import { getTelegramShareUrl, getTwitterShareUrl } from '../lib/social-links'
+
+// QR code logo settings (extracted to module-level constant)
+const QR_LOGO_SETTINGS = {
+  src: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQ4IiBmaWxsPSJ3aGl0ZSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjM0IiBmaWxsPSJub25lIiBzdHJva2U9IiM3QzNBRUQiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC40Ii8+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iMzIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzdDM0FFRCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuNyIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjMxIiBmaWxsPSIjMDkwOTBCIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iMjIiIGZpbGw9IiMwMDAwMDAiLz48L3N2Zz4=',
+  height: 40,
+  width: 40,
+  excavate: true,
+} as const
 
 /**
  * ShareModal - Modal for sharing invoice links
@@ -43,12 +61,21 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
   // Note: invoice prop is reserved for future use (e.g., displaying invoice details in modal)
   const [activeTab, setActiveTab] = useState<ShareTab>('link')
   const [copied, setCopied] = useState(false)
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(url)
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+
+      // Clear any existing timeout
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+
+      copyTimeoutRef.current = setTimeout(() => {
+        setCopied(false)
+      }, 2000)
     } catch {
       // Fallback: show error toast
       toast.error('Failed to copy link. Please copy manually.')
@@ -92,13 +119,34 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)))
   }, [])
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  // Memoize social URLs
+  const { telegramUrl, twitterUrl } = useMemo(() => ({
+    telegramUrl: getTelegramShareUrl(url),
+    twitterUrl: getTwitterShareUrl(url),
+  }), [url])
+
+  // Memoize URL parsing for display
+  const { basePath, rest } = useMemo(() => {
+    const match = url.match(/^(https?:\/\/[^?#]+)(.*)$/)
+    return {
+      basePath: match?.[1] ?? url,
+      rest: match?.[2] ?? ''
+    }
+  }, [url])
+
   // Don't render if not open or not in browser
   if (!open || typeof document === 'undefined') {
     return null
   }
-
-  const telegramUrl = getTelegramShareUrl(url)
-  const twitterUrl = getTwitterShareUrl(url)
 
   return createPortal(
     <AnimatePresence>
@@ -125,7 +173,7 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <Heading variant="h3" className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-violet-500" />
+                    <CheckCircleIcon size={20} className="text-violet-500" />
                     Invoice Generated
                   </Heading>
                   <Text variant="small" className="text-zinc-400">
@@ -138,7 +186,7 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
                   className="text-zinc-500 transition-colors hover:text-white"
                   aria-label="Close modal"
                 >
-                  <X className="h-5 w-5" />
+                  <XIcon size={20} />
                 </button>
               </div>
 
@@ -154,7 +202,7 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
                       : 'text-zinc-500 hover:text-zinc-300'
                   )}
                 >
-                  <LinkIcon className="h-4 w-4" /> Link
+                  <LinkIcon size={16} /> Link
                 </button>
                 <button
                   type="button"
@@ -166,7 +214,7 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
                       : 'text-zinc-500 hover:text-zinc-300'
                   )}
                 >
-                  <QrCode className="h-4 w-4" /> QR Code
+                  <QrCodeIcon size={16} /> QR Code
                 </button>
               </div>
 
@@ -196,18 +244,8 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
                             selection?.addRange(range)
                           }}
                         >
-                          {(() => {
-                            // Split URL into base path and query/hash
-                            const match = url.match(/^(https?:\/\/[^?#]+)(.*)$/)
-                            const basePath = match?.[1] ?? url
-                            const rest = match?.[2] ?? ''
-                            return (
-                              <>
-                                <span className="text-violet-400">{basePath}</span>
-                                {rest && <span className="text-zinc-500">{rest}</span>}
-                              </>
-                            )
-                          })()}
+                          <span className="text-violet-400">{basePath}</span>
+                          {rest && <span className="text-zinc-500">{rest}</span>}
                         </div>
                         <Button
                           onClick={handleCopy}
@@ -219,33 +257,35 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
                         >
                           {copied ? (
                             <>
-                              <Check className="mr-1 h-4 w-4" /> Copied
+                              <CheckIcon size={16} className="mr-1" /> Copied
                             </>
                           ) : (
                             <>
-                              <Copy className="mr-1 h-4 w-4" /> Copy
+                              <CopyIcon size={16} className="mr-1" /> Copy
                             </>
                           )}
                         </Button>
                       </div>
                     </div>
 
-                    {/* Social share buttons */}
+                    {/* Social share links */}
                     <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={() => window.open(telegramUrl, '_blank', 'noopener,noreferrer')}
-                        className="!cursor-pointer flex items-center justify-center gap-2 rounded-xl border border-[#0088cc]/20 bg-[#0088cc]/10 py-3 text-sm font-bold text-[#0088cc] transition-colors hover:bg-[#0088cc]/20"
+                      <a
+                        href={telegramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 rounded-xl border border-[#0088cc]/20 bg-[#0088cc]/10 py-3 text-sm font-bold text-[#0088cc] transition-colors hover:bg-[#0088cc]/20"
                       >
-                        <Send className="h-4 w-4" /> Telegram
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => window.open(twitterUrl, '_blank', 'noopener,noreferrer')}
-                        className="!cursor-pointer flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10"
+                        <SendIcon size={16} /> Telegram
+                      </a>
+                      <a
+                        href={twitterUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10"
                       >
-                        <Twitter className="h-4 w-4" /> Twitter / X
-                      </button>
+                        <TwitterIcon size={16} /> Twitter / X
+                      </a>
                     </div>
 
                     {/* Privacy warning */}
@@ -272,12 +312,7 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
                         level="H" // High error correction allows logo overlay
                         marginSize={1}
                         className="h-auto w-full"
-                        imageSettings={{
-                          src: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQ4IiBmaWxsPSJ3aGl0ZSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjM0IiBmaWxsPSJub25lIiBzdHJva2U9IiM3QzNBRUQiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC40Ii8+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iMzIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzdDM0FFRCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuNyIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjMxIiBmaWxsPSIjMDkwOTBCIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iMjIiIGZpbGw9IiMwMDAwMDAiLz48L3N2Zz4=',
-                          height: 40,
-                          width: 40,
-                          excavate: true,
-                        }}
+                        imageSettings={QR_LOGO_SETTINGS}
                       />
                     </div>
                     <Text variant="tiny" className="max-w-xs text-center text-zinc-400">
@@ -288,7 +323,7 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
                       size="sm"
                       onClick={handleDownloadQR}
                     >
-                      <Download className="mr-1.5 h-4 w-4" /> Download QR
+                      <DownloadIcon size={16} className="mr-1.5" /> Download QR
                     </Button>
                   </motion.div>
                 )}
@@ -303,7 +338,7 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
                   className="flex-1 !cursor-pointer"
                 >
                   <Button variant="default" className="w-full !cursor-pointer">
-                    Open Invoice <ArrowRight className="ml-2 h-4 w-4" />
+                    Open Invoice <ArrowRightIcon size={16} className="ml-2" />
                   </Button>
                 </a>
               </div>

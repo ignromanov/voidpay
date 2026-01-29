@@ -1,12 +1,12 @@
 'use client'
 
 import { useCallback } from 'react'
-import { Image as ImageIcon, EyeOff } from 'lucide-react'
 import { useShallow } from 'zustand/shallow'
 
 import { useCreatorStore } from '@/entities/creator'
 import { Switch } from '@/shared/ui/switch'
 import { Text } from '@/shared/ui/typography'
+import { ImageIcon, EyeOffIcon } from '@/shared/ui/icons'
 import { cn } from '@/shared/lib/utils'
 
 export interface OgImageCheckboxProps {
@@ -43,7 +43,8 @@ export function OgImageCheckbox({ className }: OgImageCheckboxProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ImageIcon
-            className={cn('h-4 w-4', includeOgImage ? 'text-violet-400' : 'text-zinc-600')}
+            size={16}
+            className={cn(includeOgImage ? 'text-violet-400' : 'text-zinc-600')}
             aria-hidden="true"
           />
           <Text variant="tiny" className="font-bold text-zinc-300">
@@ -62,7 +63,7 @@ export function OgImageCheckbox({ className }: OgImageCheckboxProps) {
           </Text>
         ) : (
           <div className="flex items-start gap-2">
-            <EyeOff className="mt-0.5 h-3 w-3 shrink-0 text-zinc-500" />
+            <EyeOffIcon size={12} className="mt-0.5 shrink-0 text-zinc-500" />
             <Text variant="tiny" className="leading-tight text-zinc-500">
               No preview card when sharing. More private, but less visual appeal in social feeds.
             </Text>

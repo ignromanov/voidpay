@@ -1,8 +1,9 @@
 'use client'
 
-import { useCallback } from 'react'
-import { Coins } from 'lucide-react'
+import { useCallback, useMemo } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
+
+import { CoinsIcon } from '@/shared/ui/icons'
 
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
@@ -29,6 +30,21 @@ export function PaymentSection({ form }: PaymentSectionProps) {
 
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
 
+  // Memoize token value to prevent unnecessary re-renders
+  const tokenValue = useMemo(
+    () =>
+      currency
+        ? {
+            symbol: currency,
+            address: tokenAddress ?? null,
+            decimals: decimals || 18,
+            name: currency,
+            iconColor: 'bg-violet-500' as const,
+          }
+        : null,
+    [currency, tokenAddress, decimals]
+  )
+
   // Network change handler (also updates theme)
   const handleNetworkChange = useCallback(
     (chainId: number) => {
@@ -52,7 +68,7 @@ export function PaymentSection({ form }: PaymentSectionProps) {
   return (
     <div className="space-y-4 border-t border-zinc-800/50 pt-4">
       <div className="mb-2 flex items-center gap-2">
-        <Coins className="h-4 w-4 text-zinc-500" />
+        <CoinsIcon size={16} className="text-zinc-500" />
         <Heading variant="h4" className="text-zinc-500">
           Token & Network
         </Heading>
@@ -67,17 +83,7 @@ export function PaymentSection({ form }: PaymentSectionProps) {
         <label className="block text-xs font-medium uppercase tracking-wide text-zinc-400">Token</label>
         <TokenSelect
           chainId={networkId || 42161}
-          value={
-            currency
-              ? {
-                  symbol: currency,
-                  address: tokenAddress ?? null,
-                  decimals: decimals || 18,
-                  name: currency,
-                  iconColor: 'bg-violet-500',
-                }
-              : null
-          }
+          value={tokenValue}
           onChange={handleTokenChange}
           className="w-full"
         />

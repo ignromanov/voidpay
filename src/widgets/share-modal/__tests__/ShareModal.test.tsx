@@ -33,6 +33,17 @@ vi.mock('qrcode.react', () => ({
   ),
 }))
 
+// Mock next/dynamic to bypass lazy loading in tests
+vi.mock('next/dynamic', () => ({
+  default: (importFn: () => Promise<{ QRCodeSVG: React.ComponentType<{ value: string }> }>) => {
+    // Return a component that renders synchronously for tests
+    const DynamicComponent = (props: { value: string }) => (
+      <svg data-testid="qr-code" data-value={props.value} />
+    )
+    return DynamicComponent
+  },
+}))
+
 const VALID_ADDRESS = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
 const TEST_URL = 'https://voidpay.xyz/pay#H123abc'
 
@@ -108,11 +119,12 @@ describe('ShareModal', () => {
   })
 
   describe('Link tab', () => {
-    it('displays URL in readonly input', () => {
+    it('displays URL in styled container', () => {
       render(<ShareModal {...defaultProps} />)
 
-      const input = screen.getByDisplayValue(TEST_URL)
-      expect(input).toHaveAttribute('readonly')
+      // URL is displayed in a styled div, split into basePath and rest
+      expect(screen.getByText('https://voidpay.xyz/pay')).toBeInTheDocument()
+      expect(screen.getByText('#H123abc')).toBeInTheDocument()
     })
 
     it('displays Copy button', () => {
@@ -196,7 +208,7 @@ describe('ShareModal', () => {
       fireEvent.click(qrTab)
 
       expect(
-        screen.getByText(/Scan with a mobile wallet/)
+        screen.getByText(/Show this QR to your client/)
       ).toBeInTheDocument()
     })
   })

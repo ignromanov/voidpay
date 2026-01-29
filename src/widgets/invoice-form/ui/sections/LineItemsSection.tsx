@@ -1,11 +1,11 @@
 'use client'
 
-import { Plus } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 
 import { useCreatorStore } from '@/entities/creator'
 import { Button } from '@/shared/ui/button'
 import { Text } from '@/shared/ui/typography'
+import { PlusIcon } from '@/shared/ui/icons'
 
 import { InvoiceItemRow } from '../InvoiceItemRow'
 
@@ -29,19 +29,17 @@ export function LineItemsSection({ decimals }: LineItemsSectionProps) {
         <Text variant="label" className="text-zinc-500">
           Line Items *
         </Text>
-        <motion.div layout>
-          <Button
-            onClick={addLineItem}
-            variant="ghost"
-            size="sm"
-            className="text-violet-400 hover:text-violet-300"
-            disabled={lineItems.length >= 5}
-            title={lineItems.length >= 5 ? 'Maximum 5 items' : undefined}
-          >
-            <Plus className="mr-1 h-3 w-3" />
-            Add Item
-          </Button>
-        </motion.div>
+        <Button
+          onClick={addLineItem}
+          variant="ghost"
+          size="sm"
+          className="text-violet-400 hover:text-violet-300"
+          disabled={lineItems.length >= 5}
+          title={lineItems.length >= 5 ? 'Maximum 5 items' : undefined}
+        >
+          <PlusIcon size={12} className="mr-1" />
+          Add Item
+        </Button>
       </div>
 
       <div className="space-y-2">

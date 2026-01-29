@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronUp, Plus } from 'lucide-react'
 
 import { Text } from '@/shared/ui/typography'
+import { ChevronUpIcon, PlusIcon } from '@/shared/ui/icons'
 import { cn } from '@/shared/lib/utils'
 
 export interface CollapsibleSectionProps {
@@ -50,9 +50,9 @@ export function CollapsibleSection({
           )}
         >
           {isOpen ? (
-            <ChevronUp className="h-3 w-3 text-zinc-500 group-hover:text-violet-400" />
+            <ChevronUpIcon size={12} className="text-zinc-500 group-hover:text-violet-400" />
           ) : (
-            <Plus className="h-3 w-3 text-zinc-500 group-hover:text-violet-400" />
+            <PlusIcon size={12} className="text-zinc-500 group-hover:text-violet-400" />
           )}
         </div>
         <Text

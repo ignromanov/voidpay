@@ -72,7 +72,7 @@ export function CreateWorkspace() {
 
   const activeDraft = useCreatorStore((s) => s.activeDraft)
   const lineItems = useCreatorStore((s) => s.lineItems)
-  const preferences = useCreatorStore((s) => s.preferences)
+  const includeOgImage = useCreatorStore((s) => s.preferences.includeOgImage)
   const updateDraft = useCreatorStore((s) => s.updateDraft)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
@@ -109,7 +109,7 @@ export function CreateWorkspace() {
     }
   }, [hash, updateDraft])
 
-  const invoiceData = activeDraft?.data
+  const invoiceData = useMemo(() => activeDraft?.data, [activeDraft])
 
   // Update network theme when invoice networkId changes
   useEffect(() => {
@@ -141,46 +141,46 @@ export function CreateWorkspace() {
   const handleGenerateLink = useCallback(async () => {
     if (!activeDraft || isGenerating) return
 
-    // Validate before generation
-    const validation = validateInvoiceForGeneration(activeDraft.data, lineItems)
-
-    if (!validation.isValid) {
-      // Show first error as toast (most important)
-      const firstError = validation.errors[0]
-      toast.error('Cannot generate link', {
-        description: firstError?.message ?? 'Please fill in all required fields',
-      })
-
-      // If multiple errors, show count
-      if (validation.errors.length > 1) {
-        toast.error(`${validation.errors.length - 1} more issue(s) found`, {
-          description: 'Check the form for other missing fields',
-        })
-      }
-      return
-    }
-
-    // Show size warning if applicable (edge case, not blocking)
-    if (validation.sizeWarning) {
-      // Use error style to draw attention to potential issue
-      toast.error('URL size approaching limit', {
-        description: 'Consider reducing notes or line items if generation fails.',
-      })
-    }
-
     setIsGenerating(true)
 
     try {
-      // Generate URL with OG preview based on user preference
-      const url = await generateAndTrackInvoice(activeDraft, lineItems, {
-        includeOG: preferences.includeOgImage ?? false,
-      })
+      // Validate INSIDE try block
+      const validation = validateInvoiceForGeneration(activeDraft.data, lineItems)
 
-      // Build invoice for ShareModal display
+      if (!validation.isValid) {
+        // Show first error as toast (most important)
+        const firstError = validation.errors[0]
+        toast.error('Cannot generate link', {
+          description: firstError?.message ?? 'Please fill in all required fields',
+        })
+
+        // If multiple errors, show count
+        if (validation.errors.length > 1) {
+          toast.error(`${validation.errors.length - 1} more issue(s) found`, {
+            description: 'Check the form for other missing fields',
+          })
+        }
+        return
+      }
+
+      // Show size warning if applicable (edge case, not blocking)
+      if (validation.sizeWarning) {
+        // Use error style to draw attention to potential issue
+        toast.error('URL size approaching limit', {
+          description: 'Consider reducing notes or line items if generation fails.',
+        })
+      }
+
+      // Build invoice BEFORE async call (no URL dependency)
       const invoice: Invoice = {
         ...activeDraft.data,
         items: lineItems.map(({ id: _id, ...item }) => item),
       } as Invoice
+
+      // Generate URL with OG preview based on user preference
+      const url = await generateAndTrackInvoice(activeDraft, lineItems, {
+        includeOG: includeOgImage ?? false,
+      })
 
       setGeneratedUrl(url)
       setGeneratedInvoice(invoice)
@@ -202,7 +202,7 @@ export function CreateWorkspace() {
     } finally {
       setIsGenerating(false)
     }
-  }, [activeDraft, lineItems, preferences.includeOgImage, isGenerating])
+  }, [activeDraft, lineItems, includeOgImage, isGenerating])
 
   return (
     <>

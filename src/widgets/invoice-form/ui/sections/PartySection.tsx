@@ -1,8 +1,9 @@
 'use client'
 
 import { useCallback } from 'react'
-import { Wallet, Users } from 'lucide-react'
 import type { UseFormReturn, FormState } from 'react-hook-form'
+
+import { WalletIcon, UsersIcon } from '@/shared/ui/icons'
 
 import { Input } from '@/shared/ui/input'
 import { AddressInput } from '@/shared/ui/address-input'
@@ -24,7 +25,7 @@ export interface PartySectionProps {
 // Configuration per party type
 const PARTY_CONFIG = {
   from: {
-    icon: Wallet,
+    icon: WalletIcon,
     iconColorClass: 'border-violet-500/20 bg-violet-500/10 text-violet-400',
     title: 'From (Sender)',
     nameLabel: 'Your Name / Company *',
@@ -45,7 +46,7 @@ const PARTY_CONFIG = {
     showBorder: false,
   },
   client: {
-    icon: Users,
+    icon: UsersIcon,
     iconColorClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-400',
     title: 'To (Recipient)',
     nameLabel: 'Client Name *',

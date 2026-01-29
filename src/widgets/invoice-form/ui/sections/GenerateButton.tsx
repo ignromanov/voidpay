@@ -1,7 +1,7 @@
 'use client'
 
-import { Share2, ArrowRight } from 'lucide-react'
-import { toast } from 'sonner'
+import { Share2Icon, ArrowRightIcon } from '@/shared/ui/icons'
+import { toast } from '@/shared/lib/toast'
 
 import { Button } from '@/shared/ui/button'
 
@@ -18,7 +18,7 @@ export function GenerateButton({ onGenerate, canGenerate }: GenerateButtonProps)
     if (onGenerate) {
       onGenerate()
     } else {
-      toast.info('Coming soon', {
+      toast.success('Coming soon', {
         description: 'Invoice generation will be available in the next update',
       })
     }
@@ -32,9 +32,9 @@ export function GenerateButton({ onGenerate, canGenerate }: GenerateButtonProps)
         variant="glow"
         className="h-14 w-full cursor-pointer text-base"
       >
-        <Share2 className="mr-2 h-5 w-5" />
+        <Share2Icon size={20} className="mr-2" />
         Generate Invoice Link
-        <ArrowRight className="ml-2 h-4 w-4" />
+        <ArrowRightIcon size={16} className="ml-2" />
       </Button>
     </div>
   )
