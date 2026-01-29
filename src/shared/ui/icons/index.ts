@@ -1,40 +1,40 @@
 /**
- * Critical Path Icons
+ * Inline SVG Icons
  *
- * Inline SVG icons for above-the-fold components.
- * Use these instead of lucide-react imports in HeroSection, SocialProofStrip.
+ * Optimized icons for above-the-fold components to avoid Lucide bundle load.
+ * Organized by category for easier maintenance.
+ *
+ * Source: Lucide Icons (https://lucide.dev)
+ * License: ISC License
  */
 
+// Types
+export type { IconProps } from './types'
+
+// Navigation (arrows, chevrons)
+export { ArrowRightIcon, ArrowLeftIcon, ChevronUpIcon, ChevronDownIcon } from './navigation'
+
+// Social (brand icons)
+export { GithubIcon, TwitterIcon, SendIcon } from './social'
+
+// Status (feedback, alerts)
+export { LockIcon, AlertCircleIcon, CheckIcon, CheckCircleIcon, XIcon } from './status'
+
+// Contact (identity fields)
+export { MailIcon, PhoneIcon, MapPinIcon, WalletIcon, HashIcon } from './contact'
+
+// Actions (user interactions)
+export { CopyIcon, Share2Icon, LinkIcon, DownloadIcon, PlusIcon } from './actions'
+
+// Miscellaneous (domain-specific)
 export {
-  ArrowRightIcon,
-  ArrowLeftIcon,
-  LockIcon,
   ServerOffIcon,
   GlobeIcon,
-  GithubIcon,
-  MailIcon,
-  PhoneIcon,
-  MapPinIcon,
-  WalletIcon,
-  HashIcon,
-  PlusIcon,
   CoinsIcon,
   CalendarIcon,
-  Share2Icon,
-  UsersIcon,
   FingerprintIcon,
-  AlertCircleIcon,
+  UsersIcon,
   ImageIcon,
   EyeOffIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
-  SendIcon,
-  TwitterIcon,
-  CopyIcon,
-  CheckIcon,
   QrCodeIcon,
-  LinkIcon,
-  DownloadIcon,
-  CheckCircleIcon,
-  XIcon,
-} from './critical-icons'
+} from './misc'
