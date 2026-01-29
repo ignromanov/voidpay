@@ -25,6 +25,9 @@ export interface NetworkSelectProps {
 
   /** Additional CSS classes */
   className?: string
+
+  /** HTML id for label association */
+  id?: string
 }
 
 /**
@@ -47,6 +50,7 @@ export function NetworkSelect({
   onChange,
   disabled = false,
   className,
+  id,
 }: NetworkSelectProps) {
   const selectedNetwork = React.useMemo(() => {
     return NETWORK_CONFIG.find((network) => network.chainId === value)
@@ -62,7 +66,7 @@ export function NetworkSelect({
 
   return (
     <Select value={value.toString()} onValueChange={handleValueChange} disabled={disabled}>
-      <SelectTrigger variant="glass" className={cn('w-[200px]', className)}>
+      <SelectTrigger id={id} variant="glass" className={cn('w-[200px]', className)}>
         <SelectValue>
           {selectedNetwork && (
             <div className="flex items-center gap-3">

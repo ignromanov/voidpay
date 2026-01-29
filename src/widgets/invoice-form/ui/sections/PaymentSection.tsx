@@ -75,13 +75,18 @@ export function PaymentSection({ form }: PaymentSectionProps) {
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-xs font-medium uppercase tracking-wide text-zinc-400">Network</label>
-        <NetworkSelect value={networkId || 42161} onChange={handleNetworkChange} className="w-full" />
+        <label htmlFor="network-select" className="block text-xs font-medium uppercase tracking-wide text-zinc-400">
+          Network
+        </label>
+        <NetworkSelect id="network-select" value={networkId || 42161} onChange={handleNetworkChange} className="w-full" />
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-xs font-medium uppercase tracking-wide text-zinc-400">Token</label>
+        <label htmlFor="token-select" className="block text-xs font-medium uppercase tracking-wide text-zinc-400">
+          Token
+        </label>
         <TokenSelect
+          id="token-select"
           chainId={networkId || 42161}
           value={tokenValue}
           onChange={handleTokenChange}

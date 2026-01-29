@@ -36,6 +36,7 @@ export function LineItemsSection({ decimals }: LineItemsSectionProps) {
           className="text-violet-400 hover:text-violet-300"
           disabled={lineItems.length >= 5}
           title={lineItems.length >= 5 ? 'Maximum 5 items' : undefined}
+          aria-label="Add line item"
         >
           <PlusIcon size={12} className="mr-1" />
           Add Item

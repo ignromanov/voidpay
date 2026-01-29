@@ -108,7 +108,9 @@ export function InvoiceItemRow({
           value={item.description}
           maxLength={FIELD_LIMITS.description}
           onChange={(e) => onUpdate({ description: e.target.value })}
-          className="w-full border-b border-zinc-800 bg-transparent py-1 text-sm text-zinc-200 transition-colors outline-none placeholder:text-zinc-700 focus:border-violet-500"
+          aria-label="Item description"
+          autoComplete="off"
+          className="w-full border-b border-zinc-800 bg-transparent py-1 text-sm text-zinc-200 transition-colors outline-none placeholder:text-zinc-700 focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
         />
       </div>
       <div className="col-span-2">
@@ -119,7 +121,9 @@ export function InvoiceItemRow({
           min={1}
           max={FIELD_LIMITS.maxQuantity}
           onChange={(e) => onUpdate({ quantity: parseFloat(e.target.value) || 1 })}
-          className="w-full border-b border-zinc-800 bg-transparent py-1 text-center text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500"
+          aria-label="Item quantity"
+          autoComplete="off"
+          className="w-full border-b border-zinc-800 bg-transparent py-1 text-center text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
         />
       </div>
       <div className="col-span-2">
@@ -131,7 +135,9 @@ export function InvoiceItemRow({
           maxLength={FIELD_LIMITS.rate}
           onChange={handleRateChange}
           onBlur={handleRateBlur}
-          className="w-full border-b border-zinc-800 bg-transparent py-1 text-right text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500"
+          aria-label="Item price"
+          autoComplete="off"
+          className="w-full border-b border-zinc-800 bg-transparent py-1 text-right text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
         />
       </div>
       <div className="col-span-2">
@@ -145,6 +151,7 @@ export function InvoiceItemRow({
             onClick={onRemove}
             variant="ghost"
             size="icon"
+            aria-label="Delete item"
             className="h-6 w-6 p-0 text-zinc-500 hover:text-red-400"
           >
             <Trash2 className="h-3 w-3" />

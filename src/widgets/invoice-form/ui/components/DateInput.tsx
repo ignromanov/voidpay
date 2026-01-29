@@ -33,10 +33,11 @@ export function DateInput({ value, onChange, className, 'aria-label': ariaLabel 
       value={inputValue}
       onChange={handleChange}
       aria-label={ariaLabel}
+      autoComplete="off"
       className={cn(
         'w-full cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900/50 px-2 py-2.5',
         'font-mono text-xs text-zinc-300 transition-shadow outline-none',
-        'focus:text-white focus:shadow-[0_0_15px_rgba(124,58,237,0.3)]',
+        'focus:text-white focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] focus-visible:ring-2 focus-visible:ring-violet-500/50',
         // Webkit calendar picker styling
         '[&::-webkit-calendar-picker-indicator]:cursor-pointer',
         '[&::-webkit-calendar-picker-indicator]:invert',

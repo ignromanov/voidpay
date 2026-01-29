@@ -111,6 +111,7 @@ export function PartySection({ partyType, form, fieldValidation, formState }: Pa
         maxLength={FIELD_LIMITS.name}
         error={getFieldError(partyErrors?.name, fieldValidation, config.nameValidationKey, config.nameValidationMessage)}
         touched={partyTouched?.name}
+        autoComplete="organization"
       />
 
       {/* Wallet address - required for sender, optional collapsible for client */}
@@ -153,6 +154,8 @@ export function PartySection({ partyType, form, fieldValidation, formState }: Pa
             maxLength={FIELD_LIMITS.email}
             error={getFieldError(partyErrors?.email)}
             touched={partyTouched?.email}
+            spellCheck={false}
+            autoComplete="email"
             {...register(`${partyType}.email`)}
           />
           <Input
@@ -162,6 +165,7 @@ export function PartySection({ partyType, form, fieldValidation, formState }: Pa
             maxLength={FIELD_LIMITS.phone}
             error={getFieldError(partyErrors?.phone)}
             touched={partyTouched?.phone}
+            autoComplete="tel"
             {...register(`${partyType}.phone`)}
           />
         </div>
@@ -181,6 +185,7 @@ export function PartySection({ partyType, form, fieldValidation, formState }: Pa
           maxLength={FIELD_LIMITS.taxId}
           error={getFieldError(partyErrors?.taxId)}
           touched={partyTouched?.taxId}
+          autoComplete="off"
           {...register(`${partyType}.taxId`)}
         />
       </CollapsibleSection>

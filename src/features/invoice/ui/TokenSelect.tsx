@@ -42,6 +42,9 @@ export interface TokenSelectProps {
 
   /** Additional CSS classes */
   className?: string
+
+  /** HTML id for label association */
+  id?: string
 }
 
 /**
@@ -65,6 +68,7 @@ export function TokenSelect({
   onChange,
   allowCustom = true,
   className,
+  id,
 }: TokenSelectProps) {
   // Custom token state
   const [isCustomMode, setIsCustomMode] = React.useState(false)
@@ -260,7 +264,7 @@ export function TokenSelect({
 
   return (
     <Select value={selectedValue} onValueChange={handleValueChange}>
-      <SelectTrigger variant="glass" className={cn('w-[200px]', className)}>
+      <SelectTrigger id={id} variant="glass" className={cn('w-[200px]', className)}>
         <SelectValue>
           {value && (
             <div className="flex items-center gap-3">

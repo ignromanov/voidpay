@@ -40,8 +40,9 @@ export function CollapsibleSection({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="group flex cursor-pointer items-center gap-1.5 focus:outline-none"
+        className="group flex cursor-pointer items-center gap-1.5 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50"
         aria-expanded={isOpen}
+        aria-label={`${isOpen ? 'Collapse' : 'Expand'} ${title}`}
       >
         <div
           className={cn(
