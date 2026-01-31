@@ -13,7 +13,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Plus, ShieldAlert } from 'lucide-react'
+import { PlusIcon, ShieldAlertIcon } from '@/shared/ui/icons'
 import { VoidLogo } from '@/shared/ui/void-logo'
 import { Button } from '@/shared/ui/button'
 import { LazyWalletButton as WalletButton } from '@/features/wallet-connect'
@@ -61,7 +61,7 @@ export function Navigation() {
                 href="#"
                 className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-zinc-800/50 hover:text-red-300"
               >
-                <ShieldAlert className="h-4 w-4" />
+                <ShieldAlertIcon className="h-4 w-4" />
                 Blocked
               </a>
 
@@ -71,7 +71,7 @@ export function Navigation() {
               {/* Create Button */}
               <Link href="/create">
                 <Button variant="outline" size="sm" className="gap-1.5">
-                  <Plus className="h-4 w-4" />
+                  <PlusIcon className="h-4 w-4" />
                   Create
                 </Button>
               </Link>

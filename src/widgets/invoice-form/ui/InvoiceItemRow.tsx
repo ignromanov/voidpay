@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
-import { Trash2 } from 'lucide-react'
+import { Trash2Icon } from '@/shared/ui/icons'
 import { motion } from 'framer-motion'
 
 import { Button } from '@/shared/ui/button'
@@ -154,7 +154,7 @@ export function InvoiceItemRow({
             aria-label="Delete item"
             className="h-6 w-6 p-0 text-zinc-500 hover:text-red-400"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2Icon className="h-3 w-3" />
           </Button>
         )}
       </div>

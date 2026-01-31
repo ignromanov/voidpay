@@ -1,6 +1,6 @@
 'use client'
 
-import { Share2Icon, ArrowRightIcon } from '@/shared/ui/icons'
+import { Share2Icon, ArrowRightIcon, Loader2Icon } from '@/shared/ui/icons'
 import { toast } from '@/shared/lib/toast'
 
 import { Button } from '@/shared/ui/button'
@@ -8,12 +8,13 @@ import { Button } from '@/shared/ui/button'
 export interface GenerateButtonProps {
   onGenerate: (() => void) | undefined
   canGenerate: boolean
+  isGenerating?: boolean | undefined
 }
 
 /**
  * Generate invoice link button with glow variant.
  */
-export function GenerateButton({ onGenerate, canGenerate }: GenerateButtonProps) {
+export function GenerateButton({ onGenerate, canGenerate, isGenerating = false }: GenerateButtonProps) {
   const handleClick = () => {
     if (onGenerate) {
       onGenerate()
@@ -28,13 +29,22 @@ export function GenerateButton({ onGenerate, canGenerate }: GenerateButtonProps)
     <div className="pt-4">
       <Button
         onClick={handleClick}
-        disabled={!canGenerate}
+        disabled={!canGenerate || isGenerating}
         variant="glow"
         className="h-14 w-full cursor-pointer text-base"
       >
-        <Share2Icon size={20} className="mr-2" />
-        Generate Invoice Link
-        <ArrowRightIcon size={16} className="ml-2" />
+        {isGenerating ? (
+          <>
+            <Loader2Icon className="mr-2 h-5 w-5 animate-spin" />
+            Generating...
+          </>
+        ) : (
+          <>
+            <Share2Icon size={20} className="mr-2" />
+            Generate Invoice Link
+            <ArrowRightIcon size={16} className="ml-2" />
+          </>
+        )}
       </Button>
     </div>
   )

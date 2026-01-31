@@ -7,7 +7,7 @@
 
 'use client'
 
-import { Github, Twitter } from 'lucide-react'
+import { GithubIcon, TwitterIcon } from '@/shared/ui/icons'
 import Link from 'next/link'
 
 import { SOCIAL_URLS } from '@/shared/config'
@@ -56,7 +56,7 @@ export function FooterCta() {
             aria-label="GitHub"
             className="text-zinc-400 transition-colors hover:text-white"
           >
-            <Github className="h-6 w-6" />
+            <GithubIcon className="h-6 w-6" />
           </a>
           <a
             href={SOCIAL_URLS.twitter}
@@ -65,7 +65,7 @@ export function FooterCta() {
             aria-label="Twitter"
             className="text-zinc-400 transition-colors hover:text-white"
           >
-            <Twitter className="h-6 w-6" />
+            <TwitterIcon className="h-6 w-6" />
           </a>
         </div>
       </div>

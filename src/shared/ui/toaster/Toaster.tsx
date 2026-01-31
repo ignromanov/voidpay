@@ -1,7 +1,7 @@
 'use client'
 
 import { Toaster as SonnerToaster } from 'sonner'
-import { CheckCircle2, XCircle, Loader2, Info } from 'lucide-react'
+import { CheckCircleIcon, XCircleIcon, Loader2Icon, InfoIcon } from '@/shared/ui/icons'
 
 export function Toaster() {
   return (
@@ -11,10 +11,10 @@ export function Toaster() {
       style={{ bottom: '50px' }}
       gap={12}
       icons={{
-        success: <CheckCircle2 className="h-5 w-5 text-emerald-400" />,
-        error: <XCircle className="h-5 w-5 text-rose-400" />,
-        loading: <Loader2 className="h-5 w-5 animate-spin text-violet-400" />,
-        info: <Info className="h-5 w-5 text-blue-400" />,
+        success: <CheckCircleIcon className="h-5 w-5 text-emerald-400" />,
+        error: <XCircleIcon className="h-5 w-5 text-rose-400" />,
+        loading: <Loader2Icon className="h-5 w-5 animate-spin text-violet-400" />,
+        info: <InfoIcon className="h-5 w-5 text-blue-400" />,
       }}
       toastOptions={{
         unstyled: true,

@@ -84,8 +84,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
     class="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
   >
     <svg
-      aria-hidden="true"
-      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4"
+      class="h-4 w-4"
       fill="none"
       height="24"
       stroke="currentColor"
@@ -97,19 +96,25 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M10 11v6"
-      />
-      <path
-        d="M14 11v6"
-      />
-      <path
-        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
-      />
-      <path
         d="M3 6h18"
       />
       <path
-        d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+        d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+      />
+      <path
+        d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+      />
+      <line
+        x1="10"
+        x2="10"
+        y1="11"
+        y2="17"
+      />
+      <line
+        x1="14"
+        x2="14"
+        y1="11"
+        y2="17"
       />
     </svg>
   </button>
@@ -200,8 +205,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
     class="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
   >
     <svg
-      aria-hidden="true"
-      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4"
+      class="h-4 w-4"
       fill="none"
       height="24"
       stroke="currentColor"
@@ -213,19 +217,25 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M10 11v6"
-      />
-      <path
-        d="M14 11v6"
-      />
-      <path
-        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
-      />
-      <path
         d="M3 6h18"
       />
       <path
-        d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+        d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+      />
+      <path
+        d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+      />
+      <line
+        x1="10"
+        x2="10"
+        y1="11"
+        y2="17"
+      />
+      <line
+        x1="14"
+        x2="14"
+        y1="11"
+        y2="17"
       />
     </svg>
   </button>
@@ -316,8 +326,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
     class="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
   >
     <svg
-      aria-hidden="true"
-      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4"
+      class="h-4 w-4"
       fill="none"
       height="24"
       stroke="currentColor"
@@ -329,19 +338,25 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M10 11v6"
-      />
-      <path
-        d="M14 11v6"
-      />
-      <path
-        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
-      />
-      <path
         d="M3 6h18"
       />
       <path
-        d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+        d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+      />
+      <path
+        d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+      />
+      <line
+        x1="10"
+        x2="10"
+        y1="11"
+        y2="17"
+      />
+      <line
+        x1="14"
+        x2="14"
+        y1="11"
+        y2="17"
       />
     </svg>
   </button>

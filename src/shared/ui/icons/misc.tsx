@@ -144,3 +144,145 @@ export function QrCodeIcon({ size = 24, ...props }: IconProps) {
     </svg>
   )
 }
+
+/**
+ * FileText icon - Used for documents/empty state
+ */
+export function FileTextIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M10 9H8" />
+      <path d="M16 13H8" />
+      <path d="M16 17H8" />
+    </svg>
+  )
+}
+
+/**
+ * Database icon - Used for zero storage feature
+ */
+export function DatabaseIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M3 5V19A9 3 0 0 0 21 19V5" />
+      <path d="M3 12A9 3 0 0 0 21 12" />
+    </svg>
+  )
+}
+
+/**
+ * Layers icon - Used for open standard feature
+ */
+export function LayersIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" />
+      <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" />
+      <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" />
+    </svg>
+  )
+}
+
+/**
+ * LayoutTemplate icon - Used for no bloat feature
+ */
+export function LayoutTemplateIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <rect width="18" height="7" x="3" y="3" rx="1" />
+      <rect width="9" height="7" x="3" y="14" rx="1" />
+      <rect width="5" height="7" x="16" y="14" rx="1" />
+    </svg>
+  )
+}
+
+/**
+ * MousePointerClick icon - Used for one-click feature
+ */
+export function MousePointerClickIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <path d="M14 4.1 12 6" />
+      <path d="m5.1 8-2.9-.8" />
+      <path d="m6 12-1.9 2" />
+      <path d="M7.2 2.2 8 5.1" />
+      <path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z" />
+    </svg>
+  )
+}
+
+/**
+ * Shield icon - Used for immutable/security feature
+ */
+export function ShieldIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+    </svg>
+  )
+}
+
+/**
+ * Zap icon - Used for instant/fast feature
+ */
+export function ZapIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
+    </svg>
+  )
+}
+
+/**
+ * Briefcase icon - Used for freelancers audience
+ */
+export function BriefcaseIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      <rect width="20" height="14" x="2" y="6" rx="2" />
+    </svg>
+  )
+}
+
+/**
+ * Building2 icon - Used for agencies audience
+ */
+export function Building2Icon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+      <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+      <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+      <path d="M10 6h4" />
+      <path d="M10 10h4" />
+      <path d="M10 14h4" />
+      <path d="M10 18h4" />
+    </svg>
+  )
+}
+
+/**
+ * Hexagon icon - Used for Polygon network shape
+ */
+export function HexagonIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+    </svg>
+  )
+}
+
+/**
+ * Triangle icon - Used for Arbitrum network shape
+ */
+export function TriangleIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <path d="M13.73 4a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+    </svg>
+  )
+}

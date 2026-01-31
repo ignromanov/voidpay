@@ -1,7 +1,7 @@
 'use client'
 
 import { useLayoutEffect, useEffect, useState, useCallback, useMemo } from 'react'
-import { Edit3, Eye, Maximize2, RotateCcw, Check, Loader2 } from 'lucide-react'
+import { Edit3Icon, EyeIcon, Maximize2Icon, RotateCcwIcon, CheckIcon, Loader2Icon } from '@/shared/ui/icons'
 
 import { parseInvoiceHash } from '@/features/invoice-codec'
 import {
@@ -71,7 +71,6 @@ export function CreateWorkspace() {
   const [isGenerating, setIsGenerating] = useState(false)
 
   const activeDraft = useCreatorStore((s) => s.activeDraft)
-  const lineItems = useCreatorStore((s) => s.lineItems)
   const includeOgImage = useCreatorStore((s) => s.preferences.includeOgImage)
   const updateDraft = useCreatorStore((s) => s.updateDraft)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
@@ -83,12 +82,12 @@ export function CreateWorkspace() {
       {
         id: 'editor',
         label: 'Editor',
-        icon: <Edit3 className="w-4 h-4" />,
+        icon: <Edit3Icon className="w-4 h-4" />,
       },
       {
         id: 'preview',
         label: 'Preview',
-        icon: <Eye className="w-4 h-4" />,
+        icon: <EyeIcon className="w-4 h-4" />,
       },
     ],
     []
@@ -139,7 +138,12 @@ export function CreateWorkspace() {
    * 4. Open ShareModal
    */
   const handleGenerateLink = useCallback(async () => {
-    if (!activeDraft || isGenerating) return
+    if (isGenerating) return
+
+    // Get fresh values from store at click time (not render time)
+    const { activeDraft, lineItems } = useCreatorStore.getState()
+
+    if (!activeDraft) return
 
     setIsGenerating(true)
 
@@ -202,7 +206,7 @@ export function CreateWorkspace() {
     } finally {
       setIsGenerating(false)
     }
-  }, [activeDraft, lineItems, includeOgImage, isGenerating])
+  }, [includeOgImage, isGenerating])
 
   return (
     <>
@@ -232,8 +236,11 @@ export function CreateWorkspace() {
       </div>
 
       {/* Main Workspace Container - form and invoice centered together */}
-      {/* Mobile: pb-20 accounts for fixed tab bar (56px + safe area) */}
-      <div className="mx-auto flex h-[calc(100vh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 pb-20 lg:pb-6 lg:py-6 print:h-auto print:max-w-none print:overflow-visible print:p-0">
+      {/* Mobile: pb with safe area for tab bar (5rem = 80px base + env safe area) */}
+      <div
+        className="mx-auto flex h-[calc(100vh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 lg:pb-6 lg:py-6 print:h-auto print:max-w-none print:overflow-visible print:p-0"
+        style={{ paddingBottom: 'max(5rem, calc(env(safe-area-inset-bottom, 0px) + 5rem))' }}
+      >
         {/* LEFT: Editor Pane (form sticks to invoice) */}
         <Card
           variant="glass"
@@ -259,12 +266,12 @@ export function CreateWorkspace() {
                 className="shrink-0 text-zinc-500 hover:text-zinc-300"
                 title="Reset to new invoice"
               >
-                <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                <RotateCcwIcon className="mr-1.5 h-3.5 w-3.5" />
                 Reset
               </Button>
             </div>
 
-            <InvoiceForm onGenerate={handleGenerateLink} />
+            <InvoiceForm onGenerate={handleGenerateLink} isGenerating={isGenerating} />
           </div>
         </Card>
 
@@ -298,7 +305,7 @@ export function CreateWorkspace() {
                     className="flex cursor-pointer items-center gap-2 rounded-full border border-zinc-600/50 bg-zinc-800/80 px-3 py-1.5 font-mono text-[10px] whitespace-nowrap text-zinc-300 shadow-xl backdrop-blur-md transition-colors hover:border-zinc-500 hover:bg-zinc-700 hover:text-zinc-100"
                     type="button"
                   >
-                    <Maximize2 className="h-3 w-3" />
+                    <Maximize2Icon className="h-3 w-3" />
                     Expand
                   </button>
                 </div>
@@ -312,9 +319,9 @@ export function CreateWorkspace() {
           <div className="absolute bottom-6 sm:bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none">
             <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
               {SYNC_STATUS_CONFIG[draftSyncStatus].icon === 'loader' ? (
-                <Loader2 className="h-3 w-3 animate-spin text-amber-500" />
+                <Loader2Icon className="h-3 w-3 animate-spin text-amber-500" />
               ) : SYNC_STATUS_CONFIG[draftSyncStatus].icon === 'check' ? (
-                <Check className="h-3 w-3 text-green-500" />
+                <CheckIcon className="h-3 w-3 text-green-500" />
               ) : (
                 <div
                   className={cn(

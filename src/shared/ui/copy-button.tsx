@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Check, Copy } from 'lucide-react'
+import { CheckIcon, CopyIcon } from '@/shared/ui/icons'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/shared/lib/utils'
 
@@ -91,9 +91,9 @@ const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
         {...props}
       >
         {state === 'copied' ? (
-          <Check className="animate-in fade-in zoom-in-75 duration-150" />
+          <CheckIcon className="animate-in fade-in zoom-in-75 duration-150" />
         ) : (
-          <Copy />
+          <CopyIcon />
         )}
       </button>
     )

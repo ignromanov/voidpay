@@ -3,7 +3,7 @@
 import * as React from 'react'
 import * as SelectPrimitive from '@radix-ui/react-select'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { Check, ChevronDown, ChevronUp } from 'lucide-react'
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from '@/shared/ui/icons'
 
 import { cn } from '@/shared/lib/utils'
 
@@ -50,7 +50,7 @@ const SelectTrigger = React.forwardRef<
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown
+      <ChevronDownIcon
         className={cn('h-4 w-4 transition-transform', variant === 'glass' ? 'text-zinc-500' : 'opacity-50')}
       />
     </SelectPrimitive.Icon>
@@ -67,7 +67,7 @@ const SelectScrollUpButton = React.forwardRef<
     className={cn('flex cursor-default items-center justify-center py-1', className)}
     {...props}
   >
-    <ChevronUp className="h-4 w-4" />
+    <ChevronUpIcon className="h-4 w-4" />
   </SelectPrimitive.ScrollUpButton>
 ))
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName
@@ -81,7 +81,7 @@ const SelectScrollDownButton = React.forwardRef<
     className={cn('flex cursor-default items-center justify-center py-1', className)}
     {...props}
   >
-    <ChevronDown className="h-4 w-4" />
+    <ChevronDownIcon className="h-4 w-4" />
   </SelectPrimitive.ScrollDownButton>
 ))
 SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName
@@ -149,7 +149,7 @@ const SelectItem = React.forwardRef<
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     <span className="ml-auto flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4 text-violet-500" />
+        <CheckIcon className="h-4 w-4 text-violet-500" />
       </SelectPrimitive.ItemIndicator>
     </span>
   </SelectPrimitive.Item>

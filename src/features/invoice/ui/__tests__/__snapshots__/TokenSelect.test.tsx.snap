@@ -17,7 +17,7 @@ exports[`TokenSelect - Snapshots > should match snapshot with default state 1`] 
   />
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
+    class="h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"
@@ -99,7 +99,7 @@ exports[`TokenSelect - Snapshots > should match snapshot with selected token 1`]
   </span>
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
+    class="h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"
@@ -134,7 +134,7 @@ exports[`TokenSelect - Snapshots > should match snapshot without custom token op
   />
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
+    class="h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"

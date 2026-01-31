@@ -45,7 +45,7 @@ export function LineItemsSection({ decimals }: LineItemsSectionProps) {
 
       <div className="space-y-2">
         {/* Table Header */}
-        <div className="grid grid-cols-12 gap-2 px-2 text-[10px] font-medium uppercase tracking-wide text-zinc-500">
+        <div className="grid grid-cols-12 gap-2 px-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
           <div className="col-span-6">Description</div>
           <div className="col-span-2 text-center">Qty</div>
           <div className="col-span-3 text-right">Price</div>

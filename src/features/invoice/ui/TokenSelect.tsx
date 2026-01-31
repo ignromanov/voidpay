@@ -16,7 +16,7 @@ import { Input } from '@/shared/ui/input'
 import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'
 import { TokenIcon } from '@/shared/ui/token-icon'
-import { Loader2, Search, AlertCircle } from 'lucide-react'
+import { Loader2Icon, SearchIcon, AlertCircleIcon } from '@/shared/ui/icons'
 import { addressesMatch } from '@/shared/lib/validation'
 import { type Address } from 'viem'
 
@@ -171,9 +171,9 @@ export function TokenSelect({
             />
             <div className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2">
               {isLoadingMetadata ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-violet-500" />
+                <Loader2Icon className="h-3.5 w-3.5 animate-spin text-violet-500" />
               ) : (
-                <Search className="h-3.5 w-3.5 text-zinc-600" />
+                <SearchIcon className="h-3.5 w-3.5 text-zinc-600" />
               )}
             </div>
           </div>
@@ -226,7 +226,7 @@ export function TokenSelect({
         {/* Error State */}
         {!isLoadingMetadata && hasMetadataError && customAddress && (
           <div className="flex items-start gap-2 rounded-lg border border-red-900/50 bg-red-950/20 p-3">
-            <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+            <AlertCircleIcon className="h-4 w-4 shrink-0 text-red-500" />
             <div className="flex flex-col gap-1">
               <p className="text-sm font-medium text-red-400">Invalid Token Address</p>
               <p className="text-xs text-red-500/80">

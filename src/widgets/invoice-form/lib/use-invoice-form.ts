@@ -61,6 +61,7 @@ export function useInvoiceForm(): UseInvoiceFormReturn {
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const idleTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isExternalUpdate = useRef(false)
+  const latestValuesRef = useRef<InvoiceFormValues | null>(null)
 
   const form = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceFormSchema),
@@ -104,82 +105,83 @@ export function useInvoiceForm(): UseInvoiceFormReturn {
   const canGenerate = Object.values(fieldValidation).every(Boolean)
 
   // Debounced sync form → store
-  const syncToStore = useCallback(
-    (data: InvoiceFormValues) => {
-      // Don't sync if this was triggered by external store update
-      if (isExternalUpdate.current) {
-        isExternalUpdate.current = false
-        return
-      }
+  const syncToStore = useCallback(() => {
+    // Don't sync if this was triggered by external store update
+    if (isExternalUpdate.current) {
+      isExternalUpdate.current = false
+      return
+    }
 
-      // Show syncing status
-      setDraftSyncStatus('syncing')
+    // Show syncing status
+    setDraftSyncStatus('syncing')
 
-      // Clear pending timeouts
-      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
-      if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current)
+    // Clear pending timeouts
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
+    if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current)
 
-      // Debounced store update
-      // Only include defined values (exactOptionalPropertyTypes)
-      syncTimeoutRef.current = setTimeout(() => {
-        updateDraft({
-          ...(data.invoiceId !== undefined && { invoiceId: data.invoiceId }),
-          ...(data.issuedAt !== undefined && { issuedAt: data.issuedAt }),
-          ...(data.dueAt !== undefined && { dueAt: data.dueAt }),
-          ...(data.notes !== undefined && { notes: data.notes }),
-          ...(data.networkId !== undefined && { networkId: data.networkId }),
-          ...(data.currency !== undefined && { currency: data.currency }),
-          ...(data.tokenAddress && isValidAddress(data.tokenAddress) && {
-            tokenAddress: data.tokenAddress as `0x${string}`,
-          }),
-          ...(data.decimals !== undefined && { decimals: data.decimals }),
-          ...(data.tax !== undefined && { tax: data.tax }),
-          ...(data.discount !== undefined && { discount: data.discount }),
-          ...(data.from && {
-            from: {
-              name: data.from.name ?? '',
-              ...(data.from.walletAddress && isValidAddress(data.from.walletAddress) && {
-                walletAddress: data.from.walletAddress as `0x${string}`,
-              }),
-              ...(data.from.email && { email: data.from.email }),
-              ...(data.from.physicalAddress && { physicalAddress: data.from.physicalAddress }),
-              ...(data.from.phone && { phone: data.from.phone }),
-              ...(data.from.taxId && { taxId: data.from.taxId }),
-            },
-          }),
-          ...(data.client && {
-            client: {
-              name: data.client.name ?? '',
-              ...(data.client.walletAddress && isValidAddress(data.client.walletAddress) && {
-                walletAddress: data.client.walletAddress as `0x${string}`,
-              }),
-              ...(data.client.email && { email: data.client.email }),
-              ...(data.client.physicalAddress && {
-                physicalAddress: data.client.physicalAddress,
-              }),
-              ...(data.client.phone && { phone: data.client.phone }),
-              ...(data.client.taxId && { taxId: data.client.taxId }),
-            },
-          }),
-        })
+    // Debounced store update
+    // Only include defined values (exactOptionalPropertyTypes)
+    syncTimeoutRef.current = setTimeout(() => {
+      const data = latestValuesRef.current
+      if (!data) return
 
-        setDraftSyncStatus('synced')
-        syncTimeoutRef.current = null
+      updateDraft({
+        ...(data.invoiceId !== undefined && { invoiceId: data.invoiceId }),
+        ...(data.issuedAt !== undefined && { issuedAt: data.issuedAt }),
+        ...(data.dueAt !== undefined && { dueAt: data.dueAt }),
+        ...(data.notes !== undefined && { notes: data.notes }),
+        ...(data.networkId !== undefined && { networkId: data.networkId }),
+        ...(data.currency !== undefined && { currency: data.currency }),
+        ...(data.tokenAddress && isValidAddress(data.tokenAddress) && {
+          tokenAddress: data.tokenAddress as `0x${string}`,
+        }),
+        ...(data.decimals !== undefined && { decimals: data.decimals }),
+        ...(data.tax !== undefined && { tax: data.tax }),
+        ...(data.discount !== undefined && { discount: data.discount }),
+        ...(data.from && {
+          from: {
+            name: data.from.name ?? '',
+            ...(data.from.walletAddress && isValidAddress(data.from.walletAddress) && {
+              walletAddress: data.from.walletAddress as `0x${string}`,
+            }),
+            ...(data.from.email && { email: data.from.email }),
+            ...(data.from.physicalAddress && { physicalAddress: data.from.physicalAddress }),
+            ...(data.from.phone && { phone: data.from.phone }),
+            ...(data.from.taxId && { taxId: data.from.taxId }),
+          },
+        }),
+        ...(data.client && {
+          client: {
+            name: data.client.name ?? '',
+            ...(data.client.walletAddress && isValidAddress(data.client.walletAddress) && {
+              walletAddress: data.client.walletAddress as `0x${string}`,
+            }),
+            ...(data.client.email && { email: data.client.email }),
+            ...(data.client.physicalAddress && {
+              physicalAddress: data.client.physicalAddress,
+            }),
+            ...(data.client.phone && { phone: data.client.phone }),
+            ...(data.client.taxId && { taxId: data.client.taxId }),
+          },
+        }),
+      })
 
-        // Return to idle after display
-        idleTimeoutRef.current = setTimeout(() => {
-          setDraftSyncStatus('idle')
-          idleTimeoutRef.current = null
-        }, 2000)
-      }, SYNC_DEBOUNCE_MS)
-    },
-    [updateDraft, setDraftSyncStatus]
-  )
+      setDraftSyncStatus('synced')
+      syncTimeoutRef.current = null
+
+      // Return to idle after display
+      idleTimeoutRef.current = setTimeout(() => {
+        setDraftSyncStatus('idle')
+        idleTimeoutRef.current = null
+      }, 2000)
+    }, SYNC_DEBOUNCE_MS)
+  }, [updateDraft, setDraftSyncStatus])
 
   // Watch form changes and sync to store
   useEffect(() => {
     const subscription = form.watch((data) => {
-      syncToStore(data as InvoiceFormValues)
+      latestValuesRef.current = data as InvoiceFormValues
+      syncToStore()
     })
     return () => subscription.unsubscribe()
   }, [form, syncToStore])

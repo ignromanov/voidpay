@@ -13,7 +13,7 @@
  */
 
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { Wallet, ChevronDown } from 'lucide-react'
+import { WalletIcon, ChevronDownIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 
 export function WalletButton() {
@@ -43,7 +43,7 @@ export function WalletButton() {
                     className="gap-1.5"
                     onClick={openConnectModal}
                   >
-                    <Wallet className="h-4 w-4" />
+                    <WalletIcon className="h-4 w-4" />
                     Connect
                   </Button>
                 )
@@ -73,7 +73,7 @@ export function WalletButton() {
                         className="h-4 w-4 rounded-full"
                       />
                     )}
-                    <ChevronDown className="h-3 w-3" />
+                    <ChevronDownIcon className="h-3 w-3" />
                   </Button>
 
                   <Button
@@ -83,7 +83,7 @@ export function WalletButton() {
                     onClick={openAccountModal}
                   >
                     {account.displayName}
-                    <ChevronDown className="h-3 w-3" />
+                    <ChevronDownIcon className="h-3 w-3" />
                   </Button>
                 </div>
               )

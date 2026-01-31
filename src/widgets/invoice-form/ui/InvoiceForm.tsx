@@ -17,6 +17,7 @@ import {
 export interface InvoiceFormProps {
   className?: string
   onGenerate?: () => void
+  isGenerating?: boolean
 }
 
 /**
@@ -40,7 +41,7 @@ export interface InvoiceFormProps {
  * - LinkOptionsSection: Magic Dust + OG image
  * - GenerateButton: Generate invoice link
  */
-export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
+export function InvoiceForm({ className, onGenerate, isGenerating = false }: InvoiceFormProps) {
   const { form, fieldValidation, formState, canGenerate } = useInvoiceForm()
   const decimals = form.watch('decimals')
 
@@ -62,7 +63,7 @@ export function InvoiceForm({ className, onGenerate }: InvoiceFormProps) {
 
       <LinkOptionsSection />
 
-      <GenerateButton onGenerate={onGenerate} canGenerate={canGenerate} />
+      <GenerateButton onGenerate={onGenerate} canGenerate={canGenerate} isGenerating={isGenerating} />
     </div>
   )
 }

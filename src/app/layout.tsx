@@ -3,7 +3,7 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { Navigation } from '@/widgets/navigation/Navigation'
 import { Footer } from '@/widgets/footer'
-import { NetworkBackground } from '@/widgets/network-background'
+import { NetworkBackground } from '@/widgets/network-background/NetworkBackground'
 import { Toaster } from '@/shared/ui/toaster'
 import './globals.css'
 

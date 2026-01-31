@@ -62,6 +62,8 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
   const [activeTab, setActiveTab] = useState<ShareTab>('link')
   const [copied, setCopied] = useState(false)
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
+  const previousActiveElement = useRef<HTMLElement | null>(null)
 
   const handleCopy = useCallback(async () => {
     try {
@@ -128,6 +130,64 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
     }
   }, [])
 
+  // Focus trap and keyboard management
+  useEffect(() => {
+    if (!open) return
+
+    // Store previously focused element for restoration
+    previousActiveElement.current = document.activeElement as HTMLElement
+
+    const modal = modalRef.current
+    if (!modal) return
+
+    // Get all focusable elements
+    const getFocusableElements = () => {
+      return modal.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])'
+      )
+    }
+
+    // Focus first element on mount
+    const focusableElements = getFocusableElements()
+    const firstElement = focusableElements[0]
+    firstElement?.focus()
+
+    // Trap focus within modal
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // ESC key to close
+      if (e.key === 'Escape') {
+        handleClose()
+        return
+      }
+
+      // TAB key focus trap
+      if (e.key === 'Tab') {
+        const focusableElements = getFocusableElements()
+        const firstElement = focusableElements[0]
+        const lastElement = focusableElements[focusableElements.length - 1]
+
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault()
+          lastElement?.focus()
+        } else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault()
+          firstElement?.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+
+      // Restore focus to previously active element
+      if (previousActiveElement.current && typeof previousActiveElement.current.focus === 'function') {
+        previousActiveElement.current.focus()
+      }
+    }
+  }, [open, handleClose])
+
   // Memoize social URLs
   const { telegramUrl, twitterUrl } = useMemo(() => ({
     telegramUrl: getTelegramShareUrl(url),
@@ -163,6 +223,10 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
 
           {/* Modal container */}
           <motion.div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="share-modal-title"
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -172,7 +236,7 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
               {/* Header */}
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
-                  <Heading variant="h3" className="flex items-center gap-2">
+                  <Heading variant="h3" id="share-modal-title" className="flex items-center gap-2">
                     <CheckCircleIcon size={20} className="text-violet-500" />
                     Invoice Generated
                   </Heading>

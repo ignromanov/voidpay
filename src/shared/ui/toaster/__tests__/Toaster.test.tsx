@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@/shared/ui/__tests__/test-utils'
 import { Toaster } from '../Toaster'
-import { CheckCircle2, XCircle, Loader2, Info } from 'lucide-react'
+import { CheckCircleIcon, XCircleIcon, Loader2Icon, InfoIcon } from '@/shared/ui/icons'
 
 describe('Toaster', () => {
   describe('rendering', () => {
@@ -96,25 +96,25 @@ describe('Toaster', () => {
 
       // Icons configured but not rendered until toast shown
       // (Icon component verification)
-      expect(CheckCircle2).toBeDefined()
+      expect(CheckCircleIcon).toBeDefined()
     })
 
     it('configures error icon as XCircle', () => {
       render(<Toaster />)
 
-      expect(XCircle).toBeDefined()
+      expect(XCircleIcon).toBeDefined()
     })
 
     it('configures loading icon as Loader2', () => {
       render(<Toaster />)
 
-      expect(Loader2).toBeDefined()
+      expect(Loader2Icon).toBeDefined()
     })
 
     it('configures info icon as Info', () => {
       render(<Toaster />)
 
-      expect(Info).toBeDefined()
+      expect(InfoIcon).toBeDefined()
     })
   })
 

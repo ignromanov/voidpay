@@ -18,13 +18,40 @@ export { ArrowRightIcon, ArrowLeftIcon, ChevronUpIcon, ChevronDownIcon } from '.
 export { GithubIcon, TwitterIcon, SendIcon } from './social'
 
 // Status (feedback, alerts)
-export { LockIcon, AlertCircleIcon, CheckIcon, CheckCircleIcon, XIcon } from './status'
+export {
+  LockIcon,
+  AlertCircleIcon,
+  CheckIcon,
+  CheckCircleIcon,
+  XIcon,
+  Loader2Icon,
+  AlertTriangleIcon,
+  XCircleIcon,
+  InfoIcon,
+  ShieldAlertIcon,
+  MinusIcon,
+} from './status'
 
 // Contact (identity fields)
 export { MailIcon, PhoneIcon, MapPinIcon, WalletIcon, HashIcon } from './contact'
 
 // Actions (user interactions)
-export { CopyIcon, Share2Icon, LinkIcon, DownloadIcon, PlusIcon } from './actions'
+export {
+  CopyIcon,
+  Share2Icon,
+  LinkIcon,
+  DownloadIcon,
+  PlusIcon,
+  Edit3Icon,
+  EyeIcon,
+  Maximize2Icon,
+  RotateCcwIcon,
+  RefreshCwIcon,
+  Trash2Icon,
+  SearchIcon,
+  ExternalLinkIcon,
+  PrinterIcon,
+} from './actions'
 
 // Miscellaneous (domain-specific)
 export {
@@ -37,4 +64,15 @@ export {
   ImageIcon,
   EyeOffIcon,
   QrCodeIcon,
+  FileTextIcon,
+  DatabaseIcon,
+  LayersIcon,
+  LayoutTemplateIcon,
+  MousePointerClickIcon,
+  ShieldIcon,
+  ZapIcon,
+  BriefcaseIcon,
+  Building2Icon,
+  HexagonIcon,
+  TriangleIcon,
 } from './misc'

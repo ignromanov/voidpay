@@ -75,7 +75,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with default state 1`
   </span>
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
+    class="h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"
@@ -158,7 +158,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with different networ
   </span>
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
+    class="h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"
@@ -237,7 +237,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with disabled state 1
   </span>
   <svg
     aria-hidden="true"
-    class="lucide lucide-chevron-down h-4 w-4 transition-transform text-zinc-500"
+    class="h-4 w-4 transition-transform text-zinc-500"
     fill="none"
     height="24"
     stroke="currentColor"
