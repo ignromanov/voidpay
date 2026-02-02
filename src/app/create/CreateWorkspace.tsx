@@ -1,7 +1,14 @@
 'use client'
 
 import { useLayoutEffect, useEffect, useState, useCallback, useMemo } from 'react'
-import { Edit3Icon, EyeIcon, Maximize2Icon, RotateCcwIcon, CheckIcon, Loader2Icon } from '@/shared/ui/icons'
+import {
+  Edit3Icon,
+  EyeIcon,
+  Maximize2Icon,
+  RotateCcwIcon,
+  CheckIcon,
+  Loader2Icon,
+} from '@/shared/ui/icons'
 
 import { parseInvoiceHash } from '@/features/invoice-codec'
 import {
@@ -9,7 +16,7 @@ import {
   generateAndTrackInvoice,
   UrlSizeError,
 } from '@/features/generate-link'
-import { useCreatorStore, type DraftSyncStatus } from '@/entities/creator'
+import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme, NETWORK_GLOW_SHADOWS } from '@/entities/network'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import { useHashFragment } from '@/shared/lib/hooks'
@@ -22,30 +29,7 @@ import { MobileTabBar, type TabItem } from '@/shared/ui/mobile-tab-bar'
 import { InvoiceForm } from '@/widgets/invoice-form'
 import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widgets/invoice-paper'
 import { ShareModal } from '@/widgets/share-modal'
-
-/** Live Preview badge configuration based on sync status */
-const SYNC_STATUS_CONFIG: Record<
-  DraftSyncStatus,
-  { label: string; dotColor: string; animate: boolean; icon?: 'check' | 'loader' }
-> = {
-  idle: {
-    label: 'Live Preview',
-    dotColor: 'bg-green-500',
-    animate: true,
-  },
-  syncing: {
-    label: 'Syncing...',
-    dotColor: 'bg-amber-500',
-    animate: true,
-    icon: 'loader',
-  },
-  synced: {
-    label: 'Synced',
-    dotColor: 'bg-green-500',
-    animate: false,
-    icon: 'check',
-  },
-}
+import { SYNC_STATUS_CONFIG } from './constants'
 
 /**
  * CreateWorkspace — Split-pane invoice creation interface

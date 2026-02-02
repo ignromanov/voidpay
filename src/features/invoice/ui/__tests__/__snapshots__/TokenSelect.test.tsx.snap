@@ -84,7 +84,7 @@ exports[`TokenSelect - Snapshots > should match snapshot with selected token 1`]
           class="flex items-center gap-1.5"
         >
           <span
-            class="leading-none font-bold"
+            class="font-bold leading-none"
           >
             USDC
           </span>
