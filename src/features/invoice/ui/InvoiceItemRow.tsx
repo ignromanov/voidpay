@@ -8,6 +8,7 @@ import { Button } from '@/shared/ui/button'
 import type { LineItem } from '@/entities/invoice'
 import { cn } from '@/shared/lib/utils'
 import { parseAmount, formatAmount } from '@/shared/lib/amount-utils'
+import { FIELD_LIMITS } from '@/shared/lib/invoice-types'
 
 /**
  * InvoiceItemRow Component Props
@@ -99,11 +100,13 @@ export function InvoiceItemRow({
       const value = e.target.value
       const numValue = Number(value)
 
-      // Validate quantity > 0
+      // Validate quantity > 0 and <= maxQuantity
       if (value === '' || (!isNaN(numValue) && numValue > 0)) {
+        // Clamp to max quantity
+        const clampedValue = Math.min(numValue || 0, FIELD_LIMITS.maxQuantity)
         onUpdate({
           ...item,
-          quantity: numValue || 0,
+          quantity: clampedValue,
         })
       }
     },
@@ -158,11 +161,11 @@ export function InvoiceItemRow({
         duration: 0.2,
         delay: index * 0.05,
       }}
-      className="group flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700"
+      className="group flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700"
     >
-      <div className="grid flex-1 grid-cols-12 gap-3">
-        {/* Description - wider */}
-        <div className="col-span-6">
+      <div className="flex flex-1 gap-2 min-w-0 overflow-hidden">
+        {/* Description — takes remaining space */}
+        <div className="flex-1 min-w-0">
           <Input
             value={item.description}
             onChange={handleDescriptionChange}
@@ -171,21 +174,22 @@ export function InvoiceItemRow({
           />
         </div>
 
-        {/* Quantity */}
-        <div className="col-span-2">
+        {/* Quantity — fixed width */}
+        <div className="w-16 flex-shrink-0">
           <Input
             type="number"
             value={item.quantity || ''}
             onChange={handleQuantityChange}
             placeholder="Qty"
             min="0.01"
+            max={FIELD_LIMITS.maxQuantity}
             step="0.01"
             className="h-9"
           />
         </div>
 
-        {/* Rate (human-readable input, stored as atomic units) */}
-        <div className="col-span-2">
+        {/* Rate — fixed width */}
+        <div className="w-24 flex-shrink-0">
           <Input
             type="text"
             inputMode="decimal"
@@ -193,14 +197,19 @@ export function InvoiceItemRow({
             onChange={handleRateChange}
             onBlur={handleRateBlur}
             placeholder="0.00"
+            maxLength={FIELD_LIMITS.rate}
             className="h-9 font-mono"
           />
         </div>
 
-        {/* Total (calculated, read-only) */}
-        <div className="col-span-2 flex items-center">
-          <div className="flex h-9 w-full items-center rounded-lg border border-zinc-800 bg-zinc-950/50 px-3 font-mono text-sm text-zinc-400">
-            {lineTotal} {currencySymbol}
+        {/* Total — fixed width */}
+        <div className="w-28 flex-shrink-0">
+          <div
+            className="flex h-9 w-full items-center rounded-lg border border-zinc-800 bg-zinc-950/50 px-2 font-mono text-sm text-zinc-400 overflow-hidden"
+            title={`${lineTotal} ${currencySymbol}`}
+          >
+            <span className="truncate tabular-nums flex-1 min-w-0">{lineTotal}</span>
+            <span className="ml-1 flex-shrink-0 text-xs">{currencySymbol}</span>
           </div>
         </div>
       </div>
@@ -211,7 +220,7 @@ export function InvoiceItemRow({
         size="icon"
         onClick={onRemove}
         className={cn(
-          'h-9 w-9 opacity-0 transition-opacity group-hover:opacity-100',
+          'h-9 w-9 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100',
           'text-zinc-500 hover:bg-red-950/20 hover:text-red-400'
         )}
         aria-label="Remove item"

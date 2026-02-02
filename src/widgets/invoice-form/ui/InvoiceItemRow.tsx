@@ -99,9 +99,10 @@ export function InvoiceItemRow({
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
-      className="group grid grid-cols-12 items-start gap-2 overflow-hidden rounded border border-transparent bg-zinc-900/40 p-2 transition-colors hover:border-zinc-800"
+      className="group flex items-start gap-2 overflow-hidden rounded border border-transparent bg-zinc-900/40 p-2 transition-colors hover:border-zinc-800"
     >
-      <div className="col-span-5">
+      {/* Description — flexible width */}
+      <div className="flex-1 min-w-0">
         <input
           type="text"
           placeholder="Description *"
@@ -113,7 +114,8 @@ export function InvoiceItemRow({
           className="w-full border-b border-zinc-800 bg-transparent py-1 text-sm text-zinc-200 transition-colors outline-none placeholder:text-zinc-700 focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
         />
       </div>
-      <div className="col-span-2">
+      {/* Qty — fixed width */}
+      <div className="w-14 flex-shrink-0">
         <input
           type="number"
           placeholder="Qty"
@@ -126,7 +128,8 @@ export function InvoiceItemRow({
           className="w-full border-b border-zinc-800 bg-transparent py-1 text-center text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
         />
       </div>
-      <div className="col-span-2">
+      {/* Price — fixed width */}
+      <div className="w-20 flex-shrink-0">
         <input
           type="text"
           inputMode="decimal"
@@ -140,12 +143,17 @@ export function InvoiceItemRow({
           className="w-full border-b border-zinc-800 bg-transparent py-1 text-right text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
         />
       </div>
-      <div className="col-span-2">
-        <div className="border-b border-zinc-800 py-1 text-right font-mono text-sm text-zinc-400">
+      {/* Total — fixed width with truncate */}
+      <div className="w-24 flex-shrink-0 overflow-hidden">
+        <div
+          className="border-b border-zinc-800 py-1 text-right font-mono text-sm text-zinc-400 truncate"
+          title={lineTotal}
+        >
           {lineTotal}
         </div>
       </div>
-      <div className="col-span-1 flex justify-end pt-1">
+      {/* Delete button — fixed width */}
+      <div className="w-6 flex-shrink-0 flex justify-end pt-1">
         {canRemove && (
           <Button
             onClick={onRemove}

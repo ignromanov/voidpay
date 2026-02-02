@@ -41,9 +41,16 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, decimals
       const qty = typeof quantity === 'string' ? parseFloat(quantity) : quantity
       const lineTotal = calculateLineTotal(qty, item.rate ?? '0', decimals)
 
+      // Format quantity with thousand separators for large numbers
+      const formattedQty = qty.toLocaleString('en-US', {
+        maximumFractionDigits: 6,
+        useGrouping: true,
+      })
+
       return {
         ...item,
         qty,
+        formattedQty,
         lineTotal,
         formattedRate: formatAmount(item.rate ?? '0', decimals),
         formattedTotal: formatAmount(lineTotal, decimals),
@@ -78,12 +85,18 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, decimals
                 key={idx}
                 className="group border-b border-zinc-200 transition-colors last:border-0 even:bg-zinc-50/50 hover:bg-zinc-100/50 print:even:bg-transparent print:hover:bg-transparent"
               >
-                <td className="py-4 font-mono text-zinc-400">{idx + 1}</td>
-                <td className="py-4 font-medium text-zinc-900">{item.description ?? ''}</td>
-                <td className="py-4 text-center font-mono text-zinc-700">{item.qty}</td>
-                <td className="py-4 text-right font-mono text-zinc-700">{item.formattedRate}</td>
-                <td className="py-4 text-right font-mono font-bold text-black">
-                  {item.formattedTotal}
+                <td className="py-4 pr-3 font-mono text-zinc-400">{idx + 1}</td>
+                <td className="py-4 pr-4 font-medium text-zinc-900 max-w-[200px] truncate" title={item.description ?? ''}>
+                  {item.description ?? ''}
+                </td>
+                <td className="py-4 px-4 text-center font-mono text-zinc-700 tabular-nums whitespace-nowrap" title={String(item.qty)}>
+                  {item.formattedQty}
+                </td>
+                <td className="py-4 px-4 text-right font-mono text-zinc-700 tabular-nums" title={item.formattedRate}>
+                  <span className="block truncate max-w-[140px] ml-auto">{item.formattedRate}</span>
+                </td>
+                <td className="py-4 pl-4 text-right font-mono font-bold text-black tabular-nums" title={item.formattedTotal}>
+                  <span className="block truncate max-w-[160px] ml-auto">{item.formattedTotal}</span>
                 </td>
               </tr>
             ))}
