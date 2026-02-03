@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { AlertTriangleIcon, RefreshCwIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
 
@@ -43,7 +43,7 @@ export default function CreateError({ error, reset }: CreateErrorProps) {
       <div className="max-w-md text-center">
         {/* Error icon */}
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-rose-500/10">
-          <AlertTriangle className="h-8 w-8 text-rose-500" />
+          <AlertTriangleIcon className="h-8 w-8 text-rose-500" />
         </div>
 
         {/* Error heading */}
@@ -74,7 +74,7 @@ export default function CreateError({ error, reset }: CreateErrorProps) {
         {/* Recovery actions */}
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Button onClick={reset} className="gap-2">
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCwIcon className="h-4 w-4" />
             Try again
           </Button>
           <Button

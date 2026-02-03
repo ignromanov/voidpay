@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { Hash, ExternalLink, AlertTriangle } from 'lucide-react'
+import { HashIcon, ExternalLinkIcon, AlertTriangleIcon } from '@/shared/ui/icons'
 import { formatShortAddress } from '../lib/format'
 import { getExplorerUrl, getNetworkName } from '@/entities/network'
 import { APP_URLS } from '@/shared/config'
@@ -170,13 +170,13 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
               <div className="mt-1 border-t border-dashed border-zinc-300 pt-2">
                 <div className="flex flex-col gap-1">
                   <span className="flex items-center gap-1 text-[8px] font-bold text-zinc-400 uppercase">
-                    <Hash className="h-2 w-2" aria-hidden="true" /> Transaction
+                    <HashIcon className="h-2 w-2" aria-hidden="true" /> Transaction
                     {!txHashValidated && (
                       <span
                         className="ml-1 flex items-center gap-0.5 text-amber-600"
                         title="Transaction not yet verified on-chain"
                       >
-                        <AlertTriangle className="h-2 w-2" aria-hidden="true" />
+                        <AlertTriangleIcon className="h-2 w-2" aria-hidden="true" />
                         <span className="text-[7px]">Unverified</span>
                       </span>
                     )}
@@ -205,7 +205,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                       >
                         {txHash}
                       </span>
-                      <ExternalLink
+                      <ExternalLinkIcon
                         className={cn(
                           'h-2.5 w-2.5 flex-shrink-0',
                           txHashValidated

@@ -1,6 +1,6 @@
 import React, { useMemo, forwardRef } from 'react'
 import type { Address } from 'viem'
-import { FileText } from 'lucide-react'
+import { FileTextIcon } from '@/shared/ui/icons'
 import { InvoicePaperProps } from '../types'
 import { calculateTotals } from '../lib/calculate-totals'
 import { PaperHeader } from './PaperHeader'
@@ -44,7 +44,7 @@ function EmptyStateContent() {
       <div className="flex flex-col items-center gap-10 text-center">
         {/* Icon — larger for scale compensation */}
         <div className="flex h-36 w-36 items-center justify-center rounded-3xl bg-zinc-100">
-          <FileText className="h-20 w-20 text-zinc-400" strokeWidth={1.5} />
+          <FileTextIcon className="h-20 w-20 text-zinc-400" strokeWidth={1.5} />
         </div>
 
         {/* Text — larger for scale compensation */}

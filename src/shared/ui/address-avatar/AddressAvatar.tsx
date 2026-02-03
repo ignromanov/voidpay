@@ -41,8 +41,8 @@ export const AddressAvatar = forwardRef<HTMLImageElement, AddressAvatarProps>(
 
     // Using <img> intentionally: blo generates inline SVG data URIs,
     // no network request needed, Next/Image optimization not applicable
-    // eslint-disable-next-line @next/next/no-img-element
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         ref={ref}
         src={blockieUri}

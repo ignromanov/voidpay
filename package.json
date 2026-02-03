@@ -1,5 +1,5 @@
 {
-  "name": "stateless-invoicing-platform",
+  "name": "voidpay",
   "version": "1.0.0",
   "description": "VoidPay - Privacy-first stateless crypto invoicing platform with URL-based state",
   "main": "index.js",
@@ -63,6 +63,7 @@
     "happy-dom": "^20.0.11",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
+    "lucide-static": "^0.563.0",
     "postcss": "^8.0.0",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.7.2",
@@ -89,7 +90,6 @@
     "clsx": "^2.0.0",
     "framer-motion": "^12.23.26",
     "geist": "^1.5.1",
-    "lucide-react": "^0.560.0",
     "lz-string": "^1.0.0",
     "next": "^15.5.9",
     "next-sitemap": "^4.2.3",

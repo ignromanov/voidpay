@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
-import { Trash2 } from 'lucide-react'
+import { Trash2Icon } from '@/shared/ui/icons'
 import { motion } from 'framer-motion'
 
 import { Button } from '@/shared/ui/button'
@@ -99,19 +99,23 @@ export function InvoiceItemRow({
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
-      className="group grid grid-cols-12 items-start gap-2 overflow-hidden rounded border border-transparent bg-zinc-900/40 p-2 transition-colors hover:border-zinc-800"
+      className="group flex items-start gap-2 overflow-hidden rounded border border-transparent bg-zinc-900/40 p-2 transition-colors hover:border-zinc-800"
     >
-      <div className="col-span-5">
+      {/* Description — flexible width */}
+      <div className="flex-1 min-w-0">
         <input
           type="text"
           placeholder="Description *"
           value={item.description}
           maxLength={FIELD_LIMITS.description}
           onChange={(e) => onUpdate({ description: e.target.value })}
-          className="w-full border-b border-zinc-800 bg-transparent py-1 text-sm text-zinc-200 transition-colors outline-none placeholder:text-zinc-700 focus:border-violet-500"
+          aria-label="Item description"
+          autoComplete="off"
+          className="w-full border-b border-zinc-800 bg-transparent py-1 text-sm text-zinc-200 transition-colors outline-none placeholder:text-zinc-700 focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
         />
       </div>
-      <div className="col-span-2">
+      {/* Qty — fixed width */}
+      <div className="w-14 flex-shrink-0">
         <input
           type="number"
           placeholder="Qty"
@@ -119,10 +123,13 @@ export function InvoiceItemRow({
           min={1}
           max={FIELD_LIMITS.maxQuantity}
           onChange={(e) => onUpdate({ quantity: parseFloat(e.target.value) || 1 })}
-          className="w-full border-b border-zinc-800 bg-transparent py-1 text-center text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500"
+          aria-label="Item quantity"
+          autoComplete="off"
+          className="w-full border-b border-zinc-800 bg-transparent py-1 text-center text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
         />
       </div>
-      <div className="col-span-2">
+      {/* Price — fixed width */}
+      <div className="w-20 flex-shrink-0">
         <input
           type="text"
           inputMode="decimal"
@@ -131,23 +138,31 @@ export function InvoiceItemRow({
           maxLength={FIELD_LIMITS.rate}
           onChange={handleRateChange}
           onBlur={handleRateBlur}
-          className="w-full border-b border-zinc-800 bg-transparent py-1 text-right text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500"
+          aria-label="Item price"
+          autoComplete="off"
+          className="w-full border-b border-zinc-800 bg-transparent py-1 text-right text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
         />
       </div>
-      <div className="col-span-2">
-        <div className="border-b border-zinc-800 py-1 text-right font-mono text-sm text-zinc-400">
+      {/* Total — fixed width with truncate */}
+      <div className="w-24 flex-shrink-0 overflow-hidden">
+        <div
+          className="border-b border-zinc-800 py-1 text-right font-mono text-sm text-zinc-400 truncate"
+          title={lineTotal}
+        >
           {lineTotal}
         </div>
       </div>
-      <div className="col-span-1 flex justify-end pt-1">
+      {/* Delete button — fixed width */}
+      <div className="w-6 flex-shrink-0 flex justify-end pt-1">
         {canRemove && (
           <Button
             onClick={onRemove}
             variant="ghost"
             size="icon"
+            aria-label="Delete item"
             className="h-6 w-6 p-0 text-zinc-500 hover:text-red-400"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2Icon className="h-3 w-3" />
           </Button>
         )}
       </div>

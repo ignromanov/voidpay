@@ -4,16 +4,16 @@
  */
 
 import {
-  Database,
-  Globe2,
-  Layers,
-  LayoutTemplate,
-  MousePointerClick,
-  Share2,
-  Shield,
-  Wallet,
-  Zap,
-} from 'lucide-react'
+  DatabaseIcon,
+  GlobeIcon,
+  LayersIcon,
+  LayoutTemplateIcon,
+  MousePointerClickIcon,
+  Share2Icon,
+  ShieldIcon,
+  WalletIcon,
+  ZapIcon,
+} from '@/shared/ui/icons'
 
 import type { FeatureCard, WorkflowStep } from '../types'
 
@@ -26,7 +26,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     title: 'Zero Storage, Zero Risk',
     description:
       "If we get hacked, there's nothing to steal. Your invoice data exists only in your URL.",
-    icon: Database,
+    icon: DatabaseIcon,
     iconColor: 'text-violet-500',
   },
   {
@@ -34,7 +34,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     title: 'Multi-Chain Native',
     description:
       'Ethereum, Arbitrum, Optimism, Polygon. The UI vibes with your network.',
-    icon: Globe2,
+    icon: GlobeIcon,
     iconColor: 'text-cyan-500',
   },
   {
@@ -42,7 +42,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     title: 'Immutable',
     description:
       'Once an invoice link is generated, it cannot be changed. The data is cryptographically secure within the link itself.',
-    icon: Shield,
+    icon: ShieldIcon,
     iconColor: 'text-emerald-500',
   },
   {
@@ -50,7 +50,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     title: 'No Bloat',
     description:
       'One tool. One purpose. No CRM, no upsells, no subscriptions. Just send the link.',
-    icon: LayoutTemplate,
+    icon: LayoutTemplateIcon,
     iconColor: 'text-pink-500',
   },
   {
@@ -58,7 +58,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     title: 'One-Click Payments',
     description:
       'Your client opens the link, connects wallet, pays. No sign-up for either party.',
-    icon: Zap,
+    icon: ZapIcon,
     iconColor: 'text-yellow-500',
   },
   {
@@ -66,7 +66,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     title: 'Open Standard',
     description:
       'Built on open web standards. Export to PDF, verify on-chain, and integrate with your existing workflow.',
-    icon: Layers,
+    icon: LayersIcon,
     iconColor: 'text-orange-500',
   },
 ]
@@ -79,18 +79,18 @@ export const WORKFLOW_STEPS: WorkflowStep[] = [
     step: 1,
     title: 'Create',
     description: 'Add invoice details. Pick network and token.',
-    icon: MousePointerClick,
+    icon: MousePointerClickIcon,
   },
   {
     step: 2,
     title: 'Share',
     description: 'Get a permanent URL. No attachments needed.',
-    icon: Share2,
+    icon: Share2Icon,
   },
   {
     step: 3,
     title: 'Get Paid',
     description: 'Client connects wallet and pays. One click.',
-    icon: Wallet,
+    icon: WalletIcon,
   },
 ]

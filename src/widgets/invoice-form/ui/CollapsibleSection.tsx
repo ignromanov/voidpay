@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronUp, Plus } from 'lucide-react'
 
 import { Text } from '@/shared/ui/typography'
+import { ChevronUpIcon, PlusIcon } from '@/shared/ui/icons'
 import { cn } from '@/shared/lib/utils'
 
 export interface CollapsibleSectionProps {
@@ -40,8 +40,9 @@ export function CollapsibleSection({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="group flex cursor-pointer items-center gap-1.5 focus:outline-none"
+        className="group flex cursor-pointer items-center gap-1.5 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50"
         aria-expanded={isOpen}
+        aria-label={`${isOpen ? 'Collapse' : 'Expand'} ${title}`}
       >
         <div
           className={cn(
@@ -50,9 +51,9 @@ export function CollapsibleSection({
           )}
         >
           {isOpen ? (
-            <ChevronUp className="h-3 w-3 text-zinc-500 group-hover:text-violet-400" />
+            <ChevronUpIcon size={12} className="text-zinc-500 group-hover:text-violet-400" />
           ) : (
-            <Plus className="h-3 w-3 text-zinc-500 group-hover:text-violet-400" />
+            <PlusIcon size={12} className="text-zinc-500 group-hover:text-violet-400" />
           )}
         </div>
         <Text

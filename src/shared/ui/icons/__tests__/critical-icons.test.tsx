@@ -17,7 +17,7 @@ import {
   MapPinIcon,
   WalletIcon,
   HashIcon,
-} from '../critical-icons'
+} from '..'
 
 describe('Critical Icons', () => {
   describe('ArrowRightIcon', () => {

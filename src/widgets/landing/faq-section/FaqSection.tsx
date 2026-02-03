@@ -7,7 +7,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDownIcon } from '@/shared/ui/icons'
 
 import { cn } from '@/shared/lib/utils'
 import { Heading, Text } from '@/shared/ui/typography'
@@ -24,7 +24,7 @@ function FaqItem({ question, answer, isOpen, onToggle }: FaqItem & { isOpen: boo
         aria-expanded={isOpen}
       >
         <span className="text-lg font-medium text-zinc-100">{question}</span>
-        <ChevronDown
+        <ChevronDownIcon
           className={cn(
             'h-5 w-5 shrink-0 text-zinc-500 transition-transform duration-200',
             isOpen && 'rotate-180'

@@ -10,7 +10,7 @@
  *
  * Usage:
  * ```ts
- * import { mockRpcCall, mockGetBalance, createMockRpcHandler } from '@/shared/test-utils/rpc-mocks'
+ * import { mockRpcCall, mockGetBalance, createMockRpcHandler } from '@/shared/lib/test-utils/rpc-mocks'
  *
  * // Mock a specific balance
  * vi.spyOn(globalThis, 'fetch').mockImplementation(mockGetBalance('0x...', '1000000000000000000'))

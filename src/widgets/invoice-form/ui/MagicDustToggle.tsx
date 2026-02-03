@@ -1,12 +1,12 @@
 'use client'
 
 import { useCallback } from 'react'
-import { Fingerprint, AlertCircle } from 'lucide-react'
 import { useShallow } from 'zustand/shallow'
 
 import { useCreatorStore } from '@/entities/creator'
 import { Switch } from '@/shared/ui/switch'
 import { Text } from '@/shared/ui/typography'
+import { FingerprintIcon, AlertCircleIcon } from '@/shared/ui/icons'
 import { cn } from '@/shared/lib/utils'
 
 export interface MagicDustToggleProps {
@@ -42,8 +42,9 @@ export function MagicDustToggle({ className }: MagicDustToggleProps) {
     <div className={cn('rounded-lg border border-zinc-800/50 bg-zinc-900/50 p-3', className)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Fingerprint
-            className={cn('h-4 w-4', magicDustEnabled ? 'text-violet-400' : 'text-zinc-600')}
+          <FingerprintIcon
+            size={16}
+            className={cn(magicDustEnabled ? 'text-violet-400' : 'text-zinc-600')}
           />
           <Text variant="tiny" className="font-bold text-zinc-300">
             Magic Dust Verification
@@ -61,7 +62,7 @@ export function MagicDustToggle({ className }: MagicDustToggleProps) {
           </Text>
         ) : (
           <div className="flex items-start gap-2">
-            <AlertCircle className="mt-0.5 h-3 w-3 shrink-0 text-amber-500" />
+            <AlertCircleIcon size={12} className="mt-0.5 shrink-0 text-amber-500" />
             <Text variant="tiny" className="leading-tight text-amber-500/80">
               <strong>Warning:</strong> Without Magic Dust, the system cannot auto-detect this
               specific payment. You will need to manually check your wallet and mark the invoice as

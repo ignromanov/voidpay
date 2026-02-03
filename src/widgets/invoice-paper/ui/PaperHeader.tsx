@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangleIcon } from '@/shared/ui/icons'
 import { Badge } from '@/shared/ui/badge'
 import { CopyButton } from '@/shared/ui/copy-button'
 import { cn } from '@/shared/lib/utils'
@@ -125,7 +125,7 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
                   )}
                   aria-label={`Invoice status: ${isPaidUnverified ? 'paid (unverified)' : status}`}
                 >
-                  {isPaidUnverified && <AlertTriangle className="h-3 w-3" aria-hidden="true" />}
+                  {isPaidUnverified && <AlertTriangleIcon className="h-3 w-3" aria-hidden="true" />}
                   {status === 'pending'
                     ? 'Awaiting Payment'
                     : isPaidUnverified

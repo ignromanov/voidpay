@@ -48,13 +48,14 @@ describe('og-preview', () => {
       expect(result).toContain('arb') // network code
     })
 
-    it('includes sender name when present', () => {
+    it('includes sender name when present (spaces replaced with hyphens)', () => {
       const invoice = createMockInvoice({
         from: { name: 'Acme Inc', walletAddress: '0x1234567890123456789012345678901234567890' },
       })
       const result = encodeOGPreview(invoice)
 
-      expect(result).toContain('Acme Inc')
+      // Spaces are replaced with hyphens for URL safety
+      expect(result).toContain('Acme-Inc')
     })
 
     it('truncates long sender names to 20 chars', () => {

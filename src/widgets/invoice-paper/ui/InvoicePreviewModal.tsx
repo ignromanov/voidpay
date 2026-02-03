@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { X, Printer, Download } from 'lucide-react'
+import { XIcon, PrinterIcon, DownloadIcon } from '@/shared/ui/icons'
 import { Dialog, DialogContent, DialogTitle, DialogClose } from '@/shared/ui/dialog'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
@@ -176,7 +176,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               className="cursor-pointer rounded-full bg-zinc-800 p-1.5 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none sm:p-2"
               aria-label="Close preview"
             >
-              <X className="h-5 w-5" />
+              <XIcon className="h-5 w-5" />
             </DialogClose>
           </motion.div>
 
@@ -230,7 +230,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               className="gap-2 text-zinc-300 hover:text-white"
               onClick={handleDownloadPdf}
             >
-              <Download className="h-5 w-5 sm:h-4 sm:w-4" />
+              <DownloadIcon className="h-5 w-5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Download PDF</span>
               <span className="sm:hidden">PDF</span>
             </Button>
@@ -240,7 +240,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               className="gap-2 text-zinc-300 hover:text-white"
               onClick={handlePrint}
             >
-              <Printer className="h-5 w-5 sm:h-4 sm:w-4" />
+              <PrinterIcon className="h-5 w-5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Print</span>
             </Button>
 

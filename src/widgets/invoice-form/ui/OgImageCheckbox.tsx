@@ -1,12 +1,12 @@
 'use client'
 
 import { useCallback } from 'react'
-import { Image as ImageIcon, HelpCircle } from 'lucide-react'
 import { useShallow } from 'zustand/shallow'
 
 import { useCreatorStore } from '@/entities/creator'
 import { Switch } from '@/shared/ui/switch'
 import { Text } from '@/shared/ui/typography'
+import { ImageIcon, EyeOffIcon } from '@/shared/ui/icons'
 import { cn } from '@/shared/lib/utils'
 
 export interface OgImageCheckboxProps {
@@ -43,21 +43,32 @@ export function OgImageCheckbox({ className }: OgImageCheckboxProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ImageIcon
-            className={cn('h-4 w-4', includeOgImage ? 'text-violet-400' : 'text-zinc-600')}
+            size={16}
+            className={cn(includeOgImage ? 'text-violet-400' : 'text-zinc-600')}
             aria-hidden="true"
           />
           <Text variant="tiny" className="font-bold text-zinc-300">
             Social Media Preview
           </Text>
-          <div className="group relative">
-            <HelpCircle className="h-3 w-3 cursor-help text-zinc-600" />
-            <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-48 -translate-x-1/2 rounded border border-zinc-800 bg-zinc-900 p-2 text-center font-sans text-[10px] text-zinc-300 opacity-0 shadow-xl transition-opacity group-hover:opacity-100">
-              Disabling hides invoice preview in social media shares (Twitter, Telegram, etc). More
-              private but less visual.
-            </div>
-          </div>
         </div>
         <Switch checked={includeOgImage} onCheckedChange={handleChange} />
+      </div>
+
+      <div className="mt-2 border-t border-zinc-800/50 pt-2">
+        {includeOgImage ? (
+          <Text variant="tiny" className="leading-tight">
+            Shows invoice preview when sharing on{' '}
+            <strong className="text-zinc-400">Twitter, Telegram, etc</strong>. Includes minimal
+            public metadata.
+          </Text>
+        ) : (
+          <div className="flex items-start gap-2">
+            <EyeOffIcon size={12} className="mt-0.5 shrink-0 text-zinc-500" />
+            <Text variant="tiny" className="leading-tight text-zinc-500">
+              No preview card when sharing. More private, but less visual appeal in social feeds.
+            </Text>
+          </div>
+        )}
       </div>
     </div>
   )

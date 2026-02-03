@@ -3,7 +3,7 @@
  * TDD: These tests are written FIRST and must FAIL until implementation
  */
 import { describe, expect, it } from 'vitest'
-import { Mail, Search } from 'lucide-react'
+import { MailIcon, SearchIcon } from '@/shared/ui/icons'
 import { renderWithUser, screen } from './test-utils'
 import { Input } from '../input'
 
@@ -94,25 +94,25 @@ describe('Input', () => {
   // T012-test: Icon support
   describe('icon support', () => {
     it('renders leading icon by default', () => {
-      renderWithUser(<Input icon={<Mail data-testid="icon" />} data-testid="input" />)
+      renderWithUser(<Input icon={<MailIcon data-testid="icon" />} data-testid="input" />)
       expect(screen.getByTestId('icon')).toBeInTheDocument()
     })
 
     it('applies left padding when icon is leading', () => {
-      renderWithUser(<Input icon={<Mail />} data-testid="input" />)
+      renderWithUser(<Input icon={<MailIcon />} data-testid="input" />)
       const input = screen.getByTestId('input')
       expect(input).toHaveClass('pl-9')
     })
 
     it('renders trailing icon when position is trailing', () => {
       renderWithUser(
-        <Input icon={<Search data-testid="icon" />} iconPosition="trailing" data-testid="input" />
+        <Input icon={<SearchIcon data-testid="icon" />} iconPosition="trailing" data-testid="input" />
       )
       expect(screen.getByTestId('icon')).toBeInTheDocument()
     })
 
     it('applies right padding when icon is trailing', () => {
-      renderWithUser(<Input icon={<Search />} iconPosition="trailing" data-testid="input" />)
+      renderWithUser(<Input icon={<SearchIcon />} iconPosition="trailing" data-testid="input" />)
       const input = screen.getByTestId('input')
       expect(input).toHaveClass('pr-9')
     })

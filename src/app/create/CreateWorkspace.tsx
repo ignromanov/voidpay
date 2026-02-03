@@ -1,11 +1,24 @@
 'use client'
 
 import { useLayoutEffect, useEffect, useState, useCallback, useMemo } from 'react'
-import { Edit3, Eye, Maximize2, RotateCcw, Check, Loader2 } from 'lucide-react'
+import {
+  Edit3Icon,
+  EyeIcon,
+  Maximize2Icon,
+  RotateCcwIcon,
+  CheckIcon,
+  Loader2Icon,
+} from '@/shared/ui/icons'
 
 import { parseInvoiceHash } from '@/features/invoice-codec'
-import { useCreatorStore, type DraftSyncStatus } from '@/entities/creator'
+import {
+  validateInvoiceForGeneration,
+  generateAndTrackInvoice,
+  UrlSizeError,
+} from '@/features/generate-link'
+import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme, NETWORK_GLOW_SHADOWS } from '@/entities/network'
+import type { Invoice } from '@/shared/lib/invoice-types'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
@@ -13,38 +26,16 @@ import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { Heading, Text } from '@/shared/ui/typography'
 import { MobileTabBar, type TabItem } from '@/shared/ui/mobile-tab-bar'
-import { InvoiceForm, MagicDustToggle } from '@/widgets/invoice-form'
+import { InvoiceForm } from '@/widgets/invoice-form'
 import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widgets/invoice-paper'
-
-/** Live Preview badge configuration based on sync status */
-const SYNC_STATUS_CONFIG: Record<
-  DraftSyncStatus,
-  { label: string; dotColor: string; animate: boolean; icon?: 'check' | 'loader' }
-> = {
-  idle: {
-    label: 'Live Preview',
-    dotColor: 'bg-green-500',
-    animate: true,
-  },
-  syncing: {
-    label: 'Syncing...',
-    dotColor: 'bg-amber-500',
-    animate: true,
-    icon: 'loader',
-  },
-  synced: {
-    label: 'Synced',
-    dotColor: 'bg-green-500',
-    animate: false,
-    icon: 'check',
-  },
-}
+import { ShareModal } from '@/widgets/share-modal'
+import { SYNC_STATUS_CONFIG } from './constants'
 
 /**
  * CreateWorkspace — Split-pane invoice creation interface
  *
  * Features:
- * - Left pane: InvoiceForm + MagicDustToggle
+ * - Left pane: InvoiceForm with toggles and Generate button
  * - Right pane: Live preview with ScaledInvoicePreview
  * - Mobile: Tab bar to switch between editor and preview
  * - URL hash decoding (e.g., /create#H4sI...)
@@ -57,7 +48,14 @@ export function CreateWorkspace() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 
+  // ShareModal state
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
+  const [generatedInvoice, setGeneratedInvoice] = useState<Invoice | null>(null)
+  const [isGenerating, setIsGenerating] = useState(false)
+
   const activeDraft = useCreatorStore((s) => s.activeDraft)
+  const includeOgImage = useCreatorStore((s) => s.preferences.includeOgImage)
   const updateDraft = useCreatorStore((s) => s.updateDraft)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
@@ -68,12 +66,12 @@ export function CreateWorkspace() {
       {
         id: 'editor',
         label: 'Editor',
-        icon: <Edit3 className="w-4 h-4" />,
+        icon: <Edit3Icon className="w-4 h-4" />,
       },
       {
         id: 'preview',
         label: 'Preview',
-        icon: <Eye className="w-4 h-4" />,
+        icon: <EyeIcon className="w-4 h-4" />,
       },
     ],
     []
@@ -94,7 +92,7 @@ export function CreateWorkspace() {
     }
   }, [hash, updateDraft])
 
-  const invoiceData = activeDraft?.data
+  const invoiceData = useMemo(() => activeDraft?.data, [activeDraft])
 
   // Update network theme when invoice networkId changes
   useEffect(() => {
@@ -115,8 +113,97 @@ export function CreateWorkspace() {
     })
   }, [createNewDraft])
 
+  /**
+   * Handle "Generate Invoice Link" button click
+   *
+   * 1. Validate invoice data
+   * 2. Generate URL with Binary V3 encoding
+   * 3. Add to history
+   * 4. Open ShareModal
+   */
+  const handleGenerateLink = useCallback(async () => {
+    if (isGenerating) return
+
+    // Get fresh values from store at click time (not render time)
+    const { activeDraft, lineItems } = useCreatorStore.getState()
+
+    if (!activeDraft) return
+
+    setIsGenerating(true)
+
+    try {
+      // Validate INSIDE try block
+      const validation = validateInvoiceForGeneration(activeDraft.data, lineItems)
+
+      if (!validation.isValid) {
+        // Show first error as toast (most important)
+        const firstError = validation.errors[0]
+        toast.error('Cannot generate link', {
+          description: firstError?.message ?? 'Please fill in all required fields',
+        })
+
+        // If multiple errors, show count
+        if (validation.errors.length > 1) {
+          toast.error(`${validation.errors.length - 1} more issue(s) found`, {
+            description: 'Check the form for other missing fields',
+          })
+        }
+        return
+      }
+
+      // Show size warning if applicable (edge case, not blocking)
+      if (validation.sizeWarning) {
+        // Use error style to draw attention to potential issue
+        toast.error('URL size approaching limit', {
+          description: 'Consider reducing notes or line items if generation fails.',
+        })
+      }
+
+      // Build invoice BEFORE async call (no URL dependency)
+      const invoice: Invoice = {
+        ...activeDraft.data,
+        items: lineItems.map(({ id: _id, ...item }) => item),
+      } as Invoice
+
+      // Generate URL with OG preview based on user preference
+      const url = await generateAndTrackInvoice(activeDraft, lineItems, {
+        includeOG: includeOgImage ?? false,
+      })
+
+      setGeneratedUrl(url)
+      setGeneratedInvoice(invoice)
+      setIsShareModalOpen(true)
+
+      toast.success('Invoice link generated!', {
+        description: 'Share it with your client to get paid',
+      })
+    } catch (error) {
+      if (error instanceof UrlSizeError) {
+        toast.error('Invoice URL is too large', {
+          description: `${error.size} bytes exceeds the ${error.limit} byte limit. Try reducing notes or line items.`,
+        })
+      } else {
+        toast.error('Failed to generate link', {
+          description: error instanceof Error ? error.message : 'Unknown error',
+        })
+      }
+    } finally {
+      setIsGenerating(false)
+    }
+  }, [includeOgImage, isGenerating])
+
   return (
     <>
+      {/* ShareModal for generated invoice URL */}
+      {generatedUrl && generatedInvoice && (
+        <ShareModal
+          url={generatedUrl}
+          invoice={generatedInvoice}
+          open={isShareModalOpen}
+          onOpenChange={setIsShareModalOpen}
+        />
+      )}
+
       {/* Fullscreen preview modal */}
       {invoiceData && (
         <InvoicePreviewModal
@@ -133,8 +220,11 @@ export function CreateWorkspace() {
       </div>
 
       {/* Main Workspace Container - form and invoice centered together */}
-      {/* Mobile: pb-20 accounts for fixed tab bar (56px + safe area) */}
-      <div className="mx-auto flex h-[calc(100vh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 pb-20 lg:pb-6 lg:py-6 print:h-auto print:max-w-none print:overflow-visible print:p-0">
+      {/* Mobile: pb with safe area for tab bar (5rem = 80px base + env safe area) */}
+      <div
+        className="mx-auto flex h-[calc(100vh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 lg:pb-6 lg:py-6 print:h-auto print:max-w-none print:overflow-visible print:p-0"
+        style={{ paddingBottom: 'max(5rem, calc(env(safe-area-inset-bottom, 0px) + 5rem))' }}
+      >
         {/* LEFT: Editor Pane (form sticks to invoice) */}
         <Card
           variant="glass"
@@ -160,13 +250,12 @@ export function CreateWorkspace() {
                 className="shrink-0 text-zinc-500 hover:text-zinc-300"
                 title="Reset to new invoice"
               >
-                <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                <RotateCcwIcon className="mr-1.5 h-3.5 w-3.5" />
                 Reset
               </Button>
             </div>
 
-            <InvoiceForm />
-            <MagicDustToggle />
+            <InvoiceForm onGenerate={handleGenerateLink} isGenerating={isGenerating} />
           </div>
         </Card>
 
@@ -200,7 +289,7 @@ export function CreateWorkspace() {
                     className="flex cursor-pointer items-center gap-2 rounded-full border border-zinc-600/50 bg-zinc-800/80 px-3 py-1.5 font-mono text-[10px] whitespace-nowrap text-zinc-300 shadow-xl backdrop-blur-md transition-colors hover:border-zinc-500 hover:bg-zinc-700 hover:text-zinc-100"
                     type="button"
                   >
-                    <Maximize2 className="h-3 w-3" />
+                    <Maximize2Icon className="h-3 w-3" />
                     Expand
                   </button>
                 </div>
@@ -214,9 +303,9 @@ export function CreateWorkspace() {
           <div className="absolute bottom-6 sm:bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none">
             <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
               {SYNC_STATUS_CONFIG[draftSyncStatus].icon === 'loader' ? (
-                <Loader2 className="h-3 w-3 animate-spin text-amber-500" />
+                <Loader2Icon className="h-3 w-3 animate-spin text-amber-500" />
               ) : SYNC_STATUS_CONFIG[draftSyncStatus].icon === 'check' ? (
-                <Check className="h-3 w-3 text-green-500" />
+                <CheckIcon className="h-3 w-3 text-green-500" />
               ) : (
                 <div
                   className={cn(

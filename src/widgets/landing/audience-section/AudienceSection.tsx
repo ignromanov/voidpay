@@ -4,7 +4,7 @@
  * DAO Diplomat: Target Freelancers, DAOs, and Agencies with specific pain points
  */
 
-import { Briefcase, Building2, Users } from 'lucide-react'
+import { BriefcaseIcon, Building2Icon, UsersIcon } from '@/shared/ui/icons'
 
 import { Heading, Text } from '@/shared/ui/typography'
 
@@ -13,7 +13,7 @@ import { AudienceCard } from './AudienceCard'
 const AUDIENCES = [
   {
     id: 'freelancers',
-    icon: Briefcase,
+    icon: BriefcaseIcon,
     title: 'Freelancers',
     headline: 'Get paid without giving up privacy',
     description:
@@ -22,7 +22,7 @@ const AUDIENCES = [
   },
   {
     id: 'daos',
-    icon: Users,
+    icon: UsersIcon,
     title: 'DAOs',
     headline: 'Pay contributors. Keep it private.',
     description:
@@ -31,7 +31,7 @@ const AUDIENCES = [
   },
   {
     id: 'agencies',
-    icon: Building2,
+    icon: Building2Icon,
     title: 'Agencies',
     headline: 'Professional invoices, zero infrastructure',
     description:

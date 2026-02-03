@@ -41,8 +41,8 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
     status,
   }) => {
     return (
-      <section className="border-t-2 border-zinc-700 pt-4">
-        <div className="flex items-start gap-4">
+      <section className="border-t-2 border-zinc-700 pt-4 overflow-hidden">
+        <div className="flex items-start gap-4 overflow-hidden">
           <PaymentInfo
             networkId={networkId}
             senderAddress={senderAddress}

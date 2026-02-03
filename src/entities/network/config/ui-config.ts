@@ -7,7 +7,7 @@
  */
 
 import { mainnet, arbitrum, optimism, polygon } from 'viem/chains'
-import { Hexagon, Triangle, Zap } from 'lucide-react'
+import { HexagonIcon, TriangleIcon, ZapIcon } from '@/shared/ui/icons'
 
 /**
  * Network name type for UI theming
@@ -52,28 +52,28 @@ export const NETWORK_CONFIG: NetworkConfig[] = [
   {
     chainId: mainnet.id,
     name: 'Ethereum',
-    icon: Hexagon,
+    icon: HexagonIcon,
     iconFilled: false,
     colorClass: 'text-indigo-400',
   },
   {
     chainId: arbitrum.id,
     name: 'Arbitrum',
-    icon: Triangle,
+    icon: TriangleIcon,
     iconFilled: true,
     colorClass: 'text-blue-400',
   },
   {
     chainId: optimism.id,
     name: 'Optimism',
-    icon: Zap,
+    icon: ZapIcon,
     iconFilled: true,
     colorClass: 'text-red-400',
   },
   {
     chainId: polygon.id,
     name: 'Polygon',
-    icon: Hexagon,
+    icon: HexagonIcon,
     iconFilled: true,
     colorClass: 'text-purple-400',
   },
