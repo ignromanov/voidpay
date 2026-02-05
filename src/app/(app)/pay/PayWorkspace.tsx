@@ -155,7 +155,7 @@ export function PayWorkspace() {
         </div>
         <div
           data-testid="pay-workspace-skeleton"
-          className="flex min-h-screen items-center justify-center"
+          className="flex h-full items-center justify-center"
         >
           <div className="h-[500px] w-[353px] animate-pulse rounded-lg bg-zinc-800/50" />
         </div>
@@ -174,7 +174,7 @@ export function PayWorkspace() {
         >
           <NetworkBackground />
         </div>
-        <div className="relative z-10 flex min-h-screen flex-col">
+        <div className="relative z-10 flex h-full flex-col">
           <DecodeErrorScreen
             errorType={errorType}
             onReturnHome={handleReturnHome}
@@ -196,7 +196,7 @@ export function PayWorkspace() {
           <NetworkBackground />
         </div>
 
-        <div className="relative z-10 flex h-[calc(100vh-104px)] w-full items-center justify-center py-4">
+        <div className="relative z-10 flex h-full w-full items-center justify-center py-4">
           <div data-testid="invoice-preview-clickable" className="h-full w-full">
             <ScaledInvoicePreview
               preset="pay"
