@@ -3,12 +3,14 @@
 import {
   forwardRef,
   useCallback,
+  useState,
   type ReactNode,
   type MouseEventHandler,
   type KeyboardEvent,
   type MouseEvent,
 } from 'react'
 import { cn } from '@/shared/lib/utils'
+import { Maximize2Icon } from '@/shared/ui/icons'
 import {
   useInvoiceScale,
   PRESET_CONFIGS,
@@ -78,6 +80,14 @@ export interface ScaledInvoicePreviewProps {
   onMouseEnter?: MouseEventHandler<HTMLDivElement>
   onMouseLeave?: MouseEventHandler<HTMLDivElement>
 
+  /**
+   * Show built-in "Expand" overlay on hover.
+   * Automatically manages hover state internally.
+   * Requires onClick to be set.
+   * @default false
+   */
+  showExpandOverlay?: boolean
+
   className?: string
 }
 
@@ -108,10 +118,14 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
       onClick,
       onMouseEnter,
       onMouseLeave,
+      showExpandOverlay = false,
       className,
     },
     ref
   ) {
+    // Hover state for expand overlay
+    const [isHovered, setIsHovered] = useState(false)
+
     // Build hook options: preset takes precedence over scaleOptions
     const hookOptions: UseInvoiceScaleOptions = preset ? { preset } : (scaleOptions ?? {})
 
@@ -152,6 +166,35 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           onClick(e)
         }
       : undefined
+
+    // Combined mouse handlers (internal state + external callbacks)
+    const handleMouseEnter: MouseEventHandler<HTMLDivElement> = (e) => {
+      if (showExpandOverlay) setIsHovered(true)
+      onMouseEnter?.(e)
+    }
+
+    const handleMouseLeave: MouseEventHandler<HTMLDivElement> = (e) => {
+      if (showExpandOverlay) setIsHovered(false)
+      onMouseLeave?.(e)
+    }
+
+    // Built-in expand overlay (shown when showExpandOverlay=true and onClick is set)
+    const expandOverlay = showExpandOverlay && onClick ? (
+      <div
+        className={cn(
+          'absolute inset-0 z-20 flex items-end justify-start p-3 transition-opacity duration-200',
+          isHovered ? 'opacity-100' : 'opacity-0'
+        )}
+      >
+        <button
+          className="flex cursor-pointer items-center gap-2 rounded-full border border-zinc-600/50 bg-zinc-800/80 px-3 py-1.5 font-mono text-[10px] whitespace-nowrap text-zinc-300 shadow-xl backdrop-blur-md transition-colors hover:border-zinc-500 hover:bg-zinc-700 hover:text-zinc-100"
+          type="button"
+        >
+          <Maximize2Icon className="h-3 w-3" />
+          Expand
+        </button>
+      </div>
+    ) : null
 
     return (
       <div
@@ -194,8 +237,8 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
             willChange: 'width, height',
           }}
           onClick={handleClick}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
           role={onClick ? 'button' : undefined}
           tabIndex={onClick ? 0 : undefined}
           onKeyDown={handleKeyDown}
@@ -216,6 +259,8 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
 
           {/* Overlay (not scaled, inside invoice bounds, hidden on print) */}
           {overlay && <div className="print:hidden">{overlay}</div>}
+          {/* Built-in expand overlay */}
+          {expandOverlay && <div className="print:hidden">{expandOverlay}</div>}
         </div>
       </div>
     )

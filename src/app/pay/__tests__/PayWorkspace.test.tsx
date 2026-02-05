@@ -184,9 +184,11 @@ describe('PayWorkspace', () => {
         expect(screen.getByText(/INV-001/)).toBeInTheDocument()
       })
 
-      // Click on invoice preview to open modal
-      const invoicePreview = screen.getByTestId('invoice-preview-clickable')
-      await user.click(invoicePreview)
+      // Click on the invoice (inner element with tabIndex=0)
+      const invoiceWrapper = screen.getByTestId('invoice-preview-clickable')
+      const clickableInvoice = invoiceWrapper.querySelector('[tabindex="0"]')
+      expect(clickableInvoice).toBeInTheDocument()
+      await user.click(clickableInvoice!)
 
       // Modal should be open (Radix Dialog uses role="dialog")
       await waitFor(() => {
@@ -205,12 +207,15 @@ describe('PayWorkspace', () => {
 
       render(<PayWorkspace />)
 
-      // Open modal
+      // Wait for invoice to render
       await waitFor(() => {
         expect(screen.getByText(/INV-001/)).toBeInTheDocument()
       })
-      const invoicePreview = screen.getByTestId('invoice-preview-clickable')
-      await user.click(invoicePreview)
+      // Click on the invoice wrapper (has tabIndex=0 for accessibility)
+      const invoiceWrapper = screen.getByTestId('invoice-preview-clickable')
+      const clickableInvoice = invoiceWrapper.querySelector('[tabindex="0"]')
+      expect(clickableInvoice).toBeInTheDocument()
+      await user.click(clickableInvoice!)
 
       // Wait for modal to open
       await waitFor(() => {

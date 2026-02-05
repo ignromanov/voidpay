@@ -4,7 +4,6 @@ import { useLayoutEffect, useEffect, useState, useCallback, useMemo } from 'reac
 import {
   Edit3Icon,
   EyeIcon,
-  Maximize2Icon,
   RotateCcwIcon,
   CheckIcon,
   Loader2Icon,
@@ -46,7 +45,6 @@ export function CreateWorkspace() {
   const hash = useHashFragment()
   const [mobileTab, setMobileTab] = useState<string>('editor')
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
 
   // ShareModal state
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
@@ -275,26 +273,7 @@ export function CreateWorkspace() {
             preset="editor"
             glowClassName={NETWORK_GLOW_SHADOWS[invoiceData?.networkId ?? 1]}
             onClick={handlePreviewClick}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            overlay={
-              invoiceData && (
-                <div
-                  className={cn(
-                    'absolute inset-0 z-20 flex items-end justify-start p-3 transition-opacity duration-200',
-                    isHovered ? 'opacity-100' : 'opacity-0'
-                  )}
-                >
-                  <button
-                    className="flex cursor-pointer items-center gap-2 rounded-full border border-zinc-600/50 bg-zinc-800/80 px-3 py-1.5 font-mono text-[10px] whitespace-nowrap text-zinc-300 shadow-xl backdrop-blur-md transition-colors hover:border-zinc-500 hover:bg-zinc-700 hover:text-zinc-100"
-                    type="button"
-                  >
-                    <Maximize2Icon className="h-3 w-3" />
-                    Expand
-                  </button>
-                </div>
-              )
-            }
+            showExpandOverlay
           >
             <InvoicePaper data={invoiceData} status="draft" showGlow />
           </ScaledInvoicePreview>

@@ -196,13 +196,13 @@ export function PayWorkspace() {
           <NetworkBackground />
         </div>
 
-        <div className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4">
-          <div
-            data-testid="invoice-preview-clickable"
-            className="cursor-pointer"
-            onClick={handleInvoiceClick}
-          >
-            <ScaledInvoicePreview preset="modal">
+        <div className="relative z-10 flex h-[calc(100vh-104px)] w-full items-center justify-center py-4">
+          <div data-testid="invoice-preview-clickable" className="h-full w-full">
+            <ScaledInvoicePreview
+              preset="pay"
+              onClick={handleInvoiceClick}
+              showExpandOverlay
+            >
               <InvoicePaper data={invoice} status="pending" />
             </ScaledInvoicePreview>
           </div>
