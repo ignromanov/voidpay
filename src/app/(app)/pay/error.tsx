@@ -2,8 +2,19 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { NetworkBackground } from '@/widgets/network-background'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
+import { Button } from '@/shared/ui/button'
+import type { DecodeErrorType } from '@/shared/ui/decode-error-screen'
+
+const CODEC_KEYWORDS = ['decode', 'binary', 'base62', 'codec', 'decompress', 'inflate', 'parse']
+
+function classifyError(error: Error): DecodeErrorType {
+  const msg = error.message.toLowerCase()
+  if (CODEC_KEYWORDS.some((kw) => msg.includes(kw))) {
+    return 'CORRUPTED_DATA'
+  }
+  return 'CORRUPTED_DATA'
+}
 
 /**
  * Error boundary for /pay route.
@@ -13,7 +24,7 @@ import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
  */
 export default function PayError({
   error,
-  reset: _reset,
+  reset,
 }: {
   error: Error & { digest?: string }
   reset: () => void
@@ -21,23 +32,30 @@ export default function PayError({
   const router = useRouter()
 
   useEffect(() => {
-    // Log error to console in development
     console.error('[PayPage Error]', error)
   }, [error])
+
+  const errorType = classifyError(error)
 
   const handleReturnHome = () => {
     router.push('/')
   }
 
   return (
-    <>
-      <NetworkBackground />
-      <div className="relative z-10 flex min-h-screen flex-col">
-        <DecodeErrorScreen
-          errorType="CORRUPTED_DATA"
-          onReturnHome={handleReturnHome}
-        />
+    <div className="relative z-10 flex min-h-screen flex-col">
+      <DecodeErrorScreen
+        errorType={errorType}
+        onReturnHome={handleReturnHome}
+      />
+      <div className="flex justify-center pb-8">
+        <Button
+          variant="ghost"
+          onClick={reset}
+          className="text-zinc-400 hover:text-zinc-200"
+        >
+          Try Again
+        </Button>
       </div>
-    </>
+    </div>
   )
 }

@@ -19,7 +19,6 @@ vi.mock('@/features/invoice-codec', async (importOriginal) => {
   return {
     ...actual,
     parseInvoiceHash: vi.fn(),
-    encodeInvoice: vi.fn(() => 'H_mock_encoded'),
   }
 })
 
@@ -134,8 +133,8 @@ describe('PayWorkspace', () => {
       })
     })
 
-    describe('Network background', () => {
-      it('renders NetworkBackground with correct networkId from decoded invoice', async () => {
+    describe('Network data attribute', () => {
+      it('sets data-network attribute from decoded invoice networkId', async () => {
         vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
         vi.mocked(parseInvoiceHash).mockReturnValue({
           success: true,
@@ -145,14 +144,13 @@ describe('PayWorkspace', () => {
         render(<PayWorkspace />)
 
         await waitFor(() => {
-          // NetworkBackground should receive Arbitrum theme
-          const background = screen.getByTestId('network-background')
-          expect(background).toBeInTheDocument()
-          expect(background).toHaveAttribute('data-network', '42161')
+          // Content container should have data-network for theme coordination
+          const container = screen.getByTestId('invoice-preview-clickable').closest('[data-network]')
+          expect(container).toHaveAttribute('data-network', '42161')
         })
       })
 
-      it('renders NetworkBackground with Ethereum theme for chainId 1', async () => {
+      it('sets data-network for Ethereum chainId 1', async () => {
         vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
         vi.mocked(parseInvoiceHash).mockReturnValue({
           success: true,
@@ -162,8 +160,8 @@ describe('PayWorkspace', () => {
         render(<PayWorkspace />)
 
         await waitFor(() => {
-          const background = screen.getByTestId('network-background')
-          expect(background).toHaveAttribute('data-network', '1')
+          const container = screen.getByTestId('invoice-preview-clickable').closest('[data-network]')
+          expect(container).toHaveAttribute('data-network', '1')
         })
       })
     })
@@ -303,7 +301,7 @@ describe('PayWorkspace', () => {
       expect(mockRouter.push).toHaveBeenCalledWith('/')
     })
 
-    it('renders NetworkBackground behind error screen', async () => {
+    it('renders error screen with data-network attribute', async () => {
       vi.mocked(useHashFragment).mockReturnValue('invalid')
       vi.mocked(parseInvoiceHash).mockReturnValue({
         success: false,
@@ -313,10 +311,11 @@ describe('PayWorkspace', () => {
       render(<PayWorkspace />)
 
       await waitFor(() => {
-        // NetworkBackground should still be visible
-        expect(screen.getByTestId('network-background')).toBeInTheDocument()
-        // Error screen should be visible
+        // Error screen should be visible (NetworkBackground is in root layout)
         expect(screen.getByTestId('decode-error-screen')).toBeInTheDocument()
+        // Container should have data-network for theme coordination
+        const container = screen.getByTestId('decode-error-screen').closest('[data-network]')
+        expect(container).toBeInTheDocument()
       })
     })
   })

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
-import { Navigation } from '@/widgets/navigation/Navigation'
+import { Navigation } from '@/widgets/navigation'
 import { Footer } from '@/widgets/footer'
-import { NetworkBackground } from '@/widgets/network-background/NetworkBackground'
+import { NetworkBackground } from '@/widgets/network-background'
 import { Toaster } from '@/shared/ui/toaster'
 import './globals.css'
 

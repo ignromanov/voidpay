@@ -1,16 +1,15 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useHashFragment } from '@/shared/lib/hooks'
-import { parseInvoiceHash, encodeInvoice } from '@/features/invoice-codec'
+import { parseInvoiceHash } from '@/features/invoice-codec'
 import { useRichInvoiceStore, type RichInvoice } from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
-import { NetworkBackground } from '@/widgets/network-background'
 import {
   ScaledInvoicePreview,
-  InvoicePreviewModal,
   InvoicePaper,
 } from '@/widgets/invoice-paper'
 import {
@@ -19,11 +18,16 @@ import {
 } from '@/shared/ui/decode-error-screen'
 import type { Invoice } from '@/shared/lib/invoice-types'
 
+const InvoicePreviewModal = dynamic(
+  () => import('@/widgets/invoice-paper').then((m) => ({ default: m.InvoicePreviewModal })),
+  { ssr: false }
+)
+
 /**
  * Hydration timeout in ms.
  * After this time without hash, we assume no invoice data.
  */
-const HYDRATION_TIMEOUT = 500
+const HYDRATION_TIMEOUT = 200
 
 /**
  * Map parseInvoiceHash error messages to DecodeErrorType.
@@ -103,17 +107,21 @@ export function PayWorkspace() {
       setErrorType(null)
 
       // Track view in history (if not already tracked)
-      const existingInvoice = getInvoice(result.data.invoiceId)
-      if (!existingInvoice) {
-        const invoiceUrl = `${window.location.origin}/pay#${encodeInvoice(result.data)}`
-        const richInvoice: Omit<RichInvoice, 'createdAt'> = {
-          invoiceId: result.data.invoiceId,
-          invoiceUrl,
-          data: result.data,
-          status: 'pending',
-          viewedAt: new Date().toISOString(),
+      try {
+        const existingInvoice = getInvoice(result.data.invoiceId)
+        if (!existingInvoice) {
+          const invoiceUrl = `${window.location.origin}/pay#${hash}`
+          const richInvoice: Omit<RichInvoice, 'createdAt'> = {
+            invoiceId: result.data.invoiceId,
+            invoiceUrl,
+            data: result.data,
+            status: 'pending',
+            viewedAt: new Date().toISOString(),
+          }
+          addInvoice(richInvoice)
         }
-        addInvoice(richInvoice)
+      } catch (error) {
+        console.error('[PayWorkspace] Failed to track invoice view:', error)
       }
     } else {
       setInvoice(null)
@@ -142,45 +150,28 @@ export function PayWorkspace() {
   // Memoize network ID for data attribute
   const networkId = useMemo(() => invoice?.networkId ?? 1, [invoice?.networkId])
 
-  // Loading state (SSR hydration)
-  if (!isHydrated && hash === '') {
+  // Loading state: SSR hydration OR waiting for decode effect to process
+  if (!invoice && !errorType) {
     return (
-      <>
-        <div
-          data-testid="network-background"
-          data-network={networkId}
-          className="fixed inset-0 z-[1]"
-        >
-          <NetworkBackground />
-        </div>
-        <div
-          data-testid="pay-workspace-skeleton"
-          className="flex h-full items-center justify-center"
-        >
-          <div className="h-[500px] w-[353px] animate-pulse rounded-lg bg-zinc-800/50" />
-        </div>
-      </>
+      <div
+        data-testid="pay-workspace-skeleton"
+        data-network={networkId}
+        className="flex h-full items-center justify-center"
+      >
+        <div className="h-[500px] w-[353px] animate-pulse rounded-lg bg-zinc-800/50" />
+      </div>
     )
   }
 
   // Error state
   if (errorType) {
     return (
-      <>
-        <div
-          data-testid="network-background"
-          data-network={networkId}
-          className="fixed inset-0 z-[1]"
-        >
-          <NetworkBackground />
-        </div>
-        <div className="relative z-10 flex h-full flex-col">
-          <DecodeErrorScreen
-            errorType={errorType}
-            onReturnHome={handleReturnHome}
-          />
-        </div>
-      </>
+      <div className="relative z-10 flex h-full flex-col" data-network={networkId}>
+        <DecodeErrorScreen
+          errorType={errorType}
+          onReturnHome={handleReturnHome}
+        />
+      </div>
     )
   }
 
@@ -188,15 +179,7 @@ export function PayWorkspace() {
   if (invoice) {
     return (
       <>
-        <div
-          data-testid="network-background"
-          data-network={networkId}
-          className="fixed inset-0 z-[1]"
-        >
-          <NetworkBackground />
-        </div>
-
-        <div className="relative z-10 flex h-full w-full items-center justify-center py-4">
+        <div className="relative z-10 flex h-full w-full items-center justify-center py-4" data-network={networkId}>
           <div data-testid="invoice-preview-clickable" className="h-full w-full">
             <ScaledInvoicePreview
               preset="pay"
@@ -208,16 +191,26 @@ export function PayWorkspace() {
           </div>
         </div>
 
-        <InvoicePreviewModal
-          data={invoice}
-          status="pending"
-          open={isPreviewOpen}
-          onOpenChange={setIsPreviewOpen}
-        />
+        {isPreviewOpen && (
+          <InvoicePreviewModal
+            data={invoice}
+            status="pending"
+            open={isPreviewOpen}
+            onOpenChange={setIsPreviewOpen}
+          />
+        )}
       </>
     )
   }
 
-  // Fallback (should not reach here)
-  return null
+  // Fallback — should not reach here
+  console.error('[PayWorkspace] Unexpected state: no invoice, no error, hydrated')
+  return (
+    <div className="relative z-10 flex h-full flex-col">
+      <DecodeErrorScreen
+        errorType="CORRUPTED_DATA"
+        onReturnHome={handleReturnHome}
+      />
+    </div>
+  )
 }

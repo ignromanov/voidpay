@@ -67,12 +67,20 @@ async function copyToClipboard(text: string): Promise<boolean> {
 const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
   ({ className, size, value, 'aria-label': ariaLabel, ...props }, ref) => {
     const [state, setState] = React.useState<CopyState>('idle')
+    const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
+    React.useEffect(() => {
+      return () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      }
+    }, [])
 
     const handleClick = React.useCallback(async () => {
       const success = await copyToClipboard(value)
       if (success) {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
         setState('copied')
-        setTimeout(() => setState('idle'), 2000)
+        timeoutRef.current = setTimeout(() => setState('idle'), 2000)
       }
     }, [value])
 

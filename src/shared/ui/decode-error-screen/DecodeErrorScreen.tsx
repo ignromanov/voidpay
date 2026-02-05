@@ -3,7 +3,7 @@
 import { AlertCircleIcon, ShieldAlertIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
-import { Heading, Text } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
 
 /**
@@ -78,6 +78,7 @@ export function DecodeErrorScreen({
 
   return (
     <div
+      role="alert"
       data-testid="decode-error-screen"
       className={cn(
         'flex flex-1 flex-col items-center justify-center p-6 text-center',
@@ -106,7 +107,7 @@ export function DecodeErrorScreen({
         {/* Title & Description */}
         <div className="space-y-2">
           <Heading variant="h2">{config.title}</Heading>
-          <Text variant="body" className="text-amber-200/70">{config.description}</Text>
+          <Text variant="body" className="text-amber-100">{config.description}</Text>
         </div>
 
         {/* Action Button */}
