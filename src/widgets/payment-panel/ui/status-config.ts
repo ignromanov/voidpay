@@ -23,8 +23,8 @@ export const STATUS_CONFIG: Record<PaymentPanelStatus, StatusConfigEntry> = {
     chipColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     icon: CheckIcon,
   },
-  expired: {
-    label: 'Expired',
+  overdue: {
+    label: 'Overdue',
     gradient: 'from-red-500 via-red-400 to-red-500',
     chipColor: 'bg-red-500/10 text-red-400 border-red-500/20',
     icon: XCircleIcon,

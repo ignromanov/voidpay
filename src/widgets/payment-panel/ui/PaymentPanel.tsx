@@ -23,7 +23,7 @@ export function PaymentPanel({
   const amounts = computeAmounts(invoice)
   const isPending = status === 'pending'
   const isPaid = status === 'paid'
-  const isExpired = status === 'expired'
+  const isExpired = status === 'overdue'
   const showPulse = isPaid && !txHashValidated
 
   return (
@@ -112,7 +112,7 @@ export function PaymentPanel({
               </a>
             )}
             <button
-              className="text-[10px] text-zinc-500 hover:text-red-400 transition-colors font-medium group px-2 py-1 rounded hover:bg-red-500/5"
+              className="cursor-pointer text-[10px] text-zinc-500 hover:text-red-400 transition-colors font-medium group px-2 py-1 rounded hover:bg-red-500/5"
               aria-label="Report abuse"
             >
               <span className="inline-flex items-center gap-1">

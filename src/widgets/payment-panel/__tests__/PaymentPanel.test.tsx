@@ -136,21 +136,21 @@ describe('PaymentPanel', () => {
     })
   })
 
-  describe('expired state', () => {
+  describe('overdue state', () => {
     it('shows red gradient bar', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="expired" />)
+      render(<PaymentPanel invoice={mockInvoice} status="overdue" />)
       const gradientBar = screen.getByTestId('gradient-bar')
       expect(gradientBar.className).toContain('from-red-500')
     })
 
     it('shows ExpiredState with expired message', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="expired" />)
+      render(<PaymentPanel invoice={mockInvoice} status="overdue" />)
       expect(screen.getByText('This invoice has expired')).toBeDefined()
     })
 
-    it('does not show ActionSlot when expired', () => {
+    it('does not show ActionSlot when overdue', () => {
       render(
-        <PaymentPanel invoice={mockInvoice} status="expired">
+        <PaymentPanel invoice={mockInvoice} status="overdue">
           <button>Pay Now</button>
         </PaymentPanel>
       )

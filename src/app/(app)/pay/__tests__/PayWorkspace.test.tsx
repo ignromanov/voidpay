@@ -29,6 +29,8 @@ vi.mock('@/entities/invoice', async (importOriginal) => {
     useRichInvoiceStore: vi.fn(() => ({
       addInvoice: vi.fn(),
       getInvoice: vi.fn(),
+      updateStatus: vi.fn(),
+      setTxHash: vi.fn(),
     })),
   }
 })
@@ -82,6 +84,8 @@ describe('PayWorkspace', () => {
     vi.mocked(useRichInvoiceStore).mockReturnValue({
       addInvoice: mockAddInvoice,
       getInvoice: mockGetInvoice,
+      updateStatus: vi.fn(),
+      setTxHash: vi.fn(),
     } as unknown as ReturnType<typeof useRichInvoiceStore>)
   })
 

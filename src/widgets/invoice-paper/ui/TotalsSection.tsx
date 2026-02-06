@@ -53,7 +53,7 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
               >
                 +{totals.taxAmount}
               </span>
-              <span className={cn('font-mono text-red-800 flex-shrink-0', currencyClass)}>{currencyDisplay}</span>
+              <span className={cn('font-mono text-zinc-600 flex-shrink-0', currencyClass)}>{currencyDisplay}</span>
             </>
           )}
 
@@ -69,7 +69,7 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
               >
                 -{totals.discountAmount}
               </span>
-              <span className={cn('font-mono text-emerald-600 flex-shrink-0', currencyClass)}>{currencyDisplay}</span>
+              <span className={cn('font-mono text-zinc-600 flex-shrink-0', currencyClass)}>{currencyDisplay}</span>
             </>
           )}
         </div>
@@ -85,7 +85,7 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
             >
               {totals.total}
             </span>
-            <span className={cn('text-sm font-bold text-violet-500 flex-shrink-0', currencyClass)}>
+            <span className={cn('text-sm font-bold text-zinc-600 flex-shrink-0', currencyClass)}>
               {currencyDisplay}
             </span>
           </div>

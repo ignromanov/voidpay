@@ -4,7 +4,7 @@ import { StatusChip } from '../ui/StatusChip'
 import type { PaymentPanelStatus } from '../types'
 
 describe('StatusChip', () => {
-  const statuses: PaymentPanelStatus[] = ['pending', 'paid', 'expired']
+  const statuses: PaymentPanelStatus[] = ['pending', 'paid', 'overdue']
 
   it.each(statuses)('renders correct label for "%s" status', (status) => {
     render(<StatusChip status={status} />)
@@ -12,7 +12,7 @@ describe('StatusChip', () => {
     const expectedLabels: Record<PaymentPanelStatus, string> = {
       pending: 'Pending',
       paid: 'Paid',
-      expired: 'Expired',
+      overdue: 'Overdue',
     }
 
     expect(screen.getByText(expectedLabels[status])).toBeDefined()
@@ -38,8 +38,8 @@ describe('StatusChip', () => {
     expect(chip.className).toContain('text-emerald-400')
   })
 
-  it('applies red chip color for expired', () => {
-    const { container } = render(<StatusChip status="expired" />)
+  it('applies red chip color for overdue', () => {
+    const { container } = render(<StatusChip status="overdue" />)
     const chip = container.firstElementChild as HTMLElement
     expect(chip.className).toContain('bg-red-500/10')
     expect(chip.className).toContain('text-red-400')

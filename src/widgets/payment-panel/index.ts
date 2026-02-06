@@ -6,4 +6,5 @@
  */
 
 export { PaymentPanel } from './ui/PaymentPanel'
+export { DevStatusToggle } from './ui/DevStatusToggle'
 export type { PaymentPanelProps, PaymentPanelStatus, ConfirmationProgress } from './types'

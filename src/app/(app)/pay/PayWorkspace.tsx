@@ -16,7 +16,7 @@ import {
   DecodeErrorScreen,
   type DecodeErrorType,
 } from '@/shared/ui/decode-error-screen'
-import { PaymentPanel, type PaymentPanelStatus } from '@/widgets/payment-panel'
+import { PaymentPanel, DevStatusToggle, type PaymentPanelStatus } from '@/widgets/payment-panel'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { CheckIcon, ClockIcon, ChevronUpIcon, ChevronDownIcon } from '@/shared/ui/icons'
 import { cn } from '@/shared/lib/utils'
@@ -37,8 +37,8 @@ const BADGE_STYLES: Record<PaymentPanelStatus, { label: string; badge: string; d
     badge: 'border-emerald-500/50 bg-emerald-950/80 text-emerald-200 shadow-[0_0_30px_-5px_rgba(16,185,129,0.5)]',
     dot: 'bg-emerald-400 shadow-[0_0_12px_#34d399]',
   },
-  expired: {
-    label: 'Expired',
+  overdue: {
+    label: 'Overdue',
     badge: 'border-red-500/40 bg-red-950/80 text-red-200 shadow-[0_0_30px_-5px_rgba(239,68,68,0.4)]',
     dot: 'bg-red-400 shadow-[0_0_12px_#f87171]',
   },
@@ -93,7 +93,7 @@ export function PayWorkspace() {
   const router = useRouter()
   const hash = useHashFragment()
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
-  const { addInvoice, getInvoice } = useRichInvoiceStore()
+  const { addInvoice, getInvoice, updateStatus, setTxHash } = useRichInvoiceStore()
 
   // Decode state
   const [isHydrated, setIsHydrated] = useState(false)
@@ -106,18 +106,18 @@ export function PayWorkspace() {
   // Panel minimize state (floating overlay can collapse to pill)
   const [isMinimized, setIsMinimized] = useState(false)
 
-  // Compute payment panel status
-  const panelStatus: PaymentPanelStatus = useMemo(() => {
-    const existingInvoice = invoice ? getInvoice(invoice.invoiceId) : undefined
-    if (existingInvoice?.status === 'paid') return 'paid'
-    if (invoice?.dueAt && invoice.dueAt * 1000 < Date.now()) return 'expired'
-    return 'pending'
-  }, [invoice, getInvoice])
-
-  // Get stored tx data
+  // Stored invoice data (re-evaluates on store changes — no useMemo, so getInvoice reads fresh data)
   const storedInvoice = invoice ? getInvoice(invoice.invoiceId) : undefined
   const storedTxHash = storedInvoice?.txHash
   const storedTxValidated = storedInvoice?.txHashValidated
+
+  // Compute payment panel status
+  const panelStatus: PaymentPanelStatus = useMemo(() => {
+    if (storedInvoice?.status === 'paid') return 'paid'
+    if (storedInvoice?.status === 'overdue') return 'overdue'
+    if (invoice?.dueAt && invoice.dueAt * 1000 < Date.now()) return 'overdue'
+    return 'pending'
+  }, [invoice, storedInvoice?.status])
 
   // Hydration detection: wait for hash to stabilize
   useEffect(() => {
@@ -179,6 +179,27 @@ export function PayWorkspace() {
     }
   }, [invoice?.networkId, setNetworkTheme])
 
+  // Sync computed status to store (so InvoicePaper reflects it too)
+  useEffect(() => {
+    if (!invoice || !storedInvoice) return
+    if (panelStatus === 'overdue' && storedInvoice.status !== 'overdue') {
+      updateStatus(invoice.invoiceId, 'overdue')
+    }
+  }, [invoice, panelStatus, storedInvoice, updateStatus])
+
+  // Dev-only: cycle through payment statuses for testing
+  const handleDevStatusCycle = () => {
+    if (!invoice) return
+    const cycle: PaymentPanelStatus[] = ['pending', 'paid', 'overdue']
+    const idx = cycle.indexOf(panelStatus)
+    const next = cycle[(idx + 1) % cycle.length] ?? 'pending'
+    if (next === 'paid') {
+      setTxHash(invoice.invoiceId, '0x' + '0'.repeat(64), false)
+    } else {
+      updateStatus(invoice.invoiceId, next)
+    }
+  }
+
   // Navigate to home
   const handleReturnHome = () => {
     router.push('/')
@@ -232,11 +253,11 @@ export function PayWorkspace() {
             <span
               data-testid="status-badge"
               className={cn(
-                'inline-flex items-center rounded-full border px-5 py-2 text-sm font-medium backdrop-blur-md',
+                'inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium backdrop-blur-md',
                 badgeConfig.badge
               )}
             >
-              <span className={cn('mr-2.5 h-2 w-2 rounded-full', badgeConfig.dot)} />
+              <span className={cn('mr-1.5 h-1.5 w-1.5 rounded-full', badgeConfig.dot)} />
               {badgeConfig.label}
             </span>
           </div>
@@ -244,7 +265,7 @@ export function PayWorkspace() {
           {/* Invoice Preview — centered in safe zone, leaving bottom space for panel */}
           <div
             data-testid="invoice-preview-clickable"
-            className="absolute inset-x-0 top-0 bottom-[140px] z-10 flex items-center justify-center p-2 md:p-4"
+            className="absolute inset-x-0 top-0 bottom-[70px] z-10 flex items-center justify-center p-2 md:p-4 print:items-start print:justify-start print:bottom-0 print:p-0"
           >
             <ScaledInvoicePreview
               preset="pay"
@@ -256,7 +277,7 @@ export function PayWorkspace() {
               {isPaid && storedTxHash ? (
                 <InvoicePaper data={invoice} status="paid" txHash={storedTxHash} />
               ) : (
-                <InvoicePaper data={invoice} status="pending" />
+                <InvoicePaper data={invoice} status={panelStatus === 'overdue' ? 'overdue' : 'pending'} />
               )}
             </ScaledInvoicePreview>
           </div>
@@ -331,12 +352,13 @@ export function PayWorkspace() {
                   <button
                     data-testid="minimize-panel"
                     onClick={() => setIsMinimized(true)}
-                    className="absolute top-2.5 right-3 z-10 rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-white"
+                    className="absolute top-2.5 right-3 z-10 cursor-pointer rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-white"
                     title="Minimize"
                     aria-label="Minimize payment panel"
                   >
                     <ChevronDownIcon size={14} />
                   </button>
+                  <DevStatusToggle status={panelStatus} onCycle={handleDevStatusCycle} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -346,7 +368,7 @@ export function PayWorkspace() {
         {isPreviewOpen && (
           <InvoicePreviewModal
             data={invoice}
-            status={isPaid && storedTxHash ? 'paid' : 'pending'}
+            status={isPaid && storedTxHash ? 'paid' : panelStatus === 'overdue' ? 'overdue' : 'pending'}
             {...(isPaid && storedTxHash ? { txHash: storedTxHash } : {})}
             open={isPreviewOpen}
             onOpenChange={setIsPreviewOpen}

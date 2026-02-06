@@ -3,13 +3,11 @@ import type { ReactNode } from 'react'
 
 /**
  * Visual status for the Payment Panel.
- * Maps from RichInvoiceStatus:
- *   'pending' → 'pending'
- *   'paid' → 'paid'
- *   'overdue' → 'expired'
- *   'draft' | 'empty' → not applicable on /pay
+ * Subset of RichInvoiceStatus relevant to /pay page:
+ *   'pending' | 'paid' | 'overdue'
+ *   ('draft' | 'empty' → not applicable on /pay)
  */
-export type PaymentPanelStatus = 'pending' | 'paid' | 'expired'
+export type PaymentPanelStatus = 'pending' | 'paid' | 'overdue'
 
 /**
  * Block confirmation progress.
