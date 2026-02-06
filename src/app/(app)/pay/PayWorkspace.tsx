@@ -183,6 +183,7 @@ export function PayWorkspace() {
           <div data-testid="invoice-preview-clickable" className="h-full w-full">
             <ScaledInvoicePreview
               preset="pay"
+              printable
               onClick={handleInvoiceClick}
               showExpandOverlay
             >
@@ -199,6 +200,7 @@ export function PayWorkspace() {
             onOpenChange={setIsPreviewOpen}
           />
         )}
+
       </>
     )
   }

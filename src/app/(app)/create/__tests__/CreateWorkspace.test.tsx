@@ -542,7 +542,7 @@ describe('CreateWorkspace', () => {
       expect(printTarget).toBeInTheDocument()
     })
 
-    it('hides print section on screen', () => {
+    it('has invoice-print-target on ScaledInvoicePreview for print', () => {
       const testInvoice = TEST_INVOICES.full()
       useCreatorStore.setState({
         activeDraft: {
@@ -558,8 +558,7 @@ describe('CreateWorkspace', () => {
       const { container } = renderWithUser(<CreateWorkspace />)
 
       const printTarget = container.querySelector('.invoice-print-target')
-      expect(printTarget).toHaveClass('hidden')
-      expect(printTarget).toHaveClass('print:block')
+      expect(printTarget).toBeInTheDocument()
     })
   })
 

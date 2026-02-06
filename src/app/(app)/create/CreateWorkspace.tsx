@@ -260,7 +260,7 @@ export function CreateWorkspace() {
         {/* RIGHT: Preview Pane - stretches to fill available height */}
         <div
           className={cn(
-            'relative flex items-start justify-center print:hidden',
+            'relative flex items-start justify-center',
             // Fill available space, let ScaledInvoicePreview handle sizing
             'h-full min-w-[300px] sm:min-w-[400px] lg:min-w-[580px]',
             // Same padding as form (p-4 sm:p-5 lg:p-6)
@@ -271,6 +271,7 @@ export function CreateWorkspace() {
           {/* Screen-only scaled preview (hidden during print to avoid flicker) */}
           <ScaledInvoicePreview
             preset="editor"
+            printable
             glowClassName={NETWORK_GLOW_SHADOWS[invoiceData?.networkId ?? 1]}
             onClick={handlePreviewClick}
             showExpandOverlay
@@ -299,10 +300,6 @@ export function CreateWorkspace() {
           </div>
         </div>
 
-        {/* Print-only invoice (hidden on screen, full-size for print) */}
-        <div className="invoice-print-target hidden print:block">
-          <InvoicePaper data={invoiceData} status="draft" />
-        </div>
       </div>
     </>
   )

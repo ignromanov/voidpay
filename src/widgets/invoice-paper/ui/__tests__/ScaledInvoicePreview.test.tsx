@@ -445,7 +445,7 @@ describe('ScaledInvoicePreview', () => {
       expect(printTarget).not.toBeInTheDocument()
     })
 
-    it('applies print-specific classes', () => {
+    it('applies print:hidden when not printable (default)', () => {
       const { container } = renderWithUser(
         <ScaledInvoicePreview preset="demo">
           <div>Test</div>
@@ -453,12 +453,12 @@ describe('ScaledInvoicePreview', () => {
       )
 
       const innerWrapper = container.querySelector('[style*="transform"]') as HTMLElement
-      expect(innerWrapper).toHaveClass('print:static')
-      expect(innerWrapper).toHaveClass('print:!transform-none')
+      expect(innerWrapper).toHaveClass('print:hidden')
+      expect(innerWrapper).not.toHaveClass('invoice-print-target')
     })
 
     it('hides overlay on print', () => {
-      const { container } = renderWithUser(
+      renderWithUser(
         <ScaledInvoicePreview preset="demo" overlay={<div>Overlay</div>}>
           <div>Test</div>
         </ScaledInvoicePreview>

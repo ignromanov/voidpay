@@ -247,10 +247,8 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           <div
             className={cn(
               'absolute top-0 left-0 origin-top-left transition-transform duration-200 ease-out',
-              // Print: no transform, static positioning, full size
-              'print:static print:!transform-none print:transition-none',
-              // Apply print target class — InvoicePaper is direct child
-              printable && 'invoice-print-target'
+              // Print: either become the print target or hide
+              printable ? 'invoice-print-target' : 'print:hidden'
             )}
             style={{ transform: `scale(${scale})` }}
           >
@@ -262,6 +260,7 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           {/* Built-in expand overlay */}
           {expandOverlay && <div className="print:hidden">{expandOverlay}</div>}
         </div>
+
       </div>
     )
   }
