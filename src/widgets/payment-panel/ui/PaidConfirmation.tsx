@@ -1,6 +1,6 @@
 import { formatAmount } from '@/shared/lib/amount-utils'
-import { getExplorerUrl } from '@/entities/network'
-import { CheckIcon, ShieldCheckIcon, ExternalLinkIcon } from '@/shared/ui/icons'
+
+import { CheckIcon, ShieldCheckIcon } from '@/shared/ui/icons'
 import { motion } from '@/shared/ui/motion'
 import type { ConfirmationProgress } from '../types'
 
@@ -8,9 +8,6 @@ interface PaidConfirmationProps {
   amount: string
   decimals: number
   currency: string
-  networkId: number
-  txHash: string
-  txHashValidated: boolean
   confirmations?: ConfirmationProgress | undefined
 }
 
@@ -18,12 +15,9 @@ export function PaidConfirmation({
   amount,
   decimals,
   currency,
-  networkId,
-  txHash,
   confirmations,
 }: PaidConfirmationProps) {
   const formattedAmount = formatAmount(amount, decimals)
-  const explorerUrl = getExplorerUrl(networkId, txHash)
   const progressPercent = confirmations
     ? Math.min((confirmations.current / confirmations.required) * 100, 100)
     : 0
@@ -59,17 +53,6 @@ export function PaidConfirmation({
           <span className="text-xl text-emerald-400/80">{currency}</span>
         </div>
       </div>
-
-      {/* View Tx link */}
-      <a
-        href={explorerUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors"
-      >
-        View Tx
-        <ExternalLinkIcon size={12} />
-      </a>
 
       {/* Confirmation progress */}
       {confirmations && (

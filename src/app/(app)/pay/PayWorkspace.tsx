@@ -32,6 +32,11 @@ const BADGE_STYLES: Record<PaymentPanelStatus, { label: string; badge: string; d
     badge: 'border-amber-500/40 bg-amber-950/80 text-amber-200 shadow-[0_0_30px_-5px_rgba(245,158,11,0.4)]',
     dot: 'bg-amber-400 shadow-[0_0_12px_#fbbf24] animate-pulse',
   },
+  confirming: {
+    label: 'Confirming Payment',
+    badge: 'border-blue-500/40 bg-blue-950/80 text-blue-200 shadow-[0_0_30px_-5px_rgba(59,130,246,0.4)]',
+    dot: 'bg-blue-400 shadow-[0_0_12px_#60a5fa] animate-pulse',
+  },
   paid: {
     label: 'Finalized & Paid',
     badge: 'border-emerald-500/50 bg-emerald-950/80 text-emerald-200 shadow-[0_0_30px_-5px_rgba(16,185,129,0.5)]',
@@ -93,7 +98,7 @@ export function PayWorkspace() {
   const router = useRouter()
   const hash = useHashFragment()
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
-  const { addInvoice, getInvoice, updateStatus, setTxHash } = useRichInvoiceStore()
+  const { addInvoice, getInvoice, updateStatus, setError } = useRichInvoiceStore()
 
   // Decode state
   const [isHydrated, setIsHydrated] = useState(false)
@@ -110,14 +115,18 @@ export function PayWorkspace() {
   const storedInvoice = invoice ? getInvoice(invoice.invoiceId) : undefined
   const storedTxHash = storedInvoice?.txHash
   const storedTxValidated = storedInvoice?.txHashValidated
+  const storedConfirmations = storedInvoice?.confirmations
+  const storedError = storedInvoice?.error
 
   // Compute payment panel status
   const panelStatus: PaymentPanelStatus = useMemo(() => {
-    if (storedInvoice?.status === 'paid') return 'paid'
+    if (storedInvoice?.status === 'paid') {
+      return storedTxValidated ? 'paid' : 'confirming'
+    }
     if (storedInvoice?.status === 'overdue') return 'overdue'
     if (invoice?.dueAt && invoice.dueAt * 1000 < Date.now()) return 'overdue'
     return 'pending'
-  }, [invoice, storedInvoice?.status])
+  }, [invoice, storedInvoice?.status, storedTxValidated])
 
   // Hydration detection: wait for hash to stabilize
   useEffect(() => {
@@ -187,19 +196,6 @@ export function PayWorkspace() {
     }
   }, [invoice, panelStatus, storedInvoice, updateStatus])
 
-  // Dev-only: cycle through payment statuses for testing
-  const handleDevStatusCycle = () => {
-    if (!invoice) return
-    const cycle: PaymentPanelStatus[] = ['pending', 'paid', 'overdue']
-    const idx = cycle.indexOf(panelStatus)
-    const next = cycle[(idx + 1) % cycle.length] ?? 'pending'
-    if (next === 'paid') {
-      setTxHash(invoice.invoiceId, '0x' + '0'.repeat(64), false)
-    } else {
-      updateStatus(invoice.invoiceId, next)
-    }
-  }
-
   // Navigate to home
   const handleReturnHome = () => {
     router.push('/')
@@ -241,7 +237,7 @@ export function PayWorkspace() {
   // Success state — overlay layout per design reference (PaymentWorkspace.tsx)
   // Invoice centered in "safe zone", PaymentPanel as floating bottom overlay
   if (invoice) {
-    const isPaid = panelStatus === 'paid'
+    const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
 
     const badgeConfig = BADGE_STYLES[panelStatus]
 
@@ -338,14 +334,16 @@ export function PayWorkspace() {
                   {isPaid && storedTxHash ? (
                     <PaymentPanel
                       invoice={invoice}
-                      status="paid"
+                      status={panelStatus}
                       txHash={storedTxHash}
-                      txHashValidated={storedTxValidated ?? false}
+                      confirmations={storedConfirmations}
                     />
                   ) : (
                     <PaymentPanel
                       invoice={invoice}
                       status={panelStatus}
+                      error={storedError}
+                      onDismissError={() => setError(invoice.invoiceId, null)}
                     />
                   )}
                   {/* Minimize button — overlays top-right of panel */}
@@ -358,7 +356,7 @@ export function PayWorkspace() {
                   >
                     <ChevronDownIcon size={14} />
                   </button>
-                  <DevStatusToggle status={panelStatus} onCycle={handleDevStatusCycle} />
+                  <DevStatusToggle invoiceId={invoice.invoiceId} status={panelStatus} />
                 </motion.div>
               )}
             </AnimatePresence>

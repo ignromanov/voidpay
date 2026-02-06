@@ -7,9 +7,6 @@ describe('PaidConfirmation', () => {
     amount: '1500000000',
     decimals: 6,
     currency: 'USDC',
-    networkId: 1,
-    txHash: '0xabc123def456',
-    txHashValidated: true,
   }
 
   it('renders "Payment Successful" heading', () => {
@@ -26,14 +23,6 @@ describe('PaidConfirmation', () => {
     render(<PaidConfirmation {...defaultProps} />)
     expect(screen.getByText('1,500.00')).toBeDefined()
     expect(screen.getByText('USDC')).toBeDefined()
-  })
-
-  it('renders "View Tx" link with correct explorer URL', () => {
-    render(<PaidConfirmation {...defaultProps} />)
-    const link = screen.getByRole('link', { name: /View Tx/i })
-    expect(link).toBeDefined()
-    expect(link.getAttribute('href')).toContain('/tx/0xabc123def456')
-    expect(link.getAttribute('target')).toBe('_blank')
   })
 
   it('renders success icon with spring animation wrapper', () => {

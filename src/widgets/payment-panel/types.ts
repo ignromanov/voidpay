@@ -3,11 +3,13 @@ import type { ReactNode } from 'react'
 
 /**
  * Visual status for the Payment Panel.
- * Subset of RichInvoiceStatus relevant to /pay page:
- *   'pending' | 'paid' | 'overdue'
- *   ('draft' | 'empty' → not applicable on /pay)
+ * Derived from RichInvoiceStatus + txHashValidated:
+ *   'pending'    — awaiting payment
+ *   'paid'       — payment validated on-chain
+ *   'confirming' — tx detected, waiting for block confirmations
+ *   'overdue'    — invoice expired
  */
-export type PaymentPanelStatus = 'pending' | 'paid' | 'overdue'
+export type PaymentPanelStatus = 'pending' | 'paid' | 'confirming' | 'overdue'
 
 /**
  * Block confirmation progress.
@@ -33,9 +35,9 @@ export interface PaymentPanelProps {
   /** Whether the txHash has been validated on-chain */
   txHashValidated?: boolean
   /** Block confirmation progress (future: P0.12.3) */
-  confirmations?: ConfirmationProgress
+  confirmations?: ConfirmationProgress | undefined
   /** Payment error message (from SmartPayButton) */
-  error?: string | null
+  error?: string | null | undefined
   /** Callback to dismiss error */
   onDismissError?: () => void
   /** Slot for SmartPayButton (P0.12.1) */

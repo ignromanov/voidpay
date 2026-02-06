@@ -109,30 +109,63 @@ describe('PaymentPanel', () => {
       expect(panel.className).toContain('border-emerald-500/30')
     })
 
-    it('shows pulse animation when paid but not validated', () => {
+    it('does not show pulse when paid', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
           status="paid"
           txHash="0xabc123"
-          txHashValidated={false}
         />
+      )
+      const gradientBar = screen.getByTestId('gradient-bar')
+      expect(gradientBar.className).not.toContain('animate-pulse')
+    })
+  })
+
+  describe('confirming state', () => {
+    it('shows blue gradient bar', () => {
+      render(
+        <PaymentPanel invoice={mockInvoice} status="confirming" txHash="0xabc123" />
+      )
+      const gradientBar = screen.getByTestId('gradient-bar')
+      expect(gradientBar.className).toContain('from-blue-500')
+    })
+
+    it('shows pulse animation', () => {
+      render(
+        <PaymentPanel invoice={mockInvoice} status="confirming" txHash="0xabc123" />
       )
       const gradientBar = screen.getByTestId('gradient-bar')
       expect(gradientBar.className).toContain('animate-pulse')
     })
 
-    it('does not show pulse when paid and validated', () => {
+    it('shows PaidConfirmation', () => {
+      render(
+        <PaymentPanel invoice={mockInvoice} status="confirming" txHash="0xabc123" />
+      )
+      expect(screen.getByText('Payment Successful')).toBeDefined()
+    })
+
+    it('does not show ActionSlot when confirming', () => {
+      render(
+        <PaymentPanel invoice={mockInvoice} status="confirming" txHash="0xabc123">
+          <button>Pay Now</button>
+        </PaymentPanel>
+      )
+      expect(screen.queryByText('Pay Now')).toBeNull()
+    })
+
+    it('does not show error banner when confirming', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
-          status="paid"
+          status="confirming"
           txHash="0xabc123"
-          txHashValidated
+          error="Some error"
+          onDismissError={() => {}}
         />
       )
-      const gradientBar = screen.getByTestId('gradient-bar')
-      expect(gradientBar.className).not.toContain('animate-pulse')
+      expect(screen.queryByRole('alert')).toBeNull()
     })
   })
 
@@ -247,9 +280,8 @@ describe('PaymentPanel', () => {
           txHashValidated
         />
       )
-      const links = screen.getAllByRole('link', { name: /view tx/i })
-      // One in PaidConfirmation, one in footer
-      expect(links.length).toBeGreaterThanOrEqual(1)
+      const link = screen.getByRole('link', { name: /view tx/i })
+      expect(link).toBeDefined()
     })
 
     it('does not render View Tx link in footer when pending', () => {
@@ -373,11 +405,9 @@ describe('PaymentPanel', () => {
           txHashValidated
         />
       )
-      const links = screen.getAllByRole('link', { name: /view tx/i })
-      for (const link of links) {
-        expect(link.getAttribute('target')).toBe('_blank')
-        expect(link.getAttribute('rel')).toContain('noopener')
-      }
+      const link = screen.getByRole('link', { name: /view tx/i })
+      expect(link.getAttribute('target')).toBe('_blank')
+      expect(link.getAttribute('rel')).toContain('noopener')
     })
   })
 })

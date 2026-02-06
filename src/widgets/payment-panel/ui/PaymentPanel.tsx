@@ -22,9 +22,9 @@ export function PaymentPanel({
   const config = STATUS_CONFIG[status]
   const amounts = computeAmounts(invoice)
   const isPending = status === 'pending'
-  const isPaid = status === 'paid'
+  const isPaid = status === 'paid' || status === 'confirming'
   const isExpired = status === 'overdue'
-  const showPulse = isPaid && !txHashValidated
+  const showPulse = status === 'confirming'
 
   return (
     <div
@@ -64,9 +64,6 @@ export function PaymentPanel({
             amount={amounts.exactTotal}
             decimals={invoice.decimals}
             currency={invoice.currency}
-            networkId={invoice.networkId}
-            txHash={txHash}
-            txHashValidated={txHashValidated ?? false}
             confirmations={confirmations}
           />
         )}

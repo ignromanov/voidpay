@@ -36,6 +36,10 @@ export interface RichInvoice {
   txHash?: string
   /** Whether txHash has been validated on-chain */
   txHashValidated?: boolean
+  /** Block confirmation progress (during polling) */
+  confirmations?: { current: number; required: number } | undefined
+  /** Last payment error message */
+  error?: string | null | undefined
   /** ISO 8601 timestamp when entry was created */
   createdAt: string
   /** ISO 8601 timestamp when invoice was last viewed */
@@ -65,6 +69,10 @@ interface RichInvoiceActions {
   updateStatus: (invoiceId: string, status: RichInvoiceStatus) => void
   /** Set transaction hash for an invoice */
   setTxHash: (invoiceId: string, txHash: string, validated?: boolean) => void
+  /** Set block confirmation progress */
+  setConfirmations: (invoiceId: string, confirmations?: { current: number; required: number }) => void
+  /** Set or clear payment error */
+  setError: (invoiceId: string, error: string | null) => void
   /** Remove an invoice from the store */
   removeInvoice: (invoiceId: string) => void
   /** Get an invoice by ID */
@@ -129,6 +137,24 @@ export const useRichInvoiceStore = create<RichInvoiceStore>()(
           invoices: state.invoices.map((inv) =>
             inv.invoiceId === invoiceId
               ? { ...inv, txHash, txHashValidated: validated, status: 'paid' as const }
+              : inv
+          ),
+        }))
+      },
+
+      setConfirmations: (invoiceId, confirmations) => {
+        set((state) => ({
+          invoices: state.invoices.map((inv) =>
+            inv.invoiceId === invoiceId ? { ...inv, confirmations } : inv
+          ),
+        }))
+      },
+
+      setError: (invoiceId, error) => {
+        set((state) => ({
+          invoices: state.invoices.map((inv) =>
+            inv.invoiceId === invoiceId
+              ? { ...inv, error: error ?? undefined }
               : inv
           ),
         }))

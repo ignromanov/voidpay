@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react'
-import { ClockIcon, CheckIcon, XCircleIcon } from '@/shared/ui/icons'
+import { ClockIcon, CheckIcon, XCircleIcon, ShieldCheckIcon } from '@/shared/ui/icons'
 import type { IconProps } from '@/shared/ui/icons'
 import type { PaymentPanelStatus } from '../types'
 
@@ -16,6 +16,12 @@ export const STATUS_CONFIG: Record<PaymentPanelStatus, StatusConfigEntry> = {
     gradient: 'from-violet-500 via-fuchsia-500 to-violet-500',
     chipColor: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
     icon: ClockIcon,
+  },
+  confirming: {
+    label: 'Confirming',
+    gradient: 'from-blue-500 via-cyan-400 to-blue-500',
+    chipColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    icon: ShieldCheckIcon,
   },
   paid: {
     label: 'Paid',
