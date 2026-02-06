@@ -7,7 +7,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type React from 'react'
 import { ScaledInvoicePreview } from '../ScaledInvoicePreview'
-import { NETWORK_GLOW_SHADOWS, NETWORK_GLOW_BORDERS } from '@/entities/network/config/ui-config'
+import { NETWORK_GLOW_SHADOWS, NETWORK_GLOW_BORDERS } from '@/entities/network'
 
 // Helper to render with userEvent
 function renderWithUser(ui: React.ReactElement) {
@@ -198,11 +198,9 @@ describe('ScaledInvoicePreview', () => {
   })
 
   describe('glow effects', () => {
-    it('applies glowClassName for elliptical glow', () => {
-      const glowClass = NETWORK_GLOW_SHADOWS[1] // Ethereum
-
+    it('applies ambient glow for non-modal preset with networkId', () => {
       const { container } = renderWithUser(
-        <ScaledInvoicePreview preset="demo" glowClassName={glowClass}>
+        <ScaledInvoicePreview preset="demo" networkId={1}>
           <div>Glowing</div>
         </ScaledInvoicePreview>
       )
@@ -210,22 +208,24 @@ describe('ScaledInvoicePreview', () => {
       const wrapper = container.querySelector('[style*="width"]') as HTMLElement
       // Glow applied via before: pseudo-element classes
       expect(wrapper.className).toContain('before:')
+      // Should contain Ethereum glow colors
+      expect(wrapper.className).toContain(NETWORK_GLOW_SHADOWS[1])
     })
 
-    it('applies borderClassName for modal borders', () => {
-      const borderClass = NETWORK_GLOW_BORDERS[42161] // Arbitrum
-
+    it('applies border glow for modal preset with networkId', () => {
       const { container } = renderWithUser(
-        <ScaledInvoicePreview preset="modal" borderClassName={borderClass}>
+        <ScaledInvoicePreview preset="modal" networkId={42161}>
           <div>Bordered</div>
         </ScaledInvoicePreview>
       )
 
       const wrapper = container.querySelector('[style*="width"]') as HTMLElement
       expect(wrapper.className).toContain('ring')
+      // Should contain Arbitrum border colors
+      expect(wrapper.className).toContain(NETWORK_GLOW_BORDERS[42161])
     })
 
-    it('renders without glow when glowClassName not provided', () => {
+    it('renders without glow when networkId not provided', () => {
       const { container } = renderWithUser(
         <ScaledInvoicePreview preset="demo">
           <div>No Glow</div>
@@ -233,14 +233,13 @@ describe('ScaledInvoicePreview', () => {
       )
 
       const wrapper = container.querySelector('[style*="width"]') as HTMLElement
-      // Should not have before: classes when no glow
       const hasBeforePseudo = wrapper.className.includes('before:bg-gradient')
       expect(hasBeforePseudo).toBe(false)
     })
 
-    it('renders without border when borderClassName not provided', () => {
+    it('renders without border when networkId not provided on modal', () => {
       const { container } = renderWithUser(
-        <ScaledInvoicePreview preset="demo">
+        <ScaledInvoicePreview preset="modal">
           <div>No Border</div>
         </ScaledInvoicePreview>
       )
@@ -621,20 +620,17 @@ describe('ScaledInvoicePreview', () => {
       expect(screen.queryByRole('button')).not.toBeInTheDocument()
     })
 
-    it('handles both glow and border simultaneously', () => {
+    it('applies ambient glow (not border) for non-modal preset', () => {
       const { container } = renderWithUser(
-        <ScaledInvoicePreview
-          preset="demo"
-          glowClassName="before:from-violet-500"
-          borderClassName="ring-1 ring-violet-500"
-        >
-          <div>Both Effects</div>
+        <ScaledInvoicePreview preset="editor" networkId={10}>
+          <div>Editor Glow</div>
         </ScaledInvoicePreview>
       )
 
       const wrapper = container.querySelector('[style*="width"]') as HTMLElement
+      // Non-modal preset → ambient glow (before:), no border (ring)
       expect(wrapper.className).toContain('before:')
-      expect(wrapper.className).toContain('ring')
+      expect(wrapper.className).not.toContain('ring')
     })
   })
 

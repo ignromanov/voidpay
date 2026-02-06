@@ -184,6 +184,7 @@ export function PayWorkspace() {
             <ScaledInvoicePreview
               preset="pay"
               printable
+              networkId={invoice.networkId}
               onClick={handleInvoiceClick}
               showExpandOverlay
             >

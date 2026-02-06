@@ -11,6 +11,7 @@ import {
 } from 'react'
 import { cn } from '@/shared/lib/utils'
 import { Maximize2Icon } from '@/shared/ui/icons'
+import { NETWORK_GLOW_SHADOWS, NETWORK_GLOW_BORDERS } from '@/entities/network'
 import {
   useInvoiceScale,
   PRESET_CONFIGS,
@@ -55,20 +56,12 @@ export interface ScaledInvoicePreviewProps {
   printable?: boolean
 
   /**
-   * Network-specific glow gradient classes.
-   * Applied to ::before pseudo-element for elliptical ambient glow.
-   * Example: "before:from-indigo-500/60 before:to-blue-500/40"
-   * Use NETWORK_GLOW_SHADOWS[networkId] from @/entities/network
+   * Network chain ID for automatic glow styling.
+   * - Non-modal presets (demo/editor/pay): elliptical ambient glow via ::before
+   * - Modal preset: border ring + shadow glow
+   * Resolved internally via NETWORK_GLOW_SHADOWS / NETWORK_GLOW_BORDERS.
    */
-  glowClassName?: string | undefined
-
-  /**
-   * Border styling classes applied directly to invoice wrapper.
-   * Use for ring/shadow effects on fullscreen modal.
-   * Example: "ring-1 ring-indigo-500/40 shadow-[0_0_30px_rgba(99,102,241,0.25)]"
-   * Use NETWORK_GLOW_BORDERS[networkId] from @/entities/network
-   */
-  borderClassName?: string | undefined
+  networkId?: number
 
   /**
    * Click handler supporting both mouse events and keyboard activation.
@@ -113,8 +106,7 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
       preset,
       scaleOptions,
       printable = false,
-      glowClassName,
-      borderClassName,
+      networkId,
       onClick,
       onMouseEnter,
       onMouseLeave,
@@ -123,6 +115,14 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
     },
     ref
   ) {
+    // Derive glow classes from networkId + preset
+    const glowClassName = networkId != null && preset !== 'modal'
+      ? NETWORK_GLOW_SHADOWS[networkId]
+      : undefined
+    const borderClassName = networkId != null && preset === 'modal'
+      ? NETWORK_GLOW_BORDERS[networkId]
+      : undefined
+
     // Hover state for expand overlay
     const [isHovered, setIsHovered] = useState(false)
 

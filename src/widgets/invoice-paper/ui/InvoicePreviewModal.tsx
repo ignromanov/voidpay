@@ -3,14 +3,13 @@
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { XIcon, PrinterIcon, DownloadIcon } from '@/shared/ui/icons'
-import { Dialog, DialogContent, DialogTitle, DialogClose } from '@/shared/ui/dialog'
+import { Dialog, DialogContent, DialogTitle, DialogClose, DialogDescription } from '@/shared/ui/dialog'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { InvoicePaper } from './InvoicePaper'
 import { ScaledInvoicePreview } from './ScaledInvoicePreview'
 import { InvoiceStatus } from '../types'
 import { PartialInvoice, invoiceSchema } from '@/entities/invoice'
-import { NETWORK_GLOW_BORDERS } from '@/entities/network'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
 
 // Animation variants for smooth enter/exit
@@ -132,12 +131,10 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           className="flex h-[100dvh] w-screen max-w-none flex-col overflow-hidden border-none bg-zinc-900/90 p-0 shadow-2xl backdrop-blur-xl sm:h-[95vh] sm:max-w-[95vw] lg:w-[880px] lg:max-w-[95vw] print:hidden [&>button]:hidden"
-          aria-describedby="invoice-preview-description"
         >
-          {/* Screen reader description */}
-          <p id="invoice-preview-description" className="sr-only">
+          <DialogDescription className="sr-only">
             Full-screen invoice preview. Press ESC to close, P to print.
-          </p>
+          </DialogDescription>
 
           {/* Animated header */}
           <motion.div
@@ -190,7 +187,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
           >
             <ScaledInvoicePreview
               preset="modal"
-              borderClassName={NETWORK_GLOW_BORDERS[data.networkId ?? 1]}
+              networkId={data.networkId ?? 1}
               className="shrink-0"
               onClick={(e) => e.stopPropagation()}
             >

@@ -77,7 +77,6 @@ export const InvoicePaper = React.memo(
         variant = 'default',
         showQR = true,
         showTexture = true,
-        showGlow: _showGlow = false,
         invoiceUrl,
         className,
         containerRef,
@@ -91,7 +90,7 @@ export const InvoicePaper = React.memo(
       const effectiveStatus = isEmpty ? 'empty' : status
 
       // Get shadow configuration for network (default to Ethereum for empty state)
-      // Note: Glow effect is handled by ScaledInvoicePreview via glowClassName prop
+      // Note: Glow effect is handled by ScaledInvoicePreview via networkId prop
       const networkId = data?.networkId ?? 1
       const shadowClass = NETWORK_SHADOWS[networkId] ?? 'shadow-black/20'
 
@@ -141,7 +140,7 @@ export const InvoicePaper = React.memo(
             'group/paper relative flex h-[1123px] min-h-[1123px] w-[794px] min-w-[794px] cursor-default flex-col overflow-hidden bg-white text-black transition-shadow duration-500',
             // Print overrides — full size to enable flex layout (mt-auto needs height constraint)
             'shadow-2xl print:!h-full print:!min-h-0 print:!w-full print:!max-w-none print:!min-w-0 print:shadow-none print:transition-none',
-            // Standard shadow for depth (glow handled by ScaledInvoicePreview)
+            // Standard shadow for depth (glow handled by ScaledInvoicePreview via networkId)
             shadowClass,
             className
           )}

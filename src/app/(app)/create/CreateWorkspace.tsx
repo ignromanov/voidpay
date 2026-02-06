@@ -16,7 +16,7 @@ import {
   UrlSizeError,
 } from '@/features/generate-link'
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkTheme, NETWORK_GLOW_SHADOWS } from '@/entities/network'
+import { getNetworkTheme } from '@/entities/network'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { toast } from '@/shared/lib/toast'
@@ -272,11 +272,11 @@ export function CreateWorkspace() {
           <ScaledInvoicePreview
             preset="editor"
             printable
-            glowClassName={NETWORK_GLOW_SHADOWS[invoiceData?.networkId ?? 1]}
+            networkId={invoiceData?.networkId ?? 1}
             onClick={handlePreviewClick}
             showExpandOverlay
           >
-            <InvoicePaper data={invoiceData} status="draft" showGlow />
+            <InvoicePaper data={invoiceData} status="draft" />
           </ScaledInvoicePreview>
 
           {/* Floating Live Preview badge with sync status */}
