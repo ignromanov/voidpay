@@ -29,11 +29,6 @@ describe('PaymentPanel', () => {
       expect(screen.getByTestId('payment-panel')).toBeDefined()
     })
 
-    it('shows StatusChip with Pending label', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.getByText('Pending')).toBeDefined()
-    })
-
     it('shows AmountDisplay with correct values', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
       expect(screen.getByText('Total Due')).toBeDefined()
@@ -84,18 +79,6 @@ describe('PaymentPanel', () => {
         />
       )
       expect(screen.getByText('Payment Successful')).toBeDefined()
-    })
-
-    it('shows StatusChip with Paid label', () => {
-      render(
-        <PaymentPanel
-          invoice={mockInvoice}
-          status="paid"
-          txHash="0xabc123"
-          txHashValidated
-        />
-      )
-      expect(screen.getByText('Paid')).toBeDefined()
     })
 
     it('does not show ActionSlot when paid', () => {
@@ -163,11 +146,6 @@ describe('PaymentPanel', () => {
     it('shows ExpiredState with expired message', () => {
       render(<PaymentPanel invoice={mockInvoice} status="expired" />)
       expect(screen.getByText('This invoice has expired')).toBeDefined()
-    })
-
-    it('shows StatusChip with Expired label', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="expired" />)
-      expect(screen.getByText('Expired')).toBeDefined()
     })
 
     it('does not show ActionSlot when expired', () => {
@@ -339,8 +317,9 @@ describe('PaymentPanel', () => {
           status="paid"
         />
       )
-      // Should show StatusChip but no PaidConfirmation (txHash required)
-      expect(screen.getByText('Paid')).toBeDefined()
+      // Should render with paid status but no PaidConfirmation (txHash required)
+      const panel = screen.getByTestId('payment-panel')
+      expect(panel.getAttribute('data-status')).toBe('paid')
       expect(screen.queryByText('Payment Successful')).toBeNull()
     })
   })

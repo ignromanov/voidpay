@@ -1,6 +1,5 @@
 import { computeAmounts } from '../lib/compute-amounts'
 import { STATUS_CONFIG } from './status-config'
-import { StatusChip } from './StatusChip'
 import { AmountDisplay } from './AmountDisplay'
 import { PaidConfirmation } from './PaidConfirmation'
 import { ExpiredState } from './ExpiredState'
@@ -45,8 +44,6 @@ export function PaymentPanel({
 
       {/* Content */}
       <div className="p-3 md:p-4 space-y-3 pt-6 md:pt-4">
-        <StatusChip status={status} />
-
         {/* Pending state: Amount + ActionSlot */}
         {isPending && (
           <>

@@ -17,7 +17,32 @@ import {
   type DecodeErrorType,
 } from '@/shared/ui/decode-error-screen'
 import { PaymentPanel, type PaymentPanelStatus } from '@/widgets/payment-panel'
+import { motion, AnimatePresence } from '@/shared/ui/motion'
+import { CheckIcon, ClockIcon, ChevronUpIcon, ChevronDownIcon } from '@/shared/ui/icons'
+import { cn } from '@/shared/lib/utils'
 import type { Invoice } from '@/shared/lib/invoice-types'
+
+/**
+ * Floating status badge styles per payment status.
+ * Matches design reference: PaymentWorkspace.tsx (lines 183-201).
+ */
+const BADGE_STYLES: Record<PaymentPanelStatus, { label: string; badge: string; dot: string }> = {
+  pending: {
+    label: 'Payment Pending',
+    badge: 'border-amber-500/40 bg-amber-950/80 text-amber-200 shadow-[0_0_30px_-5px_rgba(245,158,11,0.4)]',
+    dot: 'bg-amber-400 shadow-[0_0_12px_#fbbf24] animate-pulse',
+  },
+  paid: {
+    label: 'Finalized & Paid',
+    badge: 'border-emerald-500/50 bg-emerald-950/80 text-emerald-200 shadow-[0_0_30px_-5px_rgba(16,185,129,0.5)]',
+    dot: 'bg-emerald-400 shadow-[0_0_12px_#34d399]',
+  },
+  expired: {
+    label: 'Expired',
+    badge: 'border-red-500/40 bg-red-950/80 text-red-200 shadow-[0_0_30px_-5px_rgba(239,68,68,0.4)]',
+    dot: 'bg-red-400 shadow-[0_0_12px_#f87171]',
+  },
+}
 
 const InvoicePreviewModal = dynamic(
   () => import('@/widgets/invoice-paper').then((m) => ({ default: m.InvoicePreviewModal })),
@@ -77,6 +102,9 @@ export function PayWorkspace() {
 
   // Modal state
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+
+  // Panel minimize state (floating overlay can collapse to pill)
+  const [isMinimized, setIsMinimized] = useState(false)
 
   // Compute payment panel status
   const panelStatus: PaymentPanelStatus = useMemo(() => {
@@ -189,16 +217,35 @@ export function PayWorkspace() {
     )
   }
 
-  // Success state
+  // Success state — overlay layout per design reference (PaymentWorkspace.tsx)
+  // Invoice centered in "safe zone", PaymentPanel as floating bottom overlay
   if (invoice) {
+    const isPaid = panelStatus === 'paid'
+
+    const badgeConfig = BADGE_STYLES[panelStatus]
+
     return (
       <>
-        <div
-          className="relative z-10 flex h-full w-full flex-col items-center justify-start gap-4 overflow-y-auto py-4 md:flex-row md:items-start md:justify-center md:gap-6 md:overflow-visible"
-          data-network={networkId}
-        >
-          {/* Invoice Preview */}
-          <div data-testid="invoice-preview-clickable" className="w-full max-w-[400px] shrink-0">
+        <div className="relative z-10 h-full w-full" data-network={networkId}>
+          {/* Floating Status Badge — above invoice, per design reference */}
+          <div className="absolute top-3 inset-x-0 z-20 flex justify-center pointer-events-none">
+            <span
+              data-testid="status-badge"
+              className={cn(
+                'inline-flex items-center rounded-full border px-5 py-2 text-sm font-medium backdrop-blur-md',
+                badgeConfig.badge
+              )}
+            >
+              <span className={cn('mr-2.5 h-2 w-2 rounded-full', badgeConfig.dot)} />
+              {badgeConfig.label}
+            </span>
+          </div>
+
+          {/* Invoice Preview — centered in safe zone, leaving bottom space for panel */}
+          <div
+            data-testid="invoice-preview-clickable"
+            className="absolute inset-x-0 top-0 bottom-[140px] z-10 flex items-center justify-center p-2 md:p-4"
+          >
             <ScaledInvoicePreview
               preset="pay"
               printable
@@ -206,7 +253,7 @@ export function PayWorkspace() {
               onClick={handleInvoiceClick}
               showExpandOverlay
             >
-              {panelStatus === 'paid' && storedTxHash ? (
+              {isPaid && storedTxHash ? (
                 <InvoicePaper data={invoice} status="paid" txHash={storedTxHash} />
               ) : (
                 <InvoicePaper data={invoice} status="pending" />
@@ -214,29 +261,93 @@ export function PayWorkspace() {
             </ScaledInvoicePreview>
           </div>
 
-          {/* Payment Panel */}
-          <div className="w-full max-w-[400px]">
-            {panelStatus === 'paid' && storedTxHash ? (
-              <PaymentPanel
-                invoice={invoice}
-                status="paid"
-                txHash={storedTxHash}
-                txHashValidated={storedTxValidated ?? false}
-              />
-            ) : (
-              <PaymentPanel
-                invoice={invoice}
-                status={panelStatus}
-              />
-            )}
+          {/* Payment Panel — floating bottom overlay */}
+          <div className="absolute bottom-4 left-1/2 z-40 w-full max-w-[95%] -translate-x-1/2 px-4 md:bottom-5 md:max-w-xl">
+            <AnimatePresence mode="wait">
+              {isMinimized ? (
+                /* Minimized pill */
+                <motion.div
+                  key="minimized"
+                  layout
+                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 20, scale: 0.9 }}
+                  data-testid="payment-pill"
+                  onClick={() => setIsMinimized(false)}
+                  className={cn(
+                    'mx-auto flex w-full max-w-sm cursor-pointer items-center justify-between rounded-full border p-2 shadow-2xl backdrop-blur-md transition-colors group',
+                    isPaid
+                      ? 'border-emerald-500/30 bg-zinc-900/90 shadow-[0_0_20px_-10px_rgba(16,185,129,0.3)]'
+                      : 'border-zinc-700 bg-zinc-900/90'
+                  )}
+                >
+                  <div className="flex items-center gap-3 pl-2">
+                    {isPaid ? (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/20">
+                        <CheckIcon size={16} className="text-emerald-400" />
+                      </div>
+                    ) : (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/20">
+                        <ClockIcon size={16} className="text-amber-400" />
+                      </div>
+                    )}
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold leading-none text-white">
+                        {isPaid ? 'Payment Successful' : 'Waiting for Payment'}
+                      </span>
+                      <span className="mt-0.5 text-[10px] leading-none text-zinc-400">
+                        Click to expand details
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 transition-colors group-hover:bg-zinc-700">
+                    <ChevronUpIcon size={16} className="text-zinc-400" />
+                  </div>
+                </motion.div>
+              ) : (
+                /* Expanded panel */
+                <motion.div
+                  key="expanded"
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  className="relative w-full"
+                >
+                  {isPaid && storedTxHash ? (
+                    <PaymentPanel
+                      invoice={invoice}
+                      status="paid"
+                      txHash={storedTxHash}
+                      txHashValidated={storedTxValidated ?? false}
+                    />
+                  ) : (
+                    <PaymentPanel
+                      invoice={invoice}
+                      status={panelStatus}
+                    />
+                  )}
+                  {/* Minimize button — overlays top-right of panel */}
+                  <button
+                    data-testid="minimize-panel"
+                    onClick={() => setIsMinimized(true)}
+                    className="absolute top-2.5 right-3 z-10 rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-white"
+                    title="Minimize"
+                    aria-label="Minimize payment panel"
+                  >
+                    <ChevronDownIcon size={14} />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
         {isPreviewOpen && (
           <InvoicePreviewModal
             data={invoice}
-            status={panelStatus === 'paid' && storedTxHash ? 'paid' : 'pending'}
-            {...(panelStatus === 'paid' && storedTxHash ? { txHash: storedTxHash } : {})}
+            status={isPaid && storedTxHash ? 'paid' : 'pending'}
+            {...(isPaid && storedTxHash ? { txHash: storedTxHash } : {})}
             open={isPreviewOpen}
             onOpenChange={setIsPreviewOpen}
           />
