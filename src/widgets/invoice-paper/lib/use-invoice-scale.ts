@@ -23,7 +23,7 @@ export const INVOICE_BASE_HEIGHT = 1123
 /** Scale calculation constants */
 const MIN_SCALE = 0.25
 const HEIGHT_FRACTION = 0.95
-const INITIAL_SCALE = 0.45
+const DEFAULT_INITIAL_SCALE = 0.45
 
 /**
  * Preset configurations for common use cases
@@ -38,18 +38,28 @@ interface PresetConfig {
   maxScale: number
   minScale?: number
   scaleBy: 'fit' | 'width'
+  /** Scale before container is measured — drives the "grow in" animation */
+  initialScale: number
   /** CSS class for container height */
   containerHeightClass: string
 }
 
 export const PRESET_CONFIGS: Record<ScalePreset, PresetConfig> = {
-  demo: { maxScale: 1, scaleBy: 'fit', containerHeightClass: 'min-h-[75vh]' },
-  // Editor: fit to container, scale up to 150% for larger screens
-  editor: { maxScale: 1.5, scaleBy: 'fit', containerHeightClass: 'h-full' },
-  // Pay page: fit to parent height (like editor, parent controls sizing)
-  pay: { maxScale: 1.5, scaleBy: 'fit', containerHeightClass: 'h-full' },
+  // Demo: landing page, typical final ~0.55 → initial 0.45 (~82%)
+  demo: { maxScale: 1, initialScale: 0.45, scaleBy: 'fit', containerHeightClass: 'min-h-[75vh]' },
+  // Editor: create page, typical final ~0.65 → initial 0.55 (~85%)
+  editor: { maxScale: 1.5, initialScale: 0.55, scaleBy: 'fit', containerHeightClass: 'h-full' },
+  // Pay page: typical final ~0.70 → initial 0.58 (~83%)
+  pay: { maxScale: 1.5, initialScale: 0.58, scaleBy: 'fit', containerHeightClass: 'h-full' },
+  // Modal: fullscreen, typical final ~0.85 → initial 0.75 (~88%)
   // minScale 0.8 ensures readable text on mobile (635px width vs 516px at 0.65)
-  modal: { maxScale: 1, minScale: 0.8, scaleBy: 'width', containerHeightClass: 'h-auto' },
+  modal: {
+    maxScale: 1,
+    minScale: 0.8,
+    initialScale: 0.75,
+    scaleBy: 'width',
+    containerHeightClass: 'h-auto',
+  },
 }
 
 export interface UseInvoiceScaleOptions {
@@ -105,12 +115,13 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
   // Resolve preset or use individual options
   const config = options.preset ? PRESET_CONFIGS[options.preset] : options
   const { maxScale = 1, minScale = MIN_SCALE, scaleBy = 'fit' } = config
+  const startScale = 'initialScale' in config ? config.initialScale : DEFAULT_INITIAL_SCALE
 
   const [container, setContainer] = useState<HTMLDivElement | null>(null)
-  const [scale, setScale] = useState(INITIAL_SCALE)
+  const [scale, setScale] = useState(startScale)
 
   // Ref to track last scale for avoiding unnecessary updates
-  const lastScaleRef = useRef(INITIAL_SCALE)
+  const lastScaleRef = useRef(startScale)
 
   // Memoized scale calculation
   const calculateScale = useCallback(

@@ -14,6 +14,8 @@ import { Maximize2Icon } from '@/shared/ui/icons'
 import { NETWORK_GLOW_SHADOWS, NETWORK_GLOW_BORDERS } from '@/entities/network'
 import {
   useInvoiceScale,
+  INVOICE_BASE_WIDTH,
+  INVOICE_BASE_HEIGHT,
   PRESET_CONFIGS,
   type ScalePreset,
   type UseInvoiceScaleOptions,
@@ -27,8 +29,15 @@ import {
 type ClickHandler = MouseEventHandler<HTMLDivElement> | (() => void)
 
 export interface ScaledInvoicePreviewProps {
+  /**
+   * Show A4-proportioned skeleton placeholder instead of children.
+   * Uses base invoice dimensions (794×1123) so it scales identically.
+   * @default false
+   */
+  loading?: boolean
+
   /** Invoice content (will be scaled on screen, full-size on print) */
-  children: ReactNode
+  children?: ReactNode
 
   /** Overlay content (NOT scaled, positioned absolute, hidden on print) */
   overlay?: ReactNode
@@ -101,6 +110,7 @@ export interface ScaledInvoicePreviewProps {
 export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePreviewProps>(
   function ScaledInvoicePreview(
     {
+      loading = false,
       children,
       overlay,
       preset,
@@ -213,7 +223,7 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
         {/* Event handlers HERE for precise hit area (glow has pointer-events-none) */}
         <div
           className={cn(
-            'relative overflow-visible rounded-sm transition-[width,height] duration-200 ease-out',
+            'relative overflow-visible rounded-sm',
             // Print: reset all sizing/positioning to let invoice-print-target handle layout
             'print:!static print:!h-auto print:!w-auto print:!overflow-visible print:rounded-none print:transition-none',
             // Cursor style for interactive invoice (zoom-in for expand action)
@@ -234,7 +244,6 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           style={{
             width: `${scaledWidth}px`,
             height: `${scaledHeight}px`,
-            willChange: 'width, height',
           }}
           onClick={handleClick}
           onMouseEnter={handleMouseEnter}
@@ -243,16 +252,23 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           tabIndex={onClick ? 0 : undefined}
           onKeyDown={handleKeyDown}
         >
-          {/* Invoice with CSS scale — origin top-left to align with container */}
+          {/* Invoice with CSS scale — centered within wrapper, symmetric zoom */}
           <div
             className={cn(
-              'absolute top-0 left-0 origin-top-left transition-transform duration-200 ease-out',
+              'absolute top-1/2 left-1/2 transition-transform duration-300 ease-out',
               // Print: either become the print target or hide
               printable ? 'invoice-print-target' : 'print:hidden'
             )}
-            style={{ transform: `scale(${scale})` }}
+            style={{ transform: `translate(-50%, -50%) scale(${scale})` }}
           >
-            {children}
+            {loading ? (
+              <div
+                className="animate-pulse rounded-lg bg-zinc-800/50"
+                style={{ width: INVOICE_BASE_WIDTH, height: INVOICE_BASE_HEIGHT }}
+              />
+            ) : (
+              children
+            )}
           </div>
 
           {/* Overlay (not scaled, inside invoice bounds, hidden on print) */}

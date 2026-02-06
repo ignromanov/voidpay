@@ -215,9 +215,11 @@ export function PayWorkspace() {
       <div
         data-testid="pay-workspace-skeleton"
         data-network={networkId}
-        className="flex h-full items-center justify-center"
+        className="relative z-10 h-full w-full"
       >
-        <div className="h-[500px] w-[353px] animate-pulse rounded-lg bg-zinc-800/50" />
+        <div className="absolute inset-x-0 top-0 bottom-[70px] z-10 flex items-center justify-center p-2 md:p-4">
+          <ScaledInvoicePreview preset="pay" loading />
+        </div>
       </div>
     )
   }
