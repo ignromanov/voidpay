@@ -18,7 +18,7 @@ vi.mock('@/features/invoice-codec', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/features/invoice-codec')>()
   return {
     ...actual,
-    parseInvoiceHash: vi.fn(),
+    parseInvoiceHash: vi.fn(() => ({ success: false, error: { message: 'Mock not configured' } })),
   }
 })
 

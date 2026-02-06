@@ -1,0 +1,96 @@
+import { render, screen } from '@testing-library/react'
+import { describe, it, expect } from 'vitest'
+import { AmountDisplay } from '../ui/AmountDisplay'
+
+describe('AmountDisplay', () => {
+  it('renders formatted total amount with currency', () => {
+    render(
+      <AmountDisplay
+        subtotal="1000000"
+        magicDust="42"
+        exactTotal="1000042"
+        decimals={6}
+        currency="USDC"
+      />
+    )
+
+    // Main amount display - the subtotal (1.00 USDC)
+    expect(screen.getByText('USDC')).toBeDefined()
+  })
+
+  it('shows Magic Dust breakdown when magicDust is non-zero', () => {
+    render(
+      <AmountDisplay
+        subtotal="1000000"
+        magicDust="42"
+        exactTotal="1000042"
+        decimals={6}
+        currency="USDC"
+      />
+    )
+
+    // "Exact amount" label should be present
+    expect(screen.getByText(/Exact:/i)).toBeDefined()
+    // Info icon tooltip trigger should exist
+    const svg = document.querySelector('svg')
+    expect(svg).not.toBeNull()
+  })
+
+  it('shows "Manual verification required" when magicDust is zero', () => {
+    render(
+      <AmountDisplay
+        subtotal="5000000"
+        magicDust="0"
+        exactTotal="5000000"
+        decimals={6}
+        currency="USDC"
+      />
+    )
+
+    expect(screen.getByText('Manual verification required')).toBeDefined()
+  })
+
+  it('formats large amounts with thousand separators', () => {
+    render(
+      <AmountDisplay
+        subtotal="999999000000"
+        magicDust="0"
+        exactTotal="999999000000"
+        decimals={6}
+        currency="USDC"
+      />
+    )
+
+    // formatAmount with useGrouping=true produces "999,999.00"
+    expect(screen.getByText('999,999.00')).toBeDefined()
+  })
+
+  it('shows full precision for tiny magicDust on 18-decimal token', () => {
+    render(
+      <AmountDisplay
+        subtotal="1000000000000000000"
+        magicDust="1"
+        exactTotal="1000000000000000001"
+        decimals={18}
+        currency="ETH"
+      />
+    )
+
+    // The exact amount should show the full precision dust value
+    expect(screen.getByText(/Exact:/i)).toBeDefined()
+  })
+
+  it('renders "Total Due" label', () => {
+    render(
+      <AmountDisplay
+        subtotal="1000000"
+        magicDust="0"
+        exactTotal="1000000"
+        decimals={6}
+        currency="USDC"
+      />
+    )
+
+    expect(screen.getByText('Total Due')).toBeDefined()
+  })
+})

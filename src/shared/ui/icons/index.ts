@@ -30,6 +30,8 @@ export {
   InfoIcon,
   ShieldAlertIcon,
   MinusIcon,
+  ClockIcon,
+  ShieldCheckIcon,
 } from './status'
 
 // Contact (identity fields)
@@ -75,4 +77,5 @@ export {
   Building2Icon,
   HexagonIcon,
   TriangleIcon,
+  FlagIcon,
 } from './misc'

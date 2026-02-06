@@ -16,6 +16,7 @@ import {
   DecodeErrorScreen,
   type DecodeErrorType,
 } from '@/shared/ui/decode-error-screen'
+import { PaymentPanel, type PaymentPanelStatus } from '@/widgets/payment-panel'
 import type { Invoice } from '@/shared/lib/invoice-types'
 
 const InvoicePreviewModal = dynamic(
@@ -76,6 +77,19 @@ export function PayWorkspace() {
 
   // Modal state
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+
+  // Compute payment panel status
+  const panelStatus: PaymentPanelStatus = useMemo(() => {
+    const existingInvoice = invoice ? getInvoice(invoice.invoiceId) : undefined
+    if (existingInvoice?.status === 'paid') return 'paid'
+    if (invoice?.dueAt && invoice.dueAt * 1000 < Date.now()) return 'expired'
+    return 'pending'
+  }, [invoice, getInvoice])
+
+  // Get stored tx data
+  const storedInvoice = invoice ? getInvoice(invoice.invoiceId) : undefined
+  const storedTxHash = storedInvoice?.txHash
+  const storedTxValidated = storedInvoice?.txHashValidated
 
   // Hydration detection: wait for hash to stabilize
   useEffect(() => {
@@ -179,8 +193,12 @@ export function PayWorkspace() {
   if (invoice) {
     return (
       <>
-        <div className="relative z-10 flex h-full w-full items-center justify-center py-4" data-network={networkId}>
-          <div data-testid="invoice-preview-clickable" className="h-full w-full">
+        <div
+          className="relative z-10 flex h-full w-full flex-col items-center justify-start gap-4 overflow-y-auto py-4 md:flex-row md:items-start md:justify-center md:gap-6 md:overflow-visible"
+          data-network={networkId}
+        >
+          {/* Invoice Preview */}
+          <div data-testid="invoice-preview-clickable" className="w-full max-w-[400px] shrink-0">
             <ScaledInvoicePreview
               preset="pay"
               printable
@@ -188,20 +206,41 @@ export function PayWorkspace() {
               onClick={handleInvoiceClick}
               showExpandOverlay
             >
-              <InvoicePaper data={invoice} status="pending" />
+              {panelStatus === 'paid' && storedTxHash ? (
+                <InvoicePaper data={invoice} status="paid" txHash={storedTxHash} />
+              ) : (
+                <InvoicePaper data={invoice} status="pending" />
+              )}
             </ScaledInvoicePreview>
+          </div>
+
+          {/* Payment Panel */}
+          <div className="w-full max-w-[400px]">
+            {panelStatus === 'paid' && storedTxHash ? (
+              <PaymentPanel
+                invoice={invoice}
+                status="paid"
+                txHash={storedTxHash}
+                txHashValidated={storedTxValidated ?? false}
+              />
+            ) : (
+              <PaymentPanel
+                invoice={invoice}
+                status={panelStatus}
+              />
+            )}
           </div>
         </div>
 
         {isPreviewOpen && (
           <InvoicePreviewModal
             data={invoice}
-            status="pending"
+            status={panelStatus === 'paid' && storedTxHash ? 'paid' : 'pending'}
+            {...(panelStatus === 'paid' && storedTxHash ? { txHash: storedTxHash } : {})}
             open={isPreviewOpen}
             onOpenChange={setIsPreviewOpen}
           />
         )}
-
       </>
     )
   }
