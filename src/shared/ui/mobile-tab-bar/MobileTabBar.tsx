@@ -19,6 +19,7 @@ export interface MobileTabBarProps {
 export function MobileTabBar({ tabs, activeTab, onTabChange, className }: MobileTabBarProps) {
   return (
     <div
+      role="tablist"
       className={cn(
         // Positioning handled by parent (fixed/sticky) - this is just the visual container
         'mx-auto mb-2 flex w-full max-w-xl rounded-xl border border-zinc-800 bg-zinc-900/80 p-1 shadow-lg backdrop-blur-md lg:hidden',
@@ -28,9 +29,11 @@ export function MobileTabBar({ tabs, activeTab, onTabChange, className }: Mobile
       {tabs.map((tab) => (
         <button
           key={tab.id}
+          role="tab"
+          aria-selected={activeTab === tab.id}
           onClick={() => onTabChange(tab.id)}
           className={cn(
-            'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-2 text-sm font-bold transition-all',
+            'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-2 text-sm font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500',
             activeTab === tab.id
               ? 'bg-zinc-800 text-white shadow-sm'
               : 'text-zinc-500 hover:text-zinc-300'

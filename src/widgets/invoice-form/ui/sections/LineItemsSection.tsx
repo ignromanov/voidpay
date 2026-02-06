@@ -1,6 +1,6 @@
 'use client'
 
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from '@/shared/ui/motion'
 
 import { useCreatorStore } from '@/entities/creator'
 import { Button } from '@/shared/ui/button'

@@ -90,11 +90,10 @@
       position: absolute;
       left: 0;
       top: 0;
-      /* A4 printable area (210mm - 10mm margins = 200mm) */
-      width: calc(210mm - 10mm);
-      /* Explicit height for flexbox to work (mt-auto needs constraint) */
-      height: calc(297mm - 10mm);
-      max-width: none;
+      /* A4 printable area — !important overrides inline styles from ScaledInvoicePreview */
+      width: calc(210mm - 10mm) !important;
+      height: calc(297mm - 10mm) !important;
+      max-width: none !important;
       transform: none !important;
       box-shadow: none;
       page-break-inside: avoid;

@@ -202,10 +202,15 @@ export function calculateTotalsBigInt(
   // Calculate subtotal: sum of (quantity * rate)
   let subtotal = ZERO
   for (const item of items) {
-    const rate = BigInt(item.rate || '0')
+    let rate: bigint, qtyScaled: bigint
+    try {
+      rate = BigInt(item.rate || '0')
+      qtyScaled = BigInt(Math.round(item.quantity * Number(scale)))
+    } catch {
+      continue // skip invalid line item
+    }
     // Scale quantity to atomic units, then multiply by rate, then divide by scale
     // This handles fractional quantities correctly
-    const qtyScaled = BigInt(Math.round(item.quantity * Number(scale)))
     const lineTotal = (qtyScaled * rate) / scale
     subtotal = subtotal + lineTotal
   }
@@ -231,8 +236,9 @@ export function calculateTotalsBigInt(
     }
   }
 
-  // Final total
-  const total = subtotal + taxAmount - discountAmount
+  // Final total (clamped to zero — discount cannot exceed subtotal+tax)
+  const rawTotal = subtotal + taxAmount - discountAmount
+  const total = rawTotal < ZERO ? ZERO : rawTotal
 
   return {
     subtotal: subtotal.toString(),
@@ -257,7 +263,13 @@ export function calculateTotalsBigInt(
  * @returns Random number between 1 and 999
  */
 export function generateMagicDust(): number {
-  return Math.floor(Math.random() * 999) + 1
+  const arr = new Uint16Array(1)
+  crypto.getRandomValues(arr)
+  const value = arr[0]
+  if (value === undefined) {
+    throw new Error('Failed to generate random value')
+  }
+  return (value % 999) + 1
 }
 
 /**
@@ -268,7 +280,11 @@ export function generateMagicDust(): number {
  * @returns New total with Magic Dust added
  */
 export function addMagicDust(total: string, magicDust: number): string {
-  const totalBigInt = BigInt(total || '0')
-  const dustBigInt = BigInt(magicDust)
-  return (totalBigInt + dustBigInt).toString()
+  try {
+    const totalBigInt = BigInt(total || '0')
+    const dustBigInt = BigInt(magicDust)
+    return (totalBigInt + dustBigInt).toString()
+  } catch {
+    return total || '0'
+  }
 }

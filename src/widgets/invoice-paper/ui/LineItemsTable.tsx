@@ -62,19 +62,20 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, decimals
     <section className="flex-1">
       <div className="-mx-4 overflow-x-auto px-4">
         <table className="w-full min-w-[500px] border-collapse text-left">
+          <caption className="sr-only">Invoice line items</caption>
           <thead>
             <tr className="border-b-2 border-zinc-700">
-              <th className="w-8 py-3 text-xs font-bold tracking-widest text-black uppercase">#</th>
-              <th className="w-1/2 py-3 text-xs font-bold tracking-widest text-black uppercase">
+              <th scope="col" className="w-8 py-3 text-xs font-bold tracking-widest text-black uppercase">#</th>
+              <th scope="col" className="w-1/2 py-3 text-xs font-bold tracking-widest text-black uppercase">
                 Description
               </th>
-              <th className="py-3 text-center text-xs font-bold tracking-widest text-black uppercase">
+              <th scope="col" className="py-3 text-center text-xs font-bold tracking-widest text-black uppercase">
                 Qty
               </th>
-              <th className="py-3 text-right text-xs font-bold tracking-widest text-black uppercase">
+              <th scope="col" className="py-3 text-right text-xs font-bold tracking-widest text-black uppercase">
                 Rate (per unit)
               </th>
-              <th className="py-3 text-right text-xs font-bold tracking-widest text-black uppercase">
+              <th scope="col" className="py-3 text-right text-xs font-bold tracking-widest text-black uppercase">
                 Amount
               </th>
             </tr>
@@ -85,7 +86,7 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, decimals
                 key={idx}
                 className="group border-b border-zinc-200 transition-colors last:border-0 even:bg-zinc-50/50 hover:bg-zinc-100/50 print:even:bg-transparent print:hover:bg-transparent"
               >
-                <td className="py-4 pr-3 font-mono text-zinc-400">{idx + 1}</td>
+                <th scope="row" className="py-4 pr-3 font-mono text-zinc-600 font-normal">{idx + 1}</th>
                 <td className="py-4 pr-4 font-medium text-zinc-900 max-w-[200px] truncate" title={item.description ?? ''}>
                   {item.description ?? ''}
                 </td>

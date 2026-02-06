@@ -10,7 +10,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkTheme, NETWORK_GLOW_SHADOWS } from '@/entities/network'
+import { getNetworkTheme } from '@/entities/network'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
 import { InvoicePaper, ScaledInvoicePreview, InvoicePaperProps } from '@/widgets/invoice-paper'
@@ -80,7 +80,7 @@ export function DemoSection() {
       <div className="relative flex w-full max-w-[1400px] flex-col items-center px-4">
         <ScaledInvoicePreview
           preset="demo"
-          glowClassName={NETWORK_GLOW_SHADOWS[currentInvoice.data.networkId]}
+          networkId={currentInvoice.data.networkId}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           overlay={
@@ -106,7 +106,6 @@ export function DemoSection() {
               status: currentInvoice.status,
               txHash: currentInvoice.txHash,
               txHashValidated: currentInvoice.txHashValidated,
-              showGlow: true,
             } as InvoicePaperProps)}
           />
         </ScaledInvoicePreview>

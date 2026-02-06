@@ -49,12 +49,6 @@ interface InvoicePaperBaseProps {
    */
   showTexture?: boolean | undefined
 
-  /**
-   * Whether to show the network-colored glow effect around the invoice.
-   * Creates a soft ambient glow matching the blockchain network color.
-   * @default false
-   */
-  showGlow?: boolean | undefined
 
   /**
    * Invoice URL for sharing/linking.

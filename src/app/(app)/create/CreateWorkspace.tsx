@@ -4,7 +4,6 @@ import { useLayoutEffect, useEffect, useState, useCallback, useMemo } from 'reac
 import {
   Edit3Icon,
   EyeIcon,
-  Maximize2Icon,
   RotateCcwIcon,
   CheckIcon,
   Loader2Icon,
@@ -17,7 +16,7 @@ import {
   UrlSizeError,
 } from '@/features/generate-link'
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkTheme, NETWORK_GLOW_SHADOWS } from '@/entities/network'
+import { getNetworkTheme } from '@/entities/network'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { toast } from '@/shared/lib/toast'
@@ -46,7 +45,6 @@ export function CreateWorkspace() {
   const hash = useHashFragment()
   const [mobileTab, setMobileTab] = useState<string>('editor')
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
 
   // ShareModal state
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
@@ -262,7 +260,7 @@ export function CreateWorkspace() {
         {/* RIGHT: Preview Pane - stretches to fill available height */}
         <div
           className={cn(
-            'relative flex items-start justify-center print:hidden',
+            'relative flex items-start justify-center',
             // Fill available space, let ScaledInvoicePreview handle sizing
             'h-full min-w-[300px] sm:min-w-[400px] lg:min-w-[580px]',
             // Same padding as form (p-4 sm:p-5 lg:p-6)
@@ -273,30 +271,12 @@ export function CreateWorkspace() {
           {/* Screen-only scaled preview (hidden during print to avoid flicker) */}
           <ScaledInvoicePreview
             preset="editor"
-            glowClassName={NETWORK_GLOW_SHADOWS[invoiceData?.networkId ?? 1]}
+            printable
+            networkId={invoiceData?.networkId ?? 1}
             onClick={handlePreviewClick}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            overlay={
-              invoiceData && (
-                <div
-                  className={cn(
-                    'absolute inset-0 z-20 flex items-end justify-start p-3 transition-opacity duration-200',
-                    isHovered ? 'opacity-100' : 'opacity-0'
-                  )}
-                >
-                  <button
-                    className="flex cursor-pointer items-center gap-2 rounded-full border border-zinc-600/50 bg-zinc-800/80 px-3 py-1.5 font-mono text-[10px] whitespace-nowrap text-zinc-300 shadow-xl backdrop-blur-md transition-colors hover:border-zinc-500 hover:bg-zinc-700 hover:text-zinc-100"
-                    type="button"
-                  >
-                    <Maximize2Icon className="h-3 w-3" />
-                    Expand
-                  </button>
-                </div>
-              )
-            }
+            showExpandOverlay
           >
-            <InvoicePaper data={invoiceData} status="draft" showGlow />
+            <InvoicePaper data={invoiceData} status="draft" />
           </ScaledInvoicePreview>
 
           {/* Floating Live Preview badge with sync status */}
@@ -320,10 +300,6 @@ export function CreateWorkspace() {
           </div>
         </div>
 
-        {/* Print-only invoice (hidden on screen, full-size for print) */}
-        <div className="invoice-print-target hidden print:block">
-          <InvoicePaper data={invoiceData} status="draft" />
-        </div>
       </div>
     </>
   )

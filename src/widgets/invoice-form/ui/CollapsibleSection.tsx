@@ -58,7 +58,7 @@ export function CollapsibleSection({
         </div>
         <Text
           variant="label"
-          className="cursor-pointer text-zinc-500 transition-colors group-hover:text-violet-400"
+          className="cursor-pointer text-zinc-400 transition-colors group-hover:text-violet-400"
         >
           {title}
         </Text>

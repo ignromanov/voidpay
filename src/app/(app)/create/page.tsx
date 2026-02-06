@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { LazyWeb3Provider } from '../lazy-web3-provider'
+import { LazyWeb3Provider } from '@/app/lazy-web3-provider'
 import { CreateWorkspace } from './CreateWorkspace'
 
 export const metadata: Metadata = {

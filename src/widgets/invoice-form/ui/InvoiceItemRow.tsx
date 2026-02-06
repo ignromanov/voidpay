@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import { Trash2Icon } from '@/shared/ui/icons'
-import { motion } from 'framer-motion'
+import { motion } from '@/shared/ui/motion'
 
 import { Button } from '@/shared/ui/button'
 import { type LineItem, FIELD_LIMITS } from '@/shared/lib/invoice-types'

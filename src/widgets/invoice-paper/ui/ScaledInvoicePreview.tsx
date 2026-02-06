@@ -3,12 +3,15 @@
 import {
   forwardRef,
   useCallback,
+  useState,
   type ReactNode,
   type MouseEventHandler,
   type KeyboardEvent,
   type MouseEvent,
 } from 'react'
 import { cn } from '@/shared/lib/utils'
+import { Maximize2Icon } from '@/shared/ui/icons'
+import { NETWORK_GLOW_SHADOWS, NETWORK_GLOW_BORDERS } from '@/entities/network'
 import {
   useInvoiceScale,
   PRESET_CONFIGS,
@@ -53,20 +56,12 @@ export interface ScaledInvoicePreviewProps {
   printable?: boolean
 
   /**
-   * Network-specific glow gradient classes.
-   * Applied to ::before pseudo-element for elliptical ambient glow.
-   * Example: "before:from-indigo-500/60 before:to-blue-500/40"
-   * Use NETWORK_GLOW_SHADOWS[networkId] from @/entities/network
+   * Network chain ID for automatic glow styling.
+   * - Non-modal presets (demo/editor/pay): elliptical ambient glow via ::before
+   * - Modal preset: border ring + shadow glow
+   * Resolved internally via NETWORK_GLOW_SHADOWS / NETWORK_GLOW_BORDERS.
    */
-  glowClassName?: string | undefined
-
-  /**
-   * Border styling classes applied directly to invoice wrapper.
-   * Use for ring/shadow effects on fullscreen modal.
-   * Example: "ring-1 ring-indigo-500/40 shadow-[0_0_30px_rgba(99,102,241,0.25)]"
-   * Use NETWORK_GLOW_BORDERS[networkId] from @/entities/network
-   */
-  borderClassName?: string | undefined
+  networkId?: number
 
   /**
    * Click handler supporting both mouse events and keyboard activation.
@@ -77,6 +72,14 @@ export interface ScaledInvoicePreviewProps {
 
   onMouseEnter?: MouseEventHandler<HTMLDivElement>
   onMouseLeave?: MouseEventHandler<HTMLDivElement>
+
+  /**
+   * Show built-in "Expand" overlay on hover.
+   * Automatically manages hover state internally.
+   * Requires onClick to be set.
+   * @default false
+   */
+  showExpandOverlay?: boolean
 
   className?: string
 }
@@ -103,15 +106,26 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
       preset,
       scaleOptions,
       printable = false,
-      glowClassName,
-      borderClassName,
+      networkId,
       onClick,
       onMouseEnter,
       onMouseLeave,
+      showExpandOverlay = false,
       className,
     },
     ref
   ) {
+    // Derive glow classes from networkId + preset
+    const glowClassName = networkId != null && preset !== 'modal'
+      ? NETWORK_GLOW_SHADOWS[networkId]
+      : undefined
+    const borderClassName = networkId != null && preset === 'modal'
+      ? NETWORK_GLOW_BORDERS[networkId]
+      : undefined
+
+    // Hover state for expand overlay
+    const [isHovered, setIsHovered] = useState(false)
+
     // Build hook options: preset takes precedence over scaleOptions
     const hookOptions: UseInvoiceScaleOptions = preset ? { preset } : (scaleOptions ?? {})
 
@@ -152,6 +166,35 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           onClick(e)
         }
       : undefined
+
+    // Combined mouse handlers (internal state + external callbacks)
+    const handleMouseEnter: MouseEventHandler<HTMLDivElement> = (e) => {
+      if (showExpandOverlay) setIsHovered(true)
+      onMouseEnter?.(e)
+    }
+
+    const handleMouseLeave: MouseEventHandler<HTMLDivElement> = (e) => {
+      if (showExpandOverlay) setIsHovered(false)
+      onMouseLeave?.(e)
+    }
+
+    // Built-in expand overlay (shown when showExpandOverlay=true and onClick is set)
+    const expandOverlay = showExpandOverlay && onClick ? (
+      <div
+        className={cn(
+          'absolute inset-0 z-20 flex items-end justify-start p-3 transition-opacity duration-200',
+          isHovered ? 'opacity-100' : 'opacity-0'
+        )}
+      >
+        <button
+          className="flex cursor-pointer items-center gap-2 rounded-full border border-zinc-600/50 bg-zinc-800/80 px-3 py-1.5 font-mono text-[10px] whitespace-nowrap text-zinc-300 shadow-xl backdrop-blur-md transition-colors hover:border-zinc-500 hover:bg-zinc-700 hover:text-zinc-100"
+          type="button"
+        >
+          <Maximize2Icon className="h-3 w-3" />
+          Expand
+        </button>
+      </div>
+    ) : null
 
     return (
       <div
@@ -194,8 +237,8 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
             willChange: 'width, height',
           }}
           onClick={handleClick}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
           role={onClick ? 'button' : undefined}
           tabIndex={onClick ? 0 : undefined}
           onKeyDown={handleKeyDown}
@@ -204,10 +247,8 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           <div
             className={cn(
               'absolute top-0 left-0 origin-top-left transition-transform duration-200 ease-out',
-              // Print: no transform, static positioning, full size
-              'print:static print:!transform-none print:transition-none',
-              // Apply print target class — InvoicePaper is direct child
-              printable && 'invoice-print-target'
+              // Print: either become the print target or hide
+              printable ? 'invoice-print-target' : 'print:hidden'
             )}
             style={{ transform: `scale(${scale})` }}
           >
@@ -216,7 +257,10 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
 
           {/* Overlay (not scaled, inside invoice bounds, hidden on print) */}
           {overlay && <div className="print:hidden">{overlay}</div>}
+          {/* Built-in expand overlay */}
+          {expandOverlay && <div className="print:hidden">{expandOverlay}</div>}
         </div>
+
       </div>
     )
   }

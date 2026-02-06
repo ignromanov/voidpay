@@ -78,7 +78,16 @@ export function validateInvoiceForGeneration(
       }
 
       // Rate must be positive (stored as bigint string in atomic units)
-      const rate = BigInt(item.rate || '0')
+      let rate: bigint
+      try {
+        rate = BigInt(item.rate || '0')
+      } catch {
+        errors.push({
+          field: `items[${index}].rate`,
+          message: 'Item rate is not a valid number',
+        })
+        return
+      }
       if (rate <= BigInt(0)) {
         errors.push({
           field: `items[${index}].rate`,

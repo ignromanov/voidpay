@@ -1,3 +1,5 @@
+import { toast } from '@/shared/lib/toast'
+
 /**
  * Download QR code as PNG image
  *
@@ -9,11 +11,17 @@
  */
 export function downloadQRCode(filename = 'voidpay-invoice-qr.png'): void {
   const svg = document.querySelector('[data-qr-code] svg') as SVGSVGElement | null
-  if (!svg) return
+  if (!svg) {
+    toast.error('QR code not found')
+    return
+  }
 
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
-  if (!ctx) return
+  if (!ctx) {
+    toast.error('Failed to create canvas for QR download')
+    return
+  }
 
   const svgData = new XMLSerializer().serializeToString(svg)
   const img = new Image()
@@ -35,6 +43,10 @@ export function downloadQRCode(filename = 'voidpay-invoice-qr.png'): void {
     link.download = filename
     link.href = canvas.toDataURL('image/png')
     link.click()
+  }
+
+  img.onerror = () => {
+    toast.error('Failed to render QR code image')
   }
 
   img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)))
