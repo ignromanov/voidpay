@@ -37,7 +37,13 @@ export type ScalePreset = 'demo' | 'editor' | 'pay' | 'modal'
 interface PresetConfig {
   maxScale: number
   minScale?: number
-  scaleBy: 'fit' | 'width'
+  /**
+   * How to calculate scale:
+   * - 'fit': fit both width and height (no scroll)
+   * - 'width': scale by container width only (allow vertical scroll)
+   * - 'viewport': scale by viewport width (container-independent, for w-fit parents)
+   */
+  scaleBy: 'fit' | 'width' | 'viewport'
   /** Scale before container is measured — drives the "grow in" animation */
   initialScale: number
   /** CSS class for container height */
@@ -53,11 +59,12 @@ export const PRESET_CONFIGS: Record<ScalePreset, PresetConfig> = {
   pay: { maxScale: 1.5, initialScale: 0.58, scaleBy: 'fit', containerHeightClass: 'h-full' },
   // Modal: fullscreen, typical final ~0.85 → initial 0.75 (~88%)
   // minScale 0.8 ensures readable text on mobile (635px width vs 516px at 0.65)
+  // Modal: viewport-based scaling — container-independent, allows w-fit parent
   modal: {
     maxScale: 1,
     minScale: 0.8,
     initialScale: 0.75,
-    scaleBy: 'width',
+    scaleBy: 'viewport',
     containerHeightClass: 'h-auto',
   },
 }
@@ -86,10 +93,11 @@ export interface UseInvoiceScaleOptions {
    * How to calculate scale:
    * - 'fit': fit both width and height (default)
    * - 'width': scale by width only, allow vertical scroll
+   * - 'viewport': scale by viewport width (container-independent)
    *
    * Ignored when preset is provided.
    */
-  scaleBy?: 'fit' | 'width'
+  scaleBy?: 'fit' | 'width' | 'viewport'
 }
 
 export interface UseInvoiceScaleResult {
@@ -125,19 +133,24 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
 
   // Memoized scale calculation
   const calculateScale = useCallback(
-    (width: number, height: number): number => {
-      if (width === 0 || height === 0) return minScale
+    (containerWidth: number, containerHeight: number): number => {
+      // For viewport mode, use window width instead of container width
+      const width = scaleBy === 'viewport'
+        ? (typeof window !== 'undefined' ? window.innerWidth : containerWidth)
+        : containerWidth
+
+      if (width === 0 || containerHeight === 0) return minScale
 
       const paddingX = width < 768 ? 16 : 24
       const availableWidth = Math.max(width - paddingX, 280)
-      const targetHeight = Math.max(height * HEIGHT_FRACTION, 300)
+      const targetHeight = Math.max(containerHeight * HEIGHT_FRACTION, 300)
 
       const widthRatio = availableWidth / INVOICE_BASE_WIDTH
       const heightRatio = targetHeight / INVOICE_BASE_HEIGHT
 
-      // 'width' mode: scale by width only (allow vertical scroll)
+      // 'viewport'/'width' mode: scale by width only (allow vertical scroll)
       // 'fit' mode: fit both dimensions (no scroll needed)
-      const baseScale = scaleBy === 'width' ? widthRatio : Math.min(widthRatio, heightRatio)
+      const baseScale = scaleBy === 'fit' ? Math.min(widthRatio, heightRatio) : widthRatio
 
       return Math.min(Math.max(baseScale, minScale), maxScale)
     },

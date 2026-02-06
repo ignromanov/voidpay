@@ -130,7 +130,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="flex h-[100dvh] w-screen max-w-none flex-col overflow-hidden border-none bg-zinc-900/90 p-0 shadow-2xl backdrop-blur-xl sm:h-[95vh] sm:max-w-[95vw] lg:w-[880px] lg:max-w-[95vw] print:hidden [&>button]:hidden"
+          className="flex h-[100dvh] w-screen max-w-none flex-col gap-0 overflow-hidden border-none bg-zinc-900/90 p-0 shadow-2xl backdrop-blur-xl sm:h-[95vh] sm:w-fit sm:max-w-[95vw] print:hidden [&>button]:hidden"
         >
           <DialogDescription className="sr-only">
             Full-screen invoice preview. Press ESC to close, P to print.
@@ -182,7 +182,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             variants={invoiceVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-1 cursor-zoom-out items-start justify-center overflow-auto px-0 py-2 sm:p-2 md:p-4"
+            className="flex flex-1 cursor-zoom-out items-start justify-center overflow-auto p-4 sm:p-6"
             onClick={() => onOpenChange(false)}
           >
             <ScaledInvoicePreview

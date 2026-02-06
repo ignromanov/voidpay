@@ -81,8 +81,8 @@ describe('useInvoiceScale', () => {
       expect(PRESET_CONFIGS.editor.maxScale).toBe(1.5)
     })
 
-    it('modal preset has width-only scaling', () => {
-      expect(PRESET_CONFIGS.modal.scaleBy).toBe('width')
+    it('modal preset has viewport-based scaling', () => {
+      expect(PRESET_CONFIGS.modal.scaleBy).toBe('viewport')
       expect(PRESET_CONFIGS.modal.minScale).toBe(0.8)
     })
   })
