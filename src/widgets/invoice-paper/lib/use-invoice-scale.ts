@@ -57,13 +57,12 @@ export const PRESET_CONFIGS: Record<ScalePreset, PresetConfig> = {
   editor: { maxScale: 1.5, initialScale: 0.55, scaleBy: 'fit', containerHeightClass: 'h-full' },
   // Pay page: typical final ~0.70 → initial 0.58 (~83%)
   pay: { maxScale: 1.5, initialScale: 0.58, scaleBy: 'fit', containerHeightClass: 'h-full' },
-  // Modal: fullscreen, typical final ~0.85 → initial 0.75 (~88%)
-  // minScale 0.8 ensures readable text on mobile (635px width vs 516px at 0.65)
-  // Modal: viewport-based scaling — container-independent, allows w-fit parent
+  // Modal: always full-size invoice (scale=1), scroll when screen is smaller
+  // Viewport-based scaleBy retained for w-fit parent compatibility
   modal: {
     maxScale: 1,
-    minScale: 0.8,
-    initialScale: 0.75,
+    minScale: 1,
+    initialScale: 1,
     scaleBy: 'viewport',
     containerHeightClass: 'h-auto',
   },
@@ -134,18 +133,30 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
   // Memoized scale calculation
   const calculateScale = useCallback(
     (containerWidth: number, containerHeight: number): number => {
-      // For viewport mode, use window width instead of container width
-      const width = scaleBy === 'viewport'
-        ? (typeof window !== 'undefined' ? window.innerWidth : containerWidth)
-        : containerWidth
+      let effectiveWidth: number
 
-      if (width === 0 || containerHeight === 0) return minScale
+      if (scaleBy === 'viewport') {
+        // Viewport mode: use window.innerWidth with modal layout constraints
+        // Coupled to InvoicePreviewModal.tsx CSS:
+        //   Mobile (< 640px): w-screen, p-4 → 32px total horizontal padding
+        //   sm+ (≥ 640px): sm:max-w-[95vw], sm:p-6 → 48px total horizontal padding
+        const vw = typeof window !== 'undefined' ? window.innerWidth : containerWidth
+        const isSmall = vw < 640
+        const maxWidth = isSmall ? vw : vw * 0.95
+        const totalPadding = isSmall ? 32 : 48
+        effectiveWidth = Math.max(maxWidth - totalPadding, 280)
+      } else {
+        // Container-based modes: contentRect already excludes CSS padding
+        // paddingX = additional safety margin inside the content area
+        const paddingX = containerWidth < 768 ? 16 : 24
+        effectiveWidth = Math.max(containerWidth - paddingX, 280)
+      }
 
-      const paddingX = width < 768 ? 16 : 24
-      const availableWidth = Math.max(width - paddingX, 280)
+      if (effectiveWidth === 0 || containerHeight === 0) return minScale
+
       const targetHeight = Math.max(containerHeight * HEIGHT_FRACTION, 300)
 
-      const widthRatio = availableWidth / INVOICE_BASE_WIDTH
+      const widthRatio = effectiveWidth / INVOICE_BASE_WIDTH
       const heightRatio = targetHeight / INVOICE_BASE_HEIGHT
 
       // 'viewport'/'width' mode: scale by width only (allow vertical scroll)

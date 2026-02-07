@@ -144,6 +144,10 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
     // Get container height class from preset (or empty if using scaleOptions)
     const containerHeightClass = preset ? PRESET_CONFIGS[preset].containerHeightClass : ''
 
+    // Viewport-mode presets use w-fit (container-independent scaling, no feedback loop)
+    // Container-based presets use w-full (ResizeObserver measures parent width)
+    const isViewportMode = preset ? PRESET_CONFIGS[preset].scaleBy === 'viewport' : false
+
     // Merge callback ref with forwarded ref
     const mergedRef = useCallback(
       (node: HTMLDivElement | null) => {
@@ -210,8 +214,10 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
       <div
         ref={mergedRef}
         className={cn(
-          // w-full for width, height from preset config
-          'relative flex w-full items-center justify-center',
+          // Viewport mode: w-fit (container wraps to invoice, no feedback loop)
+          // Container mode: w-full (ResizeObserver measures parent width for scaling)
+          'relative flex',
+          isViewportMode ? 'w-fit' : 'w-full',
           // Preset-specific height class (min-h-[75vh] for demo, h-full for editor/modal)
           containerHeightClass,
           // Print: position for print target
@@ -223,7 +229,7 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
         {/* Event handlers HERE for precise hit area (glow has pointer-events-none) */}
         <div
           className={cn(
-            'relative overflow-visible rounded-sm',
+            'relative shrink-0 m-auto overflow-visible rounded-sm',
             // Print: reset all sizing/positioning to let invoice-print-target handle layout
             'print:!static print:!h-auto print:!w-auto print:!overflow-visible print:rounded-none print:transition-none',
             // Cursor style for interactive invoice (zoom-in for expand action)

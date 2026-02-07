@@ -83,7 +83,7 @@ describe('useInvoiceScale', () => {
 
     it('modal preset has viewport-based scaling', () => {
       expect(PRESET_CONFIGS.modal.scaleBy).toBe('viewport')
-      expect(PRESET_CONFIGS.modal.minScale).toBe(0.8)
+      expect(PRESET_CONFIGS.modal.minScale).toBe(1)
     })
   })
 

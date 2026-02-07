@@ -177,14 +177,18 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             </DialogClose>
           </motion.div>
 
-          {/* Invoice container — glow handled by ScaledInvoicePreview */}
+          {/* Invoice scroll container — no padding here (moved to content wrapper) */}
           <motion.div
             variants={invoiceVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-1 cursor-zoom-out items-start justify-center overflow-auto p-4 sm:p-6"
-            onClick={() => onOpenChange(false)}
+            className="flex flex-1 cursor-zoom-out items-start overflow-auto"
           >
+            {/* Content wrapper — padding is part of scrollable content (not clipped at edges) */}
+            <div
+              className="flex min-h-full min-w-full shrink-0 items-start justify-center p-4 sm:p-6"
+              onClick={() => onOpenChange(false)}
+            >
             <ScaledInvoicePreview
               preset="modal"
               networkId={data.networkId ?? 1}
@@ -212,6 +216,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
                 />
               )}
             </ScaledInvoicePreview>
+            </div>
           </motion.div>
 
           {/* Action bar — sticky bottom */}
