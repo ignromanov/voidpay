@@ -6,15 +6,16 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useCreatorStore } from '../../useCreatorStore'
 
 // Mock uuid with incrementing counter for unique IDs
-let uuidCounter = 0
-vi.mock('uuid', () => ({
-  v4: () => `test-uuid-${++uuidCounter}`,
-}))
+const uuidMock = vi.hoisted(() => {
+  let counter = 0
+  return { v4: () => `test-uuid-${++counter}`, _reset: () => { counter = 0 } }
+})
+vi.mock('uuid', () => uuidMock)
 
 describe('templateSlice', () => {
   beforeEach(() => {
     // Reset uuid counter for each test
-    uuidCounter = 0
+    uuidMock._reset()
     // Reset store state
     useCreatorStore.setState({
       activeDraft: null,

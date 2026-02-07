@@ -4,7 +4,7 @@
  * User Story: US4 (Interactive Demo)
  */
 
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@/shared/lib/test-utils'
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import * as React from 'react'
 import type { ReactNode } from 'react'
@@ -127,9 +127,8 @@ describe('DemoSection', () => {
 
       // Click on Arbitrum pagination dot to manually navigate (second invoice)
       const dots = screen.getAllByRole('button', { name: /view invoice/i })
-      const arbitrumDot = dots[1]!
       await act(async () => {
-        fireEvent.click(arbitrumDot)
+        fireEvent.click(dots[1]!)
       })
 
       // Should now show Arbitrum invoice - company name
@@ -224,7 +223,6 @@ describe('DemoSection', () => {
 
       // Click on third dot (Optimism - index 2)
       const dots = screen.getAllByRole('button', { name: /view invoice/i })
-
       await act(async () => {
         fireEvent.click(dots[2]!)
       })
@@ -238,7 +236,6 @@ describe('DemoSection', () => {
 
       // Click on fourth dot (Polygon - index 3)
       const dots = screen.getAllByRole('button', { name: /view invoice/i })
-
       await act(async () => {
         fireEvent.click(dots[3]!)
       })

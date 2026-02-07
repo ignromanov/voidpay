@@ -3,7 +3,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@/shared/lib/test-utils'
+import userEvent from '@testing-library/user-event'
 import { ShareModal } from '../ui/ShareModal'
 import type { Invoice } from '@/shared/lib/invoice-types'
 
@@ -26,7 +27,7 @@ vi.mock('@/shared/ui/motion', () => ({
   AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }))
 
-// Mock QRCodeSVG
+// Mock QRCodeSVG — renders <svg> stub (canonical shape)
 vi.mock('qrcode.react', () => ({
   QRCodeSVG: ({ value }: { value: string }) => (
     <svg data-testid="qr-code" data-value={value} />
@@ -35,12 +36,10 @@ vi.mock('qrcode.react', () => ({
 
 // Mock next/dynamic to bypass lazy loading in tests
 vi.mock('next/dynamic', () => ({
-  default: (importFn: () => Promise<{ QRCodeSVG: React.ComponentType<{ value: string }> }>) => {
-    // Return a component that renders synchronously for tests
-    const DynamicComponent = (props: { value: string }) => (
-      <svg data-testid="qr-code" data-value={props.value} />
-    )
-    return DynamicComponent
+  default: () => {
+    return function MockQRCodeSVG(props: { value?: string }) {
+      return <svg data-testid="qr-code" data-value={props.value} />
+    }
   },
 }))
 
@@ -134,21 +133,29 @@ describe('ShareModal', () => {
     })
 
     it('copies URL to clipboard when Copy button clicked', async () => {
+      const writeText = vi.fn().mockResolvedValue(undefined)
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText },
+        writable: true,
+        configurable: true,
+      })
+
       render(<ShareModal {...defaultProps} />)
 
       const copyButton = screen.getByRole('button', { name: /Copy/i })
       fireEvent.click(copyButton)
 
       await waitFor(() => {
-        expect(navigator.clipboard.writeText).toHaveBeenCalledWith(TEST_URL)
+        expect(writeText).toHaveBeenCalledWith(TEST_URL)
       })
     })
 
     it('shows "Copied" state after successful copy', async () => {
+      const user = userEvent.setup()
       render(<ShareModal {...defaultProps} />)
 
       const copyButton = screen.getByRole('button', { name: /Copy/i })
-      fireEvent.click(copyButton)
+      await user.click(copyButton)
 
       await waitFor(() => {
         expect(screen.getByText('Copied')).toBeInTheDocument()
@@ -182,30 +189,33 @@ describe('ShareModal', () => {
   })
 
   describe('QR tab', () => {
-    it('switches to QR tab when clicked', () => {
+    it('switches to QR tab when clicked', async () => {
+      const user = userEvent.setup()
       render(<ShareModal {...defaultProps} />)
 
       const qrTab = screen.getByRole('button', { name: /QR Code/i })
-      fireEvent.click(qrTab)
+      await user.click(qrTab)
 
       expect(screen.getByTestId('qr-code')).toBeInTheDocument()
     })
 
-    it('renders QR code with correct URL value', () => {
+    it('renders QR code with correct URL value', async () => {
+      const user = userEvent.setup()
       render(<ShareModal {...defaultProps} />)
 
       const qrTab = screen.getByRole('button', { name: /QR Code/i })
-      fireEvent.click(qrTab)
+      await user.click(qrTab)
 
       const qrCode = screen.getByTestId('qr-code')
       expect(qrCode).toHaveAttribute('data-value', TEST_URL)
     })
 
-    it('displays helper text for mobile scanning', () => {
+    it('displays helper text for mobile scanning', async () => {
+      const user = userEvent.setup()
       render(<ShareModal {...defaultProps} />)
 
       const qrTab = screen.getByRole('button', { name: /QR Code/i })
-      fireEvent.click(qrTab)
+      await user.click(qrTab)
 
       expect(
         screen.getByText(/Show this QR to your client/)
@@ -236,24 +246,26 @@ describe('ShareModal', () => {
   })
 
   describe('close behavior', () => {
-    it('calls onOpenChange when close button clicked', () => {
+    it('calls onOpenChange when close button clicked', async () => {
+      const user = userEvent.setup()
       const onOpenChange = vi.fn()
       render(<ShareModal {...defaultProps} onOpenChange={onOpenChange} />)
 
       const closeButton = screen.getByRole('button', { name: /Close modal/i })
-      fireEvent.click(closeButton)
+      await user.click(closeButton)
 
       expect(onOpenChange).toHaveBeenCalledWith(false)
     })
 
-    it('calls onOpenChange when backdrop clicked', () => {
+    it('calls onOpenChange when backdrop clicked', async () => {
+      const user = userEvent.setup()
       const onOpenChange = vi.fn()
       render(<ShareModal {...defaultProps} onOpenChange={onOpenChange} />)
 
       // Find backdrop by class (it's the first div with backdrop-blur)
       const backdrop = document.querySelector('.backdrop-blur-sm')
       if (backdrop) {
-        fireEvent.click(backdrop)
+        await user.click(backdrop as HTMLElement)
         expect(onOpenChange).toHaveBeenCalledWith(false)
       }
     })

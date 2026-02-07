@@ -8,8 +8,8 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-import { userEvent } from '@testing-library/user-event'
+import { render, screen, fireEvent } from '@/shared/lib/test-utils'
+import userEvent from '@testing-library/user-event'
 import { InvoiceItemRow } from '../InvoiceItemRow'
 import type { LineItem } from '@/entities/invoice'
 
@@ -22,7 +22,7 @@ const mockLineItem: LineItem = {
 }
 
 describe('InvoiceItemRow - Field Updates', () => {
-  it('should update description when changed', async () => {
+  it('should update description when changed', () => {
     const onUpdate = vi.fn()
 
     render(
@@ -35,7 +35,7 @@ describe('InvoiceItemRow - Field Updates', () => {
       />
     )
 
-    const descInput = screen.getByPlaceholderText('Item description') as HTMLInputElement
+    const descInput = screen.getByPlaceholderText('Item description')
     fireEvent.change(descInput, { target: { value: 'New description' } })
 
     expect(onUpdate).toHaveBeenCalled()
@@ -43,7 +43,7 @@ describe('InvoiceItemRow - Field Updates', () => {
     expect(lastCall.description).toBe('New description')
   })
 
-  it('should update quantity when changed', async () => {
+  it('should update quantity when changed', () => {
     const onUpdate = vi.fn()
 
     render(
@@ -56,7 +56,7 @@ describe('InvoiceItemRow - Field Updates', () => {
       />
     )
 
-    const qtyInput = screen.getByPlaceholderText('Qty') as HTMLInputElement
+    const qtyInput = screen.getByPlaceholderText('Qty')
     fireEvent.change(qtyInput, { target: { value: '25' } })
 
     expect(onUpdate).toHaveBeenCalled()
@@ -65,6 +65,7 @@ describe('InvoiceItemRow - Field Updates', () => {
   })
 
   it('should update rate to atomic units when changed', async () => {
+    const user = userEvent.setup()
     const onUpdate = vi.fn()
 
     render(
@@ -77,8 +78,9 @@ describe('InvoiceItemRow - Field Updates', () => {
       />
     )
 
-    const rateInput = screen.getByPlaceholderText('0.00') as HTMLInputElement
-    fireEvent.change(rateInput, { target: { value: '150.75' } })
+    const rateInput = screen.getByPlaceholderText('0.00')
+    await user.clear(rateInput)
+    await user.type(rateInput, '150.75')
 
     expect(onUpdate).toHaveBeenCalled()
     const lastCall = onUpdate.mock.calls[onUpdate.mock.calls.length - 1]?.[0]

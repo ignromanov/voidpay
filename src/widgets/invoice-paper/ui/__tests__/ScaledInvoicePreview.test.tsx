@@ -233,8 +233,7 @@ describe('ScaledInvoicePreview', () => {
       )
 
       const wrapper = container.querySelector('[style*="width"]') as HTMLElement
-      const hasBeforePseudo = wrapper.className.includes('before:bg-gradient')
-      expect(hasBeforePseudo).toBe(false)
+      expect(wrapper.className).not.toContain('before:bg-gradient')
     })
 
     it('renders without border when networkId not provided on modal', () => {
