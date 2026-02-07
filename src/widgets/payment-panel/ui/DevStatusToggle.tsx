@@ -15,9 +15,8 @@ interface DevStatusToggleProps {
 const DEV_STATES = [
   { label: 'pending' },
   { label: 'pending+err' },
+  { label: 'confirming' },
   { label: 'paid' },
-  { label: 'paid+conf' },
-  { label: 'paid+valid' },
   { label: 'overdue' },
 ] as const
 
@@ -47,17 +46,16 @@ function DevStatusToggleInner({ invoiceId }: DevStatusToggleProps) {
         updateStatus(invoiceId, 'pending')
         setError(invoiceId, 'Insufficient funds for gas + value')
         break
-      case 2: // paid (unverified)
-        setTxHash(invoiceId, FAKE_TX, false)
-        break
-      case 3: // paid (confirming)
+      case 2: // confirming (tx detected, waiting for finalization)
+        updateStatus(invoiceId, 'paid')
         setTxHash(invoiceId, FAKE_TX, false)
         setConfirmations(invoiceId, { current: 8, required: 15 })
         break
-      case 4: // paid (validated)
+      case 3: // paid (fully validated)
+        updateStatus(invoiceId, 'paid')
         setTxHash(invoiceId, FAKE_TX, true)
         break
-      case 5: // overdue
+      case 4: // overdue
         updateStatus(invoiceId, 'overdue')
         break
     }
