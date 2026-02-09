@@ -203,6 +203,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
                   txHash={txHash}
                   txHashValidated={txHashValidated}
                   variant="full"
+
                   invoiceUrl={invoiceUrl}
                 />
               ) : (
@@ -212,6 +213,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
                   txHash={txHash}
                   txHashValidated={txHashValidated}
                   variant="full"
+
                   invoiceUrl={invoiceUrl}
                 />
               )}

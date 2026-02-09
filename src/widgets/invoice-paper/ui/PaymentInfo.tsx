@@ -1,9 +1,8 @@
-import React, { useMemo } from 'react'
-import { QRCodeSVG } from 'qrcode.react'
+import React from 'react'
 import { HashIcon, ExternalLinkIcon, AlertTriangleIcon } from '@/shared/ui/icons'
+import { PaymentQR } from '@/features/payment-qr'
 import { formatShortAddress } from '../lib/format'
 import { getExplorerUrl, getNetworkName } from '@/entities/network'
-import { APP_URLS } from '@/shared/config'
 import { cn } from '@/shared/lib/utils'
 import { CopyButton } from '@/shared/ui/copy-button'
 import { NetworkIcon } from '@/shared/ui/network-icon'
@@ -25,10 +24,8 @@ interface PaymentInfoProps {
   txHash?: string | undefined
   /** Whether the transaction has been validated on-chain */
   txHashValidated?: boolean | undefined
-  /** Invoice URL for QR code */
-  invoiceUrl?: string | undefined
-  /** Whether to show the QR code section (auto-hides when txHash present) */
-  showQR?: boolean
+  /** Total in atomic units (bigint string) for PaymentQR */
+  amount?: string | undefined
   /** Display variant - 'full' enables interactive elements */
   variant?: InvoicePaperVariant
   /** Invoice status - used to determine if QR should be hidden */
@@ -43,24 +40,13 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
     tokenAddress,
     txHash,
     txHashValidated = true,
-    invoiceUrl,
-    showQR = true,
+    amount,
     variant = 'default',
     status,
   }) => {
     const isInteractive = variant === 'full'
-    // Hide QR code when invoice is paid (txHash present) to give txHash more space
-    const shouldShowQR = showQR && !txHash && status !== 'paid'
-
-    // SSR-safe URL handling
-    // TODO: [P0.11.3] Generate EIP-681 payment URI for direct wallet integration
-    // Native ETH: ethereum:0xRecipient@chainId?value=amountInWei
-    // ERC-20: ethereum:0xToken@chainId/transfer?address=0xRecipient&uint256=amount
-    // See: https://eips.ethereum.org/EIPS/eip-681
-    const qrUrl = useMemo(() => {
-      if (invoiceUrl) return invoiceUrl
-      return typeof window !== 'undefined' ? window.location.href : APP_URLS.base
-    }, [invoiceUrl])
+    // Hide QR when paid — txHash section takes QR's space
+    const shouldShowQR = !txHash && status !== 'paid'
 
     const networkTextClass = 'text-[9px] font-semibold text-zinc-700 capitalize'
 
@@ -84,16 +70,16 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
           {/* QR Code - hidden when paid to give txHash more space */}
           {shouldShowQR && (
             <div className="flex flex-col items-center justify-center gap-1 border-r border-zinc-200 p-3">
-              <div
-                className="flex aspect-square w-24 items-center justify-center rounded border border-zinc-200 bg-white p-1"
-                role="img"
-                aria-label="QR code linking to this invoice"
-                title={`QR Code: ${qrUrl}`}
-              >
-                <QRCodeSVG value={qrUrl} className="h-full w-full" level="H" />
-              </div>
+              <PaymentQR
+                recipientAddress={senderAddress}
+                chainId={networkId}
+                amount={amount}
+                tokenAddress={tokenAddress}
+                size={88}
+                variant="light"
+              />
               <span className="text-[7px] font-semibold tracking-wide text-zinc-400 uppercase">
-                Scan for payment link
+                Scan to pay
               </span>
             </div>
           )}

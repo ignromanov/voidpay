@@ -27,6 +27,17 @@ vi.mock('@/shared/ui/motion', () => ({
   AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }))
 
+// Mock QRTab and PaymentQR from features/payment-qr
+vi.mock('@/features/payment-qr', () => ({
+  QRTab: ({ invoice }: { invoice: Invoice }) => (
+    <div data-testid="qr-tab">
+      <svg data-testid="qr-code" data-invoice-id={invoice.invoiceId} />
+      <p>Scan with your mobile wallet to pay</p>
+    </div>
+  ),
+  PaymentQR: () => <svg data-testid="payment-qr" />,
+}))
+
 // Mock QRCodeSVG — renders <svg> stub (canonical shape)
 vi.mock('qrcode.react', () => ({
   QRCodeSVG: ({ value }: { value: string }) => (
@@ -199,7 +210,7 @@ describe('ShareModal', () => {
       expect(screen.getByTestId('qr-code')).toBeInTheDocument()
     })
 
-    it('renders QR code with correct URL value', async () => {
+    it('renders QR code with invoice data', async () => {
       const user = userEvent.setup()
       render(<ShareModal {...defaultProps} />)
 
@@ -207,7 +218,7 @@ describe('ShareModal', () => {
       await user.click(qrTab)
 
       const qrCode = screen.getByTestId('qr-code')
-      expect(qrCode).toHaveAttribute('data-value', TEST_URL)
+      expect(qrCode).toHaveAttribute('data-invoice-id', mockInvoice.invoiceId)
     })
 
     it('displays helper text for mobile scanning', async () => {
@@ -218,7 +229,7 @@ describe('ShareModal', () => {
       await user.click(qrTab)
 
       expect(
-        screen.getByText(/Show this QR to your client/)
+        screen.getByText(/Scan with your mobile wallet to pay/)
       ).toBeInTheDocument()
     })
   })

@@ -257,6 +257,43 @@ describe('PaymentPanel', () => {
     })
   })
 
+  describe('QR code button', () => {
+    it('renders Show QR button when pending', () => {
+      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      expect(screen.getByRole('button', { name: /show qr/i })).toBeDefined()
+    })
+
+    it('hides Show QR button when status is paid', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="paid"
+          txHash="0xabc123"
+          txHashValidated
+        />
+      )
+      expect(screen.queryByRole('button', { name: /show qr/i })).toBeNull()
+    })
+
+    it('hides Show QR button when status is overdue', () => {
+      render(<PaymentPanel invoice={mockInvoice} status="overdue" />)
+      expect(screen.queryByRole('button', { name: /show qr/i })).toBeNull()
+    })
+
+    it('Show QR button has hidden md:inline-flex for desktop-only', () => {
+      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      const btn = screen.getByRole('button', { name: /show qr/i })
+      expect(btn.className).toContain('hidden')
+      expect(btn.className).toContain('md:inline-flex')
+    })
+
+    it('Show QR button has cursor-pointer', () => {
+      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      const btn = screen.getByRole('button', { name: /show qr/i })
+      expect(btn.className).toContain('cursor-pointer')
+    })
+  })
+
   describe('footer', () => {
     it('renders Download PDF button (disabled)', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)

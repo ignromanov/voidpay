@@ -5,4 +5,3 @@
 export * from './types'
 export * from './social-links'
 export * from './use-focus-trap'
-export * from './download-qr'

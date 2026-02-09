@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { computeAmounts } from '../lib/compute-amounts'
 import { STATUS_CONFIG } from './status-config'
 import { AmountDisplay } from './AmountDisplay'
@@ -5,20 +6,22 @@ import { PaidConfirmation } from './PaidConfirmation'
 import { ExpiredState } from './ExpiredState'
 import { ActionSlot } from './ActionSlot'
 import { ErrorBanner } from './ErrorBanner'
-import { DownloadIcon, ExternalLinkIcon, FlagIcon } from '@/shared/ui/icons'
+import { QRModal } from '@/features/payment-qr'
+import { DownloadIcon, ExternalLinkIcon, FlagIcon, QrCodeIcon } from '@/shared/ui/icons'
 import { getExplorerUrl } from '@/entities/network'
+import { formatAmount } from '@/shared/lib/amount-utils'
 import type { PaymentPanelProps } from '../types'
 
 export function PaymentPanel({
   invoice,
   status,
   txHash,
-  txHashValidated,
   confirmations,
   error,
   onDismissError,
   children,
 }: PaymentPanelProps) {
+  const [qrOpen, setQrOpen] = useState(false)
   const config = STATUS_CONFIG[status]
   const amounts = computeAmounts(invoice)
   const isPending = status === 'pending'
@@ -87,14 +90,26 @@ export function PaymentPanel({
       <div className="px-3 md:px-4 pb-3">
         <div className="h-px w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
         <div className="flex items-center justify-between w-full pt-2">
-          <button
-            disabled
-            className="text-[10px] text-zinc-500 inline-flex items-center gap-1 opacity-50 cursor-not-allowed"
-            aria-label="Download PDF"
-          >
-            <DownloadIcon size={12} />
-            Download PDF
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              disabled
+              className="text-[10px] text-zinc-500 inline-flex items-center gap-1 opacity-50 cursor-not-allowed"
+              aria-label="Download PDF"
+            >
+              <DownloadIcon size={12} />
+              Download PDF
+            </button>
+            {isPending && (
+              <button
+                onClick={() => setQrOpen(true)}
+                className="hidden cursor-pointer md:inline-flex items-center gap-1 text-[10px] text-zinc-500 hover:text-white transition-colors px-2 py-1 rounded hover:bg-zinc-800"
+                aria-label="Show QR code for mobile payment"
+              >
+                <QrCodeIcon size={12} />
+                Show QR
+              </button>
+            )}
+          </div>
 
           <div className="flex items-center gap-1">
             {isPaid && txHash && (
@@ -120,6 +135,17 @@ export function PaymentPanel({
           </div>
         </div>
       </div>
+
+      {/* QR Modal — desktop users scan with mobile wallet */}
+      {isPending && (
+        <QRModal
+          open={qrOpen}
+          onOpenChange={setQrOpen}
+          invoice={invoice}
+          amount={formatAmount(amounts.exactTotal, invoice.decimals)}
+          exactTotal={amounts.exactTotal}
+        />
+      )}
     </div>
   )
 }

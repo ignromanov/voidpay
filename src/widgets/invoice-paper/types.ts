@@ -37,12 +37,6 @@ interface InvoicePaperBaseProps {
   variant?: InvoicePaperVariant | undefined
 
   /**
-   * Whether to show the QR code in the footer.
-   * @default true
-   */
-  showQR?: boolean | undefined
-
-  /**
    * Whether to show the texture overlay.
    * Disable for better print quality.
    * @default true

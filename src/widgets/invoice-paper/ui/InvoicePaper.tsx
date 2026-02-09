@@ -75,7 +75,6 @@ export const InvoicePaper = React.memo(
         txHash,
         txHashValidated = true,
         variant = 'default',
-        showQR = true,
         showTexture = true,
         invoiceUrl,
         className,
@@ -97,7 +96,7 @@ export const InvoicePaper = React.memo(
       const totals = useMemo(
         () =>
           isEmpty
-            ? { subtotal: '0.00', taxAmount: '0.00', discountAmount: '0.00', total: '0.00', magicDust: null }
+            ? { subtotal: '0.00', taxAmount: '0.00', discountAmount: '0.00', total: '0.00', magicDust: null, atomicTotal: '0' }
             : calculateTotals({
                 items: data.items ?? EMPTY_ITEMS,
                 tax: data.tax,
@@ -122,9 +121,6 @@ export const InvoicePaper = React.memo(
             : undefined,
         [status, data?.issuedAt]
       )
-
-      // Determine if QR should be shown based on variant
-      const shouldShowQR = showQR && variant !== 'print'
 
       // Wrapper needed for glow effect (glow must be outside article for overflow)
       const content = (
@@ -191,7 +187,7 @@ export const InvoicePaper = React.memo(
                     currency={data.currency ?? ''}
                     taxPercent={data.tax}
                     discountPercent={data.discount}
-                    showQR={shouldShowQR}
+                    amount={totals.atomicTotal !== '0' ? totals.atomicTotal : undefined}
                     networkId={data.networkId ?? 1}
                     senderAddress={from.walletAddress}
                     tokenAddress={data.tokenAddress}

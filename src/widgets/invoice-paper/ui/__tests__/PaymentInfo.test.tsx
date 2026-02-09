@@ -4,16 +4,31 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen } from '@/shared/lib/test-utils'
 import { PaymentInfo } from '../PaymentInfo'
 
-// Mock QRCodeSVG
-vi.mock('qrcode.react', () => ({
-  QRCodeSVG: ({ value }: { value: string }) => (
-    <div data-testid="qr-code" data-value={value}>
-      QR Code
-    </div>
-  ),
+// Mock PaymentQR from feature — expose individual props for assertions
+vi.mock('@/features/payment-qr', () => ({
+  PaymentQR: (props: {
+    recipientAddress?: string
+    chainId?: number
+    amount?: string
+    tokenAddress?: string
+  }) => {
+    // Simulate placeholder when required props are missing
+    if (!props.recipientAddress || !props.chainId || !props.amount) {
+      return <div data-testid="payment-qr-placeholder" />
+    }
+    return (
+      <svg
+        data-testid="payment-qr"
+        data-recipient={props.recipientAddress}
+        data-chain-id={props.chainId}
+        data-amount={props.amount}
+        data-token={props.tokenAddress}
+      />
+    )
+  },
 }))
 
 describe('PaymentInfo', () => {
@@ -84,35 +99,47 @@ describe('PaymentInfo', () => {
   })
 
   describe('QR Code', () => {
-    it('shows QR code by default', () => {
-      render(<PaymentInfo {...defaultProps} invoiceUrl="https://example.com" />)
+    const address = '0x1234567890abcdef1234567890abcdef12345678'
 
-      expect(screen.getByTestId('qr-code')).toBeInTheDocument()
-    })
+    it('renders QR code by default', () => {
+      render(<PaymentInfo {...defaultProps} amount="1500000000" senderAddress={address} />)
 
-    it('hides QR code when showQR is false', () => {
-      render(<PaymentInfo {...defaultProps} showQR={false} />)
-
-      expect(screen.queryByTestId('qr-code')).not.toBeInTheDocument()
+      expect(screen.getByTestId('payment-qr')).toBeInTheDocument()
     })
 
     it('hides QR code when txHash is present', () => {
-      render(<PaymentInfo {...defaultProps} txHash="0xabc123" />)
+      render(<PaymentInfo {...defaultProps} amount="1500000000" txHash="0xabc123" />)
 
-      expect(screen.queryByTestId('qr-code')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('payment-qr')).not.toBeInTheDocument()
     })
 
     it('hides QR code when status is paid', () => {
-      render(<PaymentInfo {...defaultProps} status="paid" />)
+      render(<PaymentInfo {...defaultProps} amount="1500000000" status="paid" />)
 
-      expect(screen.queryByTestId('qr-code')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('payment-qr')).not.toBeInTheDocument()
     })
 
-    it('uses invoice URL for QR code', () => {
-      render(<PaymentInfo {...defaultProps} invoiceUrl="https://voidpay.xyz/pay#abc" />)
+    it('passes payment data to PaymentQR', () => {
+      render(
+        <PaymentInfo
+          {...defaultProps}
+          amount="1500000000"
+          senderAddress={address}
+          tokenAddress="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        />
+      )
 
-      const qr = screen.getByTestId('qr-code')
-      expect(qr).toHaveAttribute('data-value', 'https://voidpay.xyz/pay#abc')
+      const qr = screen.getByTestId('payment-qr')
+      expect(qr).toHaveAttribute('data-recipient', address)
+      expect(qr).toHaveAttribute('data-chain-id', '1')
+      expect(qr).toHaveAttribute('data-amount', '1500000000')
+      expect(qr).toHaveAttribute('data-token', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
+    })
+
+    it('shows placeholder when no amount provided', () => {
+      render(<PaymentInfo {...defaultProps} />)
+
+      expect(screen.getByTestId('payment-qr-placeholder')).toBeInTheDocument()
     })
   })
 

@@ -19,7 +19,7 @@ import { getTelegramShareUrl, getTwitterShareUrl } from '../lib/social-links'
 import { useFocusTrap } from '../lib/use-focus-trap'
 import { TabSwitcher } from './TabSwitcher'
 import { LinkTab } from './LinkTab'
-import { QRTab } from './QRTab'
+import { QRTab } from '@/features/payment-qr'
 
 /**
  * ShareModal - Modal for sharing invoice links
@@ -30,8 +30,7 @@ import { QRTab } from './QRTab'
  * - Share via Telegram or Twitter
  * - Open invoice in new tab
  */
-export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: ShareModalProps) {
-  // Note: invoice prop is reserved for future use (e.g., displaying invoice details in modal)
+export function ShareModal({ url, invoice, open, onOpenChange }: ShareModalProps) {
   const [activeTab, setActiveTab] = useState<ShareTab>('link')
   const [copied, setCopied] = useState(false)
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -156,7 +155,7 @@ export function ShareModal({ url, invoice: _invoice, open, onOpenChange }: Share
                     twitterUrl={twitterUrl}
                   />
                 ) : (
-                  <QRTab url={url} />
+                  <QRTab invoice={invoice} />
                 )}
               </div>
 
