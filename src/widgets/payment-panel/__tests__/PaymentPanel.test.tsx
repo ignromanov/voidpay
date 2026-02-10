@@ -1,6 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, userEvent } from '@/shared/lib/test-utils'
 import { describe, it, expect, vi } from 'vitest'
-import userEvent from '@testing-library/user-event'
 import { PaymentPanel } from '../ui/PaymentPanel'
 import type { Invoice } from '@/shared/lib/invoice-types'
 
@@ -26,26 +25,26 @@ describe('PaymentPanel', () => {
   describe('pending state', () => {
     it('renders payment panel with data-testid', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.getByTestId('payment-panel')).toBeDefined()
+      expect(screen.getByTestId('payment-panel')).toBeInTheDocument()
     })
 
     it('shows AmountDisplay with correct values', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.getByText('Total Due')).toBeDefined()
-      expect(screen.getByText('USDC')).toBeDefined()
+      expect(screen.getByText('Total Due')).toBeInTheDocument()
+      expect(screen.getByText('USDC')).toBeInTheDocument()
     })
 
     it('renders violet gradient bar for pending', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
       const panel = screen.getByTestId('payment-panel')
       const gradientBar = panel.querySelector('[data-testid="gradient-bar"]')
-      expect(gradientBar).not.toBeNull()
+      expect(gradientBar).toBeInTheDocument()
       expect(gradientBar!.className).toContain('from-violet-500')
     })
 
     it('shows Magic Dust exact amount when present', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.getByText(/Exact:/i)).toBeDefined()
+      expect(screen.getByText(/Exact:/i)).toBeInTheDocument()
     })
 
     it('renders data-status attribute', () => {
@@ -62,7 +61,6 @@ describe('PaymentPanel', () => {
           invoice={mockInvoice}
           status="paid"
           txHash="0xabc123"
-          txHashValidated
         />
       )
       const gradientBar = screen.getByTestId('gradient-bar')
@@ -75,10 +73,9 @@ describe('PaymentPanel', () => {
           invoice={mockInvoice}
           status="paid"
           txHash="0xabc123"
-          txHashValidated
         />
       )
-      expect(screen.getByText('Payment Successful')).toBeDefined()
+      expect(screen.getByText('Payment Successful')).toBeInTheDocument()
     })
 
     it('does not show ActionSlot when paid', () => {
@@ -87,7 +84,6 @@ describe('PaymentPanel', () => {
           invoice={mockInvoice}
           status="paid"
           txHash="0xabc123"
-          txHashValidated
         >
           <button>Pay Now</button>
         </PaymentPanel>
@@ -102,7 +98,6 @@ describe('PaymentPanel', () => {
           invoice={mockInvoice}
           status="paid"
           txHash="0xabc123"
-          txHashValidated
         />
       )
       const panel = screen.getByTestId('payment-panel')
@@ -143,7 +138,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel invoice={mockInvoice} status="confirming" txHash="0xabc123" />
       )
-      expect(screen.getByText('Payment Successful')).toBeDefined()
+      expect(screen.getByText('Payment Successful')).toBeInTheDocument()
     })
 
     it('does not show ActionSlot when confirming', () => {
@@ -178,7 +173,7 @@ describe('PaymentPanel', () => {
 
     it('shows ExpiredState with expired message', () => {
       render(<PaymentPanel invoice={mockInvoice} status="overdue" />)
-      expect(screen.getByText('This invoice has expired')).toBeDefined()
+      expect(screen.getByText('This invoice has expired')).toBeInTheDocument()
     })
 
     it('does not show ActionSlot when overdue', () => {
@@ -199,12 +194,12 @@ describe('PaymentPanel', () => {
           <button>Pay Now</button>
         </PaymentPanel>
       )
-      expect(screen.getByText('Pay Now')).toBeDefined()
+      expect(screen.getByText('Pay Now')).toBeInTheDocument()
     })
 
     it('shows default prompt when no children on pending', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.getByText('Connect Wallet to Pay')).toBeDefined()
+      expect(screen.getByText('Connect Wallet to Pay')).toBeInTheDocument()
     })
   })
 
@@ -218,8 +213,8 @@ describe('PaymentPanel', () => {
           onDismissError={() => {}}
         />
       )
-      expect(screen.getByText('Transaction failed')).toBeDefined()
-      expect(screen.getByRole('alert')).toBeDefined()
+      expect(screen.getByText('Transaction failed')).toBeInTheDocument()
+      expect(screen.getByRole('alert')).toBeInTheDocument()
     })
 
     it('fires onDismissError when error is dismissed', async () => {
@@ -248,7 +243,6 @@ describe('PaymentPanel', () => {
           invoice={mockInvoice}
           status="paid"
           txHash="0xabc123"
-          txHashValidated
           error="Some error"
           onDismissError={() => {}}
         />
@@ -260,7 +254,7 @@ describe('PaymentPanel', () => {
   describe('QR code button', () => {
     it('renders Show QR button when pending', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.getByRole('button', { name: /show qr/i })).toBeDefined()
+      expect(screen.getByRole('button', { name: /show qr/i })).toBeInTheDocument()
     })
 
     it('hides Show QR button when status is paid', () => {
@@ -269,7 +263,6 @@ describe('PaymentPanel', () => {
           invoice={mockInvoice}
           status="paid"
           txHash="0xabc123"
-          txHashValidated
         />
       )
       expect(screen.queryByRole('button', { name: /show qr/i })).toBeNull()
@@ -298,14 +291,14 @@ describe('PaymentPanel', () => {
     it('renders Download PDF button (disabled)', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
       const downloadBtn = screen.getByRole('button', { name: /download pdf/i })
-      expect(downloadBtn).toBeDefined()
+      expect(downloadBtn).toBeInTheDocument()
       expect(downloadBtn.hasAttribute('disabled')).toBe(true)
     })
 
     it('renders Report abuse button', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
       const reportBtn = screen.getByRole('button', { name: /report abuse/i })
-      expect(reportBtn).toBeDefined()
+      expect(reportBtn).toBeInTheDocument()
     })
 
     it('renders View Tx link in footer when paid', () => {
@@ -314,11 +307,10 @@ describe('PaymentPanel', () => {
           invoice={mockInvoice}
           status="paid"
           txHash="0xabc123"
-          txHashValidated
         />
       )
       const link = screen.getByRole('link', { name: /view tx/i })
-      expect(link).toBeDefined()
+      expect(link).toBeInTheDocument()
     })
 
     it('does not render View Tx link in footer when pending', () => {
@@ -331,7 +323,7 @@ describe('PaymentPanel', () => {
         <PaymentPanel invoice={mockInvoice} status="pending" />
       )
       const separator = container.querySelector('.via-zinc-800')
-      expect(separator).not.toBeNull()
+      expect(separator).toBeInTheDocument()
     })
   })
 
@@ -343,8 +335,7 @@ describe('PaymentPanel', () => {
         magicDust: undefined,
       }
       render(<PaymentPanel invoice={invoiceNoTotal} status="pending" />)
-      // Should still render amount from line items
-      expect(screen.getByText('Total Due')).toBeDefined()
+      expect(screen.getByText('Total Due')).toBeInTheDocument()
     })
 
     it('handles decimals=0', () => {
@@ -355,7 +346,7 @@ describe('PaymentPanel', () => {
         magicDust: '5',
       }
       render(<PaymentPanel invoice={integerInvoice} status="pending" />)
-      expect(screen.getByText('Total Due')).toBeDefined()
+      expect(screen.getByText('Total Due')).toBeInTheDocument()
     })
 
     it('handles magicDust in total but magicDust field absent', () => {
@@ -365,31 +356,32 @@ describe('PaymentPanel', () => {
         magicDust: undefined,
       }
       render(<PaymentPanel invoice={noMagicDust} status="pending" />)
-      expect(screen.getByText('Manual verification required')).toBeDefined()
+      expect(screen.getByText('Manual verification required')).toBeInTheDocument()
     })
 
     it('defaults unknown status to pending behavior', () => {
-      // TypeScript wouldn't allow this but testing runtime safety
       render(
         <PaymentPanel
           invoice={mockInvoice}
-          status={'pending' as any}
+          status={'unknown' as any}
         />
       )
-      expect(screen.getByText('Total Due')).toBeDefined()
+      expect(screen.getByText('Total Due')).toBeInTheDocument()
     })
 
-    it('renders paid state without txHash gracefully', () => {
+    it('renders paid state without txHash with fallback', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
           status="paid"
         />
       )
-      // Should render with paid status but no PaidConfirmation (txHash required)
       const panel = screen.getByTestId('payment-panel')
       expect(panel.getAttribute('data-status')).toBe('paid')
       expect(screen.queryByText('Payment Successful')).toBeNull()
+      expect(screen.getByTestId('paid-fallback')).toBeInTheDocument()
+      expect(screen.getByText('Payment detected')).toBeInTheDocument()
+      expect(screen.getByText('Verifying transaction...')).toBeInTheDocument()
     })
   })
 
@@ -403,7 +395,7 @@ describe('PaymentPanel', () => {
           onDismissError={() => {}}
         />
       )
-      expect(screen.getByRole('alert')).toBeDefined()
+      expect(screen.getByRole('alert')).toBeInTheDocument()
     })
 
     it('dismiss button has aria-label', () => {
@@ -415,22 +407,22 @@ describe('PaymentPanel', () => {
           onDismissError={() => {}}
         />
       )
-      expect(screen.getByRole('button', { name: /dismiss/i })).toBeDefined()
+      expect(screen.getByRole('button', { name: /dismiss/i })).toBeInTheDocument()
     })
 
     it('tooltip has role="tooltip"', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.getByRole('tooltip')).toBeDefined()
+      expect(screen.getByRole('tooltip')).toBeInTheDocument()
     })
 
     it('Download PDF button has aria-label', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.getByRole('button', { name: /download pdf/i })).toBeDefined()
+      expect(screen.getByRole('button', { name: /download pdf/i })).toBeInTheDocument()
     })
 
     it('Report abuse button has aria-label', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.getByRole('button', { name: /report abuse/i })).toBeDefined()
+      expect(screen.getByRole('button', { name: /report abuse/i })).toBeInTheDocument()
     })
 
     it('View Tx link opens in new tab', () => {
@@ -439,7 +431,6 @@ describe('PaymentPanel', () => {
           invoice={mockInvoice}
           status="paid"
           txHash="0xabc123"
-          txHashValidated
         />
       )
       const link = screen.getByRole('link', { name: /view tx/i })

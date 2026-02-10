@@ -1,4 +1,4 @@
-import type { Invoice } from '@/shared/lib/invoice-types'
+import type { Invoice, ConfirmationProgress } from '@/shared/lib/invoice-types'
 import type { ReactNode } from 'react'
 
 /**
@@ -11,16 +11,8 @@ import type { ReactNode } from 'react'
  */
 export type PaymentPanelStatus = 'pending' | 'paid' | 'confirming' | 'overdue'
 
-/**
- * Block confirmation progress.
- * Provided by parent when payment is detected but not yet finalized.
- */
-export interface ConfirmationProgress {
-  /** Current number of confirmations */
-  current: number
-  /** Required confirmations for finality */
-  required: number
-}
+// Re-export for consumers that import from this module
+export type { ConfirmationProgress } from '@/shared/lib/invoice-types'
 
 /**
  * Props for the main PaymentPanel widget.
@@ -32,12 +24,10 @@ export interface PaymentPanelProps {
   status: PaymentPanelStatus
   /** Transaction hash when paid */
   txHash?: string
-  /** Whether the txHash has been validated on-chain */
-  txHashValidated?: boolean
   /** Block confirmation progress (future: P0.12.3) */
-  confirmations?: ConfirmationProgress | undefined
+  confirmations?: ConfirmationProgress
   /** Payment error message (from SmartPayButton) */
-  error?: string | null | undefined
+  error?: string
   /** Callback to dismiss error */
   onDismissError?: () => void
   /** Slot for SmartPayButton (P0.12.1) */

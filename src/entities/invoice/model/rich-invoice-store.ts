@@ -9,6 +9,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { INVOICE_VIEW_STORE_KEY } from '@/shared/config'
 import type { Invoice } from './schema'
+import type { ConfirmationProgress } from '@/shared/lib/invoice-types'
 
 /**
  * Status of a viewed invoice
@@ -37,7 +38,7 @@ export interface RichInvoice {
   /** Whether txHash has been validated on-chain */
   txHashValidated?: boolean
   /** Block confirmation progress (during polling) */
-  confirmations?: { current: number; required: number } | undefined
+  confirmations?: ConfirmationProgress | undefined
   /** Last payment error message */
   error?: string | null | undefined
   /** ISO 8601 timestamp when entry was created */
@@ -70,7 +71,7 @@ interface RichInvoiceActions {
   /** Set transaction hash for an invoice */
   setTxHash: (invoiceId: string, txHash: string, validated?: boolean) => void
   /** Set block confirmation progress */
-  setConfirmations: (invoiceId: string, confirmations?: { current: number; required: number }) => void
+  setConfirmations: (invoiceId: string, confirmations?: ConfirmationProgress) => void
   /** Set or clear payment error */
   setError: (invoiceId: string, error: string | null) => void
   /** Remove an invoice from the store */
@@ -136,7 +137,13 @@ export const useRichInvoiceStore = create<RichInvoiceStore>()(
         set((state) => ({
           invoices: state.invoices.map((inv) =>
             inv.invoiceId === invoiceId
-              ? { ...inv, txHash, txHashValidated: validated, status: 'paid' as const }
+              ? {
+                  ...inv,
+                  txHash,
+                  txHashValidated: validated,
+                  status: 'paid' as const,
+                  ...(validated ? { paidAt: new Date().toISOString() } : {}),
+                }
               : inv
           ),
         }))

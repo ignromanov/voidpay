@@ -154,6 +154,19 @@ export interface PaymentReceipt {
   invoiceUrl: string
 }
 
+// ============ Payment Tracking ============
+
+/**
+ * Block confirmation progress for payment verification.
+ * Used by payment-panel widget and rich-invoice-store.
+ */
+export interface ConfirmationProgress {
+  /** Current number of block confirmations */
+  current: number
+  /** Required confirmations for finality */
+  required: number
+}
+
 // ============ Helpers ============
 
 /**

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { computeAmounts } from '../lib/compute-amounts'
 import type { Invoice } from '@/shared/lib/invoice-types'
 
@@ -107,5 +107,52 @@ describe('computeAmounts', () => {
     expect(result.subtotal).toBe('1000000000000000000')
     expect(result.magicDust).toBe('42')
     expect(result.exactTotal).toBe('1000000000000000042')
+  })
+
+  it('falls through to Case 2 when total is corrupted (NaN)', () => {
+    const invoice = createInvoice({
+      total: 'NaN',
+      magicDust: '42',
+    })
+
+    // Case 1 try-catch fails on BigInt("NaN"), falls to Case 2 (total truthy)
+    const result = computeAmounts(invoice)
+
+    expect(result.subtotal).toBe('NaN')
+    expect(result.magicDust).toBe('0')
+    expect(result.exactTotal).toBe('NaN')
+  })
+
+  it('falls through to Case 3 when total is decimal string', () => {
+    const invoice = createInvoice({
+      total: '12.5',
+      magicDust: '42',
+    })
+
+    // BigInt("12.5") throws, falls to Case 2 (total truthy but no magicDust in Case 2)
+    const result = computeAmounts(invoice)
+
+    expect(result.subtotal).toBe('12.5')
+    expect(result.magicDust).toBe('0')
+    expect(result.exactTotal).toBe('12.5')
+  })
+
+  it('clamps subtotal to 0 when magicDust exceeds total', () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const invoice = createInvoice({
+      total: '10',
+      magicDust: '100',
+    })
+
+    const result = computeAmounts(invoice)
+
+    expect(result.subtotal).toBe('0')
+    expect(result.magicDust).toBe('100')
+    expect(result.exactTotal).toBe('10')
+    expect(consoleError).toHaveBeenCalledWith(
+      '[computeAmounts] Magic Dust exceeds total:',
+      expect.objectContaining({ total: '10', magicDust: '100' })
+    )
+    consoleError.mockRestore()
   })
 })

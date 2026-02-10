@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen } from '@/shared/lib/test-utils'
 import { describe, it, expect } from 'vitest'
 import { StatusChip } from '../ui/StatusChip'
 import type { PaymentPanelStatus } from '../types'

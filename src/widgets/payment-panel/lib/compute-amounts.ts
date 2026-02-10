@@ -21,12 +21,23 @@ export interface ComputedAmounts {
 export function computeAmounts(invoice: Invoice): ComputedAmounts {
   // Case 1: Pre-calculated total with Magic Dust
   if (invoice.total && invoice.magicDust) {
-    const totalBigInt = BigInt(invoice.total)
-    const dustBigInt = BigInt(invoice.magicDust)
-    return {
-      subtotal: (totalBigInt - dustBigInt).toString(),
-      magicDust: invoice.magicDust,
-      exactTotal: invoice.total,
+    try {
+      const totalBigInt = BigInt(invoice.total)
+      const dustBigInt = BigInt(invoice.magicDust)
+      const subtotal = totalBigInt - dustBigInt
+      if (subtotal < BigInt(0)) {
+        console.error('[computeAmounts] Magic Dust exceeds total:', {
+          total: invoice.total,
+          magicDust: invoice.magicDust,
+        })
+      }
+      return {
+        subtotal: (subtotal < BigInt(0) ? BigInt(0) : subtotal).toString(),
+        magicDust: invoice.magicDust,
+        exactTotal: invoice.total,
+      }
+    } catch {
+      // Corrupted total/magicDust strings — fall through to Case 2/3
     }
   }
 

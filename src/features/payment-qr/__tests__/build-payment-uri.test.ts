@@ -71,4 +71,75 @@ describe('buildPaymentUri', () => {
       expect(uri).toBe(`ethereum:${recipient}@1?value=100`)
     })
   })
+
+  describe('input validation', () => {
+    it('throws on empty recipientAddress', () => {
+      expect(() =>
+        buildPaymentUri({ recipientAddress: '', chainId: 1, amount: '100' })
+      ).toThrow(/Invalid recipientAddress/)
+    })
+
+    it('throws on non-0x recipientAddress', () => {
+      expect(() =>
+        buildPaymentUri({
+          recipientAddress: '1234567890123456789012345678901234567890ab',
+          chainId: 1,
+          amount: '100',
+        })
+      ).toThrow(/Invalid recipientAddress/)
+    })
+
+    it('throws on short recipientAddress', () => {
+      expect(() =>
+        buildPaymentUri({ recipientAddress: '0x1234', chainId: 1, amount: '100' })
+      ).toThrow(/Invalid recipientAddress/)
+    })
+
+    it('throws on zero chainId', () => {
+      expect(() =>
+        buildPaymentUri({ recipientAddress: recipient, chainId: 0, amount: '100' })
+      ).toThrow(/Invalid chainId/)
+    })
+
+    it('throws on negative chainId', () => {
+      expect(() =>
+        buildPaymentUri({ recipientAddress: recipient, chainId: -1, amount: '100' })
+      ).toThrow(/Invalid chainId/)
+    })
+
+    it('throws on float chainId', () => {
+      expect(() =>
+        buildPaymentUri({ recipientAddress: recipient, chainId: 1.5, amount: '100' })
+      ).toThrow(/Invalid chainId/)
+    })
+
+    it('throws on empty amount', () => {
+      expect(() =>
+        buildPaymentUri({ recipientAddress: recipient, chainId: 1, amount: '' })
+      ).toThrow(/Invalid amount/)
+    })
+
+    it('throws on decimal amount', () => {
+      expect(() =>
+        buildPaymentUri({ recipientAddress: recipient, chainId: 1, amount: '12.5' })
+      ).toThrow(/Invalid amount/)
+    })
+
+    it('throws on non-numeric amount', () => {
+      expect(() =>
+        buildPaymentUri({ recipientAddress: recipient, chainId: 1, amount: 'abc' })
+      ).toThrow(/Invalid amount/)
+    })
+
+    it('throws on invalid tokenAddress format', () => {
+      expect(() =>
+        buildPaymentUri({
+          recipientAddress: recipient,
+          chainId: 1,
+          amount: '100',
+          tokenAddress: '0xinvalid',
+        })
+      ).toThrow(/Invalid tokenAddress/)
+    })
+  })
 })

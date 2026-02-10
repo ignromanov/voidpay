@@ -7,7 +7,7 @@ import { ExpiredState } from './ExpiredState'
 import { ActionSlot } from './ActionSlot'
 import { ErrorBanner } from './ErrorBanner'
 import { QRModal } from '@/features/payment-qr'
-import { DownloadIcon, ExternalLinkIcon, FlagIcon, QrCodeIcon } from '@/shared/ui/icons'
+import { CheckCircleIcon, DownloadIcon, ExternalLinkIcon, FlagIcon, QrCodeIcon } from '@/shared/ui/icons'
 import { getExplorerUrl } from '@/entities/network'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import type { PaymentPanelProps } from '../types'
@@ -22,11 +22,11 @@ export function PaymentPanel({
   children,
 }: PaymentPanelProps) {
   const [qrOpen, setQrOpen] = useState(false)
-  const config = STATUS_CONFIG[status]
+  const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending
   const amounts = computeAmounts(invoice)
-  const isPending = status === 'pending'
   const isPaid = status === 'paid' || status === 'confirming'
   const isExpired = status === 'overdue'
+  const isPending = !isPaid && !isExpired
   const showPulse = status === 'confirming'
 
   return (
@@ -69,6 +69,15 @@ export function PaymentPanel({
             currency={invoice.currency}
             confirmations={confirmations}
           />
+        )}
+
+        {/* Paid without txHash: fallback (corrupted store data) */}
+        {isPaid && !txHash && (
+          <div className="text-center py-6" data-testid="paid-fallback">
+            <CheckCircleIcon className="text-emerald-400 mx-auto mb-2" size={32} />
+            <p className="text-sm text-zinc-200">Payment detected</p>
+            <p className="text-xs text-zinc-400">Verifying transaction...</p>
+          </div>
         )}
 
         {/* Expired state: ExpiredState */}

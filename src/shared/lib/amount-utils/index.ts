@@ -207,7 +207,8 @@ export function calculateTotalsBigInt(
       rate = BigInt(item.rate || '0')
       qtyScaled = BigInt(Math.round(item.quantity * Number(scale)))
     } catch {
-      continue // skip invalid line item
+      console.warn('[calculateTotalsBigInt] Skipping invalid item:', item)
+      continue
     }
     // Scale quantity to atomic units, then multiply by rate, then divide by scale
     // This handles fractional quantities correctly
@@ -280,11 +281,21 @@ export function generateMagicDust(): number {
  * @returns New total with Magic Dust added
  */
 export function addMagicDust(total: string, magicDust: number): string {
+  if (!Number.isInteger(magicDust) || magicDust < 1 || magicDust > 999) {
+    throw new RangeError(
+      `[addMagicDust] magicDust must be integer 1-999, got ${magicDust}`
+    )
+  }
   try {
     const totalBigInt = BigInt(total || '0')
     const dustBigInt = BigInt(magicDust)
     return (totalBigInt + dustBigInt).toString()
-  } catch {
+  } catch (error) {
+    console.error('[addMagicDust] Failed to add Magic Dust, returning total without dust:', {
+      total,
+      magicDust,
+      error: error instanceof Error ? error.message : String(error),
+    })
     return total || '0'
   }
 }

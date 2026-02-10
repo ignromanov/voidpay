@@ -338,13 +338,13 @@ export function PayWorkspace() {
                       invoice={invoice}
                       status={panelStatus}
                       txHash={storedTxHash}
-                      confirmations={storedConfirmations}
+                      {...(storedConfirmations ? { confirmations: storedConfirmations } : {})}
                     />
                   ) : (
                     <PaymentPanel
                       invoice={invoice}
                       status={panelStatus}
-                      error={storedError}
+                      {...(storedError ? { error: storedError } : {})}
                       onDismissError={() => setError(invoice.invoiceId, null)}
                     />
                   )}
