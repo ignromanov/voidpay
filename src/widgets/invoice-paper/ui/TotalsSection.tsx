@@ -31,7 +31,7 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
     const currencyClass = currency ? '' : 'text-zinc-300 italic'
 
     return (
-      <div className="ml-auto min-w-0 w-[280px] max-w-[280px] overflow-hidden">
+      <div className="ml-auto min-w-0 flex-1 overflow-hidden">
         {/* Grid for consistent alignment: label | amount | currency */}
         <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-x-2 gap-y-1 text-sm">
           <span className="text-zinc-600">Subtotal</span>
@@ -80,7 +80,7 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
           <span className="text-lg font-bold tracking-tight text-black flex-shrink-0">Total</span>
           <div className="flex items-baseline gap-1 min-w-0 overflow-hidden">
             <span
-              className="font-mono text-xl font-black tracking-tighter text-violet-600 tabular-nums truncate"
+              className="font-mono text-2xl font-black tracking-tighter text-violet-600 tabular-nums truncate"
               title={totals.total}
             >
               {totals.total}

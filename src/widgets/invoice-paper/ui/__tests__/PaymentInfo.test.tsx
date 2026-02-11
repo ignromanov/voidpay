@@ -83,18 +83,20 @@ describe('PaymentInfo', () => {
       expect(screen.getByText('0x... (wallet address)')).toBeInTheDocument()
     })
 
-    it('shows copy button in full variant with address', () => {
+    it('address is clickable to copy in full variant', () => {
       const address = '0x1234567890abcdef1234567890abcdef12345678'
       render(<PaymentInfo {...defaultProps} senderAddress={address} variant="full" />)
 
-      expect(screen.getByRole('button', { name: /copy wallet address/i })).toBeInTheDocument()
+      const addressEl = screen.getByRole('button', { name: /wallet address.*click to copy/i })
+      expect(addressEl).toBeInTheDocument()
+      expect(addressEl).toHaveAttribute('title', 'Click to copy address')
     })
 
-    it('hides copy button in default variant', () => {
+    it('address is not clickable in default variant', () => {
       const address = '0x1234567890abcdef1234567890abcdef12345678'
       render(<PaymentInfo {...defaultProps} senderAddress={address} variant="default" />)
 
-      expect(screen.queryByRole('button', { name: /copy wallet address/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /click to copy/i })).not.toBeInTheDocument()
     })
   })
 

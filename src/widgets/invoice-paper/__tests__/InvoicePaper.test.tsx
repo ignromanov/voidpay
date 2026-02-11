@@ -14,8 +14,8 @@ describe('InvoicePaper Integration', () => {
     invoiceId: 'INV-2024-001',
     issuedAt: 1735296000, // Dec 27
     dueAt: 1735382400, // Dec 28
-    from: { name: 'Alice', walletAddress: '0xSender' },
-    client: { name: 'Bob', walletAddress: '0xRecipient' },
+    from: { name: 'Alice', walletAddress: '0x1111111111111111111111111111111111111111' },
+    client: { name: 'Bob', walletAddress: '0x2222222222222222222222222222222222222222' },
     items: [{ description: 'Web Design', quantity: 1, rate: '1500000000' }], // $1500 in atomic units (6 decimals)
     currency: 'USDC',
     decimals: 6,

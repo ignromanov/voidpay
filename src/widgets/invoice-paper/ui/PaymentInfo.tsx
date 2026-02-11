@@ -1,10 +1,9 @@
-import React from 'react'
-import { HashIcon, ExternalLinkIcon, AlertTriangleIcon } from '@/shared/ui/icons'
+import React, { useState, useCallback } from 'react'
+import { HashIcon, ExternalLinkIcon, AlertTriangleIcon, CheckIcon } from '@/shared/ui/icons'
 import { PaymentQR } from '@/features/payment-qr'
 import { formatShortAddress } from '../lib/format'
 import { getExplorerUrl, getNetworkName } from '@/entities/network'
 import { cn } from '@/shared/lib/utils'
-import { CopyButton } from '@/shared/ui/copy-button'
 import { NetworkIcon } from '@/shared/ui/network-icon'
 import { TokenIcon } from '@/shared/ui/token-icon'
 import { AddressAvatar } from '@/shared/ui/address-avatar'
@@ -52,6 +51,16 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
 
     const networkName = getNetworkName(networkId)
 
+    const [copied, setCopied] = useState(false)
+    const handleCopyAddress = useCallback(async () => {
+      if (!senderAddress || !isInteractive) return
+      try {
+        await navigator.clipboard.writeText(senderAddress)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1500)
+      } catch { /* clipboard not available */ }
+    }, [senderAddress, isInteractive])
+
     return (
       <div
         className="flex-shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50"
@@ -85,7 +94,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
           )}
 
           {/* Payment Details */}
-          <div className="min-w-[220px] space-y-1.5 p-2.5">
+          <div className="max-w-[195px] space-y-1.5 p-2.5">
             {/* Network row */}
             <div className="flex items-center justify-between gap-2">
               <span className="text-[8px] font-bold text-zinc-400 uppercase">Network</span>
@@ -115,7 +124,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
               </div>
             </div>
 
-            {/* Wallet Address - prominent */}
+            {/* Wallet Address - click-to-copy */}
             <div className="space-y-1 pt-1.5">
               <span className="block text-[9px] font-bold text-zinc-500 uppercase">
                 Recipient Wallet
@@ -130,24 +139,36 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                 )}
                 <div
                   className={cn(
-                    'flex-1 cursor-text rounded border border-zinc-200 bg-white px-2 py-1.5 font-mono text-[10px] leading-relaxed font-medium',
-                    senderAddress ? 'text-zinc-950' : 'text-zinc-400 italic'
+                    'relative flex-1 rounded border bg-white px-2 py-1.5 font-mono text-[10px] leading-relaxed font-medium break-all transition-colors',
+                    senderAddress ? 'text-zinc-950' : 'text-zinc-400 italic',
+                    copied
+                      ? 'border-emerald-300 bg-emerald-50'
+                      : 'border-zinc-200',
+                    isInteractive && senderAddress && 'cursor-pointer hover:border-zinc-300'
                   )}
-                  title={senderAddress}
+                  onClick={isInteractive ? handleCopyAddress : undefined}
+                  role={isInteractive && senderAddress ? 'button' : undefined}
+                  tabIndex={isInteractive && senderAddress ? 0 : undefined}
+                  onKeyDown={
+                    isInteractive && senderAddress
+                      ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyAddress() } }
+                      : undefined
+                  }
+                  title={isInteractive && senderAddress ? 'Click to copy address' : senderAddress}
                   aria-label={
-                    senderAddress ? `Wallet address: ${senderAddress}` : 'Wallet address not set'
+                    senderAddress
+                      ? `Wallet address: ${senderAddress}${isInteractive ? '. Click to copy' : ''}`
+                      : 'Wallet address not set'
                   }
                 >
                   {senderAddress || '0x... (wallet address)'}
+                  {copied && (
+                    <span className="absolute right-1 top-1 flex items-center gap-0.5 rounded bg-emerald-100 px-1 py-0.5 text-[8px] font-bold text-emerald-700">
+                      <CheckIcon className="h-2.5 w-2.5" aria-hidden="true" />
+                      Copied
+                    </span>
+                  )}
                 </div>
-                {isInteractive && senderAddress && (
-                  <CopyButton
-                    value={senderAddress}
-                    size="sm"
-                    data-print-hide
-                    aria-label="Copy wallet address"
-                  />
-                )}
               </div>
             </div>
 
