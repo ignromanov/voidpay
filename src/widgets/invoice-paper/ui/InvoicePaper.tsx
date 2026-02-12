@@ -27,10 +27,10 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
 })
 
 // Variant-specific styles
-// For full variant: cursor-text on text elements, cursor-pointer on links
+// For full variant: cursor-text on text elements, cursor-pointer on links/buttons (including children)
 // Print overrides: reduced padding for A4 margins
 const VARIANT_STYLES = {
-  full: 'p-12 print:p-8 [&_p]:cursor-text [&_span]:cursor-text [&_td]:cursor-text [&_th]:cursor-text [&_address]:cursor-text [&_a]:cursor-pointer',
+  full: 'p-12 print:p-8 [&_p]:cursor-text [&_span]:cursor-text [&_td]:cursor-text [&_th]:cursor-text [&_address]:cursor-text [&_a]:cursor-pointer [&_a_span]:cursor-pointer [&_a_*]:cursor-pointer [&_[role=button]_span]:cursor-pointer [&_[role=button]_*]:cursor-pointer',
   default: 'p-12 print:p-8', // Standard mode with print padding
   print: 'p-8 print:p-6', // Print-optimized (even smaller padding)
 } as const

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { HashIcon, ExternalLinkIcon, AlertTriangleIcon, CheckIcon } from '@/shared/ui/icons'
+import { HashIcon, ExternalLinkIcon, AlertTriangleIcon, CheckIcon, CopyIcon } from '@/shared/ui/icons'
 import { PaymentQR } from '@/features/payment-qr'
 import { formatShortAddress } from '../lib/format'
 import { getExplorerUrl, getNetworkName } from '@/entities/network'
@@ -63,7 +63,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
 
     return (
       <div
-        className="flex-shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50"
+        className="w-[330px] flex-shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50"
         role="region"
         aria-label="Payment information"
       >
@@ -94,7 +94,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
           )}
 
           {/* Payment Details */}
-          <div className="max-w-[195px] space-y-1.5 p-2.5">
+          <div className="min-w-0 flex-1 space-y-1.5 p-2.5">
             {/* Network row */}
             <div className="flex items-center justify-between gap-2">
               <span className="text-[9px] font-bold text-zinc-400 uppercase">Network</span>
@@ -139,7 +139,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                 )}
                 <div
                   className={cn(
-                    'relative flex-1 rounded border bg-white px-2 py-2 font-mono text-[10px] leading-relaxed font-medium break-all transition-colors',
+                    'relative flex flex-1 items-center gap-1 rounded border bg-white px-2 py-2 font-mono text-[10px] leading-relaxed font-medium break-all transition-colors',
                     senderAddress ? 'text-zinc-950' : 'text-zinc-400 italic',
                     copied
                       ? 'border-emerald-300 bg-emerald-50'
@@ -161,7 +161,10 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                       : 'Wallet address not set'
                   }
                 >
-                  {senderAddress || '0x... (wallet address)'}
+                  <span className="min-w-0 flex-1">{senderAddress || '0x... (wallet address)'}</span>
+                  {isInteractive && senderAddress && (
+                    <CopyIcon className="h-2.5 w-2.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
+                  )}
                   {copied && (
                     <span className="absolute right-1 top-1 flex items-center gap-0.5 rounded bg-emerald-100 px-1 py-0.5 text-[8px] font-bold text-emerald-700">
                       <CheckIcon className="h-2.5 w-2.5" aria-hidden="true" />
@@ -194,9 +197,8 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                       target="_blank"
                       rel="noopener noreferrer"
                       className={cn(
-                        'group flex min-h-[44px] items-center justify-between gap-1 rounded border px-1.5 py-1 transition-all',
+                        'group flex cursor-pointer items-start gap-1 rounded border px-1.5 py-1 transition-colors',
                         'focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1',
-                        'hover:shadow-sm',
                         txHashValidated
                           ? 'border-emerald-100 bg-emerald-50 hover:border-emerald-300 hover:bg-emerald-100'
                           : 'border-amber-100 bg-amber-50 hover:border-amber-300 hover:bg-amber-100'
@@ -206,7 +208,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                     >
                       <span
                         className={cn(
-                          'truncate font-mono text-[8px] font-medium',
+                          'min-w-0 flex-1 break-all font-mono text-[8px] font-medium',
                           txHashValidated ? 'text-emerald-800' : 'text-amber-800'
                         )}
                       >
@@ -214,7 +216,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                       </span>
                       <ExternalLinkIcon
                         className={cn(
-                          'h-2.5 w-2.5 flex-shrink-0',
+                          'mt-0.5 h-2.5 w-2.5 flex-shrink-0',
                           txHashValidated
                             ? 'text-emerald-500 group-hover:text-emerald-700'
                             : 'text-amber-500 group-hover:text-amber-700'
@@ -225,20 +227,13 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                   ) : (
                     <div
                       className={cn(
-                        'flex items-center gap-1 rounded border px-1.5 py-1',
+                        'rounded border px-1.5 py-1 font-mono text-[8px] font-medium break-all',
                         txHashValidated
-                          ? 'border-emerald-100 bg-emerald-50'
-                          : 'border-amber-100 bg-amber-50'
+                          ? 'border-emerald-100 bg-emerald-50 text-emerald-800'
+                          : 'border-amber-100 bg-amber-50 text-amber-800'
                       )}
                     >
-                      <span
-                        className={cn(
-                          'truncate font-mono text-[8px] font-medium',
-                          txHashValidated ? 'text-emerald-800' : 'text-amber-800'
-                        )}
-                      >
-                        {txHash}
-                      </span>
+                      {txHash}
                     </div>
                   )}
                 </div>
