@@ -45,11 +45,15 @@ vi.mock('qrcode.react', () => ({
   ),
 }))
 
-// Mock next/dynamic to bypass lazy loading in tests
+// Mock next/dynamic to eagerly resolve dynamic imports in tests
 vi.mock('next/dynamic', () => ({
-  default: () => {
-    return function MockQRCodeSVG(props: { value?: string }) {
-      return <svg data-testid="qr-code" data-value={props.value} />
+  default: (loader: () => Promise<{ default: React.ComponentType<unknown> }>) => {
+    let Resolved: React.ComponentType<unknown> | null = null
+    loader().then((mod) => {
+      Resolved = mod.default ?? mod
+    })
+    return function DynamicMock(props: Record<string, unknown>) {
+      return Resolved ? <Resolved {...props} /> : null
     }
   },
 }))
