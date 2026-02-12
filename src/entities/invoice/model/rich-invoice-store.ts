@@ -184,6 +184,7 @@ export const useRichInvoiceStore = create<RichInvoiceStore>()(
     {
       name: INVOICE_VIEW_STORE_KEY,
       version: 1,
+      migrate: (persisted) => persisted as RichInvoiceStore,
     }
   )
 )

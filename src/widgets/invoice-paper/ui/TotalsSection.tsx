@@ -16,13 +16,15 @@ interface TotalsSectionProps {
   showMagicDust?: boolean
 }
 
+const COMMA_RE = /,/g
+
 /**
  * Check if an amount string represents a non-zero value
  * Handles formats like "0.00", "0", "0.000000"
  */
 function isNonZero(amount: string | null | undefined): boolean {
   if (!amount) return false
-  const num = parseFloat(amount.replace(/,/g, ''))
+  const num = parseFloat(amount.replace(COMMA_RE, ''))
   return !isNaN(num) && num > 0
 }
 

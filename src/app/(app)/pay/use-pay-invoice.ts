@@ -105,13 +105,15 @@ export function usePayInvoice(): PayInvoiceState {
     }
   }, [invoice?.networkId, setNetworkTheme])
 
+  const storedStatus = storedInvoice?.status
+
   // 4. Sync overdue status to store
   useEffect(() => {
-    if (!invoice || !storedInvoice) return
-    if (panelStatus === 'overdue' && storedInvoice.status !== 'overdue') {
+    if (!invoice || !storedStatus) return
+    if (panelStatus === 'overdue' && storedStatus !== 'overdue') {
       updateStatus(invoice.invoiceId, 'overdue')
     }
-  }, [invoice, panelStatus, storedInvoice, updateStatus])
+  }, [invoice, panelStatus, storedStatus, updateStatus])
 
   const dismissError = useCallback(() => {
     if (invoice) setError(invoice.invoiceId, null)

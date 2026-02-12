@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { computeAmounts } from '../lib/compute-amounts'
 import { STATUS_CONFIG } from './status-config'
 import { AmountDisplay } from './AmountDisplay'
@@ -6,11 +7,19 @@ import { PaidConfirmation } from './PaidConfirmation'
 import { ExpiredState } from './ExpiredState'
 import { ActionSlot } from './ActionSlot'
 import { ErrorBanner } from './ErrorBanner'
-import { QRModal } from '@/features/payment-qr'
 import { CheckCircleIcon, DownloadIcon, ExternalLinkIcon, FlagIcon, QrCodeIcon } from '@/shared/ui/icons'
 import { getExplorerUrl } from '@/entities/network'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import type { PaymentPanelProps } from '../types'
+
+const QRModal = dynamic(
+  () => import('@/features/payment-qr').then(mod => ({ default: mod.QRModal })),
+  { ssr: false }
+)
+
+const footerDivider = (
+  <div className="h-px w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+)
 
 export function PaymentPanel({
   invoice,
@@ -23,7 +32,7 @@ export function PaymentPanel({
 }: PaymentPanelProps) {
   const [qrOpen, setQrOpen] = useState(false)
   const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending
-  const amounts = computeAmounts(invoice)
+  const amounts = useMemo(() => computeAmounts(invoice), [invoice])
   const isPaid = status === 'paid' || status === 'confirming'
   const isExpired = status === 'overdue'
   const isPending = !isPaid && !isExpired
@@ -97,7 +106,7 @@ export function PaymentPanel({
 
       {/* Footer */}
       <div className="px-3 md:px-4 pb-3">
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+        {footerDivider}
         <div className="flex items-center justify-between w-full pt-2">
           <div className="flex items-center gap-1">
             <button

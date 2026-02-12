@@ -35,36 +35,27 @@ const VARIANT_STYLES = {
   print: 'p-8 print:p-6', // Print-optimized (even smaller padding)
 } as const
 
-/**
- * Empty state content shown when data is undefined
- */
-function EmptyStateContent() {
-  return (
-    <div className="flex h-full flex-col items-center justify-center p-16">
-      <div className="flex flex-col items-center gap-10 text-center">
-        {/* Icon — larger for scale compensation */}
-        <div className="flex h-36 w-36 items-center justify-center rounded-3xl bg-zinc-100">
-          <FileTextIcon className="h-20 w-20 text-zinc-400" strokeWidth={1.5} />
-        </div>
-
-        {/* Text — larger for scale compensation */}
-        <div className="space-y-3">
-          <h2 className="text-3xl font-semibold text-zinc-700">No Invoice Data</h2>
-          <p className="max-w-[420px] text-lg text-zinc-500">
-            Start creating your invoice or load one from a URL to see the preview here.
-          </p>
-        </div>
-
-        {/* Hint — larger for scale compensation */}
-        <div className="mt-6 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-4">
-          <p className="text-base text-zinc-500">
-            Fill in the invoice form to see the preview here
-          </p>
-        </div>
+/** Hoisted static empty state JSX — avoids re-creating element tree on every render */
+const emptyStateContent = (
+  <div className="flex h-full flex-col items-center justify-center p-16">
+    <div className="flex flex-col items-center gap-10 text-center">
+      <div className="flex h-36 w-36 items-center justify-center rounded-3xl bg-zinc-100">
+        <FileTextIcon className="h-20 w-20 text-zinc-400" strokeWidth={1.5} />
+      </div>
+      <div className="space-y-3">
+        <h2 className="text-3xl font-semibold text-zinc-700">No Invoice Data</h2>
+        <p className="max-w-[420px] text-lg text-zinc-500">
+          Start creating your invoice or load one from a URL to see the preview here.
+        </p>
+      </div>
+      <div className="mt-6 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-4">
+        <p className="text-base text-zinc-500">
+          Fill in the invoice form to see the preview here
+        </p>
       </div>
     </div>
-  )
-}
+  </div>
+)
 
 export const InvoicePaper = React.memo(
   forwardRef<HTMLElement, InvoicePaperProps>(
@@ -156,7 +147,7 @@ export const InvoicePaper = React.memo(
           {/* Content - Empty state or invoice data */}
           {isEmpty ? (
             <>
-              <EmptyStateContent />
+              {emptyStateContent}
               <Watermark status={effectiveStatus} />
             </>
           ) : (

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from '@/shared/ui/motion'
 import { XIcon, PrinterIcon, DownloadIcon } from '@/shared/ui/icons'
 import { Dialog, DialogContent, DialogTitle, DialogClose, DialogDescription } from '@/shared/ui/dialog'
 import { Badge } from '@/shared/ui/badge'

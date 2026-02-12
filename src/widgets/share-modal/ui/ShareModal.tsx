@@ -1,5 +1,7 @@
 'use client'
 
+import dynamic from 'next/dynamic'
+
 /**
  * ShareModal Component
  *
@@ -19,7 +21,10 @@ import { getTelegramShareUrl, getTwitterShareUrl } from '../lib/social-links'
 import { useFocusTrap } from '../lib/use-focus-trap'
 import { TabSwitcher } from './TabSwitcher'
 import { LinkTab } from './LinkTab'
-import { QRTab } from '@/features/payment-qr'
+const QRTab = dynamic(
+  () => import('@/features/payment-qr').then(mod => ({ default: mod.QRTab })),
+  { ssr: false }
+)
 
 /**
  * ShareModal - Modal for sharing invoice links

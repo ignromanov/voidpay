@@ -33,6 +33,14 @@ function calculateLineTotal(quantity: number, rate: string, decimals: number): s
   }
 }
 
+/** Hoisted static gradient overlays — avoids re-creating on every render */
+const leftGradientOverlay = (
+  <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-4 bg-gradient-to-r from-white to-transparent" />
+)
+const rightGradientOverlay = (
+  <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-4 bg-gradient-to-l from-white to-transparent" />
+)
+
 export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, decimals = 6 }) => {
   // Pre-calculate all line totals
   const itemsWithTotals = useMemo(() => {
@@ -61,8 +69,8 @@ export const LineItemsTable = React.memo<LineItemsTableProps>(({ items, decimals
   return (
     <section className="flex-1" aria-label="Line items">
       <div className="relative -mx-4">
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-4 bg-gradient-to-r from-white to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-4 bg-gradient-to-l from-white to-transparent" />
+        {leftGradientOverlay}
+        {rightGradientOverlay}
         <div className="overflow-x-auto px-4">
         <table className="w-full min-w-[500px] border-collapse text-left">
           <caption className="sr-only">Invoice line items</caption>

@@ -230,7 +230,7 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
         updateScale(rect.width, rect.height)
       }
     }
-    window.addEventListener('resize', handleResize)
+    window.addEventListener('resize', handleResize, { passive: true })
 
     return () => {
       if (rafId !== null) cancelAnimationFrame(rafId)
