@@ -27,44 +27,35 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
 })
 
 // Variant-specific styles
-// For full variant: cursor-text on text elements, cursor-pointer on links
+// For full variant: cursor-text on text elements, cursor-pointer on links/buttons (including children)
 // Print overrides: reduced padding for A4 margins
 const VARIANT_STYLES = {
-  full: 'p-12 print:p-8 [&_p]:cursor-text [&_span]:cursor-text [&_td]:cursor-text [&_th]:cursor-text [&_address]:cursor-text [&_a]:cursor-pointer',
+  full: 'p-12 print:p-8 [&_p]:cursor-text [&_span]:cursor-text [&_td]:cursor-text [&_th]:cursor-text [&_address]:cursor-text [&_a]:cursor-pointer [&_a_span]:cursor-pointer [&_a_*]:cursor-pointer [&_[role=button]_span]:cursor-pointer [&_[role=button]_*]:cursor-pointer',
   default: 'p-12 print:p-8', // Standard mode with print padding
   print: 'p-8 print:p-6', // Print-optimized (even smaller padding)
 } as const
 
-/**
- * Empty state content shown when data is undefined
- */
-function EmptyStateContent() {
-  return (
-    <div className="flex h-full flex-col items-center justify-center p-16">
-      <div className="flex flex-col items-center gap-10 text-center">
-        {/* Icon — larger for scale compensation */}
-        <div className="flex h-36 w-36 items-center justify-center rounded-3xl bg-zinc-100">
-          <FileTextIcon className="h-20 w-20 text-zinc-400" strokeWidth={1.5} />
-        </div>
-
-        {/* Text — larger for scale compensation */}
-        <div className="space-y-3">
-          <h2 className="text-3xl font-semibold text-zinc-700">No Invoice Data</h2>
-          <p className="max-w-[420px] text-lg text-zinc-500">
-            Start creating your invoice or load one from a URL to see the preview here.
-          </p>
-        </div>
-
-        {/* Hint — larger for scale compensation */}
-        <div className="mt-6 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-4">
-          <p className="text-base text-zinc-500">
-            Fill in the form on the left to generate your invoice
-          </p>
-        </div>
+/** Hoisted static empty state JSX — avoids re-creating element tree on every render */
+const emptyStateContent = (
+  <div className="flex h-full flex-col items-center justify-center p-16">
+    <div className="flex flex-col items-center gap-10 text-center">
+      <div className="flex h-36 w-36 items-center justify-center rounded-3xl bg-zinc-100">
+        <FileTextIcon className="h-20 w-20 text-zinc-400" strokeWidth={1.5} />
+      </div>
+      <div className="space-y-3">
+        <h2 className="text-3xl font-semibold text-zinc-700">No Invoice Data</h2>
+        <p className="max-w-[420px] text-lg text-zinc-500">
+          Start creating your invoice or load one from a URL to see the preview here.
+        </p>
+      </div>
+      <div className="mt-6 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-4">
+        <p className="text-base text-zinc-500">
+          Fill in the invoice form to see the preview here
+        </p>
       </div>
     </div>
-  )
-}
+  </div>
+)
 
 export const InvoicePaper = React.memo(
   forwardRef<HTMLElement, InvoicePaperProps>(
@@ -75,7 +66,6 @@ export const InvoicePaper = React.memo(
         txHash,
         txHashValidated = true,
         variant = 'default',
-        showQR = true,
         showTexture = true,
         invoiceUrl,
         className,
@@ -97,7 +87,7 @@ export const InvoicePaper = React.memo(
       const totals = useMemo(
         () =>
           isEmpty
-            ? { subtotal: '0.00', taxAmount: '0.00', discountAmount: '0.00', total: '0.00', magicDust: null }
+            ? { subtotal: '0.00', taxAmount: '0.00', discountAmount: '0.00', total: '0.00', magicDust: null, atomicTotal: '0' }
             : calculateTotals({
                 items: data.items ?? EMPTY_ITEMS,
                 tax: data.tax,
@@ -122,9 +112,6 @@ export const InvoicePaper = React.memo(
             : undefined,
         [status, data?.issuedAt]
       )
-
-      // Determine if QR should be shown based on variant
-      const shouldShowQR = showQR && variant !== 'print'
 
       // Wrapper needed for glow effect (glow must be outside article for overflow)
       const content = (
@@ -160,7 +147,7 @@ export const InvoicePaper = React.memo(
           {/* Content - Empty state or invoice data */}
           {isEmpty ? (
             <>
-              <EmptyStateContent />
+              {emptyStateContent}
               <Watermark status={effectiveStatus} />
             </>
           ) : (
@@ -191,7 +178,7 @@ export const InvoicePaper = React.memo(
                     currency={data.currency ?? ''}
                     taxPercent={data.tax}
                     discountPercent={data.discount}
-                    showQR={shouldShowQR}
+                    amount={totals.atomicTotal !== '0' ? totals.atomicTotal : undefined}
                     networkId={data.networkId ?? 1}
                     senderAddress={from.walletAddress}
                     tokenAddress={data.tokenAddress}
@@ -208,7 +195,7 @@ export const InvoicePaper = React.memo(
               <Watermark status={status} date={paidDate} />
 
               {/* Screen reader status announcement */}
-              <div className="sr-only" role="status" aria-live="polite">
+              <div key={`status-${status}`} className="sr-only" role="status" aria-live="polite">
                 Invoice status: {status}
                 {status === 'paid' && paidDate && `, paid on ${paidDate}`}
               </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from '@/shared/ui/motion'
 import { XIcon, PrinterIcon, DownloadIcon } from '@/shared/ui/icons'
 import { Dialog, DialogContent, DialogTitle, DialogClose, DialogDescription } from '@/shared/ui/dialog'
 import { Badge } from '@/shared/ui/badge'
@@ -130,7 +130,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="flex h-[100dvh] w-screen max-w-none flex-col overflow-hidden border-none bg-zinc-900/90 p-0 shadow-2xl backdrop-blur-xl sm:h-[95vh] sm:max-w-[95vw] lg:w-[880px] lg:max-w-[95vw] print:hidden [&>button]:hidden"
+          className="flex h-[100dvh] w-screen max-w-none flex-col gap-0 overflow-hidden border-none bg-zinc-900/90 p-0 shadow-2xl backdrop-blur-xl sm:h-[95vh] sm:w-fit sm:max-w-[95vw] print:hidden [&>button]:hidden"
         >
           <DialogDescription className="sr-only">
             Full-screen invoice preview. Press ESC to close, P to print.
@@ -177,14 +177,18 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             </DialogClose>
           </motion.div>
 
-          {/* Invoice container — glow handled by ScaledInvoicePreview */}
+          {/* Invoice scroll container — no padding here (moved to content wrapper) */}
           <motion.div
             variants={invoiceVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-1 cursor-zoom-out items-start justify-center overflow-auto px-0 py-2 sm:p-2 md:p-4"
-            onClick={() => onOpenChange(false)}
+            className="flex flex-1 cursor-zoom-out items-start overflow-auto"
           >
+            {/* Content wrapper — padding is part of scrollable content (not clipped at edges) */}
+            <div
+              className="flex min-h-full min-w-full shrink-0 items-start justify-center p-4 sm:p-6"
+              onClick={() => onOpenChange(false)}
+            >
             <ScaledInvoicePreview
               preset="modal"
               networkId={data.networkId ?? 1}
@@ -199,6 +203,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
                   txHash={txHash}
                   txHashValidated={txHashValidated}
                   variant="full"
+
                   invoiceUrl={invoiceUrl}
                 />
               ) : (
@@ -208,10 +213,12 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
                   txHash={txHash}
                   txHashValidated={txHashValidated}
                   variant="full"
+
                   invoiceUrl={invoiceUrl}
                 />
               )}
             </ScaledInvoicePreview>
+            </div>
           </motion.div>
 
           {/* Action bar — sticky bottom */}

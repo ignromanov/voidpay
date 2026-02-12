@@ -70,13 +70,13 @@ export function FingerprintIcon({ size = 24, ...props }: IconProps) {
   return (
     <svg {...defaultProps} width={size} height={size} {...props}>
       <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4" />
-      <path d="M14 13.12c0 2.38 0 6.38-1 8.88" />
-      <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02" />
+      <path d="M14 13.1c0 2.4 0 6.4-1 8.9" />
+      <path d="M17.3 21c.1-.6.4-2.3.5-3" />
       <path d="M2 12a10 10 0 0 1 18-6" />
       <path d="M2 16h.01" />
-      <path d="M21.8 16c.2-2 .131-5.354 0-6" />
-      <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2" />
-      <path d="M8.65 22c.21-.66.45-1.32.57-2" />
+      <path d="M21.8 16c.2-2 .1-5.4 0-6" />
+      <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .3-2" />
+      <path d="M8.7 22c.2-.7.5-1.3.6-2" />
       <path d="M9 6.8a6 6 0 0 1 9 5.2v2" />
     </svg>
   )
@@ -115,9 +115,9 @@ export function ImageIcon({ size = 24, ...props }: IconProps) {
 export function EyeOffIcon({ size = 24, ...props }: IconProps) {
   return (
     <svg {...defaultProps} width={size} height={size} {...props}>
-      <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
-      <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
-      <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+      <path d="M10.7 5.1a10.7 10.7 0 0 1 11.2 6.6 1 1 0 0 1 0 .7 10.7 10.7 0 0 1-1.4 2.5" />
+      <path d="M14.1 14.2a3 3 0 0 1-4.2-4.2" />
+      <path d="M17.5 17.5a10.8 10.8 0 0 1-15.4-5.2 1 1 0 0 1 0-.7 10.8 10.8 0 0 1 4.4-5.1" />
       <path d="m2 2 20 20" />
     </svg>
   )
@@ -209,7 +209,7 @@ export function MousePointerClickIcon({ size = 24, ...props }: IconProps) {
       <path d="m5.1 8-2.9-.8" />
       <path d="m6 12-1.9 2" />
       <path d="M7.2 2.2 8 5.1" />
-      <path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z" />
+      <path d="M9 9.7a.5.5 0 0 1 .7-.7l11 4.5a.5.5 0 0 1-.1.9l-4.3 1a1 1 0 0 0-.7.7l-1 4.4a.5.5 0 0 1-1 .1z" />
     </svg>
   )
 }
@@ -283,6 +283,18 @@ export function TriangleIcon({ size = 24, ...props }: IconProps) {
   return (
     <svg {...defaultProps} width={size} height={size} {...props}>
       <path d="M13.73 4a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+    </svg>
+  )
+}
+
+/**
+ * Flag icon - Used for report abuse
+ */
+export function FlagIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+      <line x1="4" x2="4" y1="22" y2="15" />
     </svg>
   )
 }

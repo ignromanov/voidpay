@@ -14,7 +14,12 @@ import {
 } from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
-import { calculateTotalsBigInt, formatAmount } from '@/shared/lib/amount-utils'
+import {
+  calculateTotalsBigInt,
+  formatAmount,
+  generateMagicDust,
+  addMagicDust,
+} from '@/shared/lib/amount-utils'
 import type { GenerateOptions } from './types'
 
 /**
@@ -70,12 +75,42 @@ export function addToHistory(invoice: Invoice, invoiceUrl: string): void {
 }
 
 /**
- * Build full Invoice from draft and line items
+ * Build full Invoice from draft and line items.
+ *
+ * Calculates total (+ Magic Dust if enabled) and bakes into the invoice.
+ * This is the single source of truth — the total is encoded into the URL
+ * and available as `invoice.total` after decoding on /pay.
  */
 export function buildInvoice(draft: DraftState, lineItems: LineItem[]): Invoice {
+  const data = draft.data
+  const items = lineItemsToInvoiceItems(lineItems)
+  const decimals = data.decimals ?? 6
+
+  // Calculate total from items + tax + discount
+  const result = calculateTotalsBigInt(
+    items.map((item) => ({
+      quantity: item.quantity,
+      rate: item.rate || '0',
+    })),
+    { tax: data.tax, discount: data.discount, decimals }
+  )
+
+  // Add Magic Dust if enabled in preferences
+  const { magicDustEnabled } = useCreatorStore.getState().preferences
+  let total = result.total
+  let magicDust: string | undefined
+
+  if (magicDustEnabled) {
+    const dust = generateMagicDust()
+    magicDust = dust.toString()
+    total = addMagicDust(total, dust)
+  }
+
   return {
-    ...draft.data,
-    items: lineItemsToInvoiceItems(lineItems),
+    ...data,
+    items,
+    total,
+    magicDust,
   } as Invoice
 }
 
@@ -104,19 +139,18 @@ export class UrlSizeError extends Error {
  * @param draft - Draft state with invoice data
  * @param lineItems - Line items for the invoice
  * @param options - Generation options (OG preview, etc.)
- * @returns Generated invoice URL
+ * @returns Object with generated URL and the baked invoice (with total/magicDust)
  * @throws UrlSizeError if URL exceeds 2000 bytes
  *
  * @example
- * const url = await generateAndTrackInvoice(draft, lineItems, { includeOG: true })
- * router.push(url)
+ * const { url, invoice } = await generateAndTrackInvoice(draft, lineItems, { includeOG: true })
  */
 export async function generateAndTrackInvoice(
   draft: DraftState,
   lineItems: LineItem[],
   options: GenerateOptions = {}
-): Promise<string> {
-  // Build full invoice from draft and line items
+): Promise<{ url: string; invoice: Invoice }> {
+  // Build full invoice from draft and line items (calculates total + magicDust)
   const invoice = buildInvoice(draft, lineItems)
 
   // Generate URL with Binary V3 encoding
@@ -139,5 +173,5 @@ export async function generateAndTrackInvoice(
   // Add to history for later retrieval
   addToHistory(invoice, invoiceUrl)
 
-  return invoiceUrl
+  return { url: invoiceUrl, invoice }
 }

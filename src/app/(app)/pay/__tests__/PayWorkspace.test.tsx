@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@/shared/lib/test-utils'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
@@ -18,7 +18,7 @@ vi.mock('@/features/invoice-codec', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/features/invoice-codec')>()
   return {
     ...actual,
-    parseInvoiceHash: vi.fn(),
+    parseInvoiceHash: vi.fn(() => ({ success: false, error: { message: 'Mock not configured' } })),
   }
 })
 
@@ -29,6 +29,8 @@ vi.mock('@/entities/invoice', async (importOriginal) => {
     useRichInvoiceStore: vi.fn(() => ({
       addInvoice: vi.fn(),
       getInvoice: vi.fn(),
+      updateStatus: vi.fn(),
+      setTxHash: vi.fn(),
     })),
   }
 })
@@ -82,6 +84,8 @@ describe('PayWorkspace', () => {
     vi.mocked(useRichInvoiceStore).mockReturnValue({
       addInvoice: mockAddInvoice,
       getInvoice: mockGetInvoice,
+      updateStatus: vi.fn(),
+      setTxHash: vi.fn(),
     } as unknown as ReturnType<typeof useRichInvoiceStore>)
   })
 

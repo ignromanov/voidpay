@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateTotals, calculateRawTotals } from '../calculate-totals'
+import { calculateTotals } from '../calculate-totals'
 
 /**
  * Tests for calculateTotals with BigInt arithmetic
@@ -18,6 +18,7 @@ describe('calculateTotals', () => {
     const result = calculateTotals({ items, decimals })
     expect(result.subtotal).toBe('250.00')
     expect(result.total).toBe('250.00')
+    expect(result.atomicTotal).toBe('250000000')
     expect(result.magicDust).toBeNull()
   })
 
@@ -31,6 +32,7 @@ describe('calculateTotals', () => {
     })
     expect(result.subtotal).toBe('100.00')
     expect(result.total).toBe('100.000042')
+    expect(result.atomicTotal).toBe('100000042')
     expect(result.magicDust).toBe('0.000042')
   })
 
@@ -64,6 +66,7 @@ describe('calculateTotals', () => {
     const result = calculateTotals({ items: [], decimals })
     expect(result.subtotal).toBe('0.00')
     expect(result.total).toBe('0.00')
+    expect(result.atomicTotal).toBe('0')
   })
 
   it('handles fractional quantities with BigInt precision', () => {
@@ -88,28 +91,5 @@ describe('calculateTotals', () => {
     const result = calculateTotals({ items, decimals: ethDecimals })
     expect(result.subtotal).toBe('5.00')
     expect(result.total).toBe('5.00')
-  })
-})
-
-describe('calculateRawTotals', () => {
-  const decimals = 6
-
-  it('returns atomic units as strings', () => {
-    const items = [{ quantity: 2, rate: '100000000' }] // $100 × 2 = $200
-    const result = calculateRawTotals({ items, decimals })
-    expect(result.subtotal).toBe('200000000')
-    expect(result.total).toBe('200000000')
-  })
-
-  it('preserves pre-calculated total from URL', () => {
-    const items = [{ quantity: 1, rate: '100000000' }]
-    const result = calculateRawTotals({
-      items,
-      decimals,
-      total: '100000042',
-      magicDust: '42',
-    })
-    expect(result.total).toBe('100000042')
-    expect(result.magicDust).toBe('42')
   })
 })

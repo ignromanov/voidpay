@@ -6,8 +6,24 @@
  */
 
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { PaperTotals } from '../PaperTotals'
+
+// Mock PaymentQR from feature
+vi.mock('@/features/payment-qr', () => ({
+  PaymentQR: (props: {
+    recipientAddress?: string
+    chainId?: number
+    amount?: string
+  }) => (
+    <svg
+      data-testid="payment-qr"
+      data-recipient={props.recipientAddress}
+      data-chain-id={props.chainId}
+      data-amount={props.amount}
+    />
+  ),
+}))
 
 describe('PaperTotals', () => {
   const mockTotals = {
@@ -16,6 +32,7 @@ describe('PaperTotals', () => {
     discountAmount: '50.00',
     total: '1,050.00',
     magicDust: '0.000001',
+    atomicTotal: '1050000001',
   }
 
   const baseProps = {
@@ -39,16 +56,16 @@ describe('PaperTotals', () => {
 
   it('renders unique amount with magic dust', () => {
     render(<PaperTotals {...baseProps} />)
-    expect(screen.getByText(/Unique Amount/i)).toBeDefined()
+    expect(screen.getByText(/Unique ID/i)).toBeDefined()
     expect(screen.getByText('0.000001')).toBeDefined()
   })
 
-  it('renders unified payment info section with QR', () => {
-    render(<PaperTotals {...baseProps} />)
+  it('renders payment info section with QR by default', () => {
+    render(<PaperTotals {...baseProps} amount="1500000000" />)
     expect(screen.getByText(/Payment Info/i)).toBeDefined()
     expect(screen.getByText(/Network/i)).toBeDefined()
     expect(screen.getByText(/Token/i)).toBeDefined()
-    expect(screen.getByText(/Scan for payment link/i)).toBeDefined()
+    expect(screen.getByText(/Scan to pay/i)).toBeDefined()
   })
 
   it('hides tax row when taxAmount is zero', () => {
@@ -86,8 +103,8 @@ describe('PaperTotals', () => {
     expect(screen.queryByText('Unverified')).toBeNull()
   })
 
-  it('hides QR code when showQR is false', () => {
-    render(<PaperTotals {...baseProps} showQR={false} />)
-    expect(screen.queryByText(/Scan for payment link/i)).toBeNull()
+  it('hides QR code when status is paid', () => {
+    render(<PaperTotals {...baseProps} amount="1500000000" status="paid" />)
+    expect(screen.queryByText(/Scan to pay/i)).toBeNull()
   })
 })

@@ -29,6 +29,7 @@ export type {
   InvoiceTemplate,
   CreationHistoryEntry,
   PaymentReceipt,
+  ConfirmationProgress,
 } from './types'
 
 // Helper functions

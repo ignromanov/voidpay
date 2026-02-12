@@ -23,7 +23,7 @@ export const INVOICE_BASE_HEIGHT = 1123
 /** Scale calculation constants */
 const MIN_SCALE = 0.25
 const HEIGHT_FRACTION = 0.95
-const INITIAL_SCALE = 0.45
+const DEFAULT_INITIAL_SCALE = 0.45
 
 /**
  * Preset configurations for common use cases
@@ -37,19 +37,35 @@ export type ScalePreset = 'demo' | 'editor' | 'pay' | 'modal'
 interface PresetConfig {
   maxScale: number
   minScale?: number
-  scaleBy: 'fit' | 'width'
+  /**
+   * How to calculate scale:
+   * - 'fit': fit both width and height (no scroll)
+   * - 'width': scale by container width only (allow vertical scroll)
+   * - 'viewport': scale by viewport width (container-independent, for w-fit parents)
+   */
+  scaleBy: 'fit' | 'width' | 'viewport'
+  /** Scale before container is measured — drives the "grow in" animation */
+  initialScale: number
   /** CSS class for container height */
   containerHeightClass: string
 }
 
 export const PRESET_CONFIGS: Record<ScalePreset, PresetConfig> = {
-  demo: { maxScale: 1, scaleBy: 'fit', containerHeightClass: 'min-h-[75vh]' },
-  // Editor: fit to container, scale up to 150% for larger screens
-  editor: { maxScale: 1.5, scaleBy: 'fit', containerHeightClass: 'h-full' },
-  // Pay page: fit to parent height (like editor, parent controls sizing)
-  pay: { maxScale: 1.5, scaleBy: 'fit', containerHeightClass: 'h-full' },
-  // minScale 0.8 ensures readable text on mobile (635px width vs 516px at 0.65)
-  modal: { maxScale: 1, minScale: 0.8, scaleBy: 'width', containerHeightClass: 'h-auto' },
+  // Demo: landing page, typical final ~0.55 → initial 0.45 (~82%)
+  demo: { maxScale: 1, initialScale: 0.45, scaleBy: 'fit', containerHeightClass: 'min-h-[75vh]' },
+  // Editor: create page, typical final ~0.65 → initial 0.55 (~85%)
+  editor: { maxScale: 1.5, initialScale: 0.55, scaleBy: 'fit', containerHeightClass: 'h-full' },
+  // Pay page: typical final ~0.70 → initial 0.58 (~83%)
+  pay: { maxScale: 1.5, initialScale: 0.58, scaleBy: 'fit', containerHeightClass: 'h-full' },
+  // Modal: always full-size invoice (scale=1), scroll when screen is smaller
+  // Viewport-based scaleBy retained for w-fit parent compatibility
+  modal: {
+    maxScale: 1,
+    minScale: 1,
+    initialScale: 1,
+    scaleBy: 'viewport',
+    containerHeightClass: 'h-auto',
+  },
 }
 
 export interface UseInvoiceScaleOptions {
@@ -76,10 +92,11 @@ export interface UseInvoiceScaleOptions {
    * How to calculate scale:
    * - 'fit': fit both width and height (default)
    * - 'width': scale by width only, allow vertical scroll
+   * - 'viewport': scale by viewport width (container-independent)
    *
    * Ignored when preset is provided.
    */
-  scaleBy?: 'fit' | 'width'
+  scaleBy?: 'fit' | 'width' | 'viewport'
 }
 
 export interface UseInvoiceScaleResult {
@@ -105,28 +122,46 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
   // Resolve preset or use individual options
   const config = options.preset ? PRESET_CONFIGS[options.preset] : options
   const { maxScale = 1, minScale = MIN_SCALE, scaleBy = 'fit' } = config
+  const startScale = 'initialScale' in config ? config.initialScale : DEFAULT_INITIAL_SCALE
 
   const [container, setContainer] = useState<HTMLDivElement | null>(null)
-  const [scale, setScale] = useState(INITIAL_SCALE)
+  const [scale, setScale] = useState(startScale)
 
   // Ref to track last scale for avoiding unnecessary updates
-  const lastScaleRef = useRef(INITIAL_SCALE)
+  const lastScaleRef = useRef(startScale)
 
   // Memoized scale calculation
   const calculateScale = useCallback(
-    (width: number, height: number): number => {
-      if (width === 0 || height === 0) return minScale
+    (containerWidth: number, containerHeight: number): number => {
+      let effectiveWidth: number
 
-      const paddingX = width < 768 ? 16 : 24
-      const availableWidth = Math.max(width - paddingX, 280)
-      const targetHeight = Math.max(height * HEIGHT_FRACTION, 300)
+      if (scaleBy === 'viewport') {
+        // Viewport mode: use window.innerWidth with modal layout constraints
+        // Coupled to InvoicePreviewModal.tsx CSS:
+        //   Mobile (< 640px): w-screen, p-4 → 32px total horizontal padding
+        //   sm+ (≥ 640px): sm:max-w-[95vw], sm:p-6 → 48px total horizontal padding
+        const vw = typeof window !== 'undefined' ? window.innerWidth : containerWidth
+        const isSmall = vw < 640
+        const maxWidth = isSmall ? vw : vw * 0.95
+        const totalPadding = isSmall ? 32 : 48
+        effectiveWidth = Math.max(maxWidth - totalPadding, 280)
+      } else {
+        // Container-based modes: contentRect already excludes CSS padding
+        // paddingX = additional safety margin inside the content area
+        const paddingX = containerWidth < 768 ? 16 : 24
+        effectiveWidth = Math.max(containerWidth - paddingX, 280)
+      }
 
-      const widthRatio = availableWidth / INVOICE_BASE_WIDTH
+      if (effectiveWidth === 0 || containerHeight === 0) return minScale
+
+      const targetHeight = Math.max(containerHeight * HEIGHT_FRACTION, 300)
+
+      const widthRatio = effectiveWidth / INVOICE_BASE_WIDTH
       const heightRatio = targetHeight / INVOICE_BASE_HEIGHT
 
-      // 'width' mode: scale by width only (allow vertical scroll)
+      // 'viewport'/'width' mode: scale by width only (allow vertical scroll)
       // 'fit' mode: fit both dimensions (no scroll needed)
-      const baseScale = scaleBy === 'width' ? widthRatio : Math.min(widthRatio, heightRatio)
+      const baseScale = scaleBy === 'fit' ? Math.min(widthRatio, heightRatio) : widthRatio
 
       return Math.min(Math.max(baseScale, minScale), maxScale)
     },
@@ -195,7 +230,7 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
         updateScale(rect.width, rect.height)
       }
     }
-    window.addEventListener('resize', handleResize)
+    window.addEventListener('resize', handleResize, { passive: true })
 
     return () => {
       if (rafId !== null) cancelAnimationFrame(rafId)

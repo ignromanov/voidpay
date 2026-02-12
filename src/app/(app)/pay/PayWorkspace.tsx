@@ -1,164 +1,51 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { useHashFragment } from '@/shared/lib/hooks'
-import { parseInvoiceHash } from '@/features/invoice-codec'
-import { useRichInvoiceStore, type RichInvoice } from '@/entities/invoice'
-import { useCreatorStore } from '@/entities/creator'
-import { getNetworkTheme } from '@/entities/network'
 import {
   ScaledInvoicePreview,
   InvoicePaper,
 } from '@/widgets/invoice-paper'
-import {
-  DecodeErrorScreen,
-  type DecodeErrorType,
-} from '@/shared/ui/decode-error-screen'
-import type { Invoice } from '@/shared/lib/invoice-types'
+import { PaymentPanel, DevStatusToggle } from '@/widgets/payment-panel'
+import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
+import { motion, AnimatePresence } from '@/shared/ui/motion'
+import { ChevronDownIcon } from '@/shared/ui/icons'
+
+import { usePayInvoice } from './use-pay-invoice'
+import { StatusBadge } from './StatusBadge'
+import { MinimizedPill } from './MinimizedPill'
 
 const InvoicePreviewModal = dynamic(
   () => import('@/widgets/invoice-paper').then((m) => ({ default: m.InvoicePreviewModal })),
-  { ssr: false }
+  { ssr: false },
 )
 
 /**
- * Hydration timeout in ms.
- * After this time without hash, we assume no invoice data.
- */
-const HYDRATION_TIMEOUT = 200
-
-/**
- * Map parseInvoiceHash error messages to DecodeErrorType.
- */
-function mapErrorMessage(message: string): DecodeErrorType {
-  const lowerMessage = message.toLowerCase()
-  if (lowerMessage.includes('empty')) {
-    return 'EMPTY_HASH'
-  }
-  if (lowerMessage.includes('prefix') || lowerMessage.includes('invalid')) {
-    return 'INVALID_FORMAT'
-  }
-  if (lowerMessage.includes('version')) {
-    return 'UNSUPPORTED_VERSION'
-  }
-  return 'CORRUPTED_DATA'
-}
-
-/**
- * PayWorkspace — Client component for viewing invoices from shared links.
+ * PayWorkspace — Composition layer for the /pay page.
  *
- * Handles:
- * 1. URL hash decoding via parseInvoiceHash (Binary V3)
- * 2. Loading/error states with network-themed background
- * 3. Fullscreen modal preview via InvoicePreviewModal
- * 4. View history tracking via useRichInvoiceStore
- *
- * @example
- * ```tsx
- * // In page.tsx
- * export default function PayPage() {
- *   return <PayWorkspace />
- * }
- * ```
+ * Orchestrates:
+ * - usePayInvoice hook (decode, tracking, status)
+ * - InvoicePaper preview with modal
+ * - PaymentPanel with minimize/expand
+ * - StatusBadge floating overlay
  */
 export function PayWorkspace() {
   const router = useRouter()
-  const hash = useHashFragment()
-  const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
-  const { addInvoice, getInvoice } = useRichInvoiceStore()
+  const { invoice, errorType, isLoading, storedInvoice, panelStatus, dismissError } = usePayInvoice()
 
-  // Decode state
-  const [isHydrated, setIsHydrated] = useState(false)
-  const [invoice, setInvoice] = useState<Invoice | null>(null)
-  const [errorType, setErrorType] = useState<DecodeErrorType | null>(null)
-
-  // Modal state
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
 
-  // Hydration detection: wait for hash to stabilize
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsHydrated(true)
-    }, HYDRATION_TIMEOUT)
-    return () => clearTimeout(timer)
-  }, [])
+  const networkId = invoice?.networkId ?? 1
 
-  // Decode hash when available
-  useEffect(() => {
-    // Skip during SSR hydration
-    if (!isHydrated && hash === '') {
-      return
-    }
-
-    // Empty hash after hydration = no invoice
-    if (hash === '') {
-      setErrorType('EMPTY_HASH')
-      setInvoice(null)
-      return
-    }
-
-    // Attempt to decode
-    const result = parseInvoiceHash(hash)
-
-    if (result.success) {
-      setInvoice(result.data)
-      setErrorType(null)
-
-      // Track view in history (if not already tracked)
-      try {
-        const existingInvoice = getInvoice(result.data.invoiceId)
-        if (!existingInvoice) {
-          const invoiceUrl = `${window.location.origin}/pay#${hash}`
-          const richInvoice: Omit<RichInvoice, 'createdAt'> = {
-            invoiceId: result.data.invoiceId,
-            invoiceUrl,
-            data: result.data,
-            status: 'pending',
-            viewedAt: new Date().toISOString(),
-          }
-          addInvoice(richInvoice)
-        }
-      } catch (error) {
-        console.error('[PayWorkspace] Failed to track invoice view:', error)
-      }
-    } else {
-      setInvoice(null)
-      setErrorType(mapErrorMessage(result.error.message))
-    }
-  }, [hash, isHydrated, addInvoice, getInvoice])
-
-  // Set network theme based on invoice
-  useEffect(() => {
-    if (invoice?.networkId) {
-      const theme = getNetworkTheme(invoice.networkId)
-      setNetworkTheme(theme)
-    }
-  }, [invoice?.networkId, setNetworkTheme])
-
-  // Navigate to home
-  const handleReturnHome = () => {
-    router.push('/')
-  }
-
-  // Handle invoice click (open modal)
-  const handleInvoiceClick = () => {
-    setIsPreviewOpen(true)
-  }
-
-  // Memoize network ID for data attribute
-  const networkId = useMemo(() => invoice?.networkId ?? 1, [invoice?.networkId])
-
-  // Loading state: SSR hydration OR waiting for decode effect to process
-  if (!invoice && !errorType) {
+  // Loading state
+  if (isLoading) {
     return (
-      <div
-        data-testid="pay-workspace-skeleton"
-        data-network={networkId}
-        className="flex h-full items-center justify-center"
-      >
-        <div className="h-[500px] w-[353px] animate-pulse rounded-lg bg-zinc-800/50" />
+      <div data-testid="pay-workspace-skeleton" data-network={networkId} className="relative z-10 h-full w-full">
+        <div className="absolute inset-x-0 top-0 bottom-[70px] z-10 flex items-center justify-center p-2 md:p-4">
+          <ScaledInvoicePreview preset="pay" loading />
+        </div>
       </div>
     )
   }
@@ -167,53 +54,111 @@ export function PayWorkspace() {
   if (errorType) {
     return (
       <div className="relative z-10 flex h-full flex-col" data-network={networkId}>
-        <DecodeErrorScreen
-          errorType={errorType}
-          onReturnHome={handleReturnHome}
-        />
+        <DecodeErrorScreen errorType={errorType} onReturnHome={() => router.push('/')} />
       </div>
     )
   }
 
-  // Success state
-  if (invoice) {
+  // Guard — unreachable if hook logic is correct
+  if (!invoice) {
     return (
-      <>
-        <div className="relative z-10 flex h-full w-full items-center justify-center py-4" data-network={networkId}>
-          <div data-testid="invoice-preview-clickable" className="h-full w-full">
-            <ScaledInvoicePreview
-              preset="pay"
-              printable
-              networkId={invoice.networkId}
-              onClick={handleInvoiceClick}
-              showExpandOverlay
-            >
-              <InvoicePaper data={invoice} status="pending" />
-            </ScaledInvoicePreview>
-          </div>
-        </div>
-
-        {isPreviewOpen && (
-          <InvoicePreviewModal
-            data={invoice}
-            status="pending"
-            open={isPreviewOpen}
-            onOpenChange={setIsPreviewOpen}
-          />
-        )}
-
-      </>
+      <div className="relative z-10 flex h-full flex-col">
+        <DecodeErrorScreen errorType="CORRUPTED_DATA" onReturnHome={() => router.push('/')} />
+      </div>
     )
   }
 
-  // Fallback — should not reach here
-  console.error('[PayWorkspace] Unexpected state: no invoice, no error, hydrated')
+  const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
+  // InvoicePaper uses discriminated union: status='paid' requires txHash.
+  // Only pass 'paid' in the branch where txHash is available (conditional rendering below).
+  const invoiceStatus = panelStatus === 'overdue' ? 'overdue' as const : 'pending' as const
+
   return (
-    <div className="relative z-10 flex h-full flex-col">
-      <DecodeErrorScreen
-        errorType="CORRUPTED_DATA"
-        onReturnHome={handleReturnHome}
-      />
-    </div>
+    <>
+      <div className="relative z-10 h-full w-full" data-network={networkId}>
+        <StatusBadge status={panelStatus} />
+
+        {/* Invoice Preview — centered in safe zone */}
+        <div
+          data-testid="invoice-preview-clickable"
+          className="absolute inset-x-0 top-0 bottom-[70px] z-10 flex items-center justify-center p-2 md:p-4 print:items-start print:justify-start print:bottom-0 print:p-0"
+        >
+          <ScaledInvoicePreview
+            preset="pay"
+            printable
+            networkId={invoice.networkId}
+            onClick={() => setIsPreviewOpen(true)}
+            showExpandOverlay
+          >
+            {isPaid && storedInvoice?.txHash ? (
+              <InvoicePaper data={invoice} status="paid" txHash={storedInvoice.txHash} />
+            ) : (
+              <InvoicePaper data={invoice} status={invoiceStatus} />
+            )}
+          </ScaledInvoicePreview>
+        </div>
+
+        {/* Payment Panel — floating bottom overlay */}
+        <div className="absolute bottom-4 left-1/2 z-40 w-full max-w-[95%] -translate-x-1/2 px-4 md:bottom-5 md:max-w-xl">
+          <AnimatePresence mode="wait">
+            {isMinimized ? (
+              <MinimizedPill isPaid={isPaid} onExpand={() => setIsMinimized(false)} />
+            ) : (
+              <motion.div
+                key="expanded"
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="relative w-full"
+              >
+                {isPaid && storedInvoice?.txHash ? (
+                  <PaymentPanel
+                    invoice={invoice}
+                    status={panelStatus}
+                    txHash={storedInvoice.txHash}
+                    {...(storedInvoice.confirmations ? { confirmations: storedInvoice.confirmations } : {})}
+                  />
+                ) : (
+                  <PaymentPanel
+                    invoice={invoice}
+                    status={panelStatus}
+                    {...(storedInvoice?.error ? { error: storedInvoice.error } : {})}
+                    onDismissError={dismissError}
+                  />
+                )}
+                <button
+                  data-testid="minimize-panel"
+                  onClick={() => setIsMinimized(true)}
+                  className="absolute top-2.5 right-3 z-10 cursor-pointer rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-white"
+                  title="Minimize"
+                  aria-label="Minimize payment panel"
+                >
+                  <ChevronDownIcon size={14} />
+                </button>
+                <DevStatusToggle invoiceId={invoice.invoiceId} status={panelStatus} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {isPreviewOpen && (isPaid && storedInvoice?.txHash ? (
+        <InvoicePreviewModal
+          data={invoice}
+          status="paid"
+          txHash={storedInvoice.txHash}
+          open={isPreviewOpen}
+          onOpenChange={setIsPreviewOpen}
+        />
+      ) : (
+        <InvoicePreviewModal
+          data={invoice}
+          status={invoiceStatus}
+          open={isPreviewOpen}
+          onOpenChange={setIsPreviewOpen}
+        />
+      ))}
+    </>
   )
 }

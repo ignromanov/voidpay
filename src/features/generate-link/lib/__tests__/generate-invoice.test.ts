@@ -24,6 +24,9 @@ vi.mock('@/entities/creator', () => ({
   useCreatorStore: {
     getState: () => ({
       addHistoryEntry: vi.fn(),
+      preferences: {
+        magicDustEnabled: true,
+      },
     }),
   },
 }))
@@ -76,7 +79,7 @@ describe('generateAndTrackInvoice', () => {
     const draft = createValidDraftState()
     const lineItems = createValidLineItems()
 
-    const url = await generateAndTrackInvoice(draft, lineItems)
+    const { url } = await generateAndTrackInvoice(draft, lineItems)
 
     expect(url).toContain('https://voidpay.xyz/pay')
     expect(url).toContain('#H')
@@ -86,7 +89,7 @@ describe('generateAndTrackInvoice', () => {
     const draft = createValidDraftState()
     const lineItems = createValidLineItems()
 
-    const url = await generateAndTrackInvoice(draft, lineItems, { includeOG: true })
+    const { url } = await generateAndTrackInvoice(draft, lineItems, { includeOG: true })
 
     expect(url).toContain('?og=')
   })
@@ -95,7 +98,7 @@ describe('generateAndTrackInvoice', () => {
     const draft = createValidDraftState()
     const lineItems = createValidLineItems()
 
-    const url = await generateAndTrackInvoice(draft, lineItems)
+    const { url } = await generateAndTrackInvoice(draft, lineItems)
 
     expect(url).not.toContain('?og=')
   })
@@ -104,21 +107,24 @@ describe('generateAndTrackInvoice', () => {
     const draft = createValidDraftState()
     const lineItems = createValidLineItems()
 
-    const url = await generateAndTrackInvoice(draft, lineItems)
+    const { url } = await generateAndTrackInvoice(draft, lineItems)
 
     // Verify URL was generated (history addition is mocked)
     expect(url).toContain('https://voidpay.xyz/pay')
   })
 
-  it('builds invoice with items converted from line items', async () => {
+  it('returns baked invoice with total and magicDust', async () => {
     const draft = createValidDraftState()
     const lineItems = createValidLineItems()
 
-    const url = await generateAndTrackInvoice(draft, lineItems)
+    const { invoice } = await generateAndTrackInvoice(draft, lineItems)
 
-    // URL generation confirms invoice was built successfully
-    expect(url).toBeDefined()
-    expect(typeof url).toBe('string')
+    // total should be calculated: 10 × 100 USDC = 1000 USDC + magicDust
+    expect(invoice.total).toBeDefined()
+    expect(typeof invoice.total).toBe('string')
+    expect(BigInt(invoice.total!)).toBeGreaterThan(BigInt('1000000000')) // > 1000 USDC in atomic
+    // magicDust should be present (preferences mock has magicDustEnabled: true)
+    expect(invoice.magicDust).toBeDefined()
   })
 })
 

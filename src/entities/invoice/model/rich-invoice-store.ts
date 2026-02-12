@@ -9,6 +9,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { INVOICE_VIEW_STORE_KEY } from '@/shared/config'
 import type { Invoice } from './schema'
+import type { ConfirmationProgress } from '@/shared/lib/invoice-types'
 
 /**
  * Status of a viewed invoice
@@ -36,6 +37,10 @@ export interface RichInvoice {
   txHash?: string
   /** Whether txHash has been validated on-chain */
   txHashValidated?: boolean
+  /** Block confirmation progress (during polling) */
+  confirmations?: ConfirmationProgress | undefined
+  /** Last payment error message */
+  error?: string | null | undefined
   /** ISO 8601 timestamp when entry was created */
   createdAt: string
   /** ISO 8601 timestamp when invoice was last viewed */
@@ -65,6 +70,10 @@ interface RichInvoiceActions {
   updateStatus: (invoiceId: string, status: RichInvoiceStatus) => void
   /** Set transaction hash for an invoice */
   setTxHash: (invoiceId: string, txHash: string, validated?: boolean) => void
+  /** Set block confirmation progress */
+  setConfirmations: (invoiceId: string, confirmations?: ConfirmationProgress) => void
+  /** Set or clear payment error */
+  setError: (invoiceId: string, error: string | null) => void
   /** Remove an invoice from the store */
   removeInvoice: (invoiceId: string) => void
   /** Get an invoice by ID */
@@ -128,7 +137,31 @@ export const useRichInvoiceStore = create<RichInvoiceStore>()(
         set((state) => ({
           invoices: state.invoices.map((inv) =>
             inv.invoiceId === invoiceId
-              ? { ...inv, txHash, txHashValidated: validated, status: 'paid' as const }
+              ? {
+                  ...inv,
+                  txHash,
+                  txHashValidated: validated,
+                  status: 'paid' as const,
+                  ...(validated ? { paidAt: new Date().toISOString() } : {}),
+                }
+              : inv
+          ),
+        }))
+      },
+
+      setConfirmations: (invoiceId, confirmations) => {
+        set((state) => ({
+          invoices: state.invoices.map((inv) =>
+            inv.invoiceId === invoiceId ? { ...inv, confirmations } : inv
+          ),
+        }))
+      },
+
+      setError: (invoiceId, error) => {
+        set((state) => ({
+          invoices: state.invoices.map((inv) =>
+            inv.invoiceId === invoiceId
+              ? { ...inv, error: error ?? undefined }
               : inv
           ),
         }))
@@ -151,6 +184,7 @@ export const useRichInvoiceStore = create<RichInvoiceStore>()(
     {
       name: INVOICE_VIEW_STORE_KEY,
       version: 1,
+      migrate: (persisted) => persisted as RichInvoiceStore,
     }
   )
 )

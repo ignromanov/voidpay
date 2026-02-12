@@ -160,7 +160,7 @@ describe('ScaledInvoicePreview', () => {
 
       const scaledDiv = container.querySelector('[style*="transform"]') as HTMLElement
       expect(scaledDiv).toBeInTheDocument()
-      expect(scaledDiv).toHaveStyle('transform: scale(0.75)')
+      expect(scaledDiv).toHaveStyle('transform: translate(-50%, -50%) scale(0.75)')
     })
 
     it('applies scaled dimensions to wrapper', () => {
@@ -190,7 +190,7 @@ describe('ScaledInvoicePreview', () => {
       )
 
       const scaledDiv = container.querySelector('[style*="transform"]') as HTMLElement
-      expect(scaledDiv).toHaveStyle('transform: scale(0.5)')
+      expect(scaledDiv).toHaveStyle('transform: translate(-50%, -50%) scale(0.5)')
 
       const wrapper = container.querySelector('[style*="width"]') as HTMLElement
       expect(wrapper).toHaveStyle({ width: '400px', height: '565px' })
@@ -233,8 +233,7 @@ describe('ScaledInvoicePreview', () => {
       )
 
       const wrapper = container.querySelector('[style*="width"]') as HTMLElement
-      const hasBeforePseudo = wrapper.className.includes('before:bg-gradient')
-      expect(hasBeforePseudo).toBe(false)
+      expect(wrapper.className).not.toContain('before:bg-gradient')
     })
 
     it('renders without border when networkId not provided on modal', () => {
@@ -540,28 +539,17 @@ describe('ScaledInvoicePreview', () => {
       expect(wrapper).toHaveStyle({ width: '480px', height: '678px' })
     })
 
-    it('applies will-change for performance', () => {
-      const { container } = renderWithUser(
-        <ScaledInvoicePreview preset="demo">
-          <div>Performance</div>
-        </ScaledInvoicePreview>
-      )
-
-      const wrapper = container.querySelector('[style*="width"]') as HTMLElement
-      expect(wrapper).toHaveStyle('will-change: width, height')
-    })
-
-    it('has transition classes for smooth scaling', () => {
+    it('has transition classes for smooth scaling on inner element', () => {
       const { container } = renderWithUser(
         <ScaledInvoicePreview preset="demo">
           <div>Smooth</div>
         </ScaledInvoicePreview>
       )
 
-      const wrapper = container.querySelector('[style*="width"]') as HTMLElement
-      expect(wrapper).toHaveClass('transition-[width,height]')
-      expect(wrapper).toHaveClass('duration-200')
-      expect(wrapper).toHaveClass('ease-out')
+      const scaledDiv = container.querySelector('[style*="transform"]') as HTMLElement
+      expect(scaledDiv).toHaveClass('transition-transform')
+      expect(scaledDiv).toHaveClass('duration-300')
+      expect(scaledDiv).toHaveClass('ease-out')
     })
   })
 
@@ -581,7 +569,7 @@ describe('ScaledInvoicePreview', () => {
       )
 
       const scaledDiv = container.querySelector('[style*="transform"]') as HTMLElement
-      expect(scaledDiv).toHaveStyle('transform: scale(0)')
+      expect(scaledDiv).toHaveStyle('transform: translate(-50%, -50%) scale(0)')
     })
 
     it('handles very large scale values', () => {
@@ -599,7 +587,7 @@ describe('ScaledInvoicePreview', () => {
       )
 
       const scaledDiv = container.querySelector('[style*="transform"]') as HTMLElement
-      expect(scaledDiv).toHaveStyle('transform: scale(2.5)')
+      expect(scaledDiv).toHaveStyle('transform: translate(-50%, -50%) scale(2.5)')
     })
 
     it('renders without children', () => {

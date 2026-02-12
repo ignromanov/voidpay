@@ -24,6 +24,9 @@ export * from './render'
 export * from './wagmi-mock'
 export * from './rpc-mocks'
 
+// Mock factories
+export * from './mock-factories'
+
 // Test helpers
 export * from './query-client'
 export * from './fetch-spy'

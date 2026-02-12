@@ -1,10 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, createNavigationMock } from '@/shared/lib/test-utils'
 
-// Mock next/navigation
-vi.mock('next/navigation', () => ({
-  usePathname: () => '/',
-}))
+// Mock next/navigation with shared factory
+vi.mock('next/navigation', () => createNavigationMock({ pathname: '/' }))
 
 // Mock WalletButton - it has its own tests
 vi.mock('@/features/wallet-connect', () => ({

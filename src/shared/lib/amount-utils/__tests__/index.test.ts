@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
   parseAmount,
   formatAmount,
@@ -389,5 +389,53 @@ describe('addMagicDust', () => {
   it('should work with maximum magic dust', () => {
     const result = addMagicDust('100000000', 999)
     expect(result).toBe('100000999')
+  })
+
+  it('should throw RangeError for float magicDust', () => {
+    expect(() => addMagicDust('100000000', 1.5)).toThrow(RangeError)
+    expect(() => addMagicDust('100000000', 1.5)).toThrow(/integer 1-999/)
+  })
+
+  it('should throw RangeError for negative magicDust', () => {
+    expect(() => addMagicDust('100000000', -1)).toThrow(RangeError)
+  })
+
+  it('should throw RangeError for zero magicDust', () => {
+    expect(() => addMagicDust('100000000', 0)).toThrow(RangeError)
+  })
+
+  it('should throw RangeError for magicDust > 999', () => {
+    expect(() => addMagicDust('100000000', 1000)).toThrow(RangeError)
+  })
+
+  it('should log error on corrupted total but return total', () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const result = addMagicDust('not-a-number', 42)
+    expect(result).toBe('not-a-number')
+    expect(consoleError).toHaveBeenCalledWith(
+      '[addMagicDust] Failed to add Magic Dust, returning total without dust:',
+      expect.objectContaining({ total: 'not-a-number', magicDust: 42 })
+    )
+    consoleError.mockRestore()
+  })
+})
+
+describe('calculateTotalsBigInt — logging', () => {
+  it('should warn when skipping invalid item', () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const items: LineItemForCalc[] = [
+      { quantity: 1, rate: 'invalid-rate' },
+      { quantity: 1, rate: '50000000' },
+    ]
+    const options: CalcOptions = { decimals: 6 }
+
+    const result = calculateTotalsBigInt(items, options)
+
+    expect(result.subtotal).toBe('50000000')
+    expect(consoleWarn).toHaveBeenCalledWith(
+      '[calculateTotalsBigInt] Skipping invalid item:',
+      expect.objectContaining({ rate: 'invalid-rate' })
+    )
+    consoleWarn.mockRestore()
   })
 })

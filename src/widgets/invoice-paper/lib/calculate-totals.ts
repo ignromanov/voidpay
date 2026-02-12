@@ -21,17 +21,8 @@ export interface Totals {
   total: string
   /** Formatted Magic Dust amount (e.g., "0.000042") or null if not present */
   magicDust: string | null
-}
-
-/**
- * Raw totals in atomic units for internal calculations
- */
-export interface RawTotals {
-  subtotal: string
-  taxAmount: string
-  discountAmount: string
-  total: string
-  magicDust: string | null
+  /** Total in atomic units (bigint string, e.g., "315000000") for QR code URI */
+  atomicTotal: string
 }
 
 interface Item {
@@ -73,6 +64,7 @@ export function calculateTotals(data: InvoiceData): Totals {
       discountAmount: breakdown.discountAmount,
       total: formatAmount(preTotal, decimals),
       magicDust: preMagicDust ? formatAmount(preMagicDust, decimals, 6) : null,
+      atomicTotal: preTotal,
     }
   }
 
@@ -92,52 +84,7 @@ export function calculateTotals(data: InvoiceData): Totals {
     discountAmount: formatAmount(result.discountAmount, decimals),
     total: formatAmount(result.total, decimals),
     magicDust: null,
-  }
-}
-
-/**
- * Calculate raw totals in atomic units
- *
- * Use this when you need atomic units for further calculations,
- * e.g., when generating invoice URL.
- */
-export function calculateRawTotals(data: InvoiceData): RawTotals {
-  const { items, tax, discount, decimals, total: preTotal, magicDust: preMagicDust } = data
-
-  // If total is pre-calculated, return it
-  if (preTotal) {
-    const result = calculateTotalsBigInt(
-      items.map((item) => ({
-        quantity: parseQuantity(item.quantity),
-        rate: item.rate || '0',
-      })),
-      { tax, discount, decimals }
-    )
-
-    return {
-      subtotal: result.subtotal,
-      taxAmount: result.taxAmount,
-      discountAmount: result.discountAmount,
-      total: preTotal,
-      magicDust: preMagicDust || null,
-    }
-  }
-
-  // Calculate fresh
-  const result = calculateTotalsBigInt(
-    items.map((item) => ({
-      quantity: parseQuantity(item.quantity),
-      rate: item.rate || '0',
-    })),
-    { tax, discount, decimals }
-  )
-
-  return {
-    subtotal: result.subtotal,
-    taxAmount: result.taxAmount,
-    discountAmount: result.discountAmount,
-    total: result.total,
-    magicDust: null,
+    atomicTotal: result.total,
   }
 }
 

@@ -1,11 +1,9 @@
-import React, { useMemo } from 'react'
-import { QRCodeSVG } from 'qrcode.react'
-import { HashIcon, ExternalLinkIcon, AlertTriangleIcon } from '@/shared/ui/icons'
+import React, { useState, useCallback } from 'react'
+import { HashIcon, ExternalLinkIcon, AlertTriangleIcon, CheckIcon, CopyIcon } from '@/shared/ui/icons'
+import { PaymentQR } from '@/features/payment-qr'
 import { formatShortAddress } from '../lib/format'
 import { getExplorerUrl, getNetworkName } from '@/entities/network'
-import { APP_URLS } from '@/shared/config'
 import { cn } from '@/shared/lib/utils'
-import { CopyButton } from '@/shared/ui/copy-button'
 import { NetworkIcon } from '@/shared/ui/network-icon'
 import { TokenIcon } from '@/shared/ui/token-icon'
 import { AddressAvatar } from '@/shared/ui/address-avatar'
@@ -25,10 +23,8 @@ interface PaymentInfoProps {
   txHash?: string | undefined
   /** Whether the transaction has been validated on-chain */
   txHashValidated?: boolean | undefined
-  /** Invoice URL for QR code */
-  invoiceUrl?: string | undefined
-  /** Whether to show the QR code section (auto-hides when txHash present) */
-  showQR?: boolean
+  /** Total in atomic units (bigint string) for PaymentQR */
+  amount?: string | undefined
   /** Display variant - 'full' enables interactive elements */
   variant?: InvoicePaperVariant
   /** Invoice status - used to determine if QR should be hidden */
@@ -43,32 +39,31 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
     tokenAddress,
     txHash,
     txHashValidated = true,
-    invoiceUrl,
-    showQR = true,
+    amount,
     variant = 'default',
     status,
   }) => {
     const isInteractive = variant === 'full'
-    // Hide QR code when invoice is paid (txHash present) to give txHash more space
-    const shouldShowQR = showQR && !txHash && status !== 'paid'
+    // Hide QR when paid — txHash section takes QR's space
+    const shouldShowQR = !txHash && status !== 'paid'
 
-    // SSR-safe URL handling
-    // TODO: [P0.11.3] Generate EIP-681 payment URI for direct wallet integration
-    // Native ETH: ethereum:0xRecipient@chainId?value=amountInWei
-    // ERC-20: ethereum:0xToken@chainId/transfer?address=0xRecipient&uint256=amount
-    // See: https://eips.ethereum.org/EIPS/eip-681
-    const qrUrl = useMemo(() => {
-      if (invoiceUrl) return invoiceUrl
-      return typeof window !== 'undefined' ? window.location.href : APP_URLS.base
-    }, [invoiceUrl])
-
-    const networkTextClass = 'text-[9px] font-semibold text-zinc-700 capitalize'
+    const networkTextClass = 'text-[10px] font-semibold text-zinc-700 capitalize'
 
     const networkName = getNetworkName(networkId)
 
+    const [copied, setCopied] = useState(false)
+    const handleCopyAddress = useCallback(async () => {
+      if (!senderAddress || !isInteractive) return
+      try {
+        await navigator.clipboard.writeText(senderAddress)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1500)
+      } catch { /* clipboard not available */ }
+    }, [senderAddress, isInteractive])
+
     return (
       <div
-        className="flex-shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50"
+        className="w-[330px] flex-shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50"
         role="region"
         aria-label="Payment information"
       >
@@ -84,25 +79,25 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
           {/* QR Code - hidden when paid to give txHash more space */}
           {shouldShowQR && (
             <div className="flex flex-col items-center justify-center gap-1 border-r border-zinc-200 p-3">
-              <div
-                className="flex aspect-square w-24 items-center justify-center rounded border border-zinc-200 bg-white p-1"
-                role="img"
-                aria-label="QR code linking to this invoice"
-                title={`QR Code: ${qrUrl}`}
-              >
-                <QRCodeSVG value={qrUrl} className="h-full w-full" level="H" />
-              </div>
+              <PaymentQR
+                recipientAddress={senderAddress}
+                chainId={networkId}
+                amount={amount}
+                tokenAddress={tokenAddress}
+                size={88}
+                variant="light"
+              />
               <span className="text-[7px] font-semibold tracking-wide text-zinc-400 uppercase">
-                Scan for payment link
+                Scan to pay
               </span>
             </div>
           )}
 
           {/* Payment Details */}
-          <div className="min-w-[220px] space-y-1.5 p-2.5">
+          <div className="min-w-0 flex-1 space-y-1.5 p-2.5">
             {/* Network row */}
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[8px] font-bold text-zinc-400 uppercase">Network</span>
+              <span className="text-[9px] font-bold text-zinc-400 uppercase">Network</span>
               <div className="flex items-center gap-2">
                 <NetworkIcon chainId={networkId} size={18} />
                 <span className={networkTextClass}>{networkName}</span>
@@ -111,7 +106,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
 
             {/* Token row */}
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[8px] font-bold text-zinc-400 uppercase">Token</span>
+              <span className="text-[9px] font-bold text-zinc-400 uppercase">Token</span>
               <div className="flex items-center gap-2">
                 <TokenIcon symbol={currency} size={18} />
                 <span
@@ -129,7 +124,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
               </div>
             </div>
 
-            {/* Wallet Address - prominent */}
+            {/* Wallet Address - click-to-copy */}
             <div className="space-y-1 pt-1.5">
               <span className="block text-[9px] font-bold text-zinc-500 uppercase">
                 Recipient Wallet
@@ -144,24 +139,39 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                 )}
                 <div
                   className={cn(
-                    'flex-1 cursor-text rounded border border-zinc-200 bg-white px-2 py-1.5 font-mono text-[10px] leading-relaxed font-medium',
-                    senderAddress ? 'text-zinc-950' : 'text-zinc-400 italic'
+                    'relative flex flex-1 items-center gap-1 rounded border bg-white px-2 py-2 font-mono text-[10px] leading-relaxed font-medium break-all transition-colors',
+                    senderAddress ? 'text-zinc-950' : 'text-zinc-400 italic',
+                    copied
+                      ? 'border-emerald-300 bg-emerald-50'
+                      : 'border-zinc-200',
+                    isInteractive && senderAddress && 'cursor-pointer hover:border-zinc-300'
                   )}
-                  title={senderAddress}
+                  onClick={isInteractive ? handleCopyAddress : undefined}
+                  role={isInteractive && senderAddress ? 'button' : undefined}
+                  tabIndex={isInteractive && senderAddress ? 0 : undefined}
+                  onKeyDown={
+                    isInteractive && senderAddress
+                      ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyAddress() } }
+                      : undefined
+                  }
+                  title={isInteractive && senderAddress ? 'Click to copy address' : senderAddress}
                   aria-label={
-                    senderAddress ? `Wallet address: ${senderAddress}` : 'Wallet address not set'
+                    senderAddress
+                      ? `Wallet address: ${senderAddress}${isInteractive ? '. Click to copy' : ''}`
+                      : 'Wallet address not set'
                   }
                 >
-                  {senderAddress || '0x... (wallet address)'}
+                  <span className="min-w-0 flex-1">{senderAddress || '0x... (wallet address)'}</span>
+                  {isInteractive && senderAddress && (
+                    <CopyIcon className="h-2.5 w-2.5 flex-shrink-0 text-zinc-400" aria-hidden="true" />
+                  )}
+                  {copied && (
+                    <span className="absolute right-1 top-1 flex items-center gap-0.5 rounded bg-emerald-100 px-1 py-0.5 text-[8px] font-bold text-emerald-700">
+                      <CheckIcon className="h-2.5 w-2.5" aria-hidden="true" />
+                      Copied
+                    </span>
+                  )}
                 </div>
-                {isInteractive && senderAddress && (
-                  <CopyButton
-                    value={senderAddress}
-                    size="sm"
-                    data-print-hide
-                    aria-label="Copy wallet address"
-                  />
-                )}
               </div>
             </div>
 
@@ -176,8 +186,8 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                         className="ml-1 flex items-center gap-0.5 text-amber-600"
                         title="Transaction not yet verified on-chain"
                       >
-                        <AlertTriangleIcon className="h-2 w-2" aria-hidden="true" />
-                        <span className="text-[7px]">Unverified</span>
+                        <AlertTriangleIcon className="h-2.5 w-2.5" aria-hidden="true" />
+                        <span className="text-[9px]">Unverified</span>
                       </span>
                     )}
                   </span>
@@ -187,9 +197,8 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                       target="_blank"
                       rel="noopener noreferrer"
                       className={cn(
-                        'group flex items-center justify-between gap-1 rounded border px-1.5 py-1 transition-all',
+                        'group flex cursor-pointer items-start gap-1 rounded border px-1.5 py-1 transition-colors',
                         'focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1',
-                        'hover:shadow-sm',
                         txHashValidated
                           ? 'border-emerald-100 bg-emerald-50 hover:border-emerald-300 hover:bg-emerald-100'
                           : 'border-amber-100 bg-amber-50 hover:border-amber-300 hover:bg-amber-100'
@@ -199,7 +208,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                     >
                       <span
                         className={cn(
-                          'truncate font-mono text-[8px] font-medium',
+                          'min-w-0 flex-1 break-all font-mono text-[8px] font-medium',
                           txHashValidated ? 'text-emerald-800' : 'text-amber-800'
                         )}
                       >
@@ -207,7 +216,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                       </span>
                       <ExternalLinkIcon
                         className={cn(
-                          'h-2.5 w-2.5 flex-shrink-0',
+                          'mt-0.5 h-2.5 w-2.5 flex-shrink-0',
                           txHashValidated
                             ? 'text-emerald-500 group-hover:text-emerald-700'
                             : 'text-amber-500 group-hover:text-amber-700'
@@ -218,20 +227,13 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                   ) : (
                     <div
                       className={cn(
-                        'flex items-center gap-1 rounded border px-1.5 py-1',
+                        'rounded border px-1.5 py-1 font-mono text-[8px] font-medium break-all',
                         txHashValidated
-                          ? 'border-emerald-100 bg-emerald-50'
-                          : 'border-amber-100 bg-amber-50'
+                          ? 'border-emerald-100 bg-emerald-50 text-emerald-800'
+                          : 'border-amber-100 bg-amber-50 text-amber-800'
                       )}
                     >
-                      <span
-                        className={cn(
-                          'truncate font-mono text-[8px] font-medium',
-                          txHashValidated ? 'text-emerald-800' : 'text-amber-800'
-                        )}
-                      >
-                        {txHash}
-                      </span>
+                      {txHash}
                     </div>
                   )}
                 </div>

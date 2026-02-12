@@ -157,14 +157,8 @@ export function CreateWorkspace() {
         })
       }
 
-      // Build invoice BEFORE async call (no URL dependency)
-      const invoice: Invoice = {
-        ...activeDraft.data,
-        items: lineItems.map(({ id: _id, ...item }) => item),
-      } as Invoice
-
-      // Generate URL with OG preview based on user preference
-      const url = await generateAndTrackInvoice(activeDraft, lineItems, {
+      // Generate URL and get baked invoice (with total + magicDust)
+      const { url, invoice } = await generateAndTrackInvoice(activeDraft, lineItems, {
         includeOG: includeOgImage ?? false,
       })
 

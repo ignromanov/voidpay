@@ -10,8 +10,8 @@ interface PaperTotalsProps {
   taxPercent?: string | undefined
   discountPercent?: string | undefined
   showMagicDust?: boolean
-  showQR?: boolean
-  invoiceUrl?: string
+  /** Total amount in atomic units for PaymentQR URI generation */
+  amount?: string | undefined
   // Payment details props
   networkId: number
   senderAddress?: string | undefined
@@ -30,8 +30,7 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
     taxPercent,
     discountPercent,
     showMagicDust = true,
-    showQR = true,
-    invoiceUrl,
+    amount,
     networkId,
     senderAddress,
     tokenAddress,
@@ -42,7 +41,7 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
   }) => {
     return (
       <section className="border-t-2 border-zinc-700 pt-4 overflow-hidden">
-        <div className="flex items-start gap-4 overflow-hidden">
+        <div className="flex items-start gap-8 overflow-hidden">
           <PaymentInfo
             networkId={networkId}
             senderAddress={senderAddress}
@@ -50,8 +49,8 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
             tokenAddress={tokenAddress}
             txHash={txHash}
             txHashValidated={txHashValidated}
-            invoiceUrl={invoiceUrl}
-            showQR={showQR}
+            amount={amount}
+
             variant={variant}
             status={status}
           />
