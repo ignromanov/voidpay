@@ -91,6 +91,8 @@ export function DemoSection() {
                 variant="glow"
                 size="default"
                 className="rounded-full bg-violet-600 px-8 py-4"
+                data-umami-event="cta_demo_template"
+                data-umami-event-invoice={currentInvoice.data.invoiceId}
                 asChild
               >
                 <Link href={`/create#${currentInvoice.createHash}`}>Use This Template</Link>

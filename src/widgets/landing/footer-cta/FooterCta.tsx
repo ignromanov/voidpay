@@ -40,6 +40,7 @@ export function FooterCta() {
               variant="glow"
               size="lg"
               className="h-16 rounded-2xl px-12 text-xl shadow-[0_0_60px_-15px_rgba(124,58,237,0.5)]"
+              data-umami-event="cta_footer_create"
             >
               Get Paid Now
             </Button>
@@ -55,6 +56,7 @@ export function FooterCta() {
             rel="noopener noreferrer"
             aria-label="GitHub"
             className="text-zinc-400 transition-colors hover:text-white"
+            data-umami-event="outbound_github"
           >
             <GithubIcon className="h-6 w-6" />
           </a>
@@ -64,6 +66,7 @@ export function FooterCta() {
             rel="noopener noreferrer"
             aria-label="Twitter"
             className="text-zinc-400 transition-colors hover:text-white"
+            data-umami-event="outbound_twitter"
           >
             <TwitterIcon className="h-6 w-6" />
           </a>

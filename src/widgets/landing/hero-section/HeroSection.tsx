@@ -61,6 +61,7 @@ export function HeroSection() {
               variant="glow"
               size="lg"
               className="h-14 rounded-2xl px-8 text-base shadow-[0_0_40px_-10px_rgba(124,58,237,0.5)]"
+              data-umami-event="cta_hero_create"
             >
               Create Your Invoice
               <ArrowRightIcon size={16} />

@@ -15,7 +15,7 @@ Stateless Invoicing Platform built with Next.js, Wagmi, and Feature-Sliced Desig
 
     ```bash
     git clone <repository-url>
-    cd stateless-invoicing-platform
+    cd voidpay
     ```
 
 2.  Install dependencies:

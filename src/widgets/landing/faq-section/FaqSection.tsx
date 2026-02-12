@@ -22,6 +22,8 @@ function FaqItem({ question, answer, isOpen, onToggle }: FaqItem & { isOpen: boo
         onClick={onToggle}
         className="flex w-full items-center justify-between gap-4 py-6 text-left transition-colors hover:text-zinc-100"
         aria-expanded={isOpen}
+        data-umami-event="faq_toggle"
+        data-umami-event-question={question}
       >
         <span className="text-lg font-medium text-zinc-100">{question}</span>
         <ChevronDownIcon
