@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react'
-import { AlertTriangleIcon } from '@/shared/ui/icons'
 import { Badge } from '@/shared/ui/badge'
 import { CopyButton } from '@/shared/ui/copy-button'
 import { cn } from '@/shared/lib/utils'
 
 import { InvoiceStatus, InvoicePaperVariant } from '../types'
+import { PAPER_STATUS_CONFIG, type PaperStatusKey } from '../lib/paper-status-config'
 
 interface PaperHeaderProps {
   invoiceId?: string | undefined
@@ -73,7 +73,7 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
                 #{invoiceId}
               </span>
             ) : (
-              <span className="text-zinc-300 italic">#ID</span>
+              <span className="text-zinc-300 italic">Draft</span>
             )}
           </h1>
           {hasLink && (
@@ -111,27 +111,21 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
                 Status
               </span>
               <span>
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    'gap-1 uppercase',
-                    status === 'pending' && 'border-amber-300 bg-amber-50 text-amber-700',
-                    status === 'paid' &&
-                      !isPaidUnverified &&
-                      'border-emerald-300 bg-emerald-50 text-emerald-700',
-                    isPaidUnverified && 'border-amber-300 bg-amber-50 text-amber-700',
-                    status === 'overdue' && 'border-red-300 bg-red-50 text-red-700',
-                    status === 'draft' && 'border-zinc-300 bg-zinc-50 text-zinc-600'
-                  )}
-                  aria-label={`Invoice status: ${isPaidUnverified ? 'paid (unverified)' : status}`}
-                >
-                  {isPaidUnverified && <AlertTriangleIcon className="h-3 w-3" aria-hidden="true" />}
-                  {status === 'pending'
-                    ? 'Awaiting Payment'
-                    : isPaidUnverified
-                      ? 'Paid (Unverified)'
-                      : status}
-                </Badge>
+                {(() => {
+                  const statusKey: PaperStatusKey = isPaidUnverified ? 'paid-unverified' : status
+                  const config = PAPER_STATUS_CONFIG[statusKey]
+                  const StatusIcon = config.icon
+                  return (
+                    <Badge
+                      variant="outline"
+                      className={cn('gap-1 uppercase', config.badge)}
+                      aria-label={`Invoice status: ${config.label}`}
+                    >
+                      <StatusIcon className="h-3 w-3" aria-hidden="true" />
+                      {config.label}
+                    </Badge>
+                  )
+                })()}
               </span>
             </div>
           )}

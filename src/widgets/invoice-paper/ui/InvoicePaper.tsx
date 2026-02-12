@@ -58,7 +58,7 @@ function EmptyStateContent() {
         {/* Hint — larger for scale compensation */}
         <div className="mt-6 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-4">
           <p className="text-base text-zinc-500">
-            Fill in the form on the left to generate your invoice
+            Fill in the invoice form to see the preview here
           </p>
         </div>
       </div>
@@ -204,7 +204,7 @@ export const InvoicePaper = React.memo(
               <Watermark status={status} date={paidDate} />
 
               {/* Screen reader status announcement */}
-              <div className="sr-only" role="status" aria-live="polite">
+              <div key={`status-${status}`} className="sr-only" role="status" aria-live="polite">
                 Invoice status: {status}
                 {status === 'paid' && paidDate && `, paid on ${paidDate}`}
               </div>

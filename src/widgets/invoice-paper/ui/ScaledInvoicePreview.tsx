@@ -233,7 +233,7 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
             // Print: reset all sizing/positioning to let invoice-print-target handle layout
             'print:!static print:!h-auto print:!w-auto print:!overflow-visible print:rounded-none print:transition-none',
             // Cursor style for interactive invoice (zoom-in for expand action)
-            onClick && 'cursor-zoom-in',
+            onClick && 'cursor-zoom-in focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500',
             // Elliptical ambient glow via ::before (pointer-events-none = won't capture clicks)
             glowClassName && [
               // Ellipse matching invoice proportions with soft blur
@@ -255,6 +255,7 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           role={onClick ? 'button' : undefined}
+          aria-label={onClick ? 'Open invoice preview' : undefined}
           tabIndex={onClick ? 0 : undefined}
           onKeyDown={handleKeyDown}
         >

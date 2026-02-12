@@ -47,7 +47,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
     // Hide QR when paid — txHash section takes QR's space
     const shouldShowQR = !txHash && status !== 'paid'
 
-    const networkTextClass = 'text-[9px] font-semibold text-zinc-700 capitalize'
+    const networkTextClass = 'text-[10px] font-semibold text-zinc-700 capitalize'
 
     const networkName = getNetworkName(networkId)
 
@@ -97,7 +97,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
           <div className="max-w-[195px] space-y-1.5 p-2.5">
             {/* Network row */}
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[8px] font-bold text-zinc-400 uppercase">Network</span>
+              <span className="text-[9px] font-bold text-zinc-400 uppercase">Network</span>
               <div className="flex items-center gap-2">
                 <NetworkIcon chainId={networkId} size={18} />
                 <span className={networkTextClass}>{networkName}</span>
@@ -106,7 +106,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
 
             {/* Token row */}
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[8px] font-bold text-zinc-400 uppercase">Token</span>
+              <span className="text-[9px] font-bold text-zinc-400 uppercase">Token</span>
               <div className="flex items-center gap-2">
                 <TokenIcon symbol={currency} size={18} />
                 <span
@@ -139,7 +139,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                 )}
                 <div
                   className={cn(
-                    'relative flex-1 rounded border bg-white px-2 py-1.5 font-mono text-[10px] leading-relaxed font-medium break-all transition-colors',
+                    'relative flex-1 rounded border bg-white px-2 py-2 font-mono text-[10px] leading-relaxed font-medium break-all transition-colors',
                     senderAddress ? 'text-zinc-950' : 'text-zinc-400 italic',
                     copied
                       ? 'border-emerald-300 bg-emerald-50'
@@ -183,8 +183,8 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                         className="ml-1 flex items-center gap-0.5 text-amber-600"
                         title="Transaction not yet verified on-chain"
                       >
-                        <AlertTriangleIcon className="h-2 w-2" aria-hidden="true" />
-                        <span className="text-[7px]">Unverified</span>
+                        <AlertTriangleIcon className="h-2.5 w-2.5" aria-hidden="true" />
+                        <span className="text-[9px]">Unverified</span>
                       </span>
                     )}
                   </span>
@@ -194,7 +194,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                       target="_blank"
                       rel="noopener noreferrer"
                       className={cn(
-                        'group flex items-center justify-between gap-1 rounded border px-1.5 py-1 transition-all',
+                        'group flex min-h-[44px] items-center justify-between gap-1 rounded border px-1.5 py-1 transition-all',
                         'focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1',
                         'hover:shadow-sm',
                         txHashValidated
