@@ -11,6 +11,10 @@ import {
 } from '@/shared/ui/select'
 import { NETWORK_TOKENS, type TokenInfo } from '../model/tokens'
 import { cn } from '@/shared/lib/utils'
+import { Badge } from '@/shared/ui/badge'
+import { TokenIcon } from '@/shared/ui/token-icon'
+import { addressesMatch } from '@/shared/lib/validation'
+import { CustomTokenForm } from './CustomTokenForm'
 
 /**
  * TokenSelect Component Props
@@ -34,6 +38,9 @@ export interface TokenSelectProps {
 
   /** Additional CSS classes */
   className?: string
+
+  /** HTML id for label association */
+  id?: string
 }
 
 /**
@@ -57,7 +64,11 @@ export function TokenSelect({
   onChange,
   allowCustom = true,
   className,
+  id,
 }: TokenSelectProps) {
+  // Custom token mode state
+  const [isCustomMode, setIsCustomMode] = React.useState(false)
+
   // Get available tokens for current network
   const availableTokens = React.useMemo(() => {
     return NETWORK_TOKENS[chainId] || []
@@ -79,7 +90,9 @@ export function TokenSelect({
 
       try {
         const { symbol, address } = JSON.parse(value)
-        const token = availableTokens.find((t) => t.symbol === symbol && t.address === address)
+        const token = availableTokens.find(
+          (t) => t.symbol === symbol && addressesMatch(t.address, address)
+        )
         return token || null
       } catch {
         return null
@@ -91,7 +104,7 @@ export function TokenSelect({
   const handleValueChange = React.useCallback(
     (serializedValue: string) => {
       if (serializedValue === 'custom') {
-        // TODO: Implement custom token entry (Phase 6)
+        setIsCustomMode(true)
         return
       }
 
@@ -103,16 +116,69 @@ export function TokenSelect({
     [deserializeToken, onChange]
   )
 
+  const handleCustomSubmit = React.useCallback(
+    (token: TokenInfo) => {
+      onChange(token)
+      setIsCustomMode(false)
+    },
+    [onChange]
+  )
+
+  const handleCustomCancel = React.useCallback(() => {
+    setIsCustomMode(false)
+  }, [])
+
   const selectedValue = serializeToken(value)
+
+  // Check if current value is a custom token (case-insensitive address comparison)
+  const isCustomToken =
+    value &&
+    !availableTokens.find(
+      (t) => t.symbol === value.symbol && addressesMatch(t.address, value.address)
+    )
+
+  if (isCustomMode) {
+    return (
+      <CustomTokenForm
+        chainId={chainId}
+        onSubmit={handleCustomSubmit}
+        onCancel={handleCustomCancel}
+        className={className}
+      />
+    )
+  }
 
   return (
     <Select value={selectedValue} onValueChange={handleValueChange}>
-      <SelectTrigger className={cn('w-[200px]', className)}>
+      <SelectTrigger id={id} variant="glass" className={cn('w-[200px]', className)}>
         <SelectValue>
           {value && (
-            <div className="flex items-center gap-2">
-              <div className={cn('h-5 w-5 rounded-full', value.iconColor)} />
-              <span>{value.symbol}</span>
+            <div className="flex items-center gap-3">
+              {isCustomToken ? (
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-700 text-[10px] font-bold text-white">
+                  ?
+                </div>
+              ) : (
+                <TokenIcon symbol={value.symbol} size={24} />
+              )}
+              <div className="flex flex-col items-start">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold leading-none">{value.symbol}</span>
+                  {isCustomToken && (
+                    <Badge
+                      variant="outline"
+                      className="border-yellow-700/50 bg-yellow-950/20 text-[10px] font-bold text-yellow-500"
+                    >
+                      Unverified
+                    </Badge>
+                  )}
+                </div>
+                <span className="mt-1 font-mono text-[10px] leading-none text-zinc-500">
+                  {value.address
+                    ? `${value.address.slice(0, 6)}...${value.address.slice(-4)}`
+                    : 'Native Token'}
+                </span>
+              </div>
             </div>
           )}
         </SelectValue>
@@ -123,7 +189,7 @@ export function TokenSelect({
           return (
             <SelectItem key={tokenValue} value={tokenValue}>
               <div className="flex items-center gap-2">
-                <div className={cn('h-5 w-5 rounded-full', token.iconColor)} />
+                <TokenIcon symbol={token.symbol} size={24} />
                 <div className="flex flex-col">
                   <span className="font-medium">{token.symbol}</span>
                   <span className="text-xs text-zinc-500">{token.name}</span>
@@ -138,10 +204,10 @@ export function TokenSelect({
         {allowCustom && (
           <SelectItem value="custom">
             <div className="flex items-center gap-2">
-              <div className="flex h-5 w-5 items-center justify-center rounded-full border border-zinc-700 text-xs text-zinc-500">
-                +
+              <div className="flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-zinc-600">
+                <span className="text-xs">+</span>
               </div>
-              <span>Custom Token</span>
+              <span>Add Custom Token</span>
             </div>
           </SelectItem>
         )}

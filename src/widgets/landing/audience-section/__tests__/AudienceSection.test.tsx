@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { Briefcase } from 'lucide-react'
+import { BriefcaseIcon } from '@/shared/ui/icons'
 import { AudienceSection } from '../AudienceSection'
 import { AudienceCard } from '../AudienceCard'
 
@@ -102,7 +102,7 @@ describe('AudienceSection', () => {
 
 describe('AudienceCard', () => {
   const defaultProps = {
-    icon: Briefcase,
+    icon: BriefcaseIcon,
     title: 'Test Title',
     headline: 'Test Headline',
     description: 'Test Description',

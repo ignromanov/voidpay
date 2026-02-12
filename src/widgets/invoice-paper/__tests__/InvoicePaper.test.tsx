@@ -1,3 +1,9 @@
+/**
+ * InvoicePaper Integration Tests
+ *
+ * All rates are in atomic units (e.g., $1500 with 6 decimals = "1500000000")
+ */
+
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import { InvoicePaper } from '../ui/InvoicePaper'
@@ -8,10 +14,11 @@ describe('InvoicePaper Integration', () => {
     invoiceId: 'INV-2024-001',
     issuedAt: 1735296000, // Dec 27
     dueAt: 1735382400, // Dec 28
-    from: { name: 'Alice', walletAddress: '0xSender' },
-    client: { name: 'Bob', walletAddress: '0xRecipient' },
-    items: [{ description: 'Web Design', quantity: 1, rate: '1500' }],
+    from: { name: 'Alice', walletAddress: '0x1111111111111111111111111111111111111111' },
+    client: { name: 'Bob', walletAddress: '0x2222222222222222222222222222222222222222' },
+    items: [{ description: 'Web Design', quantity: 1, rate: '1500000000' }], // $1500 in atomic units (6 decimals)
     currency: 'USDC',
+    decimals: 6,
     networkId: 1,
   }
 
@@ -32,7 +39,7 @@ describe('InvoicePaper Integration', () => {
     // Items
     expect(screen.getByText('Web Design')).toBeDefined()
 
-    // Totals
+    // Totals - $1500.00 formatted
     expect(screen.getAllByText(/1,500\.00/).length).toBeGreaterThanOrEqual(2)
 
     // Footer

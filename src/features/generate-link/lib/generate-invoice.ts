@@ -13,42 +13,44 @@ import {
   type LineItem,
 } from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
+import { generateInvoiceUrl } from '@/features/invoice-codec'
+import {
+  calculateTotalsBigInt,
+  formatAmount,
+  generateMagicDust,
+  addMagicDust,
+} from '@/shared/lib/amount-utils'
+import type { GenerateOptions } from './types'
 
 /**
- * Calculate total amount from invoice data
+ * Calculate total amount from invoice data using BigInt precision.
+ *
+ * Rates are stored as atomic units (e.g., "150000000" = $150.00 for 6 decimals).
+ * Uses BigInt arithmetic to avoid floating-point precision issues.
  *
  * @param invoice - Partial invoice data
- * @param lineItems - Line items with UI ids
- * @returns Total amount as decimal string with currency symbol
+ * @param lineItems - Line items with UI ids (rates in atomic units)
+ * @returns Total amount as formatted string with currency symbol (e.g., "1250.50 USDC")
  */
 export function calculateTotalAmount(invoice: PartialInvoice, lineItems: LineItem[]): string {
   const currency = invoice.currency ?? 'USDC'
+  const decimals = invoice.decimals ?? 6
 
-  // Calculate subtotal from line items
-  const subtotal = lineItems.reduce((sum, item) => {
-    const itemTotal = parseFloat(item.rate) * item.quantity
-    return sum + itemTotal
-  }, 0)
+  // Map line items for BigInt calculation
+  const items = lineItems.map((item) => ({
+    quantity: item.quantity,
+    rate: item.rate || '0',
+  }))
 
-  // Apply tax
-  let total = subtotal
-  if (invoice.tax) {
-    const taxValue = invoice.tax.endsWith('%')
-      ? (subtotal * parseFloat(invoice.tax)) / 100
-      : parseFloat(invoice.tax)
-    total += taxValue
-  }
+  // Extract tax/discount percentages (strip % suffix if present)
+  const tax = invoice.tax?.endsWith('%') ? invoice.tax.slice(0, -1) : invoice.tax
+  const discount = invoice.discount?.endsWith('%') ? invoice.discount.slice(0, -1) : invoice.discount
 
-  // Apply discount
-  if (invoice.discount) {
-    const discountValue = invoice.discount.endsWith('%')
-      ? (subtotal * parseFloat(invoice.discount)) / 100
-      : parseFloat(invoice.discount)
-    total -= discountValue
-  }
+  // Calculate using BigInt arithmetic
+  const result = calculateTotalsBigInt(items, { tax, discount, decimals })
 
   // Format with currency symbol
-  return `${total.toFixed(2)} ${currency}`
+  return `${formatAmount(result.total, decimals)} ${currency}`
 }
 
 /**
@@ -73,38 +75,103 @@ export function addToHistory(invoice: Invoice, invoiceUrl: string): void {
 }
 
 /**
- * Build full Invoice from draft and line items
+ * Build full Invoice from draft and line items.
+ *
+ * Calculates total (+ Magic Dust if enabled) and bakes into the invoice.
+ * This is the single source of truth — the total is encoded into the URL
+ * and available as `invoice.total` after decoding on /pay.
  */
 export function buildInvoice(draft: DraftState, lineItems: LineItem[]): Invoice {
+  const data = draft.data
+  const items = lineItemsToInvoiceItems(lineItems)
+  const decimals = data.decimals ?? 6
+
+  // Calculate total from items + tax + discount
+  const result = calculateTotalsBigInt(
+    items.map((item) => ({
+      quantity: item.quantity,
+      rate: item.rate || '0',
+    })),
+    { tax: data.tax, discount: data.discount, decimals }
+  )
+
+  // Add Magic Dust if enabled in preferences
+  const { magicDustEnabled } = useCreatorStore.getState().preferences
+  let total = result.total
+  let magicDust: string | undefined
+
+  if (magicDustEnabled) {
+    const dust = generateMagicDust()
+    magicDust = dust.toString()
+    total = addMagicDust(total, dust)
+  }
+
   return {
-    ...draft.data,
-    items: lineItemsToInvoiceItems(lineItems),
+    ...data,
+    items,
+    total,
+    magicDust,
   } as Invoice
+}
+
+/** URL size limit in bytes */
+const URL_SIZE_LIMIT = 2000
+
+/**
+ * Error thrown when URL exceeds size limit
+ */
+export class UrlSizeError extends Error {
+  constructor(
+    public readonly size: number,
+    public readonly limit: number = URL_SIZE_LIMIT
+  ) {
+    super(`Invoice URL is too large (${size} bytes). Maximum allowed is ${limit} bytes. Try reducing notes or line items.`)
+    this.name = 'UrlSizeError'
+  }
 }
 
 /**
  * Generate invoice URL and add to history
  *
  * Combines URL generation and history tracking.
+ * Uses Binary V3 encoding for compact, privacy-preserving URLs.
  *
  * @param draft - Draft state with invoice data
  * @param lineItems - Line items for the invoice
- * @returns Generated invoice URL
+ * @param options - Generation options (OG preview, etc.)
+ * @returns Object with generated URL and the baked invoice (with total/magicDust)
+ * @throws UrlSizeError if URL exceeds 2000 bytes
  *
  * @example
- * const url = await generateAndTrackInvoice(draft, lineItems)
- * router.push(url)
+ * const { url, invoice } = await generateAndTrackInvoice(draft, lineItems, { includeOG: true })
  */
 export async function generateAndTrackInvoice(
   draft: DraftState,
-  lineItems: LineItem[]
-): Promise<string> {
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  const invoiceUrl = `${baseUrl}/invoice?draft=${draft.meta.draftId}`
-
-  // Build full invoice and add to history
+  lineItems: LineItem[],
+  options: GenerateOptions = {}
+): Promise<{ url: string; invoice: Invoice }> {
+  // Build full invoice from draft and line items (calculates total + magicDust)
   const invoice = buildInvoice(draft, lineItems)
+
+  // Generate URL with Binary V3 encoding
+  // generateInvoiceUrl throws if URL > 2000 bytes
+  let invoiceUrl: string
+  try {
+    invoiceUrl = generateInvoiceUrl(invoice, {
+      includeOG: options.includeOG ?? false,
+    })
+  } catch (error) {
+    // Re-throw with user-friendly message
+    if (error instanceof Error && error.message.includes('URL size')) {
+      const sizeMatch = error.message.match(/\((\d+) bytes\)/)
+      const size = sizeMatch?.[1] ? parseInt(sizeMatch[1], 10) : 0
+      throw new UrlSizeError(size)
+    }
+    throw error
+  }
+
+  // Add to history for later retrieval
   addToHistory(invoice, invoiceUrl)
 
-  return invoiceUrl
+  return { url: invoiceUrl, invoice }
 }

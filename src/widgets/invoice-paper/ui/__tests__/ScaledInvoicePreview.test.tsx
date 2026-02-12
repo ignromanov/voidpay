@@ -7,7 +7,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type React from 'react'
 import { ScaledInvoicePreview } from '../ScaledInvoicePreview'
-import { NETWORK_GLOW_SHADOWS, NETWORK_GLOW_BORDERS } from '@/entities/network/config/ui-config'
+import { NETWORK_GLOW_SHADOWS, NETWORK_GLOW_BORDERS } from '@/entities/network'
 
 // Helper to render with userEvent
 function renderWithUser(ui: React.ReactElement) {
@@ -160,7 +160,7 @@ describe('ScaledInvoicePreview', () => {
 
       const scaledDiv = container.querySelector('[style*="transform"]') as HTMLElement
       expect(scaledDiv).toBeInTheDocument()
-      expect(scaledDiv).toHaveStyle('transform: scale(0.75)')
+      expect(scaledDiv).toHaveStyle('transform: translate(-50%, -50%) scale(0.75)')
     })
 
     it('applies scaled dimensions to wrapper', () => {
@@ -190,7 +190,7 @@ describe('ScaledInvoicePreview', () => {
       )
 
       const scaledDiv = container.querySelector('[style*="transform"]') as HTMLElement
-      expect(scaledDiv).toHaveStyle('transform: scale(0.5)')
+      expect(scaledDiv).toHaveStyle('transform: translate(-50%, -50%) scale(0.5)')
 
       const wrapper = container.querySelector('[style*="width"]') as HTMLElement
       expect(wrapper).toHaveStyle({ width: '400px', height: '565px' })
@@ -198,11 +198,9 @@ describe('ScaledInvoicePreview', () => {
   })
 
   describe('glow effects', () => {
-    it('applies glowClassName for elliptical glow', () => {
-      const glowClass = NETWORK_GLOW_SHADOWS[1] // Ethereum
-
+    it('applies ambient glow for non-modal preset with networkId', () => {
       const { container } = renderWithUser(
-        <ScaledInvoicePreview preset="demo" glowClassName={glowClass}>
+        <ScaledInvoicePreview preset="demo" networkId={1}>
           <div>Glowing</div>
         </ScaledInvoicePreview>
       )
@@ -210,22 +208,24 @@ describe('ScaledInvoicePreview', () => {
       const wrapper = container.querySelector('[style*="width"]') as HTMLElement
       // Glow applied via before: pseudo-element classes
       expect(wrapper.className).toContain('before:')
+      // Should contain Ethereum glow colors
+      expect(wrapper.className).toContain(NETWORK_GLOW_SHADOWS[1])
     })
 
-    it('applies borderClassName for modal borders', () => {
-      const borderClass = NETWORK_GLOW_BORDERS[42161] // Arbitrum
-
+    it('applies border glow for modal preset with networkId', () => {
       const { container } = renderWithUser(
-        <ScaledInvoicePreview preset="modal" borderClassName={borderClass}>
+        <ScaledInvoicePreview preset="modal" networkId={42161}>
           <div>Bordered</div>
         </ScaledInvoicePreview>
       )
 
       const wrapper = container.querySelector('[style*="width"]') as HTMLElement
       expect(wrapper.className).toContain('ring')
+      // Should contain Arbitrum border colors
+      expect(wrapper.className).toContain(NETWORK_GLOW_BORDERS[42161])
     })
 
-    it('renders without glow when glowClassName not provided', () => {
+    it('renders without glow when networkId not provided', () => {
       const { container } = renderWithUser(
         <ScaledInvoicePreview preset="demo">
           <div>No Glow</div>
@@ -233,14 +233,12 @@ describe('ScaledInvoicePreview', () => {
       )
 
       const wrapper = container.querySelector('[style*="width"]') as HTMLElement
-      // Should not have before: classes when no glow
-      const hasBeforePseudo = wrapper.className.includes('before:bg-gradient')
-      expect(hasBeforePseudo).toBe(false)
+      expect(wrapper.className).not.toContain('before:bg-gradient')
     })
 
-    it('renders without border when borderClassName not provided', () => {
+    it('renders without border when networkId not provided on modal', () => {
       const { container } = renderWithUser(
-        <ScaledInvoicePreview preset="demo">
+        <ScaledInvoicePreview preset="modal">
           <div>No Border</div>
         </ScaledInvoicePreview>
       )
@@ -445,7 +443,7 @@ describe('ScaledInvoicePreview', () => {
       expect(printTarget).not.toBeInTheDocument()
     })
 
-    it('applies print-specific classes', () => {
+    it('applies print:hidden when not printable (default)', () => {
       const { container } = renderWithUser(
         <ScaledInvoicePreview preset="demo">
           <div>Test</div>
@@ -453,12 +451,12 @@ describe('ScaledInvoicePreview', () => {
       )
 
       const innerWrapper = container.querySelector('[style*="transform"]') as HTMLElement
-      expect(innerWrapper).toHaveClass('print:static')
-      expect(innerWrapper).toHaveClass('print:!transform-none')
+      expect(innerWrapper).toHaveClass('print:hidden')
+      expect(innerWrapper).not.toHaveClass('invoice-print-target')
     })
 
     it('hides overlay on print', () => {
-      const { container } = renderWithUser(
+      renderWithUser(
         <ScaledInvoicePreview preset="demo" overlay={<div>Overlay</div>}>
           <div>Test</div>
         </ScaledInvoicePreview>
@@ -541,28 +539,17 @@ describe('ScaledInvoicePreview', () => {
       expect(wrapper).toHaveStyle({ width: '480px', height: '678px' })
     })
 
-    it('applies will-change for performance', () => {
-      const { container } = renderWithUser(
-        <ScaledInvoicePreview preset="demo">
-          <div>Performance</div>
-        </ScaledInvoicePreview>
-      )
-
-      const wrapper = container.querySelector('[style*="width"]') as HTMLElement
-      expect(wrapper).toHaveStyle('will-change: width, height')
-    })
-
-    it('has transition classes for smooth scaling', () => {
+    it('has transition classes for smooth scaling on inner element', () => {
       const { container } = renderWithUser(
         <ScaledInvoicePreview preset="demo">
           <div>Smooth</div>
         </ScaledInvoicePreview>
       )
 
-      const wrapper = container.querySelector('[style*="width"]') as HTMLElement
-      expect(wrapper).toHaveClass('transition-[width,height]')
-      expect(wrapper).toHaveClass('duration-200')
-      expect(wrapper).toHaveClass('ease-out')
+      const scaledDiv = container.querySelector('[style*="transform"]') as HTMLElement
+      expect(scaledDiv).toHaveClass('transition-transform')
+      expect(scaledDiv).toHaveClass('duration-300')
+      expect(scaledDiv).toHaveClass('ease-out')
     })
   })
 
@@ -582,7 +569,7 @@ describe('ScaledInvoicePreview', () => {
       )
 
       const scaledDiv = container.querySelector('[style*="transform"]') as HTMLElement
-      expect(scaledDiv).toHaveStyle('transform: scale(0)')
+      expect(scaledDiv).toHaveStyle('transform: translate(-50%, -50%) scale(0)')
     })
 
     it('handles very large scale values', () => {
@@ -600,7 +587,7 @@ describe('ScaledInvoicePreview', () => {
       )
 
       const scaledDiv = container.querySelector('[style*="transform"]') as HTMLElement
-      expect(scaledDiv).toHaveStyle('transform: scale(2.5)')
+      expect(scaledDiv).toHaveStyle('transform: translate(-50%, -50%) scale(2.5)')
     })
 
     it('renders without children', () => {
@@ -621,20 +608,17 @@ describe('ScaledInvoicePreview', () => {
       expect(screen.queryByRole('button')).not.toBeInTheDocument()
     })
 
-    it('handles both glow and border simultaneously', () => {
+    it('applies ambient glow (not border) for non-modal preset', () => {
       const { container } = renderWithUser(
-        <ScaledInvoicePreview
-          preset="demo"
-          glowClassName="before:from-violet-500"
-          borderClassName="ring-1 ring-violet-500"
-        >
-          <div>Both Effects</div>
+        <ScaledInvoicePreview preset="editor" networkId={10}>
+          <div>Editor Glow</div>
         </ScaledInvoicePreview>
       )
 
       const wrapper = container.querySelector('[style*="width"]') as HTMLElement
+      // Non-modal preset → ambient glow (before:), no border (ring)
       expect(wrapper.className).toContain('before:')
-      expect(wrapper.className).toContain('ring')
+      expect(wrapper.className).not.toContain('ring')
     })
   })
 

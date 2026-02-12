@@ -7,11 +7,13 @@
 
 'use client'
 
-import { Github, Twitter } from 'lucide-react'
+import { GithubIcon, TwitterIcon } from '@/shared/ui/icons'
 import Link from 'next/link'
 
 import { SOCIAL_URLS } from '@/shared/config'
-import { AuroraText, Button, Heading, Text } from '@/shared/ui'
+import { AuroraText } from '@/shared/ui/aurora-text'
+import { Button } from '@/shared/ui/button'
+import { Heading, Text } from '@/shared/ui/typography'
 
 export function FooterCta() {
   return (
@@ -38,6 +40,7 @@ export function FooterCta() {
               variant="glow"
               size="lg"
               className="h-16 rounded-2xl px-12 text-xl shadow-[0_0_60px_-15px_rgba(124,58,237,0.5)]"
+              data-umami-event="cta_footer_create"
             >
               Get Paid Now
             </Button>
@@ -53,8 +56,9 @@ export function FooterCta() {
             rel="noopener noreferrer"
             aria-label="GitHub"
             className="text-zinc-400 transition-colors hover:text-white"
+            data-umami-event="outbound_github"
           >
-            <Github className="h-6 w-6" />
+            <GithubIcon className="h-6 w-6" />
           </a>
           <a
             href={SOCIAL_URLS.twitter}
@@ -62,8 +66,9 @@ export function FooterCta() {
             rel="noopener noreferrer"
             aria-label="Twitter"
             className="text-zinc-400 transition-colors hover:text-white"
+            data-umami-event="outbound_twitter"
           >
-            <Twitter className="h-6 w-6" />
+            <TwitterIcon className="h-6 w-6" />
           </a>
         </div>
       </div>

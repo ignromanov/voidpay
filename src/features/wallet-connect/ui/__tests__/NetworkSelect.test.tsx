@@ -75,23 +75,15 @@ describe('NetworkSelect - Selection Logic', () => {
   })
 })
 
-describe('NetworkSelect - Wagmi Integration', () => {
+describe('NetworkSelect - onChange behavior', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('should call switchChain when network is selected', async () => {
-    const switchChain = vi.fn()
-    const { useSwitchChain } = await import('wagmi')
-    vi.mocked(useSwitchChain).mockReturnValue({
-      switchChain,
-      // @ts-expect-error - partial mock
-      chains: [],
-      isPending: false,
-    })
-
+  it('should call onChange with chainId when network is selected', async () => {
+    const onChange = vi.fn()
     const user = userEvent.setup()
-    render(<NetworkSelect value={1} onChange={() => {}} />)
+    render(<NetworkSelect value={1} onChange={onChange} />)
 
     const trigger = screen.getByRole('combobox')
     await user.click(trigger)
@@ -99,19 +91,12 @@ describe('NetworkSelect - Wagmi Integration', () => {
     const polygonOption = screen.getByText('Polygon')
     await user.click(polygonOption)
 
-    expect(switchChain).toHaveBeenCalledWith({ chainId: 137 })
+    // NetworkSelect is a pure UI component - it calls onChange, not switchChain
+    // Wallet network switching is handled separately in payment flow
+    expect(onChange).toHaveBeenCalledWith(137)
   })
 
-  it('should handle missing switchChain gracefully', async () => {
-    const { useSwitchChain } = await import('wagmi')
-    vi.mocked(useSwitchChain).mockReturnValue({
-      // @ts-expect-error - Testing undefined switchChain
-      switchChain: undefined,
-      // @ts-expect-error - partial mock
-      chains: [],
-      isPending: false,
-    })
-
+  it('should call onChange with correct chainId for Optimism', async () => {
     const onChange = vi.fn()
     const user = userEvent.setup()
 
@@ -123,7 +108,6 @@ describe('NetworkSelect - Wagmi Integration', () => {
     const optimismOption = screen.getByText('Optimism')
     await user.click(optimismOption)
 
-    // Should still call onChange even if switchChain is unavailable
     expect(onChange).toHaveBeenCalledWith(10)
   })
 })

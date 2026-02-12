@@ -6,7 +6,8 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@/shared/lib/test-utils'
+import userEvent from '@testing-library/user-event'
 import { AddressInput } from '../address-input'
 
 describe('AddressInput - Address Validation (T010-test)', () => {
@@ -65,14 +66,13 @@ describe('AddressInput - Address Validation (T010-test)', () => {
     expect(onValidChange).toHaveBeenCalledWith(true)
   })
 
-  it('should call onChange handler when value changes', () => {
+  it('should call onChange handler when value changes', async () => {
+    const user = userEvent.setup()
     const onChange = vi.fn()
     render(<AddressInput value="" onChange={onChange} />)
 
     const input = screen.getByRole('textbox')
-    fireEvent.change(input, {
-      target: { value: '0x1234567890123456789012345678901234567890' },
-    })
+    await user.type(input, '0x1234567890123456789012345678901234567890')
 
     expect(onChange).toHaveBeenCalled()
   })

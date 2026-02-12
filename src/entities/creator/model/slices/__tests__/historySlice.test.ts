@@ -5,10 +5,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useCreatorStore } from '../../useCreatorStore'
 
-// Mock uuid for deterministic tests
-vi.mock('uuid', () => ({
-  v4: vi.fn(() => 'test-uuid-1234'),
-}))
+// Mock uuid with fixed value for deterministic tests
+vi.mock('uuid', () => ({ v4: () => 'test-uuid-1234' }))
 
 describe('historySlice', () => {
   beforeEach(() => {
@@ -81,7 +79,7 @@ describe('historySlice', () => {
 
       const state = useCreatorStore.getState()
       expect(state.history[0].entryId).toBe('test-uuid-1234')
-      expect(state.history[0].createdAt).toBeDefined()
+      expect(state.history[0].createdAt).toEqual(expect.any(String))
     })
 
     it('prepends new entries to history', () => {

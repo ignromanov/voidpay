@@ -6,7 +6,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import { ArrowLeftIcon, Button, Heading, Text } from '@/shared/ui'
+import { ArrowLeftIcon } from '@/shared/ui/icons'
+import { Button } from '@/shared/ui/button'
+import { Heading, Text } from '@/shared/ui/typography'
 
 import { termsContent } from './content'
 

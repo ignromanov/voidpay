@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen } from '@/shared/test-utils'
+import { render, screen } from '@/shared/lib/test-utils'
 import { motion, AnimatePresence } from '../motion'
 import { useReducedMotion } from '../hooks/use-reduced-motion'
 

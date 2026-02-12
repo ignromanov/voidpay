@@ -39,7 +39,7 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-mouse-pointer-click h-10 w-10 text-violet-400"
+                class="h-10 w-10 text-violet-400"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -63,7 +63,7 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
                   d="M7.2 2.2 8 5.1"
                 />
                 <path
-                  d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"
+                  d="M9 9.7a.5.5 0 0 1 .7-.7l11 4.5a.5.5 0 0 1-.1.9l-4.3 1a1 1 0 0 0-.7.7l-1 4.4a.5.5 0 0 1-1 .1z"
                 />
               </svg>
             </div>
@@ -88,7 +88,7 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="lucide lucide-arrow-right h-6 w-6 text-zinc-600"
+              class="h-6 w-6 text-zinc-600"
               fill="none"
               height="24"
               stroke="currentColor"
@@ -119,7 +119,7 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-share2 lucide-share-2 h-10 w-10 text-violet-400"
+                class="h-10 w-10 text-violet-400"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -180,7 +180,7 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="lucide lucide-arrow-right h-6 w-6 text-zinc-600"
+              class="h-6 w-6 text-zinc-600"
               fill="none"
               height="24"
               stroke="currentColor"
@@ -211,7 +211,7 @@ exports[`HowItWorks > T023-test: Snapshot > should match snapshot 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-wallet h-10 w-10 text-violet-400"
+                class="h-10 w-10 text-violet-400"
                 fill="none"
                 height="24"
                 stroke="currentColor"

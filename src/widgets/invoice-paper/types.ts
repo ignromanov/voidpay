@@ -37,24 +37,12 @@ interface InvoicePaperBaseProps {
   variant?: InvoicePaperVariant | undefined
 
   /**
-   * Whether to show the QR code in the footer.
-   * @default true
-   */
-  showQR?: boolean | undefined
-
-  /**
    * Whether to show the texture overlay.
    * Disable for better print quality.
    * @default true
    */
   showTexture?: boolean | undefined
 
-  /**
-   * Whether to show the network-colored glow effect around the invoice.
-   * Creates a soft ambient glow matching the blockchain network color.
-   * @default false
-   */
-  showGlow?: boolean | undefined
 
   /**
    * Invoice URL for sharing/linking.

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, userEvent } from '@/shared/test-utils'
+import { render, screen, userEvent } from '@/shared/lib/test-utils'
 import {
   Popover,
   PopoverTrigger,

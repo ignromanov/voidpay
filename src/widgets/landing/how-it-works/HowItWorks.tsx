@@ -6,9 +6,9 @@
 
 import type { SVGProps } from 'react'
 
-import { ArrowRight } from 'lucide-react'
+import { ArrowRightIcon } from '@/shared/ui/icons'
 
-import { Heading, Text } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui/typography'
 
 import { WORKFLOW_STEPS } from '../constants/features'
 
@@ -51,7 +51,7 @@ function TimelineStep({
       {/* Arrow to next step (hidden on mobile, shown on md+) */}
       {!isLast && (
         <div className="absolute top-10 right-0 hidden translate-x-1/2 md:block">
-          <ArrowRight className="h-6 w-6 text-zinc-600" aria-hidden="true" />
+          <ArrowRightIcon className="h-6 w-6 text-zinc-600" aria-hidden="true" />
         </div>
       )}
     </div>

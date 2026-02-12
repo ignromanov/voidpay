@@ -10,7 +10,7 @@
  */
 
 import { usePathname } from 'next/navigation'
-import { Github, Twitter } from 'lucide-react'
+import { GithubIcon, TwitterIcon } from '@/shared/ui/icons'
 
 import { AnalyticsToggle } from '@/features/analytics'
 import { SOCIAL_URLS } from '@/shared/config'
@@ -54,7 +54,7 @@ export function Footer() {
             className="rounded p-1.5 transition-colors hover:bg-zinc-800/50 hover:text-zinc-300"
             aria-label="GitHub"
           >
-            <Github className="h-4 w-4" />
+            <GithubIcon className="h-4 w-4" />
           </a>
           <a
             href={SOCIAL_URLS.twitter}
@@ -63,7 +63,7 @@ export function Footer() {
             className="rounded p-1.5 transition-colors hover:bg-zinc-800/50 hover:text-zinc-300"
             aria-label="Twitter"
           >
-            <Twitter className="h-4 w-4" />
+            <TwitterIcon className="h-4 w-4" />
           </a>
         </div>
       </div>

@@ -6,19 +6,21 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useCreatorStore } from '../../useCreatorStore'
 
 // Mock uuid with incrementing counter for unique IDs
-let uuidCounter = 0
-vi.mock('uuid', () => ({
-  v4: () => `test-uuid-${++uuidCounter}`,
-}))
+const uuidMock = vi.hoisted(() => {
+  let counter = 0
+  return { v4: () => `test-uuid-${++counter}`, _reset: () => { counter = 0 } }
+})
+vi.mock('uuid', () => uuidMock)
 
 describe('draftSlice', () => {
   beforeEach(() => {
     // Reset uuid counter for each test
-    uuidCounter = 0
+    uuidMock._reset()
     // Reset store state
     useCreatorStore.setState({
       activeDraft: null,
       lineItems: [],
+      draftSyncStatus: 'idle',
       templates: [],
       history: [],
       preferences: {
@@ -41,6 +43,46 @@ describe('draftSlice', () => {
     it('initializes with empty lineItems', () => {
       const state = useCreatorStore.getState()
       expect(state.lineItems).toEqual([])
+    })
+
+    it('initializes with idle draftSyncStatus', () => {
+      const state = useCreatorStore.getState()
+      expect(state.draftSyncStatus).toBe('idle')
+    })
+  })
+
+  describe('setDraftSyncStatus', () => {
+    it('sets sync status to syncing', () => {
+      const { setDraftSyncStatus } = useCreatorStore.getState()
+
+      setDraftSyncStatus('syncing')
+
+      const state = useCreatorStore.getState()
+      expect(state.draftSyncStatus).toBe('syncing')
+    })
+
+    it('sets sync status to synced', () => {
+      const { setDraftSyncStatus } = useCreatorStore.getState()
+
+      setDraftSyncStatus('synced')
+
+      const state = useCreatorStore.getState()
+      expect(state.draftSyncStatus).toBe('synced')
+    })
+
+    it('transitions through all states', () => {
+      const { setDraftSyncStatus } = useCreatorStore.getState()
+
+      expect(useCreatorStore.getState().draftSyncStatus).toBe('idle')
+
+      setDraftSyncStatus('syncing')
+      expect(useCreatorStore.getState().draftSyncStatus).toBe('syncing')
+
+      setDraftSyncStatus('synced')
+      expect(useCreatorStore.getState().draftSyncStatus).toBe('synced')
+
+      setDraftSyncStatus('idle')
+      expect(useCreatorStore.getState().draftSyncStatus).toBe('idle')
     })
   })
 
@@ -67,6 +109,30 @@ describe('draftSlice', () => {
       expect(state.activeDraft?.data.from.name).toBe('Test Sender')
     })
 
+    it('uses fallback defaults when preferences are empty', () => {
+      // Reset store with empty preferences
+      useCreatorStore.setState({
+        activeDraft: null,
+        lineItems: [],
+        templates: [],
+        history: [],
+        preferences: {},
+        networkTheme: 'ethereum',
+        idCounter: { currentValue: 1, prefix: 'INV' },
+      })
+
+      const { createNewDraft } = useCreatorStore.getState()
+
+      createNewDraft()
+
+      const state = useCreatorStore.getState()
+      expect(state.activeDraft?.data.invoiceId).toBe('INV-001')
+      expect(state.activeDraft?.data.networkId).toBe(42161) // Default: Arbitrum
+      expect(state.activeDraft?.data.currency).toBe('USDC')
+      expect(state.activeDraft?.data.decimals).toBe(6)
+      expect(state.activeDraft?.data.from.name).toBe('')
+    })
+
     it('creates one default line item', () => {
       const { createNewDraft } = useCreatorStore.getState()
 
@@ -77,7 +143,7 @@ describe('draftSlice', () => {
       expect(state.lineItems[0]).toMatchObject({
         description: '',
         quantity: 1,
-        rate: '0',
+        rate: '',
       })
     })
 

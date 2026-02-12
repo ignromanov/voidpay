@@ -3,13 +3,13 @@
  * Feature: 012-landing-page
  */
 
-import type { LucideIcon } from 'lucide-react'
+import type { IconProps } from '@/shared/ui/icons'
 
 import { cn } from '@/shared/lib/utils'
-import { Heading, Text } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui/typography'
 
 export type AudienceCardProps = {
-  icon: LucideIcon
+  icon: React.ComponentType<IconProps>
   title: string
   headline: string
   description: string

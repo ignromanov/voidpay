@@ -7,7 +7,7 @@
  * Uses viem for EIP-55 checksum validation.
  */
 
-import { isAddress, getAddress } from 'viem'
+import { isAddress, getAddress, isAddressEqual, type Address } from 'viem'
 
 /**
  * Regular expression to validate Ethereum addresses (basic format check)
@@ -68,4 +68,45 @@ export function validateAddress(address: string): `0x${string}` | null {
  */
 export function isValidAddress(address: string): address is `0x${string}` {
   return isAddress(address)
+}
+
+/**
+ * Compares two Ethereum addresses for equality (case-insensitive)
+ *
+ * Handles null/undefined for native tokens (ETH, POL) which have no contract address.
+ * Uses viem's isAddressEqual for proper EIP-55 checksum-safe comparison.
+ *
+ * @param a - First address (can be null for native tokens)
+ * @param b - Second address (can be null for native tokens)
+ * @returns true if addresses are equal (or both null/undefined)
+ *
+ * @example
+ * ```typescript
+ * // Same address, different case
+ * addressesMatch('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48')
+ * // Returns: true
+ *
+ * // Native tokens (null addresses)
+ * addressesMatch(null, null)
+ * // Returns: true
+ *
+ * // One null, one address
+ * addressesMatch(null, '0xa0b86991...')
+ * // Returns: false
+ * ```
+ */
+export function addressesMatch(
+  a: string | null | undefined,
+  b: string | null | undefined
+): boolean {
+  // Both null = native token match
+  if (a === null && b === null) return true
+  if (a === undefined && b === undefined) return true
+  // One is null/undefined, other is not
+  if (!a || !b) return false
+  try {
+    return isAddressEqual(a as Address, b as Address)
+  } catch {
+    return false
+  }
 }

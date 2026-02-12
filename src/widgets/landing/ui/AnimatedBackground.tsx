@@ -22,7 +22,7 @@
  * FSD Note: Widget-to-widget import (@/widgets/network-background) is intentional.
  */
 
-import { PixiBackground } from '@/widgets/network-background'
+import { PixiBackground } from '@/widgets/network-background/PixiBackground'
 import { useNetworkTheme } from '../context/network-theme-context'
 
 export function AnimatedBackground() {

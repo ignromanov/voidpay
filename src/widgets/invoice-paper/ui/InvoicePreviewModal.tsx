@@ -1,16 +1,16 @@
 'use client'
 
-import React, { useMemo, useCallback, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { X, Printer, Download } from 'lucide-react'
-import { Dialog, DialogContent, DialogTitle, DialogClose, Badge, Button } from '@/shared/ui'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import { motion } from '@/shared/ui/motion'
+import { XIcon, PrinterIcon, DownloadIcon } from '@/shared/ui/icons'
+import { Dialog, DialogContent, DialogTitle, DialogClose, DialogDescription } from '@/shared/ui/dialog'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
 import { InvoicePaper } from './InvoicePaper'
 import { ScaledInvoicePreview } from './ScaledInvoicePreview'
 import { InvoiceStatus } from '../types'
-import { Invoice, PartialInvoice } from '@/entities/invoice'
-import { NETWORK_GLOW_BORDERS } from '@/entities/network'
+import { PartialInvoice, invoiceSchema } from '@/entities/invoice'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
-import { toast } from '@/shared/lib/toast'
 
 // Animation variants for smooth enter/exit
 const headerVariants = {
@@ -78,17 +78,21 @@ export interface InvoicePreviewModalProps {
 
 export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
   ({ data, status = 'pending', txHash, txHashValidated = true, open, onOpenChange }) => {
-    // Generate invoice URL for linking (only if data is complete enough)
+    // Generate invoice URL only when data passes full schema validation
+    // Uses Zod safeParse — no errors thrown, no toasts, silent fail
     const invoiceUrl = useMemo(() => {
-      // Need minimum required fields to generate URL
-      if (!data.invoiceId || !data.from?.walletAddress || !data.networkId) {
+      const result = invoiceSchema.safeParse(data)
+      if (!result.success) {
         return undefined
       }
       try {
-        return generateInvoiceUrl(data as Invoice)
+        return generateInvoiceUrl(result.data)
       } catch (error) {
-        console.error('URL generation failed:', error)
-        toast.error('Failed to generate invoice URL')
+        // Log encoder errors for debugging (shouldn't happen after Zod validation)
+        console.error('[InvoicePreviewModal] URL generation failed:', {
+          invoiceId: result.data.invoiceId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        })
         return undefined
       }
     }, [data])
@@ -126,13 +130,11 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="flex h-[100dvh] w-screen max-w-none flex-col overflow-hidden border-none bg-zinc-900/90 p-0 shadow-2xl backdrop-blur-xl sm:h-[95vh] sm:max-w-[95vw] lg:w-[880px] lg:max-w-[95vw] print:hidden [&>button]:hidden"
-          aria-describedby="invoice-preview-description"
+          className="flex h-[100dvh] w-screen max-w-none flex-col gap-0 overflow-hidden border-none bg-zinc-900/90 p-0 shadow-2xl backdrop-blur-xl sm:h-[95vh] sm:w-fit sm:max-w-[95vw] print:hidden [&>button]:hidden"
         >
-          {/* Screen reader description */}
-          <p id="invoice-preview-description" className="sr-only">
+          <DialogDescription className="sr-only">
             Full-screen invoice preview. Press ESC to close, P to print.
-          </p>
+          </DialogDescription>
 
           {/* Animated header */}
           <motion.div
@@ -171,21 +173,25 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               className="cursor-pointer rounded-full bg-zinc-800 p-1.5 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none sm:p-2"
               aria-label="Close preview"
             >
-              <X className="h-5 w-5" />
+              <XIcon className="h-5 w-5" />
             </DialogClose>
           </motion.div>
 
-          {/* Invoice container — glow handled by ScaledInvoicePreview */}
+          {/* Invoice scroll container — no padding here (moved to content wrapper) */}
           <motion.div
             variants={invoiceVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-1 cursor-zoom-out items-start justify-center overflow-auto px-0 py-2 sm:p-2 md:p-4"
-            onClick={() => onOpenChange(false)}
+            className="flex flex-1 cursor-zoom-out items-start overflow-auto"
           >
+            {/* Content wrapper — padding is part of scrollable content (not clipped at edges) */}
+            <div
+              className="flex min-h-full min-w-full shrink-0 items-start justify-center p-4 sm:p-6"
+              onClick={() => onOpenChange(false)}
+            >
             <ScaledInvoicePreview
               preset="modal"
-              borderClassName={NETWORK_GLOW_BORDERS[data.networkId ?? 1]}
+              networkId={data.networkId ?? 1}
               className="shrink-0"
               onClick={(e) => e.stopPropagation()}
             >
@@ -197,6 +203,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
                   txHash={txHash}
                   txHashValidated={txHashValidated}
                   variant="full"
+
                   invoiceUrl={invoiceUrl}
                 />
               ) : (
@@ -206,10 +213,12 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
                   txHash={txHash}
                   txHashValidated={txHashValidated}
                   variant="full"
+
                   invoiceUrl={invoiceUrl}
                 />
               )}
             </ScaledInvoicePreview>
+            </div>
           </motion.div>
 
           {/* Action bar — sticky bottom */}
@@ -225,7 +234,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               className="gap-2 text-zinc-300 hover:text-white"
               onClick={handleDownloadPdf}
             >
-              <Download className="h-5 w-5 sm:h-4 sm:w-4" />
+              <DownloadIcon className="h-5 w-5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Download PDF</span>
               <span className="sm:hidden">PDF</span>
             </Button>
@@ -235,7 +244,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               className="gap-2 text-zinc-300 hover:text-white"
               onClick={handlePrint}
             >
-              <Printer className="h-5 w-5 sm:h-4 sm:w-4" />
+              <PrinterIcon className="h-5 w-5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Print</span>
             </Button>
 

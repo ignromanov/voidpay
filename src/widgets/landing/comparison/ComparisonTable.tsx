@@ -4,9 +4,9 @@
  * Research: Honest comparison builds trust (23% conversion lift)
  */
 
-import { Check, X, Minus } from 'lucide-react'
+import { CheckIcon, XIcon, MinusIcon } from '@/shared/ui/icons'
 
-import { Heading, Text } from '@/shared/ui'
+import { Heading, Text } from '@/shared/ui/typography'
 
 type ComparisonValue = 'yes' | 'no' | 'partial' | string
 
@@ -108,7 +108,7 @@ function ValueCell({ value }: { value: ComparisonValue }) {
     return (
       <div className="flex justify-center">
         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20">
-          <Check className="h-4 w-4 text-emerald-400" />
+          <CheckIcon className="h-4 w-4 text-emerald-400" />
         </div>
       </div>
     )
@@ -117,7 +117,7 @@ function ValueCell({ value }: { value: ComparisonValue }) {
     return (
       <div className="flex justify-center">
         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500/20">
-          <X className="h-4 w-4 text-red-400" />
+          <XIcon className="h-4 w-4 text-red-400" />
         </div>
       </div>
     )
@@ -126,7 +126,7 @@ function ValueCell({ value }: { value: ComparisonValue }) {
     return (
       <div className="flex justify-center">
         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500/20">
-          <Minus className="h-4 w-4 text-yellow-400" />
+          <MinusIcon className="h-4 w-4 text-yellow-400" />
         </div>
       </div>
     )

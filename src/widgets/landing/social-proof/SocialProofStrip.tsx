@@ -9,12 +9,7 @@
 
 import type { ComponentType, SVGProps } from 'react'
 
-import {
-  GithubIcon,
-  GlobeIcon,
-  LockIcon,
-  ServerOffIcon,
-} from '@/shared/ui'
+import { GithubIcon, GlobeIcon, LockIcon, ServerOffIcon } from '@/shared/ui/icons'
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement> & { size?: number | string }>
 

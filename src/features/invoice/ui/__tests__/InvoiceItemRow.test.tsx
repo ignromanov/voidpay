@@ -3,35 +3,39 @@
  *
  * Constitutional Principle XVI: TDD Discipline
  * Tests for line item management and calculations
+ *
+ * All rates are in atomic units (e.g., $100.50 with 6 decimals = "100500000")
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-import { userEvent } from '@testing-library/user-event'
+import { render, screen, fireEvent } from '@/shared/lib/test-utils'
+import userEvent from '@testing-library/user-event'
 import { InvoiceItemRow } from '../InvoiceItemRow'
 import type { LineItem } from '@/entities/invoice'
 
+// $100.50 in atomic units (6 decimals)
 const mockLineItem: LineItem = {
   id: '123',
   description: 'Web Development Services',
   quantity: 10,
-  rate: '100.50',
+  rate: '100500000', // $100.50 in atomic units
 }
 
 describe('InvoiceItemRow - Field Updates', () => {
-  it('should update description when changed', async () => {
+  it('should update description when changed', () => {
     const onUpdate = vi.fn()
 
     render(
       <InvoiceItemRow
         item={mockLineItem}
         currencySymbol="USDC"
+        decimals={6}
         onUpdate={onUpdate}
         onRemove={() => {}}
       />
     )
 
-    const descInput = screen.getByPlaceholderText('Item description') as HTMLInputElement
+    const descInput = screen.getByPlaceholderText('Item description')
     fireEvent.change(descInput, { target: { value: 'New description' } })
 
     expect(onUpdate).toHaveBeenCalled()
@@ -39,19 +43,20 @@ describe('InvoiceItemRow - Field Updates', () => {
     expect(lastCall.description).toBe('New description')
   })
 
-  it('should update quantity when changed', async () => {
+  it('should update quantity when changed', () => {
     const onUpdate = vi.fn()
 
     render(
       <InvoiceItemRow
         item={mockLineItem}
         currencySymbol="USDC"
+        decimals={6}
         onUpdate={onUpdate}
         onRemove={() => {}}
       />
     )
 
-    const qtyInput = screen.getByPlaceholderText('Qty') as HTMLInputElement
+    const qtyInput = screen.getByPlaceholderText('Qty')
     fireEvent.change(qtyInput, { target: { value: '25' } })
 
     expect(onUpdate).toHaveBeenCalled()
@@ -59,24 +64,28 @@ describe('InvoiceItemRow - Field Updates', () => {
     expect(lastCall.quantity).toBe(25)
   })
 
-  it('should update rate when changed', async () => {
+  it('should update rate to atomic units when changed', async () => {
+    const user = userEvent.setup()
     const onUpdate = vi.fn()
 
     render(
       <InvoiceItemRow
         item={mockLineItem}
         currencySymbol="USDC"
+        decimals={6}
         onUpdate={onUpdate}
         onRemove={() => {}}
       />
     )
 
-    const rateInput = screen.getByPlaceholderText('0.00') as HTMLInputElement
-    fireEvent.change(rateInput, { target: { value: '150.75' } })
+    const rateInput = screen.getByPlaceholderText('0.00')
+    await user.clear(rateInput)
+    await user.type(rateInput, '150.75')
 
     expect(onUpdate).toHaveBeenCalled()
     const lastCall = onUpdate.mock.calls[onUpdate.mock.calls.length - 1]?.[0]
-    expect(lastCall.rate).toBe('150.75')
+    // $150.75 should be converted to atomic units: 150750000
+    expect(lastCall.rate).toBe('150750000')
   })
 
   it('should prevent invalid quantity (negative)', async () => {
@@ -87,6 +96,7 @@ describe('InvoiceItemRow - Field Updates', () => {
       <InvoiceItemRow
         item={mockLineItem}
         currencySymbol="USDC"
+        decimals={6}
         onUpdate={onUpdate}
         onRemove={() => {}}
       />
@@ -110,6 +120,7 @@ describe('InvoiceItemRow - Field Updates', () => {
       <InvoiceItemRow
         item={mockLineItem}
         currencySymbol="USDC"
+        decimals={6}
         onUpdate={onUpdate}
         onRemove={() => {}}
       />
@@ -121,8 +132,8 @@ describe('InvoiceItemRow - Field Updates', () => {
     await user.clear(rateInput)
     await user.type(rateInput, 'abc')
 
-    // Should not update with invalid characters
-    expect(onUpdate).toHaveBeenCalledTimes(initialCallCount + 1) // Only the clear
+    // Should only update on clear (to '0'), not with invalid characters
+    expect(onUpdate).toHaveBeenCalledTimes(initialCallCount + 1)
   })
 })
 
@@ -132,20 +143,27 @@ describe('InvoiceItemRow - Line Total Calculation', () => {
       <InvoiceItemRow
         item={mockLineItem}
         currencySymbol="USDC"
+        decimals={6}
         onUpdate={() => {}}
         onRemove={() => {}}
       />
     )
 
-    // 10 × 100.50 = 1005.00
-    expect(screen.getByText(/1005\.00/)).toBeInTheDocument()
+    // 10 × $100.50 = $1,005.00 (with thousand separator)
+    expect(screen.getByText(/1,005\.00/)).toBeInTheDocument()
   })
 
   it('should update line total when quantity changes', async () => {
     const onUpdate = vi.fn((item) => {
       // Re-render with updated item
       rerender(
-        <InvoiceItemRow item={item} currencySymbol="USDC" onUpdate={onUpdate} onRemove={() => {}} />
+        <InvoiceItemRow
+          item={item}
+          currencySymbol="USDC"
+          decimals={6}
+          onUpdate={onUpdate}
+          onRemove={() => {}}
+        />
       )
     })
     const user = userEvent.setup()
@@ -154,6 +172,7 @@ describe('InvoiceItemRow - Line Total Calculation', () => {
       <InvoiceItemRow
         item={mockLineItem}
         currencySymbol="USDC"
+        decimals={6}
         onUpdate={onUpdate}
         onRemove={() => {}}
       />
@@ -163,7 +182,7 @@ describe('InvoiceItemRow - Line Total Calculation', () => {
     await user.clear(qtyInput)
     await user.type(qtyInput, '5')
 
-    // 5 × 100.50 = 502.50
+    // 5 × $100.50 = $502.50
     expect(screen.getByText(/502\.50/)).toBeInTheDocument()
   })
 
@@ -172,6 +191,7 @@ describe('InvoiceItemRow - Line Total Calculation', () => {
       <InvoiceItemRow
         item={mockLineItem}
         currencySymbol="DAI"
+        decimals={6}
         onUpdate={() => {}}
         onRemove={() => {}}
       />
@@ -187,6 +207,7 @@ describe('InvoiceItemRow - Line Total Calculation', () => {
       <InvoiceItemRow
         item={zeroItem}
         currencySymbol="USDC"
+        decimals={6}
         onUpdate={() => {}}
         onRemove={() => {}}
       />
@@ -205,6 +226,7 @@ describe('InvoiceItemRow - Remove Action', () => {
       <InvoiceItemRow
         item={mockLineItem}
         currencySymbol="USDC"
+        decimals={6}
         onUpdate={() => {}}
         onRemove={onRemove}
       />
@@ -223,6 +245,7 @@ describe('InvoiceItemRow - Snapshots', () => {
       <InvoiceItemRow
         item={mockLineItem}
         currencySymbol="USDC"
+        decimals={6}
         onUpdate={() => {}}
         onRemove={() => {}}
       />
@@ -235,13 +258,14 @@ describe('InvoiceItemRow - Snapshots', () => {
       id: '456',
       description: '',
       quantity: 0,
-      rate: '',
+      rate: '0',
     }
 
     const { container } = render(
       <InvoiceItemRow
         item={emptyItem}
         currencySymbol="ETH"
+        decimals={18}
         onUpdate={() => {}}
         onRemove={() => {}}
       />
@@ -250,17 +274,19 @@ describe('InvoiceItemRow - Snapshots', () => {
   })
 
   it('should match snapshot with decimal values', () => {
+    // $75.25 in atomic units
     const decimalItem: LineItem = {
       id: '789',
       description: 'Consulting',
       quantity: 2.5,
-      rate: '75.25',
+      rate: '75250000', // $75.25 atomic units
     }
 
     const { container } = render(
       <InvoiceItemRow
         item={decimalItem}
         currencySymbol="USDC"
+        decimals={6}
         onUpdate={() => {}}
         onRemove={() => {}}
       />

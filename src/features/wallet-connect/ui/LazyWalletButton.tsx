@@ -24,8 +24,8 @@
  */
 
 import { useState, useCallback, useEffect, type ReactNode, type ComponentType } from 'react'
-import { Wallet, Loader2 } from 'lucide-react'
-import { Button } from '@/shared/ui'
+import { WalletIcon, Loader2Icon } from '@/shared/ui/icons'
+import { Button } from '@/shared/ui/button'
 
 type LoadingState = 'idle' | 'loading' | 'ready' | 'error'
 type ErrorType = 'network' | 'unknown'
@@ -41,12 +41,12 @@ function PlaceholderButton({ onClick, isLoading }: { onClick: () => void; isLoad
     <Button variant="outline" size="sm" className="gap-1.5" onClick={onClick} disabled={isLoading}>
       {isLoading ? (
         <>
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2Icon className="h-4 w-4 animate-spin" />
           Loading...
         </>
       ) : (
         <>
-          <Wallet className="h-4 w-4" />
+          <WalletIcon className="h-4 w-4" />
           Connect
         </>
       )}
@@ -145,7 +145,7 @@ export function LazyWalletButton() {
             : 'Failed to load wallet - click to retry'
         }
       >
-        <Wallet className="h-4 w-4" />
+        <WalletIcon className="h-4 w-4" />
         {errorType === 'network' ? 'Retry Connection' : 'Retry'}
       </Button>
     )

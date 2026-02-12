@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Check, Copy } from 'lucide-react'
+import { CheckIcon, CopyIcon } from '@/shared/ui/icons'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/shared/lib/utils'
 
@@ -67,12 +67,20 @@ async function copyToClipboard(text: string): Promise<boolean> {
 const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
   ({ className, size, value, 'aria-label': ariaLabel, ...props }, ref) => {
     const [state, setState] = React.useState<CopyState>('idle')
+    const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
+    React.useEffect(() => {
+      return () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      }
+    }, [])
 
     const handleClick = React.useCallback(async () => {
       const success = await copyToClipboard(value)
       if (success) {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
         setState('copied')
-        setTimeout(() => setState('idle'), 2000)
+        timeoutRef.current = setTimeout(() => setState('idle'), 2000)
       }
     }, [value])
 
@@ -91,9 +99,9 @@ const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
         {...props}
       >
         {state === 'copied' ? (
-          <Check className="animate-in fade-in zoom-in-75 duration-150" />
+          <CheckIcon className="animate-in fade-in zoom-in-75 duration-150" />
         ) : (
-          <Copy />
+          <CopyIcon />
         )}
       </button>
     )

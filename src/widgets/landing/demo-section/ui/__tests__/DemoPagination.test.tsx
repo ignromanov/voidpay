@@ -4,7 +4,8 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@/shared/lib/test-utils'
+import userEvent from '@testing-library/user-event'
 import { DemoPagination } from '../DemoPagination'
 
 describe('DemoPagination', () => {
@@ -78,37 +79,40 @@ describe('DemoPagination', () => {
   })
 
   describe('Interaction', () => {
-    it('calls onSelect with correct index when clicked', () => {
+    it('calls onSelect with correct index when clicked', async () => {
+      const user = userEvent.setup()
       const onSelect = vi.fn()
       render(<DemoPagination {...defaultProps} onSelect={onSelect} />)
 
       const buttons = screen.getAllByRole('button')
-      fireEvent.click(buttons[1]!)
+      await user.click(buttons[1]!)
 
       expect(onSelect).toHaveBeenCalledWith(1)
     })
 
-    it('calls onSelect for each dot click', () => {
+    it('calls onSelect for each dot click', async () => {
+      const user = userEvent.setup()
       const onSelect = vi.fn()
       render(<DemoPagination {...defaultProps} onSelect={onSelect} />)
 
       const buttons = screen.getAllByRole('button')
 
-      fireEvent.click(buttons[0]!)
+      await user.click(buttons[0]!)
       expect(onSelect).toHaveBeenCalledWith(0)
 
-      fireEvent.click(buttons[2]!)
+      await user.click(buttons[2]!)
       expect(onSelect).toHaveBeenCalledWith(2)
 
       expect(onSelect).toHaveBeenCalledTimes(2)
     })
 
-    it('allows clicking currently active dot', () => {
+    it('allows clicking currently active dot', async () => {
+      const user = userEvent.setup()
       const onSelect = vi.fn()
       render(<DemoPagination {...defaultProps} onSelect={onSelect} activeIndex={0} />)
 
       const buttons = screen.getAllByRole('button')
-      fireEvent.click(buttons[0]!)
+      await user.click(buttons[0]!)
 
       expect(onSelect).toHaveBeenCalledWith(0)
     })

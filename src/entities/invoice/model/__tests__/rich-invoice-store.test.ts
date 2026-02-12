@@ -255,6 +255,110 @@ describe('useRichInvoiceStore', () => {
     })
   })
 
+  describe('setTxHash — paidAt', () => {
+    it('sets paidAt when validated is true', () => {
+      const { addInvoice, setTxHash } = useRichInvoiceStore.getState()
+
+      addInvoice(createMockInvoice({ invoiceId: 'PAID-AT' }))
+      setTxHash('PAID-AT', '0xhash', true)
+
+      const state = useRichInvoiceStore.getState()
+      expect(state.invoices[0].paidAt).toBeDefined()
+      expect(new Date(state.invoices[0].paidAt!).getTime()).not.toBeNaN()
+    })
+
+    it('does not set paidAt when validated is false', () => {
+      const { addInvoice, setTxHash } = useRichInvoiceStore.getState()
+
+      addInvoice(createMockInvoice({ invoiceId: 'NO-PAID-AT' }))
+      setTxHash('NO-PAID-AT', '0xhash', false)
+
+      const state = useRichInvoiceStore.getState()
+      expect(state.invoices[0].paidAt).toBeUndefined()
+    })
+
+    it('preserves existing paidAt when re-calling with validated=false', () => {
+      const { addInvoice, setTxHash } = useRichInvoiceStore.getState()
+
+      addInvoice(createMockInvoice({ invoiceId: 'PRESERVE-PAID' }))
+      setTxHash('PRESERVE-PAID', '0xhash1', true)
+
+      const paidAt = useRichInvoiceStore.getState().invoices[0].paidAt
+      expect(paidAt).toBeDefined()
+
+      setTxHash('PRESERVE-PAID', '0xhash2', false)
+
+      const state = useRichInvoiceStore.getState()
+      expect(state.invoices[0].paidAt).toBe(paidAt)
+    })
+  })
+
+  describe('setConfirmations', () => {
+    it('sets confirmation progress', () => {
+      const { addInvoice, setConfirmations } = useRichInvoiceStore.getState()
+
+      addInvoice(createMockInvoice({ invoiceId: 'CONFIRM-TEST' }))
+      setConfirmations('CONFIRM-TEST', { current: 3, required: 12 })
+
+      const state = useRichInvoiceStore.getState()
+      expect(state.invoices[0].confirmations).toEqual({ current: 3, required: 12 })
+    })
+
+    it('clears confirmations when undefined', () => {
+      const { addInvoice, setConfirmations } = useRichInvoiceStore.getState()
+
+      addInvoice(createMockInvoice({ invoiceId: 'CLEAR-CONFIRM' }))
+      setConfirmations('CLEAR-CONFIRM', { current: 5, required: 12 })
+      setConfirmations('CLEAR-CONFIRM', undefined)
+
+      const state = useRichInvoiceStore.getState()
+      expect(state.invoices[0].confirmations).toBeUndefined()
+    })
+
+    it('handles non-existent invoiceId gracefully', () => {
+      const { addInvoice, setConfirmations } = useRichInvoiceStore.getState()
+
+      addInvoice(createMockInvoice({ invoiceId: 'EXIST' }))
+      setConfirmations('NON-EXISTENT', { current: 1, required: 12 })
+
+      const state = useRichInvoiceStore.getState()
+      expect(state.invoices[0].confirmations).toBeUndefined()
+    })
+  })
+
+  describe('setError', () => {
+    it('sets error message', () => {
+      const { addInvoice, setError } = useRichInvoiceStore.getState()
+
+      addInvoice(createMockInvoice({ invoiceId: 'ERROR-TEST' }))
+      setError('ERROR-TEST', 'Transaction reverted')
+
+      const state = useRichInvoiceStore.getState()
+      expect(state.invoices[0].error).toBe('Transaction reverted')
+    })
+
+    it('clears error with null (converts to undefined)', () => {
+      const { addInvoice, setError } = useRichInvoiceStore.getState()
+
+      addInvoice(createMockInvoice({ invoiceId: 'CLEAR-ERROR' }))
+      setError('CLEAR-ERROR', 'Some error')
+      setError('CLEAR-ERROR', null)
+
+      const state = useRichInvoiceStore.getState()
+      expect(state.invoices[0].error).toBeUndefined()
+    })
+
+    it('handles non-existent invoiceId gracefully', () => {
+      const { addInvoice, setError } = useRichInvoiceStore.getState()
+
+      addInvoice(createMockInvoice({ invoiceId: 'EXIST' }))
+      setError('NON-EXISTENT', 'Error')
+
+      const state = useRichInvoiceStore.getState()
+      expect(state.invoices[0].error).toBeUndefined()
+    })
+  })
+
   describe('edge cases', () => {
     it('handles invoice with createHash', () => {
       const { addInvoice } = useRichInvoiceStore.getState()

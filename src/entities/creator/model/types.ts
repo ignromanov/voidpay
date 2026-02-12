@@ -50,6 +50,14 @@ export interface UserPreferences {
   /** Default invoice ID prefix (e.g., "ACME" -> "ACME-001") */
   /** Max 10 chars, alphanumeric only */
   defaultIdPrefix?: string
+
+  // ========== Privacy & Verification Defaults ==========
+
+  /** Include OG image preview in generated URL (default: true) */
+  includeOgImage?: boolean
+
+  /** Enable Magic Dust verification amount (default: true) */
+  magicDustEnabled?: boolean
 }
 
 /**

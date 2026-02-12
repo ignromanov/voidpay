@@ -4,7 +4,7 @@
  * Central export point for all store slices.
  */
 
-export { createDraftSlice, type DraftSlice } from './draftSlice'
+export { createDraftSlice, type DraftSlice, type DraftSyncStatus } from './draftSlice'
 export { createTemplateSlice, type TemplateSlice } from './templateSlice'
 export { createHistorySlice, type HistorySlice } from './historySlice'
 export { createPreferencesSlice, type PreferencesSlice } from './preferencesSlice'

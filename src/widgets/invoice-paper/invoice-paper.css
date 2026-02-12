@@ -15,7 +15,7 @@
  * - Unlayered rules: Override Tailwind/inline styles with !important
  */
 
-@layer invoice-print-base, invoice-print-show, invoice-print-hide;
+@layer invoice-paper.print-base, invoice-paper.print-show, invoice-paper.print-hide;
 
 @media print {
   /* Page setup — minimal margins for more content space */
@@ -71,14 +71,14 @@
    * LAYERED RULES — For cascade organization
    * ═══════════════════════════════════════════════════════════════ */
 
-  @layer invoice-print-base {
+  @layer invoice-paper.print-base {
     /* Hide everything by default */
     body * {
       visibility: hidden;
     }
   }
 
-  @layer invoice-print-show {
+  @layer invoice-paper.print-show {
     /* Show only the printable invoice */
     .invoice-print-target,
     .invoice-print-target * {
@@ -90,11 +90,10 @@
       position: absolute;
       left: 0;
       top: 0;
-      /* A4 printable area (210mm - 10mm margins = 200mm) */
-      width: calc(210mm - 10mm);
-      /* Explicit height for flexbox to work (mt-auto needs constraint) */
-      height: calc(297mm - 10mm);
-      max-width: none;
+      /* A4 printable area — !important overrides inline styles from ScaledInvoicePreview */
+      width: calc(210mm - 10mm) !important;
+      height: calc(297mm - 10mm) !important;
+      max-width: none !important;
       transform: none !important;
       box-shadow: none;
       page-break-inside: avoid;
@@ -129,7 +128,7 @@
     }
   }
 
-  @layer invoice-print-hide {
+  @layer invoice-paper.print-hide {
     /* Hide elements with data-print-hide attribute */
     [data-print-hide],
     button {

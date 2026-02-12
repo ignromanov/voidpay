@@ -7,7 +7,7 @@
  */
 
 import { mainnet, arbitrum, optimism, polygon } from 'viem/chains'
-import { Hexagon, Triangle, Zap } from 'lucide-react'
+import { HexagonIcon, TriangleIcon, ZapIcon } from '@/shared/ui/icons'
 
 /**
  * Network name type for UI theming
@@ -52,28 +52,28 @@ export const NETWORK_CONFIG: NetworkConfig[] = [
   {
     chainId: mainnet.id,
     name: 'Ethereum',
-    icon: Hexagon,
+    icon: HexagonIcon,
     iconFilled: false,
     colorClass: 'text-indigo-400',
   },
   {
     chainId: arbitrum.id,
     name: 'Arbitrum',
-    icon: Triangle,
+    icon: TriangleIcon,
     iconFilled: true,
     colorClass: 'text-blue-400',
   },
   {
     chainId: optimism.id,
     name: 'Optimism',
-    icon: Zap,
+    icon: ZapIcon,
     iconFilled: true,
     colorClass: 'text-red-400',
   },
   {
     chainId: polygon.id,
     name: 'Polygon',
-    icon: Hexagon,
+    icon: HexagonIcon,
     iconFilled: true,
     colorClass: 'text-purple-400',
   },
@@ -168,8 +168,8 @@ export const NETWORK_GLOW_SHADOWS: Record<number, string> = {
  * - Purple-500: 168, 85, 247
  */
 export const NETWORK_GLOW_BORDERS: Record<number, string> = {
-  [mainnet.id]: 'ring-1 ring-indigo-500/40 shadow-[0_0_30px_rgba(99,102,241,0.25)]',
-  [arbitrum.id]: 'ring-1 ring-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.25)]',
-  [optimism.id]: 'ring-1 ring-red-500/40 shadow-[0_0_30px_rgba(239,68,68,0.25)]',
-  [polygon.id]: 'ring-1 ring-purple-500/40 shadow-[0_0_30px_rgba(168,85,247,0.25)]',
+  [mainnet.id]: 'ring-2 ring-indigo-500/60 shadow-[0_0_48px_rgba(99,102,241,0.4)]',
+  [arbitrum.id]: 'ring-2 ring-cyan-500/60 shadow-[0_0_48px_rgba(6,182,212,0.4)]',
+  [optimism.id]: 'ring-2 ring-red-500/60 shadow-[0_0_48px_rgba(239,68,68,0.4)]',
+  [polygon.id]: 'ring-2 ring-purple-500/60 shadow-[0_0_48px_rgba(168,85,247,0.4)]',
 }

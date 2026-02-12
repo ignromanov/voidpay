@@ -3,7 +3,7 @@
  * TDD: These tests are written FIRST and must FAIL until implementation
  */
 import { describe, expect, it } from 'vitest'
-import { Mail, Search } from 'lucide-react'
+import { MailIcon, SearchIcon } from '@/shared/ui/icons'
 import { renderWithUser, screen } from './test-utils'
 import { Input } from '../input'
 
@@ -43,12 +43,12 @@ describe('Input', () => {
       expect(screen.getByText('Email')).toBeInTheDocument()
     })
 
-    it('renders error message when provided', () => {
+    it('renders error message when provided (touched=undefined defaults to true)', () => {
       renderWithUser(<Input error="Required field" data-testid="input" />)
       expect(screen.getByText('Required field')).toBeInTheDocument()
     })
 
-    it('applies error styling to input', () => {
+    it('applies error styling to input (touched=undefined defaults to true)', () => {
       renderWithUser(<Input error="Error" data-testid="input" />)
       const input = screen.getByTestId('input')
       expect(input).toHaveClass('border-red-500/50')
@@ -61,28 +61,58 @@ describe('Input', () => {
     })
   })
 
+  // T011b-test: Soft error state (touched=false)
+  describe('soft error state (touched=false)', () => {
+    it('shows soft error styling when touched=false', () => {
+      renderWithUser(<Input error="Error" touched={false} data-testid="input" />)
+      const input = screen.getByTestId('input')
+      // Soft error: subtle bg hint, no border change
+      expect(input).toHaveClass('bg-red-900/25')
+      expect(input).not.toHaveClass('border-red-500/50')
+    })
+
+    it('does NOT show error message when touched=false', () => {
+      renderWithUser(<Input error="Required field" touched={false} data-testid="input" />)
+      expect(screen.queryByText('Required field')).not.toBeInTheDocument()
+    })
+
+    it('shows full error when touched=true', () => {
+      renderWithUser(<Input error="Required field" touched={true} data-testid="input" />)
+      const input = screen.getByTestId('input')
+      expect(input).toHaveClass('border-red-500/50')
+      expect(screen.getByText('Required field')).toBeInTheDocument()
+    })
+
+    it('has no error styling without error prop regardless of touched', () => {
+      renderWithUser(<Input touched={false} data-testid="input" />)
+      const input = screen.getByTestId('input')
+      expect(input).not.toHaveClass('bg-red-900/25')
+      expect(input).not.toHaveClass('border-red-500/50')
+    })
+  })
+
   // T012-test: Icon support
   describe('icon support', () => {
     it('renders leading icon by default', () => {
-      renderWithUser(<Input icon={<Mail data-testid="icon" />} data-testid="input" />)
+      renderWithUser(<Input icon={<MailIcon data-testid="icon" />} data-testid="input" />)
       expect(screen.getByTestId('icon')).toBeInTheDocument()
     })
 
     it('applies left padding when icon is leading', () => {
-      renderWithUser(<Input icon={<Mail />} data-testid="input" />)
+      renderWithUser(<Input icon={<MailIcon />} data-testid="input" />)
       const input = screen.getByTestId('input')
       expect(input).toHaveClass('pl-9')
     })
 
     it('renders trailing icon when position is trailing', () => {
       renderWithUser(
-        <Input icon={<Search data-testid="icon" />} iconPosition="trailing" data-testid="input" />
+        <Input icon={<SearchIcon data-testid="icon" />} iconPosition="trailing" data-testid="input" />
       )
       expect(screen.getByTestId('icon')).toBeInTheDocument()
     })
 
     it('applies right padding when icon is trailing', () => {
-      renderWithUser(<Input icon={<Search />} iconPosition="trailing" data-testid="input" />)
+      renderWithUser(<Input icon={<SearchIcon />} iconPosition="trailing" data-testid="input" />)
       const input = screen.getByTestId('input')
       expect(input).toHaveClass('pr-9')
     })
@@ -101,10 +131,16 @@ describe('Input', () => {
       expect(screen.getByTestId('input')).toHaveAttribute('aria-invalid', 'true')
     })
 
-    it('sets aria-describedby for error message', () => {
-      renderWithUser(<Input error="Error" id="test" data-testid="input" />)
+    it('sets aria-describedby for error message when touched', () => {
+      renderWithUser(<Input error="Error" id="test" touched={true} data-testid="input" />)
       const input = screen.getByTestId('input')
       expect(input).toHaveAttribute('aria-describedby', 'test-error')
+    })
+
+    it('does not set aria-describedby when touched=false', () => {
+      renderWithUser(<Input error="Error" id="test" touched={false} data-testid="input" />)
+      const input = screen.getByTestId('input')
+      expect(input).not.toHaveAttribute('aria-describedby')
     })
 
     it('generates unique id when not provided', () => {

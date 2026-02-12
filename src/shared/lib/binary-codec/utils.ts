@@ -197,3 +197,81 @@ export function readOptionalAddress(bytes: Uint8Array, offset: number): { value:
   const value = bytesToAddress(addressBytes);
   return { value, bytesRead: 21 };
 }
+
+// ============================================================================
+// BigInt VarInt Utilities
+// ============================================================================
+
+/**
+ * Writes a BigInt as a variable-length integer
+ *
+ * Uses the same encoding as regular varint (7 bits data + 1 bit continuation)
+ * but works with arbitrary precision BigInt values.
+ *
+ * @param buffer - Buffer to write to
+ * @param value - BigInt value to encode
+ *
+ * @example
+ * const buffer: number[] = []
+ * writeBigIntVarInt(buffer, 150000000n)  // $150.00 in atomic units (USDC)
+ * // buffer: [128, 194, 215, 71] (4 bytes)
+ */
+export function writeBigIntVarInt(buffer: number[], value: bigint): void {
+  const ZERO = BigInt(0)
+  const MASK_7BIT = BigInt(0x7F)
+  const SEVEN = BigInt(7)
+
+  // Handle negative values (not expected for amounts, but be safe)
+  if (value < ZERO) {
+    throw new Error('writeBigIntVarInt: negative values not supported')
+  }
+
+  // Special case: zero
+  if (value === ZERO) {
+    buffer.push(0)
+    return
+  }
+
+  let remaining = value
+  while (remaining > MASK_7BIT) {
+    buffer.push(Number(remaining & MASK_7BIT) | 0x80)
+    remaining = remaining >> SEVEN
+  }
+  buffer.push(Number(remaining & MASK_7BIT))
+}
+
+/**
+ * Reads a BigInt varint from buffer
+ *
+ * @param bytes - Buffer to read from
+ * @param offset - Starting position in buffer
+ * @returns Object with BigInt value and number of bytes read
+ *
+ * @example
+ * const bytes = new Uint8Array([128, 194, 215, 71])
+ * const result = readBigIntVarInt(bytes, 0)
+ * // result: { value: 150000000n, bytesRead: 4 }
+ */
+export function readBigIntVarInt(bytes: Uint8Array, offset: number): { value: bigint; bytesRead: number } {
+  const ZERO = BigInt(0)
+  const SEVEN = BigInt(7)
+
+  let value = ZERO
+  let shift = ZERO
+  let bytesRead = 0
+
+  while (offset + bytesRead < bytes.length) {
+    const byte = bytes[offset + bytesRead] ?? 0
+    bytesRead++
+
+    value = value | (BigInt(byte & 0x7F) << shift)
+
+    if ((byte & 0x80) === 0) {
+      break
+    }
+
+    shift = shift + SEVEN
+  }
+
+  return { value, bytesRead }
+}
