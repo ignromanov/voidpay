@@ -12,8 +12,24 @@ import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { ChevronDownIcon } from '@/shared/ui/icons'
 
-import { SmartPayButton } from '@/features/payment'
+import { Button } from '@/shared/ui/button'
 import { computeAmounts } from '@/widgets/payment-panel/lib/compute-amounts'
+
+/**
+ * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.
+ * Only this button needs wagmi — the rest of the page renders immediately.
+ */
+const PayButton = dynamic(
+  () => import('./PayButton').then((m) => ({ default: m.PayButton })),
+  {
+    ssr: false,
+    loading: () => (
+      <Button variant="void" size="lg" className="w-full" disabled>
+        Smart Pay
+      </Button>
+    ),
+  },
+)
 import { usePayInvoice } from './use-pay-invoice'
 import { StatusBadge } from './StatusBadge'
 import { MinimizedPill } from './MinimizedPill'
@@ -133,7 +149,7 @@ export function PayWorkspace() {
                       dismissError()
                     }}
                   >
-                    <SmartPayButton
+                    <PayButton
                       invoice={invoice}
                       invoiceId={invoice.invoiceId}
                       exactTotal={exactTotal}

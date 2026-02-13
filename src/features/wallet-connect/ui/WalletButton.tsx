@@ -12,12 +12,39 @@
  * For lazy-loaded usage, use LazyWalletButton from LazyWalletButton.tsx
  */
 
-import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { useEffect, useRef } from 'react'
+import { ConnectButton, useConnectModal } from '@rainbow-me/rainbowkit'
+import { useAccount } from 'wagmi'
 import { WalletIcon, ChevronDownIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 
-export function WalletButton() {
+export interface WalletButtonProps {
+  autoConnect?: boolean
+}
+
+/**
+ * Auto-opens RainbowKit connect modal once on mount.
+ * Used when LazyWalletButton was activated by user click.
+ */
+function AutoConnectTrigger() {
+  const { openConnectModal } = useConnectModal()
+  const { isConnected } = useAccount()
+  const triggered = useRef(false)
+
+  useEffect(() => {
+    if (triggered.current || isConnected || !openConnectModal) return
+    triggered.current = true
+    const id = requestAnimationFrame(() => openConnectModal())
+    return () => cancelAnimationFrame(id)
+  }, [isConnected, openConnectModal])
+
+  return null
+}
+
+export function WalletButton({ autoConnect = false }: WalletButtonProps) {
   return (
+    <>
+    {autoConnect && <AutoConnectTrigger />}
     <ConnectButton.Custom>
       {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted }) => {
         const ready = mounted
@@ -92,5 +119,6 @@ export function WalletButton() {
         )
       }}
     </ConnectButton.Custom>
+    </>
   )
 }
