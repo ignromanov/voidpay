@@ -69,6 +69,12 @@ vi.mock('@/entities/network', () => ({
   })),
 }))
 
+// Mock toast
+const mockToastInfo = vi.fn()
+vi.mock('@/shared/lib/toast', () => ({
+  toast: { info: (...args: unknown[]) => mockToastInfo(...args) },
+}))
+
 // Mock invoice store
 const mockSetTxHash = vi.fn()
 const mockSetError = vi.fn()
@@ -252,10 +258,10 @@ describe('usePaymentFlow', () => {
     })
     rerender()
 
-    // Should reset to idle with error
+    // Should silently reset to idle (no error state) and show toast
     expect(result.current.state.step).toBe('idle')
-    expect(result.current.state.error).not.toBeNull()
-    expect(result.current.state.error?.type).toBe('USER_REJECTED')
+    expect(result.current.state.error).toBeNull()
+    expect(mockToastInfo).toHaveBeenCalledWith('Payment canceled')
   })
 
   it('calls store.setError when error occurs', async () => {
@@ -283,7 +289,10 @@ describe('usePaymentFlow', () => {
     mockSendError = new Error('Something went wrong')
     rerender()
 
-    expect(mockSetError).toHaveBeenCalledWith('INV-001', expect.any(String))
+    expect(mockSetError).toHaveBeenCalledWith(
+      'INV-001',
+      'Unexpected error: Something went wrong. Please try again.',
+    )
   })
 
   it('intent is false after error', async () => {

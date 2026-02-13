@@ -7,7 +7,8 @@ import {
   ScaledInvoicePreview,
   InvoicePaper,
 } from '@/widgets/invoice-paper'
-import { PaymentPanel, DevStatusToggle, computeAmounts } from '@/widgets/payment-panel'
+import { PaymentPanel, DevStatusToggle, DevPaymentStepToggle, computeAmounts } from '@/widgets/payment-panel'
+import type { DevPaymentVisualStep } from '@/features/payment'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { ChevronDownIcon } from '@/shared/ui/icons'
@@ -53,6 +54,7 @@ export function PayWorkspace() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [devPaymentStep, setDevPaymentStep] = useState<DevPaymentVisualStep | null>(null)
 
   const networkId = invoice?.networkId ?? 1
   const exactTotal = invoice ? computeAmounts(invoice).exactTotal : '0'
@@ -161,6 +163,7 @@ export function PayWorkspace() {
                         setPaymentError(null)
                         dismissError()
                       }}
+                      devOverride={devPaymentStep}
                     />
                   </PaymentPanel>
                 )}
@@ -174,6 +177,7 @@ export function PayWorkspace() {
                   <ChevronDownIcon size={14} />
                 </button>
                 <DevStatusToggle invoiceId={invoice.invoiceId} status={panelStatus} />
+                <DevPaymentStepToggle onChange={setDevPaymentStep} />
               </motion.div>
             )}
           </AnimatePresence>

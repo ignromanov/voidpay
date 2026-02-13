@@ -2,15 +2,35 @@
 
 import { useEffect } from 'react'
 import { Button } from '@/shared/ui/button'
-import { VoidButtonOverlay } from '@/shared/ui/button-void-overlay'
 import { Loader2Icon, CheckCircleIcon } from '@/shared/ui/icons'
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { motion } from '@/shared/ui/motion'
+import { BlackHoleOverlay, type BlackHoleState } from './BlackHoleOverlay'
 import { usePaymentFlow } from '../model/use-payment-flow'
-import type { SmartPayButtonProps } from '../model/types'
+import type { SmartPayButtonProps, PaymentStep, IdleSubState, DevPaymentVisualStep } from '../model/types'
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function mapToBlackHoleState(step: PaymentStep): BlackHoleState {
+  switch (step) {
+    case 'connecting':
+    case 'switching':
+      return 'active'
+    case 'sending':
+    case 'confirming':
+      return 'intense'
+    case 'success':
+      return 'success'
+    default:
+      return 'idle'
+  }
+}
 
 function getButtonLabel(
-  step: string,
-  idleSubState: string,
+  step: PaymentStep,
+  idleSubState: IdleSubState,
   currency: string,
   exactTotal: string,
   decimals: number,
@@ -36,19 +56,29 @@ function getButtonLabel(
   }
 }
 
-function getButtonSubtitle(
-  step: string,
-  idleSubState: string,
-): string | null {
-  if (step !== 'idle') return null
-  if (idleSubState === 'disconnected') return 'Auto: Connect \u2192 Switch \u2192 Pay'
-  if (idleSubState === 'wrong-network') return 'Auto: Switch \u2192 Pay'
+function getButtonSubtitle(step: PaymentStep, idleSubState: IdleSubState): string | null {
+  if (step === 'idle') {
+    if (idleSubState === 'disconnected') return 'Auto: Connect \u2192 Switch \u2192 Pay'
+    if (idleSubState === 'wrong-network') return 'Auto: Switch \u2192 Pay'
+    return null
+  }
+  if (step === 'connecting') return 'Step 1 of 3'
+  if (step === 'switching') return 'Step 2 of 3'
+  if (step === 'sending') return 'Step 3 of 3'
+  if (step === 'confirming') return 'Almost there...'
   return null
 }
 
-function isProcessing(step: string): boolean {
-  return ['connecting', 'switching', 'sending', 'confirming', 'success'].includes(step)
+function parseDevOverride(dev: DevPaymentVisualStep): { step: PaymentStep; idleSubState: IdleSubState } {
+  if (dev.startsWith('idle:')) {
+    return { step: 'idle', idleSubState: dev.slice(5) as IdleSubState }
+  }
+  return { step: dev as PaymentStep, idleSubState: 'ready' }
 }
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export function SmartPayButton({
   invoice,
@@ -57,54 +87,75 @@ export function SmartPayButton({
   onSuccess,
   onError,
   onDismissError: _onDismissError,
+  devOverride,
 }: SmartPayButtonProps) {
-  const { state, handlePay, idleSubState } = usePaymentFlow({
+  const { state, handlePay, idleSubState: realIdleSubState } = usePaymentFlow({
     invoice,
     invoiceId,
     exactTotal,
   })
 
-  const { step, error, txHash } = state
+  const { step: realStep, error, txHash } = state
 
-  // Fire onError callback
+  // Dev override: swap visual step while real flow continues underneath
+  const { step, idleSubState } = devOverride
+    ? parseDevOverride(devOverride)
+    : { step: realStep, idleSubState: realIdleSubState }
+
+  // Fire callbacks only for real flow
   useEffect(() => {
-    if (error && onError) {
+    if (error && onError && !devOverride) {
       onError(error)
     }
-  }, [error, onError])
+  }, [error, onError, devOverride])
 
-  // Fire onSuccess callback
   useEffect(() => {
-    if (step === 'success' && txHash && onSuccess) {
+    if (realStep === 'success' && txHash && onSuccess && !devOverride) {
       onSuccess(txHash)
     }
-  }, [step, txHash, onSuccess])
+  }, [realStep, txHash, onSuccess, devOverride])
 
   const label = getButtonLabel(step, idleSubState, invoice.currency, exactTotal, invoice.decimals)
   const subtitle = getButtonSubtitle(step, idleSubState)
-  const disabled = isProcessing(step)
-  const showSpinner = ['connecting', 'switching', 'sending', 'confirming'].includes(step)
+  const isInProgress = (['connecting', 'switching', 'sending', 'confirming'] as string[]).includes(step)
+  const showSpinner = isInProgress
   const showCheck = step === 'success'
+  const overlayState = mapToBlackHoleState(step)
+
+  // Success: not disabled (keeps colorful overlay), but not interactive
+  const buttonDisabled = devOverride ? false : isInProgress
+  const isSuccessState = step === 'success' && !devOverride
+  const canInteract = !buttonDisabled && !isSuccessState
 
   return (
-    <Button
-      variant="void"
-      size="lg"
+    <motion.div
       className="relative w-full"
-      disabled={disabled}
-      onClick={handlePay}
+      {...(canInteract && {
+        whileHover: { scale: 1.02 },
+        whileTap: { scale: 0.97 },
+      })}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
     >
-      <VoidButtonOverlay isLoading={showSpinner} isDisabled={disabled} />
-      <span className="relative z-10 flex items-center justify-center gap-2">
-        {showSpinner && <Loader2Icon size={16} className="animate-spin" />}
-        {showCheck && <CheckCircleIcon size={16} />}
-        <span className="flex flex-col items-center">
-          <span>{label}</span>
-          {subtitle && (
-            <span className="text-xs font-normal opacity-70">{subtitle}</span>
-          )}
+      <Button
+        variant="void"
+        size="lg"
+        noOverlay
+        className={`w-full ${isSuccessState ? 'pointer-events-none' : ''}`}
+        disabled={buttonDisabled}
+        onClick={devOverride ? undefined : handlePay}
+      >
+        <BlackHoleOverlay state={overlayState} />
+        <span className="relative z-10 flex items-center justify-center gap-2">
+          {showSpinner && <Loader2Icon size={16} className="animate-spin" />}
+          {showCheck && <CheckCircleIcon size={16} className="text-emerald-400" />}
+          <span className="flex flex-col items-center">
+            <span>{label}</span>
+            {subtitle && (
+              <span className="text-xs font-normal opacity-70">{subtitle}</span>
+            )}
+          </span>
         </span>
-      </span>
-    </Button>
+      </Button>
+    </motion.div>
   )
 }

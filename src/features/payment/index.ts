@@ -5,4 +5,4 @@
  */
 
 export { SmartPayButton } from './ui/SmartPayButton'
-export type { SmartPayButtonProps, PaymentError, PaymentStep } from './model/types'
+export type { SmartPayButtonProps, PaymentError, PaymentStep, DevPaymentVisualStep } from './model/types'

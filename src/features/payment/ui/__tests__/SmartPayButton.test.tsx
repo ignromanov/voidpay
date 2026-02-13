@@ -156,10 +156,12 @@ describe('SmartPayButton', () => {
     expect(screen.getByRole('button').textContent).toContain('Payment complete')
   })
 
-  it('button is disabled in success state', () => {
+  it('button is not interactive in success state', () => {
     mockState = { step: 'success', error: null, txHash: '0xabc' as `0x${string}`, intent: false }
     render(<SmartPayButton {...defaultProps} />)
-    expect(screen.getByRole('button')).toBeDisabled()
+    const button = screen.getByRole('button')
+    expect(button).not.toBeDisabled() // Keep visual overlay
+    expect(button.className).toContain('pointer-events-none') // Not interactive
   })
 
   it('does not call handlePay when disabled', () => {
@@ -227,8 +229,10 @@ describe('SmartPayButton', () => {
     it('success — shows check icon and "Payment complete"', () => {
       mockState = { step: 'success', error: null, txHash: '0xabc' as `0x${string}`, intent: false }
       render(<SmartPayButton {...defaultProps} />)
-      expect(screen.getByRole('button').textContent).toContain('Payment complete')
-      expect(screen.getByRole('button')).toBeDisabled()
+      const button = screen.getByRole('button')
+      expect(button.textContent).toContain('Payment complete')
+      expect(button).not.toBeDisabled() // Keep visual overlay
+      expect(button.className).toContain('pointer-events-none') // Not interactive
     })
 
     it('error recovery — returns to idle state', () => {

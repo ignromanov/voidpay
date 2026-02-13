@@ -82,6 +82,17 @@ export const INITIAL_PAYMENT_STATE: PaymentState = {
   intent: false,
 }
 
+/** All visual states of SmartPayButton for dev preview */
+export type DevPaymentVisualStep =
+  | 'idle:disconnected'
+  | 'idle:wrong-network'
+  | 'idle:ready'
+  | 'connecting'
+  | 'switching'
+  | 'sending'
+  | 'confirming'
+  | 'success'
+
 /** Props for the SmartPayButton component */
 export interface SmartPayButtonProps {
   /** Decoded invoice data */
@@ -96,4 +107,6 @@ export interface SmartPayButtonProps {
   onError?: (error: PaymentError) => void
   /** Callback to dismiss error (clears ErrorBanner) */
   onDismissError?: () => void
+  /** Dev-only: override visual step for state preview */
+  devOverride?: DevPaymentVisualStep | null
 }

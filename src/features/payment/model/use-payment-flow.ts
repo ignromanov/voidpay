@@ -15,7 +15,9 @@ import {
 } from 'wagmi'
 import { useNetworkSwitch, useNetworkMismatch } from '@/entities/network'
 import { useRichInvoiceStore } from '@/entities/invoice'
+import { toast } from '@/shared/lib/toast'
 import { classifyPaymentError } from '../lib/classify-error'
+import { formatErrorMessage } from '../lib/error-messages'
 import { buildNativeTransferParams } from '../lib/send-native'
 import { buildErc20TransferParams } from '../lib/send-erc20'
 import { deriveIdleSubState, INITIAL_PAYMENT_STATE } from './types'
@@ -213,10 +215,10 @@ export function usePaymentFlow({
         )
         writeContract(params)
       }
-    } catch (err) {
+    } catch {
       const error: PaymentError = {
         type: 'INVALID_INVOICE',
-        message: err instanceof Error ? err.message : 'Invalid invoice data',
+        message: formatErrorMessage('INVALID_INVOICE'),
         step: 'sending',
       }
       dispatch({ type: 'ERROR', error })
@@ -238,7 +240,7 @@ export function usePaymentFlow({
     if (receipt && receipt.status === 'reverted') {
       const error: PaymentError = {
         type: 'TX_REVERTED',
-        message: 'Transaction reverted on-chain',
+        message: formatErrorMessage('TX_REVERTED'),
         step: 'confirming',
       }
       dispatch({ type: 'ERROR', error })
@@ -257,13 +259,22 @@ export function usePaymentFlow({
     if (state.step === 'idle' || state.step === 'success') return
 
     const errorType = classifyPaymentError(wagmiError, state.step)
+
+    // User rejected — silent reset with toast, not an error state
+    if (errorType === 'USER_REJECTED') {
+      toast.info('Payment canceled')
+      dispatch({ type: 'RESET' })
+      return
+    }
+
+    const friendlyMessage = formatErrorMessage(errorType)
     const error: PaymentError = {
       type: errorType,
-      message: wagmiError.message || 'Something went wrong',
+      message: friendlyMessage,
       step: state.step,
     }
 
-    setError(invoiceId, error.message)
+    setError(invoiceId, friendlyMessage)
     dispatch({ type: 'ERROR', error })
   }, [sendError, writeError, receiptError, switchError, state.step, invoiceId, setError])
 
