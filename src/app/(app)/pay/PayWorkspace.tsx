@@ -7,13 +7,11 @@ import {
   ScaledInvoicePreview,
   InvoicePaper,
 } from '@/widgets/invoice-paper'
-import { PaymentPanel, DevStatusToggle } from '@/widgets/payment-panel'
+import { PaymentPanel, DevStatusToggle, computeAmounts } from '@/widgets/payment-panel'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { ChevronDownIcon } from '@/shared/ui/icons'
-
 import { Button } from '@/shared/ui/button'
-import { computeAmounts } from '@/widgets/payment-panel/lib/compute-amounts'
 
 /**
  * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.
