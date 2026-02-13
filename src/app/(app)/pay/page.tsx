@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { decodeOGPreview } from '@/features/invoice-codec'
+import { LazyWeb3Provider } from '@/app/lazy-web3-provider'
 import { PayWorkspace } from './PayWorkspace'
 
 /**
@@ -84,5 +85,9 @@ export async function generateMetadata({
  * which is never sent to the server (privacy-first design).
  */
 export default function PayPage() {
-  return <PayWorkspace />
+  return (
+    // <LazyWeb3Provider>
+    <PayWorkspace />
+    // </LazyWeb3Provider>
+  )
 }

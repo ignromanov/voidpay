@@ -44,8 +44,8 @@ export {
   createChainTransport,
   createTransportsForChains,
 } from '@/shared/lib'
-export { useNetworkSwitch, canSwitchNetwork } from './lib/network-switch'
-export { detectNetworkMismatch, useNetworkMismatch } from './lib/network-mismatch'
+export { useNetworkSwitch, canSwitchNetwork } from '@/entities/network'
+export { detectNetworkMismatch, useNetworkMismatch } from '@/entities/network'
 export {
   shouldBlockNetworkSwitch,
   getPendingTxWarningMessage,

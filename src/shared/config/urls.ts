@@ -23,6 +23,7 @@ export const APP_URLS = {
  */
 export const SOCIAL_URLS = {
   github: 'https://github.com/ignromanov/voidpay',
+  githubIssues: 'https://github.com/ignromanov/voidpay/issues/new',
   githubOrg: 'https://github.com/voidpay',
   twitter: 'https://twitter.com/voidpay',
 } as const

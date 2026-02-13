@@ -23,3 +23,9 @@ export type { NetworkConfig, NetworkName } from './config/ui-config'
 
 // Network helper functions (from lib layer)
 export { getExplorerUrl, getNetworkName } from './lib/helpers'
+
+// Network hooks (relocated from features/wallet-connect for FSD compliance)
+export { useNetworkSwitch, canSwitchNetwork } from './lib/network-switch'
+export type { CanSwitchNetworkParams, UseNetworkSwitchReturn } from './lib/network-switch'
+export { detectNetworkMismatch, useNetworkMismatch } from './lib/network-mismatch'
+export type { DetectNetworkMismatchParams, NetworkMismatchResult } from './lib/network-mismatch'

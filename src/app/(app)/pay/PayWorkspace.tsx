@@ -12,6 +12,8 @@ import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { ChevronDownIcon } from '@/shared/ui/icons'
 
+import { SmartPayButton } from '@/features/payment'
+import { computeAmounts } from '@/widgets/payment-panel/lib/compute-amounts'
 import { usePayInvoice } from './use-pay-invoice'
 import { StatusBadge } from './StatusBadge'
 import { MinimizedPill } from './MinimizedPill'
@@ -36,8 +38,10 @@ export function PayWorkspace() {
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
 
   const networkId = invoice?.networkId ?? 1
+  const exactTotal = invoice ? computeAmounts(invoice).exactTotal : '0'
 
   // Loading state
   if (isLoading) {
@@ -123,9 +127,28 @@ export function PayWorkspace() {
                   <PaymentPanel
                     invoice={invoice}
                     status={panelStatus}
-                    {...(storedInvoice?.error ? { error: storedInvoice.error } : {})}
-                    onDismissError={dismissError}
-                  />
+                    {...(paymentError ? { error: paymentError } : storedInvoice?.error ? { error: storedInvoice.error } : {})}
+                    onDismissError={() => {
+                      setPaymentError(null)
+                      dismissError()
+                    }}
+                  >
+                    <SmartPayButton
+                      invoice={invoice}
+                      invoiceId={invoice.invoiceId}
+                      exactTotal={exactTotal}
+                      onSuccess={() => {
+                        setPaymentError(null)
+                      }}
+                      onError={(error) => {
+                        setPaymentError(error.message)
+                      }}
+                      onDismissError={() => {
+                        setPaymentError(null)
+                        dismissError()
+                      }}
+                    />
+                  </PaymentPanel>
                 )}
                 <button
                   data-testid="minimize-panel"
