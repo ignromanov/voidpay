@@ -23,7 +23,7 @@ const PayButton = dynamic(
   {
     ssr: false,
     loading: () => (
-      <Button variant="void" size="lg" className="w-full" disabled>
+      <Button variant="void" size="lg" className="h-14 w-full" disabled>
         Smart Pay
       </Button>
     ),

@@ -93,6 +93,14 @@ export type DevPaymentVisualStep =
   | 'confirming'
   | 'success'
 
+/** Parse dev override string into step + idleSubState */
+export function parseDevOverride(dev: DevPaymentVisualStep): { step: PaymentStep; idleSubState: IdleSubState } {
+  if (dev.startsWith('idle:')) {
+    return { step: 'idle', idleSubState: dev.slice(5) as IdleSubState }
+  }
+  return { step: dev as PaymentStep, idleSubState: 'ready' }
+}
+
 /** Props for the SmartPayButton component */
 export interface SmartPayButtonProps {
   /** Decoded invoice data */

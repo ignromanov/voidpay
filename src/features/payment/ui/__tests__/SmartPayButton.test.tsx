@@ -61,16 +61,16 @@ describe('SmartPayButton', () => {
     expect(mockHandlePay).toHaveBeenCalledOnce()
   })
 
-  it('renders "Smart Pay" when disconnected', () => {
+  it('renders "Connect Wallet" when disconnected', () => {
     mockIdleSubState = 'disconnected'
     render(<SmartPayButton {...defaultProps} />)
-    expect(screen.getByRole('button').textContent).toContain('Smart Pay')
+    expect(screen.getByRole('button').textContent).toContain('Connect Wallet')
   })
 
-  it('renders "Smart Switch" when wrong network', () => {
+  it('renders "Switch Network" when wrong network', () => {
     mockIdleSubState = 'wrong-network'
     render(<SmartPayButton {...defaultProps} />)
-    expect(screen.getByRole('button').textContent).toContain('Smart Switch')
+    expect(screen.getByRole('button').textContent).toContain('Switch Network')
   })
 
   it('shows "Sending funds..." during sending step', () => {
@@ -93,17 +93,16 @@ describe('SmartPayButton', () => {
     expect(screen.getByRole('button')).toBeDisabled()
   })
 
-  // US2/US3: Auto-chain subtitles and states
-  it('renders subtitle "Auto: Connect → Switch → Pay" when disconnected', () => {
+  it('renders subtitle "To proceed with payment" when disconnected', () => {
     mockIdleSubState = 'disconnected'
     render(<SmartPayButton {...defaultProps} />)
-    expect(screen.getByText(/Auto:.*Connect/)).toBeInTheDocument()
+    expect(screen.getByText('To proceed with payment')).toBeInTheDocument()
   })
 
-  it('renders subtitle "Auto: Switch → Pay" when wrong network', () => {
+  it('renders subtitle "Required for this payment" when wrong network', () => {
     mockIdleSubState = 'wrong-network'
     render(<SmartPayButton {...defaultProps} />)
-    expect(screen.getByText(/Auto:.*Switch/)).toBeInTheDocument()
+    expect(screen.getByText('Required for this payment')).toBeInTheDocument()
   })
 
   it('shows "Connecting wallet..." during connecting step', () => {
@@ -150,10 +149,10 @@ describe('SmartPayButton', () => {
     expect(onSuccess).toHaveBeenCalledWith('0xabc123')
   })
 
-  it('renders "Payment complete" in success state', () => {
+  it('renders "Payment confirmed" in success state', () => {
     mockState = { step: 'success', error: null, txHash: '0xabc' as `0x${string}`, intent: false }
     render(<SmartPayButton {...defaultProps} />)
-    expect(screen.getByRole('button').textContent).toContain('Payment complete')
+    expect(screen.getByRole('button').textContent).toContain('Payment confirmed')
   })
 
   it('button is not interactive in success state', () => {
@@ -173,20 +172,20 @@ describe('SmartPayButton', () => {
   })
 
   describe('all 9 visual states', () => {
-    it('idle:disconnected — shows "Smart Pay" with connect subtitle', () => {
+    it('idle:disconnected — shows "Connect Wallet" with subtitle', () => {
       mockIdleSubState = 'disconnected'
       mockState = { step: 'idle', error: null, txHash: null, intent: false }
       render(<SmartPayButton {...defaultProps} />)
-      expect(screen.getByRole('button').textContent).toContain('Smart Pay')
-      expect(screen.getByText(/Auto:.*Connect/)).toBeInTheDocument()
+      expect(screen.getByRole('button').textContent).toContain('Connect Wallet')
+      expect(screen.getByText('To proceed with payment')).toBeInTheDocument()
     })
 
-    it('idle:wrong-network — shows "Smart Switch" with switch subtitle', () => {
+    it('idle:wrong-network — shows "Switch Network" with subtitle', () => {
       mockIdleSubState = 'wrong-network'
       mockState = { step: 'idle', error: null, txHash: null, intent: false }
       render(<SmartPayButton {...defaultProps} />)
-      expect(screen.getByRole('button').textContent).toContain('Smart Switch')
-      expect(screen.getByText(/Auto:.*Switch/)).toBeInTheDocument()
+      expect(screen.getByRole('button').textContent).toContain('Switch Network')
+      expect(screen.getByText('Required for this payment')).toBeInTheDocument()
     })
 
     it('idle:ready — shows "Pay X ETH"', () => {
@@ -226,11 +225,11 @@ describe('SmartPayButton', () => {
       expect(screen.getByRole('button')).toBeDisabled()
     })
 
-    it('success — shows check icon and "Payment complete"', () => {
+    it('success — shows check icon and "Payment confirmed"', () => {
       mockState = { step: 'success', error: null, txHash: '0xabc' as `0x${string}`, intent: false }
       render(<SmartPayButton {...defaultProps} />)
       const button = screen.getByRole('button')
-      expect(button.textContent).toContain('Payment complete')
+      expect(button.textContent).toContain('Payment confirmed')
       expect(button).not.toBeDisabled() // Keep visual overlay
       expect(button.className).toContain('pointer-events-none') // Not interactive
     })
