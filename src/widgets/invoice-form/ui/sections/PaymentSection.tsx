@@ -9,7 +9,8 @@ import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
 import { Heading } from '@/shared/ui/typography'
 import { NetworkSelect } from '@/features/wallet-connect'
-import { TokenSelect, type TokenInfo } from '@/features/invoice'
+import type { TokenInfo } from '@/entities/network'
+import { TokenSelect } from '@/features/invoice'
 
 import type { InvoiceFormValues } from '../../lib/use-invoice-form'
 

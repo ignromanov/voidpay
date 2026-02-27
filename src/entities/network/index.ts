@@ -9,6 +9,10 @@
 export { NETWORKS, NETWORK_CODES, NETWORK_CODES_REVERSE } from './config/networks'
 export type { NetworkId } from './config/networks'
 
+// Token registry (from config layer)
+export { NETWORK_TOKENS } from './config/tokens'
+export type { TokenInfo } from './config/tokens'
+
 // Network UI configuration (from config layer)
 export {
   NETWORK_CONFIG,

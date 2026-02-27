@@ -1,18 +1,11 @@
 /**
- * Token Registry and Network Configuration
+ * Token Registry
  *
- * Constitutional Principle I: Zero-Backend
- * - Static token lists, no API calls for MVP token registry
- * - Future enhancement: Add custom token support with on-chain metadata fetch
- *
- * Constitutional Principle IV: Backward Compatibility
- * - Token addresses locked for each network
- * - Changes require new version with migration path
+ * Network-specific token lists for all supported chains.
+ * Token addresses are chain-specific and MUST NOT be reused across networks.
+ * Native tokens (ETH, POL) have address = null.
  */
 
-/**
- * Token representation for selector components
- */
 export interface TokenInfo {
   /** Token symbol (e.g., "USDC") */
   symbol: string
@@ -33,12 +26,6 @@ export interface TokenInfo {
   isCustom?: boolean
 }
 
-/**
- * Network-specific token lists
- *
- * Token addresses are chain-specific and MUST NOT be reused across networks
- * Native tokens (ETH, POL) have address = null
- */
 export const NETWORK_TOKENS: Record<number, TokenInfo[]> = {
   // Ethereum Mainnet (chainId: 1)
   1: [
@@ -158,6 +145,87 @@ export const NETWORK_TOKENS: Record<number, TokenInfo[]> = {
       address: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
       decimals: 6,
       iconColor: 'bg-emerald-500',
+    },
+  ],
+
+  // --- Testnets ---
+
+  // Sepolia (chainId: 11155111)
+  11155111: [
+    {
+      symbol: 'ETH',
+      name: 'Sepolia ETH',
+      address: null,
+      decimals: 18,
+      iconColor: 'bg-zinc-100',
+    },
+    {
+      symbol: 'USDC',
+      name: 'USD Coin (Test)',
+      address: '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',
+      decimals: 6,
+      iconColor: 'bg-blue-500',
+    },
+    {
+      symbol: 'EURC',
+      name: 'Euro Coin (Test)',
+      address: '0x08210f9170f89ab7658f0b5e3ff39b0e03c594d4',
+      decimals: 6,
+      iconColor: 'bg-blue-400',
+    },
+  ],
+
+  // Arbitrum Sepolia (chainId: 421614)
+  421614: [
+    {
+      symbol: 'ETH',
+      name: 'Arbitrum Sepolia ETH',
+      address: null,
+      decimals: 18,
+      iconColor: 'bg-zinc-100',
+    },
+    {
+      symbol: 'USDC',
+      name: 'USD Coin (Test)',
+      address: '0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+      decimals: 6,
+      iconColor: 'bg-blue-500',
+    },
+  ],
+
+  // Optimism Sepolia (chainId: 11155420)
+  11155420: [
+    {
+      symbol: 'ETH',
+      name: 'Optimism Sepolia ETH',
+      address: null,
+      decimals: 18,
+      iconColor: 'bg-zinc-100',
+    },
+    {
+      symbol: 'USDC',
+      name: 'USD Coin (Test)',
+      address: '0x5fd84259d66cd46123540766be93dfe6d43130d7',
+      decimals: 6,
+      iconColor: 'bg-blue-500',
+    },
+  ],
+
+  // Polygon Amoy (chainId: 80002)
+  80002: [
+    {
+      symbol: 'POL',
+      name: 'Amoy POL',
+      address: null,
+      decimals: 18,
+      iconColor: 'bg-purple-500',
+    },
+    {
+      symbol: 'USDC',
+      name: 'USD Coin (Test)',
+      address: '0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582',
+      decimals: 6,
+      iconColor: 'bg-blue-500',
     },
   ],
 }

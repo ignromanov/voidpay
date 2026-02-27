@@ -6,7 +6,7 @@ import { Button } from '@/shared/ui/button'
 import { Loader2Icon, SearchIcon, AlertCircleIcon } from '@/shared/ui/icons'
 import { cn } from '@/shared/lib/utils'
 import { useTokenMetadata } from '@/entities/token'
-import type { TokenInfo } from '../model/tokens'
+import type { TokenInfo } from '@/entities/network'
 import { type Address } from 'viem'
 
 export interface CustomTokenFormProps {

@@ -9,7 +9,7 @@ import {
   SelectValue,
   SelectSeparator,
 } from '@/shared/ui/select'
-import { NETWORK_TOKENS, type TokenInfo } from '../model/tokens'
+import { NETWORK_TOKENS, type TokenInfo } from '@/entities/network'
 import { cn } from '@/shared/lib/utils'
 import { Badge } from '@/shared/ui/badge'
 import { TokenIcon } from '@/shared/ui/token-icon'
