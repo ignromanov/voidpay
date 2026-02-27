@@ -3,13 +3,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { parseInvoiceHash, mapParseErrorToDecodeType } from '@/features/invoice-codec'
-import { useRichInvoiceStore, type RichInvoice } from '@/entities/invoice'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
 import { computePaymentStatus } from '@/widgets/payment-panel'
+import { nowISO } from '@/shared/lib/date-time'
 import type { PaymentPanelStatus } from '@/widgets/payment-panel'
 import type { DecodeErrorType } from '@/shared/ui/decode-error-screen'
 import type { Invoice } from '@/shared/lib/invoice-types'
+import type { InvoiceSource } from '@/entities/invoice'
 
 /** Time to wait for hash fragment to stabilize after SSR hydration */
 const HYDRATION_TIMEOUT = 200
@@ -18,8 +20,8 @@ export interface PayInvoiceState {
   invoice: Invoice | null
   errorType: DecodeErrorType | null
   isLoading: boolean
-  storedInvoice: RichInvoice | undefined
   panelStatus: PaymentPanelStatus
+  source: InvoiceSource | undefined
   dismissError: () => void
 }
 
@@ -40,18 +42,17 @@ export interface PayInvoiceState {
 export function usePayInvoice(): PayInvoiceState {
   const hash = useHashFragment()
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
-  const { addInvoice, getInvoice, updateStatus, setError } = useRichInvoiceStore()
+  const { addInvoice, getInvoice, setError } = useTrackedInvoiceStore()
 
   const [isHydrated, setIsHydrated] = useState(false)
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [errorType, setErrorType] = useState<DecodeErrorType | null>(null)
 
   // Read fresh store data on every render (no useMemo — getInvoice is a simple find)
-  const storedInvoice = invoice ? getInvoice(invoice.invoiceId) : undefined
+  const tracked = invoice ? getInvoice(invoice.invoiceId) : undefined
 
   const panelStatus = computePaymentStatus({
-    storedStatus: storedInvoice?.status,
-    txHashValidated: storedInvoice?.txHashValidated,
+    tracked,
     dueAt: invoice?.dueAt,
   })
 
@@ -78,17 +79,12 @@ export function usePayInvoice(): PayInvoiceState {
       setErrorType(null)
 
       try {
-        if (!getInvoice(result.data.invoiceId)) {
-          const invoiceUrl = `${window.location.origin}/pay#${hash}`
-          const richInvoice: Omit<RichInvoice, 'createdAt'> = {
-            invoiceId: result.data.invoiceId,
-            invoiceUrl,
-            data: result.data,
-            status: 'pending',
-            viewedAt: new Date().toISOString(),
-          }
-          addInvoice(richInvoice)
-        }
+        addInvoice({
+          invoiceId: result.data.invoiceId,
+          invoiceUrl: `${window.location.origin}/pay#${hash}`,
+          source: 'received',
+          viewedAt: nowISO(),
+        })
       } catch (error) {
         console.error('[usePayInvoice] Failed to track invoice view:', error)
       }
@@ -105,21 +101,11 @@ export function usePayInvoice(): PayInvoiceState {
     }
   }, [invoice?.networkId, setNetworkTheme])
 
-  const storedStatus = storedInvoice?.status
-
-  // 4. Sync overdue status to store
-  useEffect(() => {
-    if (!invoice || !storedStatus) return
-    if (panelStatus === 'overdue' && storedStatus !== 'overdue') {
-      updateStatus(invoice.invoiceId, 'overdue')
-    }
-  }, [invoice, panelStatus, storedStatus, updateStatus])
-
   const dismissError = useCallback(() => {
     if (invoice) setError(invoice.invoiceId, null)
   }, [invoice, setError])
 
   const isLoading = !invoice && !errorType
 
-  return { invoice, errorType, isLoading, storedInvoice, panelStatus, dismissError }
+  return { invoice, errorType, isLoading, panelStatus, source: tracked?.source, dismissError }
 }

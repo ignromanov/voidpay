@@ -10,14 +10,27 @@
  */
 
 import { encodeInvoice } from '@/features/invoice-codec'
-import type { RichInvoice } from '@/entities/invoice'
+import type { Invoice } from '@/shared/lib/invoice-types'
+import type { InvoiceStatus } from '@/widgets/invoice-paper/types'
+
+/** Demo-only type for landing page invoice rotation */
+interface DemoInvoice {
+  invoiceId: string
+  invoiceUrl: string
+  createdAt: string
+  status: InvoiceStatus
+  txHash?: string
+  txHashValidated?: boolean
+  data: Invoice
+  createHash: string
+}
 
 const BASE_TIMESTAMP = 1704067200 // 2024-01-01 00:00:00 UTC
 
 /**
  * Raw demo data without computed hashes
  */
-const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
+const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
   // --- Ethereum (1) - Smart Contract Audit [PAID + VALIDATED] ---
   {
     invoiceId: 'eth-inv-001',
@@ -195,7 +208,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
  * Demo invoices with pre-computed createHash for /create page navigation
  * Hash is computed at module load time (build time for SSG)
  */
-export const DEMO_INVOICES: RichInvoice[] = RAW_DEMO_INVOICES.map((invoice) => {
+export const DEMO_INVOICES: DemoInvoice[] = RAW_DEMO_INVOICES.map((invoice) => {
   try {
     return {
       ...invoice,

@@ -28,6 +28,7 @@ export function PaymentPanel({
   confirmations,
   error,
   onDismissError,
+  source,
   children,
 }: PaymentPanelProps) {
   const [qrOpen, setQrOpen] = useState(false)
@@ -56,6 +57,13 @@ export function PaymentPanel({
 
       {/* Content */}
       <div className="p-3 md:p-4 space-y-3 pt-6 md:pt-4">
+        {/* Creator badge */}
+        {source === 'created' && isPending && (
+          <p className="text-center text-xs text-violet-400">
+            Your invoice · Awaiting payment
+          </p>
+        )}
+
         {/* Pending state: Amount + ActionSlot */}
         {isPending && (
           <>

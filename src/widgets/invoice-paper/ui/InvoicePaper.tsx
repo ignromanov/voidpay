@@ -11,6 +11,7 @@ import { PaperFooter } from './PaperFooter'
 import { Watermark } from './Watermark'
 import { NETWORK_SHADOWS } from '@/entities/network'
 import { cn } from '@/shared/lib/utils'
+import { formatDateUTC } from '@/shared/lib/date-time'
 
 // Stable fallback objects (prevent new object creation on each render)
 // Uses zero address as fallback for draft invoices
@@ -18,13 +19,6 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as Address
 const EMPTY_PARTY = { name: '', walletAddress: ZERO_ADDRESS } as const
 const EMPTY_CLIENT = { name: '' } as const
 const EMPTY_ITEMS: never[] = []
-
-// Date formatter singleton
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-})
 
 // Variant-specific styles
 // For full variant: cursor-text on text elements, cursor-pointer on links/buttons (including children)
@@ -108,7 +102,7 @@ export const InvoicePaper = React.memo(
       const paidDate = useMemo(
         () =>
           status === 'paid' && data?.issuedAt
-            ? dateFormatter.format(new Date(data.issuedAt * 1000)).toUpperCase()
+            ? formatDateUTC(data.issuedAt)
             : undefined,
         [status, data?.issuedAt]
       )

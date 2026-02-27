@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { useCreatorStore } from '@/entities/creator'
-import { usePayerStore } from '@/entities/user'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { ExportDataV1 } from './export'
 
 // Validation schema for import data
@@ -15,10 +15,11 @@ const importSchema = z.object({
     preferences: z.any(),
     idCounter: z.any(),
   }),
-  payer: z.object({
-    version: z.number(),
-    receipts: z.array(z.any()),
-  }),
+  trackedInvoices: z
+    .object({
+      invoices: z.array(z.any()),
+    })
+    .optional(),
 })
 
 export interface ImportResult {
@@ -27,7 +28,7 @@ export interface ImportResult {
   stats?: {
     templates: number
     history: number
-    receipts: number
+    trackedInvoices: number
   }
 }
 
@@ -41,11 +42,10 @@ export const importUserData = (data: unknown): ImportResult => {
     const validData = importSchema.parse(data) as ExportDataV1
 
     const creatorStore = useCreatorStore.getState()
-    const payerStore = usePayerStore.getState()
 
     let templatesAdded = 0
     let historyAdded = 0
-    let receiptsAdded = 0
+    let trackedInvoicesAdded = 0
 
     // Merge Templates
     // TODO(feature-data-export): Store API doesn't support direct template injection.
@@ -76,21 +76,21 @@ export const importUserData = (data: unknown): ImportResult => {
       // Ideally, we should add a setCounter action to the store.
     }
 
-    // Merge Receipts
-    validData.payer.receipts.forEach((receipt) => {
-      const exists = payerStore.receipts.some((r) => r.receiptId === receipt.receiptId)
-      if (!exists) {
-        payerStore.addReceipt(receipt)
-        receiptsAdded++
+    // Import tracked invoices
+    if (validData.trackedInvoices?.invoices) {
+      const { addInvoice } = useTrackedInvoiceStore.getState()
+      for (const invoice of validData.trackedInvoices.invoices) {
+        addInvoice(invoice)
+        trackedInvoicesAdded++
       }
-    })
+    }
 
     return {
       success: true,
       stats: {
         templates: templatesAdded,
         history: historyAdded,
-        receipts: receiptsAdded,
+        trackedInvoices: trackedInvoicesAdded,
       },
     }
   } catch (error) {

@@ -12,7 +12,9 @@ import {
   type DraftState,
   type LineItem,
 } from '@/entities/invoice'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
+import { nowISO } from '@/shared/lib/date-time'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
 import {
   calculateTotalsBigInt,
@@ -71,6 +73,14 @@ export function addToHistory(invoice: Invoice, invoiceUrl: string): void {
   addHistoryEntry({
     invoice,
     invoiceUrl,
+  })
+
+  const { addInvoice } = useTrackedInvoiceStore.getState()
+  addInvoice({
+    invoiceId: invoice.invoiceId,
+    invoiceUrl,
+    source: 'created',
+    viewedAt: nowISO(),
   })
 }
 

@@ -262,9 +262,10 @@ describe('historySlice', () => {
       const state = useCreatorStore.getState()
       // issuedAt should be close to now
       expect(state.activeDraft?.data.issuedAt).toBeGreaterThanOrEqual(now - 5)
-      // dueAt should be ~30 days from now
-      const expectedDue = now + 30 * 24 * 60 * 60
-      expect(state.activeDraft?.data.dueAt).toBeGreaterThanOrEqual(expectedDue - 5)
+      // dueAt should be midnight-aligned ~30 days from now
+      const startOfToday = now - (now % 86400)
+      const expectedDue = startOfToday + 30 * 24 * 60 * 60
+      expect(state.activeDraft?.data.dueAt).toBe(expectedDue)
     })
 
     it('restores line items from history', () => {

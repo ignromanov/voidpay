@@ -30,6 +30,7 @@ const PayButton = dynamic(
   },
 )
 import { usePayInvoice } from './use-pay-invoice'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { StatusBadge } from './StatusBadge'
 import { MinimizedPill } from './MinimizedPill'
 
@@ -49,7 +50,10 @@ const InvoicePreviewModal = dynamic(
  */
 export function PayWorkspace() {
   const router = useRouter()
-  const { invoice, errorType, isLoading, storedInvoice, panelStatus, dismissError } = usePayInvoice()
+  const { invoice, errorType, isLoading, panelStatus, source, dismissError } = usePayInvoice()
+  const storedInvoice = useTrackedInvoiceStore((s) =>
+    invoice ? s.invoices.find((inv) => inv.invoiceId === invoice.invoiceId) : undefined
+  )
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
@@ -137,12 +141,14 @@ export function PayWorkspace() {
                     invoice={invoice}
                     status={panelStatus}
                     txHash={storedInvoice.txHash}
+                    source={source}
                     {...(storedInvoice.confirmations ? { confirmations: storedInvoice.confirmations } : {})}
                   />
                 ) : (
                   <PaymentPanel
                     invoice={invoice}
                     status={panelStatus}
+                    source={source}
                     {...(paymentError ? { error: paymentError } : storedInvoice?.error ? { error: storedInvoice.error } : {})}
                     onDismissError={() => {
                       setPaymentError(null)

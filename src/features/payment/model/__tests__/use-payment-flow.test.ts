@@ -78,13 +78,11 @@ vi.mock('@/shared/lib/toast', () => ({
 // Mock invoice store
 const mockSetTxHash = vi.fn()
 const mockSetError = vi.fn()
-const mockUpdateStatus = vi.fn()
 
 vi.mock('@/entities/invoice', () => ({
-  useRichInvoiceStore: vi.fn(() => ({
+  useTrackedInvoiceStore: vi.fn(() => ({
     setTxHash: mockSetTxHash,
     setError: mockSetError,
-    updateStatus: mockUpdateStatus,
   })),
 }))
 

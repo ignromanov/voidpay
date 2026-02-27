@@ -8,6 +8,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import type { StateCreator } from 'zustand'
 import type { PartialInvoice, LineItem, DraftState } from '@/entities/invoice'
+import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
 import type { InvoiceTemplate } from '../types'
 import type { CreatorStore } from './types'
 
@@ -34,20 +35,6 @@ export interface TemplateSlice {
    * Delete a template
    */
   deleteTemplate: (templateId: string) => void
-}
-
-/**
- * Get current Unix timestamp in seconds
- */
-function nowUnix(): number {
-  return Math.floor(Date.now() / 1000)
-}
-
-/**
- * Get Unix timestamp for a date N days from now
- */
-function daysFromNowUnix(days: number): number {
-  return nowUnix() + days * 24 * 60 * 60
 }
 
 /**

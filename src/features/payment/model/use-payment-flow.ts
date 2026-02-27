@@ -14,7 +14,7 @@ import {
   useWaitForTransactionReceipt,
 } from 'wagmi'
 import { useNetworkSwitch, useNetworkMismatch } from '@/entities/network'
-import { useRichInvoiceStore } from '@/entities/invoice'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { toast } from '@/shared/lib/toast'
 import { classifyPaymentError } from '../lib/classify-error'
 import { formatErrorMessage } from '../lib/error-messages'
@@ -105,7 +105,7 @@ export function usePaymentFlow({
   const { connect, connectors } = useConnect()
   const { hasMismatch, expectedChainId } = useNetworkMismatch(invoice.networkId)
   const { switchToChain, isSwitching, error: switchError } = useNetworkSwitch()
-  const { setTxHash, setError } = useRichInvoiceStore()
+  const { setTxHash, setError } = useTrackedInvoiceStore()
 
   const isNativeToken = !invoice.tokenAddress
 
