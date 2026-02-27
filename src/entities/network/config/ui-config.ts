@@ -11,6 +11,7 @@ import {
   arbitrum,
   optimism,
   polygon,
+  sepolia,
   arbitrumSepolia,
   optimismSepolia,
   polygonAmoy,
@@ -24,19 +25,29 @@ import { HexagonIcon, TriangleIcon, ZapIcon } from '@/shared/ui/icons'
 export type NetworkName = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'
 
 /**
+ * Testnet → mainnet parent mapping (single source of truth)
+ * Used to derive testnet UI configs and resolve themes
+ */
+const TESTNET_PARENT: Record<number, number> = {
+  [sepolia.id]: mainnet.id,
+  [arbitrumSepolia.id]: arbitrum.id,
+  [optimismSepolia.id]: optimism.id,
+  [polygonAmoy.id]: polygon.id,
+}
+
+/**
  * Map chain ID to network theme name
  * Used for visual theming (colors, backgrounds, etc.)
+ * Resolves testnets to their mainnet parent before matching
  */
 export function getNetworkTheme(chainId: number): NetworkName {
-  switch (chainId) {
+  const resolvedId = TESTNET_PARENT[chainId] ?? chainId
+  switch (resolvedId) {
     case arbitrum.id:
-    case arbitrumSepolia.id:
       return 'arbitrum'
     case optimism.id:
-    case optimismSepolia.id:
       return 'optimism'
     case polygon.id:
-    case polygonAmoy.id:
       return 'polygon'
     default:
       return 'ethereum'
@@ -89,6 +100,37 @@ export const NETWORK_CONFIG: NetworkConfig[] = [
     colorClass: 'text-purple-400',
   },
 ]
+
+/**
+ * Testnet display names for UI (shorter than NETWORKS canonical names)
+ */
+const TESTNET_NAMES: Record<number, string> = {
+  [sepolia.id]: 'Sepolia',
+  [arbitrumSepolia.id]: 'Arb Sepolia',
+  [optimismSepolia.id]: 'OP Sepolia',
+  [polygonAmoy.id]: 'Polygon Amoy',
+}
+
+/**
+ * Testnet UI configs derived from mainnet parents
+ * Inherits icon, iconFilled, colorClass — only chainId and name differ
+ */
+const TESTNET_NETWORK_CONFIG: NetworkConfig[] = Object.entries(TESTNET_PARENT).map(
+  ([testnetId, mainnetId]) => {
+    const parent = NETWORK_CONFIG.find((c) => c.chainId === mainnetId)!
+    return { ...parent, chainId: Number(testnetId), name: TESTNET_NAMES[Number(testnetId)] ?? parent.name }
+  }
+)
+
+/**
+ * Get network configs based on environment configuration
+ * Returns mainnet-only by default, includes testnets when NEXT_PUBLIC_ENABLE_TESTNETS=true
+ * Mirrors getSupportedChains() pattern from chains.ts
+ */
+export function getNetworkConfig(): NetworkConfig[] {
+  const enableTestnets = process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true'
+  return enableTestnets ? [...NETWORK_CONFIG, ...TESTNET_NETWORK_CONFIG] : NETWORK_CONFIG
+}
 
 /**
  * Network badge configuration with brand colors

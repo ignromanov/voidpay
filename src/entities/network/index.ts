@@ -35,6 +35,7 @@ export {
   NETWORK_SHADOWS,
   NETWORK_BADGES,
   getNetworkTheme,
+  getNetworkConfig,
 } from './config/ui-config'
 export type { NetworkConfig, NetworkName } from './config/ui-config'
 
