@@ -6,7 +6,15 @@
  * without affecting blockchain connectivity.
  */
 
-import { mainnet, arbitrum, optimism, polygon } from 'viem/chains'
+import {
+  mainnet,
+  arbitrum,
+  optimism,
+  polygon,
+  arbitrumSepolia,
+  optimismSepolia,
+  polygonAmoy,
+} from 'viem/chains'
 import { HexagonIcon, TriangleIcon, ZapIcon } from '@/shared/ui/icons'
 
 /**
@@ -22,10 +30,13 @@ export type NetworkName = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'
 export function getNetworkTheme(chainId: number): NetworkName {
   switch (chainId) {
     case arbitrum.id:
+    case arbitrumSepolia.id:
       return 'arbitrum'
     case optimism.id:
+    case optimismSepolia.id:
       return 'optimism'
     case polygon.id:
+    case polygonAmoy.id:
       return 'polygon'
     default:
       return 'ethereum'
