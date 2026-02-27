@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 /**
  * Chain Configurations for VoidPay
  *

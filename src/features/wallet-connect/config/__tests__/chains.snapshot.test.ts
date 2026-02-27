@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { MAINNET_CHAINS, TESTNET_CHAINS, SUPPORTED_CHAIN_IDS } from '@/shared/config'
+import { MAINNET_CHAINS, TESTNET_CHAINS, SUPPORTED_CHAIN_IDS } from '@/entities/network'
 
 describe('chains snapshot tests', () => {
   describe('SUPPORTED_CHAIN_IDS', () => {

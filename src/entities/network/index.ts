@@ -13,6 +13,19 @@ export type { NetworkId } from './config/networks'
 export { NETWORK_TOKENS } from './config/tokens'
 export type { TokenInfo } from './config/tokens'
 
+// Chain configuration (from config layer)
+export {
+  MAINNET_CHAINS,
+  TESTNET_CHAINS,
+  SUPPORTED_CHAIN_IDS,
+  ALL_CHAIN_IDS,
+  getChainById,
+  getSupportedChains,
+  isTestnetChain,
+  getChainName,
+  getBlockExplorerUrl,
+} from './config/chains'
+
 // Network UI configuration (from config layer)
 export {
   NETWORK_CONFIG,
