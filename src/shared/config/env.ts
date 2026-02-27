@@ -13,10 +13,9 @@ export const envSchema = z.object({
   NEXT_PUBLIC_ENABLE_TESTNETS: z.string().optional().default('false'),
 
   // RPC Proxy (Server-side only - NOT prefixed with NEXT_PUBLIC_)
+  // Single API key per provider — chain routing is automatic via prefix maps
   ALCHEMY_API_KEY: z.string().optional(),
-  ALCHEMY_RPC_URL: z.string().url().optional(),
   INFURA_API_KEY: z.string().optional(),
-  INFURA_RPC_URL: z.string().url().optional(),
 
   // Rate Limiting (Vercel KV)
   KV_REST_API_URL: z.string().url().optional(),

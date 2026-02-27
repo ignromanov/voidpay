@@ -85,8 +85,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
-    // Rate limiting (skip for mock mode to avoid blocking development)
+    // Extract chainId from query params (default to Ethereum mainnet)
     const url = new URL(request.url)
+    const chainIdParam = url.searchParams.get('chainId')
+    const chainId = chainIdParam ? Number(chainIdParam) : 1
+
+    if (Number.isNaN(chainId) || !Number.isInteger(chainId) || chainId <= 0) {
+      return NextResponse.json(
+        {
+          jsonrpc: '2.0',
+          error: {
+            code: -32602,
+            message: `Invalid chainId parameter: must be a positive integer`,
+          },
+          id: body.id || null,
+        } as JsonRpcResponse,
+        { status: 400 }
+      )
+    }
+
+    // Rate limiting (skip for mock mode to avoid blocking development)
     const { shouldUseMock } = await import('@/features/rpc-proxy')
 
     if (!shouldUseMock(url)) {
@@ -121,7 +139,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (shouldUseMock(url)) {
       const mockMode = getMockMode(url)
-      const mockResponse = await handleMockRequest(body, mockMode)
+      const mockResponse = await handleMockRequest(body, mockMode, chainId)
 
       return NextResponse.json(mockResponse, {
         status: mockResponse.error ? 400 : 200,
@@ -137,7 +155,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { proxyRequest } = await import('@/features/rpc-proxy')
 
     // Proxy the request with automatic failover
-    const result = await proxyRequest(body)
+    const result = await proxyRequest(body, chainId)
 
     // Get rate limit info for response headers (if available)
     let rateLimitHeaders: Record<string, string> = {}
