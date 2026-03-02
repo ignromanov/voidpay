@@ -42,14 +42,16 @@ export interface PayInvoiceState {
 export function usePayInvoice(): PayInvoiceState {
   const hash = useHashFragment()
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
-  const { addInvoice, getInvoice, setError } = useTrackedInvoiceStore()
+  const addInvoice = useTrackedInvoiceStore((s) => s.addInvoice)
+  const setError = useTrackedInvoiceStore((s) => s.setError)
 
   const [isHydrated, setIsHydrated] = useState(false)
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [errorType, setErrorType] = useState<DecodeErrorType | null>(null)
 
-  // Read fresh store data on every render (no useMemo — getInvoice is a simple find)
-  const tracked = invoice ? getInvoice(invoice.invoiceId) : undefined
+  const tracked = useTrackedInvoiceStore((s) =>
+    invoice ? s.invoices.find((inv) => inv.invoiceId === invoice.invoiceId) : undefined
+  )
 
   const panelStatus = computePaymentStatus({
     tracked,
@@ -92,7 +94,7 @@ export function usePayInvoice(): PayInvoiceState {
       setInvoice(null)
       setErrorType(mapParseErrorToDecodeType(result.error.message))
     }
-  }, [hash, isHydrated, addInvoice, getInvoice])
+  }, [hash, isHydrated, addInvoice])
 
   // 3. Sync network theme for background
   useEffect(() => {

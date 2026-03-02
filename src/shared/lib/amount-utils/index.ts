@@ -291,11 +291,8 @@ export function addMagicDust(total: string, magicDust: number): string {
     const dustBigInt = BigInt(magicDust)
     return (totalBigInt + dustBigInt).toString()
   } catch (error) {
-    console.error('[addMagicDust] Failed to add Magic Dust, returning total without dust:', {
-      total,
-      magicDust,
-      error: error instanceof Error ? error.message : String(error),
-    })
-    return total || '0'
+    throw new Error(
+      `[addMagicDust] Failed to convert total "${total}" to BigInt: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 }

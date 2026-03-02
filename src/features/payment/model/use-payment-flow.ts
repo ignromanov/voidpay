@@ -42,6 +42,7 @@ export { INITIAL_PAYMENT_STATE }
 export function paymentReducer(state: PaymentState, action: PaymentAction): PaymentState {
   switch (action.type) {
     case 'START':
+      if (state.step !== 'idle') return state
       return { ...state, step: action.fromStep, intent: true, error: null }
 
     case 'CONNECTED':
@@ -114,12 +115,14 @@ export function usePaymentFlow({
     data: sendHash,
     error: sendError,
     sendTransaction,
+    reset: resetSend,
   } = useSendTransaction()
 
   const {
     data: writeHash,
     error: writeError,
     writeContract,
+    reset: resetWrite,
   } = useWriteContract()
 
   const txHash = sendHash ?? writeHash
@@ -144,6 +147,8 @@ export function usePaymentFlow({
   const handlePay = useCallback(() => {
     if (state.step !== 'idle') return
 
+    resetSend()
+    resetWrite()
     sendInitiated.current = false
     connectInitiated.current = false
     switchInitiated.current = false
@@ -159,7 +164,7 @@ export function usePaymentFlow({
     }
 
     dispatch({ type: 'START', fromStep: 'sending' })
-  }, [state.step, isConnected, hasMismatch])
+  }, [state.step, isConnected, hasMismatch, resetSend, resetWrite])
 
   // Effect: Trigger wallet connection when entering 'connecting' step
   useEffect(() => {

@@ -151,10 +151,10 @@ describe('AppErrorScreen', () => {
       expect(container).toHaveClass('backdrop-blur')
     })
 
-    it('has aria-live="assertive"', () => {
+    it('has no redundant aria-live (implied by role="alert")', () => {
       render(<AppErrorScreen />)
       const alert = screen.getByRole('alert')
-      expect(alert).toHaveAttribute('aria-live', 'assertive')
+      expect(alert).not.toHaveAttribute('aria-live')
     })
 
     it('icon is decorative (aria-hidden)', () => {

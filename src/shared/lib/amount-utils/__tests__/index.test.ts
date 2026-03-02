@@ -408,15 +408,8 @@ describe('addMagicDust', () => {
     expect(() => addMagicDust('100000000', 1000)).toThrow(RangeError)
   })
 
-  it('should log error on corrupted total but return total', () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const result = addMagicDust('not-a-number', 42)
-    expect(result).toBe('not-a-number')
-    expect(consoleError).toHaveBeenCalledWith(
-      '[addMagicDust] Failed to add Magic Dust, returning total without dust:',
-      expect.objectContaining({ total: 'not-a-number', magicDust: 42 })
-    )
-    consoleError.mockRestore()
+  it('should throw on corrupted total string', () => {
+    expect(() => addMagicDust('not-a-number', 42)).toThrow('[addMagicDust] Failed to convert total')
   })
 })
 

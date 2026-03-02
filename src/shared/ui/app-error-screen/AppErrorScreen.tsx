@@ -67,7 +67,6 @@ export function AppErrorScreen({
     <div
       ref={containerRef}
       role="alert"
-      aria-live="assertive"
       tabIndex={-1}
       data-testid="app-error-screen"
       className={cn(

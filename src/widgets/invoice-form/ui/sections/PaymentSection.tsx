@@ -37,7 +37,7 @@ export function PaymentSection({ form }: PaymentSectionProps) {
       currency
         ? {
             symbol: currency,
-            address: tokenAddress ?? null,
+            address: (tokenAddress ?? null) as `0x${string}` | null,
             decimals: decimals || 18,
             name: currency,
             iconColor: 'bg-violet-500' as const,

@@ -14,7 +14,7 @@ export interface TokenInfo {
   name: string
 
   /** Contract address, null for native tokens */
-  address: `0x${string}` | null | string
+  address: `0x${string}` | null
 
   /** Token decimals (e.g., 6 for USDC, 18 for ETH) */
   decimals: number

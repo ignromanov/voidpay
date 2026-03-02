@@ -38,7 +38,7 @@ function getButtonLabel(
     case 'confirming':
       return { primary: 'Confirming', secondary: 'Verifying on-chain' }
     case 'success':
-      return { primary: 'Payment confirmed' }
+      return { primary: 'Payment sent' }
     default:
       return { primary: 'Pay' }
   }

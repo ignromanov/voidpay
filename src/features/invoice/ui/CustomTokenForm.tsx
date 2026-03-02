@@ -47,7 +47,7 @@ export function CustomTokenForm({
     onSubmit({
       symbol: customTokenMetadata.symbol ?? '',
       name: customTokenMetadata.name ?? '',
-      address: customAddress,
+      address: customAddress as `0x${string}`,
       decimals: customTokenMetadata.decimals ?? 18,
       iconColor: 'bg-zinc-700', // Default color for custom tokens
       isCustom: true, // Mark as custom/unverified

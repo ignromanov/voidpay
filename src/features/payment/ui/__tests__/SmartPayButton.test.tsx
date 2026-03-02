@@ -149,10 +149,10 @@ describe('SmartPayButton', () => {
     expect(onSuccess).toHaveBeenCalledWith('0xabc123')
   })
 
-  it('renders "Payment confirmed" in success state', () => {
+  it('renders "Payment sent" in success state', () => {
     mockState = { step: 'success', error: null, txHash: '0xabc' as `0x${string}`, intent: false }
     render(<SmartPayButton {...defaultProps} />)
-    expect(screen.getByRole('button').textContent).toContain('Payment confirmed')
+    expect(screen.getByRole('button').textContent).toContain('Payment sent')
   })
 
   it('button is not interactive in success state', () => {
@@ -225,11 +225,11 @@ describe('SmartPayButton', () => {
       expect(screen.getByRole('button')).toBeDisabled()
     })
 
-    it('success — shows check icon and "Payment confirmed"', () => {
+    it('success — shows check icon and "Payment sent"', () => {
       mockState = { step: 'success', error: null, txHash: '0xabc' as `0x${string}`, intent: false }
       render(<SmartPayButton {...defaultProps} />)
       const button = screen.getByRole('button')
-      expect(button.textContent).toContain('Payment confirmed')
+      expect(button.textContent).toContain('Payment sent')
       expect(button).not.toBeDisabled() // Keep visual overlay
       expect(button.className).toContain('pointer-events-none') // Not interactive
     })

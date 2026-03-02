@@ -4,6 +4,8 @@ import { renderHook, act, waitFor } from '@testing-library/react'
 // Mock wagmi hooks
 const mockSendTransaction = vi.fn()
 const mockWriteContract = vi.fn()
+const mockResetSend = vi.fn()
+const mockResetWrite = vi.fn()
 let mockSendData: `0x${string}` | undefined = undefined
 let mockSendError: Error | null = null
 let mockSendPending = false
@@ -35,12 +37,14 @@ vi.mock('wagmi', () => ({
     isPending: mockSendPending,
     error: mockSendError,
     sendTransaction: mockSendTransaction,
+    reset: mockResetSend,
   })),
   useWriteContract: vi.fn(() => ({
     data: mockWriteData,
     isPending: mockWritePending,
     error: mockWriteError,
     writeContract: mockWriteContract,
+    reset: mockResetWrite,
   })),
   useWaitForTransactionReceipt: vi.fn(() => ({
     isLoading: mockReceiptLoading,
@@ -320,5 +324,84 @@ describe('usePaymentFlow', () => {
     rerender()
 
     expect(result.current.state.intent).toBe(false)
+  })
+
+  it('calls resetSend and resetWrite when handlePay is called after an error', async () => {
+    mockIsConnected = true
+    mockChainId = 1
+
+    const { useNetworkMismatch } = await import('@/entities/network')
+    vi.mocked(useNetworkMismatch).mockReturnValue({
+      hasMismatch: false,
+      expectedChainId: 1,
+      actualChainId: 1,
+      expectedChainName: 'Ethereum',
+      actualChainName: 'Ethereum',
+    })
+
+    const { result, rerender } = renderHook(() =>
+      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+    )
+
+    // Trigger initial payment
+    act(() => {
+      result.current.handlePay()
+    })
+    expect(result.current.state.step).toBe('sending')
+
+    // Simulate error to return to idle
+    mockSendError = new Error('Insufficient funds')
+    rerender()
+    expect(result.current.state.step).toBe('idle')
+
+    // Clear error so it doesn't re-fire the error effect
+    mockSendError = null
+    rerender()
+
+    // Retry — should call reset functions
+    act(() => {
+      result.current.handlePay()
+    })
+
+    expect(mockResetSend).toHaveBeenCalled()
+    expect(mockResetWrite).toHaveBeenCalled()
+  })
+
+  it('dispatches ERROR when receipt status is reverted', async () => {
+    mockIsConnected = true
+    mockChainId = 1
+
+    const { useNetworkMismatch } = await import('@/entities/network')
+    vi.mocked(useNetworkMismatch).mockReturnValue({
+      hasMismatch: false,
+      expectedChainId: 1,
+      actualChainId: 1,
+      expectedChainName: 'Ethereum',
+      actualChainName: 'Ethereum',
+    })
+
+    const { result, rerender } = renderHook(() =>
+      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+    )
+
+    // Start payment and get to sending state
+    act(() => {
+      result.current.handlePay()
+    })
+    expect(result.current.state.step).toBe('sending')
+
+    // Simulate TX hash arriving → confirming
+    mockSendData = '0xdeadbeef' as `0x${string}`
+    rerender()
+    expect(result.current.state.step).toBe('confirming')
+
+    // Simulate reverted receipt
+    mockReceiptSuccess = true
+    mockReceiptData = { status: 'reverted' }
+    rerender()
+
+    expect(result.current.state.step).toBe('idle')
+    expect(result.current.state.error).not.toBeNull()
+    expect(result.current.state.error?.message).toContain('rejected by the blockchain')
   })
 })

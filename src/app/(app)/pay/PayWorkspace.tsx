@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import {
@@ -13,6 +13,11 @@ import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { ChevronDownIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
+
+import { usePayInvoice } from './use-pay-invoice'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
+import { StatusBadge } from './StatusBadge'
+import { MinimizedPill } from './MinimizedPill'
 
 /**
  * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.
@@ -29,10 +34,6 @@ const PayButton = dynamic(
     ),
   },
 )
-import { usePayInvoice } from './use-pay-invoice'
-import { useTrackedInvoiceStore } from '@/entities/invoice'
-import { StatusBadge } from './StatusBadge'
-import { MinimizedPill } from './MinimizedPill'
 
 const InvoicePreviewModal = dynamic(
   () => import('@/widgets/invoice-paper').then((m) => ({ default: m.InvoicePreviewModal })),
@@ -61,7 +62,8 @@ export function PayWorkspace() {
   const [devPaymentStep, setDevPaymentStep] = useState<DevPaymentVisualStep | null>(null)
 
   const networkId = invoice?.networkId ?? 1
-  const exactTotal = invoice ? computeAmounts(invoice).exactTotal : '0'
+  const amounts = useMemo(() => invoice ? computeAmounts(invoice) : null, [invoice])
+  const exactTotal = amounts?.exactTotal ?? '0'
 
   // Loading state
   if (isLoading) {
@@ -126,7 +128,7 @@ export function PayWorkspace() {
         <div className="absolute bottom-4 left-1/2 z-40 w-full max-w-[95%] -translate-x-1/2 px-4 md:bottom-5 md:max-w-xl">
           <AnimatePresence mode="wait">
             {isMinimized ? (
-              <MinimizedPill isPaid={isPaid} onExpand={() => setIsMinimized(false)} />
+              <MinimizedPill key="minimized" isPaid={isPaid} onExpand={() => setIsMinimized(false)} />
             ) : (
               <motion.div
                 key="expanded"

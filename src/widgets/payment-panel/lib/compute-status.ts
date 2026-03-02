@@ -1,12 +1,6 @@
-import type { TrackedInvoice } from '@/entities/invoice'
 import { isDueDatePassed } from '@/shared/lib/date-time'
-
-export type PaymentPanelStatus = 'pending' | 'paid' | 'confirming' | 'overdue'
-
-export interface StatusInput {
-  tracked?: TrackedInvoice | undefined
-  dueAt?: number | undefined
-}
+import type { PaymentPanelStatus, StatusInput } from '../types'
+export type { PaymentPanelStatus, StatusInput }
 
 /**
  * Derive payment status from facts + time.
