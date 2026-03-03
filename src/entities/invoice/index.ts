@@ -39,6 +39,10 @@ export { invoiceSchema } from './lib/validation'
 // Note: ETH_ADDRESS_REGEX now lives in shared/lib/validation
 export { ETH_ADDRESS_REGEX, NUMERIC_STRING_REGEX } from './lib/constants'
 
+// Status derivation (from lib layer)
+export { computeInvoiceStatus } from './lib/compute-status'
+export type { InvoiceStatus, InvoiceStatusInput } from './lib/compute-status'
+
 // Invoice view store (from model layer)
 export { useTrackedInvoiceStore } from './model/rich-invoice-store'
 export type { TrackedInvoice, InvoiceSource } from './model/rich-invoice-store'

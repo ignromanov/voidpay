@@ -1,11 +1,11 @@
 /**
- * computePaymentStatus Tests
- * Widget: payment-panel
+ * computeInvoiceStatus Tests
+ * Entity: invoice
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { computePaymentStatus } from '../compute-status'
-import type { TrackedInvoice } from '@/entities/invoice'
+import { computeInvoiceStatus } from '../compute-status'
+import type { TrackedInvoice } from '../../model/rich-invoice-store'
 
 vi.mock('@/shared/lib/date-time', () => ({
   isDueDatePassed: vi.fn(),
@@ -25,13 +25,13 @@ function makeTracked(overrides: Partial<TrackedInvoice> = {}): TrackedInvoice {
   }
 }
 
-describe('computePaymentStatus', () => {
+describe('computeInvoiceStatus', () => {
   beforeEach(() => {
     mockIsDueDatePassed.mockReturnValue(false)
   })
 
   it('returns "pending" when no txHash and due date is not passed', () => {
-    const result = computePaymentStatus({
+    const result = computeInvoiceStatus({
       tracked: makeTracked(),
       dueAt: 9999999999,
     })
@@ -42,7 +42,7 @@ describe('computePaymentStatus', () => {
   it('returns "overdue" when no txHash and due date is passed', () => {
     mockIsDueDatePassed.mockReturnValue(true)
 
-    const result = computePaymentStatus({
+    const result = computeInvoiceStatus({
       tracked: makeTracked(),
       dueAt: 1000000000,
     })
@@ -51,7 +51,7 @@ describe('computePaymentStatus', () => {
   })
 
   it('returns "confirming" when txHash present and not yet validated', () => {
-    const result = computePaymentStatus({
+    const result = computeInvoiceStatus({
       tracked: makeTracked({ txHash: '0xabc123', txHashValidated: false }),
       dueAt: 9999999999,
     })
@@ -60,7 +60,7 @@ describe('computePaymentStatus', () => {
   })
 
   it('returns "paid" when txHash present and validated', () => {
-    const result = computePaymentStatus({
+    const result = computeInvoiceStatus({
       tracked: makeTracked({ txHash: '0xabc123', txHashValidated: true }),
       dueAt: 9999999999,
     })
@@ -71,7 +71,7 @@ describe('computePaymentStatus', () => {
   it('priority: "confirming" beats "overdue" when txHash present but not validated and due date passed', () => {
     mockIsDueDatePassed.mockReturnValue(true)
 
-    const result = computePaymentStatus({
+    const result = computeInvoiceStatus({
       tracked: makeTracked({ txHash: '0xabc123', txHashValidated: false }),
       dueAt: 1000000000,
     })
@@ -82,7 +82,7 @@ describe('computePaymentStatus', () => {
   it('priority: "paid" beats "overdue" when txHash validated and due date passed', () => {
     mockIsDueDatePassed.mockReturnValue(true)
 
-    const result = computePaymentStatus({
+    const result = computeInvoiceStatus({
       tracked: makeTracked({ txHash: '0xabc123', txHashValidated: true }),
       dueAt: 1000000000,
     })
@@ -91,7 +91,7 @@ describe('computePaymentStatus', () => {
   })
 
   it('returns "pending" when no dueAt and no txHash', () => {
-    const result = computePaymentStatus({
+    const result = computeInvoiceStatus({
       tracked: makeTracked(),
     })
 
@@ -100,13 +100,13 @@ describe('computePaymentStatus', () => {
   })
 
   it('returns "pending" when tracked is undefined and no dueAt', () => {
-    const result = computePaymentStatus({})
+    const result = computeInvoiceStatus({})
 
     expect(result).toBe('pending')
   })
 
   it('returns "pending" when tracked is undefined and due date is not passed', () => {
-    const result = computePaymentStatus({ dueAt: 9999999999 })
+    const result = computeInvoiceStatus({ dueAt: 9999999999 })
 
     expect(result).toBe('pending')
   })

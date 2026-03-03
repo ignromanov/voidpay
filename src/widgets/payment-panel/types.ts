@@ -1,24 +1,15 @@
 import type { Invoice, ConfirmationProgress } from '@/shared/lib/invoice-types'
-import type { TrackedInvoice, InvoiceSource } from '@/entities/invoice'
+import type { InvoiceStatus, InvoiceSource } from '@/entities/invoice'
 import type { ReactNode } from 'react'
 
 /**
- * Visual status for the Payment Panel.
- * Derived from TrackedInvoice facts + time:
- *   'pending'    — awaiting payment
- *   'paid'       — payment validated on-chain
- *   'confirming' — tx detected, waiting for block confirmations
- *   'overdue'    — invoice expired
+ * Re-export canonical status types with widget-level aliases.
  */
-export type PaymentPanelStatus = 'pending' | 'paid' | 'confirming' | 'overdue'
+export type PaymentPanelStatus = InvoiceStatus
+export type StatusInput = import('@/entities/invoice').InvoiceStatusInput
 
 // Re-export for consumers that import from this module
 export type { ConfirmationProgress } from '@/shared/lib/invoice-types'
-
-export interface StatusInput {
-  tracked?: TrackedInvoice | undefined
-  dueAt?: number | undefined
-}
 
 /**
  * Props for the main PaymentPanel widget.

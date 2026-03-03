@@ -1,7 +1,7 @@
 import { cn } from '@/shared/lib/utils'
-import type { PaymentPanelStatus } from '@/widgets/payment-panel'
+import type { InvoiceStatus } from '@/entities/invoice'
 
-const BADGE_STYLES: Record<PaymentPanelStatus, { label: string; badge: string; dot: string }> = {
+const BADGE_STYLES: Record<InvoiceStatus, { label: string; badge: string; dot: string }> = {
   pending: {
     label: 'Payment Pending',
     badge: 'border-amber-500/40 bg-amber-950/80 text-amber-200 shadow-[0_0_30px_-5px_rgba(245,158,11,0.4)]',
@@ -25,7 +25,7 @@ const BADGE_STYLES: Record<PaymentPanelStatus, { label: string; badge: string; d
 }
 
 interface StatusBadgeProps {
-  status: PaymentPanelStatus
+  status: InvoiceStatus
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {

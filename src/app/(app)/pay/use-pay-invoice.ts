@@ -3,13 +3,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { parseInvoiceHash, mapParseErrorToDecodeType } from '@/features/invoice-codec'
-import { useTrackedInvoiceStore } from '@/entities/invoice'
+import { useTrackedInvoiceStore, computeInvoiceStatus } from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
-import { computePaymentStatus } from '@/widgets/payment-panel'
 import { nowISO } from '@/shared/lib/date-time'
 import { toast } from '@/shared/lib/toast'
-import type { PaymentPanelStatus } from '@/widgets/payment-panel'
+import type { InvoiceStatus } from '@/entities/invoice'
 import type { DecodeErrorType } from '@/shared/ui/decode-error-screen'
 import type { Invoice, ConfirmationProgress } from '@/shared/lib/invoice-types'
 import type { InvoiceSource } from '@/entities/invoice'
@@ -21,7 +20,7 @@ export interface PayInvoiceState {
   invoice: Invoice | null
   errorType: DecodeErrorType | null
   isLoading: boolean
-  panelStatus: PaymentPanelStatus
+  panelStatus: InvoiceStatus
   source: InvoiceSource | undefined
   dismissError: () => void
   txHash: `0x${string}` | undefined
@@ -35,7 +34,7 @@ export interface PayInvoiceState {
  * Composes lower-layer logic:
  * - Hash decoding via parseInvoiceHash (features/invoice-codec)
  * - Error mapping via mapParseErrorToDecodeType (features/invoice-codec)
- * - Status derivation via computePaymentStatus (widgets/payment-panel)
+ * - Status derivation via computeInvoiceStatus (widgets/payment-panel)
  *
  * Side effects (app-layer composition):
  * - Hydration timeout for SSR
@@ -57,7 +56,7 @@ export function usePayInvoice(): PayInvoiceState {
     invoice ? s.invoices.find((inv) => inv.invoiceId === invoice.invoiceId) : undefined
   )
 
-  const panelStatus = computePaymentStatus({
+  const panelStatus = computeInvoiceStatus({
     tracked,
     dueAt: invoice?.dueAt,
   })
