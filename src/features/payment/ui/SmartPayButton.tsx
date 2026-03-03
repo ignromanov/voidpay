@@ -18,7 +18,7 @@ function getButtonLabel(
   step: PaymentStep,
   idleSubState: IdleSubState,
   currency: string,
-  exactTotal: string,
+  subtotal: string,
   decimals: number,
 ): { primary: string; secondary?: string } {
   switch (step) {
@@ -27,7 +27,7 @@ function getButtonLabel(
         return { primary: 'Connect Wallet', secondary: 'To proceed with payment' }
       if (idleSubState === 'wrong-network')
         return { primary: 'Switch Network', secondary: 'Required for this payment' }
-      return { primary: `Pay ${formatAmount(exactTotal, decimals)} ${currency}` }
+      return { primary: `Pay ${formatAmount(subtotal, decimals)} ${currency}` }
     }
     case 'connecting':
       return { primary: 'Connecting', secondary: 'Step 1 of 3' }
@@ -67,14 +67,14 @@ function getAriaLabel(
   step: PaymentStep,
   idleSubState: IdleSubState,
   currency: string,
-  exactTotal: string,
+  subtotal: string,
   decimals: number,
 ): string {
   switch (step) {
     case 'idle': {
       if (idleSubState === 'disconnected') return 'Connect wallet to proceed with payment'
       if (idleSubState === 'wrong-network') return 'Switch network to continue payment'
-      return `Pay ${formatAmount(exactTotal, decimals)} ${currency}`
+      return `Pay ${formatAmount(subtotal, decimals)} ${currency}`
     }
     case 'connecting':
       return 'Connecting wallet. Step 1 of 3.'
@@ -99,6 +99,7 @@ export function SmartPayButton({
   invoice,
   invoiceId,
   exactTotal,
+  subtotal,
   onSuccess,
   onError,
   onDismissError: _onDismissError,
@@ -130,8 +131,8 @@ export function SmartPayButton({
     }
   }, [realStep, txHash, onSuccess, devOverride])
 
-  const label = getButtonLabel(step, idleSubState, invoice.currency, exactTotal, invoice.decimals)
-  const ariaLabel = getAriaLabel(step, idleSubState, invoice.currency, exactTotal, invoice.decimals)
+  const label = getButtonLabel(step, idleSubState, invoice.currency, subtotal, invoice.decimals)
+  const ariaLabel = getAriaLabel(step, idleSubState, invoice.currency, subtotal, invoice.decimals)
   const progress = getProgress(step)
   const isInProgress = (['connecting', 'switching', 'sending', 'confirming'] as string[]).includes(step)
   const isSuccess = step === 'success'

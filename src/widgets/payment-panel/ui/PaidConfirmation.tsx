@@ -1,23 +1,30 @@
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
 
 import { CheckIcon, ShieldCheckIcon } from '@/shared/ui/icons'
 import { motion } from '@/shared/ui/motion'
 import type { ConfirmationProgress } from '../types'
 
 interface PaidConfirmationProps {
-  amount: string
+  subtotal: string
+  magicDust: string
   decimals: number
   currency: string
   confirmations?: ConfirmationProgress | undefined
 }
 
 export function PaidConfirmation({
-  amount,
+  subtotal,
+  magicDust,
   decimals,
   currency,
   confirmations,
 }: PaidConfirmationProps) {
-  const formattedAmount = formatAmount(amount, decimals)
+  const formattedSubtotal = formatAmount(subtotal, decimals)
+  const hasMagicDust = magicDust !== '0'
+  const formattedExact = hasMagicDust
+    ? formatAmount((BigInt(subtotal) + BigInt(magicDust)).toString(), decimals, { displayDecimals: decimals, useGrouping: true })
+    : null
   const progressPercent = confirmations
     ? Math.min((confirmations.current / confirmations.required) * 100, 100)
     : 0
@@ -48,10 +55,15 @@ export function PaidConfirmation({
       <div className="py-2 pl-2 border-l-2 border-emerald-500/30 bg-emerald-500/5 rounded-r-lg">
         <div className="flex items-baseline gap-2 pl-2">
           <span className="text-4xl font-black font-mono tracking-tight text-white">
-            {formattedAmount}
+            {formattedSubtotal}
           </span>
           <span className="text-xl text-emerald-400/80">{currency}</span>
         </div>
+        {hasMagicDust && formattedExact && (
+          <div className="pl-2 mt-1">
+            <MagicDustBadge label="Sent" amount={formattedExact} currency={currency} variant="dark" />
+          </div>
+        )}
       </div>
 
       {/* Confirmation progress */}

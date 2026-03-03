@@ -106,7 +106,7 @@ export const invoiceSchema = z.object({
       'Discount must be 0-100%'
     )
     .optional(),
-  /** Pre-calculated total in atomic units (includes Magic Dust if enabled) */
+  /** Exact amount to be sent in atomic units (includes Magic Dust when present) */
   total: z.string().regex(ATOMIC_UNITS_REGEX, 'Total must be atomic units').optional(),
   /** Magic Dust amount in atomic units (1-999 for unique payment ID) */
   magicDust: z.string().regex(ATOMIC_UNITS_REGEX, 'Magic Dust must be atomic units').optional(),

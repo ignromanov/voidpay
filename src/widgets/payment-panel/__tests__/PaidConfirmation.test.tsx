@@ -4,7 +4,8 @@ import { PaidConfirmation } from '../ui/PaidConfirmation'
 
 describe('PaidConfirmation', () => {
   const defaultProps = {
-    amount: '1500000000',
+    subtotal: '1500000000',
+    magicDust: '0',
     decimals: 6,
     currency: 'USDC',
   }
@@ -45,5 +46,15 @@ describe('PaidConfirmation', () => {
   it('does not render confirmation progress when not provided', () => {
     render(<PaidConfirmation {...defaultProps} />)
     expect(screen.queryByText('Protecting against chain reorgs')).toBeNull()
+  })
+
+  it('shows MagicDustBadge when magicDust is present', () => {
+    render(<PaidConfirmation {...defaultProps} subtotal="1500000000" magicDust="42" />)
+    expect(screen.getByText(/Sent/)).toBeDefined()
+  })
+
+  it('hides MagicDustBadge when magicDust is zero', () => {
+    render(<PaidConfirmation {...defaultProps} />)
+    expect(screen.queryByText(/Sent:/)).toBeNull()
   })
 })

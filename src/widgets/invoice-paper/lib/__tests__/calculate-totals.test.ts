@@ -31,8 +31,8 @@ describe('calculateTotals', () => {
       magicDust: '42',
     })
     expect(result.subtotal).toBe('100.00')
-    expect(result.total).toBe('100.000042')
-    expect(result.atomicTotal).toBe('100000042')
+    expect(result.total).toBe('100.00') // Display total = composite minus dust
+    expect(result.atomicTotal).toBe('100000042') // Atomic total unchanged (for QR/payment)
     expect(result.magicDust).toBe('0.000042')
   })
 

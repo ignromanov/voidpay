@@ -1,5 +1,5 @@
 import { formatAmount } from '@/shared/lib/amount-utils'
-import { InfoIcon } from '@/shared/ui/icons'
+import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
 
 interface AmountDisplayProps {
   subtotal: string
@@ -36,21 +36,7 @@ export function AmountDisplay({
       </div>
 
       {hasMagicDust ? (
-        <div className="flex items-center gap-1.5">
-          <span className="text-[9px] font-mono text-zinc-500">Exact:</span>
-          <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
-            {formattedExact} {currency}
-          </span>
-          <span className="relative cursor-help group">
-            <InfoIcon size={12} className="text-zinc-600" />
-            <span
-              role="tooltip"
-              className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-zinc-900 text-zinc-300 text-[10px] font-sans rounded shadow-xl border border-zinc-800 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100] text-center"
-            >
-              Magic Dust is a tiny unique amount added for payment matching without a backend.
-            </span>
-          </span>
-        </div>
+        <MagicDustBadge label="Exact amount" amount={formattedExact!} currency={currency} variant="dark" />
       ) : (
         <p className="text-[9px] font-mono text-amber-500/80">
           Manual verification required

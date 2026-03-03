@@ -111,7 +111,8 @@ export function buildInvoice(draft: DraftState, lineItems: LineItem[]): Invoice 
   let magicDust: string | undefined
 
   if (magicDustEnabled) {
-    const dust = generateMagicDust()
+    // Reuse dust from draft (set by MagicDustToggle), or generate as fallback
+    const dust = data.magicDust ? Number(data.magicDust) : generateMagicDust()
     magicDust = dust.toString()
     total = addMagicDust(total, dust)
   }

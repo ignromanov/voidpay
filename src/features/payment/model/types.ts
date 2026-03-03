@@ -109,6 +109,8 @@ export interface SmartPayButtonProps {
   invoiceId: string
   /** Exact total in atomic units (from computeAmounts — computed by parent) */
   exactTotal: string
+  /** Clean subtotal in atomic units (without Magic Dust) for button label display */
+  subtotal: string
   /** Callback when payment succeeds (txHash persisted) */
   onSuccess?: (txHash: `0x${string}`) => void
   /** Callback when error occurs (for parent error display) */

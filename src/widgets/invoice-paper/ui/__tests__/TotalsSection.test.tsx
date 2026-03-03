@@ -139,40 +139,40 @@ describe('TotalsSection', () => {
       const totals: Totals = {
         ...baseTotals,
         magicDust: '0.000042',
-        total: '1,000.000042',
+        total: '1,000.00', // Display total is clean (dust subtracted by calculateTotals)
       }
       render(<TotalsSection totals={totals} showMagicDust={true} />)
 
-      expect(screen.getByText('Unique ID:')).toBeInTheDocument()
-      expect(screen.getByText('0.000042')).toBeInTheDocument()
+      expect(screen.getByText(/Unique ID/i)).toBeInTheDocument()
+      expect(screen.getByText(/0\.000042/)).toBeInTheDocument()
     })
 
     it('hides magic dust when showMagicDust is false', () => {
       const totals: Totals = {
         ...baseTotals,
         magicDust: '0.000042',
-        total: '1,000.000042',
+        total: '1,000.00',
       }
       render(<TotalsSection totals={totals} showMagicDust={false} />)
 
-      expect(screen.queryByText('Unique ID:')).not.toBeInTheDocument()
+      expect(screen.queryByText(/Unique ID/i)).not.toBeInTheDocument()
     })
 
     it('hides magic dust when magicDust is null', () => {
       render(<TotalsSection totals={baseTotals} showMagicDust={true} />)
 
-      expect(screen.queryByText('Unique ID:')).not.toBeInTheDocument()
+      expect(screen.queryByText(/Unique ID/i)).not.toBeInTheDocument()
     })
 
     it('shows magic dust by default (showMagicDust defaults to true)', () => {
       const totals: Totals = {
         ...baseTotals,
         magicDust: '0.000042',
-        total: '1,000.000042',
+        total: '1,000.00',
       }
       render(<TotalsSection totals={totals} />)
 
-      expect(screen.getByText('Unique ID:')).toBeInTheDocument()
+      expect(screen.getByText(/Unique ID/i)).toBeInTheDocument()
     })
   })
 

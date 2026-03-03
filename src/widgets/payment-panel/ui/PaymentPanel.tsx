@@ -81,7 +81,8 @@ export function PaymentPanel({
         {/* Paid state: PaidConfirmation */}
         {isPaid && txHash && (
           <PaidConfirmation
-            amount={amounts.exactTotal}
+            subtotal={amounts.subtotal}
+            magicDust={amounts.magicDust}
             decimals={invoice.decimals}
             currency={invoice.currency}
             confirmations={confirmations}
@@ -100,7 +101,8 @@ export function PaymentPanel({
         {/* Expired state: ExpiredState */}
         {isExpired && (
           <ExpiredState
-            amount={amounts.exactTotal}
+            subtotal={amounts.subtotal}
+            magicDust={amounts.magicDust}
             decimals={invoice.decimals}
             currency={invoice.currency}
           />
@@ -168,8 +170,13 @@ export function PaymentPanel({
           open={qrOpen}
           onOpenChange={setQrOpen}
           invoice={invoice}
-          amount={formatAmount(amounts.exactTotal, invoice.decimals)}
+          amount={formatAmount(amounts.subtotal, invoice.decimals)}
           exactTotal={amounts.exactTotal}
+          magicDustAmount={
+            amounts.magicDust !== '0'
+              ? formatAmount(amounts.exactTotal, invoice.decimals, { displayDecimals: invoice.decimals, useGrouping: true })
+              : undefined
+          }
         />
       )}
     </div>

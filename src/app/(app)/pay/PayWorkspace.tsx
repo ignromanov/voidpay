@@ -64,6 +64,7 @@ export function PayWorkspace() {
   const networkId = invoice?.networkId ?? 1
   const amounts = useMemo(() => invoice ? computeAmounts(invoice) : null, [invoice])
   const exactTotal = amounts?.exactTotal ?? '0'
+  const subtotal = amounts?.subtotal ?? '0'
 
   // Loading state
   if (isLoading) {
@@ -161,6 +162,7 @@ export function PayWorkspace() {
                       invoice={invoice}
                       invoiceId={invoice.invoiceId}
                       exactTotal={exactTotal}
+                      subtotal={subtotal}
                       onSuccess={() => {
                         setPaymentError(null)
                       }}
