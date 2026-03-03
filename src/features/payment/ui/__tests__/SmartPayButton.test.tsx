@@ -3,12 +3,14 @@ import { render, screen, fireEvent } from '@testing-library/react'
 
 // Mock usePaymentFlow
 const mockHandlePay = vi.fn()
-let mockState = { step: 'idle' as const, error: null, txHash: null, intent: false }
+let mockState = { step: 'idle' as const, error: null, txHash: null }
 let mockIdleSubState: 'disconnected' | 'wrong-network' | 'ready' = 'ready'
 
 vi.mock('../../model/use-payment-flow', () => ({
   usePaymentFlow: vi.fn(() => ({
-    state: mockState,
+    step: mockState.step,
+    error: mockState.error,
+    txHash: mockState.txHash,
     handlePay: mockHandlePay,
     idleSubState: mockIdleSubState,
   })),
@@ -44,7 +46,7 @@ const defaultProps = {
 describe('SmartPayButton', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockState = { step: 'idle', error: null, txHash: null, intent: false }
+    mockState = { step: 'idle', error: null, txHash: null }
     mockIdleSubState = 'ready'
   })
 
@@ -74,21 +76,21 @@ describe('SmartPayButton', () => {
   })
 
   it('shows "Sending funds..." during sending step', () => {
-    mockState = { step: 'sending', error: null, txHash: null, intent: true }
+    mockState = { step: 'sending', error: null, txHash: null }
     render(<SmartPayButton {...defaultProps} />)
     expect(screen.getByRole('button').textContent).toContain('Sending')
     expect(screen.getByRole('button')).toBeDisabled()
   })
 
   it('shows "Verifying on-chain..." during confirming step', () => {
-    mockState = { step: 'confirming', error: null, txHash: '0xabc' as `0x${string}`, intent: true }
+    mockState = { step: 'confirming', error: null, txHash: '0xabc' as `0x${string}` }
     render(<SmartPayButton {...defaultProps} />)
     expect(screen.getByRole('button').textContent).toContain('Verifying')
     expect(screen.getByRole('button')).toBeDisabled()
   })
 
   it('is disabled during processing states', () => {
-    mockState = { step: 'sending', error: null, txHash: null, intent: true }
+    mockState = { step: 'sending', error: null, txHash: null }
     render(<SmartPayButton {...defaultProps} />)
     expect(screen.getByRole('button')).toBeDisabled()
   })
@@ -106,21 +108,21 @@ describe('SmartPayButton', () => {
   })
 
   it('shows "Connecting wallet..." during connecting step', () => {
-    mockState = { step: 'connecting', error: null, txHash: null, intent: true }
+    mockState = { step: 'connecting', error: null, txHash: null }
     render(<SmartPayButton {...defaultProps} />)
     expect(screen.getByRole('button').textContent).toContain('Connecting')
     expect(screen.getByRole('button')).toBeDisabled()
   })
 
   it('shows "Switching network..." during switching step', () => {
-    mockState = { step: 'switching', error: null, txHash: null, intent: true }
+    mockState = { step: 'switching', error: null, txHash: null }
     render(<SmartPayButton {...defaultProps} />)
     expect(screen.getByRole('button').textContent).toContain('Switching')
     expect(screen.getByRole('button')).toBeDisabled()
   })
 
   it('button disabled during connecting', () => {
-    mockState = { step: 'connecting', error: null, txHash: null, intent: true }
+    mockState = { step: 'connecting', error: null, txHash: null }
     render(<SmartPayButton {...defaultProps} />)
     expect(screen.getByRole('button')).toBeDisabled()
   })
@@ -131,7 +133,6 @@ describe('SmartPayButton', () => {
       step: 'idle',
       error: { type: 'USER_REJECTED' as const, message: 'Rejected', step: 'sending' as const },
       txHash: null,
-      intent: false,
     }
     render(<SmartPayButton {...defaultProps} onError={onError} />)
     expect(onError).toHaveBeenCalledWith(expect.objectContaining({ type: 'USER_REJECTED' }))
@@ -143,20 +144,19 @@ describe('SmartPayButton', () => {
       step: 'success',
       error: null,
       txHash: '0xabc123' as `0x${string}`,
-      intent: false,
     }
     render(<SmartPayButton {...defaultProps} onSuccess={onSuccess} />)
     expect(onSuccess).toHaveBeenCalledWith('0xabc123')
   })
 
   it('renders "Transaction submitted" in success state', () => {
-    mockState = { step: 'success', error: null, txHash: '0xabc' as `0x${string}`, intent: false }
+    mockState = { step: 'success', error: null, txHash: '0xabc' as `0x${string}` }
     render(<SmartPayButton {...defaultProps} />)
     expect(screen.getByRole('button').textContent).toContain('Transaction submitted')
   })
 
   it('button is not interactive in success state', () => {
-    mockState = { step: 'success', error: null, txHash: '0xabc' as `0x${string}`, intent: false }
+    mockState = { step: 'success', error: null, txHash: '0xabc' as `0x${string}` }
     render(<SmartPayButton {...defaultProps} />)
     const button = screen.getByRole('button')
     expect(button).not.toBeDisabled() // Keep visual overlay
@@ -164,7 +164,7 @@ describe('SmartPayButton', () => {
   })
 
   it('does not call handlePay when disabled', () => {
-    mockState = { step: 'sending', error: null, txHash: null, intent: true }
+    mockState = { step: 'sending', error: null, txHash: null }
     render(<SmartPayButton {...defaultProps} />)
     fireEvent.click(screen.getByRole('button'))
     // Button is disabled, so handlePay should not be called
@@ -174,7 +174,7 @@ describe('SmartPayButton', () => {
   describe('all 9 visual states', () => {
     it('idle:disconnected — shows "Connect Wallet" with subtitle', () => {
       mockIdleSubState = 'disconnected'
-      mockState = { step: 'idle', error: null, txHash: null, intent: false }
+      mockState = { step: 'idle', error: null, txHash: null }
       render(<SmartPayButton {...defaultProps} />)
       expect(screen.getByRole('button').textContent).toContain('Connect Wallet')
       expect(screen.getByText('To proceed with payment')).toBeInTheDocument()
@@ -182,7 +182,7 @@ describe('SmartPayButton', () => {
 
     it('idle:wrong-network — shows "Switch Network" with subtitle', () => {
       mockIdleSubState = 'wrong-network'
-      mockState = { step: 'idle', error: null, txHash: null, intent: false }
+      mockState = { step: 'idle', error: null, txHash: null }
       render(<SmartPayButton {...defaultProps} />)
       expect(screen.getByRole('button').textContent).toContain('Switch Network')
       expect(screen.getByText('Required for this payment')).toBeInTheDocument()
@@ -190,7 +190,7 @@ describe('SmartPayButton', () => {
 
     it('idle:ready — shows "Pay X ETH"', () => {
       mockIdleSubState = 'ready'
-      mockState = { step: 'idle', error: null, txHash: null, intent: false }
+      mockState = { step: 'idle', error: null, txHash: null }
       render(<SmartPayButton {...defaultProps} />)
       expect(screen.getByRole('button').textContent).toContain('Pay')
       expect(screen.getByRole('button').textContent).toContain('ETH')
@@ -198,35 +198,35 @@ describe('SmartPayButton', () => {
     })
 
     it('connecting — shows spinner and "Connecting wallet..."', () => {
-      mockState = { step: 'connecting', error: null, txHash: null, intent: true }
+      mockState = { step: 'connecting', error: null, txHash: null }
       render(<SmartPayButton {...defaultProps} />)
       expect(screen.getByRole('button').textContent).toContain('Connecting')
       expect(screen.getByRole('button')).toBeDisabled()
     })
 
     it('switching — shows spinner and "Switching network..."', () => {
-      mockState = { step: 'switching', error: null, txHash: null, intent: true }
+      mockState = { step: 'switching', error: null, txHash: null }
       render(<SmartPayButton {...defaultProps} />)
       expect(screen.getByRole('button').textContent).toContain('Switching')
       expect(screen.getByRole('button')).toBeDisabled()
     })
 
     it('sending — shows spinner and "Sending funds..."', () => {
-      mockState = { step: 'sending', error: null, txHash: null, intent: true }
+      mockState = { step: 'sending', error: null, txHash: null }
       render(<SmartPayButton {...defaultProps} />)
       expect(screen.getByRole('button').textContent).toContain('Sending')
       expect(screen.getByRole('button')).toBeDisabled()
     })
 
     it('confirming — shows spinner and "Verifying on-chain..."', () => {
-      mockState = { step: 'confirming', error: null, txHash: '0xabc' as `0x${string}`, intent: true }
+      mockState = { step: 'confirming', error: null, txHash: '0xabc' as `0x${string}` }
       render(<SmartPayButton {...defaultProps} />)
       expect(screen.getByRole('button').textContent).toContain('Verifying')
       expect(screen.getByRole('button')).toBeDisabled()
     })
 
     it('success — shows check icon and "Transaction submitted"', () => {
-      mockState = { step: 'success', error: null, txHash: '0xabc' as `0x${string}`, intent: false }
+      mockState = { step: 'success', error: null, txHash: '0xabc' as `0x${string}` }
       render(<SmartPayButton {...defaultProps} />)
       const button = screen.getByRole('button')
       expect(button.textContent).toContain('Transaction submitted')

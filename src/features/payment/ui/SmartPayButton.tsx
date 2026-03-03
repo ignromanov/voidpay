@@ -110,13 +110,11 @@ export function SmartPayButton({
   onError,
   devOverride,
 }: SmartPayButtonProps) {
-  const { state, handlePay, idleSubState: realIdleSubState } = usePaymentFlow({
+  const { step: realStep, error, txHash, handlePay, idleSubState: realIdleSubState } = usePaymentFlow({
     invoice,
     invoiceId,
     exactTotal,
   })
-
-  const { step: realStep, error, txHash } = state
 
   // Dev override: swap visual step while real flow continues underneath
   const { step, idleSubState } = devOverride

@@ -8,11 +8,11 @@
 import { useReducer, useCallback, useEffect, useRef } from 'react'
 import {
   useAccount,
-  useConnect,
   useSendTransaction,
   useWriteContract,
   useWaitForTransactionReceipt,
 } from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useNetworkSwitch, useNetworkMismatch } from '@/entities/network'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { toast } from '@/shared/lib/toast'
@@ -21,7 +21,7 @@ import { formatErrorMessage } from '../lib/error-messages'
 import { buildNativeTransferParams } from '../lib/send-native'
 import { buildErc20TransferParams } from '../lib/send-erc20'
 import { deriveIdleSubState, INITIAL_PAYMENT_STATE } from './types'
-import type { PaymentState, PaymentAction, PaymentError, IdleSubState } from './types'
+import type { PaymentState, PaymentAction, PaymentError, PaymentErrorType, PaymentStep, IdleSubState } from './types'
 import type { Invoice } from '@/entities/invoice'
 
 // Re-export for convenient imports
@@ -83,9 +83,20 @@ interface UsePaymentFlowParams {
 }
 
 interface UsePaymentFlowReturn {
-  state: PaymentState
+  step: PaymentStep
+  error: PaymentError | null
+  txHash: `0x${string}` | null
   handlePay: () => void
   idleSubState: IdleSubState
+}
+
+/** Build a PaymentError with auto-derived message */
+function createPaymentError(
+  type: PaymentErrorType,
+  step: PaymentStep,
+  message?: string,
+): PaymentError {
+  return { type, message: message ?? formatErrorMessage(type), step }
 }
 
 /**
@@ -103,12 +114,14 @@ export function usePaymentFlow({
   const [state, dispatch] = useReducer(paymentReducer, INITIAL_PAYMENT_STATE)
 
   const { isConnected } = useAccount()
-  const { connect, connectors } = useConnect()
+  const { openConnectModal, connectModalOpen } = useConnectModal()
   const { hasMismatch, expectedChainId } = useNetworkMismatch(invoice.networkId)
   const { switchToChain, isSwitching, error: switchError } = useNetworkSwitch()
-  const { setTxHash, setError } = useTrackedInvoiceStore()
+  const setTxHash = useTrackedInvoiceStore((s) => s.setTxHash)
+  const setError = useTrackedInvoiceStore((s) => s.setError)
 
   const isNativeToken = !invoice.tokenAddress
+  // Stable refs for effect deps (avoid re-triggering when invoice object changes)
   const invoiceTokenAddress = invoice.tokenAddress
   const invoiceWalletAddress = invoice.from.walletAddress
 
@@ -140,10 +153,10 @@ export function usePaymentFlow({
 
   const idleSubState = deriveIdleSubState(isConnected, hasMismatch)
 
-  // Track whether we initiated operations to avoid re-firing
-  const sendInitiated = useRef(false)
-  const connectInitiated = useRef(false)
-  const switchInitiated = useRef(false)
+  // Tracks which step's side-effect has been fired (prevents re-triggering)
+  const stepFired = useRef<PaymentStep | null>(null)
+  // Tracks RainbowKit modal lifecycle (detect close without connecting)
+  const modalWasOpen = useRef(false)
 
   // handlePay — dispatches START based on wallet state
   const handlePay = useCallback(() => {
@@ -151,9 +164,8 @@ export function usePaymentFlow({
 
     resetSend()
     resetWrite()
-    sendInitiated.current = false
-    connectInitiated.current = false
-    switchInitiated.current = false
+    stepFired.current = null
+    modalWasOpen.current = false
 
     if (!isConnected) {
       dispatch({ type: 'START', fromStep: 'connecting' })
@@ -168,64 +180,70 @@ export function usePaymentFlow({
     dispatch({ type: 'START', fromStep: 'sending' })
   }, [state.step, isConnected, hasMismatch, resetSend, resetWrite])
 
-  // Effect: Trigger wallet connection when entering 'connecting' step
+  // Effect: Open RainbowKit connect modal when entering 'connecting' step
   useEffect(() => {
-    if (state.step !== 'connecting' || !state.intent || connectInitiated.current) return
-    connectInitiated.current = true
+    if (state.step !== 'connecting' || !state.intent || stepFired.current === 'connecting') return
+    stepFired.current = 'connecting'
 
-    const connector = connectors[0]
-    if (connector) {
-      connect({ connector })
+    if (openConnectModal) {
+      openConnectModal()
     } else {
-      dispatch({ type: 'ERROR', error: { type: 'UNKNOWN', message: 'No wallet detected', step: 'connecting' } })
+      dispatch({ type: 'ERROR', error: createPaymentError('UNKNOWN', 'connecting', 'No wallet provider available') })
     }
-  }, [state.step, state.intent, connect, connectors])
+  }, [state.step, state.intent, openConnectModal])
 
-  // Effect: Auto-progress from connecting → switching when wallet connects
+  // Effect: Connecting lifecycle — user connected or dismissed modal
   useEffect(() => {
-    if (state.step !== 'connecting' || !state.intent || !isConnected) return
-    connectInitiated.current = false
-    dispatch({ type: 'CONNECTED' })
-  }, [state.step, state.intent, isConnected])
+    if (state.step !== 'connecting' || !state.intent) return
 
-  // Effect: Trigger network switch when entering 'switching' step
-  useEffect(() => {
-    if (state.step !== 'switching' || !state.intent || switchInitiated.current) return
-    switchInitiated.current = true
+    if (connectModalOpen) {
+      modalWasOpen.current = true
+      return
+    }
 
-    switchToChain(expectedChainId)
-  }, [state.step, state.intent, switchToChain, expectedChainId])
+    // User connected → progress to switching
+    if (isConnected) {
+      dispatch({ type: 'CONNECTED' })
+      return
+    }
 
-  // Effect: Auto-progress from switching → sending when network switches
+    // Modal was opened then closed without connecting → reset
+    if (modalWasOpen.current) {
+      modalWasOpen.current = false
+      dispatch({ type: 'RESET' })
+    }
+  }, [state.step, state.intent, isConnected, connectModalOpen])
+
+  // Effect: Switching — initiate network switch or detect completion
   useEffect(() => {
     if (state.step !== 'switching' || !state.intent) return
-    if (isSwitching || hasMismatch) return
-    switchInitiated.current = false
-    dispatch({ type: 'SWITCHED' })
-  }, [state.step, state.intent, isSwitching, hasMismatch])
+
+    if (stepFired.current !== 'switching') {
+      stepFired.current = 'switching'
+      switchToChain(expectedChainId)
+      return
+    }
+
+    if (!isSwitching && !hasMismatch) {
+      dispatch({ type: 'SWITCHED' })
+    }
+  }, [state.step, state.intent, switchToChain, expectedChainId, isSwitching, hasMismatch])
 
   // Effect: Execute transaction when entering 'sending' step
   useEffect(() => {
-    if (state.step !== 'sending' || sendInitiated.current) return
-    sendInitiated.current = true
+    if (state.step !== 'sending' || stepFired.current === 'sending') return
+    stepFired.current = 'sending'
 
     try {
       if (isNativeToken) {
-        const params = buildNativeTransferParams(invoiceWalletAddress, exactTotal)
-        sendTransaction(params)
+        sendTransaction(buildNativeTransferParams(invoiceWalletAddress, exactTotal))
       } else {
         if (!invoiceTokenAddress) return
-        const params = buildErc20TransferParams(invoiceTokenAddress, invoiceWalletAddress, exactTotal)
-        writeContract(params)
+        writeContract(buildErc20TransferParams(invoiceTokenAddress, invoiceWalletAddress, exactTotal))
       }
     } catch (err) {
       console.error('[usePaymentFlow] Build params failed:', err)
-      const error: PaymentError = {
-        type: 'INVALID_INVOICE',
-        message: formatErrorMessage('INVALID_INVOICE'),
-        step: 'sending',
-      }
-      dispatch({ type: 'ERROR', error })
+      dispatch({ type: 'ERROR', error: createPaymentError('INVALID_INVOICE', 'sending') })
     }
   }, [state.step, isNativeToken, invoiceTokenAddress, invoiceWalletAddress, exactTotal, sendTransaction, writeContract])
 
@@ -240,23 +258,16 @@ export function usePaymentFlow({
   useEffect(() => {
     if (state.step !== 'confirming' || !isReceiptSuccess || !txHash) return
 
-    // Check for reverted receipt
     if (receipt && receipt.status === 'reverted') {
-      const error: PaymentError = {
-        type: 'TX_REVERTED',
-        message: formatErrorMessage('TX_REVERTED'),
-        step: 'confirming',
-      }
-      dispatch({ type: 'ERROR', error })
+      dispatch({ type: 'ERROR', error: createPaymentError('TX_REVERTED', 'confirming') })
       return
     }
 
-    // Store txHash and update status
     setTxHash(invoiceId, txHash, false)
     dispatch({ type: 'CONFIRMED' })
   }, [state.step, isReceiptSuccess, txHash, receipt, invoiceId, setTxHash])
 
-  // Effect: Handle transaction errors
+  // Effect: Handle wagmi errors (sticky — cleared by resetSend/resetWrite in handlePay)
   useEffect(() => {
     const wagmiError = sendError ?? writeError ?? receiptError ?? switchError
     if (!wagmiError) return
@@ -271,16 +282,10 @@ export function usePaymentFlow({
       return
     }
 
-    const friendlyMessage = formatErrorMessage(errorType)
-    const error: PaymentError = {
-      type: errorType,
-      message: friendlyMessage,
-      step: state.step,
-    }
-
-    setError(invoiceId, friendlyMessage)
+    const error = createPaymentError(errorType, state.step)
+    setError(invoiceId, error.message)
     dispatch({ type: 'ERROR', error })
   }, [sendError, writeError, receiptError, switchError, state.step, invoiceId, setError])
 
-  return { state, handlePay, idleSubState }
+  return { step: state.step, error: state.error, txHash: state.txHash, handlePay, idleSubState }
 }

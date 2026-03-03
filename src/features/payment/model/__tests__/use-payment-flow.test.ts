@@ -18,8 +18,8 @@ let mockReceiptError: Error | null = null
 let mockReceiptData: { status: string } | undefined = undefined
 let mockIsConnected = true
 let mockChainId: number | undefined = 1
-const mockConnect = vi.fn()
-const mockConnectors = [{ id: 'test' }]
+const mockOpenConnectModal = vi.fn()
+let mockConnectModalOpen = false
 
 vi.mock('wagmi', () => ({
   useAccount: vi.fn(() => ({
@@ -27,10 +27,6 @@ vi.mock('wagmi', () => ({
     address: '0xTestAddress',
     chainId: mockChainId,
     connector: { id: 'test' },
-  })),
-  useConnect: vi.fn(() => ({
-    connect: mockConnect,
-    connectors: mockConnectors,
   })),
   useSendTransaction: vi.fn(() => ({
     data: mockSendData,
@@ -53,6 +49,14 @@ vi.mock('wagmi', () => ({
     data: mockReceiptData,
   })),
   useChainId: vi.fn(() => mockChainId),
+}))
+
+// Mock RainbowKit
+vi.mock('@rainbow-me/rainbowkit', () => ({
+  useConnectModal: vi.fn(() => ({
+    openConnectModal: mockOpenConnectModal,
+    connectModalOpen: mockConnectModalOpen,
+  })),
 }))
 
 // Mock entities/network
@@ -84,10 +88,10 @@ const mockSetTxHash = vi.fn()
 const mockSetError = vi.fn()
 
 vi.mock('@/entities/invoice', () => ({
-  useTrackedInvoiceStore: vi.fn(() => ({
-    setTxHash: mockSetTxHash,
-    setError: mockSetError,
-  })),
+  useTrackedInvoiceStore: vi.fn((selector?: (s: Record<string, unknown>) => unknown) => {
+    const store = { setTxHash: mockSetTxHash, setError: mockSetError }
+    return selector ? selector(store) : store
+  }),
 }))
 
 import { usePaymentFlow } from '../use-payment-flow'
@@ -120,14 +124,14 @@ describe('usePaymentFlow', () => {
     mockReceiptData = undefined
     mockIsConnected = true
     mockChainId = 1
+    mockConnectModalOpen = false
   })
 
   it('returns initial idle state', () => {
     const { result } = renderHook(() =>
       usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
     )
-    expect(result.current.state.step).toBe('idle')
-    expect(result.current.state.intent).toBe(false)
+    expect(result.current.step).toBe('idle')
   })
 
   it('handlePay dispatches START(sending) for native token on correct network', () => {
@@ -139,8 +143,8 @@ describe('usePaymentFlow', () => {
       result.current.handlePay()
     })
 
-    expect(result.current.state.step).toBe('sending')
-    expect(result.current.state.intent).toBe(true)
+    expect(result.current.step).toBe('sending')
+
   })
 
   it('calls sendTransaction for native token when step is sending', () => {
@@ -195,8 +199,8 @@ describe('usePaymentFlow', () => {
       result.current.handlePay()
     })
 
-    expect(result.current.state.step).toBe('connecting')
-    expect(result.current.state.intent).toBe(true)
+    expect(result.current.step).toBe('connecting')
+
   })
 
   // US3: Auto-switch from wrong network
@@ -224,8 +228,8 @@ describe('usePaymentFlow', () => {
       result.current.handlePay()
     })
 
-    expect(result.current.state.step).toBe('switching')
-    expect(result.current.state.intent).toBe(true)
+    expect(result.current.step).toBe('switching')
+
   })
 
   it('error during sending resets to idle with error', async () => {
@@ -251,7 +255,7 @@ describe('usePaymentFlow', () => {
     act(() => {
       result.current.handlePay()
     })
-    expect(result.current.state.step).toBe('sending')
+    expect(result.current.step).toBe('sending')
 
     // Simulate wagmi error
     mockSendError = Object.assign(new Error('User rejected the request.'), {
@@ -261,8 +265,8 @@ describe('usePaymentFlow', () => {
     rerender()
 
     // Should silently reset to idle (no error state) and show toast
-    expect(result.current.state.step).toBe('idle')
-    expect(result.current.state.error).toBeNull()
+    expect(result.current.step).toBe('idle')
+    expect(result.current.error).toBeNull()
     expect(mockToastInfo).toHaveBeenCalledWith('Payment canceled')
   })
 
@@ -297,8 +301,7 @@ describe('usePaymentFlow', () => {
     )
   })
 
-  it('intent is false after error', async () => {
-    // Ensure we're testing the normal flow (connected, correct network)
+  it('error resets step to idle', async () => {
     mockIsConnected = true
     mockChainId = 1
 
@@ -318,12 +321,13 @@ describe('usePaymentFlow', () => {
     act(() => {
       result.current.handlePay()
     })
-    expect(result.current.state.intent).toBe(true)
+    expect(result.current.step).toBe('sending')
 
     mockSendError = new Error('Insufficient funds')
     rerender()
 
-    expect(result.current.state.intent).toBe(false)
+    expect(result.current.step).toBe('idle')
+    expect(result.current.error).not.toBeNull()
   })
 
   it('calls resetSend and resetWrite when handlePay is called after an error', async () => {
@@ -347,12 +351,12 @@ describe('usePaymentFlow', () => {
     act(() => {
       result.current.handlePay()
     })
-    expect(result.current.state.step).toBe('sending')
+    expect(result.current.step).toBe('sending')
 
     // Simulate error to return to idle
     mockSendError = new Error('Insufficient funds')
     rerender()
-    expect(result.current.state.step).toBe('idle')
+    expect(result.current.step).toBe('idle')
 
     // Clear error so it doesn't re-fire the error effect
     mockSendError = null
@@ -388,20 +392,20 @@ describe('usePaymentFlow', () => {
     act(() => {
       result.current.handlePay()
     })
-    expect(result.current.state.step).toBe('sending')
+    expect(result.current.step).toBe('sending')
 
     // Simulate TX hash arriving → confirming
     mockSendData = '0xdeadbeef' as `0x${string}`
     rerender()
-    expect(result.current.state.step).toBe('confirming')
+    expect(result.current.step).toBe('confirming')
 
     // Simulate reverted receipt
     mockReceiptSuccess = true
     mockReceiptData = { status: 'reverted' }
     rerender()
 
-    expect(result.current.state.step).toBe('idle')
-    expect(result.current.state.error).not.toBeNull()
-    expect(result.current.state.error?.message).toContain('rejected by the blockchain')
+    expect(result.current.step).toBe('idle')
+    expect(result.current.error).not.toBeNull()
+    expect(result.current.error?.message).toContain('rejected by the blockchain')
   })
 })
