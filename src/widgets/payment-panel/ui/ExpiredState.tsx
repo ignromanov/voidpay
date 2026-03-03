@@ -5,15 +5,16 @@ import { XCircleIcon } from '@/shared/ui/icons'
 interface ExpiredStateProps {
   subtotal: string
   magicDust: string
+  exactTotal: string
   decimals: number
   currency: string
 }
 
-export function ExpiredState({ subtotal, magicDust, decimals, currency }: ExpiredStateProps) {
+export function ExpiredState({ subtotal, magicDust, exactTotal, decimals, currency }: ExpiredStateProps) {
   const formattedSubtotal = formatAmount(subtotal, decimals)
   const hasMagicDust = magicDust !== '0'
   const formattedExact = hasMagicDust
-    ? formatAmount((BigInt(subtotal) + BigInt(magicDust)).toString(), decimals, { displayDecimals: decimals, useGrouping: true })
+    ? formatAmount(exactTotal, decimals, { displayDecimals: decimals, useGrouping: true })
     : null
 
   return (

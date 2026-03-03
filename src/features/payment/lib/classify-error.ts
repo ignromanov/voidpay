@@ -18,9 +18,9 @@ interface ErrorWithShortMessage extends Error {
  * 1. User rejection (by name or message)
  * 2. Insufficient gas (before general insufficient funds — more specific)
  * 3. Insufficient funds
- * 4. Network switch failure (step-based)
- * 5. Transaction reverted
- * 6. RPC/network errors
+ * 4. Transaction reverted
+ * 5. RPC/network errors
+ * 6. Network switch failure (step-based — only if no pattern matched)
  * 7. Unknown fallback
  */
 export function classifyPaymentError(error: Error, step: PaymentStep): PaymentErrorType {
@@ -48,11 +48,6 @@ export function classifyPaymentError(error: Error, step: PaymentStep): PaymentEr
     return 'INSUFFICIENT_FUNDS'
   }
 
-  // Network switch errors (step-based detection)
-  if (step === 'switching') {
-    return 'NETWORK_SWITCH_FAILED'
-  }
-
   // Transaction reverted
   if (lower.includes('reverted')) {
     return 'TX_REVERTED'
@@ -61,6 +56,11 @@ export function classifyPaymentError(error: Error, step: PaymentStep): PaymentEr
   // RPC / network errors
   if (lower.includes('rpc') || lower.includes('network') || lower.includes('timeout')) {
     return 'RPC_ERROR'
+  }
+
+  // Network switch errors (step-based detection)
+  if (step === 'switching') {
+    return 'NETWORK_SWITCH_FAILED'
   }
 
   return 'UNKNOWN'

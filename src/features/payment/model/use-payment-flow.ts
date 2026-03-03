@@ -109,6 +109,8 @@ export function usePaymentFlow({
   const { setTxHash, setError } = useTrackedInvoiceStore()
 
   const isNativeToken = !invoice.tokenAddress
+  const invoiceTokenAddress = invoice.tokenAddress
+  const invoiceWalletAddress = invoice.from.walletAddress
 
   // Wagmi transaction hooks
   const {
@@ -174,6 +176,8 @@ export function usePaymentFlow({
     const connector = connectors[0]
     if (connector) {
       connect({ connector })
+    } else {
+      dispatch({ type: 'ERROR', error: { type: 'UNKNOWN', message: 'No wallet detected', step: 'connecting' } })
     }
   }, [state.step, state.intent, connect, connectors])
 
@@ -207,20 +211,15 @@ export function usePaymentFlow({
 
     try {
       if (isNativeToken) {
-        const params = buildNativeTransferParams(
-          invoice.from.walletAddress,
-          exactTotal,
-        )
+        const params = buildNativeTransferParams(invoiceWalletAddress, exactTotal)
         sendTransaction(params)
       } else {
-        const params = buildErc20TransferParams(
-          invoice.tokenAddress!,
-          invoice.from.walletAddress,
-          exactTotal,
-        )
+        if (!invoiceTokenAddress) return
+        const params = buildErc20TransferParams(invoiceTokenAddress, invoiceWalletAddress, exactTotal)
         writeContract(params)
       }
-    } catch {
+    } catch (err) {
+      console.error('[usePaymentFlow] Build params failed:', err)
       const error: PaymentError = {
         type: 'INVALID_INVOICE',
         message: formatErrorMessage('INVALID_INVOICE'),
@@ -228,7 +227,7 @@ export function usePaymentFlow({
       }
       dispatch({ type: 'ERROR', error })
     }
-  }, [state.step, isNativeToken, invoice, exactTotal, sendTransaction, writeContract])
+  }, [state.step, isNativeToken, invoiceTokenAddress, invoiceWalletAddress, exactTotal, sendTransaction, writeContract])
 
   // Effect: TX_SUBMITTED when hash arrives
   useEffect(() => {

@@ -41,7 +41,6 @@ export type PaymentErrorType =
   | 'TX_REVERTED'
   | 'RPC_ERROR'
   | 'INVALID_INVOICE'
-  | 'CHAIN_MISMATCH'
   | 'UNKNOWN'
 
 /** Rich error object for the state machine */
@@ -115,8 +114,6 @@ export interface SmartPayButtonProps {
   onSuccess?: (txHash: `0x${string}`) => void
   /** Callback when error occurs (for parent error display) */
   onError?: (error: PaymentError) => void
-  /** Callback to dismiss error (clears ErrorBanner) */
-  onDismissError?: () => void
   /** Dev-only: override visual step for state preview */
   devOverride?: DevPaymentVisualStep | null
 }

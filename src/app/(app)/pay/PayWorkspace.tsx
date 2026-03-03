@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import {
@@ -8,14 +8,13 @@ import {
   InvoicePaper,
 } from '@/widgets/invoice-paper'
 import { PaymentPanel, DevStatusToggle, DevPaymentStepToggle, computeAmounts } from '@/widgets/payment-panel'
-import type { DevPaymentVisualStep } from '@/features/payment'
+import type { DevPaymentVisualStep, PaymentError } from '@/features/payment'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { ChevronDownIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 
 import { usePayInvoice } from './use-pay-invoice'
-import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { StatusBadge } from './StatusBadge'
 import { MinimizedPill } from './MinimizedPill'
 
@@ -51,15 +50,15 @@ const InvoicePreviewModal = dynamic(
  */
 export function PayWorkspace() {
   const router = useRouter()
-  const { invoice, errorType, isLoading, panelStatus, source, dismissError } = usePayInvoice()
-  const storedInvoice = useTrackedInvoiceStore((s) =>
-    invoice ? s.invoices.find((inv) => inv.invoiceId === invoice.invoiceId) : undefined
-  )
+  const { invoice, errorType, isLoading, panelStatus, source, dismissError, txHash, confirmations, storedError } = usePayInvoice()
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [devPaymentStep, setDevPaymentStep] = useState<DevPaymentVisualStep | null>(null)
+
+  const handlePaymentSuccess = useCallback(() => { setPaymentError(null) }, [])
+  const handlePaymentError = useCallback((error: PaymentError) => { setPaymentError(error.message) }, [])
 
   const networkId = invoice?.networkId ?? 1
   const amounts = useMemo(() => invoice ? computeAmounts(invoice) : null, [invoice])
@@ -117,8 +116,8 @@ export function PayWorkspace() {
             onClick={() => setIsPreviewOpen(true)}
             showExpandOverlay
           >
-            {isPaid && storedInvoice?.txHash ? (
-              <InvoicePaper data={invoice} status="paid" txHash={storedInvoice.txHash} />
+            {isPaid && txHash ? (
+              <InvoicePaper data={invoice} status="paid" txHash={txHash} />
             ) : (
               <InvoicePaper data={invoice} status={invoiceStatus} />
             )}
@@ -139,40 +138,29 @@ export function PayWorkspace() {
                 exit={{ opacity: 0, y: 20 }}
                 className="relative w-full"
               >
-                {isPaid && storedInvoice?.txHash ? (
+                {isPaid && txHash ? (
                   <PaymentPanel
                     invoice={invoice}
                     status={panelStatus}
-                    txHash={storedInvoice.txHash}
+                    txHash={txHash}
                     source={source}
-                    {...(storedInvoice.confirmations ? { confirmations: storedInvoice.confirmations } : {})}
+                    {...(confirmations ? { confirmations } : {})}
                   />
                 ) : (
                   <PaymentPanel
                     invoice={invoice}
                     status={panelStatus}
                     source={source}
-                    {...(paymentError ? { error: paymentError } : storedInvoice?.error ? { error: storedInvoice.error } : {})}
-                    onDismissError={() => {
-                      setPaymentError(null)
-                      dismissError()
-                    }}
+                    {...(paymentError ? { error: paymentError } : storedError ? { error: storedError } : {})}
+                    onDismissError={dismissError}
                   >
                     <PayButton
                       invoice={invoice}
                       invoiceId={invoice.invoiceId}
                       exactTotal={exactTotal}
                       subtotal={subtotal}
-                      onSuccess={() => {
-                        setPaymentError(null)
-                      }}
-                      onError={(error) => {
-                        setPaymentError(error.message)
-                      }}
-                      onDismissError={() => {
-                        setPaymentError(null)
-                        dismissError()
-                      }}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
                       devOverride={devPaymentStep}
                     />
                   </PaymentPanel>
@@ -194,11 +182,11 @@ export function PayWorkspace() {
         </div>
       </div>
 
-      {isPreviewOpen && (isPaid && storedInvoice?.txHash ? (
+      {isPreviewOpen && (isPaid && txHash ? (
         <InvoicePreviewModal
           data={invoice}
           status="paid"
-          txHash={storedInvoice.txHash}
+          txHash={txHash}
           open={isPreviewOpen}
           onOpenChange={setIsPreviewOpen}
         />

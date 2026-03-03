@@ -23,8 +23,10 @@ export function buildNativeTransferParams(
   recipientAddress: string,
   exactTotal: string,
 ): NativeTransferParams {
+  const value = BigInt(exactTotal)
+  if (value <= BigInt(0)) throw new Error('Cannot send zero or negative amount')
   return {
     to: getAddress(recipientAddress),
-    value: BigInt(exactTotal),
+    value,
   }
 }

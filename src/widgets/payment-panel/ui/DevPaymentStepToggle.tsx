@@ -26,19 +26,14 @@ function DevPaymentStepToggleInner({ onChange }: DevPaymentStepToggleProps) {
   const [idx, setIdx] = useState<number | null>(null)
 
   const handleCycle = () => {
-    if (idx === null) {
-      setIdx(0)
-      onChange(DEV_STEPS[0] ?? null)
+    const current = idx ?? -1
+    const next = current + 1
+    if (next >= DEV_STEPS.length) {
+      setIdx(null)
+      onChange(null)
     } else {
-      // +1 slot for "off" (back to real mode)
-      const next = (idx + 1) % (DEV_STEPS.length + 1)
-      if (next === DEV_STEPS.length) {
-        setIdx(null)
-        onChange(null)
-      } else {
-        setIdx(next)
-        onChange(DEV_STEPS[next] ?? null)
-      }
+      setIdx(next)
+      onChange(DEV_STEPS[next]!)
     }
   }
 

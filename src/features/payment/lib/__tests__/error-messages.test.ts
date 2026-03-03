@@ -10,7 +10,6 @@ const ALL_TYPES: PaymentErrorType[] = [
   'TX_REVERTED',
   'RPC_ERROR',
   'INVALID_INVOICE',
-  'CHAIN_MISMATCH',
   'UNKNOWN',
 ]
 

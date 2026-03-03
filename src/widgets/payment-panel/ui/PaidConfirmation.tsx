@@ -8,6 +8,7 @@ import type { ConfirmationProgress } from '../types'
 interface PaidConfirmationProps {
   subtotal: string
   magicDust: string
+  exactTotal: string
   decimals: number
   currency: string
   confirmations?: ConfirmationProgress | undefined
@@ -16,6 +17,7 @@ interface PaidConfirmationProps {
 export function PaidConfirmation({
   subtotal,
   magicDust,
+  exactTotal,
   decimals,
   currency,
   confirmations,
@@ -23,7 +25,7 @@ export function PaidConfirmation({
   const formattedSubtotal = formatAmount(subtotal, decimals)
   const hasMagicDust = magicDust !== '0'
   const formattedExact = hasMagicDust
-    ? formatAmount((BigInt(subtotal) + BigInt(magicDust)).toString(), decimals, { displayDecimals: decimals, useGrouping: true })
+    ? formatAmount(exactTotal, decimals, { displayDecimals: decimals, useGrouping: true })
     : null
   const progressPercent = confirmations
     ? Math.min((confirmations.current / confirmations.required) * 100, 100)

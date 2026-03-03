@@ -10,6 +10,8 @@ import { ErrorBanner } from './ErrorBanner'
 import { CheckCircleIcon, DownloadIcon, ExternalLinkIcon, FlagIcon, QrCodeIcon } from '@/shared/ui/icons'
 import { getExplorerUrl } from '@/entities/network'
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { Button } from '@/shared/ui/button'
+import { cn } from '@/shared/lib/utils'
 import type { PaymentPanelProps } from '../types'
 
 const QRModal = dynamic(
@@ -83,6 +85,7 @@ export function PaymentPanel({
           <PaidConfirmation
             subtotal={amounts.subtotal}
             magicDust={amounts.magicDust}
+            exactTotal={amounts.exactTotal}
             decimals={invoice.decimals}
             currency={invoice.currency}
             confirmations={confirmations}
@@ -103,6 +106,7 @@ export function PaymentPanel({
           <ExpiredState
             subtotal={amounts.subtotal}
             magicDust={amounts.magicDust}
+            exactTotal={amounts.exactTotal}
             decimals={invoice.decimals}
             currency={invoice.currency}
           />
@@ -119,23 +123,27 @@ export function PaymentPanel({
         {footerDivider}
         <div className="flex items-center justify-between w-full pt-2">
           <div className="flex items-center gap-1">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               disabled
               className="text-[10px] text-zinc-500 inline-flex items-center gap-1 opacity-50 cursor-not-allowed"
               aria-label="Download PDF"
             >
               <DownloadIcon size={12} />
               Download PDF
-            </button>
+            </Button>
             {isPending && (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setQrOpen(true)}
-                className="hidden cursor-pointer md:inline-flex items-center gap-1 text-[10px] text-zinc-500 hover:text-white transition-colors px-2 py-1 rounded hover:bg-zinc-800"
+                className={cn('hidden md:inline-flex items-center gap-1 text-[10px] text-zinc-500 hover:text-white')}
                 aria-label="Show QR code for mobile payment"
               >
                 <QrCodeIcon size={12} />
                 Show QR
-              </button>
+              </Button>
             )}
           </div>
 
@@ -151,15 +159,17 @@ export function PaymentPanel({
                 <ExternalLinkIcon size={12} />
               </a>
             )}
-            <button
-              className="cursor-pointer text-[10px] text-zinc-500 hover:text-red-400 transition-colors font-medium group px-2 py-1 rounded hover:bg-red-500/5"
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn('text-[10px] text-zinc-500 hover:text-red-400 font-medium group hover:bg-red-500/5')}
               aria-label="Report abuse"
             >
               <span className="inline-flex items-center gap-1">
                 <FlagIcon size={12} className="group-hover:fill-current" />
                 Report
               </span>
-            </button>
+            </Button>
           </div>
         </div>
       </div>

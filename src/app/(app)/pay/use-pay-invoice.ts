@@ -8,9 +8,10 @@ import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
 import { computePaymentStatus } from '@/widgets/payment-panel'
 import { nowISO } from '@/shared/lib/date-time'
+import { toast } from '@/shared/lib/toast'
 import type { PaymentPanelStatus } from '@/widgets/payment-panel'
 import type { DecodeErrorType } from '@/shared/ui/decode-error-screen'
-import type { Invoice } from '@/shared/lib/invoice-types'
+import type { Invoice, ConfirmationProgress } from '@/shared/lib/invoice-types'
 import type { InvoiceSource } from '@/entities/invoice'
 
 /** Time to wait for hash fragment to stabilize after SSR hydration */
@@ -23,6 +24,9 @@ export interface PayInvoiceState {
   panelStatus: PaymentPanelStatus
   source: InvoiceSource | undefined
   dismissError: () => void
+  txHash: `0x${string}` | undefined
+  confirmations: ConfirmationProgress | undefined
+  storedError: string | null | undefined
 }
 
 /**
@@ -89,6 +93,7 @@ export function usePayInvoice(): PayInvoiceState {
         })
       } catch (error) {
         console.error('[usePayInvoice] Failed to track invoice view:', error)
+        toast.info('Could not save invoice to history. Your payment experience is unaffected.')
       }
     } else {
       setInvoice(null)
@@ -109,5 +114,15 @@ export function usePayInvoice(): PayInvoiceState {
 
   const isLoading = !invoice && !errorType
 
-  return { invoice, errorType, isLoading, panelStatus, source: tracked?.source, dismissError }
+  return {
+    invoice,
+    errorType,
+    isLoading,
+    panelStatus,
+    source: tracked?.source,
+    dismissError,
+    txHash: tracked?.txHash,
+    confirmations: tracked?.confirmations,
+    storedError: tracked?.error,
+  }
 }

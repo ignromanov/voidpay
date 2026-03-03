@@ -23,7 +23,7 @@ export interface TrackedInvoice {
   /** Whether invoice was created by or received by the user */
   source: InvoiceSource
   /** Transaction hash (if paid) */
-  txHash?: string
+  txHash?: `0x${string}`
   /** Whether txHash has been validated on-chain */
   txHashValidated?: boolean
   /** Block confirmation progress (during polling) */
@@ -47,7 +47,7 @@ interface TrackedInvoiceStore {
   invoices: TrackedInvoice[]
   // actions:
   addInvoice: (invoice: Omit<TrackedInvoice, 'createdAt'>) => void
-  setTxHash: (invoiceId: string, txHash: string, validated?: boolean) => void
+  setTxHash: (invoiceId: string, txHash: `0x${string}`, validated?: boolean) => void
   setValidated: (invoiceId: string, validated: boolean) => void
   setConfirmations: (invoiceId: string, confirmations?: ConfirmationProgress) => void
   setError: (invoiceId: string, error: string | null) => void
@@ -83,6 +83,10 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
       },
 
       setTxHash: (invoiceId, txHash, validated = false) => {
+        const exists = get().invoices.some(inv => inv.invoiceId === invoiceId)
+        if (!exists) {
+          console.warn('[TrackedInvoiceStore] setTxHash called for unknown invoice:', { invoiceId, txHash })
+        }
         set((state) => ({
           invoices: state.invoices.map((inv) =>
             inv.invoiceId === invoiceId
@@ -98,6 +102,10 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
       },
 
       setValidated: (invoiceId, validated) => {
+        const exists = get().invoices.some(inv => inv.invoiceId === invoiceId)
+        if (!exists) {
+          console.warn('[TrackedInvoiceStore] setValidated called for unknown invoice:', { invoiceId, validated })
+        }
         set((state) => ({
           invoices: state.invoices.map((inv) =>
             inv.invoiceId === invoiceId

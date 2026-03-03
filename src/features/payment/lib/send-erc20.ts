@@ -33,10 +33,12 @@ export function buildErc20TransferParams(
     throw new Error('Token address is required for ERC-20 transfers')
   }
 
+  const amount = BigInt(exactTotal)
+  if (amount <= BigInt(0)) throw new Error('Cannot send zero or negative amount')
   return {
     address: getAddress(tokenAddress),
     abi: erc20TransferAbi,
     functionName: 'transfer',
-    args: [getAddress(recipientAddress), BigInt(exactTotal)],
+    args: [getAddress(recipientAddress), amount],
   }
 }

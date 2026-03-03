@@ -84,9 +84,9 @@ describe('formatAmount', () => {
     expect(formatAmount('0', 6)).toBe('0.00')
   })
 
-  it('should return "0.00" for invalid BigInt string', () => {
-    expect(formatAmount('invalid', 6)).toBe('0.00')
-    expect(formatAmount('12.34', 6)).toBe('0.00') // BigInt doesn't accept decimals
+  it('should return "—" for invalid BigInt string', () => {
+    expect(formatAmount('invalid', 6)).toBe('—')
+    expect(formatAmount('12.34', 6)).toBe('—') // BigInt doesn't accept decimals
   })
 
   // Options

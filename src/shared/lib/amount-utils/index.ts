@@ -38,12 +38,8 @@ export function parseAmount(humanAmount: string, decimals: number): string {
   try {
     const atomic = parseUnits(trimmed, decimals)
     return atomic.toString()
-  } catch (error) {
-    console.error('[parseAmount] Failed to parse amount:', {
-      humanAmount,
-      decimals,
-      error: error instanceof Error ? error.message : String(error),
-    })
+  } catch (e) {
+    console.warn('[parseAmount] Failed to parse amount:', { input: humanAmount, decimals, error: e instanceof Error ? e.message : String(e) })
     return '0'
   }
 }
@@ -106,7 +102,7 @@ export function formatAmount(
       tokenDecimals,
       error: error instanceof Error ? error.message : String(error),
     })
-    return '0.00'
+    return '—'
   }
 }
 

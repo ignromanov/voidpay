@@ -51,11 +51,6 @@ const ERROR_MESSAGES: Record<PaymentErrorType, ErrorMessage> = {
     description: 'This payment link contains invalid data. Ask the sender for a new link.',
     severity: 'error',
   },
-  CHAIN_MISMATCH: {
-    title: 'Wrong network',
-    description: 'Connected to the wrong network. Click Pay to auto-switch.',
-    severity: 'warning',
-  },
   UNKNOWN: {
     title: 'Unexpected error',
     description: 'Something went wrong. Please try again.',

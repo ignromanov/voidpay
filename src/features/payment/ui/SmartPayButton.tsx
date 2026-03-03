@@ -11,6 +11,12 @@ import { parseDevOverride } from '../model/types'
 import type { SmartPayButtonProps, PaymentStep, IdleSubState } from '../model/types'
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const IN_PROGRESS_STEPS = new Set<PaymentStep>(['connecting', 'switching', 'sending', 'confirming'])
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -38,7 +44,7 @@ function getButtonLabel(
     case 'confirming':
       return { primary: 'Confirming', secondary: 'Verifying on-chain' }
     case 'success':
-      return { primary: 'Payment sent' }
+      return { primary: 'Transaction submitted' }
     default:
       return { primary: 'Pay' }
   }
@@ -85,7 +91,7 @@ function getAriaLabel(
     case 'confirming':
       return 'Transaction submitted. Waiting for blockchain confirmation.'
     case 'success':
-      return 'Payment confirmed successfully.'
+      return 'Transaction submitted successfully.'
     default:
       return 'Pay'
   }
@@ -102,7 +108,6 @@ export function SmartPayButton({
   subtotal,
   onSuccess,
   onError,
-  onDismissError: _onDismissError,
   devOverride,
 }: SmartPayButtonProps) {
   const { state, handlePay, idleSubState: realIdleSubState } = usePaymentFlow({
@@ -134,7 +139,7 @@ export function SmartPayButton({
   const label = getButtonLabel(step, idleSubState, invoice.currency, subtotal, invoice.decimals)
   const ariaLabel = getAriaLabel(step, idleSubState, invoice.currency, subtotal, invoice.decimals)
   const progress = getProgress(step)
-  const isInProgress = (['connecting', 'switching', 'sending', 'confirming'] as string[]).includes(step)
+  const isInProgress = IN_PROGRESS_STEPS.has(step)
   const isSuccess = step === 'success'
   // Success: not disabled (keeps colorful overlay), but not interactive
   const buttonDisabled = devOverride ? false : isInProgress

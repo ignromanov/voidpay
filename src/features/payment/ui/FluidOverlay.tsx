@@ -2,11 +2,11 @@
 
 import { motion } from '@/shared/ui/motion'
 import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
-
-export type FluidOverlayStep = 'idle' | 'connecting' | 'switching' | 'sending' | 'confirming' | 'success'
+import type { TargetAndTransition, Transition } from 'framer-motion'
+import type { PaymentStep } from '../model/types'
 
 interface FluidOverlayProps {
-  step: FluidOverlayStep
+  step: PaymentStep
   className?: string
 }
 
@@ -15,7 +15,7 @@ interface FluidOverlayProps {
 // violet(280) → blue-violet(268) → indigo(252) → magenta(300) → blue(240) → emerald(165)
 // ---------------------------------------------------------------------------
 
-const GRADIENTS: Record<FluidOverlayStep, { primary: string; secondary: string; glow: string }> = {
+const GRADIENTS: Record<PaymentStep, { primary: string; secondary: string; glow: string }> = {
   idle: {
     primary:   'radial-gradient(ellipse 80% 60% at 50% 50%, oklch(45% 0.27 280 / 0.5) 0%, oklch(52% 0.22 285 / 0.3) 40%, transparent 70%)',
     secondary: 'radial-gradient(ellipse 70% 50% at 45% 55%, oklch(57% 0.24 290 / 0.4) 0%, oklch(66% 0.17 290 / 0.2) 50%, transparent 70%)',
@@ -48,8 +48,10 @@ const GRADIENTS: Record<FluidOverlayStep, { primary: string; secondary: string; 
   },
 }
 
+type Intensity = 'calm' | 'active' | 'intense'
+
 /** Animation intensity tier derived from step */
-function getIntensity(step: FluidOverlayStep): 'calm' | 'active' | 'intense' {
+function getIntensity(step: PaymentStep): Intensity {
   switch (step) {
     case 'connecting':
     case 'switching':
@@ -60,6 +62,44 @@ function getIntensity(step: FluidOverlayStep): 'calm' | 'active' | 'intense' {
     default:
       return 'calm'
   }
+}
+
+// ---------------------------------------------------------------------------
+// Animation lookup maps — keyed by intensity, success handled separately
+// ---------------------------------------------------------------------------
+
+const LAYER1_ANIMATE: Record<Intensity, TargetAndTransition> = {
+  calm:    { opacity: [0.3, 0.4, 0.3], scale: [1, 1.03, 1] },
+  active:  { opacity: [0.4, 0.55, 0.4], scale: [1, 1.05, 1] },
+  intense: { opacity: [0.6, 0.75, 0.6], scale: [1, 1.08, 1] },
+}
+const LAYER1_ANIMATE_SUCCESS: TargetAndTransition = { opacity: [0.5, 0.9, 0.3], scale: [1, 1.4, 1.1] }
+
+const LAYER1_TRANSITION: Record<Intensity, Transition> = {
+  calm:    { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+  active:  { duration: 2, repeat: Infinity, ease: 'easeInOut' },
+  intense: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
+}
+const LAYER1_TRANSITION_SUCCESS: Transition = { duration: 1.2, times: [0, 0.4, 1], ease: 'easeOut' }
+
+const LAYER2_ANIMATE: Record<Intensity, TargetAndTransition> = {
+  calm:    { opacity: [0.2, 0.3, 0.2], x: [-2, 2, -2], y: [1, -1, 1] },
+  active:  { opacity: [0.25, 0.4, 0.25], x: [-2, 2, -2], y: [1, -1, 1] },
+  intense: { opacity: [0.4, 0.55, 0.4], x: [-3, 3, -3], y: [2, -2, 2] },
+}
+const LAYER2_ANIMATE_SUCCESS: TargetAndTransition = { opacity: [0.3, 0.7, 0.2], x: [0, 5, 0], y: [0, -5, 0] }
+
+const LAYER2_TRANSITION: Record<Intensity, Transition> = {
+  calm:    { duration: 5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.5, 1] },
+  active:  { duration: 3.5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.5, 1] },
+  intense: { duration: 2.5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.5, 1] },
+}
+const LAYER2_TRANSITION_SUCCESS: Transition = { duration: 1, times: [0, 0.5, 1], ease: 'easeOut' }
+
+const LAYER3_OPACITY: Record<Intensity, number> = {
+  calm:    0.06,
+  active:  0.1,
+  intense: 0.15,
 }
 
 /**
@@ -89,48 +129,16 @@ export function FluidOverlay({ step, className }: FluidOverlayProps) {
       {/* Layer 1: Primary morphing blob */}
       <motion.div
         className="absolute inset-0 rounded-[inherit] blur-xl"
-        animate={
-          isSuccess
-            ? { opacity: [0.5, 0.9, 0.3], scale: [1, 1.4, 1.1] }
-            : intensity === 'intense'
-              ? { opacity: [0.6, 0.75, 0.6], scale: [1, 1.08, 1] }
-              : intensity === 'active'
-                ? { opacity: [0.4, 0.55, 0.4], scale: [1, 1.05, 1] }
-                : { opacity: [0.3, 0.4, 0.3], scale: [1, 1.03, 1] }
-        }
-        transition={
-          isSuccess
-            ? { duration: 1.2, times: [0, 0.4, 1], ease: 'easeOut' }
-            : intensity === 'intense'
-              ? { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }
-              : intensity === 'active'
-                ? { duration: 2, repeat: Infinity, ease: 'easeInOut' }
-                : { duration: 4, repeat: Infinity, ease: 'easeInOut' }
-        }
+        animate={isSuccess ? LAYER1_ANIMATE_SUCCESS : LAYER1_ANIMATE[intensity]}
+        transition={isSuccess ? LAYER1_TRANSITION_SUCCESS : LAYER1_TRANSITION[intensity]}
         style={{ background: primary }}
       />
 
       {/* Layer 2: Secondary blob (offset, counter-phase) */}
       <motion.div
         className="absolute inset-0 rounded-[inherit] blur-2xl"
-        animate={
-          isSuccess
-            ? { opacity: [0.3, 0.7, 0.2], x: [0, 5, 0], y: [0, -5, 0] }
-            : intensity === 'intense'
-              ? { opacity: [0.4, 0.55, 0.4], x: [-3, 3, -3], y: [2, -2, 2] }
-              : intensity === 'active'
-                ? { opacity: [0.25, 0.4, 0.25], x: [-2, 2, -2], y: [1, -1, 1] }
-                : { opacity: [0.2, 0.3, 0.2], x: [-2, 2, -2], y: [1, -1, 1] }
-        }
-        transition={
-          isSuccess
-            ? { duration: 1, times: [0, 0.5, 1], ease: 'easeOut' }
-            : intensity === 'intense'
-              ? { duration: 2.5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.5, 1] }
-              : intensity === 'active'
-                ? { duration: 3.5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.5, 1] }
-                : { duration: 5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.5, 1] }
-        }
+        animate={isSuccess ? LAYER2_ANIMATE_SUCCESS : LAYER2_ANIMATE[intensity]}
+        transition={isSuccess ? LAYER2_TRANSITION_SUCCESS : LAYER2_TRANSITION[intensity]}
         style={{ background: secondary }}
       />
 
@@ -138,9 +146,7 @@ export function FluidOverlay({ step, className }: FluidOverlayProps) {
       {!isSuccess && (
         <motion.div
           className="absolute inset-0 rounded-[inherit]"
-          animate={
-            intensity === 'intense' ? { opacity: 0.15 } : intensity === 'active' ? { opacity: 0.1 } : { opacity: 0.06 }
-          }
+          animate={{ opacity: LAYER3_OPACITY[intensity] }}
           transition={{ duration: 0.4 }}
           style={{ background: glow }}
         />
