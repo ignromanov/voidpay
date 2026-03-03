@@ -28,6 +28,26 @@ describe('network helpers', () => {
       expect(url).toBe('https://polygonscan.com/tx/0x789ghi')
     })
 
+    it('returns Sepolia Etherscan URL for Sepolia', () => {
+      const url = getExplorerUrl(11155111, '0xaaa')
+      expect(url).toBe('https://sepolia.etherscan.io/tx/0xaaa')
+    })
+
+    it('returns Arbiscan Sepolia URL for Arbitrum Sepolia', () => {
+      const url = getExplorerUrl(421614, '0xbbb')
+      expect(url).toBe('https://sepolia.arbiscan.io/tx/0xbbb')
+    })
+
+    it('returns Blockscout URL for Optimism Sepolia', () => {
+      const url = getExplorerUrl(11155420, '0xccc')
+      expect(url).toBe('https://optimism-sepolia.blockscout.com/tx/0xccc')
+    })
+
+    it('returns Amoy Polygonscan URL for Polygon Amoy', () => {
+      const url = getExplorerUrl(80002, '0xddd')
+      expect(url).toBe('https://amoy.polygonscan.com/tx/0xddd')
+    })
+
     it('returns # for unknown network', () => {
       const url = getExplorerUrl(999999, '0xunknown')
       expect(url).toBe('#')

@@ -163,6 +163,10 @@ export const BLOCK_EXPLORERS: Record<number, { name: string; url: string }> = {
   [arbitrum.id]: { name: 'Arbiscan', url: 'https://arbiscan.io' },
   [optimism.id]: { name: 'Optimism Etherscan', url: 'https://optimistic.etherscan.io' },
   [polygon.id]: { name: 'Polygonscan', url: 'https://polygonscan.com' },
+  [sepolia.id]: { name: 'Sepolia Etherscan', url: 'https://sepolia.etherscan.io' },
+  [arbitrumSepolia.id]: { name: 'Arbiscan Sepolia', url: 'https://sepolia.arbiscan.io' },
+  [optimismSepolia.id]: { name: 'OP Sepolia Blockscout', url: 'https://optimism-sepolia.blockscout.com' },
+  [polygonAmoy.id]: { name: 'Amoy Polygonscan', url: 'https://amoy.polygonscan.com' },
 }
 
 /**
