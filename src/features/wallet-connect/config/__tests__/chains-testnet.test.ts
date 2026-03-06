@@ -23,7 +23,7 @@ describe('chains testnet filtering', () => {
         vi.stubEnv('NEXT_PUBLIC_ENABLE_TESTNETS', 'false')
 
         // Import directly from chains.ts to avoid wagmiConfig initialization
-        const { getSupportedChains } = await import('@/shared/config/chains')
+        const { getSupportedChains } = await import('@/entities/network/config/chains')
         const chains = getSupportedChains()
 
         expect(chains.length).toBe(4)
@@ -37,7 +37,7 @@ describe('chains testnet filtering', () => {
       async () => {
         vi.stubEnv('NEXT_PUBLIC_ENABLE_TESTNETS', 'true')
 
-        const { getSupportedChains } = await import('@/shared/config/chains')
+        const { getSupportedChains } = await import('@/entities/network/config/chains')
         const chains = getSupportedChains()
 
         expect(chains.length).toBe(8)
@@ -50,7 +50,7 @@ describe('chains testnet filtering', () => {
       async () => {
         vi.stubEnv('NEXT_PUBLIC_ENABLE_TESTNETS', 'true')
 
-        const { getSupportedChains } = await import('@/shared/config/chains')
+        const { getSupportedChains } = await import('@/entities/network/config/chains')
         const chains = getSupportedChains()
 
         const sepolia = chains.find((c) => c.id === 11155111)
@@ -65,7 +65,7 @@ describe('chains testnet filtering', () => {
       async () => {
         vi.stubEnv('NEXT_PUBLIC_ENABLE_TESTNETS', 'false')
 
-        const { getSupportedChains } = await import('@/shared/config/chains')
+        const { getSupportedChains } = await import('@/entities/network/config/chains')
         const chains = getSupportedChains()
 
         const sepolia = chains.find((c) => c.id === 11155111)
@@ -77,7 +77,7 @@ describe('chains testnet filtering', () => {
 
   describe('isTestnetChain', () => {
     it('should identify testnet chains correctly', async () => {
-      const { isTestnetChain } = await import('@/shared/config/chains')
+      const { isTestnetChain } = await import('@/entities/network/config/chains')
 
       // Testnets
       expect(isTestnetChain(11155111)).toBe(true) // Sepolia

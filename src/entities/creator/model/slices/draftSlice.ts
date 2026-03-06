@@ -14,6 +14,7 @@ import {
   type DraftState,
   type LineItem,
 } from '@/entities/invoice'
+import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
 import type { UserPreferences } from '../types'
 import type { CreatorStore } from './types'
 
@@ -83,20 +84,6 @@ export interface DraftSlice {
    * Update a single line item
    */
   updateLineItem: (id: string, updates: Partial<Omit<LineItem, 'id'>>) => void
-}
-
-/**
- * Get current Unix timestamp in seconds
- */
-function nowUnix(): number {
-  return Math.floor(Date.now() / 1000)
-}
-
-/**
- * Get Unix timestamp for a date N days from now
- */
-function daysFromNowUnix(days: number): number {
-  return nowUnix() + days * 24 * 60 * 60
 }
 
 /**

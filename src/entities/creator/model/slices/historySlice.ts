@@ -8,6 +8,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import type { StateCreator } from 'zustand'
 import { invoiceItemsToLineItems, type DraftState } from '@/entities/invoice'
+import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
 import type { CreationHistoryEntry } from '../types'
 import type { CreatorStore } from './types'
 
@@ -39,20 +40,6 @@ export interface HistorySlice {
    * Manually trigger history pruning (auto-called when > 100 entries)
    */
   pruneHistory: () => void
-}
-
-/**
- * Get current Unix timestamp in seconds
- */
-function nowUnix(): number {
-  return Math.floor(Date.now() / 1000)
-}
-
-/**
- * Get Unix timestamp for a date N days from now
- */
-function daysFromNowUnix(days: number): number {
-  return nowUnix() + days * 24 * 60 * 60
 }
 
 /**

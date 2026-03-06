@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 import { Badge } from '@/shared/ui/badge'
 import { CopyButton } from '@/shared/ui/copy-button'
 import { cn } from '@/shared/lib/utils'
+import { formatDateUTC } from '@/shared/lib/date-time'
 
 import { InvoiceStatus, InvoicePaperVariant } from '../types'
 import { PAPER_STATUS_CONFIG, type PaperStatusKey } from '../lib/paper-status-config'
@@ -19,24 +20,6 @@ interface PaperHeaderProps {
   variant?: InvoicePaperVariant | undefined
 }
 
-/**
- * Hoisted DateTimeFormat instance for performance
- * Created once at module load instead of on every render
- */
-const DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-})
-
-/**
- * Format a Unix timestamp to display date
- * Uses hoisted formatter for better performance
- */
-function formatDate(timestamp: number): string {
-  if (!timestamp) return '---'
-  return DATE_FORMATTER.format(new Date(timestamp * 1000)).toUpperCase()
-}
 
 export const PaperHeader = React.memo<PaperHeaderProps>(
   ({ invoiceId, iss, due, status, txHashValidated = true, invoiceUrl, variant = 'default' }) => {
@@ -94,7 +77,7 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
               Issued
             </span>
             <span className={cn('font-mono font-medium', !iss && 'text-zinc-300 italic')}>
-              {iss ? formatDate(iss) : 'Date'}
+              {iss ? formatDateUTC(iss) : 'Date'}
             </span>
           </div>
           <div className="flex justify-end gap-4 text-sm">
@@ -102,7 +85,7 @@ export const PaperHeader = React.memo<PaperHeaderProps>(
               Due
             </span>
             <span className={cn('font-mono font-medium', !due && 'text-zinc-300 italic')}>
-              {due ? formatDate(due) : 'Date'}
+              {due ? formatDateUTC(due) : 'Date'}
             </span>
           </div>
           {status && (

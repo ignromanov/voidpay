@@ -10,6 +10,8 @@ import { ErrorBanner } from './ErrorBanner'
 import { CheckCircleIcon, DownloadIcon, ExternalLinkIcon, FlagIcon, QrCodeIcon } from '@/shared/ui/icons'
 import { getExplorerUrl } from '@/entities/network'
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { Button } from '@/shared/ui/button'
+import { cn } from '@/shared/lib/utils'
 import type { PaymentPanelProps } from '../types'
 
 const QRModal = dynamic(
@@ -28,6 +30,7 @@ export function PaymentPanel({
   confirmations,
   error,
   onDismissError,
+  source,
   children,
 }: PaymentPanelProps) {
   const [qrOpen, setQrOpen] = useState(false)
@@ -56,6 +59,13 @@ export function PaymentPanel({
 
       {/* Content */}
       <div className="p-3 md:p-4 space-y-3 pt-6 md:pt-4">
+        {/* Creator badge */}
+        {source === 'created' && isPending && (
+          <p className="text-center text-xs text-violet-400">
+            Your invoice · Awaiting payment
+          </p>
+        )}
+
         {/* Pending state: Amount + ActionSlot */}
         {isPending && (
           <>
@@ -73,7 +83,9 @@ export function PaymentPanel({
         {/* Paid state: PaidConfirmation */}
         {isPaid && txHash && (
           <PaidConfirmation
-            amount={amounts.exactTotal}
+            subtotal={amounts.subtotal}
+            magicDust={amounts.magicDust}
+            exactTotal={amounts.exactTotal}
             decimals={invoice.decimals}
             currency={invoice.currency}
             confirmations={confirmations}
@@ -92,7 +104,9 @@ export function PaymentPanel({
         {/* Expired state: ExpiredState */}
         {isExpired && (
           <ExpiredState
-            amount={amounts.exactTotal}
+            subtotal={amounts.subtotal}
+            magicDust={amounts.magicDust}
+            exactTotal={amounts.exactTotal}
             decimals={invoice.decimals}
             currency={invoice.currency}
           />
@@ -109,23 +123,27 @@ export function PaymentPanel({
         {footerDivider}
         <div className="flex items-center justify-between w-full pt-2">
           <div className="flex items-center gap-1">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               disabled
               className="text-[10px] text-zinc-500 inline-flex items-center gap-1 opacity-50 cursor-not-allowed"
               aria-label="Download PDF"
             >
               <DownloadIcon size={12} />
               Download PDF
-            </button>
+            </Button>
             {isPending && (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setQrOpen(true)}
-                className="hidden cursor-pointer md:inline-flex items-center gap-1 text-[10px] text-zinc-500 hover:text-white transition-colors px-2 py-1 rounded hover:bg-zinc-800"
+                className={cn('hidden md:inline-flex items-center gap-1 text-[10px] text-zinc-500 hover:text-white')}
                 aria-label="Show QR code for mobile payment"
               >
                 <QrCodeIcon size={12} />
                 Show QR
-              </button>
+              </Button>
             )}
           </div>
 
@@ -141,15 +159,17 @@ export function PaymentPanel({
                 <ExternalLinkIcon size={12} />
               </a>
             )}
-            <button
-              className="cursor-pointer text-[10px] text-zinc-500 hover:text-red-400 transition-colors font-medium group px-2 py-1 rounded hover:bg-red-500/5"
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn('text-[10px] text-zinc-500 hover:text-red-400 font-medium group hover:bg-red-500/5')}
               aria-label="Report abuse"
             >
               <span className="inline-flex items-center gap-1">
                 <FlagIcon size={12} className="group-hover:fill-current" />
                 Report
               </span>
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -160,8 +180,13 @@ export function PaymentPanel({
           open={qrOpen}
           onOpenChange={setQrOpen}
           invoice={invoice}
-          amount={formatAmount(amounts.exactTotal, invoice.decimals)}
+          amount={formatAmount(amounts.subtotal, invoice.decimals)}
           exactTotal={amounts.exactTotal}
+          magicDustAmount={
+            amounts.magicDust !== '0'
+              ? formatAmount(amounts.exactTotal, invoice.decimals, { displayDecimals: invoice.decimals, useGrouping: true })
+              : undefined
+          }
         />
       )}
     </div>

@@ -3,13 +3,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { parseInvoiceHash, mapParseErrorToDecodeType } from '@/features/invoice-codec'
-import { useRichInvoiceStore, type RichInvoice } from '@/entities/invoice'
+import { useTrackedInvoiceStore, computeInvoiceStatus } from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
-import { computePaymentStatus } from '@/widgets/payment-panel'
-import type { PaymentPanelStatus } from '@/widgets/payment-panel'
+import { nowISO } from '@/shared/lib/date-time'
+import { toast } from '@/shared/lib/toast'
+import type { InvoiceStatus } from '@/entities/invoice'
 import type { DecodeErrorType } from '@/shared/ui/decode-error-screen'
-import type { Invoice } from '@/shared/lib/invoice-types'
+import type { Invoice, ConfirmationProgress } from '@/shared/lib/invoice-types'
+import type { InvoiceSource } from '@/entities/invoice'
 
 /** Time to wait for hash fragment to stabilize after SSR hydration */
 const HYDRATION_TIMEOUT = 200
@@ -18,9 +20,12 @@ export interface PayInvoiceState {
   invoice: Invoice | null
   errorType: DecodeErrorType | null
   isLoading: boolean
-  storedInvoice: RichInvoice | undefined
-  panelStatus: PaymentPanelStatus
+  panelStatus: InvoiceStatus
+  source: InvoiceSource | undefined
   dismissError: () => void
+  txHash: `0x${string}` | undefined
+  confirmations: ConfirmationProgress | undefined
+  storedError: string | null | undefined
 }
 
 /**
@@ -29,7 +34,7 @@ export interface PayInvoiceState {
  * Composes lower-layer logic:
  * - Hash decoding via parseInvoiceHash (features/invoice-codec)
  * - Error mapping via mapParseErrorToDecodeType (features/invoice-codec)
- * - Status derivation via computePaymentStatus (widgets/payment-panel)
+ * - Status derivation via computeInvoiceStatus (widgets/payment-panel)
  *
  * Side effects (app-layer composition):
  * - Hydration timeout for SSR
@@ -40,18 +45,19 @@ export interface PayInvoiceState {
 export function usePayInvoice(): PayInvoiceState {
   const hash = useHashFragment()
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
-  const { addInvoice, getInvoice, updateStatus, setError } = useRichInvoiceStore()
+  const addInvoice = useTrackedInvoiceStore((s) => s.addInvoice)
+  const setError = useTrackedInvoiceStore((s) => s.setError)
 
   const [isHydrated, setIsHydrated] = useState(false)
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [errorType, setErrorType] = useState<DecodeErrorType | null>(null)
 
-  // Read fresh store data on every render (no useMemo — getInvoice is a simple find)
-  const storedInvoice = invoice ? getInvoice(invoice.invoiceId) : undefined
+  const tracked = useTrackedInvoiceStore((s) =>
+    invoice ? s.invoices.find((inv) => inv.invoiceId === invoice.invoiceId) : undefined
+  )
 
-  const panelStatus = computePaymentStatus({
-    storedStatus: storedInvoice?.status,
-    txHashValidated: storedInvoice?.txHashValidated,
+  const panelStatus = computeInvoiceStatus({
+    tracked,
     dueAt: invoice?.dueAt,
   })
 
@@ -78,25 +84,21 @@ export function usePayInvoice(): PayInvoiceState {
       setErrorType(null)
 
       try {
-        if (!getInvoice(result.data.invoiceId)) {
-          const invoiceUrl = `${window.location.origin}/pay#${hash}`
-          const richInvoice: Omit<RichInvoice, 'createdAt'> = {
-            invoiceId: result.data.invoiceId,
-            invoiceUrl,
-            data: result.data,
-            status: 'pending',
-            viewedAt: new Date().toISOString(),
-          }
-          addInvoice(richInvoice)
-        }
+        addInvoice({
+          invoiceId: result.data.invoiceId,
+          invoiceUrl: `${window.location.origin}/pay#${hash}`,
+          source: 'received',
+          viewedAt: nowISO(),
+        })
       } catch (error) {
         console.error('[usePayInvoice] Failed to track invoice view:', error)
+        toast.info('Could not save invoice to history. Your payment experience is unaffected.')
       }
     } else {
       setInvoice(null)
       setErrorType(mapParseErrorToDecodeType(result.error.message))
     }
-  }, [hash, isHydrated, addInvoice, getInvoice])
+  }, [hash, isHydrated, addInvoice])
 
   // 3. Sync network theme for background
   useEffect(() => {
@@ -105,21 +107,21 @@ export function usePayInvoice(): PayInvoiceState {
     }
   }, [invoice?.networkId, setNetworkTheme])
 
-  const storedStatus = storedInvoice?.status
-
-  // 4. Sync overdue status to store
-  useEffect(() => {
-    if (!invoice || !storedStatus) return
-    if (panelStatus === 'overdue' && storedStatus !== 'overdue') {
-      updateStatus(invoice.invoiceId, 'overdue')
-    }
-  }, [invoice, panelStatus, storedStatus, updateStatus])
-
   const dismissError = useCallback(() => {
     if (invoice) setError(invoice.invoiceId, null)
   }, [invoice, setError])
 
   const isLoading = !invoice && !errorType
 
-  return { invoice, errorType, isLoading, storedInvoice, panelStatus, dismissError }
+  return {
+    invoice,
+    errorType,
+    isLoading,
+    panelStatus,
+    source: tracked?.source,
+    dismissError,
+    txHash: tracked?.txHash,
+    confirmations: tracked?.confirmations,
+    storedError: tracked?.error,
+  }
 }

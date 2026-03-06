@@ -58,17 +58,22 @@ export function calculateTotals(data: InvoiceData): Totals {
     // Calculate breakdown for display (subtotal, tax, discount)
     const breakdown = calculateBreakdown(items, decimals, tax, discount)
 
+    // Display total = composite minus dust (users see clean amount)
+    const displayTotal = preMagicDust
+      ? (BigInt(preTotal) - BigInt(preMagicDust)).toString()
+      : preTotal
+
     return {
       subtotal: breakdown.subtotal,
       taxAmount: breakdown.taxAmount,
       discountAmount: breakdown.discountAmount,
-      total: formatAmount(preTotal, decimals),
+      total: formatAmount(displayTotal, decimals),
       magicDust: preMagicDust ? formatAmount(preMagicDust, decimals, 6) : null,
       atomicTotal: preTotal,
     }
   }
 
-  // Fallback: calculate totals locally (for old links without pre-calculated total)
+  // Fallback: calculate totals locally (drafts + old links without pre-calculated total)
   const result = calculateTotalsBigInt(
     items.map((item) => ({
       quantity: parseQuantity(item.quantity),
@@ -77,14 +82,18 @@ export function calculateTotals(data: InvoiceData): Totals {
     { tax, discount, decimals }
   )
 
-  // No Magic Dust for old links (they didn't have this feature)
+  // Draft with Magic Dust: dust exists in data but total was not pre-baked
+  const atomicTotal = preMagicDust
+    ? (BigInt(result.total) + BigInt(preMagicDust)).toString()
+    : result.total
+
   return {
     subtotal: formatAmount(result.subtotal, decimals),
     taxAmount: formatAmount(result.taxAmount, decimals),
     discountAmount: formatAmount(result.discountAmount, decimals),
     total: formatAmount(result.total, decimals),
-    magicDust: null,
-    atomicTotal: result.total,
+    magicDust: preMagicDust ? formatAmount(preMagicDust, decimals, 6) : null,
+    atomicTotal,
   }
 }
 

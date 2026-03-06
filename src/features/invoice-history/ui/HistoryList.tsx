@@ -7,19 +7,34 @@
  * Allows users to view, duplicate, or delete history entries.
  */
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useCreatorStore } from '@/entities/creator'
-import { formatInvoiceTotal, type CreationHistoryEntry } from '@/entities/invoice'
+import {
+  formatInvoiceTotal,
+  useTrackedInvoiceStore,
+  computeInvoiceStatus,
+  type CreationHistoryEntry,
+  type TrackedInvoice,
+  type InvoiceStatus,
+} from '@/entities/invoice'
+import { InvoiceStatusBadge } from './InvoiceStatusBadge'
+import { InvoiceCardShell } from './InvoiceCardShell'
 
 interface HistoryListProps {
-  /** Optional CSS class name */
+  debug?: boolean
   className?: string
 }
 
-export function HistoryList({ className = '' }: HistoryListProps) {
+export function HistoryList({ debug = false, className = '' }: HistoryListProps) {
   const history = useCreatorStore((s) => s.history)
   const deleteHistoryEntry = useCreatorStore((s) => s.deleteHistoryEntry)
   const duplicateHistoryEntry = useCreatorStore((s) => s.duplicateHistoryEntry)
+
+  const trackedInvoices = useTrackedInvoiceStore((s) => s.invoices)
+  const trackedMap = useMemo(
+    () => new Map<string, TrackedInvoice>(trackedInvoices.map((inv) => [inv.invoiceId, inv])),
+    [trackedInvoices],
+  )
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
@@ -30,8 +45,6 @@ export function HistoryList({ className = '' }: HistoryListProps) {
 
   const handleDuplicate = (entryId: string) => {
     duplicateHistoryEntry(entryId)
-    // Optionally navigate to /create page
-    // router.push('/create')
   }
 
   const handleView = (invoiceUrl: string) => {
@@ -67,26 +80,30 @@ export function HistoryList({ className = '' }: HistoryListProps) {
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-100">Creation History</h2>
-        <span className="text-sm text-gray-400">
-          {history.length} invoice{history.length !== 1 ? 's' : ''}
-        </span>
-      </div>
-
       <div className="space-y-2">
-        {history.map((entry) => (
-          <HistoryEntryCard
-            key={entry.entryId}
-            entry={entry}
-            onView={() => handleView(entry.invoiceUrl)}
-            onDuplicate={() => handleDuplicate(entry.entryId)}
-            onDelete={() => setDeleteConfirmId(entry.entryId)}
-            isDeleteConfirming={deleteConfirmId === entry.entryId}
-            onDeleteConfirm={() => handleDelete(entry.entryId)}
-            onDeleteCancel={() => setDeleteConfirmId(null)}
-          />
-        ))}
+        {history.map((entry) => {
+          const tracked = trackedMap.get(entry.invoice.invoiceId)
+          const status = computeInvoiceStatus({
+            tracked,
+            dueAt: entry.invoice.dueAt,
+          })
+
+          return (
+            <HistoryEntryCard
+              key={entry.entryId}
+              entry={entry}
+              status={status}
+              tracked={tracked}
+              debug={debug}
+              onView={() => handleView(entry.invoiceUrl)}
+              onDuplicate={() => handleDuplicate(entry.entryId)}
+              onDelete={() => setDeleteConfirmId(entry.entryId)}
+              isDeleteConfirming={deleteConfirmId === entry.entryId}
+              onDeleteConfirm={() => handleDelete(entry.entryId)}
+              onDeleteCancel={() => setDeleteConfirmId(null)}
+            />
+          )
+        })}
       </div>
     </div>
   )
@@ -94,6 +111,9 @@ export function HistoryList({ className = '' }: HistoryListProps) {
 
 interface HistoryEntryCardProps {
   entry: CreationHistoryEntry
+  status: InvoiceStatus
+  tracked?: TrackedInvoice | undefined
+  debug: boolean
   onView: () => void
   onDuplicate: () => void
   onDelete: () => void
@@ -104,6 +124,9 @@ interface HistoryEntryCardProps {
 
 function HistoryEntryCard({
   entry,
+  status,
+  tracked,
+  debug,
   onView,
   onDuplicate,
   onDelete,
@@ -111,6 +134,8 @@ function HistoryEntryCard({
   onDeleteConfirm,
   onDeleteCancel,
 }: HistoryEntryCardProps) {
+  const [debugOpen, setDebugOpen] = useState(false)
+
   const formattedDate = new Date(entry.createdAt).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -120,7 +145,7 @@ function HistoryEntryCard({
   })
 
   return (
-    <div className="rounded-lg border border-gray-700 bg-gray-800/50 p-4 transition-colors hover:border-gray-600">
+    <InvoiceCardShell>
       <div className="flex items-start justify-between gap-4">
         {/* Left: Invoice Info */}
         <div className="min-w-0 flex-1">
@@ -128,11 +153,7 @@ function HistoryEntryCard({
             <h3 className="truncate text-sm font-semibold text-gray-100">
               {entry.invoice.invoiceId}
             </h3>
-            {entry.txHash && (
-              <span className="inline-flex items-center rounded border border-green-800 bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-400">
-                Paid
-              </span>
-            )}
+            <InvoiceStatusBadge status={status} />
           </div>
           <p className="mb-1 text-sm text-gray-300">{entry.invoice.client?.name ?? 'Unknown'}</p>
           <div className="flex items-center gap-3 text-xs text-gray-400">
@@ -167,6 +188,15 @@ function HistoryEntryCard({
               >
                 Delete
               </button>
+              {debug && (
+                <button
+                  onClick={() => setDebugOpen((v) => !v)}
+                  className="rounded bg-gray-700 px-2 py-1.5 text-xs font-mono text-gray-400 transition-colors hover:bg-gray-600"
+                  title="Toggle debug info"
+                >
+                  {'</>'}
+                </button>
+              )}
             </>
           ) : (
             <>
@@ -186,6 +216,12 @@ function HistoryEntryCard({
           )}
         </div>
       </div>
-    </div>
+
+      {debug && debugOpen && (
+        <pre className="mt-3 max-h-48 overflow-auto rounded bg-gray-900/80 p-3 text-xs text-gray-400">
+          {JSON.stringify({ tracked, entryId: entry.entryId, txHash: entry.txHash }, null, 2)}
+        </pre>
+      )}
+    </InvoiceCardShell>
   )
 }

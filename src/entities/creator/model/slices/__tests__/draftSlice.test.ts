@@ -150,14 +150,14 @@ describe('draftSlice', () => {
     it('sets default due date 30 days from now', () => {
       const { createNewDraft } = useCreatorStore.getState()
       const now = Math.floor(Date.now() / 1000)
+      const startOfToday = now - (now % 86400)
 
       createNewDraft()
 
       const state = useCreatorStore.getState()
-      const expectedDueAt = now + 30 * 24 * 60 * 60
-      // Allow 5 second tolerance for test execution time
-      expect(state.activeDraft?.data.dueAt).toBeGreaterThanOrEqual(expectedDueAt - 5)
-      expect(state.activeDraft?.data.dueAt).toBeLessThanOrEqual(expectedDueAt + 5)
+      const expectedDueAt = startOfToday + 30 * 24 * 60 * 60
+      // daysFromNowUnix returns midnight-aligned timestamps
+      expect(state.activeDraft?.data.dueAt).toBe(expectedDueAt)
     })
   })
 

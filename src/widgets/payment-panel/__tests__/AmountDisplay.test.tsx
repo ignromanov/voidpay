@@ -29,9 +29,9 @@ describe('AmountDisplay', () => {
       />
     )
 
-    // "Exact amount" label should be present
-    expect(screen.getByText(/Exact:/i)).toBeDefined()
-    // Info icon tooltip trigger should exist
+    // MagicDustBadge with "Exact amount" label
+    expect(screen.getByText(/Exact amount/i)).toBeDefined()
+    // FingerprintIcon inside MagicDustBadge
     const svg = document.querySelector('svg')
     expect(svg).not.toBeNull()
   })
@@ -76,8 +76,8 @@ describe('AmountDisplay', () => {
       />
     )
 
-    // The exact amount should show the full precision dust value
-    expect(screen.getByText(/Exact:/i)).toBeDefined()
+    // MagicDustBadge with "Exact amount" label
+    expect(screen.getByText(/Exact amount/i)).toBeDefined()
   })
 
   it('renders "Total Due" label', () => {

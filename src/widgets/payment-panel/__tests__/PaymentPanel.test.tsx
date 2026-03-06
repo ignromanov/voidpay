@@ -44,7 +44,7 @@ describe('PaymentPanel', () => {
 
     it('shows Magic Dust exact amount when present', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.getByText(/Exact:/i)).toBeInTheDocument()
+      expect(screen.getByText(/Exact amount/i)).toBeInTheDocument()
     })
 
     it('renders data-status attribute', () => {
@@ -410,9 +410,9 @@ describe('PaymentPanel', () => {
       expect(screen.getByRole('button', { name: /dismiss/i })).toBeInTheDocument()
     })
 
-    it('tooltip has role="tooltip"', () => {
+    it('MagicDustBadge renders for pending state with dust', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.getByRole('tooltip')).toBeInTheDocument()
+      expect(screen.getByText(/Exact amount/i)).toBeInTheDocument()
     })
 
     it('Download PDF button has aria-label', () => {

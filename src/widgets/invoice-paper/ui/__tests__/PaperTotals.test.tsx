@@ -57,7 +57,7 @@ describe('PaperTotals', () => {
   it('renders unique amount with magic dust', () => {
     render(<PaperTotals {...baseProps} />)
     expect(screen.getByText(/Unique ID/i)).toBeDefined()
-    expect(screen.getByText('0.000001')).toBeDefined()
+    expect(screen.getByText(/0\.000001/)).toBeDefined()
   })
 
   it('renders payment info section with QR by default', () => {

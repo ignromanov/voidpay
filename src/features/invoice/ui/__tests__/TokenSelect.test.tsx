@@ -9,7 +9,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { TokenSelect } from '../TokenSelect'
-import { NETWORK_TOKENS } from '../../model/tokens'
+import { NETWORK_TOKENS } from '@/entities/network'
 
 // Mock useTokenMetadata hook to avoid WagmiProvider requirement
 vi.mock('@/entities/token/lib/use-token-metadata', () => ({

@@ -2,6 +2,15 @@ import { render, screen, waitFor } from '@/shared/lib/test-utils'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
+// Stable mock store state — hoisted so it's available inside vi.mock factories
+const mockStoreState = vi.hoisted(() => ({
+  addInvoice: vi.fn(),
+  getInvoice: vi.fn(),
+  setTxHash: vi.fn(),
+  setError: vi.fn(),
+  invoices: [] as never[],
+}))
+
 // Mock dependencies before importing component
 vi.mock('@/shared/lib/hooks', () => ({
   useHashFragment: vi.fn(() => ''),
@@ -26,12 +35,11 @@ vi.mock('@/entities/invoice', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/entities/invoice')>()
   return {
     ...actual,
-    useRichInvoiceStore: vi.fn(() => ({
-      addInvoice: vi.fn(),
-      getInvoice: vi.fn(),
-      updateStatus: vi.fn(),
-      setTxHash: vi.fn(),
-    })),
+    // Supports both plain call and selector call patterns used by Zustand
+    useTrackedInvoiceStore: vi.fn((selector?: (s: typeof mockStoreState) => unknown) => {
+      if (typeof selector === 'function') return selector(mockStoreState)
+      return mockStoreState
+    }),
   }
 })
 
@@ -44,7 +52,7 @@ vi.mock('next/navigation', () => ({
 // Import mocked modules for manipulation
 import { useHashFragment } from '@/shared/lib/hooks'
 import { parseInvoiceHash } from '@/features/invoice-codec'
-import { useRichInvoiceStore } from '@/entities/invoice'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { useRouter } from 'next/navigation'
 
 // Import component under test
@@ -81,12 +89,9 @@ describe('PayWorkspace', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(useRouter).mockReturnValue(mockRouter as ReturnType<typeof useRouter>)
-    vi.mocked(useRichInvoiceStore).mockReturnValue({
-      addInvoice: mockAddInvoice,
-      getInvoice: mockGetInvoice,
-      updateStatus: vi.fn(),
-      setTxHash: vi.fn(),
-    } as unknown as ReturnType<typeof useRichInvoiceStore>)
+    // Sync test-local mocks into the shared store state
+    mockStoreState.addInvoice = mockAddInvoice
+    mockStoreState.getInvoice = mockGetInvoice
   })
 
   afterEach(() => {
@@ -339,14 +344,13 @@ describe('PayWorkspace', () => {
         expect(mockAddInvoice).toHaveBeenCalledWith(
           expect.objectContaining({
             invoiceId: 'INV-001',
-            data: VALID_INVOICE,
-            status: 'pending',
+            source: 'received',
           })
         )
       })
     })
 
-    it('does not add duplicate when invoice already exists', async () => {
+    it('calls addInvoice as upsert even when invoice already exists', async () => {
       vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
       vi.mocked(parseInvoiceHash).mockReturnValue({
         success: true,
@@ -356,8 +360,7 @@ describe('PayWorkspace', () => {
       mockGetInvoice.mockReturnValue({
         invoiceId: 'INV-001',
         invoiceUrl: '/pay#H_mock_encoded',
-        data: VALID_INVOICE,
-        status: 'pending',
+        source: 'received',
         createdAt: '2026-02-01T00:00:00Z',
       })
 
@@ -367,8 +370,13 @@ describe('PayWorkspace', () => {
         expect(screen.getByText(/INV-001/)).toBeInTheDocument()
       })
 
-      // Should not call addInvoice for existing invoice
-      expect(mockAddInvoice).not.toHaveBeenCalled()
+      // addInvoice is always called as an upsert — store handles deduplication internally
+      expect(mockAddInvoice).toHaveBeenCalledWith(
+        expect.objectContaining({
+          invoiceId: 'INV-001',
+          source: 'received',
+        })
+      )
     })
   })
 })

@@ -6,7 +6,7 @@ import { Button } from '@/shared/ui/button'
 import { Loader2Icon, SearchIcon, AlertCircleIcon } from '@/shared/ui/icons'
 import { cn } from '@/shared/lib/utils'
 import { useTokenMetadata } from '@/entities/token'
-import type { TokenInfo } from '../model/tokens'
+import type { TokenInfo } from '@/entities/network'
 import { type Address } from 'viem'
 
 export interface CustomTokenFormProps {
@@ -47,7 +47,7 @@ export function CustomTokenForm({
     onSubmit({
       symbol: customTokenMetadata.symbol ?? '',
       name: customTokenMetadata.name ?? '',
-      address: customAddress,
+      address: customAddress as `0x${string}`,
       decimals: customTokenMetadata.decimals ?? 18,
       iconColor: 'bg-zinc-700', // Default color for custom tokens
       isCustom: true, // Mark as custom/unverified

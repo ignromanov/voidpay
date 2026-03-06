@@ -15,7 +15,7 @@
 
 import { createStorage } from 'wagmi'
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
-import { getSupportedChains, ALL_CHAIN_IDS } from '@/shared/config'
+import { getSupportedChains, ALL_CHAIN_IDS } from '@/entities/network'
 import { createTransportsForChains } from '@/shared/lib'
 
 /**

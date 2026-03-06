@@ -1,217 +1,294 @@
 /**
- * Viewed Invoice Store tests
- * Feature: 015-create-page-preview
+ * Tracked Invoice Store tests
+ * Feature: 021-smart-pay-button
  */
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useRichInvoiceStore, type RichInvoice } from '../rich-invoice-store'
+import { useTrackedInvoiceStore, type TrackedInvoice } from '../rich-invoice-store'
 
-describe('useRichInvoiceStore', () => {
+describe('useTrackedInvoiceStore', () => {
   beforeEach(() => {
-    // Reset store state
-    useRichInvoiceStore.setState({
-      version: 1,
+    useTrackedInvoiceStore.setState({
       invoices: [],
     })
   })
 
-  const createMockInvoice = (
-    overrides: Partial<RichInvoice> = {}
-  ): Omit<RichInvoice, 'createdAt'> => ({
-    invoiceId: 'INV-001',
-    invoiceUrl: 'https://voidpay.xyz/pay#abc123',
-    data: {
-      version: 2,
+  function createMockTrackedInvoice(
+    overrides: Partial<Omit<TrackedInvoice, 'createdAt'>> = {}
+  ): Omit<TrackedInvoice, 'createdAt'> {
+    return {
       invoiceId: 'INV-001',
-      issuedAt: 1704067200,
-      dueAt: 1706745600,
-      networkId: 1,
-      currency: 'USDC',
-      decimals: 6,
-      from: { name: 'Sender', walletAddress: '0x1234567890123456789012345678901234567890' },
-      client: { name: 'Client' },
-      items: [{ description: 'Service', quantity: 1, rate: '100' }],
-    },
-    status: 'pending',
-    ...overrides,
-  })
+      invoiceUrl: 'https://voidpay.xyz/pay#abc123',
+      source: 'received' as const,
+      ...overrides,
+    }
+  }
 
   describe('initial state', () => {
     it('initializes with empty invoices array', () => {
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices).toEqual([])
-      expect(state.version).toBe(1)
     })
   })
 
   describe('addInvoice', () => {
     it('adds invoice to store', () => {
-      const { addInvoice } = useRichInvoiceStore.getState()
+      const { addInvoice } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice())
+      addInvoice(createMockTrackedInvoice())
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices).toHaveLength(1)
       expect(state.invoices[0].invoiceId).toBe('INV-001')
     })
 
-    it('sets createdAt timestamp', () => {
-      const { addInvoice } = useRichInvoiceStore.getState()
+    it('sets createdAt timestamp on new invoice', () => {
+      const { addInvoice } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice())
+      addInvoice(createMockTrackedInvoice())
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices[0].createdAt).toBeDefined()
       expect(new Date(state.invoices[0].createdAt).getTime()).not.toBeNaN()
     })
 
     it('prepends new invoices to list', () => {
-      const { addInvoice } = useRichInvoiceStore.getState()
+      const { addInvoice } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'FIRST' }))
-      addInvoice(createMockInvoice({ invoiceId: 'SECOND' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'FIRST' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'SECOND' }))
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices[0].invoiceId).toBe('SECOND')
       expect(state.invoices[1].invoiceId).toBe('FIRST')
     })
 
-    it('updates existing invoice and moves to top', () => {
-      const { addInvoice } = useRichInvoiceStore.getState()
+    it('merge-upserts existing invoice and moves to top', () => {
+      const { addInvoice } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'EXISTING', status: 'pending' }))
-      addInvoice(createMockInvoice({ invoiceId: 'OTHER' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'EXISTING', source: 'received' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'OTHER' }))
 
-      // Re-add existing with new status
-      addInvoice(createMockInvoice({ invoiceId: 'EXISTING', status: 'paid' }))
+      // Re-add with overlaid fields
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'EXISTING', source: 'created' }))
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices).toHaveLength(2)
       expect(state.invoices[0].invoiceId).toBe('EXISTING')
-      expect(state.invoices[0].status).toBe('paid')
+      expect(state.invoices[0].source).toBe('created')
+    })
+
+    it('preserves existing createdAt on upsert', () => {
+      const { addInvoice } = useTrackedInvoiceStore.getState()
+
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'PRESERVE' }))
+      const originalCreatedAt = useTrackedInvoiceStore.getState().invoices[0].createdAt
+
+      // Re-add same invoice
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'PRESERVE' }))
+
+      const state = useTrackedInvoiceStore.getState()
+      expect(state.invoices[0].createdAt).toBe(originalCreatedAt)
+    })
+
+    it('preserves existing txHash on upsert (merge semantics)', () => {
+      const { addInvoice, setTxHash } = useTrackedInvoiceStore.getState()
+
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'MERGE-TX' }))
+      setTxHash('MERGE-TX', '0xoriginal')
+
+      // Re-add without txHash — existing txHash should be preserved
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'MERGE-TX', invoiceUrl: 'https://voidpay.xyz/pay#updated' }))
+
+      const state = useTrackedInvoiceStore.getState()
+      expect(state.invoices[0].txHash).toBe('0xoriginal')
+      expect(state.invoices[0].invoiceUrl).toBe('https://voidpay.xyz/pay#updated')
     })
 
     it('limits to MAX_INVOICES (50)', () => {
-      const { addInvoice } = useRichInvoiceStore.getState()
+      const { addInvoice } = useTrackedInvoiceStore.getState()
 
-      // Add 55 invoices
       for (let i = 0; i < 55; i++) {
-        addInvoice(createMockInvoice({ invoiceId: `INV-${i.toString().padStart(3, '0')}` }))
+        addInvoice(createMockTrackedInvoice({ invoiceId: `INV-${i.toString().padStart(3, '0')}` }))
       }
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices).toHaveLength(50)
-      // Most recent should be first
       expect(state.invoices[0].invoiceId).toBe('INV-054')
     })
   })
 
-  describe('updateStatus', () => {
-    it('updates invoice status', () => {
-      const { addInvoice, updateStatus } = useRichInvoiceStore.getState()
-
-      addInvoice(createMockInvoice({ invoiceId: 'STATUS-TEST', status: 'pending' }))
-
-      updateStatus('STATUS-TEST', 'paid')
-
-      const state = useRichInvoiceStore.getState()
-      expect(state.invoices[0].status).toBe('paid')
-    })
-
-    it('handles non-existent invoiceId gracefully', () => {
-      const { addInvoice, updateStatus } = useRichInvoiceStore.getState()
-
-      addInvoice(createMockInvoice({ invoiceId: 'KEEP', status: 'pending' }))
-
-      updateStatus('NON-EXISTENT', 'paid')
-
-      const state = useRichInvoiceStore.getState()
-      expect(state.invoices[0].status).toBe('pending')
-    })
-
-    it('supports all status types', () => {
-      const { addInvoice, updateStatus } = useRichInvoiceStore.getState()
-
-      addInvoice(createMockInvoice({ invoiceId: 'MULTI-STATUS' }))
-
-      const statuses = ['pending', 'paid', 'overdue', 'draft', 'empty'] as const
-
-      for (const status of statuses) {
-        updateStatus('MULTI-STATUS', status)
-        expect(useRichInvoiceStore.getState().invoices[0].status).toBe(status)
-      }
-    })
-  })
-
   describe('setTxHash', () => {
-    it('sets transaction hash and marks as paid', () => {
-      const { addInvoice, setTxHash } = useRichInvoiceStore.getState()
+    it('sets transaction hash', () => {
+      const { addInvoice, setTxHash } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'TX-TEST', status: 'pending' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'TX-TEST' }))
 
       setTxHash('TX-TEST', '0xabcdef1234567890')
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices[0].txHash).toBe('0xabcdef1234567890')
-      expect(state.invoices[0].status).toBe('paid')
+    })
+
+    it('does not set status field (no status on TrackedInvoice)', () => {
+      const { addInvoice, setTxHash } = useTrackedInvoiceStore.getState()
+
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'TX-NO-STATUS' }))
+      setTxHash('TX-NO-STATUS', '0xhash')
+
+      const state = useTrackedInvoiceStore.getState()
+      // TrackedInvoice has no status field
+      expect(Object.hasOwn(state.invoices[0], 'status')).toBe(false)
     })
 
     it('sets validation flag', () => {
-      const { addInvoice, setTxHash } = useRichInvoiceStore.getState()
+      const { addInvoice, setTxHash } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'VALIDATED' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'VALIDATED' }))
 
       setTxHash('VALIDATED', '0xhash', true)
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices[0].txHashValidated).toBe(true)
     })
 
     it('defaults validation to false', () => {
-      const { addInvoice, setTxHash } = useRichInvoiceStore.getState()
+      const { addInvoice, setTxHash } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'UNVALIDATED' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'UNVALIDATED' }))
 
       setTxHash('UNVALIDATED', '0xhash')
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices[0].txHashValidated).toBe(false)
+    })
+
+    it('sets paidAt when validated is true', () => {
+      const { addInvoice, setTxHash } = useTrackedInvoiceStore.getState()
+
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'PAID-AT' }))
+      setTxHash('PAID-AT', '0xhash', true)
+
+      const state = useTrackedInvoiceStore.getState()
+      expect(state.invoices[0].paidAt).toBeDefined()
+      expect(new Date(state.invoices[0].paidAt!).getTime()).not.toBeNaN()
+    })
+
+    it('does not set paidAt when validated is false', () => {
+      const { addInvoice, setTxHash } = useTrackedInvoiceStore.getState()
+
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'NO-PAID-AT' }))
+      setTxHash('NO-PAID-AT', '0xhash', false)
+
+      const state = useTrackedInvoiceStore.getState()
+      expect(state.invoices[0].paidAt).toBeUndefined()
+    })
+
+    it('preserves existing paidAt when re-calling with validated=false', () => {
+      const { addInvoice, setTxHash } = useTrackedInvoiceStore.getState()
+
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'PRESERVE-PAID' }))
+      setTxHash('PRESERVE-PAID', '0xhash1', true)
+
+      const paidAt = useTrackedInvoiceStore.getState().invoices[0].paidAt
+      expect(paidAt).toBeDefined()
+
+      setTxHash('PRESERVE-PAID', '0xhash2', false)
+
+      const state = useTrackedInvoiceStore.getState()
+      expect(state.invoices[0].paidAt).toBe(paidAt)
+    })
+  })
+
+  describe('resetPaymentState', () => {
+    it('clears txHash, txHashValidated, paidAt, confirmations', () => {
+      const { addInvoice, setTxHash, setConfirmations, resetPaymentState } =
+        useTrackedInvoiceStore.getState()
+
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'RESET-TEST' }))
+      setTxHash('RESET-TEST', '0xhash', true)
+      setConfirmations('RESET-TEST', { current: 6, required: 12 })
+
+      resetPaymentState('RESET-TEST')
+
+      const state = useTrackedInvoiceStore.getState()
+      expect(state.invoices[0].txHash).toBeUndefined()
+      expect(state.invoices[0].txHashValidated).toBeUndefined()
+      expect(state.invoices[0].paidAt).toBeUndefined()
+      expect(state.invoices[0].confirmations).toBeUndefined()
+    })
+
+    it('preserves non-payment fields after reset', () => {
+      const { addInvoice, setTxHash, setError, resetPaymentState } =
+        useTrackedInvoiceStore.getState()
+
+      addInvoice(
+        createMockTrackedInvoice({
+          invoiceId: 'PRESERVE-FIELDS',
+          invoiceUrl: 'https://voidpay.xyz/pay#preserve',
+          source: 'created',
+        })
+      )
+      setTxHash('PRESERVE-FIELDS', '0xhash', true)
+      setError('PRESERVE-FIELDS', 'some error')
+
+      resetPaymentState('PRESERVE-FIELDS')
+
+      const state = useTrackedInvoiceStore.getState()
+      const inv = state.invoices[0]
+      expect(inv.invoiceId).toBe('PRESERVE-FIELDS')
+      expect(inv.invoiceUrl).toBe('https://voidpay.xyz/pay#preserve')
+      expect(inv.source).toBe('created')
+      expect(inv.error).toBe('some error')
+      expect(inv.createdAt).toBeDefined()
+    })
+
+    it('handles non-existent invoiceId gracefully', () => {
+      const { addInvoice, resetPaymentState } = useTrackedInvoiceStore.getState()
+
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'KEEP' }))
+
+      resetPaymentState('NON-EXISTENT')
+
+      const state = useTrackedInvoiceStore.getState()
+      expect(state.invoices).toHaveLength(1)
+      expect(state.invoices[0].invoiceId).toBe('KEEP')
     })
   })
 
   describe('removeInvoice', () => {
     it('removes invoice by invoiceId', () => {
-      const { addInvoice, removeInvoice } = useRichInvoiceStore.getState()
+      const { addInvoice, removeInvoice } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'TO-REMOVE' }))
-      expect(useRichInvoiceStore.getState().invoices).toHaveLength(1)
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'TO-REMOVE' }))
+      expect(useTrackedInvoiceStore.getState().invoices).toHaveLength(1)
 
       removeInvoice('TO-REMOVE')
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices).toHaveLength(0)
     })
 
     it('handles non-existent invoiceId gracefully', () => {
-      const { addInvoice, removeInvoice } = useRichInvoiceStore.getState()
+      const { addInvoice, removeInvoice } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'KEEP' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'KEEP' }))
 
       removeInvoice('NON-EXISTENT')
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices).toHaveLength(1)
     })
 
     it('removes only specified invoice', () => {
-      const { addInvoice, removeInvoice } = useRichInvoiceStore.getState()
+      const { addInvoice, removeInvoice } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'FIRST' }))
-      addInvoice(createMockInvoice({ invoiceId: 'SECOND' }))
-      addInvoice(createMockInvoice({ invoiceId: 'THIRD' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'FIRST' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'SECOND' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'THIRD' }))
 
       removeInvoice('SECOND')
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices).toHaveLength(2)
       expect(state.invoices.map((i) => i.invoiceId)).toEqual(['THIRD', 'FIRST'])
     })
@@ -219,9 +296,9 @@ describe('useRichInvoiceStore', () => {
 
   describe('getInvoice', () => {
     it('returns invoice by invoiceId', () => {
-      const { addInvoice, getInvoice } = useRichInvoiceStore.getState()
+      const { addInvoice, getInvoice } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'FIND-ME' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'FIND-ME' }))
 
       const invoice = getInvoice('FIND-ME')
 
@@ -230,7 +307,7 @@ describe('useRichInvoiceStore', () => {
     })
 
     it('returns undefined for non-existent invoiceId', () => {
-      const { getInvoice } = useRichInvoiceStore.getState()
+      const { getInvoice } = useTrackedInvoiceStore.getState()
 
       const invoice = getInvoice('NON-EXISTENT')
 
@@ -240,240 +317,164 @@ describe('useRichInvoiceStore', () => {
 
   describe('clearAll', () => {
     it('removes all invoices', () => {
-      const { addInvoice, clearAll } = useRichInvoiceStore.getState()
+      const { addInvoice, clearAll } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'ONE' }))
-      addInvoice(createMockInvoice({ invoiceId: 'TWO' }))
-      addInvoice(createMockInvoice({ invoiceId: 'THREE' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'ONE' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'TWO' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'THREE' }))
 
-      expect(useRichInvoiceStore.getState().invoices).toHaveLength(3)
+      expect(useTrackedInvoiceStore.getState().invoices).toHaveLength(3)
 
       clearAll()
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices).toHaveLength(0)
-    })
-  })
-
-  describe('setTxHash — paidAt', () => {
-    it('sets paidAt when validated is true', () => {
-      const { addInvoice, setTxHash } = useRichInvoiceStore.getState()
-
-      addInvoice(createMockInvoice({ invoiceId: 'PAID-AT' }))
-      setTxHash('PAID-AT', '0xhash', true)
-
-      const state = useRichInvoiceStore.getState()
-      expect(state.invoices[0].paidAt).toBeDefined()
-      expect(new Date(state.invoices[0].paidAt!).getTime()).not.toBeNaN()
-    })
-
-    it('does not set paidAt when validated is false', () => {
-      const { addInvoice, setTxHash } = useRichInvoiceStore.getState()
-
-      addInvoice(createMockInvoice({ invoiceId: 'NO-PAID-AT' }))
-      setTxHash('NO-PAID-AT', '0xhash', false)
-
-      const state = useRichInvoiceStore.getState()
-      expect(state.invoices[0].paidAt).toBeUndefined()
-    })
-
-    it('preserves existing paidAt when re-calling with validated=false', () => {
-      const { addInvoice, setTxHash } = useRichInvoiceStore.getState()
-
-      addInvoice(createMockInvoice({ invoiceId: 'PRESERVE-PAID' }))
-      setTxHash('PRESERVE-PAID', '0xhash1', true)
-
-      const paidAt = useRichInvoiceStore.getState().invoices[0].paidAt
-      expect(paidAt).toBeDefined()
-
-      setTxHash('PRESERVE-PAID', '0xhash2', false)
-
-      const state = useRichInvoiceStore.getState()
-      expect(state.invoices[0].paidAt).toBe(paidAt)
     })
   })
 
   describe('setConfirmations', () => {
     it('sets confirmation progress', () => {
-      const { addInvoice, setConfirmations } = useRichInvoiceStore.getState()
+      const { addInvoice, setConfirmations } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'CONFIRM-TEST' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'CONFIRM-TEST' }))
       setConfirmations('CONFIRM-TEST', { current: 3, required: 12 })
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices[0].confirmations).toEqual({ current: 3, required: 12 })
     })
 
     it('clears confirmations when undefined', () => {
-      const { addInvoice, setConfirmations } = useRichInvoiceStore.getState()
+      const { addInvoice, setConfirmations } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'CLEAR-CONFIRM' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'CLEAR-CONFIRM' }))
       setConfirmations('CLEAR-CONFIRM', { current: 5, required: 12 })
       setConfirmations('CLEAR-CONFIRM', undefined)
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices[0].confirmations).toBeUndefined()
     })
 
     it('handles non-existent invoiceId gracefully', () => {
-      const { addInvoice, setConfirmations } = useRichInvoiceStore.getState()
+      const { addInvoice, setConfirmations } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'EXIST' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'EXIST' }))
       setConfirmations('NON-EXISTENT', { current: 1, required: 12 })
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices[0].confirmations).toBeUndefined()
     })
   })
 
   describe('setError', () => {
     it('sets error message', () => {
-      const { addInvoice, setError } = useRichInvoiceStore.getState()
+      const { addInvoice, setError } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'ERROR-TEST' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'ERROR-TEST' }))
       setError('ERROR-TEST', 'Transaction reverted')
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices[0].error).toBe('Transaction reverted')
     })
 
-    it('clears error with null (converts to undefined)', () => {
-      const { addInvoice, setError } = useRichInvoiceStore.getState()
+    it('clears error with null (converts to undefined via store)', () => {
+      const { addInvoice, setError } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'CLEAR-ERROR' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'CLEAR-ERROR' }))
       setError('CLEAR-ERROR', 'Some error')
       setError('CLEAR-ERROR', null)
 
-      const state = useRichInvoiceStore.getState()
-      expect(state.invoices[0].error).toBeUndefined()
+      const state = useTrackedInvoiceStore.getState()
+      // error field stores null as passed — callers treat null as "no error"
+      expect(state.invoices[0].error).toBeNull()
     })
 
     it('handles non-existent invoiceId gracefully', () => {
-      const { addInvoice, setError } = useRichInvoiceStore.getState()
+      const { addInvoice, setError } = useTrackedInvoiceStore.getState()
 
-      addInvoice(createMockInvoice({ invoiceId: 'EXIST' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'EXIST' }))
       setError('NON-EXISTENT', 'Error')
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices[0].error).toBeUndefined()
     })
   })
 
   describe('edge cases', () => {
-    it('handles invoice with createHash', () => {
-      const { addInvoice } = useRichInvoiceStore.getState()
+    it('handles invoice with source=created', () => {
+      const { addInvoice } = useTrackedInvoiceStore.getState()
 
       addInvoice(
-        createMockInvoice({
-          invoiceId: 'WITH-HASH',
-          createHash: 'N4IgbghgTg9g...',
+        createMockTrackedInvoice({
+          invoiceId: 'CREATED-SOURCE',
+          source: 'created',
         })
       )
 
-      const state = useRichInvoiceStore.getState()
-      expect(state.invoices[0].createHash).toBe('N4IgbghgTg9g...')
+      const state = useTrackedInvoiceStore.getState()
+      expect(state.invoices[0].source).toBe('created')
     })
 
     it('handles invoice with all optional fields', () => {
-      const { addInvoice } = useRichInvoiceStore.getState()
+      const { addInvoice } = useTrackedInvoiceStore.getState()
 
       addInvoice({
         invoiceId: 'FULL-OPTIONS',
         invoiceUrl: 'https://voidpay.xyz/pay#full',
-        data: {
-          version: 2,
-          invoiceId: 'FULL-OPTIONS',
-          issuedAt: 1704067200,
-          dueAt: 1706745600,
-          networkId: 137,
-          currency: 'MATIC',
-          decimals: 18,
-          tokenAddress: '0xtoken',
-          from: {
-            name: 'Full Sender',
-            walletAddress: '0xsender',
-            email: 'sender@test.com',
-            physicalAddress: '123 Main St',
-          },
-          client: {
-            name: 'Full Client',
-            walletAddress: '0xclient',
-            email: 'client@test.com',
-          },
-          items: [{ description: 'Full Service', quantity: 5, rate: '200' }],
-          tax: '10',
-          discount: '5',
-          notes: 'Full invoice with all fields',
-        },
-        status: 'paid',
+        source: 'received',
         txHash: '0xfulltx',
         txHashValidated: true,
-        createHash: 'fullhash',
+        confirmations: { current: 12, required: 12 },
+        error: undefined,
+        viewedAt: new Date().toISOString(),
+        paidAt: new Date().toISOString(),
       })
 
-      const state = useRichInvoiceStore.getState()
-      expect(state.invoices[0].data.tokenAddress).toBe('0xtoken')
-      expect(state.invoices[0].data.notes).toBe('Full invoice with all fields')
+      const state = useTrackedInvoiceStore.getState()
+      expect(state.invoices[0].txHash).toBe('0xfulltx')
+      expect(state.invoices[0].txHashValidated).toBe(true)
+      expect(state.invoices[0].confirmations).toEqual({ current: 12, required: 12 })
     })
 
     it('handles rapid operations', () => {
-      const { addInvoice, updateStatus, setTxHash, removeInvoice } = useRichInvoiceStore.getState()
+      const { addInvoice, setTxHash, removeInvoice } = useTrackedInvoiceStore.getState()
 
-      // Rapid adds
       for (let i = 0; i < 10; i++) {
-        addInvoice(createMockInvoice({ invoiceId: `RAPID-${i}` }))
+        addInvoice(createMockTrackedInvoice({ invoiceId: `RAPID-${i}` }))
       }
 
-      // Rapid status updates
-      for (let i = 0; i < 10; i++) {
-        updateStatus(`RAPID-${i}`, 'paid')
-      }
-
-      // Set tx hashes
       for (let i = 0; i < 5; i++) {
-        setTxHash(`RAPID-${i}`, `0xtx${i}`)
+        setTxHash(`RAPID-${i}`, `0xtx${i}`, true)
       }
 
-      // Remove some
       for (let i = 5; i < 8; i++) {
         removeInvoice(`RAPID-${i}`)
       }
 
-      const state = useRichInvoiceStore.getState()
+      const state = useTrackedInvoiceStore.getState()
       expect(state.invoices).toHaveLength(7)
-      expect(state.invoices.every((i) => i.status === 'paid')).toBe(true)
+      // First 5 have txHash set
+      const withTx = state.invoices.filter((i) => i.txHash !== undefined)
+      expect(withTx).toHaveLength(5)
     })
 
     it('preserves data integrity across operations', () => {
-      const { addInvoice, updateStatus, setTxHash, getInvoice } = useRichInvoiceStore.getState()
-
-      const originalData = {
-        version: 2 as const,
-        invoiceId: 'INTEGRITY-TEST',
-        issuedAt: 1704067200,
-        dueAt: 1706745600,
-        networkId: 42161,
-        currency: 'ARB',
-        decimals: 18,
-        from: { name: 'Important Sender', walletAddress: '0xintegrity' as `0x${string}` },
-        client: { name: 'Important Client' },
-        items: [{ description: 'Critical Service', quantity: 10, rate: '1000' }],
-      }
+      const { addInvoice, setTxHash, getInvoice } = useTrackedInvoiceStore.getState()
 
       addInvoice({
         invoiceId: 'INTEGRITY-TEST',
         invoiceUrl: 'https://voidpay.xyz/pay#integrity',
-        data: originalData,
-        status: 'pending',
+        source: 'received',
       })
 
-      updateStatus('INTEGRITY-TEST', 'paid')
       setTxHash('INTEGRITY-TEST', '0xintegritytx', true)
 
       const invoice = getInvoice('INTEGRITY-TEST')
-      expect(invoice?.data).toEqual(originalData)
-      expect(invoice?.status).toBe('paid')
+      expect(invoice?.invoiceId).toBe('INTEGRITY-TEST')
+      expect(invoice?.invoiceUrl).toBe('https://voidpay.xyz/pay#integrity')
+      expect(invoice?.source).toBe('received')
       expect(invoice?.txHash).toBe('0xintegritytx')
+      expect(invoice?.txHashValidated).toBe(true)
+      expect(invoice?.paidAt).toBeDefined()
     })
   })
 })

@@ -36,8 +36,13 @@ export function computeAmounts(invoice: Invoice): ComputedAmounts {
         magicDust: invoice.magicDust,
         exactTotal: invoice.total,
       }
-    } catch {
-      // Corrupted total/magicDust strings — fall through to Case 2/3
+    } catch (error) {
+      console.error('[computeAmounts] Corrupted total/magicDust:', {
+        total: invoice.total,
+        magicDust: invoice.magicDust,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      // Fall through to Case 2/3 (recalculate from line items)
     }
   }
 

@@ -1,15 +1,16 @@
-import { PartialInvoice, RichInvoiceStatus as InvoiceStatus } from '@/entities/invoice'
+import type { PartialInvoice } from '@/entities/invoice'
+
+export type InvoiceStatus = 'draft' | 'pending' | 'paid' | 'overdue' | 'empty'
 
 /**
  * Visual status of the invoice document
- * Re-exported from entities/invoice for consistency across the app.
  *
  * - draft: Invoice being created (editable, not yet generated)
  * - pending: Invoice created, awaiting payment
  * - paid: Payment confirmed on-chain
  * - overdue: Payment deadline passed
+ * - empty: No invoice data (placeholder)
  */
-export type { InvoiceStatus }
 
 /**
  * Invoice paper display variant

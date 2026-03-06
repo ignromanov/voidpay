@@ -12,9 +12,15 @@ const ALLOWED_METHODS = new Set<RpcMethod>([
   'eth_call',
   'eth_getBalance',
   'eth_getGasPrice',
+  'eth_maxPriorityFeePerGas',
+  'eth_feeHistory',
   'eth_estimateGas',
+  'eth_getTransactionCount',
   'eth_sendRawTransaction',
+  'eth_getTransactionByHash',
   'eth_getTransactionReceipt',
+  'eth_getBlockByNumber',
+  'eth_getCode',
   'eth_chainId',
   'net_version',
 ] as const)
@@ -22,9 +28,13 @@ const ALLOWED_METHODS = new Set<RpcMethod>([
 /**
  * Proxy an RPC request with automatic failover
  * @param request JSON-RPC request
+ * @param chainId Target chain ID (default: 1 = Ethereum mainnet)
  * @returns Proxy result with response and metadata
  */
-export async function proxyRequest(request: JsonRpcRequest): Promise<ProxyResult> {
+export async function proxyRequest(
+  request: JsonRpcRequest,
+  chainId: number = 1
+): Promise<ProxyResult> {
   validateServerSideOnly()
 
   // Validate method is allowlisted
@@ -44,7 +54,7 @@ export async function proxyRequest(request: JsonRpcRequest): Promise<ProxyResult
     }
   }
 
-  const config = loadRpcConfig()
+  const config = loadRpcConfig(chainId)
   const requestId = generateRequestId()
 
   // Try primary provider (Alchemy)

@@ -32,7 +32,7 @@ export {
   getSupportedChains,
   getChainById,
   isTestnetChain,
-} from '@/shared/config'
+} from '@/entities/network'
 export { voidPayTheme, VOIDPAY_ACCENT_COLOR, createVoidPayTheme } from './config/rainbowkit-theme'
 
 // UI exports
@@ -44,8 +44,8 @@ export {
   createChainTransport,
   createTransportsForChains,
 } from '@/shared/lib'
-export { useNetworkSwitch, canSwitchNetwork } from './lib/network-switch'
-export { detectNetworkMismatch, useNetworkMismatch } from './lib/network-mismatch'
+export { useNetworkSwitch, canSwitchNetwork } from '@/entities/network'
+export { detectNetworkMismatch, useNetworkMismatch } from '@/entities/network'
 export {
   shouldBlockNetworkSwitch,
   getPendingTxWarningMessage,

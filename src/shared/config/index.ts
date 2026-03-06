@@ -25,18 +25,8 @@ export {
 // URL constants
 export { VOIDPAY_DOMAIN, APP_URLS, SOCIAL_URLS, getAppBaseUrl } from './urls'
 
-// Chain configurations
-export {
-  MAINNET_CHAINS,
-  TESTNET_CHAINS,
-  SUPPORTED_CHAIN_IDS,
-  ALL_CHAIN_IDS,
-  getChainById,
-  getSupportedChains,
-  isTestnetChain,
-  getChainName,
-  getBlockExplorerUrl,
-} from './chains'
+// NOTE: Chain configurations moved to @/entities/network (from config/chains.ts)
+// Import chain utils from @/entities/network instead of @/shared/config
 
 // NOTE: wagmiConfig and voidPayTheme are intentionally NOT exported here.
 // They trigger RainbowKit initialization which requires browser environment.

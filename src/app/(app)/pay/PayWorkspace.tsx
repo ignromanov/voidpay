@@ -1,20 +1,38 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import {
   ScaledInvoicePreview,
   InvoicePaper,
 } from '@/widgets/invoice-paper'
-import { PaymentPanel, DevStatusToggle } from '@/widgets/payment-panel'
+import { PaymentPanel, DevStatusToggle, DevPaymentStepToggle, computeAmounts } from '@/widgets/payment-panel'
+import type { DevPaymentVisualStep, PaymentError } from '@/features/payment'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { ChevronDownIcon } from '@/shared/ui/icons'
+import { Button } from '@/shared/ui/button'
 
 import { usePayInvoice } from './use-pay-invoice'
 import { StatusBadge } from './StatusBadge'
 import { MinimizedPill } from './MinimizedPill'
+
+/**
+ * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.
+ * Only this button needs wagmi — the rest of the page renders immediately.
+ */
+const PayButton = dynamic(
+  () => import('./PayButton').then((m) => ({ default: m.PayButton })),
+  {
+    ssr: false,
+    loading: () => (
+      <Button variant="void" size="lg" className="h-14 w-full" disabled>
+        Smart Pay
+      </Button>
+    ),
+  },
+)
 
 const InvoicePreviewModal = dynamic(
   () => import('@/widgets/invoice-paper').then((m) => ({ default: m.InvoicePreviewModal })),
@@ -32,12 +50,20 @@ const InvoicePreviewModal = dynamic(
  */
 export function PayWorkspace() {
   const router = useRouter()
-  const { invoice, errorType, isLoading, storedInvoice, panelStatus, dismissError } = usePayInvoice()
+  const { invoice, errorType, isLoading, panelStatus, source, dismissError, txHash, confirmations, storedError } = usePayInvoice()
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [devPaymentStep, setDevPaymentStep] = useState<DevPaymentVisualStep | null>(null)
+
+  const handlePaymentSuccess = useCallback(() => { setPaymentError(null) }, [])
+  const handlePaymentError = useCallback((error: PaymentError) => { setPaymentError(error.message) }, [])
 
   const networkId = invoice?.networkId ?? 1
+  const amounts = useMemo(() => invoice ? computeAmounts(invoice) : null, [invoice])
+  const exactTotal = amounts?.exactTotal ?? '0'
+  const subtotal = amounts?.subtotal ?? '0'
 
   // Loading state
   if (isLoading) {
@@ -90,8 +116,8 @@ export function PayWorkspace() {
             onClick={() => setIsPreviewOpen(true)}
             showExpandOverlay
           >
-            {isPaid && storedInvoice?.txHash ? (
-              <InvoicePaper data={invoice} status="paid" txHash={storedInvoice.txHash} />
+            {isPaid && txHash ? (
+              <InvoicePaper data={invoice} status="paid" txHash={txHash} />
             ) : (
               <InvoicePaper data={invoice} status={invoiceStatus} />
             )}
@@ -102,7 +128,7 @@ export function PayWorkspace() {
         <div className="absolute bottom-4 left-1/2 z-40 w-full max-w-[95%] -translate-x-1/2 px-4 md:bottom-5 md:max-w-xl">
           <AnimatePresence mode="wait">
             {isMinimized ? (
-              <MinimizedPill isPaid={isPaid} onExpand={() => setIsMinimized(false)} />
+              <MinimizedPill key="minimized" isPaid={isPaid} onExpand={() => setIsMinimized(false)} />
             ) : (
               <motion.div
                 key="expanded"
@@ -112,20 +138,32 @@ export function PayWorkspace() {
                 exit={{ opacity: 0, y: 20 }}
                 className="relative w-full"
               >
-                {isPaid && storedInvoice?.txHash ? (
+                {isPaid && txHash ? (
                   <PaymentPanel
                     invoice={invoice}
                     status={panelStatus}
-                    txHash={storedInvoice.txHash}
-                    {...(storedInvoice.confirmations ? { confirmations: storedInvoice.confirmations } : {})}
+                    txHash={txHash}
+                    source={source}
+                    {...(confirmations ? { confirmations } : {})}
                   />
                 ) : (
                   <PaymentPanel
                     invoice={invoice}
                     status={panelStatus}
-                    {...(storedInvoice?.error ? { error: storedInvoice.error } : {})}
+                    source={source}
+                    {...(paymentError ? { error: paymentError } : storedError ? { error: storedError } : {})}
                     onDismissError={dismissError}
-                  />
+                  >
+                    <PayButton
+                      invoice={invoice}
+                      invoiceId={invoice.invoiceId}
+                      exactTotal={exactTotal}
+                      subtotal={subtotal}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                      devOverride={devPaymentStep}
+                    />
+                  </PaymentPanel>
                 )}
                 <button
                   data-testid="minimize-panel"
@@ -137,17 +175,18 @@ export function PayWorkspace() {
                   <ChevronDownIcon size={14} />
                 </button>
                 <DevStatusToggle invoiceId={invoice.invoiceId} status={panelStatus} />
+                <DevPaymentStepToggle onChange={setDevPaymentStep} />
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </div>
 
-      {isPreviewOpen && (isPaid && storedInvoice?.txHash ? (
+      {isPreviewOpen && (isPaid && txHash ? (
         <InvoicePreviewModal
           data={invoice}
           status="paid"
-          txHash={storedInvoice.txHash}
+          txHash={txHash}
           open={isPreviewOpen}
           onOpenChange={setIsPreviewOpen}
         />

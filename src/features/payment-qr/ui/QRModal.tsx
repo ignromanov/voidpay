@@ -9,6 +9,7 @@ import {
 import { NetworkIcon } from '@/shared/ui/network-icon'
 import { TokenIcon } from '@/shared/ui/token-icon'
 import { CopyButton } from '@/shared/ui/copy-button'
+import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
 import { getNetworkName } from '@/entities/network'
 import { buildPaymentUri } from '../lib/build-payment-uri'
 import { PaymentQR } from './PaymentQR'
@@ -19,10 +20,12 @@ interface QRModalProps {
   onOpenChange: (open: boolean) => void
   /** Full invoice data for EIP-681 URI generation */
   invoice: Invoice
-  /** Formatted display amount (e.g. "1,500.000042") */
+  /** Formatted clean display amount (e.g. "1,500.00") */
   amount: string
   /** Exact total in atomic units (for EIP-681 URI) */
   exactTotal: string
+  /** Formatted exact total with dust for footnote (e.g. "1,500.000042") */
+  magicDustAmount?: string | undefined
 }
 
 export function QRModal({
@@ -31,6 +34,7 @@ export function QRModal({
   invoice,
   amount,
   exactTotal,
+  magicDustAmount,
 }: QRModalProps) {
   const networkName = getNetworkName(invoice.networkId)
   const recipientAddress = invoice.from.walletAddress
@@ -72,14 +76,19 @@ export function QRModal({
           </div>
 
           {/* Amount + Currency with token icon */}
-          <div className="flex items-center justify-center gap-2">
-            <TokenIcon symbol={invoice.currency} size={24} />
-            <span className="font-mono text-2xl font-bold text-white">
-              {amount}
-            </span>
-            <span className="text-lg font-medium text-zinc-400">
-              {invoice.currency}
-            </span>
+          <div className="flex flex-col items-center gap-1">
+            <div className="flex items-center justify-center gap-2">
+              <TokenIcon symbol={invoice.currency} size={24} />
+              <span className="font-mono text-2xl font-bold text-white">
+                {amount}
+              </span>
+              <span className="text-lg font-medium text-zinc-400">
+                {invoice.currency}
+              </span>
+            </div>
+            {magicDustAmount && (
+              <MagicDustBadge label="Exact amount" amount={magicDustAmount} currency={invoice.currency} variant="dark" />
+            )}
           </div>
 
           {/* Network badge */}

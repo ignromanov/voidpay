@@ -13,6 +13,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { CREATOR_STORE_KEY } from '@/shared/config'
+import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
 import {
   createDraftSlice,
   createTemplateSlice,
@@ -125,10 +126,6 @@ const migrateInternal = (persistedState: any, version: number): Partial<CreatorS
           rate: item.rate,
         })
       )
-
-      // Get current Unix timestamp in seconds
-      const nowUnix = () => Math.floor(Date.now() / 1000)
-      const daysFromNowUnix = (days: number) => nowUnix() + days * 24 * 60 * 60
 
       // Convert dates from ISO to Unix timestamps
       const issuedAt = oldDraft.issueDate

@@ -1,1 +1,2 @@
-export * from './payer-store'
+// Model reserved for future payer-specific data
+export {}

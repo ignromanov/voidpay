@@ -12,7 +12,9 @@ import {
   type DraftState,
   type LineItem,
 } from '@/entities/invoice'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
+import { nowISO } from '@/shared/lib/date-time'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
 import {
   calculateTotalsBigInt,
@@ -72,6 +74,14 @@ export function addToHistory(invoice: Invoice, invoiceUrl: string): void {
     invoice,
     invoiceUrl,
   })
+
+  const { addInvoice } = useTrackedInvoiceStore.getState()
+  addInvoice({
+    invoiceId: invoice.invoiceId,
+    invoiceUrl,
+    source: 'created',
+    viewedAt: nowISO(),
+  })
 }
 
 /**
@@ -101,7 +111,8 @@ export function buildInvoice(draft: DraftState, lineItems: LineItem[]): Invoice 
   let magicDust: string | undefined
 
   if (magicDustEnabled) {
-    const dust = generateMagicDust()
+    // Reuse dust from draft (set by MagicDustToggle), or generate as fallback
+    const dust = data.magicDust ? Number(data.magicDust) : generateMagicDust()
     magicDust = dust.toString()
     total = addMagicDust(total, dust)
   }

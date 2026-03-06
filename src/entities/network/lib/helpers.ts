@@ -4,7 +4,8 @@
  * Utility functions for working with blockchain networks.
  */
 
-import { BLOCK_EXPLORERS, NETWORK_CONFIG } from '../config/ui-config'
+import { BLOCK_EXPLORERS } from '../config/ui-config'
+import { NETWORKS, type NetworkId } from '../config/networks'
 
 /**
  * Get the block explorer URL for a transaction hash on a specific network
@@ -21,10 +22,12 @@ export function getExplorerUrl(networkId: number, hash: string): string {
 
 /**
  * Get the human-readable network name by chain ID
+ * Uses NETWORKS map for O(1) lookup across all 8 networks (mainnet + testnet)
  *
  * @param networkId - Chain ID of the network
  * @returns Network name (e.g., 'Ethereum', 'Arbitrum') or chain ID as string if unknown
  */
 export function getNetworkName(networkId: number): string {
-  return NETWORK_CONFIG.find((n) => n.chainId === networkId)?.name ?? networkId.toString()
+  const network = NETWORKS[networkId as NetworkId]
+  return network?.name ?? networkId.toString()
 }

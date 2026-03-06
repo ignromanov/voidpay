@@ -16,7 +16,8 @@ const mockTransactions = new Map<string, MockTransaction>()
  */
 export async function handleMockRequest(
   request: JsonRpcRequest,
-  mode: MockMode = 'success'
+  mode: MockMode = 'success',
+  chainId: number = 1
 ): Promise<JsonRpcResponse> {
   // Simulate network delay based on mode
   const delay = getDelayForMode(mode)
@@ -48,20 +49,38 @@ export async function handleMockRequest(
     case 'eth_getGasPrice':
       return mockGetGasPrice(request)
 
+    case 'eth_maxPriorityFeePerGas':
+      return mockMaxPriorityFeePerGas(request)
+
+    case 'eth_feeHistory':
+      return mockFeeHistory(request)
+
     case 'eth_estimateGas':
       return mockEstimateGas(request)
+
+    case 'eth_getTransactionCount':
+      return mockGetTransactionCount(request)
 
     case 'eth_sendRawTransaction':
       return mockSendRawTransaction(request)
 
+    case 'eth_getTransactionByHash':
+      return mockGetTransactionByHash(request)
+
     case 'eth_getTransactionReceipt':
       return mockGetTransactionReceipt(request)
 
+    case 'eth_getBlockByNumber':
+      return mockGetBlockByNumber(request)
+
+    case 'eth_getCode':
+      return mockGetCode(request)
+
     case 'eth_chainId':
-      return mockChainId(request)
+      return mockChainId(request, chainId)
 
     case 'net_version':
-      return mockNetVersion(request)
+      return mockNetVersion(request, chainId)
 
     default:
       return {
@@ -226,12 +245,113 @@ function mockGetTransactionReceipt(request: JsonRpcRequest): JsonRpcResponse {
 }
 
 /**
- * Mock eth_chainId
+ * Mock eth_maxPriorityFeePerGas (EIP-1559)
  */
-function mockChainId(request: JsonRpcRequest): JsonRpcResponse {
+function mockMaxPriorityFeePerGas(request: JsonRpcRequest): JsonRpcResponse {
   return {
     jsonrpc: '2.0',
-    result: '0x1', // Ethereum Mainnet
+    result: '0x59682f00', // 1.5 gwei
+    id: request.id,
+  }
+}
+
+/**
+ * Mock eth_feeHistory (EIP-1559)
+ */
+function mockFeeHistory(request: JsonRpcRequest): JsonRpcResponse {
+  return {
+    jsonrpc: '2.0',
+    result: {
+      oldestBlock: '0x1',
+      baseFeePerGas: ['0x3b9aca00', '0x3b9aca00'],
+      gasUsedRatio: [0.5],
+      reward: [['0x59682f00']],
+    },
+    id: request.id,
+  }
+}
+
+/**
+ * Mock eth_getTransactionCount
+ */
+function mockGetTransactionCount(request: JsonRpcRequest): JsonRpcResponse {
+  return {
+    jsonrpc: '2.0',
+    result: '0x1', // nonce = 1
+    id: request.id,
+  }
+}
+
+/**
+ * Mock eth_getTransactionByHash
+ */
+function mockGetTransactionByHash(request: JsonRpcRequest): JsonRpcResponse {
+  const txHash = request.params[0] as string
+  const tx = mockTransactions.get(txHash)
+
+  if (!tx) {
+    return {
+      jsonrpc: '2.0',
+      result: null,
+      id: request.id,
+    }
+  }
+
+  return {
+    jsonrpc: '2.0',
+    result: {
+      hash: tx.hash,
+      blockNumber: tx.status === 'pending' ? null : '0x' + Math.floor(Date.now() / 1000).toString(16),
+      blockHash: tx.status === 'pending' ? null : generateFakeTxHash(),
+      from: tx.from,
+      to: tx.to,
+      value: tx.value,
+      gas: '0x5208',
+      gasPrice: '0x3b9aca00',
+      input: '0x',
+      nonce: '0x1',
+      transactionIndex: tx.status === 'pending' ? null : '0x0',
+    },
+    id: request.id,
+  }
+}
+
+/**
+ * Mock eth_getBlockByNumber
+ */
+function mockGetBlockByNumber(request: JsonRpcRequest): JsonRpcResponse {
+  const timestamp = Math.floor(Date.now() / 1000)
+  return {
+    jsonrpc: '2.0',
+    result: {
+      number: '0x' + timestamp.toString(16),
+      hash: generateFakeTxHash(),
+      timestamp: '0x' + timestamp.toString(16),
+      transactions: [],
+      baseFeePerGas: '0x3b9aca00',
+    },
+    id: request.id,
+  }
+}
+
+/**
+ * Mock eth_getCode
+ */
+function mockGetCode(request: JsonRpcRequest): JsonRpcResponse {
+  return {
+    jsonrpc: '2.0',
+    result: '0x', // EOA (no code) — safe default
+    id: request.id,
+  }
+}
+
+/**
+ * Mock eth_chainId
+ */
+function mockChainId(request: JsonRpcRequest, chainId: number = 1): JsonRpcResponse {
+  return {
+    jsonrpc: '2.0',
+    result: `0x${chainId.toString(16)}`,
     id: request.id,
   }
 }
@@ -239,10 +359,10 @@ function mockChainId(request: JsonRpcRequest): JsonRpcResponse {
 /**
  * Mock net_version
  */
-function mockNetVersion(request: JsonRpcRequest): JsonRpcResponse {
+function mockNetVersion(request: JsonRpcRequest, chainId: number = 1): JsonRpcResponse {
   return {
     jsonrpc: '2.0',
-    result: '1', // Ethereum Mainnet
+    result: chainId.toString(),
     id: request.id,
   }
 }
@@ -265,17 +385,18 @@ function generateFakeTxHash(): string {
  * Check if mock mode should be enabled
  */
 export function shouldUseMock(url: URL): boolean {
-  // Enable mock if:
-  // 1. Running on localhost
-  // 2. debug=1 query param is present
-  // 3. NODE_ENV is development
+  // Explicit mock mode via ?mock= query param always wins
+  if (url.searchParams.has('mock')) return true
 
+  // If real API keys are configured, use real providers (even in dev)
+  const hasApiKeys = !!process.env.ALCHEMY_API_KEY || !!process.env.INFURA_API_KEY
+  if (hasApiKeys) return false
+
+  // Fallback: mock in dev when no API keys available
   const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1'
-  const hasDebugParam =
-    url.searchParams.get('debug') === '1' || url.searchParams.get('debug') === 'true'
   const isDevelopment = process.env.NODE_ENV === 'development'
 
-  return isLocalhost || hasDebugParam || isDevelopment
+  return isLocalhost || isDevelopment
 }
 
 /**

@@ -18,7 +18,7 @@ const buttonVariants = cva(
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
         glow: 'bg-violet-600 text-white shadow-[0_0_20px_-5px_rgba(124,58,237,0.6)] border border-violet-400/50 hover:bg-violet-500 hover:shadow-[0_0_30px_-5px_rgba(124,58,237,0.8)] hover:-translate-y-0.5 active:scale-[0.96]',
-        void: 'relative bg-black text-white border border-electric-violet/30 shadow-lg shadow-electric-violet/20 overflow-hidden group disabled:grayscale',
+        void: 'relative bg-black text-white border border-electric-violet/30 shadow-[0_0_20px_-5px_rgba(124,58,237,0.3),0_0_60px_-15px_rgba(124,58,237,0.15)] overflow-hidden group hover:border-electric-violet/50 hover:shadow-[0_0_30px_-5px_rgba(124,58,237,0.5),0_0_80px_-15px_rgba(124,58,237,0.25)] disabled:grayscale',
       },
       size: {
         default: 'h-9 px-4 py-2',
@@ -40,15 +40,17 @@ export interface ButtonProps
   asChild?: boolean
   /** Loading state for void variant (triggers maximum spin velocity) */
   isLoading?: boolean
+  /** Skip built-in VoidButtonOverlay + z-10 wrapper (consumer provides own overlay) */
+  noOverlay?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, isLoading, disabled, children, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, isLoading, noOverlay, disabled, children, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button'
     const isVoidVariant = variant === 'void'
     const isButtonDisabled = disabled || isLoading
 
-    if (isVoidVariant) {
+    if (isVoidVariant && !noOverlay) {
       // When asChild is used (e.g., with Link), clone the child element with merged props
       // This avoids Slot's React.Children.only() error with multiple children
       if (asChild && React.isValidElement(children)) {

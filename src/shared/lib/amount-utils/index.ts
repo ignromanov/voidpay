@@ -38,12 +38,8 @@ export function parseAmount(humanAmount: string, decimals: number): string {
   try {
     const atomic = parseUnits(trimmed, decimals)
     return atomic.toString()
-  } catch (error) {
-    console.error('[parseAmount] Failed to parse amount:', {
-      humanAmount,
-      decimals,
-      error: error instanceof Error ? error.message : String(error),
-    })
+  } catch (e) {
+    console.warn('[parseAmount] Failed to parse amount:', { input: humanAmount, decimals, error: e instanceof Error ? e.message : String(e) })
     return '0'
   }
 }
@@ -106,7 +102,7 @@ export function formatAmount(
       tokenDecimals,
       error: error instanceof Error ? error.message : String(error),
     })
-    return '0.00'
+    return '—'
   }
 }
 
@@ -291,11 +287,8 @@ export function addMagicDust(total: string, magicDust: number): string {
     const dustBigInt = BigInt(magicDust)
     return (totalBigInt + dustBigInt).toString()
   } catch (error) {
-    console.error('[addMagicDust] Failed to add Magic Dust, returning total without dust:', {
-      total,
-      magicDust,
-      error: error instanceof Error ? error.message : String(error),
-    })
-    return total || '0'
+    throw new Error(
+      `[addMagicDust] Failed to convert total "${total}" to BigInt: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 }

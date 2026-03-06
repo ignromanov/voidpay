@@ -9,7 +9,8 @@ import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
 import { Heading } from '@/shared/ui/typography'
 import { NetworkSelect } from '@/features/wallet-connect'
-import { TokenSelect, type TokenInfo } from '@/features/invoice'
+import type { TokenInfo } from '@/entities/network'
+import { TokenSelect } from '@/features/invoice'
 
 import type { InvoiceFormValues } from '../../lib/use-invoice-form'
 
@@ -36,7 +37,7 @@ export function PaymentSection({ form }: PaymentSectionProps) {
       currency
         ? {
             symbol: currency,
-            address: tokenAddress ?? null,
+            address: (tokenAddress ?? null) as `0x${string}` | null,
             decimals: decimals || 18,
             name: currency,
             iconColor: 'bg-violet-500' as const,

@@ -1,15 +1,12 @@
 import type { Invoice, ConfirmationProgress } from '@/shared/lib/invoice-types'
+import type { InvoiceStatus, InvoiceSource } from '@/entities/invoice'
 import type { ReactNode } from 'react'
 
 /**
- * Visual status for the Payment Panel.
- * Derived from RichInvoiceStatus + txHashValidated:
- *   'pending'    — awaiting payment
- *   'paid'       — payment validated on-chain
- *   'confirming' — tx detected, waiting for block confirmations
- *   'overdue'    — invoice expired
+ * Re-export canonical status types with widget-level aliases.
  */
-export type PaymentPanelStatus = 'pending' | 'paid' | 'confirming' | 'overdue'
+export type PaymentPanelStatus = InvoiceStatus
+export type StatusInput = import('@/entities/invoice').InvoiceStatusInput
 
 // Re-export for consumers that import from this module
 export type { ConfirmationProgress } from '@/shared/lib/invoice-types'
@@ -22,6 +19,8 @@ export interface PaymentPanelProps {
   invoice: Invoice
   /** Computed status (parent determines overdue from dueAt) */
   status: PaymentPanelStatus
+  /** Invoice source: created by or received by user */
+  source?: InvoiceSource | undefined
   /** Transaction hash when paid */
   txHash?: string
   /** Block confirmation progress (future: P0.12.3) */

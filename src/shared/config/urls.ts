@@ -23,6 +23,7 @@ export const APP_URLS = {
  */
 export const SOCIAL_URLS = {
   github: 'https://github.com/ignromanov/voidpay',
+  githubIssues: 'https://github.com/ignromanov/voidpay/issues/new',
   githubOrg: 'https://github.com/voidpay',
   twitter: 'https://twitter.com/voidpay',
 } as const
@@ -32,5 +33,20 @@ export const SOCIAL_URLS = {
  * Supports environment variable override for staging/preview deployments
  */
 export function getAppBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL ?? APP_URLS.base
+  // Explicit override (production config)
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL
+  }
+
+  // Client-side: use current origin (localhost, Vercel preview, production)
+  if (typeof window !== 'undefined') {
+    return window.location.origin
+  }
+
+  // Server-side: Vercel auto-sets this for every deployment
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  }
+
+  return APP_URLS.base
 }
