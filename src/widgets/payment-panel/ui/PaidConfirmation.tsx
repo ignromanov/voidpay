@@ -1,8 +1,11 @@
-import { formatAmount } from '@/shared/lib/amount-utils'
-import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
+import { useEffect, useRef } from 'react'
 
-import { CheckIcon, ShieldCheckIcon } from '@/shared/ui/icons'
+import { formatAmount } from '@/shared/lib/amount-utils'
+import { toast } from '@/shared/lib/toast'
+import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
+import { CheckIcon, CheckCheckIcon, ShieldCheckIcon } from '@/shared/ui/icons'
 import { motion } from '@/shared/ui/motion'
+
 import type { ConfirmationProgress } from '../types'
 
 interface PaidConfirmationProps {
@@ -12,6 +15,8 @@ interface PaidConfirmationProps {
   decimals: number
   currency: string
   confirmations?: ConfirmationProgress | undefined
+  finalized?: boolean
+  reorgDetected?: boolean
 }
 
 export function PaidConfirmation({
@@ -21,6 +26,8 @@ export function PaidConfirmation({
   decimals,
   currency,
   confirmations,
+  finalized = false,
+  reorgDetected = false,
 }: PaidConfirmationProps) {
   const formattedSubtotal = formatAmount(subtotal, decimals)
   const hasMagicDust = magicDust !== '0'
@@ -30,6 +37,15 @@ export function PaidConfirmation({
   const progressPercent = confirmations
     ? Math.min((confirmations.current / confirmations.required) * 100, 100)
     : 0
+
+  const reorgToastFired = useRef(false)
+
+  useEffect(() => {
+    if (reorgDetected && !reorgToastFired.current) {
+      reorgToastFired.current = true
+      toast.info('Chain reorg detected — payment may need re-verification')
+    }
+  }, [reorgDetected])
 
   return (
     <div className="space-y-4">
@@ -41,7 +57,11 @@ export function PaidConfirmation({
           transition={{ type: 'spring' }}
           className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] text-emerald-500"
         >
-          <CheckIcon size={24} strokeWidth={3} />
+          {finalized ? (
+            <CheckCheckIcon size={24} strokeWidth={3} />
+          ) : (
+            <CheckIcon size={24} strokeWidth={3} />
+          )}
         </motion.div>
         <div>
           <h3 className="text-lg font-semibold text-emerald-400">

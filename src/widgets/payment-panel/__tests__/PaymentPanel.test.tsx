@@ -385,6 +385,309 @@ describe('PaymentPanel', () => {
     })
   })
 
+  describe("I've paid button (T018)", () => {
+    it("renders I've paid button when onIvePaid prop is provided for pending status", () => {
+      render(
+        <PaymentPanel invoice={mockInvoice} status="pending" onIvePaid={vi.fn()} />
+      )
+      expect(screen.getByTestId('ive-paid-button')).toBeInTheDocument()
+      expect(screen.getByText("I've paid")).toBeInTheDocument()
+    })
+
+    it("does not render I've paid button when onIvePaid is not provided", () => {
+      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      expect(screen.queryByTestId('ive-paid-button')).toBeNull()
+    })
+
+    it("does not render I've paid button for paid status", () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="paid"
+          txHash="0xabc123"
+          onIvePaid={vi.fn()}
+        />
+      )
+      expect(screen.queryByTestId('ive-paid-button')).toBeNull()
+    })
+
+    it("calls onIvePaid when button is clicked", async () => {
+      const onIvePaid = vi.fn()
+      render(
+        <PaymentPanel invoice={mockInvoice} status="pending" onIvePaid={onIvePaid} />
+      )
+      await userEvent.click(screen.getByTestId('ive-paid-button'))
+      expect(onIvePaid).toHaveBeenCalledOnce()
+    })
+
+    it('shows PollingStatus when pollingMode is aggressive', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onIvePaid={vi.fn()}
+          pollingMode="aggressive"
+        />
+      )
+      expect(screen.getByText('Searching for your payment...')).toBeInTheDocument()
+    })
+
+    it('does not show PollingStatus when pollingMode is idle', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onIvePaid={vi.fn()}
+          pollingMode="idle"
+        />
+      )
+      expect(screen.queryByText('Searching for your payment...')).toBeNull()
+      expect(screen.queryByText('Checking...')).toBeNull()
+    })
+  })
+
+  describe('Check payment button (T019)', () => {
+    it('renders Check payment button when onCheckPayment prop is provided', () => {
+      render(
+        <PaymentPanel invoice={mockInvoice} status="pending" onCheckPayment={vi.fn()} />
+      )
+      expect(screen.getByTestId('check-payment-button')).toBeInTheDocument()
+      expect(screen.getByText('Check payment')).toBeInTheDocument()
+    })
+
+    it('does not render Check payment button when onCheckPayment is not provided', () => {
+      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      expect(screen.queryByTestId('check-payment-button')).toBeNull()
+    })
+
+    it('calls onCheckPayment when button is clicked', async () => {
+      const onCheckPayment = vi.fn()
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onCheckPayment={onCheckPayment}
+        />
+      )
+      await userEvent.click(screen.getByTestId('check-payment-button'))
+      expect(onCheckPayment).toHaveBeenCalledOnce()
+    })
+
+    it('is disabled and shows countdown when cooldownUntil is in the future', () => {
+      const cooldownUntil = Date.now() + 25_000
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onCheckPayment={vi.fn()}
+          cooldownUntil={cooldownUntil}
+        />
+      )
+      const btn = screen.getByTestId('check-payment-button')
+      expect(btn).toBeDisabled()
+      expect(btn.textContent).toMatch(/Check payment \(\d+s\)/)
+    })
+
+    it('is enabled when cooldownUntil is in the past', () => {
+      const cooldownUntil = Date.now() - 1000
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onCheckPayment={vi.fn()}
+          cooldownUntil={cooldownUntil}
+        />
+      )
+      const btn = screen.getByTestId('check-payment-button')
+      expect(btn).not.toBeDisabled()
+      expect(btn.textContent).toBe('Check payment')
+    })
+
+    it('does not render Check payment button for paid status', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="paid"
+          txHash="0xabc123"
+          onCheckPayment={vi.fn()}
+        />
+      )
+      expect(screen.queryByTestId('check-payment-button')).toBeNull()
+    })
+  })
+
+  describe('Watch for payment toggle (T020)', () => {
+    it('renders Watch for payment button when onStartWatching is provided', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onStartWatching={vi.fn()}
+        />
+      )
+      expect(screen.getByTestId('start-watching-button')).toBeInTheDocument()
+      expect(screen.getByText('Watch for payment')).toBeInTheDocument()
+    })
+
+    it('calls onStartWatching when Watch for payment is clicked', async () => {
+      const onStartWatching = vi.fn()
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onStartWatching={onStartWatching}
+        />
+      )
+      await userEvent.click(screen.getByTestId('start-watching-button'))
+      expect(onStartWatching).toHaveBeenCalledOnce()
+    })
+
+    it('shows Stop watching button and PollingStatus when pollingMode is watching', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onStartWatching={vi.fn()}
+          onStopWatching={vi.fn()}
+          pollingMode="watching"
+        />
+      )
+      expect(screen.getByTestId('stop-watching-button')).toBeInTheDocument()
+      expect(screen.getByText('Stop watching')).toBeInTheDocument()
+      expect(screen.getByText('Watching for payment...')).toBeInTheDocument()
+    })
+
+    it('calls onStopWatching when Stop watching is clicked', async () => {
+      const onStopWatching = vi.fn()
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onStartWatching={vi.fn()}
+          onStopWatching={onStopWatching}
+          pollingMode="watching"
+        />
+      )
+      await userEvent.click(screen.getByTestId('stop-watching-button'))
+      expect(onStopWatching).toHaveBeenCalledOnce()
+    })
+
+    it('does not render Watch button for paid status', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="paid"
+          txHash="0xabc123"
+          onStartWatching={vi.fn()}
+        />
+      )
+      expect(screen.queryByTestId('start-watching-button')).toBeNull()
+    })
+  })
+
+  describe('Verify by txHash (T021)', () => {
+    it('renders toggle when onVerifyTxHash is provided', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onVerifyTxHash={vi.fn()}
+        />
+      )
+      expect(screen.getByTestId('verify-txhash-toggle')).toBeInTheDocument()
+      expect(screen.getByText('Verify by transaction hash')).toBeInTheDocument()
+    })
+
+    it('does not render toggle when onVerifyTxHash is not provided', () => {
+      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      expect(screen.queryByTestId('verify-txhash-toggle')).toBeNull()
+    })
+
+    it('expands section on toggle click', async () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onVerifyTxHash={vi.fn()}
+        />
+      )
+      expect(screen.queryByTestId('verify-txhash-section')).toBeNull()
+      await userEvent.click(screen.getByTestId('verify-txhash-toggle'))
+      expect(screen.getByTestId('verify-txhash-section')).toBeInTheDocument()
+      expect(screen.getByTestId('txhash-input')).toBeInTheDocument()
+    })
+
+    it('collapses section on second toggle click', async () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onVerifyTxHash={vi.fn()}
+        />
+      )
+      const toggle = screen.getByTestId('verify-txhash-toggle')
+      await userEvent.click(toggle)
+      expect(screen.getByTestId('verify-txhash-section')).toBeInTheDocument()
+      await userEvent.click(toggle)
+      expect(screen.queryByTestId('verify-txhash-section')).toBeNull()
+    })
+
+    it('Verify button is disabled with invalid txHash input', async () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onVerifyTxHash={vi.fn()}
+        />
+      )
+      await userEvent.click(screen.getByTestId('verify-txhash-toggle'))
+      await userEvent.type(screen.getByTestId('txhash-input'), 'not-a-hash')
+      expect(screen.getByTestId('verify-txhash-button')).toBeDisabled()
+    })
+
+    it('Verify button is enabled with valid 0x + 64 hex chars', async () => {
+      const validHash = '0x' + 'a'.repeat(64)
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onVerifyTxHash={vi.fn()}
+        />
+      )
+      await userEvent.click(screen.getByTestId('verify-txhash-toggle'))
+      await userEvent.type(screen.getByTestId('txhash-input'), validHash)
+      expect(screen.getByTestId('verify-txhash-button')).not.toBeDisabled()
+    })
+
+    it('calls onVerifyTxHash with txHash when Verify is clicked', async () => {
+      const validHash = '0x' + 'b'.repeat(64)
+      const onVerifyTxHash = vi.fn()
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onVerifyTxHash={onVerifyTxHash}
+        />
+      )
+      await userEvent.click(screen.getByTestId('verify-txhash-toggle'))
+      await userEvent.type(screen.getByTestId('txhash-input'), validHash)
+      await userEvent.click(screen.getByTestId('verify-txhash-button'))
+      expect(onVerifyTxHash).toHaveBeenCalledWith({ txHash: validHash })
+    })
+
+    it('does not render for paid status', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="paid"
+          txHash="0xabc123"
+          onVerifyTxHash={vi.fn()}
+        />
+      )
+      expect(screen.queryByTestId('verify-txhash-toggle')).toBeNull()
+    })
+  })
+
   describe('accessibility', () => {
     it('error banner has role="alert"', () => {
       render(

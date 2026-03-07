@@ -9,6 +9,7 @@ import {
 } from '@/widgets/invoice-paper'
 import { PaymentPanel, DevStatusToggle, DevPaymentStepToggle, computeAmounts } from '@/widgets/payment-panel'
 import type { DevPaymentVisualStep, PaymentError } from '@/features/payment'
+import { usePaymentPolling } from '@/features/payment'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { ChevronDownIcon } from '@/shared/ui/icons'
@@ -44,6 +45,7 @@ const InvoicePreviewModal = dynamic(
  *
  * Orchestrates:
  * - usePayInvoice hook (decode, tracking, status)
+ * - usePaymentPolling hook (discovery polling, no wagmi needed)
  * - InvoicePaper preview with modal
  * - PaymentPanel with minimize/expand
  * - StatusBadge floating overlay
@@ -64,6 +66,19 @@ export function PayWorkspace() {
   const amounts = useMemo(() => invoice ? computeAmounts(invoice) : null, [invoice])
   const exactTotal = amounts?.exactTotal ?? '0'
   const subtotal = amounts?.subtotal ?? '0'
+
+  // Discovery polling — fetch-based, no wagmi dependency, safe to call here.
+  // Params default to empty/zero when invoice is not yet decoded.
+  const category: 'external' | 'erc20' = invoice?.tokenAddress ? 'erc20' : 'external'
+  const polling = usePaymentPolling({
+    invoiceId: invoice?.invoiceId ?? '',
+    toAddress: invoice?.from?.walletAddress ?? '',
+    chainId: networkId,
+    ...(invoice?.tokenAddress ? { contractAddress: invoice.tokenAddress } : {}),
+    category,
+    exactTotal: BigInt(exactTotal),
+    createdAt: 0,
+  })
 
   // Loading state
   if (isLoading) {
@@ -95,8 +110,6 @@ export function PayWorkspace() {
   }
 
   const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
-  // InvoicePaper uses discriminated union: status='paid' requires txHash.
-  // Only pass 'paid' in the branch where txHash is available (conditional rendering below).
   const invoiceStatus = panelStatus === 'overdue' ? 'overdue' as const : 'pending' as const
 
   return (
@@ -145,6 +158,9 @@ export function PayWorkspace() {
                     txHash={txHash}
                     source={source}
                     {...(confirmations ? { confirmations } : {})}
+                    pollingMode={polling.mode}
+                    onStartWatching={polling.startWatching}
+                    onStopWatching={polling.stop}
                   />
                 ) : (
                   <PaymentPanel
@@ -153,6 +169,12 @@ export function PayWorkspace() {
                     source={source}
                     {...(paymentError ? { error: paymentError } : storedError ? { error: storedError } : {})}
                     onDismissError={dismissError}
+                    pollingMode={polling.mode}
+                    onIvePaid={polling.startAggressivePolling}
+                    onCheckPayment={polling.startManualCheck}
+                    {...(polling.cooldownUntil !== undefined ? { cooldownUntil: polling.cooldownUntil } : {})}
+                    onStartWatching={polling.startWatching}
+                    onStopWatching={polling.stop}
                   >
                     <PayButton
                       invoice={invoice}

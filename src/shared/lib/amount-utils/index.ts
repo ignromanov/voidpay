@@ -73,7 +73,6 @@ export function formatAmount(
   tokenDecimals: number,
   options: FormatAmountOptions | number = {}
 ): string {
-  // Support legacy signature: formatAmount(amount, decimals, displayDecimals)
   const opts: FormatAmountOptions =
     typeof options === 'number' ? { displayDecimals: options } : options
 
@@ -86,16 +85,28 @@ export function formatAmount(
 
   try {
     const human = formatUnits(BigInt(atomicAmount), tokenDecimals)
-    const num = parseFloat(human)
 
-    // For very small amounts (like Magic Dust), show more precision
-    const effectiveDecimals = Math.max(displayDecimals, countSignificantDecimals(human))
+    // String-based formatting to preserve ALL significant digits
+    const [intPart = '0', fracPart = ''] = human.split('.')
 
-    return num.toLocaleString('en-US', {
-      minimumFractionDigits: displayDecimals,
-      maximumFractionDigits: Math.min(effectiveDecimals, tokenDecimals),
-      useGrouping,
-    })
+    // Count how many decimal places actually carry significant value
+    const significantDecimals = fracPart.length > 0
+      ? fracPart.split('').reduce((last, ch, i) => ch !== '0' ? i + 1 : last, 0)
+      : 0
+    const effectiveDecimals = Math.max(displayDecimals, significantDecimals)
+    const finalDecimals = Math.min(effectiveDecimals, tokenDecimals)
+
+    // Pad or trim fractional part to finalDecimals
+    const adjustedFrac = fracPart.padEnd(finalDecimals, '0').slice(0, finalDecimals)
+
+    // Add thousand separators to integer part
+    const formattedInt = useGrouping
+      ? intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      : intPart
+
+    return adjustedFrac.length > 0
+      ? `${formattedInt}.${adjustedFrac}`
+      : formattedInt
   } catch (error) {
     console.error('[formatAmount] Failed to format amount:', {
       atomicAmount,
@@ -104,25 +115,6 @@ export function formatAmount(
     })
     return '—'
   }
-}
-
-/**
- * Counts significant decimal places in a string
- * Used to preserve precision for small amounts like Magic Dust
- */
-function countSignificantDecimals(value: string): number {
-  const parts = value.split('.')
-  if (parts.length < 2 || !parts[1]) return 0
-
-  // Count non-zero decimal places
-  const decimalPart = parts[1]
-  let lastNonZero = 0
-  for (let i = 0; i < decimalPart.length; i++) {
-    if (decimalPart[i] !== '0') {
-      lastNonZero = i + 1
-    }
-  }
-  return lastNonZero
 }
 
 /**

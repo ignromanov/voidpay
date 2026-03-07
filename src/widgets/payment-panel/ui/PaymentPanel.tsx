@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { computeAmounts } from '../lib/compute-amounts'
 import { STATUS_CONFIG } from './status-config'
@@ -7,10 +7,20 @@ import { PaidConfirmation } from './PaidConfirmation'
 import { ExpiredState } from './ExpiredState'
 import { ActionSlot } from './ActionSlot'
 import { ErrorBanner } from './ErrorBanner'
-import { CheckCircleIcon, DownloadIcon, ExternalLinkIcon, FlagIcon, QrCodeIcon } from '@/shared/ui/icons'
+import { PollingStatus } from './PollingStatus'
+import {
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  DownloadIcon,
+  ExternalLinkIcon,
+  FlagIcon,
+  QrCodeIcon,
+} from '@/shared/ui/icons'
 import { getExplorerUrl } from '@/entities/network'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
 import { cn } from '@/shared/lib/utils'
 import type { PaymentPanelProps } from '../types'
 
@@ -32,14 +42,49 @@ export function PaymentPanel({
   onDismissError,
   source,
   children,
+  onIvePaid,
+  pollingMode,
+  onCheckPayment,
+  cooldownUntil,
+  onStartWatching,
+  onStopWatching,
+  onVerifyTxHash,
 }: PaymentPanelProps) {
   const [qrOpen, setQrOpen] = useState(false)
+  const [txHashInput, setTxHashInput] = useState('')
+  const [txHashOpen, setTxHashOpen] = useState(false)
+  const [cooldownSeconds, setCooldownSeconds] = useState(0)
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    if (!cooldownUntil) {
+      setCooldownSeconds(0)
+      return
+    }
+    const update = () => {
+      const remaining = Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000))
+      setCooldownSeconds(remaining)
+      if (remaining === 0 && cooldownRef.current) {
+        clearInterval(cooldownRef.current)
+        cooldownRef.current = null
+      }
+    }
+    update()
+    cooldownRef.current = setInterval(update, 500)
+    return () => {
+      if (cooldownRef.current) clearInterval(cooldownRef.current)
+    }
+  }, [cooldownUntil])
+
   const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending
   const amounts = useMemo(() => computeAmounts(invoice), [invoice])
   const isPaid = status === 'paid' || status === 'confirming'
   const isExpired = status === 'overdue'
   const isPending = !isPaid && !isExpired
   const showPulse = status === 'confirming'
+
+  const isWatching = pollingMode === 'watching'
+  const txHashValid = /^0x[0-9a-fA-F]{64}$/.test(txHashInput)
 
   return (
     <div
@@ -77,6 +122,109 @@ export function PaymentPanel({
               currency={invoice.currency}
             />
             <ActionSlot>{children}</ActionSlot>
+
+            {/* US4: "I've paid" button + polling status */}
+            {onIvePaid && (
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-zinc-300 border-zinc-700 hover:border-violet-500/50 hover:text-white"
+                  onClick={onIvePaid}
+                  data-testid="ive-paid-button"
+                >
+                  I&apos;ve paid
+                </Button>
+                {pollingMode && pollingMode !== 'idle' && (
+                  <PollingStatus mode={pollingMode} />
+                )}
+              </div>
+            )}
+
+            {/* US6: "Check payment" button with cooldown */}
+            {onCheckPayment && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-zinc-400 hover:text-white"
+                onClick={onCheckPayment}
+                disabled={cooldownSeconds > 0}
+                data-testid="check-payment-button"
+              >
+                {cooldownSeconds > 0
+                  ? `Check payment (${cooldownSeconds}s)`
+                  : 'Check payment'}
+              </Button>
+            )}
+
+            {/* US8: "Watch for payment" toggle (creator side) */}
+            {(onStartWatching || onStopWatching) && (
+              <div className="space-y-2">
+                {isWatching ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-violet-400 hover:text-white"
+                    onClick={onStopWatching}
+                    data-testid="stop-watching-button"
+                  >
+                    Stop watching
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-zinc-400 hover:text-violet-300"
+                    onClick={onStartWatching}
+                    data-testid="start-watching-button"
+                  >
+                    Watch for payment
+                  </Button>
+                )}
+                {isWatching && <PollingStatus mode="watching" />}
+              </div>
+            )}
+
+            {/* US9: "Verify by txHash" expandable section */}
+            {onVerifyTxHash && (
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                  onClick={() => setTxHashOpen(v => !v)}
+                  data-testid="verify-txhash-toggle"
+                  aria-expanded={txHashOpen}
+                >
+                  {txHashOpen ? (
+                    <ChevronUpIcon size={12} />
+                  ) : (
+                    <ChevronDownIcon size={12} />
+                  )}
+                  Verify by transaction hash
+                </button>
+                {txHashOpen && (
+                  <div className="space-y-2" data-testid="verify-txhash-section">
+                    <Input
+                      placeholder="0x..."
+                      value={txHashInput}
+                      onChange={e => setTxHashInput(e.target.value)}
+                      className="font-mono text-xs bg-zinc-900 border-zinc-700 text-zinc-200"
+                      data-testid="txhash-input"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-zinc-700 text-zinc-300 hover:text-white disabled:opacity-40"
+                      disabled={!txHashValid}
+                      onClick={() => onVerifyTxHash({ txHash: txHashInput })}
+                      data-testid="verify-txhash-button"
+                    >
+                      Verify
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
 

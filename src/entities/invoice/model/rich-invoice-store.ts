@@ -26,6 +26,8 @@ export interface TrackedInvoice {
   txHash?: `0x${string}`
   /** Whether txHash has been validated on-chain */
   txHashValidated?: boolean
+  /** Whether payment has been fully finalized (deep confirmation) */
+  finalized?: boolean
   /** Block confirmation progress (during polling) */
   confirmations?: ConfirmationProgress
   /** Last payment error message */
@@ -49,6 +51,7 @@ interface TrackedInvoiceStore {
   addInvoice: (invoice: Omit<TrackedInvoice, 'createdAt'>) => void
   setTxHash: (invoiceId: string, txHash: `0x${string}`, validated?: boolean) => void
   setValidated: (invoiceId: string, validated: boolean) => void
+  setFinalized: (invoiceId: string) => void
   setConfirmations: (invoiceId: string, confirmations?: ConfirmationProgress) => void
   setError: (invoiceId: string, error: string | null) => void
   getInvoice: (invoiceId: string) => TrackedInvoice | undefined
@@ -70,8 +73,18 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
           const existing = state.invoices.find(
             (inv) => inv.invoiceId === invoice.invoiceId
           )
+          // W3-013: reset all payment-critical fields on merge to prevent stale state
+          const safeDefaults = {
+            txHash: undefined,
+            txHashValidated: undefined,
+            paidAt: undefined,
+            finalized: undefined,
+            confirmations: undefined,
+            error: undefined,
+          }
           const merged = {
             ...existing,
+            ...safeDefaults,
             ...invoice,
             createdAt: existing?.createdAt ?? new Date().toISOString(),
           } as TrackedInvoice
@@ -83,6 +96,9 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
       },
 
       setTxHash: (invoiceId, txHash, validated = false) => {
+        const TX_HASH_REGEX = /^0x[a-fA-F0-9]{64}$/
+        if (!TX_HASH_REGEX.test(txHash)) return
+
         const exists = get().invoices.some(inv => inv.invoiceId === invoiceId)
         if (!exists) {
           console.warn('[TrackedInvoiceStore] setTxHash called for unknown invoice:', { invoiceId, txHash })
@@ -102,10 +118,10 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
       },
 
       setValidated: (invoiceId, validated) => {
-        const exists = get().invoices.some(inv => inv.invoiceId === invoiceId)
-        if (!exists) {
-          console.warn('[TrackedInvoiceStore] setValidated called for unknown invoice:', { invoiceId, validated })
-        }
+        // W3-014: guard against missing txHash
+        const invoice = get().invoices.find(inv => inv.invoiceId === invoiceId)
+        if (!invoice?.txHash) return
+
         set((state) => ({
           invoices: state.invoices.map((inv) =>
             inv.invoiceId === invoiceId
@@ -114,6 +130,18 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
                   txHashValidated: validated,
                   ...(validated ? { paidAt: new Date().toISOString() } : {}),
                 }
+              : inv
+          ),
+        }))
+      },
+
+      setFinalized: (invoiceId) => {
+        const invoice = get().invoices.find(inv => inv.invoiceId === invoiceId)
+        if (!invoice?.txHashValidated) return
+        set((state) => ({
+          invoices: state.invoices.map((inv) =>
+            inv.invoiceId === invoiceId
+              ? { ...inv, finalized: true }
               : inv
           ),
         }))
@@ -162,7 +190,7 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
           invoices: state.invoices.map((inv) => {
             if (inv.invoiceId !== invoiceId) return inv
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { txHash, txHashValidated, paidAt, confirmations, ...rest } = inv
+            const { txHash, txHashValidated, paidAt, confirmations, finalized, ...rest } = inv
             return rest
           }),
         }))
