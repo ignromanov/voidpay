@@ -50,4 +50,8 @@ export interface PaymentPanelProps {
   // US9: "Verify by txHash" escape hatch
   /** Called when payer submits a txHash for manual verification */
   onVerifyTxHash?: (args: { txHash: string }) => void
+  /** Whether the transaction has been finalized on-chain */
+  finalized?: boolean
+  /** Whether a chain reorg was detected */
+  reorgDetected?: boolean
 }

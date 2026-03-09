@@ -21,6 +21,7 @@ describe('PaidConfirmation', () => {
   const defaultProps = {
     subtotal: '1500000000',
     magicDust: '0',
+    exactTotal: '1500000000',
     decimals: 6,
     currency: 'USDC',
   }
@@ -71,6 +72,17 @@ describe('PaidConfirmation', () => {
   it('hides MagicDustBadge when magicDust is zero', () => {
     render(<PaidConfirmation {...defaultProps} />)
     expect(screen.queryByText(/Sent:/)).toBeNull()
+  })
+
+  it('removes animate-pulse when confirmation progress reaches 100%', () => {
+    const { container } = render(
+      <PaidConfirmation
+        {...defaultProps}
+        confirmations={{ current: 15, required: 15 }}
+      />
+    )
+    const shieldContainer = container.querySelector('.bg-blue-500\\/10.rounded-full')
+    expect(shieldContainer?.className).not.toContain('animate-pulse')
   })
 
   describe('finalized prop', () => {

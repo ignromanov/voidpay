@@ -11,6 +11,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
+import { parseInvoiceHash } from '@/features/invoice-codec'
 import { matchTransfer } from '../lib/match-transfer'
 
 // ---------------------------------------------------------------------------
@@ -94,20 +95,39 @@ export function useBatchCheck(): UseBatchCheckResult {
         if (controller.signal.aborted) break
 
         try {
-          const url = new URL('/api/transfers', window.location.origin)
-          const response = await fetch(url.toString(), {
+          // Extract hash fragment from stored URL
+          if (!invoice.invoiceUrl) continue
+          const hashIndex = invoice.invoiceUrl.indexOf('#')
+          if (hashIndex < 0) continue
+          const hashFragment = invoice.invoiceUrl.substring(hashIndex + 1)
+
+          // Decode invoice to get transfer params
+          const decoded = parseInvoiceHash(hashFragment)
+          if (!decoded.success) continue
+
+          const inv = decoded.data
+          const toAddress = inv.from?.walletAddress
+          if (!toAddress) continue
+
+          const category: 'external' | 'erc20' = inv.tokenAddress ? 'erc20' : 'external'
+          const exactTotal = BigInt(inv.total ?? '0')
+
+          const response = await fetch('/api/transfers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              invoiceId: invoice.invoiceId,
-              invoiceUrl: invoice.invoiceUrl,
+              toAddress,
+              chainId: inv.networkId,
+              category,
+              fromBlock: '0x1',
+              ...(inv.tokenAddress ? { contractAddress: inv.tokenAddress } : {}),
             }),
             signal: controller.signal,
           })
 
           if (response.ok) {
             const data = (await response.json()) as { transfers: Parameters<typeof matchTransfer>[0] }
-            const match = matchTransfer(data.transfers, BigInt(0))
+            const match = matchTransfer(data.transfers, exactTotal)
             if (match) {
               setTxHash(invoice.invoiceId, match.hash, false)
             }

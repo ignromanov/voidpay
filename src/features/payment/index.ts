@@ -12,7 +12,7 @@ export { verifyNativeReceipt, verifyErc20Receipt } from './lib/verify-receipt'
 export type { VerificationResult } from './lib/verify-receipt'
 
 // Confirmation config
-export { CONFIRMATION_CONFIG, getSoftConfirmations, getFinalizationTimeout, getMaxBlockAge, getAvgBlockTimeMs, estimateBlockFromTimestamp } from './lib/confirmation-config'
+export { CONFIRMATION_CONFIG, getSoftConfirmations, getFinalizationTimeout, getMaxBlockAge, getAvgBlockTimeMs, estimateBlockFromTimestamp, estimateFromBlockHex } from './lib/confirmation-config'
 export type { SoftConfirmationConfig } from './lib/confirmation-config'
 
 // Transfer matching

@@ -17,7 +17,7 @@ export function useFinalizationTracker({
   txHash,
   networkId,
 }: UseFinalizationTrackerParams): void {
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: networkId })
   const setFinalized = useTrackedInvoiceStore((s) => s.setFinalized)
   const resetPaymentState = useTrackedInvoiceStore((s) => s.resetPaymentState)
   // Internal state triggers re-render so waitFor can detect mock calls via MutationObserver

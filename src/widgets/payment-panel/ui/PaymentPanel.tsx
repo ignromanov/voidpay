@@ -49,6 +49,8 @@ export function PaymentPanel({
   onStartWatching,
   onStopWatching,
   onVerifyTxHash,
+  finalized,
+  reorgDetected,
 }: PaymentPanelProps) {
   const [qrOpen, setQrOpen] = useState(false)
   const [txHashInput, setTxHashInput] = useState('')
@@ -90,16 +92,19 @@ export function PaymentPanel({
     <div
       data-testid="payment-panel"
       data-status={status}
-      className={`w-full rounded-xl bg-zinc-950/90 overflow-hidden relative shadow-[0_-10px_50px_-15px_rgba(0,0,0,0.8)] transition-all duration-500 ${
-        isPaid ? 'border border-emerald-500/30' : ''
-      }`}
+      className={cn(
+        'w-full rounded-xl bg-zinc-950/90 overflow-hidden relative shadow-[0_-10px_50px_-15px_rgba(0,0,0,0.8)] transition-all duration-500',
+        isPaid && 'border border-emerald-500/30'
+      )}
     >
       {/* Top gradient bar */}
       <div
         data-testid="gradient-bar"
-        className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${config.gradient} ${
-          showPulse ? 'animate-pulse' : ''
-        }`}
+        className={cn(
+          'absolute top-0 left-0 right-0 h-1 bg-gradient-to-r',
+          config.gradient,
+          showPulse && 'animate-pulse'
+        )}
       />
 
       {/* Content */}
@@ -135,9 +140,6 @@ export function PaymentPanel({
                 >
                   I&apos;ve paid
                 </Button>
-                {pollingMode && pollingMode !== 'idle' && (
-                  <PollingStatus mode={pollingMode} />
-                )}
               </div>
             )}
 
@@ -181,7 +183,6 @@ export function PaymentPanel({
                     Watch for payment
                   </Button>
                 )}
-                {isWatching && <PollingStatus mode="watching" />}
               </div>
             )}
 
@@ -190,7 +191,7 @@ export function PaymentPanel({
               <div className="space-y-2">
                 <button
                   type="button"
-                  className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 rounded"
                   onClick={() => setTxHashOpen(v => !v)}
                   data-testid="verify-txhash-toggle"
                   aria-expanded={txHashOpen}
@@ -225,6 +226,11 @@ export function PaymentPanel({
                 )}
               </div>
             )}
+
+            {/* Unified polling status — single render point */}
+            {pollingMode && pollingMode !== 'idle' && (
+              <PollingStatus mode={pollingMode} />
+            )}
           </>
         )}
 
@@ -237,6 +243,8 @@ export function PaymentPanel({
             decimals={invoice.decimals}
             currency={invoice.currency}
             confirmations={confirmations}
+            finalized={finalized}
+            reorgDetected={reorgDetected}
           />
         )}
 

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useWaitForTransactionReceipt, useBlockNumber, usePublicClient } from 'wagmi'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
-import { verifyNativeReceipt, verifyErc20Receipt } from './verify-receipt'
+import { verifyNativeReceipt, verifyErc20Receipt } from '../lib/verify-receipt'
+import type { VerificationResult } from '../lib/verify-receipt'
 import { getSoftConfirmations } from '../lib/confirmation-config'
 import type { Invoice } from '@/entities/invoice'
 import type { ConfirmationProgress } from '@/shared/lib/invoice-types'
@@ -20,20 +21,6 @@ export interface UsePaymentVerificationResult {
   error: string | undefined
 }
 
-// Local shape matching what verify functions return (real + mocked)
-interface VerifyResult {
-  matched?: boolean
-  verified?: boolean
-  actualAmount: string | bigint
-  error?: string
-}
-
-function isMatch(result: VerifyResult): boolean {
-  if (result.matched !== undefined) return result.matched
-  if (result.verified !== undefined) return result.verified
-  return false
-}
-
 export function usePaymentVerification({
   invoice,
   invoiceId,
@@ -44,12 +31,9 @@ export function usePaymentVerification({
   const tokenAddress = invoice.tokenAddress
   const recipientAddress = invoice.from?.walletAddress
 
-  const store = useTrackedInvoiceStore()
-  const { setValidated, setError: setStoreError, setConfirmations } = store as {
-    setValidated: (id: string, v: boolean) => void
-    setError: (id: string, e: string | null) => void
-    setConfirmations: (id: string, c?: ConfirmationProgress) => void
-  }
+  const setValidated = useTrackedInvoiceStore((s) => s.setValidated)
+  const setStoreError = useTrackedInvoiceStore((s) => s.setError)
+  const setConfirmations = useTrackedInvoiceStore((s) => s.setConfirmations)
 
   const publicClient = usePublicClient({ chainId })
 
@@ -71,9 +55,11 @@ export function usePaymentVerification({
     if (!isReceiptSuccess || !receipt) return
     if (nativeFetchAttempted.current) return
 
+    if (!publicClient) return
+
     nativeFetchAttempted.current = true
 
-    publicClient!.getTransaction({ hash: txHash }).then(
+    publicClient.getTransaction({ hash: txHash }).then(
       (tx) => setNativeTxValue(tx.value),
       (err) => setNativeFetchError(err instanceof Error ? err.message : 'Failed to fetch tx'),
     )
@@ -120,17 +106,15 @@ export function usePaymentVerification({
       }>,
     }
 
-    const result = verifyErc20Receipt(
+    const result: VerificationResult = verifyErc20Receipt(
       erc20Receipt,
       tokenAddress!,
       recipientAddress ?? '',
       BigInt(exactTotal),
-    ) as unknown as VerifyResult
+    )
 
-    if (!isMatch(result)) {
-      const errorMsg =
-        (result.error as string | undefined) ??
-        "Transaction amount doesn't match the expected total"
+    if (!result.verified) {
+      const errorMsg = result.error ?? "Transaction amount doesn't match the expected total"
       setStoreErrorRef.current(invoiceId, errorMsg)
       setVerifyError(errorMsg)
       return
@@ -155,15 +139,13 @@ export function usePaymentVerification({
     const requiredConfirmations = getSoftConfirmations(chainId)
     const receiptBlockNumber = receipt.blockNumber
 
-    const result = verifyNativeReceipt(
+    const result: VerificationResult = verifyNativeReceipt(
       { value: nativeTxValue! },
       BigInt(exactTotal),
-    ) as unknown as VerifyResult
+    )
 
-    if (!isMatch(result)) {
-      const errorMsg =
-        (result.error as string | undefined) ??
-        "Transaction amount doesn't match the expected total"
+    if (!result.verified) {
+      const errorMsg = result.error ?? "Transaction amount doesn't match the expected total"
       setStoreErrorRef.current(invoiceId, errorMsg)
       setVerifyError(errorMsg)
       return

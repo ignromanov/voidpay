@@ -36,7 +36,7 @@ vi.mock('wagmi', () => ({
 const mockVerifyNativeReceipt = vi.fn()
 const mockVerifyErc20Receipt = vi.fn()
 
-vi.mock('../verify-receipt', () => ({
+vi.mock('../../lib/verify-receipt', () => ({
   verifyNativeReceipt: (...args: unknown[]) => mockVerifyNativeReceipt(...args),
   verifyErc20Receipt: (...args: unknown[]) => mockVerifyErc20Receipt(...args),
 }))
@@ -96,8 +96,8 @@ describe('usePaymentVerification', () => {
     mockReceiptError = null
     mockCurrentBlockNumber = 100n
 
-    mockVerifyNativeReceipt.mockReturnValue({ matched: true, actualAmount: '1000000000000000000' })
-    mockVerifyErc20Receipt.mockReturnValue({ matched: true, actualAmount: '1000000' })
+    mockVerifyNativeReceipt.mockReturnValue({ verified: true, actualAmount: '1000000000000000000' })
+    mockVerifyErc20Receipt.mockReturnValue({ verified: true, actualAmount: '1000000' })
   })
 
   // Test case 1: Native tx verified → soft confirm counting → setValidated called after threshold
@@ -172,7 +172,7 @@ describe('usePaymentVerification', () => {
   // Test case 3: Amount mismatch → error state (no setValidated called)
   it('amount mismatch: calls setError and does NOT call setValidated', async () => {
     mockVerifyNativeReceipt.mockReturnValue({
-      matched: false,
+      verified: false,
       actualAmount: '900000000000000000', // wrong amount
     })
 

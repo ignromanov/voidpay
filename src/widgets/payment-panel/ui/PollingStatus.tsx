@@ -1,6 +1,6 @@
 import { cn } from '@/shared/lib/utils'
 import { Loader2Icon } from '@/shared/ui/icons'
-import type { PollingMode } from '@/features/payment/model/use-payment-polling'
+import type { PollingMode } from '@/features/payment'
 
 export interface PollingStatusProps {
   mode: PollingMode

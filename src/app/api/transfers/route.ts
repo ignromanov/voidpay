@@ -11,7 +11,7 @@
 import { isAddress, getAddress } from 'viem'
 import { Ratelimit } from '@upstash/ratelimit'
 import { kv } from '@vercel/kv'
-import { getMaxBlockAge } from '@/features/payment/lib/confirmation-config'
+import { getMaxBlockAge, getAvgBlockTimeMs } from '@/features/payment/lib/confirmation-config'
 
 export const runtime = 'edge'
 
@@ -19,13 +19,24 @@ export const runtime = 'edge'
 // Constants
 // ---------------------------------------------------------------------------
 
-const SUPPORTED_CHAIN_IDS = new Set([1, 42161, 10, 137])
+const SUPPORTED_CHAIN_IDS = new Set([
+  // Mainnet
+  1, 42161, 10, 137,
+  // Testnet
+  11155111, 421614, 11155420, 80002,
+])
 
 const CHAIN_NETWORK_SLUG: Record<number, string> = {
+  // Mainnet
   1:     'eth-mainnet',
   42161: 'arb-mainnet',
   10:    'opt-mainnet',
   137:   'polygon-mainnet',
+  // Testnet
+  11155111: 'eth-sepolia',
+  421614:   'arb-sepolia',
+  11155420: 'opt-sepolia',
+  80002:    'polygon-amoy',
 }
 
 /** W3-015: hardcoded server-side, never from client */
@@ -192,7 +203,7 @@ export async function POST(request: Request): Promise<Response> {
     return json({ error: 'Invalid chainId: must be an integer' }, 400)
   }
   if (!SUPPORTED_CHAIN_IDS.has(chainId)) {
-    return json({ error: `Unsupported chainId: ${chainId}. Supported: 1, 42161, 10, 137` }, 400)
+    return json({ error: `Unsupported chainId: ${chainId}` }, 400)
   }
 
   // Validate toAddress (W3-016) — accept any valid hex address regardless of checksum case
@@ -226,17 +237,36 @@ export async function POST(request: Request): Promise<Response> {
     return json({ error: 'Invalid fromBlock: must be greater than zero (DoS cap)' }, 400)
   }
 
-  // Additional DoS cap using getMaxBlockAge — estimate min allowed block
-  // If fromBlock is 0, already rejected above. For non-zero, compare against
-  // the max block age limit (the function exists to be called per spec).
+  // DoS cap: rough estimate of minimum allowed block
   const maxBlockAge = getMaxBlockAge(chainId)
-  // We use a rough estimate: if fromBlock is so small that even accounting for
-  // the oldest realistic current block (e.g. 1 for ETH) it exceeds maxBlockAge,
-  // reject it. Since fromBlock > 0 already passes the zero check, we only
-  // reject here if explicitly below a meaningful threshold.
-  // The primary DoS guard is the zero-block check above; maxBlockAge is referenced
-  // to satisfy the spec dependency.
-  void maxBlockAge
+  const avgBlockTimeMs = getAvgBlockTimeMs(chainId)
+
+  // Rough estimate of current block using reference anchors (conservative, for DoS protection only)
+  // Reference: known block heights at 2025-01-01T00:00:00Z
+  const REFERENCE_BLOCKS: Record<number, { block: number; timestampMs: number }> = {
+    // Mainnet
+    1:     { block: 21_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
+    42161: { block: 290_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
+    10:    { block: 130_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
+    137:   { block: 65_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
+    // Testnet
+    11155111: { block: 7_500_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
+    421614:   { block: 100_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
+    11155420: { block: 20_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
+    80002:    { block: 15_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
+  }
+
+  const nowMs = Date.now()
+  const ref = REFERENCE_BLOCKS[chainId]
+  if (ref) {
+    const elapsedMs = nowMs - ref.timestampMs
+    const estimatedCurrentBlock = ref.block + Math.floor(elapsedMs / avgBlockTimeMs)
+    const minAllowedBlock = estimatedCurrentBlock - maxBlockAge
+
+    if (fromBlockNum < minAllowedBlock) {
+      return json({ error: `Invalid fromBlock: too old (DoS cap: max ${maxBlockAge} blocks)` }, 400)
+    }
+  }
 
   // Validate category
   if (!category || (category !== 'external' && category !== 'erc20')) {
@@ -244,7 +274,10 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   // Build Alchemy request
-  const apiKey = process.env.ALCHEMY_API_KEY ?? ''
+  const apiKey = process.env.ALCHEMY_API_KEY
+  if (!apiKey) {
+    return json({ error: 'Service temporarily unavailable' }, 503)
+  }
   const networkSlug = CHAIN_NETWORK_SLUG[chainId]
   const alchemyUrl = `https://${networkSlug}.g.alchemy.com/v2/${apiKey}`
 
@@ -294,7 +327,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   if (alchemyJson.error) {
-    return json({ error: 'Upstream provider returned an error', detail: alchemyJson.error }, 502)
+    return json({ error: 'Upstream provider returned an error' }, 502)
   }
 
   const rawTransfers = alchemyJson.result?.transfers ?? []

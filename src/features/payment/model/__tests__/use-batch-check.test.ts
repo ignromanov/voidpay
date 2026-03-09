@@ -8,6 +8,15 @@ const mockFetch = vi.fn()
 global.fetch = mockFetch
 
 // ---------------------------------------------------------------------------
+// Mock parseInvoiceHash
+// ---------------------------------------------------------------------------
+const mockParseInvoiceHash = vi.fn()
+
+vi.mock('@/features/invoice-codec', () => ({
+  parseInvoiceHash: (...args: unknown[]) => mockParseInvoiceHash(...args),
+}))
+
+// ---------------------------------------------------------------------------
 // Mock matchTransfer
 // ---------------------------------------------------------------------------
 const mockMatchTransfer = vi.fn()
@@ -91,6 +100,19 @@ describe('useBatchCheck', () => {
     mockInvoices = []
     mockMatchTransfer.mockReturnValue(null)
     mockFetchOk({ transfers: [] })
+    mockParseInvoiceHash.mockReturnValue({
+      success: true,
+      data: {
+        version: 2,
+        invoiceId: 'test',
+        networkId: 1,
+        currency: 'ETH',
+        decimals: 18,
+        total: '1000000000000000000',
+        from: { walletAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045' },
+        items: [{ description: 'Test', quantity: 1, rate: '1000000000000000000' }],
+      },
+    })
   })
 
   afterEach(() => {
@@ -124,6 +146,17 @@ describe('useBatchCheck', () => {
     // First invoice checked immediately
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+
+    const [url, init] = mockFetch.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe('/api/transfers')
+    expect(init.method).toBe('POST')
+    const body = JSON.parse(init.body as string) as Record<string, unknown>
+    expect(body).toMatchObject({
+      toAddress: expect.any(String),
+      chainId: expect.any(Number),
+      category: expect.stringMatching(/^(external|erc20)$/),
+      fromBlock: '0x1',
     })
 
     // Advance past inter-invoice delay to trigger second check
@@ -260,6 +293,12 @@ describe('useBatchCheck', () => {
         false, // not yet validated
       )
     })
+
+    // matchTransfer called with exactTotal from decoded invoice
+    expect(mockMatchTransfer).toHaveBeenCalledWith(
+      expect.any(Array),
+      BigInt('1000000000000000000'), // from decoded invoice.total
+    )
 
     await waitFor(() => {
       expect(result.current.isChecking).toBe(false)

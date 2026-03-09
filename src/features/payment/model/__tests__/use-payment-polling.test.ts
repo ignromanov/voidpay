@@ -62,7 +62,7 @@ const BASE_PARAMS = {
   chainId: 1,
   category: 'external' as const,
   exactTotal: 1_000_000_000_000_000_000n,
-  createdAt: Math.floor(Date.now() / 1000) - 60, // 60 seconds ago
+  fromBlock: '0x1',
 }
 
 const ERC20_PARAMS = {
@@ -141,9 +141,22 @@ describe('usePaymentPolling', () => {
 
     expect(mockFetch).toHaveBeenCalledTimes(1)
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/transfers'),
-      expect.any(Object),
+      '/api/transfers',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: expect.any(String),
+        signal: expect.any(AbortSignal),
+      }),
     )
+    // Verify POST body shape
+    const callBody = JSON.parse(mockFetch.mock.calls[0][1].body as string)
+    expect(callBody).toEqual({
+      toAddress: BASE_PARAMS.toAddress,
+      chainId: BASE_PARAMS.chainId,
+      category: BASE_PARAMS.category,
+      fromBlock: BASE_PARAMS.fromBlock,
+    })
 
     // Advance time well past any interval — should NOT fire again
     await vi.advanceTimersByTimeAsync(AGGRESSIVE_INTERVAL_MS * 3)
@@ -544,10 +557,16 @@ describe('usePaymentPolling', () => {
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('contractAddress'),
-        expect.any(Object),
+        '/api/transfers',
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.any(String),
+        }),
       )
     })
+    // Verify contractAddress in POST body
+    const erc20Body = JSON.parse(mockFetch.mock.calls[0][1].body as string)
+    expect(erc20Body.contractAddress).toBe(ERC20_PARAMS.contractAddress)
 
     await waitFor(() => {
       expect(mockSetTxHash).toHaveBeenCalledWith(

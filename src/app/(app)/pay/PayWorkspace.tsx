@@ -9,7 +9,8 @@ import {
 } from '@/widgets/invoice-paper'
 import { PaymentPanel, DevStatusToggle, DevPaymentStepToggle, computeAmounts } from '@/widgets/payment-panel'
 import type { DevPaymentVisualStep, PaymentError } from '@/features/payment'
-import { usePaymentPolling } from '@/features/payment'
+import { usePaymentPolling, estimateFromBlockHex } from '@/features/payment'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { ChevronDownIcon } from '@/shared/ui/icons'
@@ -62,6 +63,13 @@ export function PayWorkspace() {
   const handlePaymentSuccess = useCallback(() => { setPaymentError(null) }, [])
   const handlePaymentError = useCallback((error: PaymentError) => { setPaymentError(error.message) }, [])
 
+  const finalized = useTrackedInvoiceStore((s) => {
+    if (!invoice) return false
+    const t = s.invoices.find((inv) => inv.invoiceId === invoice.invoiceId)
+    return t?.finalized ?? false
+  })
+
+
   const networkId = invoice?.networkId ?? 1
   const amounts = useMemo(() => invoice ? computeAmounts(invoice) : null, [invoice])
   const exactTotal = amounts?.exactTotal ?? '0'
@@ -70,6 +78,10 @@ export function PayWorkspace() {
   // Discovery polling — fetch-based, no wagmi dependency, safe to call here.
   // Params default to empty/zero when invoice is not yet decoded.
   const category: 'external' | 'erc20' = invoice?.tokenAddress ? 'erc20' : 'external'
+  const fromBlock = useMemo(
+    () => invoice ? estimateFromBlockHex(networkId, invoice.issuedAt) : '0x1',
+    [networkId, invoice],
+  )
   const polling = usePaymentPolling({
     invoiceId: invoice?.invoiceId ?? '',
     toAddress: invoice?.from?.walletAddress ?? '',
@@ -77,7 +89,7 @@ export function PayWorkspace() {
     ...(invoice?.tokenAddress ? { contractAddress: invoice.tokenAddress } : {}),
     category,
     exactTotal: BigInt(exactTotal),
-    createdAt: 0,
+    fromBlock,
   })
 
   // Loading state
@@ -158,6 +170,7 @@ export function PayWorkspace() {
                     txHash={txHash}
                     source={source}
                     {...(confirmations ? { confirmations } : {})}
+                    finalized={finalized}
                     pollingMode={polling.mode}
                     onStartWatching={polling.startWatching}
                     onStopWatching={polling.stop}

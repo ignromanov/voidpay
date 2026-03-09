@@ -25,7 +25,7 @@ vi.mock('wagmi', () => ({
 const mockVerifyNativeReceipt = vi.fn()
 const mockVerifyErc20Receipt = vi.fn()
 
-vi.mock('../verify-receipt', () => ({
+vi.mock('../../lib/verify-receipt', () => ({
   verifyNativeReceipt: (...args: unknown[]) => mockVerifyNativeReceipt(...args),
   verifyErc20Receipt: (...args: unknown[]) => mockVerifyErc20Receipt(...args),
 }))

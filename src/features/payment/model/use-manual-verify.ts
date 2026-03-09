@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { getAddress } from 'viem'
 import { usePublicClient } from 'wagmi'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
-import { verifyNativeReceipt, verifyErc20Receipt } from './verify-receipt'
+import { verifyNativeReceipt, verifyErc20Receipt } from '../lib/verify-receipt'
 
 export interface UseManualVerifyParams {
   invoiceId: string
@@ -40,12 +40,10 @@ export function useManualVerify({
 
   const publicClient = usePublicClient({ chainId: networkId })
 
-  const { invoices, setTxHash } = useTrackedInvoiceStore((s) => ({
-    invoices: (s as { invoices: Array<{ invoiceId: string; txHash?: string }> }).invoices,
-    setTxHash: (s as { setTxHash: (id: string, hash: string, validated: boolean) => void }).setTxHash,
-  })) as { invoices: Array<{ invoiceId: string; txHash?: string }>; setTxHash: (id: string, hash: string, validated: boolean) => void }
+  const invoices = useTrackedInvoiceStore((s) => s.invoices)
+  const setTxHash = useTrackedInvoiceStore((s) => s.setTxHash)
 
-  const verify = async (txHash: string): Promise<void> => {
+  const verify = useCallback(async (txHash: string): Promise<void> => {
     setError(undefined)
     setResult(undefined)
 
@@ -64,12 +62,17 @@ export function useManualVerify({
       return
     }
 
+    if (!publicClient) {
+      setError('No wallet client available for this network')
+      return
+    }
+
     setIsLoading(true)
     try {
       const hash = txHash as `0x${string}`
 
       // W3-007: fetch receipt on the invoice's networkId only
-      const receipt = await publicClient!.getTransactionReceipt({ hash })
+      const receipt = await publicClient.getTransactionReceipt({ hash })
 
       if (!receipt) {
         setError('Transaction is still pending')
@@ -90,7 +93,7 @@ export function useManualVerify({
         verifyResult = verifyErc20Receipt(erc20Receipt, tokenAddress, recipient, exactTotal)
       } else {
         // Native: fetch tx for value, then check recipient (FR-033)
-        const tx = await publicClient!.getTransaction({ hash })
+        const tx = await publicClient.getTransaction({ hash })
 
         const normalizedTxTo = tx.to ? getAddress(tx.to) : null
         const normalizedRecipient = getAddress(recipient)
@@ -119,7 +122,7 @@ export function useManualVerify({
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [invoiceId, recipient, exactTotal, tokenAddress, publicClient, invoices, setTxHash])
 
   const ret: UseManualVerifyResult = { verify, isLoading }
   if (result !== undefined) ret.result = result

@@ -1,5 +1,6 @@
 import { decodeEventLog, getAddress } from 'viem'
 import type { Address } from 'viem'
+import { formatAmount } from '@/shared/lib/amount-utils'
 
 export interface VerificationResult {
   verified: boolean
@@ -33,6 +34,8 @@ interface Erc20Receipt {
 export function verifyNativeReceipt(
   tx: NativeTx,
   expectedTotal: bigint,
+  decimals = 18,
+  tokenSymbol = 'ETH',
 ): VerificationResult {
   const actualAmount = tx.value
   const expectedAmount = expectedTotal
@@ -45,7 +48,7 @@ export function verifyNativeReceipt(
     verified: false,
     actualAmount,
     expectedAmount,
-    error: `Amount mismatch: expected ${expectedAmount}, got ${actualAmount}`,
+    error: `Amount mismatch: expected ${formatAmount(expectedAmount.toString(), decimals)} ${tokenSymbol}, got ${formatAmount(actualAmount.toString(), decimals)} ${tokenSymbol}`,
   }
 }
 
@@ -54,6 +57,8 @@ export function verifyErc20Receipt(
   tokenAddress: string,
   recipient: string,
   expectedTotal: bigint,
+  decimals = 18,
+  tokenSymbol = 'TOKEN',
 ): VerificationResult {
   const expectedAmount = expectedTotal
   const normalizedToken = getAddress(tokenAddress)
@@ -92,8 +97,8 @@ export function verifyErc20Receipt(
       // W3-004: mention fee-on-transfer when actual < expected
       const error =
         actualAmount < expectedAmount
-          ? `Amount mismatch: expected ${expectedAmount}, got ${actualAmount}. This may be a fee-on-transfer token.`
-          : `Amount mismatch: expected ${expectedAmount}, got ${actualAmount}`
+          ? `Amount mismatch: expected ${formatAmount(expectedAmount.toString(), decimals)} ${tokenSymbol}, got ${formatAmount(actualAmount.toString(), decimals)} ${tokenSymbol}. This may be a fee-on-transfer token.`
+          : `Amount mismatch: expected ${formatAmount(expectedAmount.toString(), decimals)} ${tokenSymbol}, got ${formatAmount(actualAmount.toString(), decimals)} ${tokenSymbol}`
 
       return { verified: false, actualAmount, expectedAmount, error }
     } catch {

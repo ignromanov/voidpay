@@ -38,7 +38,7 @@ export interface UsePaymentPollingParams {
   contractAddress?: string
   category: 'external' | 'erc20'
   exactTotal: bigint
-  createdAt: number
+  fromBlock: string
 }
 
 export interface UsePaymentPollingResult {
@@ -121,7 +121,7 @@ function nextSessionId() {
 // ---------------------------------------------------------------------------
 
 export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPollingResult {
-  const { invoiceId, toAddress, chainId, contractAddress, category, exactTotal, createdAt } = params
+  const { invoiceId, toAddress, chainId, contractAddress, category, exactTotal, fromBlock } = params
 
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE)
 
@@ -197,17 +197,21 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
     const controller = new AbortController()
     abortRef.current = controller
 
-    const url = new URL('/api/transfers', window.location.origin)
-    url.searchParams.set('toAddress', toAddress)
-    url.searchParams.set('chainId', String(chainId))
-    url.searchParams.set('category', category)
-    url.searchParams.set('fromBlock', String(createdAt))
-    if (contractAddress) url.searchParams.set('contractAddress', contractAddress)
-
     dispatch({ type: 'SET_LOADING', payload: true })
 
     try {
-      const res = await fetch(url.toString(), { signal: controller.signal })
+      const res = await fetch('/api/transfers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          toAddress,
+          chainId,
+          category,
+          fromBlock,
+          ...(contractAddress ? { contractAddress } : {}),
+        }),
+        signal: controller.signal,
+      })
 
       if (res.status === 429) {
         consec429Ref.current += 1
@@ -234,7 +238,7 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
       dispatch({ type: 'SET_LOADING', payload: false })
       return null
     }
-  }, [toAddress, chainId, category, createdAt, contractAddress, exactTotal, flushStop])
+  }, [toAddress, chainId, category, fromBlock, contractAddress, exactTotal, flushStop])
 
   // ---------------------------------------------------------------------------
   // Aggressive loop — polls every AGGRESSIVE_INTERVAL_MS, max AGGRESSIVE_MAX_MS

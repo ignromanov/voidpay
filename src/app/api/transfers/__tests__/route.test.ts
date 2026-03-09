@@ -81,11 +81,18 @@ function makeRequest(
   })
 }
 
+// Compute a valid ETH fromBlock dynamically so this test stays valid over time.
+// Mirrors the reference anchor used by the route's DoS guard.
+const ETH_REF_BLOCK = 21_000_000
+const ETH_REF_TS = Date.parse('2025-01-01T00:00:00Z')
+const ETH_AVG_MS = 12_000
+const estimatedEthCurrent = ETH_REF_BLOCK + Math.floor((Date.now() - ETH_REF_TS) / ETH_AVG_MS)
+
 /** Valid request body using current block well within the DoS cap. */
 const VALID_BODY = {
   chainId: 1,
   toAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045', // vitalik.eth checksummed
-  fromBlock: '0x1312D00', // block 20,000,000 — well within 216,000 block DoS cap
+  fromBlock: `0x${(estimatedEthCurrent - 10).toString(16)}`, // ~current block, well within 216,000-block DoS cap
   category: 'external' as const,
 }
 
@@ -97,6 +104,8 @@ let POST: (req: Request) => Promise<Response>
 
 beforeEach(async () => {
   vi.clearAllMocks()
+  // Ensure ALCHEMY_API_KEY is set for happy-path tests
+  process.env.ALCHEMY_API_KEY = 'test-key'
   // Dynamic import so the module is re-evaluated after mocks are set up
   const mod = await import('../route')
   POST = mod.POST
@@ -190,9 +199,21 @@ describe('POST /api/transfers', () => {
     })
 
     it('accepts all four supported chainIds', async () => {
+      // Compute a valid fromBlock per chain using the same reference anchors as the route,
+      // so this test stays valid regardless of when it runs.
+      const REF: Record<number, { block: number; timestampMs: number; avgMs: number }> = {
+        1:     { block: 21_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z'), avgMs: 12_000 },
+        42161: { block: 290_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z'), avgMs: 250 },
+        10:    { block: 130_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z'), avgMs: 2_000 },
+        137:   { block: 65_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z'), avgMs: 2_000 },
+      }
       for (const chainId of [1, 42161, 10, 137]) {
         mockAlchemySuccess()
-        const response = await POST(makeRequest({ ...VALID_BODY, chainId }))
+        const ref = REF[chainId]!
+        const estimatedCurrent = ref.block + Math.floor((Date.now() - ref.timestampMs) / ref.avgMs)
+        // Use a block 10 blocks behind estimated current — well within DoS cap
+        const recentBlock = `0x${(estimatedCurrent - 10).toString(16)}`
+        const response = await POST(makeRequest({ ...VALID_BODY, chainId, fromBlock: recentBlock }))
         expect(response.status).toBe(200)
       }
     })
@@ -235,8 +256,7 @@ describe('POST /api/transfers', () => {
   // -------------------------------------------------------------------------
   describe('TC-4: fromBlock older than DoS cap → 400', () => {
     it('rejects fromBlock 0x0 (genesis) on ETH mainnet', async () => {
-      // currentBlock on mainnet is ~21,000,000; max age is 216,000 blocks
-      // fromBlock = 0x0 is far too old
+      // fromBlock = 0x0 is always rejected (zero guard)
       const response = await POST(makeRequest({ ...VALID_BODY, fromBlock: '0x0' }))
 
       expect(response.status).toBe(400)
@@ -470,6 +490,48 @@ describe('POST /api/transfers', () => {
         const data = await response.json() as { error: string }
         expect(data.error).toBeDefined()
       }
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  // TC-11 Missing ALCHEMY_API_KEY → 503
+  // -------------------------------------------------------------------------
+  describe('TC-11: missing ALCHEMY_API_KEY → 503', () => {
+    it('returns 503 when ALCHEMY_API_KEY is not set', async () => {
+      const originalKey = process.env.ALCHEMY_API_KEY
+      delete process.env.ALCHEMY_API_KEY
+      vi.resetModules()
+
+      try {
+        const mod = await import('../route')
+        const localPost = mod.POST
+        const response = await localPost(makeRequest(VALID_BODY))
+
+        expect(response.status).toBe(503)
+        const data = await response.json() as { error: string }
+        expect(data.error).toBeDefined()
+        // Must NOT leak internal detail
+        expect(JSON.stringify(data)).not.toContain('detail')
+      } finally {
+        process.env.ALCHEMY_API_KEY = originalKey
+      }
+    })
+
+    it('does not leak upstream error detail field in 502 responses', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          jsonrpc: '2.0',
+          id: 1,
+          error: { code: -32600, message: 'Invalid API key' },
+        }),
+      })
+
+      const response = await POST(makeRequest(VALID_BODY))
+
+      expect(response.status).toBe(502)
+      const data = await response.json() as Record<string, unknown>
+      expect(data).not.toHaveProperty('detail')
     })
   })
 

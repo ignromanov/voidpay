@@ -585,6 +585,23 @@ describe('PaymentPanel', () => {
     })
   })
 
+  describe('Single PollingStatus render (T022)', () => {
+    it('renders only one PollingStatus when both onIvePaid and watching are active', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onIvePaid={vi.fn()}
+          onStartWatching={vi.fn()}
+          onStopWatching={vi.fn()}
+          pollingMode="watching"
+        />
+      )
+      const watchingTexts = screen.getAllByText('Watching for payment...')
+      expect(watchingTexts).toHaveLength(1)
+    })
+  })
+
   describe('Verify by txHash (T021)', () => {
     it('renders toggle when onVerifyTxHash is provided', () => {
       render(

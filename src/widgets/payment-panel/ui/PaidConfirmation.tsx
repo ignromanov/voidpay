@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { cn } from '@/shared/lib/utils'
 import { toast } from '@/shared/lib/toast'
 import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
 import { CheckIcon, CheckCheckIcon, ShieldCheckIcon } from '@/shared/ui/icons'
@@ -15,8 +16,8 @@ interface PaidConfirmationProps {
   decimals: number
   currency: string
   confirmations?: ConfirmationProgress | undefined
-  finalized?: boolean
-  reorgDetected?: boolean
+  finalized?: boolean | undefined
+  reorgDetected?: boolean | undefined
 }
 
 export function PaidConfirmation({
@@ -54,7 +55,7 @@ export function PaidConfirmation({
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ type: 'spring' }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] text-emerald-500"
         >
           {finalized ? (
@@ -91,7 +92,10 @@ export function PaidConfirmation({
       {/* Confirmation progress */}
       {confirmations && (
         <div className="bg-blue-900/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
-          <span className="p-1.5 bg-blue-500/10 rounded-full shrink-0 animate-pulse">
+          <span className={cn(
+            'p-1.5 bg-blue-500/10 rounded-full shrink-0',
+            progressPercent < 100 && 'animate-pulse'
+          )}>
             <ShieldCheckIcon size={16} className="text-blue-400" />
           </span>
           <div className="flex-1 space-y-1.5">

@@ -1,7 +1,7 @@
 import { render, screen } from '@/shared/lib/test-utils'
 import { describe, it, expect } from 'vitest'
 import { PollingStatus } from '../PollingStatus'
-import type { PollingMode } from '@/features/payment/model/use-payment-polling'
+import type { PollingMode } from '@/features/payment'
 
 describe('PollingStatus', () => {
   it('renders nothing for idle mode', () => {
