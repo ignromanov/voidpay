@@ -11,12 +11,14 @@ import { PaymentPanel, DevStatusToggle, DevPaymentStepToggle, computeAmounts } f
 import type { DevPaymentVisualStep, PaymentError } from '@/features/payment'
 import { usePaymentPolling, estimateFromBlockHex } from '@/features/payment'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
+import type { Invoice } from '@/shared/lib/invoice-types'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { ChevronDownIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 
 import { usePayInvoice } from './use-pay-invoice'
+import type { PayInvoiceState } from './use-pay-invoice'
 import { StatusBadge } from './StatusBadge'
 import { MinimizedPill } from './MinimizedPill'
 
@@ -41,56 +43,23 @@ const InvoicePreviewModal = dynamic(
   { ssr: false },
 )
 
+// ---------------------------------------------------------------------------
+// PayWorkspace — Gate layer (decode, loading, error)
+// ---------------------------------------------------------------------------
+
 /**
- * PayWorkspace — Composition layer for the /pay page.
+ * PayWorkspace — Gate layer for the /pay page.
  *
- * Orchestrates:
- * - usePayInvoice hook (decode, tracking, status)
- * - usePaymentPolling hook (discovery polling, no wagmi needed)
- * - InvoicePaper preview with modal
- * - PaymentPanel with minimize/expand
- * - StatusBadge floating overlay
+ * Handles decode, loading, and error states. Once the invoice is decoded,
+ * renders PayWorkspaceReady which mounts all interaction hooks with
+ * guaranteed valid data (no fallback values, no wasted requests).
  */
 export function PayWorkspace() {
   const router = useRouter()
-  const { invoice, errorType, isLoading, panelStatus, source, dismissError, txHash, confirmations, storedError } = usePayInvoice()
-
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const [isMinimized, setIsMinimized] = useState(false)
-  const [paymentError, setPaymentError] = useState<string | null>(null)
-  const [devPaymentStep, setDevPaymentStep] = useState<DevPaymentVisualStep | null>(null)
-
-  const handlePaymentSuccess = useCallback(() => { setPaymentError(null) }, [])
-  const handlePaymentError = useCallback((error: PaymentError) => { setPaymentError(error.message) }, [])
-
-  const finalized = useTrackedInvoiceStore((s) => {
-    if (!invoice) return false
-    const t = s.invoices.find((inv) => inv.invoiceId === invoice.invoiceId)
-    return t?.finalized ?? false
-  })
-
+  const payInvoice = usePayInvoice()
+  const { invoice, errorType, isLoading } = payInvoice
 
   const networkId = invoice?.networkId ?? 1
-  const amounts = useMemo(() => invoice ? computeAmounts(invoice) : null, [invoice])
-  const exactTotal = amounts?.exactTotal ?? '0'
-  const subtotal = amounts?.subtotal ?? '0'
-
-  // Discovery polling — fetch-based, no wagmi dependency, safe to call here.
-  // Params default to empty/zero when invoice is not yet decoded.
-  const category: 'external' | 'erc20' = invoice?.tokenAddress ? 'erc20' : 'external'
-  const fromBlock = useMemo(
-    () => invoice ? estimateFromBlockHex(networkId, invoice.issuedAt) : '0x1',
-    [networkId, invoice],
-  )
-  const polling = usePaymentPolling({
-    invoiceId: invoice?.invoiceId ?? '',
-    toAddress: invoice?.from?.walletAddress ?? '',
-    chainId: networkId,
-    ...(invoice?.tokenAddress ? { contractAddress: invoice.tokenAddress } : {}),
-    category,
-    exactTotal: BigInt(exactTotal),
-    fromBlock,
-  })
 
   // Loading state
   if (isLoading) {
@@ -120,6 +89,55 @@ export function PayWorkspace() {
       </div>
     )
   }
+
+  return <PayWorkspaceReady invoice={invoice} payInvoice={payInvoice} />
+}
+
+// ---------------------------------------------------------------------------
+// PayWorkspaceReady — Interaction layer (hooks mount with valid data)
+// ---------------------------------------------------------------------------
+
+interface PayWorkspaceReadyProps {
+  invoice: Invoice
+  payInvoice: PayInvoiceState
+}
+
+function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
+  const { panelStatus, source, dismissError, txHash, confirmations, storedError } = payInvoice
+
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [devPaymentStep, setDevPaymentStep] = useState<DevPaymentVisualStep | null>(null)
+
+  const handlePaymentSuccess = useCallback(() => { setPaymentError(null) }, [])
+  const handlePaymentError = useCallback((error: PaymentError) => { setPaymentError(error.message) }, [])
+
+  const finalized = useTrackedInvoiceStore((s) => {
+    const t = s.invoices.find((inv) => inv.invoiceId === invoice.invoiceId)
+    return t?.finalized ?? false
+  })
+
+  const networkId = invoice.networkId
+  const amounts = useMemo(() => computeAmounts(invoice), [invoice])
+  const exactTotal = amounts.exactTotal
+  const subtotal = amounts.subtotal
+
+  // Discovery polling — all params guaranteed valid (invoice is non-null)
+  const category: 'external' | 'erc20' = invoice.tokenAddress ? 'erc20' : 'external'
+  const fromBlock = useMemo(
+    () => estimateFromBlockHex(networkId, invoice.issuedAt),
+    [networkId, invoice.issuedAt],
+  )
+  const polling = usePaymentPolling({
+    invoiceId: invoice.invoiceId,
+    toAddress: invoice.from?.walletAddress ?? '',
+    chainId: networkId,
+    ...(invoice.tokenAddress ? { contractAddress: invoice.tokenAddress } : {}),
+    category,
+    exactTotal: BigInt(exactTotal),
+    fromBlock,
+  })
 
   const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
   const invoiceStatus = panelStatus === 'overdue' ? 'overdue' as const : 'pending' as const
