@@ -11,7 +11,7 @@
 import { isAddress, getAddress } from 'viem'
 import { Ratelimit } from '@upstash/ratelimit'
 import { kv } from '@vercel/kv'
-import { getMaxBlockAge, getAvgBlockTimeMs } from '@/features/payment/lib/confirmation-config'
+import { getMaxBlockAge, estimateCurrentBlock } from '@/features/payment'
 
 export const runtime = 'edge'
 
@@ -157,15 +157,20 @@ interface TransfersRequest {
 
 interface TransferResult {
   hash: string
-  rawContract: unknown
+  rawContract: {
+    value: string
+    address: string | null
+    decimal: string
+  }
   category: string
   blockTimestamp: string
 }
 
 function stripTransfer(raw: Record<string, unknown>): TransferResult {
+  const rc = raw.rawContract as Record<string, unknown> | undefined
   return {
     hash: raw.hash as string,
-    rawContract: raw.rawContract,
+    rawContract: rc ? { value: rc.value as string, address: (rc.address as string) ?? null, decimal: rc.decimal as string } : { value: '0', address: null, decimal: '0' },
     category: raw.category as string,
     blockTimestamp: raw.blockTimestamp as string,
   }
@@ -239,30 +244,9 @@ export async function POST(request: Request): Promise<Response> {
 
   // DoS cap: rough estimate of minimum allowed block
   const maxBlockAge = getMaxBlockAge(chainId)
-  const avgBlockTimeMs = getAvgBlockTimeMs(chainId)
-
-  // Rough estimate of current block using reference anchors (conservative, for DoS protection only)
-  // Reference: known block heights at 2025-01-01T00:00:00Z
-  const REFERENCE_BLOCKS: Record<number, { block: number; timestampMs: number }> = {
-    // Mainnet
-    1:     { block: 21_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
-    42161: { block: 290_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
-    10:    { block: 130_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
-    137:   { block: 65_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
-    // Testnet
-    11155111: { block: 7_500_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
-    421614:   { block: 100_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
-    11155420: { block: 20_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
-    80002:    { block: 15_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
-  }
-
-  const nowMs = Date.now()
-  const ref = REFERENCE_BLOCKS[chainId]
-  if (ref) {
-    const elapsedMs = nowMs - ref.timestampMs
-    const estimatedCurrentBlock = ref.block + Math.floor(elapsedMs / avgBlockTimeMs)
-    const minAllowedBlock = estimatedCurrentBlock - maxBlockAge
-
+  const estimatedCurrent = estimateCurrentBlock(chainId)
+  if (estimatedCurrent !== null) {
+    const minAllowedBlock = estimatedCurrent - maxBlockAge
     if (fromBlockNum < minAllowedBlock) {
       return json({ error: `Invalid fromBlock: too old (DoS cap: max ${maxBlockAge} blocks)` }, 400)
     }

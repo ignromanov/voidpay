@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
+import type { DecodedBatchInvoice } from '../use-batch-check'
 
 // ---------------------------------------------------------------------------
 // Mock fetch (used for /api/transfers requests)
@@ -8,21 +9,19 @@ const mockFetch = vi.fn()
 global.fetch = mockFetch
 
 // ---------------------------------------------------------------------------
-// Mock parseInvoiceHash
-// ---------------------------------------------------------------------------
-const mockParseInvoiceHash = vi.fn()
-
-vi.mock('@/features/invoice-codec', () => ({
-  parseInvoiceHash: (...args: unknown[]) => mockParseInvoiceHash(...args),
-}))
-
-// ---------------------------------------------------------------------------
 // Mock matchTransfer
 // ---------------------------------------------------------------------------
 const mockMatchTransfer = vi.fn()
 
 vi.mock('../../lib/match-transfer', () => ({
   matchTransfer: (...args: unknown[]) => mockMatchTransfer(...args),
+}))
+
+// ---------------------------------------------------------------------------
+// Mock estimateFromBlockHex
+// ---------------------------------------------------------------------------
+vi.mock('../../lib/confirmation-config', () => ({
+  estimateFromBlockHex: (_chainId: number, _issuedAt: number) => '0xabc123',
 }))
 
 // ---------------------------------------------------------------------------
@@ -48,7 +47,7 @@ vi.mock('@/entities/invoice', () => ({
 }))
 
 // ---------------------------------------------------------------------------
-// Subject under test (imported after mocks — does not exist yet → RED phase)
+// Subject under test
 // ---------------------------------------------------------------------------
 import { useBatchCheck } from '../use-batch-check'
 
@@ -65,6 +64,15 @@ const MOCK_TRANSFER = {
   category: 'external' as const,
   blockTimestamp: '2024-01-01T00:00:00Z',
 }
+
+const DECODED_INVOICE: DecodedBatchInvoice = {
+  toAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+  networkId: 1,
+  total: '1000000000000000000',
+  issuedAt: Math.floor(Date.now() / 1000) - 3600,
+}
+
+const mockDecoder = vi.fn<(url: string) => DecodedBatchInvoice | null>()
 
 function makeInvoice(
   id: string,
@@ -100,39 +108,29 @@ describe('useBatchCheck', () => {
     mockInvoices = []
     mockMatchTransfer.mockReturnValue(null)
     mockFetchOk({ transfers: [] })
-    mockParseInvoiceHash.mockReturnValue({
-      success: true,
-      data: {
-        version: 2,
-        invoiceId: 'test',
-        networkId: 1,
-        currency: 'ETH',
-        decimals: 18,
-        total: '1000000000000000000',
-        from: { walletAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045' },
-        items: [{ description: 'Test', quantity: 1, rate: '1000000000000000000' }],
-      },
-    })
+    mockDecoder.mockReturnValue(DECODED_INVOICE)
   })
 
   afterEach(() => {
     vi.useRealTimers()
   })
 
+  const renderBatchCheck = () =>
+    renderHook(() => useBatchCheck({ decodeInvoiceUrl: mockDecoder }))
+
   // -------------------------------------------------------------------------
   // TC01: Checks all pending `source:'created'` invoices (no txHash)
   // -------------------------------------------------------------------------
   it('TC01: checks all pending created invoices and ignores received/already-paid', async () => {
     mockInvoices = [
-      makeInvoice('INV-001', 'created'),              // pending created → should check
-      makeInvoice('INV-002', 'created'),              // pending created → should check
-      makeInvoice('INV-003', 'received'),             // received → skip
-      makeInvoice('INV-004', 'created', '0x' + 'a'.repeat(64)), // has txHash → skip
+      makeInvoice('INV-001', 'created'),
+      makeInvoice('INV-002', 'created'),
+      makeInvoice('INV-003', 'received'),
+      makeInvoice('INV-004', 'created', '0x' + 'a'.repeat(64)),
     ]
 
-    const { result } = renderHook(() => useBatchCheck())
+    const { result } = renderBatchCheck()
 
-    // Initially not checking
     expect(result.current.isChecking).toBe(false)
     expect(result.current.progress).toEqual({ checked: 0, total: 0 })
 
@@ -141,9 +139,8 @@ describe('useBatchCheck', () => {
     })
 
     expect(result.current.isChecking).toBe(true)
-    expect(result.current.progress.total).toBe(2) // only 2 pending created
+    expect(result.current.progress.total).toBe(2)
 
-    // First invoice checked immediately
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(1)
     })
@@ -156,10 +153,9 @@ describe('useBatchCheck', () => {
       toAddress: expect.any(String),
       chainId: expect.any(Number),
       category: expect.stringMatching(/^(external|erc20)$/),
-      fromBlock: '0x1',
+      fromBlock: '0xabc123',
     })
 
-    // Advance past inter-invoice delay to trigger second check
     await act(async () => {
       await vi.advanceTimersByTimeAsync(DELAY_MS + 100)
     })
@@ -168,17 +164,15 @@ describe('useBatchCheck', () => {
       expect(mockFetch).toHaveBeenCalledTimes(2)
     })
 
-    // Wait for completion
     await waitFor(() => {
       expect(result.current.isChecking).toBe(false)
     })
 
-    // Received and paid invoices were NOT checked
     expect(mockFetch).toHaveBeenCalledTimes(2)
   })
 
   // -------------------------------------------------------------------------
-  // TC02: Sequential processing with 2s delay between calls (not parallel)
+  // TC02: Sequential processing with 2s delay
   // -------------------------------------------------------------------------
   it('TC02: processes invoices sequentially with 2s delay (not parallel)', async () => {
     mockInvoices = [
@@ -187,7 +181,6 @@ describe('useBatchCheck', () => {
       makeInvoice('INV-SEQ-003', 'created'),
     ]
 
-    // Use a slow-resolving fetch to detect parallelism
     let concurrentFetchCount = 0
     let maxConcurrentFetches = 0
 
@@ -204,21 +197,18 @@ describe('useBatchCheck', () => {
       })
     })
 
-    const { result } = renderHook(() => useBatchCheck())
+    const { result } = renderBatchCheck()
 
     act(() => {
       result.current.checkAll()
     })
 
-    // First fetch starts immediately
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(1)
     })
 
-    // Before delay, only 1 fetch should have happened
     expect(mockFetch).toHaveBeenCalledTimes(1)
 
-    // Advance past first delay
     await act(async () => {
       await vi.advanceTimersByTimeAsync(DELAY_MS + 100)
     })
@@ -227,10 +217,8 @@ describe('useBatchCheck', () => {
       expect(mockFetch).toHaveBeenCalledTimes(2)
     })
 
-    // Still sequential — max 1 concurrent fetch at any time
     expect(maxConcurrentFetches).toBe(1)
 
-    // Advance past second delay
     await act(async () => {
       await vi.advanceTimersByTimeAsync(DELAY_MS + 100)
     })
@@ -256,26 +244,23 @@ describe('useBatchCheck', () => {
       hash: '0x' + 'b'.repeat(64) as `0x${string}`,
     }
 
-    // First invoice: no match; second invoice: match
     mockMatchTransfer
       .mockReturnValueOnce(null)
       .mockReturnValueOnce(secondTransfer)
 
     mockFetchOk({ transfers: [MOCK_TRANSFER] })
 
-    const { result } = renderHook(() => useBatchCheck())
+    const { result } = renderBatchCheck()
 
     act(() => {
       result.current.checkAll()
     })
 
-    // First check — no match
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(1)
     })
     expect(mockSetTxHash).not.toHaveBeenCalled()
 
-    // Advance to trigger second check
     await act(async () => {
       await vi.advanceTimersByTimeAsync(DELAY_MS + 100)
     })
@@ -284,20 +269,20 @@ describe('useBatchCheck', () => {
       expect(mockFetch).toHaveBeenCalledTimes(2)
     })
 
-    // Match found on second invoice → setTxHash called
     await waitFor(() => {
       expect(mockSetTxHash).toHaveBeenCalledTimes(1)
       expect(mockSetTxHash).toHaveBeenCalledWith(
         'INV-MATCH-002',
         secondTransfer.hash,
-        false, // not yet validated
+        false,
       )
     })
 
-    // matchTransfer called with exactTotal from decoded invoice
+    // matchTransfer called with exactTotal + optional contract
     expect(mockMatchTransfer).toHaveBeenCalledWith(
       expect.any(Array),
-      BigInt('1000000000000000000'), // from decoded invoice.total
+      BigInt('1000000000000000000'),
+      undefined, // no tokenAddress in DECODED_INVOICE
     )
 
     await waitFor(() => {
@@ -306,7 +291,7 @@ describe('useBatchCheck', () => {
   })
 
   // -------------------------------------------------------------------------
-  // TC04: Progress tracking exposed correctly
+  // TC04: Progress tracking
   // -------------------------------------------------------------------------
   it('TC04: progress.checked increments as each invoice is processed', async () => {
     mockInvoices = [
@@ -315,7 +300,7 @@ describe('useBatchCheck', () => {
       makeInvoice('INV-PROG-003', 'created'),
     ]
 
-    const { result } = renderHook(() => useBatchCheck())
+    const { result } = renderBatchCheck()
 
     act(() => {
       result.current.checkAll()
@@ -324,7 +309,6 @@ describe('useBatchCheck', () => {
     expect(result.current.progress.total).toBe(3)
     expect(result.current.progress.checked).toBe(0)
 
-    // After first check completes
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(1)
     })
@@ -334,7 +318,6 @@ describe('useBatchCheck', () => {
     })
     expect(result.current.progress.total).toBe(3)
 
-    // Advance to second check
     await act(async () => {
       await vi.advanceTimersByTimeAsync(DELAY_MS + 100)
     })
@@ -343,7 +326,6 @@ describe('useBatchCheck', () => {
       expect(result.current.progress.checked).toBe(2)
     })
 
-    // Advance to third check
     await act(async () => {
       await vi.advanceTimersByTimeAsync(DELAY_MS + 100)
     })
@@ -363,13 +345,12 @@ describe('useBatchCheck', () => {
       makeInvoice('INV-PAID', 'created', '0x' + 'c'.repeat(64)),
     ]
 
-    const { result } = renderHook(() => useBatchCheck())
+    const { result } = renderBatchCheck()
 
     act(() => {
       result.current.checkAll()
     })
 
-    // Should complete immediately with no fetches
     await waitFor(() => {
       expect(result.current.isChecking).toBe(false)
     })
@@ -379,7 +360,7 @@ describe('useBatchCheck', () => {
   })
 
   // -------------------------------------------------------------------------
-  // TC06: Abort on unmount — in-flight sequence is cancelled
+  // TC06: Abort on unmount
   // -------------------------------------------------------------------------
   it('TC06: aborts remaining checks when hook unmounts mid-run', async () => {
     mockInvoices = [
@@ -388,26 +369,56 @@ describe('useBatchCheck', () => {
       makeInvoice('INV-ABORT-003', 'created'),
     ]
 
-    const { result, unmount } = renderHook(() => useBatchCheck())
+    const { result, unmount } = renderBatchCheck()
 
     act(() => {
       result.current.checkAll()
     })
 
-    // First fetch starts
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(1)
     })
 
-    // Unmount before remaining checks fire
     unmount()
 
-    // Advance time — remaining checks should NOT fire
     await act(async () => {
       await vi.advanceTimersByTimeAsync(DELAY_MS * 5)
     })
 
-    // Only 1 fetch should have occurred (unmounted before rest)
     expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  // -------------------------------------------------------------------------
+  // TC07: Decoder returning null skips that invoice
+  // -------------------------------------------------------------------------
+  it('TC07: skips invoices where decoder returns null', async () => {
+    mockInvoices = [
+      makeInvoice('INV-NULL-001', 'created'),
+      makeInvoice('INV-NULL-002', 'created'),
+    ]
+
+    mockDecoder
+      .mockReturnValueOnce(null) // first invoice can't be decoded
+      .mockReturnValueOnce(DECODED_INVOICE) // second succeeds
+
+    const { result } = renderBatchCheck()
+
+    act(() => {
+      result.current.checkAll()
+    })
+
+    // First invoice skipped (decoder returned null), second needs delay
+    // Advance past inter-invoice delay so second invoice can process
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(DELAY_MS + 100)
+    })
+
+    await waitFor(() => {
+      expect(result.current.isChecking).toBe(false)
+    })
+
+    // Only 1 fetch — first invoice was skipped by decoder
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(mockDecoder).toHaveBeenCalledTimes(2)
   })
 })

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
-import { getAddress } from 'viem'
+import { isAddressEqual } from 'viem'
+import type { Address } from 'viem'
 import { usePublicClient } from 'wagmi'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { verifyNativeReceipt, verifyErc20Receipt } from '../lib/verify-receipt'
@@ -40,7 +41,6 @@ export function useManualVerify({
 
   const publicClient = usePublicClient({ chainId: networkId })
 
-  const invoices = useTrackedInvoiceStore((s) => s.invoices)
   const setTxHash = useTrackedInvoiceStore((s) => s.setTxHash)
 
   const verify = useCallback(async (txHash: string): Promise<void> => {
@@ -54,7 +54,7 @@ export function useManualVerify({
     }
 
     // W3-006: uniqueness check — reject if linked to a different invoice
-    const alreadyLinked = invoices.some(
+    const alreadyLinked = useTrackedInvoiceStore.getState().invoices.some(
       (inv) => inv.txHash === txHash && inv.invoiceId !== invoiceId,
     )
     if (alreadyLinked) {
@@ -95,10 +95,7 @@ export function useManualVerify({
         // Native: fetch tx for value, then check recipient (FR-033)
         const tx = await publicClient.getTransaction({ hash })
 
-        const normalizedTxTo = tx.to ? getAddress(tx.to) : null
-        const normalizedRecipient = getAddress(recipient)
-
-        if (normalizedTxTo !== normalizedRecipient) {
+        if (!tx.to || !isAddressEqual(tx.to as Address, recipient as Address)) {
           setError('Transaction recipient address does not match invoice recipient')
           return
         }
@@ -122,7 +119,7 @@ export function useManualVerify({
     } finally {
       setIsLoading(false)
     }
-  }, [invoiceId, recipient, exactTotal, tokenAddress, publicClient, invoices, setTxHash])
+  }, [invoiceId, recipient, exactTotal, tokenAddress, publicClient, setTxHash])
 
   const ret: UseManualVerifyResult = { verify, isLoading }
   if (result !== undefined) ret.result = result

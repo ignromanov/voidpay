@@ -11,8 +11,9 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
-import { parseInvoiceHash } from '@/features/invoice-codec'
 import { matchTransfer } from '../lib/match-transfer'
+import type { TransferResult } from '../lib/match-transfer'
+import { estimateFromBlockHex } from '../lib/confirmation-config'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -24,6 +25,18 @@ const INTER_INVOICE_DELAY_MS = 2_000
 // Types
 // ---------------------------------------------------------------------------
 
+export interface DecodedBatchInvoice {
+  toAddress: string
+  networkId: number
+  tokenAddress?: string
+  total: string
+  issuedAt: number
+}
+
+export interface UseBatchCheckParams {
+  decodeInvoiceUrl: (url: string) => DecodedBatchInvoice | null
+}
+
 export interface UseBatchCheckResult {
   isChecking: boolean
   progress: { checked: number; total: number }
@@ -34,7 +47,7 @@ export interface UseBatchCheckResult {
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useBatchCheck(): UseBatchCheckResult {
+export function useBatchCheck({ decodeInvoiceUrl }: UseBatchCheckParams): UseBatchCheckResult {
   const invoices = useTrackedInvoiceStore((s) => s.invoices)
   const setTxHash = useTrackedInvoiceStore((s) => s.setTxHash)
 
@@ -95,39 +108,34 @@ export function useBatchCheck(): UseBatchCheckResult {
         if (controller.signal.aborted) break
 
         try {
-          // Extract hash fragment from stored URL
+          // Decode invoice URL via injected decoder (FSD-compliant)
           if (!invoice.invoiceUrl) continue
-          const hashIndex = invoice.invoiceUrl.indexOf('#')
-          if (hashIndex < 0) continue
-          const hashFragment = invoice.invoiceUrl.substring(hashIndex + 1)
+          const decoded = decodeInvoiceUrl(invoice.invoiceUrl)
+          if (!decoded) continue
 
-          // Decode invoice to get transfer params
-          const decoded = parseInvoiceHash(hashFragment)
-          if (!decoded.success) continue
-
-          const inv = decoded.data
-          const toAddress = inv.from?.walletAddress
+          const { toAddress, networkId, tokenAddress, total, issuedAt } = decoded
           if (!toAddress) continue
 
-          const category: 'external' | 'erc20' = inv.tokenAddress ? 'erc20' : 'external'
-          const exactTotal = BigInt(inv.total ?? '0')
+          const category: 'external' | 'erc20' = tokenAddress ? 'erc20' : 'external'
+          const exactTotal = BigInt(total ?? '0')
+          const fromBlock = estimateFromBlockHex(networkId, issuedAt)
 
           const response = await fetch('/api/transfers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               toAddress,
-              chainId: inv.networkId,
+              chainId: networkId,
               category,
-              fromBlock: '0x1',
-              ...(inv.tokenAddress ? { contractAddress: inv.tokenAddress } : {}),
+              fromBlock,
+              ...(tokenAddress ? { contractAddress: tokenAddress } : {}),
             }),
             signal: controller.signal,
           })
 
           if (response.ok) {
-            const data = (await response.json()) as { transfers: Parameters<typeof matchTransfer>[0] }
-            const match = matchTransfer(data.transfers, exactTotal)
+            const data = (await response.json()) as { transfers: TransferResult[] }
+            const match = matchTransfer(data.transfers, exactTotal, tokenAddress)
             if (match) {
               setTxHash(invoice.invoiceId, match.hash, false)
             }
@@ -145,7 +153,7 @@ export function useBatchCheck(): UseBatchCheckResult {
         setIsChecking(false)
       }
     })()
-  }, [invoices, setTxHash])
+  }, [invoices, setTxHash, decodeInvoiceUrl])
 
   return { isChecking, progress, checkAll }
 }

@@ -1,4 +1,4 @@
-import { decodeEventLog, getAddress } from 'viem'
+import { decodeEventLog, isAddressEqual } from 'viem'
 import type { Address } from 'viem'
 import { formatAmount } from '@/shared/lib/amount-utils'
 
@@ -61,13 +61,11 @@ export function verifyErc20Receipt(
   tokenSymbol = 'TOKEN',
 ): VerificationResult {
   const expectedAmount = expectedTotal
-  const normalizedToken = getAddress(tokenAddress)
-  const normalizedRecipient = getAddress(recipient)
 
   // W3-005: filter logs strictly by token contract address first
   const tokenLogs = receipt.logs.filter((log) => {
     try {
-      return getAddress(log.address) === normalizedToken
+      return isAddressEqual(log.address as Address, tokenAddress as Address)
     } catch {
       return false
     }
@@ -84,9 +82,8 @@ export function verifyErc20Receipt(
       if (decoded.eventName !== 'Transfer') continue
 
       const args = decoded.args as { from: Address; to: Address; value: bigint }
-      const normalizedTo = getAddress(args.to)
 
-      if (normalizedTo !== normalizedRecipient) continue
+      if (!isAddressEqual(args.to, recipient as Address)) continue
 
       const actualAmount = args.value
 

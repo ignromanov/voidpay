@@ -25,6 +25,12 @@ const MAX_CONSECUTIVE_429 = 3
 // Module-level session counter for concurrent polling sessions
 let activeSessionCount = 0
 
+/** @internal Test-only: reset module-level counters */
+export function __resetPollingCounters() {
+  activeSessionCount = 0
+  sessionIdCounter = 0
+}
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -230,7 +236,7 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
       }
 
       const data = (await res.json()) as { transfers: TransferResult[] }
-      const matched = matchTransfer(data.transfers, exactTotal)
+      const matched = matchTransfer(data.transfers, exactTotal, contractAddress)
       dispatch({ type: 'SET_LOADING', payload: false })
       return matched
     } catch (err) {

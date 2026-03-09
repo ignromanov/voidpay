@@ -97,6 +97,19 @@ const REFERENCE_BLOCKS: Record<number, { block: number; timestampMs: number }> =
   80002:    { block: 15_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z') },
 }
 
+/**
+ * Estimate current block number for a chain without RPC.
+ * Uses reference anchors + avgBlockTime for DoS validation.
+ */
+export function estimateCurrentBlock(chainId: number): number | null {
+  const ref = REFERENCE_BLOCKS[chainId]
+  const avgBlockTimeMs = AVG_BLOCK_TIME_MS[chainId]
+  if (!ref || !avgBlockTimeMs) return null
+
+  const elapsedMs = Date.now() - ref.timestampMs
+  return ref.block + Math.floor(elapsedMs / avgBlockTimeMs)
+}
+
 const FROM_BLOCK_BUFFER = 1_000
 
 /**

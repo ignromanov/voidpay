@@ -37,18 +37,22 @@ const mockSetError = vi.fn()
 const mockGetInvoice = vi.fn()
 const mockInvoices: Array<{ invoiceId: string; txHash?: string }> = []
 
-vi.mock('@/entities/invoice', () => ({
-  useTrackedInvoiceStore: vi.fn((selector?: (s: Record<string, unknown>) => unknown) => {
-    const store = {
-      invoices: mockInvoices,
-      setTxHash: mockSetTxHash,
-      setValidated: mockSetValidated,
-      setError: mockSetError,
-      getInvoice: mockGetInvoice,
-    }
+vi.mock('@/entities/invoice', () => {
+  const getStore = () => ({
+    invoices: mockInvoices,
+    setTxHash: mockSetTxHash,
+    setValidated: mockSetValidated,
+    setError: mockSetError,
+    getInvoice: mockGetInvoice,
+  })
+  const hook = vi.fn((selector?: (s: Record<string, unknown>) => unknown) => {
+    const store = getStore()
     return selector ? selector(store) : store
-  }),
-}))
+  })
+  // Support useTrackedInvoiceStore.getState() for non-reactive access
+  ;(hook as unknown as Record<string, unknown>).getState = getStore
+  return { useTrackedInvoiceStore: hook }
+})
 
 // ---------------------------------------------------------------------------
 // Subject under test (module doesn't exist yet — RED phase)

@@ -171,6 +171,25 @@ describe('POST /api/transfers', () => {
 
       expect(transfers[0].rawContract.value).toBe(hexValue)
     })
+
+    it('rawContract contains only value, address, decimal — extra fields stripped', async () => {
+      mockAlchemySuccess([makeAlchemyTransfer({
+        rawContract: {
+          value: '0xde0b6b3a7640000',
+          address: null,
+          decimal: '0x12',
+          // Extra field that must NOT appear in output
+          extraField: 'should-be-stripped',
+        },
+      })])
+
+      const response = await POST(makeRequest(VALID_BODY))
+      const { transfers } = await response.json() as { transfers: { rawContract: Record<string, unknown> }[] }
+
+      const rc = transfers[0].rawContract
+      expect(Object.keys(rc).sort()).toEqual(['address', 'decimal', 'value'])
+      expect(rc).not.toHaveProperty('extraField')
+    })
   })
 
   // -------------------------------------------------------------------------

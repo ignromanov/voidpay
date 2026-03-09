@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useWaitForTransactionReceipt, useBlockNumber, usePublicClient } from 'wagmi'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { verifyNativeReceipt, verifyErc20Receipt } from '../lib/verify-receipt'
@@ -37,13 +37,22 @@ export function usePaymentVerification({
 
   const publicClient = usePublicClient({ chainId })
 
+  const [verifyDone, setVerifyDone] = useState(false)
+  const [verifyError, setVerifyError] = useState<string | undefined>(undefined)
+  const [txBlockNumber, setTxBlockNumber] = useState<bigint | undefined>(undefined)
+  const [confirmations, setLocalConfirmations] = useState<ConfirmationProgress | undefined>(
+    undefined,
+  )
+
   const {
     data: receipt,
     isLoading: isReceiptLoading,
     isSuccess: isReceiptSuccess,
   } = useWaitForTransactionReceipt({ hash: txHash, chainId })
 
-  const { data: currentBlock } = useBlockNumber({ watch: true, chainId })
+  // Stop watching blocks once soft-confirmation is reached
+  const needsBlockWatch = !verifyDone || (confirmations !== undefined && confirmations.current < confirmations.required)
+  const { data: currentBlock } = useBlockNumber({ watch: true, chainId, query: { enabled: needsBlockWatch } })
 
   // For native tokens: fetch tx value asynchronously, store in state to trigger sync verify effect
   const [nativeTxValue, setNativeTxValue] = useState<bigint | undefined>(undefined)
@@ -66,13 +75,6 @@ export function usePaymentVerification({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReceiptSuccess, receipt?.blockNumber?.toString()])
 
-  const [verifyDone, setVerifyDone] = useState(false)
-  const [verifyError, setVerifyError] = useState<string | undefined>(undefined)
-  const [txBlockNumber, setTxBlockNumber] = useState<bigint | undefined>(undefined)
-  const [confirmations, setLocalConfirmations] = useState<ConfirmationProgress | undefined>(
-    undefined,
-  )
-
   // Keep store action refs stable so async callbacks always use the latest
   const setStoreErrorRef = useRef(setStoreError)
   setStoreErrorRef.current = setStoreError
@@ -91,12 +93,28 @@ export function usePaymentVerification({
   const nativeReady = readyToVerify && !tokenAddress && nativeTxValue !== undefined
   const erc20Ready = readyToVerify && !!tokenAddress
 
+  // Shared post-verify logic for both ERC-20 and native
+  const completeVerification = useCallback((receiptBlockNumber: bigint) => {
+    const required = getSoftConfirmations(chainId)
+    const current = currentBlock !== undefined
+      ? Math.max(0, Number(currentBlock - receiptBlockNumber))
+      : 0
+    const progress: ConfirmationProgress = { current, required }
+    setTxBlockNumber(receiptBlockNumber)
+    setLocalConfirmations(progress)
+    setConfirmationsRef.current(invoiceId, progress)
+    setVerifyDone(true)
+  }, [chainId, currentBlock, invoiceId])
+
+  const handleVerifyError = useCallback((result: VerificationResult) => {
+    const errorMsg = result.error ?? "Transaction amount doesn't match the expected total"
+    setStoreErrorRef.current(invoiceId, errorMsg)
+    setVerifyError(errorMsg)
+  }, [invoiceId])
+
   // Phase 1a: verify ERC-20 synchronously when receipt arrives
   useEffect(() => {
     if (!erc20Ready || !receipt) return
-
-    const requiredConfirmations = getSoftConfirmations(chainId)
-    const receiptBlockNumber = receipt.blockNumber
 
     const erc20Receipt = {
       logs: receipt.logs as Array<{
@@ -113,22 +131,8 @@ export function usePaymentVerification({
       BigInt(exactTotal),
     )
 
-    if (!result.verified) {
-      const errorMsg = result.error ?? "Transaction amount doesn't match the expected total"
-      setStoreErrorRef.current(invoiceId, errorMsg)
-      setVerifyError(errorMsg)
-      return
-    }
-
-    const current =
-      currentBlock !== undefined
-        ? Math.max(0, Number(currentBlock - receiptBlockNumber))
-        : 0
-    const progress: ConfirmationProgress = { current, required: requiredConfirmations }
-    setTxBlockNumber(receiptBlockNumber)
-    setLocalConfirmations(progress)
-    setConfirmationsRef.current(invoiceId, progress)
-    setVerifyDone(true)
+    if (!result.verified) { handleVerifyError(result); return }
+    completeVerification(receipt.blockNumber)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [erc20Ready])
 
@@ -136,30 +140,13 @@ export function usePaymentVerification({
   useEffect(() => {
     if (!nativeReady || !receipt) return
 
-    const requiredConfirmations = getSoftConfirmations(chainId)
-    const receiptBlockNumber = receipt.blockNumber
-
     const result: VerificationResult = verifyNativeReceipt(
       { value: nativeTxValue! },
       BigInt(exactTotal),
     )
 
-    if (!result.verified) {
-      const errorMsg = result.error ?? "Transaction amount doesn't match the expected total"
-      setStoreErrorRef.current(invoiceId, errorMsg)
-      setVerifyError(errorMsg)
-      return
-    }
-
-    const current =
-      currentBlock !== undefined
-        ? Math.max(0, Number(currentBlock - receiptBlockNumber))
-        : 0
-    const progress: ConfirmationProgress = { current, required: requiredConfirmations }
-    setTxBlockNumber(receiptBlockNumber)
-    setLocalConfirmations(progress)
-    setConfirmationsRef.current(invoiceId, progress)
-    setVerifyDone(true)
+    if (!result.verified) { handleVerifyError(result); return }
+    completeVerification(receipt.blockNumber)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nativeReady, nativeTxValue])
 
