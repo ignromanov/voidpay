@@ -35,18 +35,27 @@ vi.mock('../../lib/match-transfer', () => ({
 // ---------------------------------------------------------------------------
 // Mock invoice store
 // ---------------------------------------------------------------------------
-const mockSetTxHash = vi.fn()
-const mockSetError = vi.fn()
-
-vi.mock('@/entities/invoice', () => ({
-  useTrackedInvoiceStore: vi.fn((selector?: (s: Record<string, unknown>) => unknown) => {
-    const store = {
-      setTxHash: mockSetTxHash,
-      setError: mockSetError,
-    }
-    return selector ? selector(store) : store
-  }),
+const { mockSetTxHash, mockSetError } = vi.hoisted(() => ({
+  mockSetTxHash: vi.fn(),
+  mockSetError: vi.fn(),
 }))
+
+vi.mock('@/entities/invoice', () => {
+  const store = {
+    setTxHash: mockSetTxHash,
+    setError: mockSetError,
+  }
+  const hook = vi.fn((selector?: (s: Record<string, unknown>) => unknown) => {
+    return selector ? selector(store) : store
+  })
+  // Static methods used by the hook
+  ;(hook as unknown as Record<string, unknown>).getState = () => ({ invoices: [] })
+  ;(hook as unknown as Record<string, unknown>).persist = {
+    hasHydrated: () => true,
+    onFinishHydration: vi.fn(),
+  }
+  return { useTrackedInvoiceStore: hook }
+})
 
 // ---------------------------------------------------------------------------
 // Module under test (imported after mocks — does not exist yet → tests FAIL)

@@ -81,12 +81,9 @@ function makeRequest(
   })
 }
 
-// Compute a valid ETH fromBlock dynamically so this test stays valid over time.
-// Mirrors the reference anchor used by the route's DoS guard.
-const ETH_REF_BLOCK = 21_000_000
-const ETH_REF_TS = Date.parse('2025-01-01T00:00:00Z')
-const ETH_AVG_MS = 12_000
-const estimatedEthCurrent = ETH_REF_BLOCK + Math.floor((Date.now() - ETH_REF_TS) / ETH_AVG_MS)
+// Use the same estimateCurrentBlock as the route — single source of truth.
+import { estimateCurrentBlock } from '@/entities/network'
+const estimatedEthCurrent = estimateCurrentBlock(1)!
 
 /** Valid request body using current block well within the DoS cap. */
 const VALID_BODY = {
@@ -218,19 +215,10 @@ describe('POST /api/transfers', () => {
     })
 
     it('accepts all four supported chainIds', async () => {
-      // Compute a valid fromBlock per chain using the same reference anchors as the route,
-      // so this test stays valid regardless of when it runs.
-      const REF: Record<number, { block: number; timestampMs: number; avgMs: number }> = {
-        1:     { block: 21_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z'), avgMs: 12_000 },
-        42161: { block: 290_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z'), avgMs: 250 },
-        10:    { block: 130_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z'), avgMs: 2_000 },
-        137:   { block: 65_000_000, timestampMs: Date.parse('2025-01-01T00:00:00Z'), avgMs: 2_000 },
-      }
+      // Use the same estimateCurrentBlock as the route — single source of truth.
       for (const chainId of [1, 42161, 10, 137]) {
         mockAlchemySuccess()
-        const ref = REF[chainId]!
-        const estimatedCurrent = ref.block + Math.floor((Date.now() - ref.timestampMs) / ref.avgMs)
-        // Use a block 10 blocks behind estimated current — well within DoS cap
+        const estimatedCurrent = estimateCurrentBlock(chainId)!
         const recentBlock = `0x${(estimatedCurrent - 10).toString(16)}`
         const response = await POST(makeRequest({ ...VALID_BODY, chainId, fromBlock: recentBlock }))
         expect(response.status).toBe(200)

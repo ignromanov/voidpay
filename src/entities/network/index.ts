@@ -47,3 +47,12 @@ export { useNetworkSwitch, canSwitchNetwork } from './lib/network-switch'
 export type { CanSwitchNetworkParams, UseNetworkSwitchReturn } from './lib/network-switch'
 export { detectNetworkMismatch, useNetworkMismatch } from './lib/network-mismatch'
 export type { DetectNetworkMismatchParams, NetworkMismatchResult } from './lib/network-mismatch'
+
+// Block estimation utilities (no React — safe for Edge runtime)
+export {
+  getMaxBlockAge,
+  getAvgBlockTimeMs,
+  estimateCurrentBlock,
+  estimateFromBlockHex,
+  estimateBlockFromTimestamp,
+} from './lib/block-estimates'

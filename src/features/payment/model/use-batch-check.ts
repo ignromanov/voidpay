@@ -13,7 +13,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { matchTransfer } from '../lib/match-transfer'
 import type { TransferResult } from '../lib/match-transfer'
-import { estimateFromBlockHex } from '../lib/confirmation-config'
+import { estimateFromBlockHex } from '@/entities/network'
 
 // ---------------------------------------------------------------------------
 // Constants

@@ -1,16 +1,14 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import {
   ScaledInvoicePreview,
   InvoicePaper,
 } from '@/widgets/invoice-paper'
-import { PaymentPanel, DevStatusToggle, DevPaymentStepToggle, computeAmounts } from '@/widgets/payment-panel'
+import { PaymentPanel, DevStatusToggle, DevPaymentStepToggle } from '@/widgets/payment-panel'
 import type { DevPaymentVisualStep, PaymentError } from '@/features/payment'
-import { usePaymentPolling, estimateFromBlockHex } from '@/features/payment'
-import { useTrackedInvoiceStore } from '@/entities/invoice'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
@@ -36,6 +34,11 @@ const PayButton = dynamic(
       </Button>
     ),
   },
+)
+
+const PaymentVerifier = dynamic(
+  () => import('./PaymentVerifier').then((m) => ({ default: m.PaymentVerifier })),
+  { ssr: false },
 )
 
 const InvoicePreviewModal = dynamic(
@@ -103,7 +106,10 @@ interface PayWorkspaceReadyProps {
 }
 
 function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
-  const { panelStatus, source, dismissError, txHash, confirmations, storedError } = payInvoice
+  const {
+    panelStatus, source, dismissError, txHash, confirmations, storedError,
+    finalized, exactTotal, subtotal, polling, verifyTxHash,
+  } = payInvoice
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
@@ -113,37 +119,22 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
   const handlePaymentSuccess = useCallback(() => { setPaymentError(null) }, [])
   const handlePaymentError = useCallback((error: PaymentError) => { setPaymentError(error.message) }, [])
 
-  const finalized = useTrackedInvoiceStore((s) => {
-    const t = s.invoices.find((inv) => inv.invoiceId === invoice.invoiceId)
-    return t?.finalized ?? false
-  })
-
   const networkId = invoice.networkId
-  const amounts = useMemo(() => computeAmounts(invoice), [invoice])
-  const exactTotal = amounts.exactTotal
-  const subtotal = amounts.subtotal
-
-  // Discovery polling — all params guaranteed valid (invoice is non-null)
-  const category: 'external' | 'erc20' = invoice.tokenAddress ? 'erc20' : 'external'
-  const fromBlock = useMemo(
-    () => estimateFromBlockHex(networkId, invoice.issuedAt),
-    [networkId, invoice.issuedAt],
-  )
-  const polling = usePaymentPolling({
-    invoiceId: invoice.invoiceId,
-    toAddress: invoice.from?.walletAddress ?? '',
-    chainId: networkId,
-    ...(invoice.tokenAddress ? { contractAddress: invoice.tokenAddress } : {}),
-    category,
-    exactTotal: BigInt(exactTotal),
-    fromBlock,
-  })
-
   const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
   const invoiceStatus = panelStatus === 'overdue' ? 'overdue' as const : 'pending' as const
 
   return (
     <>
+      {/* Headless verification: mounts when txHash exists, writes to store */}
+      {txHash && (
+        <PaymentVerifier
+          invoice={invoice}
+          invoiceId={invoice.invoiceId}
+          txHash={txHash}
+          exactTotal={exactTotal}
+        />
+      )}
+
       <div className="relative z-10 h-full w-full" data-network={networkId}>
         <StatusBadge status={panelStatus} />
 
@@ -189,9 +180,8 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                     source={source}
                     {...(confirmations ? { confirmations } : {})}
                     finalized={finalized}
-                    pollingMode={polling.mode}
-                    onStartWatching={polling.startWatching}
-                    onStopWatching={polling.stop}
+                    pollingMode={polling?.mode ?? 'idle'}
+                    {...(polling ? { onStartWatching: polling.startWatching, onStopWatching: polling.stop } : {})}
                   />
                 ) : (
                   <PaymentPanel
@@ -200,12 +190,15 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                     source={source}
                     {...(paymentError ? { error: paymentError } : storedError ? { error: storedError } : {})}
                     onDismissError={dismissError}
-                    pollingMode={polling.mode}
-                    onIvePaid={polling.startAggressivePolling}
-                    onCheckPayment={polling.startManualCheck}
-                    {...(polling.cooldownUntil !== undefined ? { cooldownUntil: polling.cooldownUntil } : {})}
-                    onStartWatching={polling.startWatching}
-                    onStopWatching={polling.stop}
+                    pollingMode={polling?.mode ?? 'idle'}
+                    onVerifyTxHash={verifyTxHash}
+                    {...(polling ? {
+                      onIvePaid: polling.startAggressivePolling,
+                      onCheckPayment: polling.startManualCheck,
+                      onStartWatching: polling.startWatching,
+                      onStopWatching: polling.stop,
+                      ...(polling.cooldownUntil !== undefined ? { cooldownUntil: polling.cooldownUntil } : {}),
+                    } : {})}
                   >
                     <PayButton
                       invoice={invoice}

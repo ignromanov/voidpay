@@ -3,9 +3,6 @@ import {
   CONFIRMATION_CONFIG,
   getSoftConfirmations,
   getFinalizationTimeout,
-  getMaxBlockAge,
-  getAvgBlockTimeMs,
-  estimateBlockFromTimestamp,
 } from '../confirmation-config'
 
 describe('confirmation-config', () => {
@@ -42,47 +39,6 @@ describe('confirmation-config', () => {
     it('returns correct timeout per chain', () => {
       expect(getFinalizationTimeout(1)).toBe(3_600_000)      // 60 min
       expect(getFinalizationTimeout(42161)).toBe(1_800_000)  // 30 min
-    })
-  })
-
-  describe('getMaxBlockAge', () => {
-    it('returns chain-specific ~30 day DoS caps', () => {
-      expect(getMaxBlockAge(1)).toBe(216_000)
-      expect(getMaxBlockAge(42161)).toBe(10_368_000)
-      expect(getMaxBlockAge(10)).toBe(1_296_000)
-      expect(getMaxBlockAge(137)).toBe(1_296_000)
-    })
-
-    it('throws for unknown chainId', () => {
-      expect(() => getMaxBlockAge(999)).toThrow()
-    })
-  })
-
-  describe('getAvgBlockTimeMs', () => {
-    it('returns correct average block time', () => {
-      expect(getAvgBlockTimeMs(1)).toBe(12_000)
-      expect(getAvgBlockTimeMs(42161)).toBe(250)
-      expect(getAvgBlockTimeMs(10)).toBe(2_000)
-      expect(getAvgBlockTimeMs(137)).toBe(2_000)
-    })
-  })
-
-  describe('estimateBlockFromTimestamp', () => {
-    it('computes correct fromBlock from createdAt', () => {
-      const now = Date.now()
-      const createdAt = Math.floor((now - 3_600_000) / 1000) // 1 hour ago (unix seconds)
-      const currentBlock = 20_000_000n
-
-      // For ETH (12s blocks): 3600s / 12s = 300 blocks ago
-      const result = estimateBlockFromTimestamp(createdAt, 1, currentBlock)
-      expect(result).toBe(currentBlock - 300n)
-    })
-
-    it('never returns negative block number', () => {
-      const veryOldCreatedAt = Math.floor((Date.now() - 365 * 24 * 3600 * 1000) / 1000) // 1 year ago
-      const currentBlock = 100n
-      const result = estimateBlockFromTimestamp(veryOldCreatedAt, 1, currentBlock)
-      expect(result >= 0n).toBe(true)
     })
   })
 })

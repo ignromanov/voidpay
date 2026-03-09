@@ -11,7 +11,7 @@
 import { isAddress, getAddress } from 'viem'
 import { Ratelimit } from '@upstash/ratelimit'
 import { kv } from '@vercel/kv'
-import { getMaxBlockAge, estimateCurrentBlock } from '@/features/payment'
+import { getMaxBlockAge, estimateCurrentBlock } from '@/entities/network'
 
 export const runtime = 'edge'
 

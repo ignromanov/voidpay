@@ -33,13 +33,19 @@ vi.mock('@/features/invoice-codec', async (importOriginal) => {
 
 vi.mock('@/entities/invoice', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/entities/invoice')>()
+  const hook = vi.fn((selector?: (s: typeof mockStoreState) => unknown) => {
+    if (typeof selector === 'function') return selector(mockStoreState)
+    return mockStoreState
+  })
+  // Static methods used by usePaymentPolling
+  ;(hook as unknown as Record<string, unknown>).getState = () => mockStoreState
+  ;(hook as unknown as Record<string, unknown>).persist = {
+    hasHydrated: () => true,
+    onFinishHydration: vi.fn(),
+  }
   return {
     ...actual,
-    // Supports both plain call and selector call patterns used by Zustand
-    useTrackedInvoiceStore: vi.fn((selector?: (s: typeof mockStoreState) => unknown) => {
-      if (typeof selector === 'function') return selector(mockStoreState)
-      return mockStoreState
-    }),
+    useTrackedInvoiceStore: hook,
   }
 })
 

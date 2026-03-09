@@ -35,7 +35,8 @@ export function matchTransfer(
 
     // Safe BigInt conversion — skip malformed values
     try {
-      if (BigInt(t.rawContract.value) === exactTotal) {
+      const transferValue = BigInt(t.rawContract.value)
+      if (transferValue === exactTotal) {
         return t
       }
     } catch {

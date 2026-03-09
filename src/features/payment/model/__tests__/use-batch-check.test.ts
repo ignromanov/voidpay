@@ -20,7 +20,7 @@ vi.mock('../../lib/match-transfer', () => ({
 // ---------------------------------------------------------------------------
 // Mock estimateFromBlockHex
 // ---------------------------------------------------------------------------
-vi.mock('../../lib/confirmation-config', () => ({
+vi.mock('@/entities/network', () => ({
   estimateFromBlockHex: (_chainId: number, _issuedAt: number) => '0xabc123',
 }))
 

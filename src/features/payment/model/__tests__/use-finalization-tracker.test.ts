@@ -19,12 +19,14 @@ vi.mock('wagmi', () => ({
 }))
 
 // Mock invoice store
+const mockSetValidated = vi.fn()
 const mockSetFinalized = vi.fn()
 const mockResetPaymentState = vi.fn()
 
 vi.mock('@/entities/invoice', () => ({
   useTrackedInvoiceStore: vi.fn((selector?: (s: Record<string, unknown>) => unknown) => {
     const store = {
+      setValidated: mockSetValidated,
       setFinalized: mockSetFinalized,
       resetPaymentState: mockResetPaymentState,
     }
