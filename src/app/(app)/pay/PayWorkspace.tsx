@@ -108,7 +108,7 @@ interface PayWorkspaceReadyProps {
 function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
   const {
     panelStatus, source, dismissError, txHash, confirmations, storedError,
-    finalized, exactTotal, subtotal, polling, verifyTxHash,
+    finalized, exactTotal, subtotal, polling, verifyTxHash, isSyncing,
   } = payInvoice
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
@@ -132,12 +132,12 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
           invoiceId={invoice.invoiceId}
           txHash={txHash}
           exactTotal={exactTotal}
-          onReorgDetected={polling?.startAutoCheck}
+          onReorgDetected={polling.startAutoCheck}
         />
       )}
 
       <div className="relative z-10 h-full w-full" data-network={networkId}>
-        <StatusBadge status={panelStatus} />
+        <StatusBadge status={panelStatus} isSyncing={isSyncing} />
 
         {/* Invoice Preview — centered in safe zone */}
         <div
@@ -181,8 +181,9 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                     source={source}
                     {...(confirmations ? { confirmations } : {})}
                     finalized={finalized}
-                    pollingMode={polling?.mode ?? 'idle'}
-                    {...(polling ? { onStartWatching: polling.startWatching, onStopWatching: polling.stop } : {})}
+                    pollingMode={polling.mode}
+                    onStartWatching={polling.startWatching}
+                    onStopWatching={polling.stop}
                   />
                 ) : (
                   <PaymentPanel
@@ -191,15 +192,13 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                     source={source}
                     {...(paymentError ? { error: paymentError } : storedError ? { error: storedError } : {})}
                     onDismissError={dismissError}
-                    pollingMode={polling?.mode ?? 'idle'}
+                    pollingMode={polling.mode}
                     onVerifyTxHash={verifyTxHash}
-                    {...(polling ? {
-                      onIvePaid: polling.startAggressivePolling,
-                      onCheckPayment: polling.startManualCheck,
-                      onStartWatching: polling.startWatching,
-                      onStopWatching: polling.stop,
-                      ...(polling.cooldownUntil !== undefined ? { cooldownUntil: polling.cooldownUntil } : {}),
-                    } : {})}
+                    onIvePaid={polling.startAggressivePolling}
+                    onCheckPayment={polling.startManualCheck}
+                    onStartWatching={polling.startWatching}
+                    onStopWatching={polling.stop}
+                    {...(polling.cooldownUntil !== undefined ? { cooldownUntil: polling.cooldownUntil } : {})}
                   >
                     <PayButton
                       invoice={invoice}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { parseInvoiceHash, mapParseErrorToDecodeType } from '@/features/invoice-codec'
 import { usePaymentPolling } from '@/features/payment'
@@ -32,8 +32,9 @@ export interface PayInvoiceState {
   finalized: boolean
   exactTotal: string
   subtotal: string
-  polling: UsePaymentPollingResult | null
+  polling: UsePaymentPollingResult
   verifyTxHash: (args: { txHash: string }) => void
+  isSyncing: boolean
 }
 
 /**
@@ -54,7 +55,7 @@ export interface PayInvoiceState {
 export function usePayInvoice(): PayInvoiceState {
   const hash = useHashFragment()
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
-  const addInvoice = useTrackedInvoiceStore((s) => s.addInvoice)
+  const trackView = useTrackedInvoiceStore((s) => s.trackView)
   const setError = useTrackedInvoiceStore((s) => s.setError)
   const setTxHash = useTrackedInvoiceStore((s) => s.setTxHash)
 
@@ -88,6 +89,7 @@ export function usePayInvoice(): PayInvoiceState {
     [networkId, invoice],
   )
   const polling = usePaymentPolling({
+    enabled: !!invoice,
     invoiceId: invoice?.invoiceId ?? '',
     toAddress: invoice?.from?.walletAddress ?? '',
     chainId: networkId,
@@ -96,6 +98,28 @@ export function usePayInvoice(): PayInvoiceState {
     exactTotal: BigInt(amounts.exactTotal || '0'),
     fromBlock,
   })
+
+  // Syncing indicator: shows during auto-check with 600ms minimum display
+  const [syncVisible, setSyncVisible] = useState(false)
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    const isAutoChecking = polling.mode === 'auto-check'
+
+    if (isAutoChecking && !syncVisible) {
+      setSyncVisible(true)
+    }
+
+    if (!isAutoChecking && syncVisible) {
+      // Ensure minimum 600ms display to prevent flash
+      syncTimerRef.current = setTimeout(() => setSyncVisible(false), 600)
+      return () => {
+        if (syncTimerRef.current) clearTimeout(syncTimerRef.current)
+      }
+    }
+  }, [polling.mode, syncVisible])
+
+  const isSyncing = syncVisible && !!invoice
 
   // 1. Hydration detection: wait for hash to stabilize
   useEffect(() => {
@@ -120,7 +144,7 @@ export function usePayInvoice(): PayInvoiceState {
       setErrorType(null)
 
       try {
-        addInvoice({
+        trackView({
           invoiceId: result.data.invoiceId,
           invoiceUrl: `${window.location.origin}/pay#${hash}`,
           source: 'received',
@@ -134,7 +158,7 @@ export function usePayInvoice(): PayInvoiceState {
       setInvoice(null)
       setErrorType(mapParseErrorToDecodeType(result.error.message))
     }
-  }, [hash, isHydrated, addInvoice])
+  }, [hash, isHydrated, trackView])
 
   // 3. Sync network theme for background
   useEffect(() => {
@@ -179,7 +203,8 @@ export function usePayInvoice(): PayInvoiceState {
     finalized,
     exactTotal: amounts.exactTotal,
     subtotal: amounts.subtotal,
-    polling: invoice ? polling : null,
+    polling,
     verifyTxHash,
+    isSyncing,
   }
 }
