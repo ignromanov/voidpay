@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import type { PaymentPanelStatus } from '../types'
 
@@ -27,7 +28,12 @@ const FAKE_TX = ('0x' + '0'.repeat(64)) as `0x${string}`
  */
 function DevStatusToggleInner({ invoiceId }: DevStatusToggleProps) {
   const { setTxHash, setConfirmations, setError, resetPaymentState } =
-    useTrackedInvoiceStore()
+    useTrackedInvoiceStore(useShallow((s) => ({
+      setTxHash: s.setTxHash,
+      setConfirmations: s.setConfirmations,
+      setError: s.setError,
+      resetPaymentState: s.resetPaymentState,
+    })))
   const [idx, setIdx] = useState(0)
 
   const handleCycle = () => {

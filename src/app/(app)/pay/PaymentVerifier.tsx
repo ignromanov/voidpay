@@ -9,6 +9,7 @@ interface PaymentVerifierProps {
   invoiceId: string
   txHash: `0x${string}`
   exactTotal: string
+  onReorgDetected?: (() => void) | undefined
 }
 
 /**
@@ -23,6 +24,7 @@ function VerificationEffect(props: PaymentVerifierProps) {
     invoiceId: props.invoiceId,
     txHash: props.txHash,
     networkId: props.invoice.networkId,
+    onReorgDetected: props.onReorgDetected,
   })
   return null
 }

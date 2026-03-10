@@ -394,7 +394,7 @@ describe('addMagicDust', () => {
 
   it('should throw RangeError for float magicDust', () => {
     expect(() => addMagicDust('100000000', 1.5)).toThrow(RangeError)
-    expect(() => addMagicDust('100000000', 1.5)).toThrow(/integer 1-999/)
+    expect(() => addMagicDust('100000000', 1.5)).toThrow(/integer 1-1000/)
   })
 
   it('should throw RangeError for negative magicDust', () => {
@@ -405,8 +405,13 @@ describe('addMagicDust', () => {
     expect(() => addMagicDust('100000000', 0)).toThrow(RangeError)
   })
 
-  it('should throw RangeError for magicDust > 999', () => {
-    expect(() => addMagicDust('100000000', 1000)).toThrow(RangeError)
+  it('should throw RangeError for magicDust > 1000', () => {
+    expect(() => addMagicDust('100000000', 1001)).toThrow(RangeError)
+  })
+
+  it('should accept magicDust = 1000', () => {
+    const result = addMagicDust('100000000', 1000)
+    expect(result).toBe('100001000')
   })
 
   it('should throw on corrupted total string', () => {

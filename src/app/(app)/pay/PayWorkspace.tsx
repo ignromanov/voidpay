@@ -132,6 +132,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
           invoiceId={invoice.invoiceId}
           txHash={txHash}
           exactTotal={exactTotal}
+          onReorgDetected={polling?.startAutoCheck}
         />
       )}
 

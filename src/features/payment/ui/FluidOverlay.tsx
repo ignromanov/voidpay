@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from '@/shared/ui/motion'
-import { useReducedMotion } from '@/shared/ui/hooks/use-reduced-motion'
+import { useReducedMotion } from '@/shared/ui'
 import type { TargetAndTransition, Transition } from 'framer-motion'
 import type { PaymentStep } from '../model/types'
 

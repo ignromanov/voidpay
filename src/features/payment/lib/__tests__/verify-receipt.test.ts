@@ -41,7 +41,7 @@ function makeTransferLog(params: {
 describe('verifyNativeReceipt', () => {
   it('returns verified:true when tx.value matches expectedTotal', () => {
     const amount = 1_000_000_000_000_000_000n // 1 ETH in wei
-    const result = verifyNativeReceipt({ value: amount }, amount)
+    const result = verifyNativeReceipt({ value: amount, to: RECIPIENT }, RECIPIENT, amount)
     expect(result.verified).toBe(true)
     expect(result.actualAmount).toBe(amount)
     expect(result.expectedAmount).toBe(amount)
@@ -51,7 +51,7 @@ describe('verifyNativeReceipt', () => {
   it('returns verified:false with error when amounts do not match', () => {
     const sent = 900_000_000_000_000_000n
     const expected = 1_000_000_000_000_000_000n
-    const result = verifyNativeReceipt({ value: sent }, expected)
+    const result = verifyNativeReceipt({ value: sent, to: RECIPIENT }, RECIPIENT, expected)
     expect(result.verified).toBe(false)
     expect(result.actualAmount).toBe(sent)
     expect(result.expectedAmount).toBe(expected)
@@ -61,9 +61,23 @@ describe('verifyNativeReceipt', () => {
 
   it('returns verified:false when tx.value is zero', () => {
     const expected = 1_000_000_000_000_000_000n
-    const result = verifyNativeReceipt({ value: 0n }, expected)
+    const result = verifyNativeReceipt({ value: 0n, to: RECIPIENT }, RECIPIENT, expected)
     expect(result.verified).toBe(false)
     expect(result.actualAmount).toBe(0n)
+  })
+
+  it('returns verified:false when recipient does not match', () => {
+    const amount = 1_000_000_000_000_000_000n
+    const result = verifyNativeReceipt({ value: amount, to: OTHER_CONTRACT }, RECIPIENT, amount)
+    expect(result.verified).toBe(false)
+    expect(result.error).toContain('Recipient mismatch')
+  })
+
+  it('returns verified:false when tx has no recipient', () => {
+    const amount = 1_000_000_000_000_000_000n
+    const result = verifyNativeReceipt({ value: amount }, RECIPIENT, amount)
+    expect(result.verified).toBe(false)
+    expect(result.error).toBe('Transaction has no recipient')
   })
 })
 

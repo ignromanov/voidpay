@@ -11,6 +11,8 @@ export interface UseManualVerifyParams {
   recipient: string
   exactTotal: bigint
   tokenAddress?: string
+  decimals?: number
+  tokenSymbol?: string
 }
 
 export interface ManualVerifyResult {
@@ -34,6 +36,8 @@ export function useManualVerify({
   recipient,
   exactTotal,
   tokenAddress,
+  decimals = 18,
+  tokenSymbol,
 }: UseManualVerifyParams): UseManualVerifyResult {
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<ManualVerifyResult | undefined>(undefined)
@@ -90,7 +94,7 @@ export function useManualVerify({
             data: `0x${string}`
           }>,
         }
-        verifyResult = verifyErc20Receipt(erc20Receipt, tokenAddress, recipient, exactTotal)
+        verifyResult = verifyErc20Receipt(erc20Receipt, tokenAddress, recipient, exactTotal, decimals, tokenSymbol ?? 'TOKEN')
       } else {
         // Native: fetch tx for value, then check recipient (FR-033)
         const tx = await publicClient.getTransaction({ hash })
@@ -100,7 +104,7 @@ export function useManualVerify({
           return
         }
 
-        verifyResult = verifyNativeReceipt({ value: tx.value }, exactTotal)
+        verifyResult = verifyNativeReceipt({ value: tx.value, to: tx.to ?? undefined }, recipient, exactTotal, decimals, tokenSymbol ?? 'ETH')
       }
 
       const finalResult: ManualVerifyResult = {
@@ -119,7 +123,7 @@ export function useManualVerify({
     } finally {
       setIsLoading(false)
     }
-  }, [invoiceId, recipient, exactTotal, tokenAddress, publicClient, setTxHash])
+  }, [invoiceId, recipient, exactTotal, tokenAddress, publicClient, setTxHash, decimals, tokenSymbol])
 
   const ret: UseManualVerifyResult = { verify, isLoading }
   if (result !== undefined) ret.result = result

@@ -183,7 +183,7 @@ export function calculateTotalsBigInt(
   options: CalcOptions
 ): BigIntTotals {
   const { decimals, tax, discount } = options
-  const scale = BigInt(Math.pow(10, decimals))
+  const scale = 10n ** BigInt(decimals)
   const ZERO = BigInt(0)
   const HUNDRED_SQUARED = BigInt(10000)
 
@@ -258,7 +258,7 @@ export function generateMagicDust(): number {
   if (value === undefined) {
     throw new Error('Failed to generate random value')
   }
-  return (value % 999) + 1
+  return (value % 1000) + 1
 }
 
 /**
@@ -269,9 +269,9 @@ export function generateMagicDust(): number {
  * @returns New total with Magic Dust added
  */
 export function addMagicDust(total: string, magicDust: number): string {
-  if (!Number.isInteger(magicDust) || magicDust < 1 || magicDust > 999) {
+  if (!Number.isInteger(magicDust) || magicDust < 1 || magicDust > 1000) {
     throw new RangeError(
-      `[addMagicDust] magicDust must be integer 1-999, got ${magicDust}`
+      `[addMagicDust] magicDust must be integer 1-1000, got ${magicDust}`
     )
   }
   try {

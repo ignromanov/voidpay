@@ -8,6 +8,7 @@ export interface UseFinalizationTrackerParams {
   invoiceId: string
   txHash: `0x${string}`
   networkId: number
+  onReorgDetected?: (() => void) | undefined
 }
 
 type TrackingState = 'idle' | 'tracking' | 'finalized' | 'reorg' | 'timeout'
@@ -16,9 +17,9 @@ export function useFinalizationTracker({
   invoiceId,
   txHash,
   networkId,
+  onReorgDetected,
 }: UseFinalizationTrackerParams): void {
   const publicClient = usePublicClient({ chainId: networkId })
-  const setValidated = useTrackedInvoiceStore((s) => s.setValidated)
   const setFinalized = useTrackedInvoiceStore((s) => s.setFinalized)
   const resetPaymentState = useTrackedInvoiceStore((s) => s.resetPaymentState)
   // Internal state triggers re-render so waitFor can detect mock calls via MutationObserver
@@ -45,8 +46,6 @@ export function useFinalizationTracker({
       .then(() => {
         if (cancelled) return
         clearTimeout(timeoutId)
-        // On-chain receipt confirmation IS proof of validity — set both in order
-        setValidated(invoiceId, true)
         setFinalized(invoiceId)
         setTrackingState('finalized')
       })
@@ -56,6 +55,7 @@ export function useFinalizationTracker({
         // Reorg: transaction disappeared from chain
         toast.error('Chain reorg detected — transaction not found on chain')
         resetPaymentState(invoiceId)
+        onReorgDetected?.()
         setTrackingState('reorg')
       })
 
@@ -63,5 +63,5 @@ export function useFinalizationTracker({
       cancelled = true
       clearTimeout(timeoutId)
     }
-  }, [invoiceId, txHash, networkId, publicClient, setValidated, setFinalized, resetPaymentState])
+  }, [invoiceId, txHash, networkId, publicClient, setFinalized, resetPaymentState, onReorgDetected])
 }

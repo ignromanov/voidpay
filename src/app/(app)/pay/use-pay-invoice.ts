@@ -71,12 +71,8 @@ export function usePayInvoice(): PayInvoiceState {
     dueAt: invoice?.dueAt,
   })
 
-  // Finalized state — centralized here instead of direct store read in component
-  const finalized = useTrackedInvoiceStore((s) => {
-    if (!invoice) return false
-    const t = s.invoices.find((inv) => inv.invoiceId === invoice.invoiceId)
-    return t?.finalized ?? false
-  })
+  // Derived from tracked — no separate store subscription needed
+  const finalized = tracked?.finalized ?? false
 
   // Amount computation — centralized here
   const amounts = useMemo(

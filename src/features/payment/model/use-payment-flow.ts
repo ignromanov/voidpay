@@ -149,6 +149,7 @@ export function usePaymentFlow({
   } = useWaitForTransactionReceipt({
     hash: txHash,
     confirmations: 1,
+    chainId: invoice.networkId,
   })
 
   const idleSubState = deriveIdleSubState(isConnected, hasMismatch)

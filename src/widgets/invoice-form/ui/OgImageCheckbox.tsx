@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
-import { useShallow } from 'zustand/shallow'
+import { useShallow } from 'zustand/react/shallow'
 
 import { useCreatorStore } from '@/entities/creator'
 import { Switch } from '@/shared/ui/switch'

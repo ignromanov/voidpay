@@ -337,6 +337,8 @@ describe('useManualVerify', () => {
       TOKEN_ADDRESS,
       RECIPIENT,
       erc20Total,
+      18,
+      'TOKEN',
     )
     expect(mockVerifyNativeReceipt).not.toHaveBeenCalled()
 

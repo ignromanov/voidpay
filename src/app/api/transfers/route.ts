@@ -119,8 +119,8 @@ async function checkRateLimit(ip: string): Promise<{ allowed: boolean; remaining
 function extractIp(headers: Headers): string {
   const forwarded = headers.get('x-forwarded-for')
   if (forwarded) {
-    const first = forwarded.split(',')[0]?.trim()
-    if (first) return first
+    const last = forwarded.split(',').at(-1)?.trim()
+    if (last) return last
   }
   return headers.get('x-real-ip') ?? 'unknown'
 }

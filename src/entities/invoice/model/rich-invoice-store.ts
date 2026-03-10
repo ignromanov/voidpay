@@ -199,7 +199,17 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
     {
       name: INVOICE_VIEW_STORE_KEY,
       version: 1,
-      migrate: (persisted) => persisted as TrackedInvoiceStore,
+      migrate: (persisted) => {
+        try {
+          const state = persisted as Record<string, unknown>
+          if (!state || typeof state !== 'object' || !Array.isArray(state.invoices)) {
+            return { invoices: [] } as unknown as TrackedInvoiceStore
+          }
+          return persisted as TrackedInvoiceStore
+        } catch {
+          return { invoices: [] } as unknown as TrackedInvoiceStore
+        }
+      },
     }
   )
 )

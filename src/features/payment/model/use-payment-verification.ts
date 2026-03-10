@@ -50,14 +50,16 @@ export function usePaymentVerification({
     isSuccess: isReceiptSuccess,
   } = useWaitForTransactionReceipt({ hash: txHash, chainId })
 
-  // Stop watching blocks once soft-confirmation is reached
-  const needsBlockWatch = !verifyDone || (confirmations !== undefined && confirmations.current < confirmations.required)
+  // Stop watching blocks once soft-confirmation is reached or verification failed
+  const needsBlockWatch = (!verifyDone && !verifyError) || (confirmations !== undefined && confirmations.current < confirmations.required)
   const { data: currentBlock } = useBlockNumber({ watch: true, chainId, query: { enabled: needsBlockWatch } })
 
-  // For native tokens: fetch tx value asynchronously, store in state to trigger sync verify effect
+  // For native tokens: fetch tx value + to address asynchronously
   const [nativeTxValue, setNativeTxValue] = useState<bigint | undefined>(undefined)
+  const [nativeTxTo, setNativeTxTo] = useState<string | undefined>(undefined)
   const [nativeFetchError, setNativeFetchError] = useState<string | undefined>(undefined)
   const nativeFetchAttempted = useRef(false)
+  const receiptBlockStr = receipt?.blockNumber?.toString()
 
   useEffect(() => {
     if (tokenAddress) return
@@ -69,11 +71,10 @@ export function usePaymentVerification({
     nativeFetchAttempted.current = true
 
     publicClient.getTransaction({ hash: txHash }).then(
-      (tx) => setNativeTxValue(tx.value),
+      (tx) => { setNativeTxValue(tx.value); setNativeTxTo(tx.to ?? undefined) },
       (err) => setNativeFetchError(err instanceof Error ? err.message : 'Failed to fetch tx'),
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isReceiptSuccess, receipt?.blockNumber?.toString()])
+  }, [isReceiptSuccess, receiptBlockStr, receipt, publicClient, tokenAddress, txHash])
 
   // Keep store action refs stable so async callbacks always use the latest
   const setStoreErrorRef = useRef(setStoreError)
@@ -129,6 +130,8 @@ export function usePaymentVerification({
       tokenAddress!,
       recipientAddress ?? '',
       BigInt(exactTotal),
+      invoice.decimals,
+      invoice.currency ?? 'TOKEN',
     )
 
     if (!result.verified) { handleVerifyError(result); return }
@@ -141,8 +144,11 @@ export function usePaymentVerification({
     if (!nativeReady || !receipt) return
 
     const result: VerificationResult = verifyNativeReceipt(
-      { value: nativeTxValue! },
+      { value: nativeTxValue!, to: nativeTxTo },
+      recipientAddress ?? '',
       BigInt(exactTotal),
+      invoice.decimals,
+      invoice.currency ?? 'ETH',
     )
 
     if (!result.verified) { handleVerifyError(result); return }

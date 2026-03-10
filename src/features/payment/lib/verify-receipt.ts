@@ -21,6 +21,7 @@ const transferEvent = {
 
 interface NativeTx {
   value: bigint
+  to?: string | undefined
 }
 
 interface Erc20Receipt {
@@ -33,12 +34,25 @@ interface Erc20Receipt {
 
 export function verifyNativeReceipt(
   tx: NativeTx,
+  recipient: string,
   expectedTotal: bigint,
   decimals = 18,
   tokenSymbol = 'ETH',
 ): VerificationResult {
   const actualAmount = tx.value
   const expectedAmount = expectedTotal
+
+  // W3-016: Verify recipient address
+  if (!tx.to) {
+    return { verified: false, actualAmount, expectedAmount, error: 'Transaction has no recipient' }
+  }
+  try {
+    if (!isAddressEqual(tx.to as Address, recipient as Address)) {
+      return { verified: false, actualAmount, expectedAmount, error: `Recipient mismatch: expected ${recipient}, got ${tx.to}` }
+    }
+  } catch {
+    return { verified: false, actualAmount, expectedAmount, error: 'Invalid recipient address format' }
+  }
 
   if (actualAmount === expectedAmount) {
     return { verified: true, actualAmount, expectedAmount }
