@@ -9,6 +9,7 @@ export interface UseFinalizationTrackerParams {
   txHash: `0x${string}`
   networkId: number
   onReorgDetected?: (() => void) | undefined
+  enabled?: boolean
 }
 
 type TrackingState = 'idle' | 'tracking' | 'finalized' | 'reorg' | 'timeout'
@@ -18,6 +19,7 @@ export function useFinalizationTracker({
   txHash,
   networkId,
   onReorgDetected,
+  enabled = true,
 }: UseFinalizationTrackerParams): void {
   const publicClient = usePublicClient({ chainId: networkId })
   const setFinalized = useTrackedInvoiceStore((s) => s.setFinalized)
@@ -26,6 +28,7 @@ export function useFinalizationTracker({
   const [, setTrackingState] = useState<TrackingState>('idle')
 
   useEffect(() => {
+    if (!enabled) return
     if (!publicClient || !txHash || !invoiceId) return
 
     const timeoutMs = getFinalizationTimeout(networkId)
@@ -63,5 +66,5 @@ export function useFinalizationTracker({
       cancelled = true
       clearTimeout(timeoutId)
     }
-  }, [invoiceId, txHash, networkId, publicClient, setFinalized, resetPaymentState, onReorgDetected])
+  }, [enabled, invoiceId, txHash, networkId, publicClient, setFinalized, resetPaymentState, onReorgDetected])
 }

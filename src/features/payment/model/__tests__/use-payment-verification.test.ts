@@ -270,6 +270,72 @@ describe('usePaymentVerification', () => {
     })
   })
 
+  // Test case: enabled=false prevents all verification side effects
+  it('enabled=false: does not verify or count confirmations', async () => {
+    mockReceiptData = {
+      blockNumber: 97n,
+      status: 'success',
+      logs: [],
+      transactionHash: MOCK_TX_HASH,
+    }
+    mockReceiptSuccess = true
+    mockCurrentBlockNumber = 100n
+
+    const { result } = renderHook(() =>
+      usePaymentVerification({
+        invoice: mockNativeInvoice,
+        invoiceId: 'INV-NATIVE-001',
+        txHash: MOCK_TX_HASH,
+        exactTotal: '1000000000000000000',
+        enabled: false,
+      })
+    )
+
+    // Wait a tick to let any effects fire
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50))
+    })
+
+    expect(mockSetValidated).not.toHaveBeenCalled()
+    expect(mockSetError).not.toHaveBeenCalled()
+    expect(mockSetConfirmations).not.toHaveBeenCalled()
+    expect(result.current.isVerifying).toBe(false)
+  })
+
+  // Test case: enabled false→true starts verification
+  it('enabled false→true: starts verification on re-enable', async () => {
+    mockReceiptData = {
+      blockNumber: 97n,
+      status: 'success',
+      logs: [],
+      transactionHash: MOCK_TX_HASH,
+    }
+    mockReceiptSuccess = true
+    mockCurrentBlockNumber = 100n
+
+    const { rerender } = renderHook(
+      ({ enabled }: { enabled: boolean }) =>
+        usePaymentVerification({
+          invoice: mockNativeInvoice,
+          invoiceId: 'INV-NATIVE-001',
+          txHash: MOCK_TX_HASH,
+          exactTotal: '1000000000000000000',
+          enabled,
+        }),
+      { initialProps: { enabled: false } }
+    )
+
+    // Nothing called yet
+    expect(mockSetValidated).not.toHaveBeenCalled()
+
+    // Re-enable
+    rerender({ enabled: true })
+
+    await waitFor(() => {
+      expect(mockSetValidated).toHaveBeenCalledWith('INV-NATIVE-001', true)
+    })
+  })
+
   // Test case 6: Page reload during soft-confirm → re-fetches receipt and resumes from current block
   it('resumes soft-confirmation progress from current block height on re-mount (page reload)', async () => {
     // Simulate: tx was submitted, page reloaded, now we re-mount the hook.

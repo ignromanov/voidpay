@@ -12,6 +12,7 @@ export interface UsePaymentVerificationParams {
   invoiceId: string
   txHash: `0x${string}`
   exactTotal: string
+  enabled?: boolean
 }
 
 export interface UsePaymentVerificationResult {
@@ -26,6 +27,7 @@ export function usePaymentVerification({
   invoiceId,
   txHash,
   exactTotal,
+  enabled = true,
 }: UsePaymentVerificationParams): UsePaymentVerificationResult {
   const chainId = invoice.networkId
   const tokenAddress = invoice.tokenAddress
@@ -48,11 +50,11 @@ export function usePaymentVerification({
     data: receipt,
     isLoading: isReceiptLoading,
     isSuccess: isReceiptSuccess,
-  } = useWaitForTransactionReceipt({ hash: txHash, chainId })
+  } = useWaitForTransactionReceipt({ hash: txHash, chainId, query: { enabled: enabled !== false } })
 
   // Stop watching blocks once soft-confirmation is reached or verification failed
   const needsBlockWatch = (!verifyDone && !verifyError) || (confirmations !== undefined && confirmations.current < confirmations.required)
-  const { data: currentBlock } = useBlockNumber({ watch: true, chainId, query: { enabled: needsBlockWatch } })
+  const { data: currentBlock } = useBlockNumber({ watch: true, chainId, query: { enabled: needsBlockWatch && enabled !== false } })
 
   // For native tokens: fetch tx value + to address asynchronously
   const [nativeTxValue, setNativeTxValue] = useState<bigint | undefined>(undefined)
@@ -62,6 +64,7 @@ export function usePaymentVerification({
   const receiptBlockStr = receipt?.blockNumber?.toString()
 
   useEffect(() => {
+    if (!enabled) return
     if (tokenAddress) return
     if (!isReceiptSuccess || !receipt) return
     if (nativeFetchAttempted.current) return
@@ -74,7 +77,7 @@ export function usePaymentVerification({
       (tx) => { setNativeTxValue(tx.value); setNativeTxTo(tx.to ?? undefined) },
       (err) => setNativeFetchError(err instanceof Error ? err.message : 'Failed to fetch tx'),
     )
-  }, [isReceiptSuccess, receiptBlockStr, receipt, publicClient, tokenAddress, txHash])
+  }, [enabled, isReceiptSuccess, receiptBlockStr, receipt, publicClient, tokenAddress, txHash])
 
   // Keep store action refs stable so async callbacks always use the latest
   const setStoreErrorRef = useRef(setStoreError)
@@ -115,6 +118,7 @@ export function usePaymentVerification({
 
   // Phase 1a: verify ERC-20 synchronously when receipt arrives
   useEffect(() => {
+    if (!enabled) return
     if (!erc20Ready || !receipt) return
 
     const erc20Receipt = {
@@ -141,6 +145,7 @@ export function usePaymentVerification({
 
   // Phase 1b: verify native synchronously once tx value is fetched
   useEffect(() => {
+    if (!enabled) return
     if (!nativeReady || !receipt) return
 
     const result: VerificationResult = verifyNativeReceipt(
@@ -158,6 +163,7 @@ export function usePaymentVerification({
 
   // Phase 1c: propagate native fetch error to store
   useEffect(() => {
+    if (!enabled) return
     if (!nativeFetchError) return
     setStoreErrorRef.current(invoiceId, nativeFetchError)
     setVerifyError(nativeFetchError)
@@ -166,6 +172,7 @@ export function usePaymentVerification({
 
   // Phase 2: count block confirmations after verification passes
   useEffect(() => {
+    if (!enabled) return
     if (!verifyDone || txBlockNumber === undefined || currentBlock === undefined) return
 
     const requiredConfirmations = getSoftConfirmations(chainId)

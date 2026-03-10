@@ -141,6 +141,61 @@ describe('useFinalizationTracker', () => {
     expect(mockSetFinalized).not.toHaveBeenCalled()
   })
 
+  // Test case: enabled=false prevents all finalization side effects
+  it('enabled=false: does not start finalization tracking', async () => {
+    mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
+      status: 'success',
+      blockNumber: 100n,
+      transactionHash: MOCK_TX_HASH,
+    })
+
+    renderHook(() =>
+      useFinalizationTracker({
+        invoiceId: 'INV-001',
+        txHash: MOCK_TX_HASH,
+        networkId: 1,
+        enabled: false,
+      })
+    )
+
+    // Advance past the 60-minute ETH finalization timeout
+    await vi.advanceTimersByTimeAsync(61 * 60 * 1000)
+
+    expect(mockPublicClient.waitForTransactionReceipt).not.toHaveBeenCalled()
+    expect(mockSetFinalized).not.toHaveBeenCalled()
+    expect(mockResetPaymentState).not.toHaveBeenCalled()
+  })
+
+  // Test case: enabled false→true starts tracking
+  it('enabled false→true: starts finalization tracking on re-enable', async () => {
+    mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
+      status: 'success',
+      blockNumber: 100n,
+      transactionHash: MOCK_TX_HASH,
+    })
+
+    const { rerender } = renderHook(
+      ({ enabled }: { enabled: boolean }) =>
+        useFinalizationTracker({
+          invoiceId: 'INV-001',
+          txHash: MOCK_TX_HASH,
+          networkId: 1,
+          enabled,
+        }),
+      { initialProps: { enabled: false } }
+    )
+
+    // Nothing started yet
+    expect(mockPublicClient.waitForTransactionReceipt).not.toHaveBeenCalled()
+
+    // Re-enable
+    rerender({ enabled: true })
+
+    await waitFor(() => {
+      expect(mockSetFinalized).toHaveBeenCalledWith('INV-001')
+    })
+  })
+
   // Test case 3: Reorg detection (tx disappears) → toast + resetPaymentState (FR-011)
   it('reorg: shows toast and calls resetPaymentState when transaction disappears', async () => {
     // Simulate reorg: waitForTransactionReceipt rejects because tx is no longer on chain
