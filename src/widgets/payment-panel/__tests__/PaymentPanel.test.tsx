@@ -585,6 +585,29 @@ describe('PaymentPanel', () => {
     })
   })
 
+  describe('PollingStatus filtering', () => {
+    it('does not show PollingStatus when pollingMode is auto-check', () => {
+      render(<PaymentPanel invoice={mockInvoice} status="pending" pollingMode="auto-check" />)
+      expect(screen.queryByText('Checking...')).toBeNull()
+    })
+
+    it('shows PollingStatus for aggressive mode', () => {
+      render(<PaymentPanel invoice={mockInvoice} status="pending" pollingMode="aggressive" />)
+      expect(screen.getByText('Searching for your payment...')).toBeInTheDocument()
+    })
+
+    it('shows PollingStatus for watching mode', () => {
+      render(<PaymentPanel invoice={mockInvoice} status="pending" pollingMode="watching" />)
+      expect(screen.getByText('Watching for payment...')).toBeInTheDocument()
+    })
+
+    it('does not show PollingStatus for idle mode', () => {
+      render(<PaymentPanel invoice={mockInvoice} status="pending" pollingMode="idle" />)
+      expect(screen.queryByText('Checking...')).toBeNull()
+      expect(screen.queryByText('Watching for payment...')).toBeNull()
+    })
+  })
+
   describe('Single PollingStatus render (T022)', () => {
     it('renders only one PollingStatus when both onIvePaid and watching are active', () => {
       render(

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
+import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { computeAmounts } from '../lib/compute-amounts'
 import { STATUS_CONFIG } from './status-config'
 import { AmountDisplay } from './AmountDisplay'
@@ -101,7 +102,7 @@ export function PaymentPanel({
       <div
         data-testid="gradient-bar"
         className={cn(
-          'absolute top-0 left-0 right-0 h-1 bg-gradient-to-r',
+          'absolute top-0 left-0 right-0 h-1 bg-gradient-to-r transition-all duration-700',
           config.gradient,
           showPulse && 'animate-pulse'
         )}
@@ -116,159 +117,192 @@ export function PaymentPanel({
           </p>
         )}
 
-        {/* Pending state: Amount + ActionSlot */}
-        {isPending && (
-          <>
-            <AmountDisplay
-              subtotal={amounts.subtotal}
-              magicDust={amounts.magicDust}
-              exactTotal={amounts.exactTotal}
-              decimals={invoice.decimals}
-              currency={invoice.currency}
-            />
-            <ActionSlot>{children}</ActionSlot>
+        <AnimatePresence mode="wait" initial={false}>
+          {/* Pending state: Amount + ActionSlot */}
+          {isPending && (
+            <motion.div
+              key="pending"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-3"
+            >
+              <AmountDisplay
+                subtotal={amounts.subtotal}
+                magicDust={amounts.magicDust}
+                exactTotal={amounts.exactTotal}
+                decimals={invoice.decimals}
+                currency={invoice.currency}
+              />
+              <ActionSlot>{children}</ActionSlot>
 
-            {/* US4: "I've paid" button + polling status */}
-            {onIvePaid && (
-              <div className="space-y-2">
+              {/* US4: "I've paid" button */}
+              {onIvePaid && (
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-zinc-300 border-zinc-700 hover:border-violet-500/50 hover:text-white"
+                    onClick={onIvePaid}
+                    data-testid="ive-paid-button"
+                  >
+                    I&apos;ve paid
+                  </Button>
+                </div>
+              )}
+
+              {/* US6: "Check payment" button with cooldown */}
+              {onCheckPayment && (
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="w-full text-zinc-300 border-zinc-700 hover:border-violet-500/50 hover:text-white"
-                  onClick={onIvePaid}
-                  data-testid="ive-paid-button"
+                  className="w-full text-zinc-400 hover:text-white"
+                  onClick={onCheckPayment}
+                  disabled={cooldownSeconds > 0}
+                  data-testid="check-payment-button"
                 >
-                  I&apos;ve paid
+                  {cooldownSeconds > 0
+                    ? `Check payment (${cooldownSeconds}s)`
+                    : 'Check payment'}
                 </Button>
-              </div>
-            )}
+              )}
 
-            {/* US6: "Check payment" button with cooldown */}
-            {onCheckPayment && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full text-zinc-400 hover:text-white"
-                onClick={onCheckPayment}
-                disabled={cooldownSeconds > 0}
-                data-testid="check-payment-button"
-              >
-                {cooldownSeconds > 0
-                  ? `Check payment (${cooldownSeconds}s)`
-                  : 'Check payment'}
-              </Button>
-            )}
-
-            {/* US8: "Watch for payment" toggle (creator side) */}
-            {(onStartWatching || onStopWatching) && (
-              <div className="space-y-2">
-                {isWatching ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full text-violet-400 hover:text-white"
-                    onClick={onStopWatching}
-                    data-testid="stop-watching-button"
-                  >
-                    Stop watching
-                  </Button>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full text-zinc-400 hover:text-violet-300"
-                    onClick={onStartWatching}
-                    data-testid="start-watching-button"
-                  >
-                    Watch for payment
-                  </Button>
-                )}
-              </div>
-            )}
-
-            {/* US9: "Verify by txHash" expandable section */}
-            {onVerifyTxHash && (
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 rounded"
-                  onClick={() => setTxHashOpen(v => !v)}
-                  data-testid="verify-txhash-toggle"
-                  aria-expanded={txHashOpen}
-                >
-                  {txHashOpen ? (
-                    <ChevronUpIcon size={12} />
-                  ) : (
-                    <ChevronDownIcon size={12} />
-                  )}
-                  Verify by transaction hash
-                </button>
-                {txHashOpen && (
-                  <div className="space-y-2" data-testid="verify-txhash-section">
-                    <Input
-                      placeholder="0x..."
-                      value={txHashInput}
-                      onChange={e => setTxHashInput(e.target.value)}
-                      className="font-mono text-xs bg-zinc-900 border-zinc-700 text-zinc-200"
-                      data-testid="txhash-input"
-                    />
+              {/* US8: "Watch for payment" toggle */}
+              {(onStartWatching || onStopWatching) && (
+                <div className="space-y-2">
+                  {isWatching ? (
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      className="w-full border-zinc-700 text-zinc-300 hover:text-white disabled:opacity-40"
-                      disabled={!txHashValid}
-                      onClick={() => onVerifyTxHash({ txHash: txHashInput })}
-                      data-testid="verify-txhash-button"
+                      className="w-full text-violet-400 hover:text-white"
+                      onClick={onStopWatching}
+                      data-testid="stop-watching-button"
                     >
-                      Verify
+                      Stop watching
                     </Button>
-                  </div>
-                )}
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-zinc-400 hover:text-violet-300"
+                      onClick={onStartWatching}
+                      data-testid="start-watching-button"
+                    >
+                      Watch for payment
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* US9: "Verify by txHash" expandable section */}
+              {onVerifyTxHash && (
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 rounded"
+                    onClick={() => setTxHashOpen(v => !v)}
+                    data-testid="verify-txhash-toggle"
+                    aria-expanded={txHashOpen}
+                  >
+                    {txHashOpen ? (
+                      <ChevronUpIcon size={12} />
+                    ) : (
+                      <ChevronDownIcon size={12} />
+                    )}
+                    Verify by transaction hash
+                  </button>
+                  {txHashOpen && (
+                    <div className="space-y-2" data-testid="verify-txhash-section">
+                      <Input
+                        placeholder="0x..."
+                        value={txHashInput}
+                        onChange={e => setTxHashInput(e.target.value)}
+                        className="font-mono text-xs bg-zinc-900 border-zinc-700 text-zinc-200"
+                        data-testid="txhash-input"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full border-zinc-700 text-zinc-300 hover:text-white disabled:opacity-40"
+                        disabled={!txHashValid}
+                        onClick={() => onVerifyTxHash({ txHash: txHashInput })}
+                        data-testid="verify-txhash-button"
+                      >
+                        Verify
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Polling status — user-initiated modes only (auto-check shown in StatusBadge) */}
+              {pollingMode && pollingMode !== 'idle' && pollingMode !== 'auto-check' && (
+                <PollingStatus mode={pollingMode} />
+              )}
+            </motion.div>
+          )}
+
+          {/* Paid state: PaidConfirmation */}
+          {isPaid && txHash && (
+            <motion.div
+              key="paid"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <PaidConfirmation
+                subtotal={amounts.subtotal}
+                magicDust={amounts.magicDust}
+                exactTotal={amounts.exactTotal}
+                decimals={invoice.decimals}
+                currency={invoice.currency}
+                confirmations={confirmations}
+                finalized={finalized}
+                reorgDetected={reorgDetected}
+              />
+            </motion.div>
+          )}
+
+          {/* Paid without txHash: fallback */}
+          {isPaid && !txHash && (
+            <motion.div
+              key="paid-fallback"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="text-center py-6" data-testid="paid-fallback">
+                <CheckCircleIcon className="text-emerald-400 mx-auto mb-2" size={32} />
+                <p className="text-sm text-zinc-200">Payment detected</p>
+                <p className="text-xs text-zinc-400">Verifying transaction...</p>
               </div>
-            )}
+            </motion.div>
+          )}
 
-            {/* Unified polling status — single render point */}
-            {pollingMode && pollingMode !== 'idle' && (
-              <PollingStatus mode={pollingMode} />
-            )}
-          </>
-        )}
+          {/* Expired state */}
+          {isExpired && (
+            <motion.div
+              key="expired"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ExpiredState
+                subtotal={amounts.subtotal}
+                magicDust={amounts.magicDust}
+                exactTotal={amounts.exactTotal}
+                decimals={invoice.decimals}
+                currency={invoice.currency}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Paid state: PaidConfirmation */}
-        {isPaid && txHash && (
-          <PaidConfirmation
-            subtotal={amounts.subtotal}
-            magicDust={amounts.magicDust}
-            exactTotal={amounts.exactTotal}
-            decimals={invoice.decimals}
-            currency={invoice.currency}
-            confirmations={confirmations}
-            finalized={finalized}
-            reorgDetected={reorgDetected}
-          />
-        )}
-
-        {/* Paid without txHash: fallback (corrupted store data) */}
-        {isPaid && !txHash && (
-          <div className="text-center py-6" data-testid="paid-fallback">
-            <CheckCircleIcon className="text-emerald-400 mx-auto mb-2" size={32} />
-            <p className="text-sm text-zinc-200">Payment detected</p>
-            <p className="text-xs text-zinc-400">Verifying transaction...</p>
-          </div>
-        )}
-
-        {/* Expired state: ExpiredState */}
-        {isExpired && (
-          <ExpiredState
-            subtotal={amounts.subtotal}
-            magicDust={amounts.magicDust}
-            exactTotal={amounts.exactTotal}
-            decimals={invoice.decimals}
-            currency={invoice.currency}
-          />
-        )}
-
-        {/* Error banner (visible in any non-paid state) */}
+        {/* Error banner — outside AnimatePresence */}
         {!isPaid && error && onDismissError && (
           <ErrorBanner error={error} onDismiss={onDismissError} />
         )}
