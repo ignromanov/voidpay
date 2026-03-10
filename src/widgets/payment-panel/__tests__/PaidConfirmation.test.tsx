@@ -74,15 +74,15 @@ describe('PaidConfirmation', () => {
     expect(screen.queryByText(/Sent:/)).toBeNull()
   })
 
-  it('removes animate-pulse when confirmation progress reaches 100%', () => {
+  it('hides confirmation progress when confirmations reach 100%', () => {
     const { container } = render(
       <PaidConfirmation
         {...defaultProps}
         confirmations={{ current: 15, required: 15 }}
       />
     )
-    const shieldContainer = container.querySelector('.bg-blue-500\\/10.rounded-full')
-    expect(shieldContainer?.className).not.toContain('animate-pulse')
+    expect(container.querySelector('[class*="animate-pulse"]')).toBeNull()
+    expect(screen.queryByText(/Protecting against chain reorgs/)).toBeNull()
   })
 
   describe('finalized prop', () => {
