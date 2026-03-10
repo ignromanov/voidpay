@@ -26,6 +26,7 @@ export { __resetPollingCounters }
 export type { PollingMode, PollingState }
 
 export interface UsePaymentPollingParams {
+  enabled?: boolean  // default true for backward compatibility
   invoiceId: string
   toAddress: string
   chainId: number
@@ -52,7 +53,7 @@ export interface UsePaymentPollingResult {
 // ---------------------------------------------------------------------------
 
 export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPollingResult {
-  const { invoiceId, toAddress, chainId, contractAddress, category, exactTotal, fromBlock } = params
+  const { enabled = true, invoiceId, toAddress, chainId, contractAddress, category, exactTotal, fromBlock } = params
 
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE)
 
@@ -121,21 +122,24 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
 
   // ---- Public actions ----
   const startAutoCheck = useCallback(() => {
+    if (!enabled) return
     isActiveRef.current = true
     sessionStartedAtRef.current = Date.now()
     sessionModeRef.current = 'auto-check'
     dispatch({ type: 'START', mode: 'auto-check', sessionId: nextSessionId() })
-  }, [])
+  }, [enabled])
 
   const startManualCheck = useCallback(() => {
+    if (!enabled) return
     if (timerRef.current !== null) { clearTimeout(timerRef.current); timerRef.current = null }
     isActiveRef.current = true
     sessionStartedAtRef.current = Date.now()
     sessionModeRef.current = 'manual'
     dispatch({ type: 'START', mode: 'manual', sessionId: nextSessionId() })
-  }, [])
+  }, [enabled])
 
   const startAggressivePolling = useCallback(() => {
+    if (!enabled) return
     if (activeSessionCount >= MAX_CONCURRENT_SESSIONS) {
       dispatch({ type: 'SET_ERROR', payload: 'Max concurrent polling sessions reached' })
       return
@@ -147,9 +151,10 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
     sessionModeRef.current = 'aggressive'
     if (!holdsSlotRef.current) { incrementActiveSessionCount(); holdsSlotRef.current = true }
     dispatch({ type: 'START', mode: 'aggressive', sessionId: nextSessionId() })
-  }, [])
+  }, [enabled])
 
   const startWatching = useCallback(() => {
+    if (!enabled) return
     if (activeSessionCount >= MAX_CONCURRENT_SESSIONS) {
       dispatch({ type: 'SET_ERROR', payload: 'Max concurrent polling sessions reached' })
       return
@@ -162,7 +167,7 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
     sessionModeRef.current = 'watching'
     if (!holdsSlotRef.current) { incrementActiveSessionCount(); holdsSlotRef.current = true }
     dispatch({ type: 'START', mode: 'watching', sessionId: nextSessionId() })
-  }, [])
+  }, [enabled])
 
   const stop = useCallback(() => {
     flushStop()
@@ -223,8 +228,10 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.mode, state.sessionId])
 
-  // ---- Mount: auto-check once ----
+  // ---- Mount / enabled change: auto-check once ----
   useEffect(() => {
+    if (!enabled) return
+
     const check = () => {
       const tracked = useTrackedInvoiceStore.getState().invoices.find(
         (inv) => inv.invoiceId === invoiceId,
@@ -239,7 +246,7 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
     }
     return useTrackedInvoiceStore.persist.onFinishHydration(check)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [enabled])
 
   // ---- Unmount: cleanup ----
   // Refs must be read inside the cleanup function (not captured at mount time)

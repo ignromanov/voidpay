@@ -587,6 +587,54 @@ describe('usePaymentPolling', () => {
   })
 
   // -------------------------------------------------------------------------
+  // TC14: enabled=false — does not fire auto-check on mount
+  // -------------------------------------------------------------------------
+  it('enabled=false: does not fire auto-check on mount', async () => {
+    const { result } = renderHook(() =>
+      usePaymentPolling({ ...BASE_PARAMS, enabled: false })
+    )
+
+    await vi.advanceTimersByTimeAsync(100)
+
+    expect(result.current.mode).toBe('idle')
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  // -------------------------------------------------------------------------
+  // TC15: enabled=false — public actions are no-ops
+  // -------------------------------------------------------------------------
+  it('enabled=false: public actions are no-ops', async () => {
+    const { result } = renderHook(() =>
+      usePaymentPolling({ ...BASE_PARAMS, enabled: false })
+    )
+
+    act(() => { result.current.startManualCheck() })
+    await vi.advanceTimersByTimeAsync(100)
+
+    expect(result.current.mode).toBe('idle')
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  // -------------------------------------------------------------------------
+  // TC16: enabled transitions false→true — triggers auto-check
+  // -------------------------------------------------------------------------
+  it('enabled transitions false→true: triggers auto-check', async () => {
+    let enabled = false
+    const { result, rerender } = renderHook(() =>
+      usePaymentPolling({ ...BASE_PARAMS, enabled })
+    )
+
+    await vi.advanceTimersByTimeAsync(100)
+    expect(mockFetch).not.toHaveBeenCalled()
+
+    enabled = true
+    rerender()
+    await vi.advanceTimersByTimeAsync(100)
+
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  // -------------------------------------------------------------------------
   // TC13: stop() — exits any active polling mode immediately
   // -------------------------------------------------------------------------
   it('stop: exits aggressive mode immediately when stop() is called', async () => {

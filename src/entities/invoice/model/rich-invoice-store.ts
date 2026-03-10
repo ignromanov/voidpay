@@ -45,10 +45,34 @@ export interface TrackedInvoice {
  */
 const MAX_INVOICES = 50
 
+/**
+ * Shared upsert logic for addInvoice and trackView.
+ * Merges data into existing entry (or creates new), returns updated array.
+ */
+function _upsertInvoice(
+  invoices: TrackedInvoice[],
+  data: Partial<TrackedInvoice> & { invoiceId: string },
+): TrackedInvoice[] {
+  const existing = invoices.find((inv) => inv.invoiceId === data.invoiceId)
+  const merged = {
+    ...existing,
+    ...data,
+    createdAt: existing?.createdAt ?? new Date().toISOString(),
+  } as TrackedInvoice
+  const filtered = invoices.filter((inv) => inv.invoiceId !== data.invoiceId)
+  return [merged, ...filtered].slice(0, MAX_INVOICES)
+}
+
 interface TrackedInvoiceStore {
   invoices: TrackedInvoice[]
   // actions:
   addInvoice: (invoice: Omit<TrackedInvoice, 'createdAt'>) => void
+  trackView: (data: {
+    invoiceId: string
+    invoiceUrl: string
+    source: InvoiceSource
+    viewedAt: string
+  }) => void
   setTxHash: (invoiceId: string, txHash: `0x${string}`, validated?: boolean) => void
   setValidated: (invoiceId: string, validated: boolean) => void
   setFinalized: (invoiceId: string) => void
@@ -73,7 +97,7 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
           const existing = state.invoices.find(
             (inv) => inv.invoiceId === invoice.invoiceId
           )
-          // W3-013: reset all payment-critical fields on merge to prevent stale state
+          // W3-013: reset payment-critical fields on merge to prevent stale state
           const safeDefaults = {
             txHash: undefined,
             txHashValidated: undefined,
@@ -82,17 +106,20 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
             confirmations: undefined,
             error: undefined,
           }
-          const merged = {
-            ...existing,
-            ...safeDefaults,
-            ...invoice,
-            createdAt: existing?.createdAt ?? new Date().toISOString(),
-          } as TrackedInvoice
-          const filtered = state.invoices.filter(
-            (inv) => inv.invoiceId !== invoice.invoiceId
-          )
-          return { invoices: [merged, ...filtered].slice(0, MAX_INVOICES) }
+          return {
+            invoices: _upsertInvoice(state.invoices, {
+              ...safeDefaults,
+              ...invoice,
+              createdAt: existing?.createdAt ?? new Date().toISOString(),
+            }),
+          }
         })
+      },
+
+      trackView: (data) => {
+        set((state) => ({
+          invoices: _upsertInvoice(state.invoices, data),
+        }))
       },
 
       setTxHash: (invoiceId, txHash, validated = false) => {

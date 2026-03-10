@@ -478,6 +478,129 @@ describe('useTrackedInvoiceStore', () => {
     })
   })
 
+  describe('trackView', () => {
+    it('creates new entry when invoice does not exist', () => {
+      const { trackView } = useTrackedInvoiceStore.getState()
+
+      trackView({
+        invoiceId: 'NEW-VIEW',
+        invoiceUrl: 'https://voidpay.xyz/pay#hash',
+        source: 'received',
+        viewedAt: '2026-03-10T12:00:00Z',
+      })
+
+      const state = useTrackedInvoiceStore.getState()
+      expect(state.invoices).toHaveLength(1)
+      expect(state.invoices[0].invoiceId).toBe('NEW-VIEW')
+      expect(state.invoices[0].source).toBe('received')
+      expect(state.invoices[0].viewedAt).toBe('2026-03-10T12:00:00Z')
+      // New entry must not have stale payment fields
+      expect(state.invoices[0].txHash).toBeUndefined()
+      expect(state.invoices[0].txHashValidated).toBeUndefined()
+      expect(state.invoices[0].finalized).toBeUndefined()
+    })
+
+    it('preserves txHash, txHashValidated, finalized, paidAt on re-view', () => {
+      const { addInvoice, setTxHash, setValidated, setFinalized, trackView } =
+        useTrackedInvoiceStore.getState()
+
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'PAID-VIEW' }))
+      setTxHash('PAID-VIEW', `0x${'ab'.repeat(32)}`, false)
+      setValidated('PAID-VIEW', true)
+      setFinalized('PAID-VIEW')
+
+      trackView({
+        invoiceId: 'PAID-VIEW',
+        invoiceUrl: 'https://voidpay.xyz/pay#updated',
+        source: 'received',
+        viewedAt: '2026-03-10T14:00:00Z',
+      })
+
+      const inv = useTrackedInvoiceStore.getState().invoices[0]
+      expect(inv.txHash).toBe(`0x${'ab'.repeat(32)}`)
+      expect(inv.txHashValidated).toBe(true)
+      expect(inv.finalized).toBe(true)
+      expect(inv.paidAt).toBeDefined()
+      expect(inv.viewedAt).toBe('2026-03-10T14:00:00Z')
+      expect(inv.invoiceUrl).toBe('https://voidpay.xyz/pay#updated')
+    })
+
+    it('preserves confirmations and error fields on re-view', () => {
+      const { addInvoice, setTxHash, setConfirmations, setError, trackView } =
+        useTrackedInvoiceStore.getState()
+
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'CONFIRM-VIEW' }))
+      setTxHash('CONFIRM-VIEW', `0x${'cd'.repeat(32)}`, false)
+      setConfirmations('CONFIRM-VIEW', { current: 2, required: 3 })
+      setError('CONFIRM-VIEW', 'some error')
+
+      trackView({
+        invoiceId: 'CONFIRM-VIEW',
+        invoiceUrl: 'https://voidpay.xyz/pay#hash',
+        source: 'received',
+        viewedAt: '2026-03-10T15:00:00Z',
+      })
+
+      const inv = useTrackedInvoiceStore.getState().invoices[0]
+      expect(inv.txHash).toBe(`0x${'cd'.repeat(32)}`)
+      expect(inv.confirmations).toEqual({ current: 2, required: 3 })
+      expect(inv.error).toBe('some error')
+    })
+
+    it('updates source on re-view', () => {
+      const { addInvoice, trackView } = useTrackedInvoiceStore.getState()
+
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'SRC', source: 'created' }))
+
+      trackView({
+        invoiceId: 'SRC',
+        invoiceUrl: 'https://voidpay.xyz/pay#hash',
+        source: 'received',
+        viewedAt: '2026-03-10T16:00:00Z',
+      })
+
+      expect(useTrackedInvoiceStore.getState().invoices[0].source).toBe('received')
+    })
+
+    it('moves viewed invoice to top of list (MRU order)', () => {
+      const { addInvoice, trackView } = useTrackedInvoiceStore.getState()
+
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'A' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'B' }))
+      addInvoice(createMockTrackedInvoice({ invoiceId: 'C' }))
+      // Order: C, B, A
+
+      trackView({
+        invoiceId: 'A',
+        invoiceUrl: 'https://voidpay.xyz/pay#hash',
+        source: 'received',
+        viewedAt: '2026-03-10T17:00:00Z',
+      })
+
+      const ids = useTrackedInvoiceStore.getState().invoices.map(i => i.invoiceId)
+      expect(ids[0]).toBe('A')
+    })
+
+    it('respects MAX_INVOICES limit', () => {
+      const { addInvoice, trackView } = useTrackedInvoiceStore.getState()
+
+      for (let i = 0; i < 50; i++) {
+        addInvoice(createMockTrackedInvoice({ invoiceId: `FILL-${i}` }))
+      }
+
+      trackView({
+        invoiceId: 'OVERFLOW',
+        invoiceUrl: 'https://voidpay.xyz/pay#hash',
+        source: 'received',
+        viewedAt: '2026-03-10T18:00:00Z',
+      })
+
+      const state = useTrackedInvoiceStore.getState()
+      expect(state.invoices).toHaveLength(50)
+      expect(state.invoices[0].invoiceId).toBe('OVERFLOW')
+    })
+  })
+
   describe('store hardening', () => {
     // W3-013: addInvoice merge-upsert must NOT inherit stale payment fields
     describe('addInvoice resets payment fields on upsert (W3-013)', () => {
