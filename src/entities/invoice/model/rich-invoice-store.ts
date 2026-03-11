@@ -105,7 +105,7 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
             finalized: undefined,
             confirmations: undefined,
             error: undefined,
-          }
+          } as unknown as Partial<TrackedInvoice>
           return {
             invoices: _upsertInvoice(state.invoices, {
               ...safeDefaults,

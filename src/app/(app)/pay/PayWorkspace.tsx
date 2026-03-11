@@ -17,8 +17,7 @@ import { Button } from '@/shared/ui/button'
 
 import { usePayInvoice } from './use-pay-invoice'
 import type { PayInvoiceState } from './use-pay-invoice'
-import { StatusBadge } from './StatusBadge'
-import { MinimizedPill } from './MinimizedPill'
+import { StatusBadge, MinimizedPill } from '@/widgets/payment-panel'
 
 /**
  * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.

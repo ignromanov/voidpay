@@ -113,9 +113,10 @@ export function usePayInvoice(): PayInvoiceState {
     if (!isAutoChecking && syncVisible) {
       // Ensure minimum 600ms display to prevent flash
       syncTimerRef.current = setTimeout(() => setSyncVisible(false), 600)
-      return () => {
-        if (syncTimerRef.current) clearTimeout(syncTimerRef.current)
-      }
+    }
+
+    return () => {
+      if (syncTimerRef.current) clearTimeout(syncTimerRef.current)
     }
   }, [polling.mode, syncVisible])
 

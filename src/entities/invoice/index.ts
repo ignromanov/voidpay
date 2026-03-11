@@ -46,3 +46,7 @@ export type { InvoiceStatus, InvoiceStatusInput } from './lib/compute-status'
 // Invoice view store (from model layer)
 export { useTrackedInvoiceStore } from './model/rich-invoice-store'
 export type { TrackedInvoice, InvoiceSource } from './model/rich-invoice-store'
+
+// Amount computation
+export { computeAmounts } from './lib/compute-amounts'
+export type { ComputedAmounts } from './lib/compute-amounts'

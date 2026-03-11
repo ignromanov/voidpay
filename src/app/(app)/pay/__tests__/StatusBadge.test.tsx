@@ -1,6 +1,6 @@
 import { render, screen } from '@/shared/lib/test-utils'
 import { describe, it, expect } from 'vitest'
-import { StatusBadge } from '../StatusBadge'
+import { StatusBadge } from '@/widgets/payment-panel'
 
 describe('StatusBadge', () => {
   it('shows status label when not syncing', () => {
