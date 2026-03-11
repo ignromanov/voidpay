@@ -18,6 +18,7 @@ import { Button } from '@/shared/ui/button'
 import { usePayInvoice } from './use-pay-invoice'
 import type { PayInvoiceState } from './use-pay-invoice'
 import { StatusBadge, MinimizedPill } from '@/widgets/payment-panel'
+import { CreatorHintBanner } from './CreatorHintBanner'
 
 /**
  * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.
@@ -160,6 +161,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
 
         {/* Payment Panel — floating bottom overlay */}
         <div className="absolute bottom-4 left-1/2 z-40 w-full max-w-[95%] -translate-x-1/2 px-4 md:bottom-5 md:max-w-xl">
+          <CreatorHintBanner isCreator={source === 'created'} />
           <AnimatePresence mode="wait">
             {isMinimized ? (
               <MinimizedPill key="minimized" isPaid={isPaid} onExpand={() => setIsMinimized(false)} />
