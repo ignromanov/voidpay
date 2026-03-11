@@ -24,6 +24,9 @@ import {
 } from '@/shared/lib/amount-utils'
 import type { GenerateOptions } from './types'
 
+// NOTE: History is tracked via TrackedInvoiceStore only (historySlice removed).
+// Invoice data is decoded from URL when needed (same as ReceivedInvoiceList pattern).
+
 /**
  * Calculate total amount from invoice data using BigInt precision.
  *
@@ -68,13 +71,6 @@ export function calculateTotalAmount(invoice: PartialInvoice, lineItems: LineIte
  * addToHistory(invoice, url)
  */
 export function addToHistory(invoice: Invoice, invoiceUrl: string): void {
-  const { addHistoryEntry } = useCreatorStore.getState()
-
-  addHistoryEntry({
-    invoice,
-    invoiceUrl,
-  })
-
   const { addInvoice } = useTrackedInvoiceStore.getState()
   addInvoice({
     invoiceId: invoice.invoiceId,

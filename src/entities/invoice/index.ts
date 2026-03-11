@@ -16,7 +16,6 @@ export type {
   DraftState,
   InvoiceTemplate,
   PaymentReceipt,
-  CreationHistoryEntry,
   // Generic utilities
   DeepPartial,
   PartialInvoice,

@@ -23,7 +23,6 @@ vi.mock('@/features/invoice-codec', () => ({
 vi.mock('@/entities/creator', () => ({
   useCreatorStore: {
     getState: () => ({
-      addHistoryEntry: vi.fn(),
       preferences: {
         magicDustEnabled: true,
       },

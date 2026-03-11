@@ -10,7 +10,6 @@
 
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { useCreatorStore } from '@/entities/creator'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { HistoryList, ReceivedInvoiceList } from '@/features/invoice-history'
 import { useReceivedInvoices } from './use-received-invoices'
@@ -49,13 +48,14 @@ function HistoryPageContent() {
   const debug =
     process.env.NODE_ENV === 'development' || searchParams.get('debug') === '1'
 
-  const creatorHydrated = useCreatorStore.persist.hasHydrated()
   const trackedHydrated = useTrackedInvoiceStore.persist.hasHydrated()
 
-  const createdCount = useCreatorStore((s) => s.history.length)
+  const createdCount = useTrackedInvoiceStore((s) =>
+    s.invoices.filter((inv) => inv.source === 'created').length
+  )
   const receivedInvoices = useReceivedInvoices()
 
-  if (!creatorHydrated || !trackedHydrated) {
+  if (!trackedHydrated) {
     return <HistorySkeleton />
   }
 

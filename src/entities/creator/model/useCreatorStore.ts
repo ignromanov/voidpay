@@ -17,7 +17,6 @@ import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
 import {
   createDraftSlice,
   createTemplateSlice,
-  createHistorySlice,
   createPreferencesSlice,
   createIdCounterSlice,
   createUtilitySlice,
@@ -33,7 +32,6 @@ const initialState = {
   activeDraft: null,
   lineItems: [],
   templates: [],
-  history: [],
   preferences: {},
   idCounter: {
     currentValue: 1,
@@ -238,7 +236,6 @@ export const useCreatorStore = create<CreatorStore>()(
       // ========== Slices ==========
       ...createDraftSlice(...a),
       ...createTemplateSlice(...a),
-      ...createHistorySlice(...a),
       ...createPreferencesSlice(...a),
       ...createIdCounterSlice(...a),
       ...createUtilitySlice(...a),
@@ -320,10 +317,10 @@ export const useCreatorStore = create<CreatorStore>()(
         activeDraft: state.activeDraft,
         lineItems: state.lineItems,
         templates: state.templates,
-        history: state.history,
         preferences: state.preferences,
         idCounter: state.idCounter,
         // Note: networkTheme is intentionally excluded (transient UI state)
+        // Note: history removed — now lives in TrackedInvoiceStore
       }),
     }
   )

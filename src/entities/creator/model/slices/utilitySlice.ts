@@ -28,7 +28,6 @@ const initialState = {
   activeDraft: null,
   lineItems: [],
   templates: [],
-  history: [],
   preferences: {},
   idCounter: {
     currentValue: 1,

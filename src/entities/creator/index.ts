@@ -7,7 +7,6 @@ export type {
   DraftSlice,
   DraftSyncStatus,
   TemplateSlice,
-  HistorySlice,
   PreferencesSlice,
   IdCounterSlice,
   UtilitySlice,
