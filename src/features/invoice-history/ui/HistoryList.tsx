@@ -8,7 +8,8 @@
  * Allows users to view, duplicate, or delete history entries.
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   formatInvoiceTotal,
   useTrackedInvoiceStore,
@@ -18,6 +19,7 @@ import {
   type Invoice,
 } from '@/entities/invoice'
 import { parseInvoiceHash } from '@/features/invoice-codec'
+import { toast } from '@/shared/lib/toast'
 import { duplicateFromUrl } from '../lib/duplicate-invoice'
 import { InvoiceStatusBadge } from './InvoiceStatusBadge'
 import { InvoiceCardShell } from './InvoiceCardShell'
@@ -35,6 +37,7 @@ interface HistoryListProps {
 }
 
 export function HistoryList({ debug = false, className = '' }: HistoryListProps) {
+  const router = useRouter()
   const trackedInvoices = useTrackedInvoiceStore((s) => s.invoices)
   const removeInvoice = useTrackedInvoiceStore((s) => s.removeInvoice)
 
@@ -70,13 +73,25 @@ export function HistoryList({ debug = false, className = '' }: HistoryListProps)
     setDeleteConfirmId(null)
   }
 
-  const handleDuplicate = (invoiceUrl: string) => {
-    duplicateFromUrl(invoiceUrl)
-  }
+  const handleDuplicate = useCallback((invoiceUrl: string) => {
+    const draftId = duplicateFromUrl(invoiceUrl)
+    if (draftId) {
+      router.push('/create')
+      toast.success('Invoice duplicated')
+    } else {
+      toast.error('Could not decode invoice for duplication')
+    }
+  }, [router])
 
-  const handleView = (invoiceUrl: string) => {
-    window.open(invoiceUrl, '_blank', 'noopener,noreferrer')
-  }
+  const handleView = useCallback((invoiceUrl: string) => {
+    // Open in /invoice (creator tracking view) instead of /pay
+    try {
+      const hash = new URL(invoiceUrl).hash
+      window.open(`/invoice${hash}`, '_blank', 'noopener,noreferrer')
+    } catch {
+      window.open(invoiceUrl, '_blank', 'noopener,noreferrer')
+    }
+  }, [])
 
   if (entries.length === 0) {
     return (

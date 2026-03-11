@@ -11,7 +11,7 @@ import dynamic from 'next/dynamic'
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { CheckCircleIcon, XIcon, ArrowRightIcon } from '@/shared/ui/icons'
+import { CheckCircleIcon, XIcon, ArrowRightIcon, ChevronDownIcon, CopyIcon } from '@/shared/ui/icons'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
@@ -164,6 +164,9 @@ export function ShareModal({ url, invoice, open, onOpenChange }: ShareModalProps
                 )}
               </div>
 
+              {/* Tracking link for creator (collapsible) */}
+              <TrackingLinkSection url={url} />
+
               {/* Footer - Open Invoice button */}
               <div className="flex gap-3 pt-2">
                 <a href={url} target="_blank" rel="noopener noreferrer" className="flex-1">
@@ -178,5 +181,68 @@ export function ShareModal({ url, invoice, open, onOpenChange }: ShareModalProps
       )}
     </AnimatePresence>,
     document.body
+  )
+}
+
+/**
+ * Collapsible section with /invoice tracking link (copy-only, no social share).
+ * Replaces /pay with /invoice in the URL for creator's private tracking view.
+ */
+function TrackingLinkSection({ url }: { url: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const trackingUrl = useMemo(() => {
+    try {
+      const parsed = new URL(url)
+      return `${parsed.origin}/invoice${parsed.search}${parsed.hash}`
+    } catch {
+      return url.replace('/pay', '/invoice')
+    }
+  }, [url])
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(trackingUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast.error('Failed to copy tracking link')
+    }
+  }, [trackingUrl])
+
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-zinc-800/30">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full items-center justify-between px-4 py-2.5 text-sm text-zinc-400 transition-colors hover:text-zinc-300"
+      >
+        <span>Save for yourself</span>
+        <ChevronDownIcon
+          size={14}
+          className={`transition-transform ${expanded ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {expanded && (
+        <div className="border-t border-zinc-800 px-4 py-3">
+          <Text variant="tiny" className="mb-2 text-zinc-500">
+            Track payment status (not shared with payers)
+          </Text>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="flex w-full items-center gap-2 rounded-lg bg-zinc-800 px-3 py-2 text-xs text-zinc-300 transition-colors hover:bg-zinc-700"
+          >
+            {copied ? (
+              <CheckCircleIcon size={14} className="text-emerald-400" />
+            ) : (
+              <CopyIcon size={14} />
+            )}
+            <span className="truncate">{trackingUrl}</span>
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
