@@ -304,4 +304,51 @@ describe('ShareModal', () => {
       expect(twitterLink).toHaveAttribute('rel', 'noopener noreferrer')
     })
   })
+
+  describe('Tracking link section', () => {
+    it('renders "Save for yourself" collapsible section', () => {
+      render(<ShareModal {...defaultProps} />)
+      expect(screen.getByText('Save for yourself')).toBeInTheDocument()
+    })
+
+    it('expands tracking link on click', async () => {
+      const user = userEvent.setup()
+      render(<ShareModal {...defaultProps} />)
+
+      await user.click(screen.getByText('Save for yourself'))
+
+      expect(screen.getByText(/Track payment status/)).toBeInTheDocument()
+    })
+
+    it('shows /invoice URL (not /pay) in tracking link', async () => {
+      const user = userEvent.setup()
+      render(<ShareModal {...defaultProps} />)
+
+      await user.click(screen.getByText('Save for yourself'))
+
+      // URL should show /invoice instead of /pay
+      expect(screen.getByText(/\/invoice/)).toBeInTheDocument()
+    })
+
+    it('copies tracking URL on click', async () => {
+      render(<ShareModal {...defaultProps} />)
+
+      // Expand the tracking section
+      fireEvent.click(screen.getByText('Save for yourself'))
+
+      // Find the tracking copy button (contains /invoice URL text)
+      const buttons = screen.getAllByRole('button')
+      const trackingButton = buttons.find((btn) =>
+        btn.textContent?.includes('/invoice')
+      )
+      expect(trackingButton).toBeDefined()
+      fireEvent.click(trackingButton!)
+
+      await waitFor(() => {
+        expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+          expect.stringContaining('/invoice')
+        )
+      })
+    })
+  })
 })
