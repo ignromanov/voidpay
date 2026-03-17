@@ -27,3 +27,4 @@ export type { PollingMode, PollingState, UsePaymentPollingResult } from './model
 export { useManualVerify } from './model/use-manual-verify'
 export { useBatchCheck } from './model/use-batch-check'
 export type { DecodedBatchInvoice } from './model/use-batch-check'
+export { useFinalizationToast } from './model/use-payment-toast'

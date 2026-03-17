@@ -7,6 +7,7 @@ import { formatAmount } from '@/shared/lib/amount-utils'
 import { motion } from '@/shared/ui/motion'
 import { FluidOverlay } from './FluidOverlay'
 import { usePaymentFlow } from '../model/use-payment-flow'
+import { usePaymentToast } from '../model/use-payment-toast'
 import { parseDevOverride } from '../model/types'
 import type { SmartPayButtonProps, PaymentStep, IdleSubState } from '../model/types'
 
@@ -20,6 +21,13 @@ const IN_PROGRESS_STEPS = new Set<PaymentStep>(['connecting', 'switching', 'send
 // Helpers
 // ---------------------------------------------------------------------------
 
+function getStepCount(idleSubState: IdleSubState): { total: number; offset: number } {
+  // offset = how many steps are skipped (already done)
+  if (idleSubState === 'disconnected') return { total: 3, offset: 0 }  // connect → switch → send
+  if (idleSubState === 'wrong-network') return { total: 2, offset: 0 } // switch → send
+  return { total: 1, offset: 0 }                                       // send only
+}
+
 function getButtonLabel(
   step: PaymentStep,
   idleSubState: IdleSubState,
@@ -27,6 +35,8 @@ function getButtonLabel(
   subtotal: string,
   decimals: number,
 ): { primary: string; secondary?: string } {
+  const { total } = getStepCount(idleSubState)
+
   switch (step) {
     case 'idle': {
       if (idleSubState === 'disconnected')
@@ -36,11 +46,15 @@ function getButtonLabel(
       return { primary: `Pay ${formatAmount(subtotal, decimals)} ${currency}` }
     }
     case 'connecting':
-      return { primary: 'Connecting', secondary: 'Step 1 of 3' }
-    case 'switching':
-      return { primary: 'Switching', secondary: 'Step 2 of 3' }
+      return { primary: 'Connecting', secondary: `Step 1 of ${total}` }
+    case 'switching': {
+      const n = idleSubState === 'disconnected' ? 2 : 1
+      return { primary: 'Switching', secondary: `Step ${n} of ${total}` }
+    }
     case 'sending':
-      return { primary: 'Sending', secondary: 'Step 3 of 3' }
+      return total > 1
+        ? { primary: 'Sending', secondary: `Step ${total} of ${total}` }
+        : { primary: 'Sending' }
     case 'confirming':
       return { primary: 'Confirming', secondary: 'Verifying on-chain' }
     case 'success':
@@ -120,6 +134,18 @@ export function SmartPayButton({
   const { step, idleSubState } = devOverride
     ? parseDevOverride(devOverride)
     : { step: realStep, idleSubState: realIdleSubState }
+
+  // Toast notifications for payment progress
+  usePaymentToast({
+    step: realStep,
+    idleSubState: realIdleSubState,
+    currency: invoice.currency,
+    subtotal,
+    decimals: invoice.decimals,
+    networkId: invoice.networkId,
+    error,
+    devOverride: !!devOverride,
+  })
 
   // Fire callbacks only for real flow
   useEffect(() => {
