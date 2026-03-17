@@ -12,10 +12,10 @@ export function PollingStatus({ mode, className }: PollingStatusProps) {
 
   if (mode === 'watching') {
     return (
-      <div className={cn('flex items-center gap-2 text-sm text-zinc-400', className)}>
+      <div role="status" aria-live="polite" className={cn('flex items-center gap-2 text-sm text-zinc-400 motion-safe:animate-in motion-safe:fade-in', className)}>
         <span
           data-testid="polling-dot"
-          className="inline-block h-2 w-2 rounded-full bg-violet-400 animate-pulse"
+          className="inline-block h-2 w-2 rounded-full bg-violet-400 motion-safe:animate-pulse"
         />
         <span>Watching for payment...</span>
       </div>
@@ -26,8 +26,8 @@ export function PollingStatus({ mode, className }: PollingStatusProps) {
     mode === 'aggressive' ? 'Searching for your payment...' : 'Checking...'
 
   return (
-    <div className={cn('flex items-center gap-2 text-sm text-zinc-400', className)}>
-      <Loader2Icon size={14} className="animate-spin" />
+    <div role="status" aria-live="polite" className={cn('flex items-center gap-2 text-sm text-zinc-400', className)}>
+      <Loader2Icon size={14} className="motion-safe:animate-spin" />
       <span>{label}</span>
     </div>
   )
