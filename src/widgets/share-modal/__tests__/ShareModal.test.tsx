@@ -127,21 +127,22 @@ describe('ShareModal', () => {
     it('displays Link and QR Code tabs', () => {
       render(<ShareModal {...defaultProps} />)
 
-      expect(screen.getByRole('button', { name: /Link/i })).toBeInTheDocument()
+      // Tab buttons — use exact text to avoid matching "Copy Link"
+      expect(screen.getByRole('button', { name: /^Link$/ })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /QR Code/i })).toBeInTheDocument()
     })
   })
 
   describe('Link tab', () => {
-    it('displays URL in styled container', () => {
+    it('displays URL anatomy with domain and hash', () => {
       render(<ShareModal {...defaultProps} />)
 
-      // URL is displayed in a styled div, split into basePath and rest
-      expect(screen.getByText('https://voidpay.xyz/pay')).toBeInTheDocument()
-      expect(screen.getByText('#H123abc')).toBeInTheDocument()
+      // URL is parsed into anatomy: domain, route, hash
+      expect(screen.getByText('voidpay.xyz')).toBeInTheDocument()
+      expect(screen.getByText('/pay')).toBeInTheDocument()
     })
 
-    it('displays Copy button', () => {
+    it('displays Copy Link button', () => {
       render(<ShareModal {...defaultProps} />)
 
       expect(screen.getByRole('button', { name: /Copy/i })).toBeInTheDocument()
@@ -165,7 +166,7 @@ describe('ShareModal', () => {
       })
     })
 
-    it('shows "Copied" state after successful copy', async () => {
+    it('shows "Copied!" state after successful copy', async () => {
       const user = userEvent.setup()
       render(<ShareModal {...defaultProps} />)
 
@@ -173,7 +174,7 @@ describe('ShareModal', () => {
       await user.click(copyButton)
 
       await waitFor(() => {
-        expect(screen.getByText('Copied')).toBeInTheDocument()
+        expect(screen.getByText('Copied!')).toBeInTheDocument()
       })
     })
 
@@ -191,14 +192,11 @@ describe('ShareModal', () => {
       expect(twitterLink).toHaveAttribute('href', expect.stringContaining('twitter.com/intent'))
     })
 
-    it('displays privacy warning', () => {
+    it('displays privacy message', () => {
       render(<ShareModal {...defaultProps} />)
 
       expect(
-        screen.getByText(/VoidPay is stateless/)
-      ).toBeInTheDocument()
-      expect(
-        screen.getByText(/invoice is lost forever/)
+        screen.getByText(/All data lives in this link/)
       ).toBeInTheDocument()
     })
   })
@@ -245,11 +243,12 @@ describe('ShareModal', () => {
       expect(screen.getByRole('link', { name: /Open Invoice/i })).toBeInTheDocument()
     })
 
-    it('links to invoice URL', () => {
+    it('links to invoice tracking URL', () => {
       render(<ShareModal {...defaultProps} />)
 
       const openLink = screen.getByRole('link', { name: /Open Invoice/i })
-      expect(openLink).toHaveAttribute('href', TEST_URL)
+      // "Open Invoice" now links to /invoice (creator tracking page), not /pay
+      expect(openLink).toHaveAttribute('href', 'https://voidpay.xyz/invoice#H123abc')
     })
 
     it('opens in new tab', () => {
@@ -305,50 +304,13 @@ describe('ShareModal', () => {
     })
   })
 
-  describe('Tracking link section', () => {
-    it('renders "Save for yourself" collapsible section', () => {
-      render(<ShareModal {...defaultProps} />)
-      expect(screen.getByText('Save for yourself')).toBeInTheDocument()
-    })
-
-    it('expands tracking link on click', async () => {
-      const user = userEvent.setup()
+  describe('invoice tracking', () => {
+    it('"Open Invoice" links to /invoice URL for creator tracking', () => {
       render(<ShareModal {...defaultProps} />)
 
-      await user.click(screen.getByText('Save for yourself'))
-
-      expect(screen.getByText(/Track payment status/)).toBeInTheDocument()
-    })
-
-    it('shows /invoice URL (not /pay) in tracking link', async () => {
-      const user = userEvent.setup()
-      render(<ShareModal {...defaultProps} />)
-
-      await user.click(screen.getByText('Save for yourself'))
-
-      // URL should show /invoice instead of /pay
-      expect(screen.getByText(/\/invoice/)).toBeInTheDocument()
-    })
-
-    it('copies tracking URL on click', async () => {
-      render(<ShareModal {...defaultProps} />)
-
-      // Expand the tracking section
-      fireEvent.click(screen.getByText('Save for yourself'))
-
-      // Find the tracking copy button (contains /invoice URL text)
-      const buttons = screen.getAllByRole('button')
-      const trackingButton = buttons.find((btn) =>
-        btn.textContent?.includes('/invoice')
-      )
-      expect(trackingButton).toBeDefined()
-      fireEvent.click(trackingButton!)
-
-      await waitFor(() => {
-        expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-          expect.stringContaining('/invoice')
-        )
-      })
+      const openLink = screen.getByRole('link', { name: /Open Invoice/i })
+      expect(openLink.getAttribute('href')).toContain('/invoice')
+      expect(openLink.getAttribute('href')).not.toContain('/pay')
     })
   })
 })

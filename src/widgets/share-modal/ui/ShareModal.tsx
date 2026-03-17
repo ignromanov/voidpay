@@ -11,7 +11,7 @@ import dynamic from 'next/dynamic'
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { CheckCircleIcon, XIcon, ArrowRightIcon, ChevronDownIcon, CopyIcon } from '@/shared/ui/icons'
+import { CheckCircleIcon, XIcon, ArrowRightIcon } from '@/shared/ui/icons'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
@@ -85,14 +85,17 @@ export function ShareModal({ url, invoice, open, onOpenChange }: ShareModalProps
     [url]
   )
 
-  // Memoize URL parsing for display
-  const { basePath, rest } = useMemo(() => {
-    const match = url.match(/^(https?:\/\/[^?#]+)(.*)$/)
-    return {
-      basePath: match?.[1] ?? url,
-      rest: match?.[2] ?? '',
+  // Invoice tracking URL for creator (replaces /pay with /invoice)
+  const invoiceUrl = useMemo(() => {
+    try {
+      const parsed = new URL(url)
+      return `${parsed.origin}/invoice${parsed.search}${parsed.hash}`
+    } catch {
+      return url.replace('/pay', '/invoice')
     }
   }, [url])
+
+  // URL parsing removed — LinkTab parses internally via URL Anatomy
 
   // Don't render if not open or not in browser
   if (!open || typeof document === 'undefined') {
@@ -138,10 +141,10 @@ export function ShareModal({ url, invoice, open, onOpenChange }: ShareModalProps
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="text-zinc-500 transition-colors hover:text-white"
+                  className="rounded-lg p-2 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-white"
                   aria-label="Close modal"
                 >
-                  <XIcon size={20} />
+                  <XIcon size={18} />
                 </button>
               </div>
 
@@ -149,11 +152,10 @@ export function ShareModal({ url, invoice, open, onOpenChange }: ShareModalProps
               <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
 
               {/* Tab content */}
-              <div className="min-h-[200px]">
+              <div className="min-h-[160px]">
                 {activeTab === 'link' ? (
                   <LinkTab
-                    basePath={basePath}
-                    rest={rest}
+                    url={url}
                     copied={copied}
                     onCopy={handleCopy}
                     telegramUrl={telegramUrl}
@@ -164,85 +166,17 @@ export function ShareModal({ url, invoice, open, onOpenChange }: ShareModalProps
                 )}
               </div>
 
-              {/* Tracking link for creator (collapsible) */}
-              <TrackingLinkSection url={url} />
-
-              {/* Footer - Open Invoice button */}
-              <div className="flex gap-3 pt-2">
-                <a href={url} target="_blank" rel="noopener noreferrer" className="flex-1">
-                  <Button variant="default" className="w-full">
-                    Open Invoice <ArrowRightIcon size={16} className="ml-2" />
-                  </Button>
+              {/* Footer - Open Invoice (creator tracking page) */}
+              <Button variant="default" asChild className="w-full">
+                <a href={invoiceUrl} target="_blank" rel="noopener noreferrer">
+                  Open Invoice <ArrowRightIcon size={16} className="ml-2" />
                 </a>
-              </div>
+              </Button>
             </div>
           </motion.div>
         </div>
       )}
     </AnimatePresence>,
     document.body
-  )
-}
-
-/**
- * Collapsible section with /invoice tracking link (copy-only, no social share).
- * Replaces /pay with /invoice in the URL for creator's private tracking view.
- */
-function TrackingLinkSection({ url }: { url: string }) {
-  const [expanded, setExpanded] = useState(false)
-  const [copied, setCopied] = useState(false)
-
-  const trackingUrl = useMemo(() => {
-    try {
-      const parsed = new URL(url)
-      return `${parsed.origin}/invoice${parsed.search}${parsed.hash}`
-    } catch {
-      return url.replace('/pay', '/invoice')
-    }
-  }, [url])
-
-  const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(trackingUrl)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      toast.error('Failed to copy tracking link')
-    }
-  }, [trackingUrl])
-
-  return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-800/30">
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
-        className="flex w-full items-center justify-between px-4 py-2.5 text-sm text-zinc-400 transition-colors hover:text-zinc-300"
-      >
-        <span>Save for yourself</span>
-        <ChevronDownIcon
-          size={14}
-          className={`transition-transform ${expanded ? 'rotate-180' : ''}`}
-        />
-      </button>
-      {expanded && (
-        <div className="border-t border-zinc-800 px-4 py-3">
-          <Text variant="tiny" className="mb-2 text-zinc-500">
-            Track payment status (not shared with payers)
-          </Text>
-          <button
-            type="button"
-            onClick={handleCopy}
-            className="flex w-full items-center gap-2 rounded-lg bg-zinc-800 px-3 py-2 text-xs text-zinc-300 transition-colors hover:bg-zinc-700"
-          >
-            {copied ? (
-              <CheckCircleIcon size={14} className="text-emerald-400" />
-            ) : (
-              <CopyIcon size={14} />
-            )}
-            <span className="truncate">{trackingUrl}</span>
-          </button>
-        </div>
-      )}
-    </div>
   )
 }
