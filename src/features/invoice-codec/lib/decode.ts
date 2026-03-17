@@ -1,25 +1,283 @@
 import type { Invoice } from '@/entities/invoice'
 import { invoiceSchema } from '@/entities/invoice'
-import { decodeBinaryV3 } from '@/shared/lib/binary-codec'
+import type { TlvRecord } from '@/shared/lib/tlv-codec'
+import {
+  readTlv,
+  validateCanonical,
+  decodeBase62,
+  readVarInt,
+  readBigIntVarInt,
+  groupedInflate,
+  isRequired,
+} from '@/shared/lib/tlv-codec'
+import {
+  TlvType,
+  decodeCurrency,
+  decodeTokenAddress,
+  COMPRESSED_TEXT_WHITELIST,
+} from './tlv-map'
+import { validateSecurity } from './security'
+import type { Address } from 'viem'
+
+/** Decode a Uint8Array to UTF-8 string */
+function decodeUtf8(bytes: Uint8Array): string {
+  return new TextDecoder().decode(bytes)
+}
+
+/** Decode 20 raw bytes to 0x-prefixed hex address */
+function bytesToAddress(bytes: Uint8Array): string {
+  let hex = '0x'
+  for (const b of bytes) {
+    hex += b.toString(16).padStart(2, '0')
+  }
+  return hex
+}
+
+/** Read uint32 big-endian from 4 bytes */
+function readUint32BE(bytes: Uint8Array): number {
+  return ((bytes[0]! << 24) | (bytes[1]! << 16) | (bytes[2]! << 8) | bytes[3]!) >>> 0
+}
+
+/** Find a record by type, return undefined if not found */
+function findRecord(records: TlvRecord[], type: number): TlvRecord | undefined {
+  return records.find((r) => r.type === type)
+}
+
+/** Find a record by type, throw if not found */
+function requireRecord(records: TlvRecord[], type: number, name: string): TlvRecord {
+  const record = findRecord(records, type)
+  if (!record) {
+    throw new Error(`Missing required TLV type ${type} (${name})`)
+  }
+  return record
+}
+
+/** Unpack line items from Type 14 binary format */
+function unpackItems(data: Uint8Array): Invoice['items'] {
+  let offset = 0
+  const countResult = readVarInt(data, offset)
+  const count = countResult.value
+  offset += countResult.bytesRead
+
+  const items: Invoice['items'] = []
+  for (let i = 0; i < count; i++) {
+    // description
+    const descLenResult = readVarInt(data, offset)
+    offset += descLenResult.bytesRead
+    const descBytes = data.slice(offset, offset + descLenResult.value)
+    offset += descLenResult.value
+    const description = decodeUtf8(descBytes)
+
+    // quantity: 4 bytes float32 BE
+    const qtyView = new DataView(data.buffer, data.byteOffset + offset, 4)
+    const quantity = qtyView.getFloat32(0, false)
+    offset += 4
+
+    // rate: [len: varint] [BigInt varint bytes]
+    const rateLenResult = readVarInt(data, offset)
+    offset += rateLenResult.bytesRead
+    const rateBytes = data.slice(offset, offset + rateLenResult.value)
+    offset += rateLenResult.value
+    const rateResult = readBigIntVarInt(rateBytes, 0)
+    const rate = rateResult.value.toString()
+
+    items.push({ description, quantity, rate })
+  }
+  return items
+}
 
 /**
- * Decodes a Binary V3 compressed string into an invoice object.
- * Supports version-specific parsing for backward compatibility.
+ * Decodes a TLV v1 compressed string into an invoice object.
+ * Validates canonical ordering, security constraints, and schema.
  *
- * @param compressed The compressed string from the URL hash fragment
+ * @param compressed The Base62-encoded string from the URL hash fragment (no prefix)
  * @returns The decoded invoice object
- * @throws Error if decoding fails or version is unsupported
+ * @throws Error if decoding fails, security validation fails, or schema invalid
  */
-export const decodeInvoice = (compressed: string): Invoice => {
-  // Binary V3 format starts with 'H' prefix
-  if (!compressed.startsWith('H')) {
-    throw new Error('Invalid invoice format: expected Binary V3 (H prefix)')
+export function decodeInvoice(compressed: string): Invoice {
+  if (!compressed) {
+    throw new Error('Empty invoice data')
   }
 
   try {
-    const invoice = decodeBinaryV3(compressed)
+    // 1. Base62 → binary
+    const bytes = decodeBase62(compressed)
 
-    // Validate against schema
+    // 2. Parse TLV structure
+    const { records } = readTlv(bytes)
+
+    // 3. Validate canonical ordering (ascending by type, no duplicates)
+    validateCanonical(records)
+
+    // 4. Security validation (salt, domain separator)
+    validateSecurity(records)
+
+    // 5. Handle compressed text block (Type 253)
+    let allRecords = [...records]
+    const compressedRecord = findRecord(allRecords, TlvType.COMPRESSED_TEXT)
+    if (compressedRecord) {
+      const inflatedFields = groupedInflate(compressedRecord.value)
+      // Validate whitelist — reject spoofed type_ids
+      for (const field of inflatedFields) {
+        if (!COMPRESSED_TEXT_WHITELIST.has(field.typeId)) {
+          throw new Error(
+            `Type spoofing: type_id ${field.typeId} not allowed in compressed block`
+          )
+        }
+      }
+      // Merge inflated fields as TLV records, remove Type 253
+      allRecords = allRecords.filter((r) => r.type !== TlvType.COMPRESSED_TEXT)
+      for (const field of inflatedFields) {
+        allRecords.push({ type: field.typeId, value: field.value })
+      }
+    }
+
+    // 6. Check for unknown required (even) types
+    const knownTypes = new Set(Object.values(TlvType))
+    for (const record of allRecords) {
+      if (isRequired(record.type) && !knownTypes.has(record.type)) {
+        throw new Error(`Unknown required TLV type: ${record.type}`)
+      }
+    }
+
+    // 7. Extract required fields
+    const chainIdRecord = requireRecord(allRecords, TlvType.CHAIN_ID, 'chainId')
+    const issuedAtRecord = requireRecord(allRecords, TlvType.ISSUED_AT, 'issuedAt')
+    const dueAtRecord = requireRecord(allRecords, TlvType.DUE_AT, 'dueAt')
+    const decimalsRecord = requireRecord(allRecords, TlvType.DECIMALS, 'decimals')
+    const fromWalletRecord = requireRecord(allRecords, TlvType.FROM_WALLET, 'fromWallet')
+    const currencyRecord = requireRecord(allRecords, TlvType.CURRENCY, 'currency')
+    const itemsRecord = requireRecord(allRecords, TlvType.ITEMS, 'items')
+    const invoiceIdRecord = requireRecord(allRecords, TlvType.INVOICE_ID, 'invoiceId')
+    const fromNameRecord = requireRecord(allRecords, TlvType.FROM_NAME, 'fromName')
+    const clientNameRecord = requireRecord(allRecords, TlvType.CLIENT_NAME, 'clientName')
+
+    // 8. Decode required fields
+    const networkIdResult = readVarInt(chainIdRecord.value, 0)
+    const networkId = networkIdResult.value
+
+    const issuedAt = readUint32BE(issuedAtRecord.value)
+    const dueAt = readUint32BE(dueAtRecord.value)
+    const decimals = decimalsRecord.value[0]!
+
+    const fromWalletAddress = bytesToAddress(fromWalletRecord.value)
+
+    // Currency: prefix 0x00=dict, 0x01=raw
+    let currency: string
+    if (currencyRecord.value[0] === 0x00) {
+      const code = currencyRecord.value[1]!
+      currency = decodeCurrency(code) ?? `UNKNOWN_${code}`
+    } else {
+      currency = decodeUtf8(currencyRecord.value.slice(1))
+    }
+
+    const items = unpackItems(itemsRecord.value)
+    const invoiceId = decodeUtf8(invoiceIdRecord.value)
+    const fromName = decodeUtf8(fromNameRecord.value)
+    const clientName = decodeUtf8(clientNameRecord.value)
+
+    // 9. Decode optional fields
+    const tokenAddressRecord = findRecord(allRecords, TlvType.TOKEN_ADDRESS)
+    let tokenAddress: string | undefined
+    if (tokenAddressRecord) {
+      if (tokenAddressRecord.value[0] === 0x00) {
+        const code = tokenAddressRecord.value[1]!
+        const entry = decodeTokenAddress(code)
+        tokenAddress = entry?.address
+      } else {
+        tokenAddress = bytesToAddress(tokenAddressRecord.value.slice(1))
+      }
+    }
+
+    const clientWalletRecord = findRecord(allRecords, TlvType.CLIENT_WALLET)
+    const clientWalletAddress = clientWalletRecord
+      ? bytesToAddress(clientWalletRecord.value)
+      : undefined
+
+    const notesRecord = findRecord(allRecords, TlvType.NOTES)
+    const notes = notesRecord ? decodeUtf8(notesRecord.value) : undefined
+
+    const fromEmailRecord = findRecord(allRecords, TlvType.FROM_EMAIL)
+    const fromEmail = fromEmailRecord ? decodeUtf8(fromEmailRecord.value) : undefined
+
+    const fromPhoneRecord = findRecord(allRecords, TlvType.FROM_PHONE)
+    const fromPhone = fromPhoneRecord ? decodeUtf8(fromPhoneRecord.value) : undefined
+
+    const fromAddressRecord = findRecord(allRecords, TlvType.FROM_ADDRESS)
+    const fromPhysicalAddress = fromAddressRecord ? decodeUtf8(fromAddressRecord.value) : undefined
+
+    const fromTaxIdRecord = findRecord(allRecords, TlvType.FROM_TAX_ID)
+    const fromTaxId = fromTaxIdRecord ? decodeUtf8(fromTaxIdRecord.value) : undefined
+
+    const clientEmailRecord = findRecord(allRecords, TlvType.CLIENT_EMAIL)
+    const clientEmail = clientEmailRecord ? decodeUtf8(clientEmailRecord.value) : undefined
+
+    const clientPhoneRecord = findRecord(allRecords, TlvType.CLIENT_PHONE)
+    const clientPhone = clientPhoneRecord ? decodeUtf8(clientPhoneRecord.value) : undefined
+
+    const clientAddressRecord = findRecord(allRecords, TlvType.CLIENT_ADDRESS)
+    const clientPhysicalAddress = clientAddressRecord
+      ? decodeUtf8(clientAddressRecord.value)
+      : undefined
+
+    const clientTaxIdRecord = findRecord(allRecords, TlvType.CLIENT_TAX_ID)
+    const clientTaxId = clientTaxIdRecord ? decodeUtf8(clientTaxIdRecord.value) : undefined
+
+    const taxRecord = findRecord(allRecords, TlvType.TAX)
+    const tax = taxRecord ? decodeUtf8(taxRecord.value) : undefined
+
+    const discountRecord = findRecord(allRecords, TlvType.DISCOUNT)
+    const discount = discountRecord ? decodeUtf8(discountRecord.value) : undefined
+
+    const totalRecord = findRecord(allRecords, TlvType.TOTAL)
+    let total: string | undefined
+    if (totalRecord) {
+      const result = readBigIntVarInt(totalRecord.value, 0)
+      total = result.value.toString()
+    }
+
+    const magicDustRecord = findRecord(allRecords, TlvType.MAGIC_DUST)
+    let magicDust: string | undefined
+    if (magicDustRecord) {
+      const result = readBigIntVarInt(magicDustRecord.value, 0)
+      magicDust = result.value.toString()
+    }
+
+    // 10. Construct invoice (version: 2 always)
+    const invoice: Invoice = {
+      version: 2,
+      invoiceId,
+      issuedAt,
+      dueAt,
+      networkId,
+      currency,
+      decimals,
+      from: {
+        name: fromName,
+        walletAddress: fromWalletAddress as Address,
+        ...(fromEmail && { email: fromEmail }),
+        ...(fromPhysicalAddress && { physicalAddress: fromPhysicalAddress }),
+        ...(fromPhone && { phone: fromPhone }),
+        ...(fromTaxId && { taxId: fromTaxId }),
+      },
+      client: {
+        name: clientName,
+        ...(clientWalletAddress && { walletAddress: clientWalletAddress as Address }),
+        ...(clientEmail && { email: clientEmail }),
+        ...(clientPhysicalAddress && { physicalAddress: clientPhysicalAddress }),
+        ...(clientPhone && { phone: clientPhone }),
+        ...(clientTaxId && { taxId: clientTaxId }),
+      },
+      items,
+      ...(tokenAddress && { tokenAddress: tokenAddress as Address }),
+      ...(notes && { notes }),
+      ...(tax && { tax }),
+      ...(discount && { discount }),
+      ...(total && { total }),
+      ...(magicDust && { magicDust }),
+    }
+
+    // 11. Validate against schema
     return validateInvoice(invoice)
   } catch (error) {
     if (error instanceof Error) {
@@ -31,17 +289,14 @@ export const decodeInvoice = (compressed: string): Invoice => {
 
 /**
  * Validates decoded invoice against schema.
- * Ensures data integrity after binary decoding.
- *
- * @param data Decoded invoice data
- * @returns Validated Invoice object
- * @throws Error if validation fails
  */
 function validateInvoice(data: unknown): Invoice {
   const result = invoiceSchema.safeParse(data)
 
   if (!result.success) {
-    const errors = result.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
+    const errors = result.error.issues
+      .map((e) => `${e.path.join('.')}: ${e.message}`)
+      .join(', ')
     throw new Error(`Invalid invoice data: ${errors}`)
   }
 
