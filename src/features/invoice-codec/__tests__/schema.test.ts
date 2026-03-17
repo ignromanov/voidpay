@@ -12,7 +12,7 @@
  * 3. Consider adding a new schema version instead of modifying v1
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { encodeInvoice, generateInvoiceUrl } from '../lib/encode'
 import { decodeInvoice } from '../lib/decode'
 import {
@@ -23,6 +23,19 @@ import {
 
 describe('Invoice Schema V1 Encoding', () => {
   describe('Snapshot Tests - Backward Compatibility Protection', () => {
+    // Mock crypto.getRandomValues for deterministic salt in snapshots
+    const originalGetRandomValues = globalThis.crypto.getRandomValues.bind(globalThis.crypto)
+    beforeEach(() => {
+      vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation((array) => {
+        const bytes = array as Uint8Array
+        for (let i = 0; i < bytes.length; i++) bytes[i] = i & 0xff
+        return array
+      })
+    })
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
     it('should encode full invoice to stable compressed format', () => {
       const invoice = TEST_INVOICES.full()
       const encoded = encodeInvoice(invoice)
@@ -72,7 +85,6 @@ describe('Invoice Schema V1 Encoding', () => {
       const encoded = encodeInvoice(invoice)
       const decoded = decodeInvoice(encoded)
 
-      // Verify optional fields are preserved (addresses normalized to lowercase)
       expect(decoded.notes).toBe(invoice.notes)
       expect(decoded.tokenAddress?.toLowerCase()).toBe(invoice.tokenAddress?.toLowerCase())
       expect(decoded.tax).toBe(invoice.tax)
@@ -123,19 +135,17 @@ describe('Invoice Schema V1 Encoding', () => {
       expect(() => decodeInvoice('invalid-data-not-compressed')).toThrow()
     })
 
-    it('should throw on missing H prefix', () => {
-      // Binary V3 requires 'H' prefix
-      expect(() => decodeInvoice('ABCD1234')).toThrow(/expected Binary V3/)
+    it('should throw on empty input', () => {
+      expect(() => decodeInvoice('')).toThrow(/Empty invoice data/)
     })
 
-    it('should throw on corrupted base62 data', () => {
-      // Valid H prefix but corrupted data
-      expect(() => decodeInvoice('H!!!invalid!!!')).toThrow()
+    it('should throw on corrupted data', () => {
+      expect(() => decodeInvoice('ABCD1234')).toThrow()
     })
 
     it('should throw on truncated binary data', () => {
-      // Valid H prefix but too short
-      expect(() => decodeInvoice('H1')).toThrow()
+      // Short Base62 that decodes to invalid TLV
+      expect(() => decodeInvoice('1')).toThrow()
     })
   })
 
@@ -144,8 +154,12 @@ describe('Invoice Schema V1 Encoding', () => {
       const invoice = TEST_INVOICES.minimal()
       const url = generateInvoiceUrl(invoice)
 
-      expect(url).toContain('/pay#H') // Binary V3 prefix
+      // TLV v1: raw Base62 in hash fragment (no H prefix)
+      expect(url).toContain('/pay#')
       expect(url).toMatch(/^https?:\/\//)
+      // Verify it's valid Base62 after #
+      const hash = url.split('#')[1]
+      expect(hash).toMatch(/^[0-9A-Za-z]+$/)
     })
 
     it('should generate URL with custom base URL', () => {
@@ -154,38 +168,33 @@ describe('Invoice Schema V1 Encoding', () => {
       const url = generateInvoiceUrl(invoice, { baseUrl: customBase })
 
       expect(url.startsWith(customBase)).toBe(true)
-      expect(url).toContain('/pay#H')
+      expect(url).toContain('/pay#')
     })
 
     it('should generate URL that can be decoded back', () => {
       const invoice = TEST_INVOICES.full()
       const url = generateInvoiceUrl(invoice, { baseUrl: 'https://voidpay.xyz' })
 
-      // Extract the compressed data from hash fragment
       const hashIndex = url.indexOf('#')
       const compressed = url.slice(hashIndex + 1)
 
       expect(compressed).toBeTruthy()
-      expect(compressed.startsWith('H')).toBe(true)
       const decoded = decodeInvoice(compressed)
 
       expect(normalizeInvoiceAddresses(decoded)).toEqual(normalizeInvoiceAddresses(invoice))
     })
 
-    it('should throw when URL exceeds 2000 bytes', () => {
+    it('should throw when URL exceeds size limits', () => {
       const largeInvoice = createLargeInvoice()
-      expect(() => generateInvoiceUrl(largeInvoice)).toThrow(/exceeds 2000 byte limit/)
+      expect(() => generateInvoiceUrl(largeInvoice)).toThrow(/exceeds/i)
     })
 
     it('should calculate correct byte size for unicode characters', () => {
-      // Unicode characters take more bytes than ASCII
       const invoice = TEST_INVOICES.japaneseUnicode()
 
-      // Should not throw for reasonable unicode content
       const url = generateInvoiceUrl(invoice)
       expect(url).toBeDefined()
 
-      // Verify byte calculation uses TextEncoder
       const byteSize = new TextEncoder().encode(url).length
       expect(byteSize).toBeLessThanOrEqual(2000)
     })
