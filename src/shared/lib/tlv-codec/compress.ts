@@ -23,7 +23,7 @@ export function groupedDeflate(
   for (const field of fields) {
     rawParts.push(field.typeId)
     writeVarInt(rawParts, field.value.length)
-    for (const b of field.value) rawParts.push(b)
+    for (let i = 0; i < field.value.length; i++) rawParts.push(field.value[i]!)
   }
 
   const raw = new Uint8Array(rawParts)

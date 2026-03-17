@@ -27,8 +27,8 @@ function decodeUtf8(bytes: Uint8Array): string {
 /** Decode 20 raw bytes to 0x-prefixed hex address */
 function bytesToAddress(bytes: Uint8Array): string {
   let hex = '0x'
-  for (const b of bytes) {
-    hex += b.toString(16).padStart(2, '0')
+  for (let i = 0; i < bytes.length; i++) {
+    hex += bytes[i]!.toString(16).padStart(2, '0')
   }
   return hex
 }
@@ -133,7 +133,7 @@ export function decodeInvoice(compressed: string): Invoice {
     }
 
     // 6. Check for unknown required (even) types
-    const knownTypes = new Set(Object.values(TlvType))
+    const knownTypes = new Set<number>(Object.values(TlvType))
     for (const record of allRecords) {
       if (isRequired(record.type) && !knownTypes.has(record.type)) {
         throw new Error(`Unknown required TLV type: ${record.type}`)

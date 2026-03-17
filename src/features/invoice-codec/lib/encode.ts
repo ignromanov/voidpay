@@ -60,7 +60,7 @@ function packItems(items: Invoice['items']): Uint8Array {
     // description: [len: varint] [utf8 bytes]
     const descBytes = utf8(item.description)
     writeVarInt(buf, descBytes.length)
-    for (const b of descBytes) buf.push(b)
+    for (let i = 0; i < descBytes.length; i++) buf.push(descBytes[i]!)
     // quantity: 4 bytes float32 BE
     const qtyView = new DataView(new ArrayBuffer(4))
     qtyView.setFloat32(0, item.quantity, false)
@@ -68,7 +68,7 @@ function packItems(items: Invoice['items']): Uint8Array {
     // rate: [len: varint] [BigInt varint bytes]
     const rateBytes = bigintVarintBytes(BigInt(item.rate || '0'))
     writeVarInt(buf, rateBytes.length)
-    for (const b of rateBytes) buf.push(b)
+    for (let i = 0; i < rateBytes.length; i++) buf.push(rateBytes[i]!)
   }
   return new Uint8Array(buf)
 }
