@@ -2,7 +2,7 @@ import pako from 'pako'
 import { writeVarInt, readVarInt } from './varint'
 import { MAX_INFLATE_SIZE } from './types'
 
-interface CompressedField {
+export interface CompressedField {
   typeId: number
   value: Uint8Array
 }
