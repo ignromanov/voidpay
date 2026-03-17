@@ -21,6 +21,12 @@ const mockInvoice: Invoice = {
   magicDust: '42',
 }
 
+/** Helper: open "More options" disclosure inside the panel */
+async function expandMoreOptions() {
+  const toggle = screen.getByTestId('more-options-toggle')
+  await userEvent.click(toggle)
+}
+
 describe('PaymentPanel', () => {
   describe('pending state', () => {
     it('renders payment panel with data-testid', () => {
@@ -279,12 +285,6 @@ describe('PaymentPanel', () => {
       expect(btn.className).toContain('hidden')
       expect(btn.className).toContain('md:inline-flex')
     })
-
-    it('Show QR button has cursor-pointer', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      const btn = screen.getByRole('button', { name: /show qr/i })
-      expect(btn.className).toContain('cursor-pointer')
-    })
   })
 
   describe('footer', () => {
@@ -385,13 +385,30 @@ describe('PaymentPanel', () => {
     })
   })
 
-  describe("I've paid button (T018)", () => {
-    it("renders I've paid button when onIvePaid prop is provided for pending status", () => {
+  describe('secondary actions: horizontal row', () => {
+    it("renders I've paid and Check payment side-by-side when both provided", () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onIvePaid={vi.fn()}
+          onCheckPayment={vi.fn()}
+        />
+      )
+      expect(screen.getByTestId('ive-paid-button')).toBeInTheDocument()
+      expect(screen.getByTestId('check-payment-button')).toBeInTheDocument()
+      // Both should share a flex parent
+      const ivePaid = screen.getByTestId('ive-paid-button')
+      const check = screen.getByTestId('check-payment-button')
+      expect(ivePaid.parentElement).toBe(check.parentElement)
+    })
+
+    it("renders only I've paid when onCheckPayment is not provided", () => {
       render(
         <PaymentPanel invoice={mockInvoice} status="pending" onIvePaid={vi.fn()} />
       )
       expect(screen.getByTestId('ive-paid-button')).toBeInTheDocument()
-      expect(screen.getByText("I've paid")).toBeInTheDocument()
+      expect(screen.queryByTestId('check-payment-button')).toBeNull()
     })
 
     it("does not render I've paid button when onIvePaid is not provided", () => {
@@ -420,46 +437,6 @@ describe('PaymentPanel', () => {
       expect(onIvePaid).toHaveBeenCalledOnce()
     })
 
-    it('shows PollingStatus when pollingMode is aggressive', () => {
-      render(
-        <PaymentPanel
-          invoice={mockInvoice}
-          status="pending"
-          onIvePaid={vi.fn()}
-          pollingMode="aggressive"
-        />
-      )
-      expect(screen.getByText('Searching for your payment...')).toBeInTheDocument()
-    })
-
-    it('does not show PollingStatus when pollingMode is idle', () => {
-      render(
-        <PaymentPanel
-          invoice={mockInvoice}
-          status="pending"
-          onIvePaid={vi.fn()}
-          pollingMode="idle"
-        />
-      )
-      expect(screen.queryByText('Searching for your payment...')).toBeNull()
-      expect(screen.queryByText('Checking...')).toBeNull()
-    })
-  })
-
-  describe('Check payment button (T019)', () => {
-    it('renders Check payment button when onCheckPayment prop is provided', () => {
-      render(
-        <PaymentPanel invoice={mockInvoice} status="pending" onCheckPayment={vi.fn()} />
-      )
-      expect(screen.getByTestId('check-payment-button')).toBeInTheDocument()
-      expect(screen.getByText('Check payment')).toBeInTheDocument()
-    })
-
-    it('does not render Check payment button when onCheckPayment is not provided', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.queryByTestId('check-payment-button')).toBeNull()
-    })
-
     it('calls onCheckPayment when button is clicked', async () => {
       const onCheckPayment = vi.fn()
       render(
@@ -485,7 +462,7 @@ describe('PaymentPanel', () => {
       )
       const btn = screen.getByTestId('check-payment-button')
       expect(btn).toBeDisabled()
-      expect(btn.textContent).toMatch(/Check payment \(\d+s\)/)
+      expect(btn.textContent).toMatch(/\d+s/)
     })
 
     it('is enabled when cooldownUntil is in the past', () => {
@@ -500,7 +477,7 @@ describe('PaymentPanel', () => {
       )
       const btn = screen.getByTestId('check-payment-button')
       expect(btn).not.toBeDisabled()
-      expect(btn.textContent).toBe('Check payment')
+      expect(btn.textContent).toContain('Check')
     })
 
     it('does not render Check payment button for paid status', () => {
@@ -516,8 +493,8 @@ describe('PaymentPanel', () => {
     })
   })
 
-  describe('Watch for payment toggle (T020)', () => {
-    it('renders Watch for payment button when onStartWatching is provided', () => {
+  describe('tertiary actions: "More options" disclosure', () => {
+    it('renders "More" toggle when watch or verify is provided', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
@@ -525,6 +502,67 @@ describe('PaymentPanel', () => {
           onStartWatching={vi.fn()}
         />
       )
+      expect(screen.getByTestId('more-options-toggle')).toBeInTheDocument()
+      expect(screen.getByText('More')).toBeInTheDocument()
+    })
+
+    it('does not render "More options" when neither watch nor verify is provided', () => {
+      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      expect(screen.queryByTestId('more-options-toggle')).toBeNull()
+    })
+
+    it('has aria-expanded=false by default', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onVerifyTxHash={vi.fn()}
+        />
+      )
+      const toggle = screen.getByTestId('more-options-toggle')
+      expect(toggle.getAttribute('aria-expanded')).toBe('false')
+    })
+
+    it('expands on click and sets aria-expanded=true', async () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onStartWatching={vi.fn()}
+        />
+      )
+      const toggle = screen.getByTestId('more-options-toggle')
+      await userEvent.click(toggle)
+      expect(toggle.getAttribute('aria-expanded')).toBe('true')
+      expect(screen.getByTestId('start-watching-button')).toBeInTheDocument()
+    })
+
+    it('collapses on second click', async () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onStartWatching={vi.fn()}
+        />
+      )
+      const toggle = screen.getByTestId('more-options-toggle')
+      await userEvent.click(toggle)
+      expect(screen.getByTestId('start-watching-button')).toBeInTheDocument()
+      await userEvent.click(toggle)
+      expect(screen.queryByTestId('start-watching-button')).toBeNull()
+    })
+  })
+
+  describe('Watch for payment toggle (inside More options)', () => {
+    it('renders Watch for payment button after expanding More options', async () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onStartWatching={vi.fn()}
+        />
+      )
+      await expandMoreOptions()
       expect(screen.getByTestId('start-watching-button')).toBeInTheDocument()
       expect(screen.getByText('Watch for payment')).toBeInTheDocument()
     })
@@ -538,11 +576,12 @@ describe('PaymentPanel', () => {
           onStartWatching={onStartWatching}
         />
       )
+      await expandMoreOptions()
       await userEvent.click(screen.getByTestId('start-watching-button'))
       expect(onStartWatching).toHaveBeenCalledOnce()
     })
 
-    it('shows Stop watching button and PollingStatus when pollingMode is watching', () => {
+    it('shows Stop watching button and PollingStatus when pollingMode is watching', async () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
@@ -552,8 +591,9 @@ describe('PaymentPanel', () => {
           pollingMode="watching"
         />
       )
+      await expandMoreOptions()
       expect(screen.getByTestId('stop-watching-button')).toBeInTheDocument()
-      expect(screen.getByText('Stop watching')).toBeInTheDocument()
+      expect(screen.getByText('Watching...')).toBeInTheDocument()
       expect(screen.getByText('Watching for payment...')).toBeInTheDocument()
     })
 
@@ -568,6 +608,7 @@ describe('PaymentPanel', () => {
           pollingMode="watching"
         />
       )
+      await expandMoreOptions()
       await userEvent.click(screen.getByTestId('stop-watching-button'))
       expect(onStopWatching).toHaveBeenCalledOnce()
     })
@@ -581,6 +622,7 @@ describe('PaymentPanel', () => {
           onStartWatching={vi.fn()}
         />
       )
+      expect(screen.queryByTestId('more-options-toggle')).toBeNull()
       expect(screen.queryByTestId('start-watching-button')).toBeNull()
     })
   })
@@ -591,9 +633,18 @@ describe('PaymentPanel', () => {
       expect(screen.queryByText('Checking...')).toBeNull()
     })
 
-    it('shows PollingStatus for aggressive mode', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" pollingMode="aggressive" />)
-      expect(screen.getByText('Searching for your payment...')).toBeInTheDocument()
+    it('shows searching state inline for aggressive mode', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          pollingMode="aggressive"
+          onIvePaid={vi.fn()}
+          onStopPolling={vi.fn()}
+        />
+      )
+      // Aggressive mode shows "Searching..." inline in the I've paid button, not as standalone PollingStatus
+      expect(screen.getByText('Searching...')).toBeInTheDocument()
     })
 
     it('shows PollingStatus for watching mode', () => {
@@ -608,8 +659,8 @@ describe('PaymentPanel', () => {
     })
   })
 
-  describe('Single PollingStatus render (T022)', () => {
-    it('renders only one PollingStatus when both onIvePaid and watching are active', () => {
+  describe('Single PollingStatus render', () => {
+    it('renders only one PollingStatus when both onIvePaid and watching are active', async () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
@@ -625,8 +676,8 @@ describe('PaymentPanel', () => {
     })
   })
 
-  describe('Verify by txHash (T021)', () => {
-    it('renders toggle when onVerifyTxHash is provided', () => {
+  describe('Verify by txHash (inside More options)', () => {
+    it('shows txHash input and verify button after expanding More options', async () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
@@ -634,42 +685,14 @@ describe('PaymentPanel', () => {
           onVerifyTxHash={vi.fn()}
         />
       )
-      expect(screen.getByTestId('verify-txhash-toggle')).toBeInTheDocument()
+      await expandMoreOptions()
+      expect(screen.getByTestId('txhash-input')).toBeInTheDocument()
       expect(screen.getByText('Verify by transaction hash')).toBeInTheDocument()
     })
 
-    it('does not render toggle when onVerifyTxHash is not provided', () => {
+    it('does not render when onVerifyTxHash is not provided', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.queryByTestId('verify-txhash-toggle')).toBeNull()
-    })
-
-    it('expands section on toggle click', async () => {
-      render(
-        <PaymentPanel
-          invoice={mockInvoice}
-          status="pending"
-          onVerifyTxHash={vi.fn()}
-        />
-      )
-      expect(screen.queryByTestId('verify-txhash-section')).toBeNull()
-      await userEvent.click(screen.getByTestId('verify-txhash-toggle'))
-      expect(screen.getByTestId('verify-txhash-section')).toBeInTheDocument()
-      expect(screen.getByTestId('txhash-input')).toBeInTheDocument()
-    })
-
-    it('collapses section on second toggle click', async () => {
-      render(
-        <PaymentPanel
-          invoice={mockInvoice}
-          status="pending"
-          onVerifyTxHash={vi.fn()}
-        />
-      )
-      const toggle = screen.getByTestId('verify-txhash-toggle')
-      await userEvent.click(toggle)
-      expect(screen.getByTestId('verify-txhash-section')).toBeInTheDocument()
-      await userEvent.click(toggle)
-      expect(screen.queryByTestId('verify-txhash-section')).toBeNull()
+      expect(screen.queryByTestId('more-options-toggle')).toBeNull()
     })
 
     it('Verify button is disabled with invalid txHash input', async () => {
@@ -680,9 +703,34 @@ describe('PaymentPanel', () => {
           onVerifyTxHash={vi.fn()}
         />
       )
-      await userEvent.click(screen.getByTestId('verify-txhash-toggle'))
+      await expandMoreOptions()
       await userEvent.type(screen.getByTestId('txhash-input'), 'not-a-hash')
       expect(screen.getByTestId('verify-txhash-button')).toBeDisabled()
+    })
+
+    it('shows helper text for invalid input', async () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onVerifyTxHash={vi.fn()}
+        />
+      )
+      await expandMoreOptions()
+      await userEvent.type(screen.getByTestId('txhash-input'), 'bad')
+      expect(screen.getByText(/Enter a valid 66-character/)).toBeInTheDocument()
+    })
+
+    it('shows default helper text when input is empty', async () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onVerifyTxHash={vi.fn()}
+        />
+      )
+      await expandMoreOptions()
+      expect(screen.getByText(/Paste a transaction hash/)).toBeInTheDocument()
     })
 
     it('Verify button is enabled with valid 0x + 64 hex chars', async () => {
@@ -694,7 +742,7 @@ describe('PaymentPanel', () => {
           onVerifyTxHash={vi.fn()}
         />
       )
-      await userEvent.click(screen.getByTestId('verify-txhash-toggle'))
+      await expandMoreOptions()
       await userEvent.type(screen.getByTestId('txhash-input'), validHash)
       expect(screen.getByTestId('verify-txhash-button')).not.toBeDisabled()
     })
@@ -709,7 +757,7 @@ describe('PaymentPanel', () => {
           onVerifyTxHash={onVerifyTxHash}
         />
       )
-      await userEvent.click(screen.getByTestId('verify-txhash-toggle'))
+      await expandMoreOptions()
       await userEvent.type(screen.getByTestId('txhash-input'), validHash)
       await userEvent.click(screen.getByTestId('verify-txhash-button'))
       expect(onVerifyTxHash).toHaveBeenCalledWith({ txHash: validHash })
@@ -724,7 +772,35 @@ describe('PaymentPanel', () => {
           onVerifyTxHash={vi.fn()}
         />
       )
-      expect(screen.queryByTestId('verify-txhash-toggle')).toBeNull()
+      expect(screen.queryByTestId('more-options-toggle')).toBeNull()
+    })
+
+    it('txHash input has visible label', async () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onVerifyTxHash={vi.fn()}
+        />
+      )
+      await expandMoreOptions()
+      const input = screen.getByTestId('txhash-input')
+      const label = screen.getByText('Verify by transaction hash')
+      expect(label.tagName).toBe('LABEL')
+      expect(label.getAttribute('for')).toBe(input.getAttribute('id'))
+    })
+
+    it('txHash input has aria-describedby for helper text', async () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          status="pending"
+          onVerifyTxHash={vi.fn()}
+        />
+      )
+      await expandMoreOptions()
+      const input = screen.getByTestId('txhash-input')
+      expect(input.getAttribute('aria-describedby')).toBe('txhash-hint')
     })
   })
 
@@ -779,6 +855,24 @@ describe('PaymentPanel', () => {
       const link = screen.getByRole('link', { name: /view tx/i })
       expect(link.getAttribute('target')).toBe('_blank')
       expect(link.getAttribute('rel')).toContain('noopener')
+    })
+
+    it("I've paid button has descriptive aria-label", () => {
+      render(
+        <PaymentPanel invoice={mockInvoice} status="pending" onIvePaid={vi.fn()} />
+      )
+      const btn = screen.getByTestId('ive-paid-button')
+      expect(btn.getAttribute('aria-label')).toContain('already paid')
+    })
+
+    it('gradient bar respects reduced motion', () => {
+      render(
+        <PaymentPanel invoice={mockInvoice} status="confirming" txHash="0xabc123" />
+      )
+      const gradientBar = screen.getByTestId('gradient-bar')
+      expect(gradientBar.className).toContain('motion-safe:animate-pulse')
+      // Must NOT have bare `animate-pulse` without `motion-safe:` prefix
+      expect(gradientBar.className).not.toMatch(/(?<!motion-safe:)animate-pulse/)
     })
   })
 })

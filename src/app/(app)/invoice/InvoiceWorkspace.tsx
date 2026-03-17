@@ -16,6 +16,7 @@ import type { InvoiceViewState } from '@/widgets/payment-panel'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { ChevronDownIcon, ExternalLinkIcon } from '@/shared/ui/icons'
+import { Button } from '@/shared/ui/button'
 
 const InvoiceVerifier = dynamic(
   () => import('./InvoiceVerifier').then((m) => ({ default: m.InvoiceVerifier })),
@@ -93,7 +94,11 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
   const networkId = invoice.networkId
   const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
   const invoiceStatus = panelStatus === 'overdue' ? 'overdue' as const : 'pending' as const
-  const payUrl = `/pay${window.location.hash}`
+  const [payUrl, setPayUrl] = useState('')
+
+  useEffect(() => {
+    setPayUrl(`/pay${window.location.hash}`)
+  }, [])
 
   return (
     <>
@@ -152,8 +157,6 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                     {...(confirmations ? { confirmations } : {})}
                     finalized={finalized}
                     pollingMode={polling.mode}
-                    onStartWatching={polling.startWatching}
-                    onStopWatching={polling.stop}
                   />
                 ) : (
                   <PaymentPanel
@@ -164,19 +167,18 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                     onDismissError={dismissError}
                     pollingMode={polling.mode}
                     onVerifyTxHash={verifyTxHash}
-                    onCheckPayment={polling.startManualCheck}
-                    onStartWatching={polling.startWatching}
-                    onStopWatching={polling.stop}
-                    {...(polling.cooldownUntil !== undefined ? { cooldownUntil: polling.cooldownUntil } : {})}
+                    onCheckPayment={polling.startAggressivePolling}
+                    onStopPolling={polling.stop}
                   >
                     {/* "Pay this invoice" escape route for wrong-page visitors */}
-                    <Link
-                      href={payUrl}
-                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-800/80 px-4 py-3 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-700/80 hover:text-white"
-                    >
-                      Pay this invoice
-                      <ExternalLinkIcon size={14} />
-                    </Link>
+                    {payUrl && (
+                      <Button variant="outline" asChild className="w-full border-zinc-700 text-zinc-300 hover:border-violet-500/50 hover:text-violet-300 hover:bg-violet-500/5">
+                        <Link href={payUrl}>
+                          Pay this invoice
+                          <ExternalLinkIcon size={14} />
+                        </Link>
+                      </Button>
+                    )}
                   </PaymentPanel>
                 )}
                 <button

@@ -17,9 +17,11 @@ interface CreatorHintBannerProps {
  */
 export function CreatorHintBanner({ isCreator }: CreatorHintBannerProps) {
   const [dismissed, setDismissed] = useState(true) // default hidden to prevent flash
+  const [invoiceUrl, setInvoiceUrl] = useState('')
 
   useEffect(() => {
     if (!isCreator) return
+    setInvoiceUrl(`/invoice${window.location.hash}`)
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.HINT_DISMISSED)
       setDismissed(stored === 'true')
@@ -37,11 +39,9 @@ export function CreatorHintBanner({ isCreator }: CreatorHintBannerProps) {
     }
   }
 
-  const invoiceUrl = `/invoice${window.location.hash}`
-
   return (
     <AnimatePresence>
-      {isCreator && !dismissed && (
+      {isCreator && !dismissed && invoiceUrl && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -59,7 +59,7 @@ export function CreatorHintBanner({ isCreator }: CreatorHintBannerProps) {
           </p>
           <button
             onClick={handleDismiss}
-            className="ml-3 rounded-lg p-1 text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-white"
+            className="ml-3 rounded-lg p-2 text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-white"
             aria-label="Dismiss hint"
           >
             <XIcon size={14} />

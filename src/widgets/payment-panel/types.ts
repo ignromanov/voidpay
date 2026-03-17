@@ -32,13 +32,15 @@ export interface PaymentPanelProps {
   onDismissError?: () => void
   /** Slot for SmartPayButton (P0.12.1) */
   children?: ReactNode
-  // US4: "I've paid" button
-  /** Called when payer clicks "I've paid" to trigger manual payment check */
+  // US4: "I've paid" toggle (payer side)
+  /** Called when payer clicks "I've paid" to start aggressive polling */
   onIvePaid?: () => void
-  /** Current polling mode — controls PollingStatus display */
+  /** Current polling mode — controls inline button states and PollingStatus */
   pollingMode?: PollingMode
-  // US6: "Check payment" button
-  /** Called when payer clicks "Check payment" */
+  /** Called to stop any active polling (aggressive/manual/watching) */
+  onStopPolling?: () => void
+  // US6: "Check payment" button (creator side)
+  /** Called when creator clicks "Check" for a single manual check */
   onCheckPayment?: () => void
   /** Timestamp (ms) until which "Check payment" is on cooldown */
   cooldownUntil?: number

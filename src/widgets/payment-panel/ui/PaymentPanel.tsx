@@ -11,12 +11,17 @@ import { ErrorBanner } from './ErrorBanner'
 import { PollingStatus } from './PollingStatus'
 import {
   CheckCircleIcon,
+  CheckIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   DownloadIcon,
   ExternalLinkIcon,
+  EyeIcon,
   FlagIcon,
+  Loader2Icon,
   QrCodeIcon,
+  RefreshCwIcon,
+  SearchIcon,
 } from '@/shared/ui/icons'
 import { getExplorerUrl } from '@/entities/network'
 import { formatAmount } from '@/shared/lib/amount-utils'
@@ -30,9 +35,9 @@ const QRModal = dynamic(
   { ssr: false }
 )
 
-const footerDivider = (
-  <div className="h-px w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
-)
+/** Shared base classes for footer action buttons */
+const footerActionBase =
+  'cursor-pointer select-none inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950'
 
 export function PaymentPanel({
   invoice,
@@ -45,6 +50,7 @@ export function PaymentPanel({
   children,
   onIvePaid,
   pollingMode,
+  onStopPolling,
   onCheckPayment,
   cooldownUntil,
   onStartWatching,
@@ -55,7 +61,7 @@ export function PaymentPanel({
 }: PaymentPanelProps) {
   const [qrOpen, setQrOpen] = useState(false)
   const [txHashInput, setTxHashInput] = useState('')
-  const [txHashOpen, setTxHashOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
   const [cooldownSeconds, setCooldownSeconds] = useState(0)
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -87,14 +93,18 @@ export function PaymentPanel({
   const showPulse = status === 'confirming'
 
   const isWatching = pollingMode === 'watching'
+  const isSearching = pollingMode === 'aggressive'
+  const isChecking = pollingMode === 'manual'
   const txHashValid = /^0x[0-9a-fA-F]{64}$/.test(txHashInput)
+
+  const hasMoreOptions = !!(onStartWatching || onStopWatching || onVerifyTxHash)
 
   return (
     <div
       data-testid="payment-panel"
       data-status={status}
       className={cn(
-        'w-full rounded-xl bg-zinc-950/90 overflow-hidden relative shadow-[0_-10px_50px_-15px_rgba(0,0,0,0.8)] transition-all duration-500',
+        'w-full rounded-xl bg-zinc-950/95 overflow-hidden relative shadow-[0_-10px_50px_-15px_rgba(0,0,0,0.8)] backdrop-blur-sm transition-all duration-500',
         isPaid && 'border border-emerald-500/30'
       )}
     >
@@ -104,12 +114,12 @@ export function PaymentPanel({
         className={cn(
           'absolute top-0 left-0 right-0 h-1 bg-gradient-to-r transition-all duration-700',
           config.gradient,
-          showPulse && 'animate-pulse'
+          showPulse && 'motion-safe:animate-pulse'
         )}
       />
 
-      {/* Content */}
-      <div className="p-3 md:p-4 space-y-3 pt-6 md:pt-4">
+      {/* Content — clean: Amount + CTA only */}
+      <div className="p-4 space-y-4 pt-5">
         {/* Creator badge */}
         {source === 'created' && isPending && (
           <p className="text-center text-xs text-violet-400">
@@ -118,7 +128,7 @@ export function PaymentPanel({
         )}
 
         <AnimatePresence mode="wait" initial={false}>
-          {/* Pending state: Amount + ActionSlot */}
+          {/* Pending state */}
           {isPending && (
             <motion.div
               key="pending"
@@ -126,7 +136,7 @@ export function PaymentPanel({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="space-y-3"
+              className="space-y-4"
             >
               <AmountDisplay
                 subtotal={amounts.subtotal}
@@ -137,108 +147,165 @@ export function PaymentPanel({
               />
               <ActionSlot>{children}</ActionSlot>
 
-              {/* US4: "I've paid" button */}
-              {onIvePaid && (
-                <div className="space-y-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-zinc-300 border-zinc-700 hover:border-violet-500/50 hover:text-white"
-                    onClick={onIvePaid}
-                    data-testid="ive-paid-button"
-                  >
-                    I&apos;ve paid
-                  </Button>
-                </div>
-              )}
-
-              {/* US6: "Check payment" button with cooldown */}
-              {onCheckPayment && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-zinc-400 hover:text-white"
-                  onClick={onCheckPayment}
-                  disabled={cooldownSeconds > 0}
-                  data-testid="check-payment-button"
-                >
-                  {cooldownSeconds > 0
-                    ? `Check payment (${cooldownSeconds}s)`
-                    : 'Check payment'}
-                </Button>
-              )}
-
-              {/* US8: "Watch for payment" toggle */}
-              {(onStartWatching || onStopWatching) && (
-                <div className="space-y-2">
-                  {isWatching ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full text-violet-400 hover:text-white"
-                      onClick={onStopWatching}
-                      data-testid="stop-watching-button"
+              {/* Secondary actions — tight below CTA */}
+              {(onIvePaid || onCheckPayment || hasMoreOptions) && (
+                <div className="flex items-center gap-1 -mt-2 -mb-1">
+                  {onIvePaid && (
+                    <button
+                      type="button"
+                      className={cn(
+                        footerActionBase,
+                        isSearching
+                          ? 'text-violet-400 bg-violet-500/10 shadow-[0_0_12px_-3px_rgba(139,92,246,0.3)]'
+                          : 'text-zinc-400 hover:bg-violet-500/10 hover:text-violet-300 hover:shadow-[0_0_12px_-3px_rgba(139,92,246,0.2)]',
+                      )}
+                      onClick={isSearching ? onStopPolling : onIvePaid}
+                      data-testid="ive-paid-button"
+                      aria-label={isSearching ? 'Stop searching for payment' : "I've already paid this invoice"}
                     >
-                      Stop watching
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full text-zinc-400 hover:text-violet-300"
-                      onClick={onStartWatching}
-                      data-testid="start-watching-button"
+                      {isSearching ? (
+                        <>
+                          <Loader2Icon size={12} className="motion-safe:animate-spin" />
+                          Searching...
+                        </>
+                      ) : (
+                        <>
+                          <CheckIcon size={12} className="text-violet-400" />
+                          I&apos;ve paid
+                        </>
+                      )}
+                    </button>
+                  )}
+                  {onCheckPayment && (
+                    <button
+                      type="button"
+                      className={cn(
+                        footerActionBase,
+                        isChecking
+                          ? 'text-violet-400 bg-violet-500/10 shadow-[0_0_12px_-3px_rgba(139,92,246,0.3)]'
+                          : cooldownSeconds > 0
+                            ? 'text-zinc-600 cursor-not-allowed active:scale-100'
+                            : 'text-zinc-400 hover:bg-violet-500/10 hover:text-violet-300 hover:shadow-[0_0_12px_-3px_rgba(139,92,246,0.2)]',
+                      )}
+                      onClick={isChecking ? onStopPolling : onCheckPayment}
+                      disabled={cooldownSeconds > 0}
+                      data-testid="check-payment-button"
+                      aria-label={
+                        isChecking
+                          ? 'Stop checking for payment'
+                          : cooldownSeconds > 0
+                            ? `Check payment available in ${cooldownSeconds} seconds`
+                            : 'Check if payment has been received'
+                      }
                     >
-                      Watch for payment
-                    </Button>
+                      {isChecking ? (
+                        <>
+                          <Loader2Icon size={12} className="motion-safe:animate-spin" />
+                          Checking...
+                        </>
+                      ) : cooldownSeconds > 0 ? (
+                        <>
+                          <RefreshCwIcon size={12} />
+                          {cooldownSeconds}s
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCwIcon size={12} className="text-violet-400" />
+                          Check
+                        </>
+                      )}
+                    </button>
+                  )}
+                  {hasMoreOptions && (
+                    <button
+                      type="button"
+                      className={cn(
+                        footerActionBase,
+                        moreOpen
+                          ? 'text-violet-400 bg-violet-500/10'
+                          : 'text-zinc-500 hover:bg-violet-500/10 hover:text-violet-300 hover:shadow-[0_0_12px_-3px_rgba(139,92,246,0.2)]',
+                      )}
+                      onClick={() => setMoreOpen(v => !v)}
+                      data-testid="more-options-toggle"
+                      aria-expanded={moreOpen}
+                    >
+                      {moreOpen ? <ChevronUpIcon size={12} /> : <ChevronDownIcon size={12} />}
+                      More
+                    </button>
                   )}
                 </div>
               )}
 
-              {/* US9: "Verify by txHash" expandable section */}
-              {onVerifyTxHash && (
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 rounded"
-                    onClick={() => setTxHashOpen(v => !v)}
-                    data-testid="verify-txhash-toggle"
-                    aria-expanded={txHashOpen}
-                  >
-                    {txHashOpen ? (
-                      <ChevronUpIcon size={12} />
-                    ) : (
-                      <ChevronDownIcon size={12} />
-                    )}
-                    Verify by transaction hash
-                  </button>
-                  {txHashOpen && (
-                    <div className="space-y-2" data-testid="verify-txhash-section">
-                      <Input
-                        placeholder="0x..."
-                        value={txHashInput}
-                        onChange={e => setTxHashInput(e.target.value)}
-                        className="font-mono text-xs bg-zinc-900 border-zinc-700 text-zinc-200"
-                        data-testid="txhash-input"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full border-zinc-700 text-zinc-300 hover:text-white disabled:opacity-40"
-                        disabled={!txHashValid}
-                        onClick={() => onVerifyTxHash({ txHash: txHashInput })}
-                        data-testid="verify-txhash-button"
-                      >
-                        Verify
-                      </Button>
+              {/* Expanded "More" panel */}
+              {moreOpen && hasMoreOptions && (
+                <div className="space-y-2 rounded-lg border border-zinc-800/60 bg-zinc-900/50 p-3">
+                  {(onStartWatching || onStopWatching) && (
+                    <button
+                      type="button"
+                      className={cn(
+                        'cursor-pointer w-full inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
+                        isWatching
+                          ? 'text-violet-400 bg-violet-500/10'
+                          : 'text-zinc-400 hover:bg-violet-500/10 hover:text-violet-300',
+                      )}
+                      onClick={isWatching ? onStopWatching : onStartWatching}
+                      data-testid={isWatching ? 'stop-watching-button' : 'start-watching-button'}
+                      aria-label={isWatching ? 'Stop watching for incoming payment' : 'Automatically watch for incoming payment'}
+                    >
+                      {isWatching ? (
+                        <>
+                          <span className="h-2 w-2 rounded-full bg-violet-400 motion-safe:animate-pulse" />
+                          Watching...
+                        </>
+                      ) : (
+                        <>
+                          <EyeIcon size={12} className="text-violet-400" />
+                          Watch for payment
+                        </>
+                      )}
+                    </button>
+                  )}
+                  {onVerifyTxHash && (
+                    <div className="space-y-2">
+                      <label htmlFor="txhash-input" className="block text-xs text-zinc-500">
+                        Verify by transaction hash
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="txhash-input"
+                          placeholder="0x..."
+                          value={txHashInput}
+                          onChange={e => setTxHashInput(e.target.value)}
+                          className="flex-1 font-mono text-xs bg-zinc-900 border-zinc-700 text-zinc-200"
+                          data-testid="txhash-input"
+                          aria-describedby="txhash-hint"
+                          aria-invalid={txHashInput.length > 0 && !txHashValid}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0 border-zinc-700 text-violet-400 hover:text-white hover:border-violet-500/50 hover:bg-violet-500/10 disabled:opacity-40 disabled:text-zinc-600"
+                          disabled={!txHashValid}
+                          onClick={() => onVerifyTxHash({ txHash: txHashInput })}
+                          data-testid="verify-txhash-button"
+                          aria-label="Verify transaction hash"
+                        >
+                          <SearchIcon size={14} />
+                        </Button>
+                      </div>
+                      <p id="txhash-hint" className="text-[10px] text-zinc-600">
+                        {txHashInput.length > 0 && !txHashValid
+                          ? 'Enter a valid 66-character transaction hash (0x...)'
+                          : 'Paste a transaction hash to verify payment manually'}
+                      </p>
                     </div>
                   )}
                 </div>
               )}
 
-              {/* Polling status — user-initiated modes only (auto-check shown in StatusBadge) */}
-              {pollingMode && pollingMode !== 'idle' && pollingMode !== 'auto-check' && (
-                <PollingStatus mode={pollingMode} />
+              {/* Watching status — only for watching mode */}
+              {isWatching && (
+                <PollingStatus mode="watching" />
               )}
             </motion.div>
           )}
@@ -308,31 +375,33 @@ export function PaymentPanel({
         )}
       </div>
 
-      {/* Footer */}
-      <div className="px-3 md:px-4 pb-3">
-        {footerDivider}
-        <div className="flex items-center justify-between w-full pt-2">
+      {/* Footer — utility actions only */}
+      <div className="px-4 pb-3">
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+
+        {/* Utility actions */}
+        <div className="flex items-center justify-between w-full py-2">
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="sm"
               disabled
-              className="text-[10px] text-zinc-500 inline-flex items-center gap-1 opacity-50 cursor-not-allowed"
-              aria-label="Download PDF"
+              className="text-xs text-zinc-500 inline-flex items-center gap-1 opacity-50 cursor-not-allowed"
+              aria-label="Download PDF (coming soon)"
             >
               <DownloadIcon size={12} />
-              Download PDF
+              PDF
             </Button>
             {isPending && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setQrOpen(true)}
-                className={cn('hidden md:inline-flex items-center gap-1 text-[10px] text-zinc-500 hover:text-white')}
+                className="hidden md:inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-white"
                 aria-label="Show QR code for mobile payment"
               >
                 <QrCodeIcon size={12} />
-                Show QR
+                QR
               </Button>
             )}
           </div>
@@ -343,7 +412,7 @@ export function PaymentPanel({
                 href={getExplorerUrl(invoice.networkId, txHash)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1 px-2 py-1 text-[10px] font-bold rounded-lg bg-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors border border-zinc-700/50"
+                className="inline-flex items-center justify-center gap-1 rounded-lg bg-zinc-800/50 px-2.5 py-1.5 text-xs font-bold text-zinc-400 transition-colors border border-zinc-700/50 hover:text-white hover:bg-zinc-800"
               >
                 View Tx
                 <ExternalLinkIcon size={12} />
@@ -352,7 +421,7 @@ export function PaymentPanel({
             <Button
               variant="ghost"
               size="sm"
-              className={cn('text-[10px] text-zinc-500 hover:text-red-400 font-medium group hover:bg-red-500/5')}
+              className="text-xs text-zinc-500 hover:text-red-400 font-medium group hover:bg-red-500/5"
               aria-label="Report abuse"
             >
               <span className="inline-flex items-center gap-1">

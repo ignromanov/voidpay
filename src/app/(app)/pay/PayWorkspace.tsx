@@ -9,6 +9,7 @@ import {
 } from '@/widgets/invoice-paper'
 import { PaymentPanel, DevStatusToggle, DevPaymentStepToggle } from '@/widgets/payment-panel'
 import type { DevPaymentVisualStep, PaymentError } from '@/features/payment'
+import { useFinalizationToast } from '@/features/payment'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
@@ -119,6 +120,14 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
   const handlePaymentSuccess = useCallback(() => { setPaymentError(null) }, [])
   const handlePaymentError = useCallback((error: PaymentError) => { setPaymentError(error.message) }, [])
 
+  useFinalizationToast({
+    finalized,
+    currency: invoice.currency,
+    subtotal,
+    decimals: invoice.decimals,
+    networkId: invoice.networkId,
+  })
+
   const networkId = invoice.networkId
   const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
   const invoiceStatus = panelStatus === 'overdue' ? 'overdue' as const : 'pending' as const
@@ -183,8 +192,6 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                     {...(confirmations ? { confirmations } : {})}
                     finalized={finalized}
                     pollingMode={polling.mode}
-                    onStartWatching={polling.startWatching}
-                    onStopWatching={polling.stop}
                   />
                 ) : (
                   <PaymentPanel
@@ -196,10 +203,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                     pollingMode={polling.mode}
                     onVerifyTxHash={verifyTxHash}
                     onIvePaid={polling.startAggressivePolling}
-                    onCheckPayment={polling.startManualCheck}
-                    onStartWatching={polling.startWatching}
-                    onStopWatching={polling.stop}
-                    {...(polling.cooldownUntil !== undefined ? { cooldownUntil: polling.cooldownUntil } : {})}
+                    onStopPolling={polling.stop}
                   >
                     <PayButton
                       invoice={invoice}
