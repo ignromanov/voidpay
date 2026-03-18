@@ -224,12 +224,30 @@ export function decodeCurrency(code: number): string | null {
   return CURRENCY_DICT_REVERSE[code] ?? null
 }
 
+/** Chain ID → valid token dictionary code range */
+const CHAIN_CODE_RANGES: Record<number, [number, number]> = {
+  1: [1, 9],       // Ethereum
+  42161: [10, 19],  // Arbitrum
+  10: [20, 29],     // Optimism
+  137: [30, 39],    // Polygon
+  8453: [40, 49],   // Base
+}
+
 /**
  * Encode token address to { code, decimals } dictionary entry.
+ * When chainId is provided, validates that the resolved code falls within the chain's range.
  * Returns null if the address is not in the dictionary (caller should use raw 20 bytes).
  */
-export function encodeTokenAddress(address: string): TokenDictEntry | null {
-  return TOKEN_DICT[address.toLowerCase()] ?? null
+export function encodeTokenAddress(address: string, chainId?: number): TokenDictEntry | null {
+  const entry = TOKEN_DICT[address.toLowerCase()] ?? null
+  if (!entry || chainId == null) return entry
+
+  const range = CHAIN_CODE_RANGES[chainId]
+  if (range && (entry.code < range[0] || entry.code > range[1])) {
+    // Address exists in dict but for a different chain — encode as raw bytes
+    return null
+  }
+  return entry
 }
 
 /**

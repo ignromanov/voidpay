@@ -52,12 +52,18 @@ function requireRecord(records: TlvRecord[], type: number, name: string): TlvRec
   return record
 }
 
+const MAX_ITEMS = 50 // hardening limit (schema may be stricter)
+
 /** Unpack line items from Type 14 binary format */
 function unpackItems(data: Uint8Array): Invoice['items'] {
   let offset = 0
   const countResult = readVarInt(data, offset)
   const count = countResult.value
   offset += countResult.bytesRead
+
+  if (count > MAX_ITEMS) {
+    throw new Error(`Item count ${count} exceeds max ${MAX_ITEMS}`)
+  }
 
   const items: Invoice['items'] = []
   for (let i = 0; i < count; i++) {
@@ -127,7 +133,12 @@ export function decodeInvoice(compressed: string): Invoice {
       }
       // Merge inflated fields as TLV records, remove Type 253
       allRecords = allRecords.filter((r) => r.type !== TlvType.COMPRESSED_TEXT)
+      const existingTypes = new Set(allRecords.map((r) => r.type))
       for (const field of inflatedFields) {
+        if (existingTypes.has(field.typeId)) {
+          throw new Error(`Duplicate type after decompression: ${field.typeId}`)
+        }
+        existingTypes.add(field.typeId)
         allRecords.push({ type: field.typeId, value: field.value })
       }
     }

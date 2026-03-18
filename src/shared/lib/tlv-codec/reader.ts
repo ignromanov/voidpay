@@ -1,5 +1,5 @@
 import type { TlvHeader, TlvRecord } from './types'
-import { MAGIC, VERSION, MAX_TLV_COUNT } from './types'
+import { MAGIC, VERSION, MAX_TLV_COUNT, MAX_VALUE_SIZE } from './types'
 
 /**
  * Parse binary TLV format.
@@ -37,6 +37,10 @@ export function readTlv(bytes: Uint8Array): { header: TlvHeader; records: TlvRec
     const type = bytes[offset]!
     const length = (bytes[offset + 1]! << 8) | bytes[offset + 2]!
     offset += 3
+
+    if (length > MAX_VALUE_SIZE) {
+      throw new Error(`TLV value size ${length} exceeds max ${MAX_VALUE_SIZE}`)
+    }
 
     if (offset + length > bytes.length) {
       throw new Error(

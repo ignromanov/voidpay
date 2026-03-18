@@ -19,10 +19,12 @@ export function computeDomainSeparator(records: TlvRecord[]): Uint8Array {
   const parts: Uint8Array[] = [prefix]
   for (const record of records) {
     if (record.type === TlvType.DOMAIN_SEPARATOR) continue
-    // Serialize: type(1) + value
-    const chunk = new Uint8Array(1 + record.value.length)
+    // Serialize: type(1) + length(2 BE) + value — matches wire TLV format
+    const chunk = new Uint8Array(3 + record.value.length)
     chunk[0] = record.type
-    chunk.set(record.value, 1)
+    chunk[1] = (record.value.length >> 8) & 0xff
+    chunk[2] = record.value.length & 0xff
+    chunk.set(record.value, 3)
     parts.push(chunk)
   }
 
@@ -55,13 +57,13 @@ export function validateSecurity(records: TlvRecord[]): void {
   }
 
   const domSepRecord = records.find((r) => r.type === TlvType.DOMAIN_SEPARATOR)
-  if (domSepRecord) {
-    const expected = computeDomainSeparator(records)
-    if (toHex(domSepRecord.value) !== toHex(expected)) {
-      throw new Error('Domain separator mismatch — invoice may be tampered')
-    }
+  if (!domSepRecord) {
+    throw new Error('Missing required domain separator (Type 31)')
   }
-  // Type 31 is odd → optional, so absent is OK
+  const expected = computeDomainSeparator(records)
+  if (toHex(domSepRecord.value) !== toHex(expected)) {
+    throw new Error('Domain separator mismatch — invoice may be tampered')
+  }
 }
 
 /**

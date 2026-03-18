@@ -21,6 +21,9 @@ function utf8(str: string): Uint8Array {
 /** Encode an Ethereum address (0x-prefixed hex) to 20 raw bytes */
 function addressToBytes(address: string): Uint8Array {
   const hex = address.startsWith('0x') ? address.slice(2) : address
+  if (hex.length !== 40 || !/^[0-9a-fA-F]{40}$/.test(hex)) {
+    throw new Error(`Invalid address: ${address}`)
+  }
   const bytes = new Uint8Array(20)
   for (let i = 0; i < 20; i++) {
     bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
@@ -171,7 +174,7 @@ export function encodeInvoice(invoice: Invoice): string {
 
   // --- Optional non-text fields (odd types) ---
   if (invoice.tokenAddress) {
-    const tokenEntry = encodeTokenAddress(invoice.tokenAddress)
+    const tokenEntry = encodeTokenAddress(invoice.tokenAddress, invoice.networkId)
     if (tokenEntry) {
       records.push({ type: TlvType.TOKEN_ADDRESS, value: new Uint8Array([0x00, tokenEntry.code]) })
     } else {

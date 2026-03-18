@@ -88,9 +88,11 @@ describe('computeDomainSeparator', () => {
 })
 
 describe('validateSecurity', () => {
-  it('passes for valid records with salt', () => {
+  it('passes for valid records with salt and domain separator', () => {
     const records = makeValidRecords()
-    expect(() => validateSecurity(records)).not.toThrow()
+    const domSep = computeDomainSeparator(records)
+    const withSep = [...records, makeRecord(TlvType.DOMAIN_SEPARATOR, domSep)]
+    expect(() => validateSecurity(withSep)).not.toThrow()
   })
 
   it('rejects missing salt', () => {
@@ -118,9 +120,9 @@ describe('validateSecurity', () => {
     expect(() => validateSecurity(tampered)).toThrow('Domain separator mismatch')
   })
 
-  it('accepts absent domain separator (Type 31 is odd = optional)', () => {
+  it('rejects absent domain separator (now mandatory)', () => {
     const records = makeValidRecords() // no Type 31
-    expect(() => validateSecurity(records)).not.toThrow()
+    expect(() => validateSecurity(records)).toThrow('Missing required domain separator')
   })
 
   it('accepts correct domain separator', () => {

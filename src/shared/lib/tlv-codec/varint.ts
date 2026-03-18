@@ -20,11 +20,15 @@ export function writeVarInt(buffer: number[], value: number): void {
  * Reads a varint from a Uint8Array at the given offset.
  */
 export function readVarInt(bytes: Uint8Array, offset: number): { value: number; bytesRead: number } {
+  const MAX_BYTES = 5 // max for uint32 (35 bits encoded)
   let value = 0
   let shift = 0
   let bytesRead = 0
 
   while (offset + bytesRead < bytes.length) {
+    if (bytesRead >= MAX_BYTES) {
+      throw new Error('Varint overflow: too many continuation bytes')
+    }
     const byte = bytes[offset + bytesRead] ?? 0
     bytesRead++
     value |= (byte & 0x7F) << shift
@@ -76,6 +80,7 @@ export function writeBigIntVarInt(buffer: number[], value: bigint): void {
  * // result: { value: 150000000n, bytesRead: 4 }
  */
 export function readBigIntVarInt(bytes: Uint8Array, offset: number): { value: bigint; bytesRead: number } {
+  const MAX_BYTES = 16 // 112 bits — far exceeds uint256 needs for atomic amounts
   const ZERO = BigInt(0)
   const SEVEN = BigInt(7)
 
@@ -84,6 +89,9 @@ export function readBigIntVarInt(bytes: Uint8Array, offset: number): { value: bi
   let bytesRead = 0
 
   while (offset + bytesRead < bytes.length) {
+    if (bytesRead >= MAX_BYTES) {
+      throw new Error('BigInt varint overflow: too many continuation bytes')
+    }
     const byte = bytes[offset + bytesRead] ?? 0
     bytesRead++
     value = value | (BigInt(byte & 0x7F) << shift)

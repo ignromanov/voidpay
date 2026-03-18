@@ -49,9 +49,33 @@ export function groupedInflate(
 ): CompressedField[] {
   const maxInflate = opts?.maxInflateSize ?? MAX_INFLATE_SIZE
 
-  const inflated = pako.inflate(data)
-  if (inflated.length > maxInflate) {
-    throw new Error(`Inflated size ${inflated.length} exceeds max ${maxInflate}`)
+  // Streaming inflate with size limit — prevents OOM on decompression bombs
+  const inflator = new pako.Inflate()
+  const chunks: Uint8Array[] = []
+  let totalSize = 0
+
+  inflator.onData = (chunk: Uint8Array) => {
+    totalSize += chunk.length
+    if (totalSize > maxInflate) {
+      throw new Error(`Inflated size exceeds max ${maxInflate}`)
+    }
+    chunks.push(chunk)
+  }
+
+  inflator.push(data, true)
+  if (inflator.err) {
+    throw new Error(`Decompression failed: ${inflator.msg}`)
+  }
+  if (totalSize > maxInflate) {
+    throw new Error(`Inflated size ${totalSize} exceeds max ${maxInflate}`)
+  }
+
+  // Concatenate chunks
+  const inflated = new Uint8Array(totalSize)
+  let pos = 0
+  for (const chunk of chunks) {
+    inflated.set(chunk, pos)
+    pos += chunk.length
   }
 
   const fieldCount = inflated[0]!
