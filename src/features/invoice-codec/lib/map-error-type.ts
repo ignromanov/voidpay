@@ -20,7 +20,7 @@ export function mapParseErrorToDecodeType(message: string): DecodeErrorType {
 
   // INVALID_FORMAT: bad magic byte, unrecognised prefix, or structurally invalid
   // Covers TLV v1: "Invalid magic byte", "Invalid invoice data"
-  // Covers V3 legacy: messages containing "prefix" or "invalid"
+  // Covers legacy: messages containing "prefix" or "invalid"
   if (
     lower.includes('magic') ||
     lower.includes('prefix') ||

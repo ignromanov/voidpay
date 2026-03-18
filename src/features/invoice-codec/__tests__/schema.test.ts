@@ -68,7 +68,7 @@ describe('Invoice Schema V1 Encoding', () => {
       const encoded = encodeInvoice(original)
       const decoded = decodeInvoice(encoded)
 
-      // Addresses are normalized to lowercase by binary codec
+      // Addresses are normalized to lowercase by TLV codec
       expect(normalizeInvoiceAddresses(decoded)).toEqual(normalizeInvoiceAddresses(original))
     })
 

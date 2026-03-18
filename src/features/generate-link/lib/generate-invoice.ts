@@ -145,7 +145,7 @@ export class UrlSizeError extends Error {
  * Generate invoice URL and add to history
  *
  * Combines URL generation and history tracking.
- * Uses Binary V3 encoding for compact, privacy-preserving URLs.
+ * Uses TLV v1 encoding for compact, privacy-preserving URLs.
  *
  * @param draft - Draft state with invoice data
  * @param lineItems - Line items for the invoice
@@ -164,7 +164,7 @@ export async function generateAndTrackInvoice(
   // Build full invoice from draft and line items (calculates total + magicDust)
   const invoice = buildInvoice(draft, lineItems)
 
-  // Generate URL with Binary V3 encoding
+  // Generate URL with TLV v1 encoding
   // generateInvoiceUrl throws if URL > 2000 bytes
   let invoiceUrl: string
   try {

@@ -358,7 +358,7 @@ describe('PayWorkspace', () => {
       // Invoice already in history
       mockGetInvoice.mockReturnValue({
         invoiceId: 'INV-001',
-        invoiceUrl: '/pay#H_mock_encoded',
+        invoiceUrl: '/pay#mock_encoded',
         source: 'received',
         createdAt: '2026-02-01T00:00:00Z',
       })
