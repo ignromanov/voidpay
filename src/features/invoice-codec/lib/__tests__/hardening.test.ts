@@ -23,7 +23,6 @@ import { writeVarInt } from '@/shared/lib/tlv-codec'
 
 function createTestInvoice(): Invoice {
   return {
-    version: 2,
     invoiceId: 'HARD-001',
     issuedAt: 1704067200,
     dueAt: 1706745600,
@@ -38,6 +37,7 @@ function createTestInvoice(): Invoice {
       name: 'Hardening Client',
     },
     items: [{ description: 'Hardening service', quantity: 1, rate: '100000000' }],
+    total: '100000000',
   }
 }
 

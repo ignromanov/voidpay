@@ -42,6 +42,7 @@ describe('TlvType', () => {
       TlvType.CLIENT_NAME,
       TlvType.SALT,
       TlvType.INVOICE_ID,
+      TlvType.TOTAL,
     ]
     for (const t of requiredTypes) {
       expect(t % 2, `type ${t} should be even (required)`).toBe(0)
@@ -61,7 +62,6 @@ describe('TlvType', () => {
       TlvType.CLIENT_ADDRESS,
       TlvType.TAX,
       TlvType.DISCOUNT,
-      TlvType.TOTAL,
       TlvType.MAGIC_DUST,
       TlvType.TTL,
       TlvType.DOMAIN_SEPARATOR,
@@ -100,7 +100,7 @@ describe('TlvType', () => {
     expect(TlvType.CLIENT_ADDRESS).toBe(17)
     expect(TlvType.TAX).toBe(19)
     expect(TlvType.DISCOUNT).toBe(21)
-    expect(TlvType.TOTAL).toBe(23)
+    expect(TlvType.TOTAL).toBe(24)
     expect(TlvType.MAGIC_DUST).toBe(25)
     expect(TlvType.TTL).toBe(29)
     expect(TlvType.DOMAIN_SEPARATOR).toBe(31)
@@ -538,7 +538,7 @@ describe('COMPRESSED_TEXT_WHITELIST', () => {
     // Binary/numeric odd types must not appear in compressed block
     expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.TOKEN_ADDRESS)).toBe(false) // 1
     expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.CLIENT_WALLET)).toBe(false) // 3
-    expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.TOTAL)).toBe(false)         // 23
+    expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.TOTAL)).toBe(false)         // 24
     expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.MAGIC_DUST)).toBe(false)    // 25
     expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.TTL)).toBe(false)           // 29
     expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.DOMAIN_SEPARATOR)).toBe(false) // 31

@@ -240,12 +240,9 @@ export function decodeInvoice(compressed: string): Invoice {
     const discountRecord = findRecord(allRecords, TlvType.DISCOUNT)
     const discount = discountRecord ? decodeUtf8(discountRecord.value) : undefined
 
-    const totalRecord = findRecord(allRecords, TlvType.TOTAL)
-    let total: string | undefined
-    if (totalRecord) {
-      const result = readBigIntVarInt(totalRecord.value, 0)
-      total = result.value.toString()
-    }
+    const totalRecord = requireRecord(allRecords, TlvType.TOTAL, 'total')
+    const totalResult = readBigIntVarInt(totalRecord.value, 0)
+    const total = totalResult.value.toString()
 
     const magicDustRecord = findRecord(allRecords, TlvType.MAGIC_DUST)
     let magicDust: string | undefined
@@ -254,9 +251,8 @@ export function decodeInvoice(compressed: string): Invoice {
       magicDust = result.value.toString()
     }
 
-    // 10. Construct invoice (version: 2 always)
+    // 10. Construct invoice
     const invoice: Invoice = {
-      version: 2,
       invoiceId,
       issuedAt,
       dueAt,
@@ -284,7 +280,7 @@ export function decodeInvoice(compressed: string): Invoice {
       ...(notes && { notes }),
       ...(tax && { tax }),
       ...(discount && { discount }),
-      ...(total && { total }),
+      total,
       ...(magicDust && { magicDust }),
     }
 

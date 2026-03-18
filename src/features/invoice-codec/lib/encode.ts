@@ -196,9 +196,10 @@ export function encodeInvoice(invoice: Invoice): string {
   if (invoice.discount) {
     records.push({ type: TlvType.DISCOUNT, value: utf8(invoice.discount) })
   }
-  if (invoice.total) {
-    records.push({ type: TlvType.TOTAL, value: bigintVarintBytes(BigInt(invoice.total)) })
+  if (!invoice.total) {
+    throw new Error('Invoice total is required for encoding')
   }
+  records.push({ type: TlvType.TOTAL, value: bigintVarintBytes(BigInt(invoice.total)) })
   if (invoice.magicDust) {
     records.push({ type: TlvType.MAGIC_DUST, value: bigintVarintBytes(BigInt(invoice.magicDust)) })
   }

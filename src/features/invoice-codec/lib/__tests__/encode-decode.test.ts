@@ -17,7 +17,6 @@ vi.mock('@/shared/config', async (importOriginal) => {
 })
 
 const createMinimalInvoice = (): Invoice => ({
-  version: 2,
   invoiceId: 'TEST-001',
   issuedAt: 1704067200,
   dueAt: 1706745600,
@@ -32,10 +31,10 @@ const createMinimalInvoice = (): Invoice => ({
     name: 'Test Client',
   },
   items: [{ description: 'Test service', quantity: 1, rate: '100000000' }],
+  total: '100000000',
 })
 
 const createFullInvoice = (): Invoice => ({
-  version: 2,
   invoiceId: 'FULL-001',
   issuedAt: 1704067200,
   dueAt: 1706745600,
@@ -137,7 +136,6 @@ describe('Invoice Codec TLV v1', () => {
       expect(decoded.decimals).toBe(original.decimals)
       expect(decoded.from.name).toBe(original.from.name)
       expect(decoded.client.name).toBe(original.client.name)
-      expect(decoded.version).toBe(2)
     })
 
     it('throws on empty string', () => {
@@ -146,12 +144,6 @@ describe('Invoice Codec TLV v1', () => {
 
     it('throws on invalid Base62', () => {
       expect(() => decodeInvoice('!!invalid!!')).toThrow()
-    })
-
-    it('outputs version: 2', () => {
-      const encoded = encodeInvoice(createMinimalInvoice())
-      const decoded = decodeInvoice(encoded)
-      expect(decoded.version).toBe(2)
     })
 
     it('validates against schema', () => {

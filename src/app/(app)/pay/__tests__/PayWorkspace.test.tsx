@@ -60,7 +60,6 @@ import { PayWorkspace } from '../PayWorkspace'
 
 // Test fixtures matching Invoice schema
 const VALID_INVOICE = {
-  version: 2,
   invoiceId: 'INV-001',
   from: {
     name: 'Test Sender',

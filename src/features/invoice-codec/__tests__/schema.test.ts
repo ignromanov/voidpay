@@ -120,16 +120,6 @@ describe('Invoice Schema V1 Encoding', () => {
     })
   })
 
-  describe('Version Detection', () => {
-    it('should correctly identify schema version 2', () => {
-      const invoice = TEST_INVOICES.full()
-      const encoded = encodeInvoice(invoice)
-      const decoded = decodeInvoice(encoded)
-
-      expect(decoded.version).toBe(2)
-    })
-  })
-
   describe('Error Handling', () => {
     it('should throw on invalid compressed data', () => {
       expect(() => decodeInvoice('invalid-data-not-compressed')).toThrow()

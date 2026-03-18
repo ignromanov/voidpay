@@ -41,7 +41,6 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
     txHash: '0x0000000000000000000000000000000000000000000000000000000000000001',
     txHashValidated: true,
     data: {
-      version: 2,
       invoiceId: 'eth-inv-001',
       issuedAt: BASE_TIMESTAMP,
       dueAt: BASE_TIMESTAMP + 86400 * 14,
@@ -82,7 +81,6 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
     createdAt: '2024-01-03T09:30:00.000Z',
     status: 'pending',
     data: {
-      version: 2,
       invoiceId: 'arb-inv-001',
       issuedAt: BASE_TIMESTAMP + 86400 * 2,
       dueAt: BASE_TIMESTAMP + 86400 * 32,
@@ -125,7 +123,6 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
     txHash: '0x0000000000000000000000000000000000000000000000000000000000000002',
     txHashValidated: false, // Shows warning indicator
     data: {
-      version: 2,
       invoiceId: 'opt-inv-001',
       issuedAt: BASE_TIMESTAMP + 86400 * 5,
       dueAt: BASE_TIMESTAMP + 86400 * 35,
@@ -167,7 +164,6 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
     createdAt: '2024-01-02T16:45:00.000Z',
     status: 'overdue',
     data: {
-      version: 2,
       invoiceId: 'poly-inv-001',
       issuedAt: BASE_TIMESTAMP + 86400 * 1,
       dueAt: BASE_TIMESTAMP + 86400 * 15,

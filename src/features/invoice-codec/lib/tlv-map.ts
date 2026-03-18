@@ -30,7 +30,7 @@ export const TlvType = {
   CLIENT_ADDRESS: 17,    // client.physicalAddress — UTF-8 string
   TAX: 19,               // tax — UTF-8 string (percentage)
   DISCOUNT: 21,          // discount — UTF-8 string (percentage)
-  TOTAL: 23,             // total — BigInt varint (atomic units)
+  TOTAL: 24,             // total — BigInt varint (atomic units), REQUIRED (even)
   MAGIC_DUST: 25,        // magicDust — BigInt varint (atomic units)
   // 27: reserved
   TTL: 29,               // codec-only: uint32 BE unix timestamp (ERC-3009 validBefore)
