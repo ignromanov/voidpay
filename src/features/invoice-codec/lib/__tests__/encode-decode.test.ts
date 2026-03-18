@@ -2,7 +2,7 @@
  * Invoice Codec TLV v1 encode/decode tests
  */
 import { describe, it, expect, vi } from 'vitest'
-import { encodeInvoice, generateInvoiceUrl } from '../encode'
+import { encodeInvoice, generateInvoiceUrl, MIX_PREFIX_SIZE } from '../encode'
 import { decodeInvoice } from '../decode'
 import type { Invoice } from '@/entities/invoice'
 import { readTlv, decodeBase62, encodeBase62, writeTlv } from '@/shared/lib/tlv-codec'
@@ -92,14 +92,16 @@ describe('Invoice Codec TLV v1', () => {
 
     it('encoded binary has correct magic byte and version', () => {
       const encoded = encodeInvoice(createMinimalInvoice())
-      const bytes = decodeBase62(encoded)
+      const raw = decodeBase62(encoded)
+      const bytes = raw.slice(MIX_PREFIX_SIZE) // skip mix prefix
       expect(bytes[0]).toBe(0x56) // MAGIC
       expect(bytes[1]).toBe(0x01) // VERSION
     })
 
     it('encoded TLV contains salt (Type 20, 16 bytes)', () => {
       const encoded = encodeInvoice(createMinimalInvoice())
-      const bytes = decodeBase62(encoded)
+      const raw = decodeBase62(encoded)
+      const bytes = raw.slice(MIX_PREFIX_SIZE)
       const { records } = readTlv(bytes)
       const salt = records.find((r) => r.type === TlvType.SALT)
       expect(salt).toBeDefined()
@@ -108,7 +110,8 @@ describe('Invoice Codec TLV v1', () => {
 
     it('records are in canonical order', () => {
       const encoded = encodeInvoice(createFullInvoice())
-      const bytes = decodeBase62(encoded)
+      const raw = decodeBase62(encoded)
+      const bytes = raw.slice(MIX_PREFIX_SIZE)
       const { records } = readTlv(bytes)
       for (let i = 1; i < records.length; i++) {
         expect(records[i]!.type).toBeGreaterThan(records[i - 1]!.type)
@@ -117,7 +120,8 @@ describe('Invoice Codec TLV v1', () => {
 
     it('invoiceId is individual TLV (Type 22), not in compressed block', () => {
       const encoded = encodeInvoice(createFullInvoice())
-      const bytes = decodeBase62(encoded)
+      const raw = decodeBase62(encoded)
+      const bytes = raw.slice(MIX_PREFIX_SIZE)
       const { records } = readTlv(bytes)
       const invoiceIdRecord = records.find((r) => r.type === TlvType.INVOICE_ID)
       expect(invoiceIdRecord).toBeDefined()

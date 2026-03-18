@@ -9,9 +9,13 @@ import {
   groupedDeflate,
 } from '@/shared/lib/tlv-codec'
 import { getAppBaseUrl } from '@/shared/config'
+import { keccak256, toBytes } from 'viem'
 import { encodeOGPreview } from './og-preview'
 import { TlvType, encodeCurrency, encodeTokenAddress, COMPRESSED_TEXT_WHITELIST } from './tlv-map'
 import { generateSalt, computeDomainSeparator } from './security'
+
+/** Mix prefix size in bytes — prepended for full Base62 avalanche diffusion */
+export const MIX_PREFIX_SIZE = 2
 
 /** Encode a UTF-8 string to Uint8Array */
 function utf8(str: string): Uint8Array {
@@ -216,7 +220,16 @@ export function encodeInvoice(invoice: Invoice): string {
 
   // --- Serialize ---
   const bytes = writeTlv(finalRecords)
-  return encodeBase62(bytes)
+
+  // Mix prefix: 2 bytes of keccak256(payload) prepended for full Base62 avalanche diffusion.
+  // Any single-bit change in TLV → completely different keccak → different high-order BigInt bits
+  // → entire Base62 string changes. Stripped on decode (not verified — domain separator handles integrity).
+  const mixHash = toBytes(keccak256(bytes))
+  const withMix = new Uint8Array(MIX_PREFIX_SIZE + bytes.length)
+  withMix.set(mixHash.slice(0, MIX_PREFIX_SIZE))
+  withMix.set(bytes, MIX_PREFIX_SIZE)
+
+  return encodeBase62(withMix)
 }
 
 /**

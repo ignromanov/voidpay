@@ -2,7 +2,7 @@
  * Hardening tests — encoder/decoder rejects malicious or malformed inputs.
  */
 import { describe, it, expect } from 'vitest'
-import { encodeInvoice } from '../encode'
+import { encodeInvoice, MIX_PREFIX_SIZE } from '../encode'
 import { decodeInvoice } from '../decode'
 import type { Invoice } from '@/entities/invoice'
 import {
@@ -16,6 +16,16 @@ import { TlvType, TOKEN_DICT } from '../tlv-map'
 import { generateSalt, computeDomainSeparator } from '../security'
 import pako from 'pako'
 import { writeVarInt } from '@/shared/lib/tlv-codec'
+import { keccak256, toBytes } from 'viem'
+
+/** Add mix prefix to manually built TLV bytes (mirrors encodeInvoice behavior) */
+function addMixPrefix(bytes: Uint8Array): Uint8Array {
+  const mixHash = toBytes(keccak256(bytes))
+  const withMix = new Uint8Array(MIX_PREFIX_SIZE + bytes.length)
+  withMix.set(mixHash.slice(0, MIX_PREFIX_SIZE))
+  withMix.set(bytes, MIX_PREFIX_SIZE)
+  return withMix
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -188,7 +198,7 @@ describe('hardening: type 253 whitelist — reject spoofed type_id', () => {
     const finalRecords = sortCanonical(sorted)
 
     const bytes = writeTlv(finalRecords)
-    const encoded = encodeBase62(bytes)
+    const encoded = encodeBase62(addMixPrefix(bytes))
 
     expect(() => decodeInvoice(encoded)).toThrow(/Type spoofing/)
   })

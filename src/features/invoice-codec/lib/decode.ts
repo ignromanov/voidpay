@@ -17,6 +17,7 @@ import {
   COMPRESSED_TEXT_WHITELIST,
 } from './tlv-map'
 import { validateSecurity } from './security'
+import { MIX_PREFIX_SIZE } from './encode'
 import type { Address } from 'viem'
 
 /** Decode a Uint8Array to UTF-8 string */
@@ -106,8 +107,9 @@ export function decodeInvoice(compressed: string): Invoice {
   }
 
   try {
-    // 1. Base62 → binary
-    const bytes = decodeBase62(compressed)
+    // 1. Base62 → binary, strip mix prefix (avalanche diffusion bytes)
+    const allBytes = decodeBase62(compressed)
+    const bytes = allBytes.slice(MIX_PREFIX_SIZE)
 
     // 2. Parse TLV structure
     const { records } = readTlv(bytes)
