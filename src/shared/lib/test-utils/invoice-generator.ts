@@ -158,7 +158,6 @@ export function generateRandomInvoice(): Invoice {
   const includeClientPhone = randomBool(0.4)
 
   const invoice: Invoice = {
-    version: 2,
     invoiceId: generateUUID(),
     issuedAt: iss,
     dueAt: due,
@@ -188,6 +187,7 @@ export function generateRandomInvoice(): Invoice {
     items: it,
     tax: includeTax ? randomInt(5, 25) + '%' : undefined,
     discount: includeDiscount ? randomInt(5, 20) + '%' : undefined,
+    total: String(randomInt(100000, 999999999)),
   }
 
   return invoice

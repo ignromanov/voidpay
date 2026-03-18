@@ -10,7 +10,7 @@ import {
   nativeShare,
 } from '../social-links'
 
-const TEST_URL = 'https://voidpay.xyz/pay#H123abc'
+const TEST_URL = 'https://voidpay.xyz/pay#abc123def'
 
 describe('getTelegramShareUrl', () => {
   it('generates valid Telegram share URL', () => {

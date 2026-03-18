@@ -38,7 +38,6 @@ describe('historySlice', () => {
 
       addHistoryEntry({
         invoice: {
-          version: 2,
           invoiceId: 'INV-001',
           issuedAt: 1704067200,
           dueAt: 1706745600,
@@ -63,7 +62,6 @@ describe('historySlice', () => {
 
       addHistoryEntry({
         invoice: {
-          version: 2,
           invoiceId: 'INV-002',
           issuedAt: 1704067200,
           dueAt: 1706745600,
@@ -87,7 +85,6 @@ describe('historySlice', () => {
 
       addHistoryEntry({
         invoice: {
-          version: 2,
           invoiceId: 'FIRST',
           issuedAt: 1704067200,
           dueAt: 1706745600,
@@ -103,7 +100,6 @@ describe('historySlice', () => {
 
       addHistoryEntry({
         invoice: {
-          version: 2,
           invoiceId: 'SECOND',
           issuedAt: 1704067200,
           dueAt: 1706745600,
@@ -129,7 +125,6 @@ describe('historySlice', () => {
       for (let i = 0; i < 105; i++) {
         addHistoryEntry({
           invoice: {
-            version: 2,
             invoiceId: `INV-${i.toString().padStart(3, '0')}`,
             issuedAt: 1704067200,
             dueAt: 1706745600,
@@ -157,7 +152,6 @@ describe('historySlice', () => {
 
       addHistoryEntry({
         invoice: {
-          version: 2,
           invoiceId: 'TO-DELETE',
           issuedAt: 1704067200,
           dueAt: 1706745600,
@@ -184,7 +178,6 @@ describe('historySlice', () => {
 
       addHistoryEntry({
         invoice: {
-          version: 2,
           invoiceId: 'KEEP',
           issuedAt: 1704067200,
           dueAt: 1706745600,
@@ -211,7 +204,6 @@ describe('historySlice', () => {
 
       addHistoryEntry({
         invoice: {
-          version: 2,
           invoiceId: 'ORIGINAL',
           issuedAt: 1704067200,
           dueAt: 1706745600,
@@ -242,7 +234,6 @@ describe('historySlice', () => {
 
       addHistoryEntry({
         invoice: {
-          version: 2,
           invoiceId: 'OLD-DATES',
           issuedAt: 1609459200, // Jan 1, 2021
           dueAt: 1612137600, // Feb 1, 2021
@@ -273,7 +264,6 @@ describe('historySlice', () => {
 
       addHistoryEntry({
         invoice: {
-          version: 2,
           invoiceId: 'WITH-ITEMS',
           issuedAt: 1704067200,
           dueAt: 1706745600,
@@ -310,7 +300,6 @@ describe('historySlice', () => {
 
       addHistoryEntry({
         invoice: {
-          version: 2,
           invoiceId: 'NO-ITEMS',
           issuedAt: 1704067200,
           dueAt: 1706745600,
@@ -340,7 +329,6 @@ describe('historySlice', () => {
         entryId: `entry-${i}`,
         createdAt: new Date().toISOString(),
         invoice: {
-          version: 2 as const,
           invoiceId: `INV-${i}`,
           issuedAt: 1704067200,
           dueAt: 1706745600,
@@ -368,7 +356,6 @@ describe('historySlice', () => {
 
       addHistoryEntry({
         invoice: {
-          version: 2,
           invoiceId: 'SINGLE',
           issuedAt: 1704067200,
           dueAt: 1706745600,
@@ -395,7 +382,6 @@ describe('historySlice', () => {
 
       addHistoryEntry({
         invoice: {
-          version: 2,
           invoiceId: 'FULL',
           issuedAt: 1704067200,
           dueAt: 1706745600,

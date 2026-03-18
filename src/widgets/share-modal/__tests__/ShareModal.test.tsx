@@ -59,7 +59,7 @@ vi.mock('next/dynamic', () => ({
 }))
 
 const VALID_ADDRESS = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
-const TEST_URL = 'https://voidpay.xyz/pay#H123abc'
+const TEST_URL = 'https://voidpay.xyz/pay#abc123def'
 
 const mockInvoice: Invoice = {
   invoiceId: 'INV-001',
@@ -138,7 +138,7 @@ describe('ShareModal', () => {
 
       // URL is displayed in a styled div, split into basePath and rest
       expect(screen.getByText('https://voidpay.xyz/pay')).toBeInTheDocument()
-      expect(screen.getByText('#H123abc')).toBeInTheDocument()
+      expect(screen.getByText('#abc123def')).toBeInTheDocument()
     })
 
     it('displays Copy button', () => {

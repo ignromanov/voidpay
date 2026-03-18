@@ -28,7 +28,6 @@ vi.mock('../ui/PaymentQR', () => ({
 }))
 
 const mockInvoice: Invoice = {
-  version: 2,
   invoiceId: 'INV-001',
   issuedAt: 1704067200,
   dueAt: 1706745600,

@@ -100,7 +100,6 @@ function createDefaultDraft(
       lastModified: new Date().toISOString(),
     },
     data: {
-      version: 2,
       invoiceId,
       issuedAt: nowUnix(),
       dueAt: daysFromNowUnix(30), // Default: 30 days from now

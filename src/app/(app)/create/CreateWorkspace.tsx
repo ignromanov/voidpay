@@ -37,7 +37,7 @@ import { SYNC_STATUS_CONFIG } from './constants'
  * - Left pane: InvoiceForm with toggles and Generate button
  * - Right pane: Live preview with ScaledInvoicePreview
  * - Mobile: Tab bar to switch between editor and preview
- * - URL hash decoding (e.g., /create#H4sI...)
+ * - URL hash decoding (e.g., /create#<Base62 TLV>)
  * - Fullscreen preview modal on click
  * - Sets network theme in store for dynamic background
  */
@@ -115,7 +115,7 @@ export function CreateWorkspace() {
    * Handle "Generate Invoice Link" button click
    *
    * 1. Validate invoice data
-   * 2. Generate URL with Binary V3 encoding
+   * 2. Generate URL with TLV v1 encoding
    * 3. Add to history
    * 4. Open ShareModal
    */

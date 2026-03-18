@@ -60,7 +60,6 @@ const formEmailSchema = (maxLength: number) =>
  * The TypeScript Invoice type is inferred from this schema.
  */
 export const invoiceSchema = z.object({
-  version: z.literal(2),
   invoiceId: z.string().min(1).max(FIELD_LIMITS.invoiceId),
   issuedAt: z.number().int().positive(),
   dueAt: z.number().int().positive(),
@@ -131,7 +130,6 @@ export type Invoice = z.infer<typeof invoiceSchema>
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type InvoiceSchemaCheck = Invoice extends {
-  version: 2
   invoiceId: string
   issuedAt: number
   dueAt: number

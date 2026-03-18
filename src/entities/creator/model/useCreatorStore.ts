@@ -142,7 +142,6 @@ const migrateInternal = (persistedState: any, version: number): Partial<CreatorS
           lastModified: oldDraft.lastModified ?? new Date().toISOString(),
         },
         data: {
-          version: 2,
           invoiceId: oldDraft.invoiceId ?? '',
           issuedAt,
           dueAt,

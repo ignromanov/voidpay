@@ -118,7 +118,6 @@ export const TEST_INVOICES = {
    * Use for complete round-trip tests and snapshot tests.
    */
   full: (): Invoice => ({
-    version: 2,
     invoiceId: 'INV-2024-001',
     issuedAt: TEST_TIMESTAMPS.issued,
     dueAt: TEST_TIMESTAMPS.due,
@@ -132,6 +131,7 @@ export const TEST_INVOICES = {
     items: [...TEST_LINE_ITEMS.development],
     tax: '8.5%',
     discount: '5%',
+    total: '15000000000',
   }),
 
   /**
@@ -139,7 +139,6 @@ export const TEST_INVOICES = {
    * Use for minimal round-trip tests.
    */
   minimal: (): Invoice => ({
-    version: 2,
     invoiceId: 'INV-MIN-001',
     issuedAt: TEST_TIMESTAMPS.issued,
     dueAt: TEST_TIMESTAMPS.due,
@@ -149,6 +148,7 @@ export const TEST_INVOICES = {
     from: TEST_PARTIES.sender.minimal,
     client: TEST_PARTIES.client.minimal,
     items: [...TEST_LINE_ITEMS.consulting],
+    total: '500000000000000000000',
   }),
 
   /**
@@ -156,7 +156,6 @@ export const TEST_INVOICES = {
    * Use for internationalization tests.
    */
   unicode: (): Invoice => ({
-    version: 2,
     invoiceId: 'INV-UNICODE-001',
     issuedAt: TEST_TIMESTAMPS.issued,
     dueAt: TEST_TIMESTAMPS.due,
@@ -172,6 +171,7 @@ export const TEST_INVOICES = {
       name: 'Client 顧客 Клиент',
     },
     items: [...TEST_LINE_ITEMS.consulting],
+    total: '500000000000000000000',
   }),
 
   /**
@@ -179,7 +179,6 @@ export const TEST_INVOICES = {
    * Use for numeric edge case tests.
    */
   variousQuantities: (): Invoice => ({
-    version: 2,
     invoiceId: 'INV-VAR-001',
     issuedAt: TEST_TIMESTAMPS.issued,
     dueAt: TEST_TIMESTAMPS.due,
@@ -189,6 +188,7 @@ export const TEST_INVOICES = {
     from: TEST_PARTIES.sender.minimal,
     client: TEST_PARTIES.client.minimal,
     items: [...TEST_LINE_ITEMS.various],
+    total: '1000000000000000000000',
   }),
 
   /**
@@ -196,7 +196,6 @@ export const TEST_INVOICES = {
    * Use for URL byte size calculations.
    */
   japaneseUnicode: (): Invoice => ({
-    version: 2,
     invoiceId: 'INV-JP-001',
     issuedAt: TEST_TIMESTAMPS.issued,
     dueAt: TEST_TIMESTAMPS.due,
@@ -210,6 +209,7 @@ export const TEST_INVOICES = {
     },
     client: TEST_PARTIES.client.minimal,
     items: [...TEST_LINE_ITEMS.consulting],
+    total: '500000000000000000000',
   }),
 } as const
 
