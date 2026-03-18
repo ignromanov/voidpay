@@ -108,6 +108,7 @@ This enables future codec versions to add optional fields without breaking exist
 | 18 | `clientName` | UTF-8 string | variable |
 | 20 | `salt` | random bytes (`crypto.getRandomValues`) | 16 |
 | 22 | `invoiceId` | UTF-8 string | variable |
+| 24 | `total` | BigInt varint (atomic units) | variable |
 
 ### 4.2 Optional Types (odd)
 
@@ -124,10 +125,9 @@ This enables future codec versions to add optional fields without breaking exist
 | 17 | `clientAddress` | UTF-8 string (physical address) | variable |
 | 19 | `tax` | UTF-8 string (percentage, e.g. "8.25") | variable |
 | 21 | `discount` | UTF-8 string (percentage) | variable |
-| 23 | `total` | BigInt varint (atomic units) | variable |
 | 25 | `magicDust` | BigInt varint (atomic units, 1–999) | 1–2 |
 | 29 | `ttl` | uint32 BE (unix timestamp, ERC-3009 validBefore) | 4 |
-| 31 | `domainSeparator` | keccak256 hash (see §7.3) | 32 |
+| 31 | `domainSeparator` | keccak256 hash (see §7.3) — **mandatory** | 32 |
 | 35 | `fromTaxId` | UTF-8 string | variable |
 | 37 | `clientTaxId` | UTF-8 string | variable |
 | 253 | `compressedText` | grouped deflate block (see §6) | variable |
@@ -217,17 +217,17 @@ Used for deterministic magic dust generation: `(uint32(derived[0..3]) % 999) + 1
 
 Records sorted ascending by type. Decoder validates — rejects non-ascending or duplicate types. Ensures deterministic binary output for domain separator computation.
 
-### 7.3 Domain Separator (Type 31, optional)
+### 7.3 Domain Separator (Type 31, mandatory)
 
 ```
 hash = keccak256( UTF-8("VOIDPAY_INVOICE_V1") || serialized_body )
 ```
 
-Where `serialized_body` = concatenation of `[type(1)] [value(n)]` for all records **except** Type 31 itself, in canonical order.
+Where `serialized_body` = concatenation of `[type(1)] [length(2 BE)] [value(n)]` for all records **except** Type 31 itself, in canonical order. The length bytes mirror the on-wire TLV format, preventing field boundary confusion in the hash preimage.
 
-- Encoder: compute after all other records, insert at canonical position
-- Decoder: if Type 31 present, recompute and compare — reject on mismatch
-- Type 31 is odd — third-party decoders MAY skip verification
+- Encoder: MUST compute after all other records, insert at canonical position
+- Decoder: MUST recompute and compare — reject on mismatch or if absent
+- Despite Type 31 being odd (normally optional by the even/odd rule), this implementation requires it for integrity protection
 
 > **Note**: Domain separator is an integrity checksum, not a cryptographic signature. It protects against data corruption and cross-protocol collision, but not intentional forgery. Anti-tampering requires EIP-712 signatures (planned for future versions).
 
@@ -382,7 +382,8 @@ Range convention: **1–9** Ethereum, **10–19** Arbitrum, **20–29** Optimism
     "walletAddress": "0x1234567890123456789012345678901234567890"
   },
   "client": { "name": "Bob" },
-  "items": [{ "description": "Consulting", "quantity": 1, "rate": "150000000" }]
+  "items": [{ "description": "Consulting", "quantity": 1, "rate": "150000000" }],
+  "total": "150000000"
 }
 ```
 
@@ -400,6 +401,7 @@ Type 16 (fromName):    UTF-8("Alice")
 Type 18 (clientName):  UTF-8("Bob")
 Type 20 (salt):        <16 random bytes>
 Type 22 (invoiceId):   UTF-8("INV-001")
+Type 24 (total):       BigInt varint(150000000)
 Type 31 (domainSep):   keccak256(prefix || body)
 ```
 
@@ -414,7 +416,7 @@ https://voidpay.xyz/pay#2F8kN7xQ...  (Base62 of binary)
 ## 11. Versioning
 
 - Codec version is in header byte 1 (currently `0x01`)
-- Invoice schema version is NOT stored — decoder hardcodes `version: 2`
+- No separate "invoice schema version" field — the codec version is the single version identifier
 - Format is **locked** once deployed — changes require a new codec version
 - Forward compatibility via odd/even rule: new optional types can be added without version bump
 
