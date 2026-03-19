@@ -1,20 +1,20 @@
 import type { TlvHeader, TlvRecord } from './types'
 import { MAGIC, VERSION, MAX_TLV_COUNT, MAX_VALUE_SIZE } from './types'
+import { readVarInt } from './varint'
 
 /**
  * Parse binary TLV format.
- * Header: [MAGIC(1), VERSION(1), FLAGS(1), COUNT(1)]
- * Each TLV: [TYPE(1), LENGTH_HI(1), LENGTH_LO(1), VALUE(length)]
+ * Header: [MAGIC(1), VERSION(1), COUNT(1)]
+ * Each TLV: [TYPE(1), LENGTH(varint), VALUE(length)]
  */
 export function readTlv(bytes: Uint8Array): { header: TlvHeader; records: TlvRecord[] } {
-  if (bytes.length < 4) {
-    throw new Error('TLV data too short: need at least 4 bytes for header')
+  if (bytes.length < 3) {
+    throw new Error('TLV data too short: need at least 3 bytes for header')
   }
 
   const magic = bytes[0]!
   const version = bytes[1]!
-  const flags = bytes[2]!
-  const tlvCount = bytes[3]!
+  const tlvCount = bytes[2]!
 
   if (magic !== MAGIC) {
     throw new Error(`Invalid magic byte: 0x${magic.toString(16)}, expected 0x${MAGIC.toString(16)}`)
@@ -26,17 +26,22 @@ export function readTlv(bytes: Uint8Array): { header: TlvHeader; records: TlvRec
     throw new Error(`TLV count ${tlvCount} exceeds max ${MAX_TLV_COUNT}`)
   }
 
-  const header: TlvHeader = { magic, version, flags, tlvCount }
+  const header: TlvHeader = { magic, version, tlvCount }
   const records: TlvRecord[] = []
 
-  let offset = 4
+  let offset = 3
   for (let i = 0; i < tlvCount; i++) {
-    if (offset + 3 > bytes.length) {
+    if (offset >= bytes.length) {
       throw new Error(`Truncated TLV at record ${i}: need type + length bytes`)
     }
     const type = bytes[offset]!
-    const length = (bytes[offset + 1]! << 8) | bytes[offset + 2]!
-    offset += 3
+    offset += 1
+
+    if (offset >= bytes.length) {
+      throw new Error(`Truncated TLV at record ${i}: need type + length bytes`)
+    }
+    const { value: length, bytesRead } = readVarInt(bytes, offset)
+    offset += bytesRead
 
     if (length > MAX_VALUE_SIZE) {
       throw new Error(`TLV value size ${length} exceeds max ${MAX_VALUE_SIZE}`)

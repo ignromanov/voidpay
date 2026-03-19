@@ -3,12 +3,20 @@ import { readTlv } from '../reader'
 import { writeTlv } from '../writer'
 import { MAGIC, VERSION } from '../types'
 
-function buildHeader(magic: number, version: number, flags: number, count: number): number[] {
-  return [magic, version, flags, count]
+function buildHeader(magic: number, version: number, count: number): number[] {
+  return [magic, version, count]
 }
 
 function buildTlvRecord(type: number, value: Uint8Array): number[] {
-  return [type, (value.length >> 8) & 0xff, value.length & 0xff, ...value]
+  // Encode varint length
+  const varint: number[] = []
+  let v = value.length
+  while (v > 0x7f) {
+    varint.push((v & 0x7f) | 0x80)
+    v >>>= 7
+  }
+  varint.push(v & 0x7f)
+  return [type, ...varint, ...value]
 }
 
 function makeBytes(parts: number[][]): Uint8Array {
@@ -18,20 +26,15 @@ function makeBytes(parts: number[][]): Uint8Array {
 
 describe('readTlv', () => {
   describe('valid header parsing', () => {
-    it('parses correct magic, version, flags, and count', () => {
-      const bytes = makeBytes([buildHeader(MAGIC, VERSION, 0x00, 0)])
+    it('parses correct magic, version, and count (3-byte header, no flags)', () => {
+      const bytes = makeBytes([buildHeader(MAGIC, VERSION, 0)])
       const { header, records } = readTlv(bytes)
       expect(header.magic).toBe(MAGIC)
       expect(header.version).toBe(VERSION)
-      expect(header.flags).toBe(0x00)
       expect(header.tlvCount).toBe(0)
       expect(records).toHaveLength(0)
-    })
-
-    it('parses non-zero flags correctly', () => {
-      const bytes = makeBytes([buildHeader(MAGIC, VERSION, 0x03, 0)])
-      const { header } = readTlv(bytes)
-      expect(header.flags).toBe(0x03)
+      // flags field no longer exists
+      expect('flags' in header).toBe(false)
     })
   })
 
@@ -39,7 +42,7 @@ describe('readTlv', () => {
     it('parses type and value correctly', () => {
       const value = new TextEncoder().encode('hello')
       const bytes = makeBytes([
-        buildHeader(MAGIC, VERSION, 0x00, 1),
+        buildHeader(MAGIC, VERSION, 1),
         buildTlvRecord(0x01, value),
       ])
       const { records } = readTlv(bytes)
@@ -51,11 +54,21 @@ describe('readTlv', () => {
     it('handles empty value', () => {
       const value = new Uint8Array(0)
       const bytes = makeBytes([
-        buildHeader(MAGIC, VERSION, 0x00, 1),
+        buildHeader(MAGIC, VERSION, 1),
         buildTlvRecord(0x02, value),
       ])
       const { records } = readTlv(bytes)
       expect(records[0]!.value).toHaveLength(0)
+    })
+
+    it('parses value >= 128 bytes using 2-byte varint length', () => {
+      const value = new Uint8Array(300).fill(0xab)
+      const bytes = makeBytes([
+        buildHeader(MAGIC, VERSION, 1),
+        buildTlvRecord(0x02, value),
+      ])
+      const { records } = readTlv(bytes)
+      expect(records[0]!.value).toEqual(value)
     })
   })
 
@@ -65,7 +78,7 @@ describe('readTlv', () => {
       const v2 = new TextEncoder().encode('bar')
       const v3 = new Uint8Array([0xde, 0xad, 0xbe, 0xef])
       const bytes = makeBytes([
-        buildHeader(MAGIC, VERSION, 0x00, 3),
+        buildHeader(MAGIC, VERSION, 3),
         buildTlvRecord(0x01, v1),
         buildTlvRecord(0x02, v2),
         buildTlvRecord(0x03, v3),
@@ -83,31 +96,31 @@ describe('readTlv', () => {
 
   describe('error: bad magic', () => {
     it('rejects magic byte that is not 0x56', () => {
-      const bytes = makeBytes([buildHeader(0x00, VERSION, 0x00, 0)])
+      const bytes = makeBytes([buildHeader(0x00, VERSION, 0)])
       expect(() => readTlv(bytes)).toThrow(/Invalid magic byte/)
     })
 
     it('rejects magic 0xff', () => {
-      const bytes = makeBytes([buildHeader(0xff, VERSION, 0x00, 0)])
+      const bytes = makeBytes([buildHeader(0xff, VERSION, 0)])
       expect(() => readTlv(bytes)).toThrow(/Invalid magic byte/)
     })
   })
 
   describe('error: unsupported version', () => {
     it('rejects version 0', () => {
-      const bytes = makeBytes([buildHeader(MAGIC, 0x00, 0x00, 0)])
+      const bytes = makeBytes([buildHeader(MAGIC, 0x00, 0)])
       expect(() => readTlv(bytes)).toThrow(/Unsupported version/)
     })
 
     it('rejects version 2', () => {
-      const bytes = makeBytes([buildHeader(MAGIC, 0x02, 0x00, 0)])
+      const bytes = makeBytes([buildHeader(MAGIC, 0x02, 0)])
       expect(() => readTlv(bytes)).toThrow(/Unsupported version/)
     })
   })
 
   describe('error: truncated data', () => {
-    it('rejects data shorter than 4 bytes (header too short)', () => {
-      expect(() => readTlv(new Uint8Array([MAGIC, VERSION, 0x00]))).toThrow(/too short/)
+    it('rejects data shorter than 3 bytes (header too short)', () => {
+      expect(() => readTlv(new Uint8Array([MAGIC, VERSION]))).toThrow(/too short/)
     })
 
     it('rejects empty input', () => {
@@ -115,15 +128,15 @@ describe('readTlv', () => {
     })
 
     it('rejects truncated TLV where header says 1 record but no record bytes follow', () => {
-      const bytes = makeBytes([buildHeader(MAGIC, VERSION, 0x00, 1)])
+      const bytes = makeBytes([buildHeader(MAGIC, VERSION, 1)])
       expect(() => readTlv(bytes)).toThrow(/Truncated TLV/)
     })
 
     it('rejects truncated TLV where value bytes are cut short', () => {
-      // Record says length=10 but only 3 value bytes follow
+      // Record says length=10 (varint 0x0a) but only 3 value bytes follow
       const bytes = makeBytes([
-        buildHeader(MAGIC, VERSION, 0x00, 1),
-        [0x01, 0x00, 0x0a, 0x11, 0x22, 0x33], // type=1, length=10, only 3 bytes of value
+        buildHeader(MAGIC, VERSION, 1),
+        [0x01, 0x0a, 0x11, 0x22, 0x33], // type=1, varint length=10, only 3 bytes of value
       ])
       expect(() => readTlv(bytes)).toThrow(/Truncated TLV/)
     })
@@ -131,7 +144,7 @@ describe('readTlv', () => {
     it('rejects when second of two records is missing', () => {
       const v1 = new TextEncoder().encode('hello')
       const bytes = makeBytes([
-        buildHeader(MAGIC, VERSION, 0x00, 2),
+        buildHeader(MAGIC, VERSION, 2),
         buildTlvRecord(0x01, v1),
         // second record missing
       ])
@@ -141,13 +154,13 @@ describe('readTlv', () => {
 
   describe('error: TLV count exceeds max', () => {
     it('rejects count of 65 (> MAX_TLV_COUNT=64)', () => {
-      const bytes = makeBytes([buildHeader(MAGIC, VERSION, 0x00, 65)])
+      const bytes = makeBytes([buildHeader(MAGIC, VERSION, 65)])
       expect(() => readTlv(bytes)).toThrow(/exceeds max/)
     })
 
     it('accepts count of 64 (= MAX_TLV_COUNT)', () => {
       // Build 64 empty records
-      const parts: number[][] = [buildHeader(MAGIC, VERSION, 0x00, 64)]
+      const parts: number[][] = [buildHeader(MAGIC, VERSION, 64)]
       for (let i = 0; i < 64; i++) {
         parts.push(buildTlvRecord(i + 1, new Uint8Array(0)))
       }
@@ -199,6 +212,14 @@ describe('readTlv', () => {
       const encoded = writeTlv(input)
       const { records } = readTlv(encoded)
       expect(records[0]!.value).toEqual(binaryValue)
+    })
+
+    it('roundtrips value >= 128 bytes (2-byte varint length)', () => {
+      const value = new Uint8Array(200).fill(0xcd)
+      const input = [{ type: 0x02, value }]
+      const encoded = writeTlv(input)
+      const { records } = readTlv(encoded)
+      expect(records[0]!.value).toEqual(value)
     })
   })
 })
