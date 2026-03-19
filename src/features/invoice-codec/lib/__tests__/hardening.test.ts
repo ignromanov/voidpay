@@ -2,30 +2,22 @@
  * Hardening tests — encoder/decoder rejects malicious or malformed inputs.
  */
 import { describe, it, expect } from 'vitest'
-import { encodeInvoice, MIX_PREFIX_SIZE } from '../encode'
+import { encodeInvoice } from '../encode'
 import { decodeInvoice } from '../decode'
 import type { Invoice } from '@/entities/invoice'
 import {
-  decodeBase62,
-  encodeBase62,
+  decodeBase64url,
+  encodeBase64url,
   writeTlv,
   sortCanonical,
   groupedDeflate,
+  writeVarInt,
+  writeQuantity,
+  writeMantissa,
 } from '@/shared/lib/tlv-codec'
 import { TlvType, TOKEN_DICT } from '../tlv-map'
 import { generateSalt, computeDomainSeparator } from '../security'
-import pako from 'pako'
-import { writeVarInt } from '@/shared/lib/tlv-codec'
-import { keccak256, toBytes } from 'viem'
-
-/** Add mix prefix to manually built TLV bytes (mirrors encodeInvoice behavior) */
-function addMixPrefix(bytes: Uint8Array): Uint8Array {
-  const mixHash = toBytes(keccak256(bytes))
-  const withMix = new Uint8Array(MIX_PREFIX_SIZE + bytes.length)
-  withMix.set(mixHash.slice(0, MIX_PREFIX_SIZE))
-  withMix.set(bytes, MIX_PREFIX_SIZE)
-  return withMix
-}
+import { brotliCompressSync } from 'node:zlib'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -58,9 +50,9 @@ function createTestInvoice(): Invoice {
 describe('hardening: truncated binary', () => {
   it('throws when encoded binary is truncated to half length', () => {
     const encoded = encodeInvoice(createTestInvoice())
-    const bytes = decodeBase62(encoded)
+    const bytes = decodeBase64url(encoded)
     const truncated = bytes.slice(0, Math.floor(bytes.length / 2))
-    const reEncoded = encodeBase62(truncated)
+    const reEncoded = encodeBase64url(truncated)
 
     expect(() => decodeInvoice(reEncoded)).toThrow()
   })
@@ -72,18 +64,19 @@ describe('hardening: truncated binary', () => {
 
 describe('hardening: random bytes', () => {
   it('throws on random payload with valid magic byte prepended', () => {
-    // Build 32 pseudo-random bytes after the magic/version header
+    // Build 32 pseudo-random bytes after the magic/version/count header
     const random = new Uint8Array(32)
     for (let i = 0; i < 32; i++) {
       random[i] = (i * 137 + 42) & 0xff
     }
-    // Prepend magic (0x56) and version (0x01) so the header looks valid
-    const payload = new Uint8Array(2 + random.length)
+    // Prepend magic (0x56), version (0x01), count (0x00) — 3-byte header
+    const payload = new Uint8Array(3 + random.length)
     payload[0] = 0x56 // MAGIC
     payload[1] = 0x01 // VERSION
-    payload.set(random, 2)
+    payload[2] = 0x00 // COUNT
+    payload.set(random, 3)
 
-    const encoded = encodeBase62(payload)
+    const encoded = encodeBase64url(payload)
     expect(() => decodeInvoice(encoded)).toThrow()
   })
 })
@@ -111,7 +104,7 @@ describe('hardening: type 253 whitelist — reject spoofed type_id', () => {
     // 1. Encode a valid invoice to get the correct binary skeleton.
     // 2. Parse the TLV records.
     // 3. Build a crafted compressed block: [field_count=1][type_id=2][len][value]
-    //    with enough padding so pako actually compresses it (>= 100 bytes raw).
+    //    with enough padding so Brotli actually compresses it (>= 100 bytes raw).
     // 4. Replace/inject Type 253 TLV into the records, re-serialize, re-encode.
 
     // Step 1: Build minimal but valid records manually (same as encodeInvoice does)
@@ -140,7 +133,7 @@ describe('hardening: type 253 whitelist — reject spoofed type_id', () => {
 
     // Craft a compressed block that contains type_id=2 (CHAIN_ID, not whitelisted).
     // Format: [field_count: uint8] [type_id: uint8] [value_len: varint] [value: bytes]
-    // We need raw >= 100 bytes to pass pako's compression threshold in groupedDeflate,
+    // We need raw >= 100 bytes to pass Brotli's compression threshold in groupedDeflate,
     // so we pad the value with zeroes.
     const paddedValue = new Uint8Array(120).fill(0x41) // 120 'A' bytes
     const rawParts: number[] = [1] // field_count = 1
@@ -149,40 +142,29 @@ describe('hardening: type 253 whitelist — reject spoofed type_id', () => {
     for (const b of paddedValue) rawParts.push(b)
 
     const raw = new Uint8Array(rawParts)
-    const spoofedCompressed = pako.deflate(raw)
+    const spoofedCompressed = new Uint8Array(brotliCompressSync(Buffer.from(raw)))
 
     // Build valid TLV records without COMPRESSED_TEXT
+    // chainId=1 uses dict encoding: [0x00, 0x01]
+    const chainIdBuf: number[] = []
+    chainIdBuf.push(0x00, 0x01) // dict prefix + code for Ethereum (chainId=1)
+
+    // items: [count=1][descLen][desc][scale: uint8][scaled_value: varint][mantissa: bigint varint][zeros: uint8]
+    const itemsBuf: number[] = [1] // count
+    const desc = utf8(inv.items[0]!.description)
+    writeVarInt(itemsBuf, desc.length)
+    for (const b of desc) itemsBuf.push(b)
+    writeQuantity(itemsBuf, 1) // quantity = 1
+    writeMantissa(itemsBuf, BigInt(inv.items[0]!.rate)) // rate = 100000000n
+
     const records = [
-      { type: TlvType.CHAIN_ID, value: new Uint8Array([0x01]) },           // chainId=1 (varint)
+      { type: TlvType.CHAIN_ID, value: new Uint8Array(chainIdBuf) },
       { type: TlvType.ISSUED_AT, value: uint32BE(inv.issuedAt) },
       { type: TlvType.DUE_AT, value: uint32BE(inv.dueAt) },
       { type: TlvType.DECIMALS, value: new Uint8Array([inv.decimals]) },
       { type: TlvType.FROM_WALLET, value: addressToBytes(inv.from.walletAddress) },
       { type: TlvType.CURRENCY, value: new Uint8Array([0x00, 1]) },        // USDC dict code=1
-      { type: TlvType.ITEMS, value: (() => {
-        // pack 1 item: [count=1][descLen][desc][qty float32][rateLen][rate varint]
-        const buf: number[] = [1] // count
-        const desc = utf8(inv.items[0]!.description)
-        writeVarInt(buf, desc.length)
-        for (const b of desc) buf.push(b)
-        // qty = 1.0 as float32 BE
-        const qtyView = new DataView(new ArrayBuffer(4))
-        qtyView.setFloat32(0, 1.0, false)
-        for (let i = 0; i < 4; i++) buf.push(qtyView.getUint8(i))
-        // rate = 100000000 as bigint varint — 1 byte for small values
-        // Actually writeBigIntVarInt is not exported; use raw encoding
-        // 100000000 = 0x5F5E100 — needs multi-byte varint
-        let rate = BigInt(100000000)
-        const rateBuf: number[] = []
-        while (rate >= 128n) {
-          rateBuf.push(Number((rate & 0x7fn) | 0x80n))
-          rate >>= 7n
-        }
-        rateBuf.push(Number(rate))
-        writeVarInt(buf, rateBuf.length)
-        for (const b of rateBuf) buf.push(b)
-        return new Uint8Array(buf)
-      })() },
+      { type: TlvType.ITEMS, value: new Uint8Array(itemsBuf) },
       { type: TlvType.FROM_NAME, value: utf8(inv.from.name) },
       { type: TlvType.CLIENT_NAME, value: utf8(inv.client.name) },
       { type: TlvType.SALT, value: salt },
@@ -198,7 +180,7 @@ describe('hardening: type 253 whitelist — reject spoofed type_id', () => {
     const finalRecords = sortCanonical(sorted)
 
     const bytes = writeTlv(finalRecords)
-    const encoded = encodeBase62(addMixPrefix(bytes))
+    const encoded = encodeBase64url(bytes)
 
     expect(() => decodeInvoice(encoded)).toThrow(/Type spoofing/)
   })
