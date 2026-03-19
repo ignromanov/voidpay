@@ -26,7 +26,8 @@ interface Result {
   codec: string
   version: string
   length: number
-  reduction: number // percentage vs v0
+  reduction: number
+  encoded: string
 }
 
 const results: Result[] = []
@@ -43,6 +44,7 @@ for (const { name, invoice } of TEST_INVOICES) {
       version: codec.info.version,
       length,
       reduction,
+      encoded,
     })
   }
 }
@@ -81,9 +83,12 @@ console.log()
 const codecInfos = CODECS.map(c => c.info)
 
 const lookup: Record<string, Record<string, { length: number; reduction: number }>> = {}
+const urlsLookup: Record<string, Record<string, string>> = {}
 for (const r of results) {
   if (!lookup[r.scenario]) lookup[r.scenario] = {}
+  if (!urlsLookup[r.scenario]) urlsLookup[r.scenario] = {}
   lookup[r.scenario]![r.version] = { length: r.length, reduction: r.reduction }
+  urlsLookup[r.scenario]![r.version] = r.encoded
 }
 
 const bestPerScenario: Record<string, string> = {}
@@ -106,14 +111,18 @@ for (const v of versions) {
   avgReduction[v] = Math.round(reductions.reduce((a, b) => a + b, 0) / reductions.length)
 }
 
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 function generateDemoHtml(
-  results: Result[],
   codecInfos: CodecInfo[],
   scenarios: string[],
   versions: string[],
   lookup: Record<string, Record<string, { length: number; reduction: number }>>,
   bestPerScenario: Record<string, string>,
   avgReduction: Record<string, number>,
+  urlsLookup: Record<string, Record<string, string>>,
 ): string {
   function cellColor(length: number, min: number, max: number): string {
     if (max === min) return '#22c55e'
@@ -163,9 +172,45 @@ function generateDemoHtml(
           <span style="color:#e5e5e5;font-size:0.85rem">${length}</span>
         </div>`
       }).join('\n')
-      return `<div class="card" style="margin-bottom:1rem">
+      return `<div class="card">
       <div style="color:#a3a3a3;font-size:0.9rem;margin-bottom:0.5rem">${s}</div>
       ${bars}
+    </div>`
+    })
+    .join('\n')
+
+  // Build URL comparison panels
+  const urlTabs = scenarios
+    .map((s, i) => `<button class="url-tab${i === 0 ? ' active' : ''}" data-scenario="${esc(s)}" onclick="showScenario(this)">${esc(s)}</button>`)
+    .join('\n  ')
+
+  const urlPanels = scenarios
+    .map((s, i) => {
+      const lengths = versions.map(v => lookup[s]![v]!.length)
+      const minLen = Math.min(...lengths)
+      const maxLen = Math.max(...lengths)
+      const rows = versions.map(v => {
+        const { length } = lookup[s]![v]!
+        const encoded = urlsLookup[s]![v]!
+        const fullUrl = `https://voidpay.xyz/pay#${encoded}`
+        const isBest = bestPerScenario[s] === v
+        const color = cellColor(length, minLen, maxLen)
+        const codecName = codecInfos.find(c => c.version === v)?.name ?? v
+        const panelId = `url-${s.replace(/\s+/g, '-')}-${v}`
+        return `<div class="url-row${isBest ? ' url-best' : ''}">
+        <div class="url-meta">
+          <span class="url-ver">${v}</span>
+          <span class="url-name">${esc(codecName)}</span>
+          <span class="url-len" style="color:${color}">${length} chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="${panelId}">${esc(fullUrl)}</code>
+          <button class="copy-btn" data-url="${esc(fullUrl)}" onclick="copyUrl(this)">Copy</button>
+        </div>
+      </div>`
+      }).join('\n      ')
+      return `<div class="url-panel${i === 0 ? '' : ' hidden'}" id="panel-${s.replace(/\s+/g, '-')}">
+      ${rows}
     </div>`
     })
     .join('\n')
@@ -218,6 +263,24 @@ function generateDemoHtml(
     .meta td, .meta th { border-color: #1a1a1a; padding: 0.35rem 0.75rem; font-size: 0.82rem; }
     .meta td:nth-child(6) { text-align: center; }
     .charts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    /* URL comparison */
+    .url-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .url-tab { background: #171717; border: 1px solid #262626; color: #737373; padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.82rem; transition: all 0.1s; }
+    .url-tab:hover { border-color: #404040; color: #a3a3a3; }
+    .url-tab.active { background: #262626; color: #e5e5e5; border-color: #404040; }
+    .url-panel { display: flex; flex-direction: column; gap: 0.5rem; }
+    .url-panel.hidden { display: none; }
+    .url-row { background: #111; border: 1px solid #1e1e1e; border-radius: 6px; padding: 0.6rem 0.75rem; display: flex; flex-direction: column; gap: 0.35rem; }
+    .url-row.url-best { border-color: #166534; }
+    .url-meta { display: flex; align-items: center; gap: 0.5rem; }
+    .url-ver { background: #1e1e1e; color: #a3a3a3; font-family: monospace; font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 3px; }
+    .url-name { color: #525252; font-size: 0.8rem; }
+    .url-len { margin-left: auto; font-size: 0.78rem; font-family: monospace; font-weight: 600; }
+    .url-content { display: flex; align-items: flex-start; gap: 0.5rem; }
+    .url-text { font-family: monospace; font-size: 0.7rem; color: #525252; word-break: break-all; flex: 1; line-height: 1.6; }
+    .url-best .url-text { color: #737373; }
+    .copy-btn { background: #1e1e1e; border: 1px solid #333; color: #737373; padding: 0.25rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; white-space: nowrap; flex-shrink: 0; transition: all 0.1s; }
+    .copy-btn:hover { background: #262626; color: #e5e5e5; border-color: #404040; }
     @media (max-width: 600px) { body { padding: 1rem; } .summary { flex-direction: column; } }
   </style>
 </head>
@@ -261,6 +324,12 @@ function generateDemoHtml(
     ${barCharts}
   </div>
 
+  <h2>Encoded URLs</h2>
+  <div class="url-tabs" id="urlTabs">
+    ${urlTabs}
+  </div>
+  ${urlPanels}
+
   <h2>Codec Metadata</h2>
   <table class="meta">
     <thead>
@@ -270,20 +339,42 @@ function generateDemoHtml(
   </table>
 
   <p style="color:#3f3f46;font-size:0.75rem;margin-top:2rem">
-    Generated ${new Date().toISOString()} · 8 test invoices (minimal → unicode) · Salt deterministic for reproducibility
+    Generated ${new Date().toISOString()} · ${scenarios.length} test invoices (minimal → unicode) · Salt deterministic for reproducibility
   </p>
+
+  <script>
+    function showScenario(btn) {
+      const name = btn.dataset.scenario;
+      document.querySelectorAll('.url-panel').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.url-tab').forEach(t => t.classList.remove('active'));
+      const panel = document.getElementById('panel-' + name.replace(/\\s+/g, '-'));
+      if (panel) panel.classList.remove('hidden');
+      btn.classList.add('active');
+    }
+    function copyUrl(btn) {
+      const url = btn.dataset.url;
+      navigator.clipboard.writeText(url).then(() => {
+        btn.textContent = 'Copied!';
+        btn.style.color = '#22c55e';
+        setTimeout(() => { btn.textContent = 'Copy'; btn.style.color = ''; }, 1500);
+      }).catch(() => {
+        btn.textContent = 'Failed';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+      });
+    }
+  </script>
 </body>
 </html>`
 }
 
 const html = generateDemoHtml(
-  results,
   codecInfos,
   scenarios,
   versions,
   lookup,
   bestPerScenario,
   avgReduction,
+  urlsLookup,
 )
 writeFileSync('demo.html', html)
 console.log('✓ demo.html generated')
