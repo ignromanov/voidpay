@@ -12,8 +12,11 @@ export {
 export { writeTlv } from './writer'
 export { readTlv } from './reader'
 export { sortCanonical, validateCanonical } from './canonical'
-export { encodeBase62, decodeBase62 } from './base62'
-export { writeVarInt, readVarInt, writeBigIntVarInt, readBigIntVarInt } from './varint'
+export { encodeBase64url, decodeBase64url } from './base64url'
+export {
+  writeVarInt, readVarInt, writeBigIntVarInt, readBigIntVarInt,
+  writeMantissa, readMantissa, writeQuantity, readQuantity,
+} from './varint'
 export { groupedDeflate, groupedInflate } from './compress'
 export type { CompressedField } from './compress'
 export { derivePRNG } from './crypto'
