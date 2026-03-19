@@ -17,9 +17,9 @@ export const envSchema = z.object({
   ALCHEMY_API_KEY: z.string().optional(),
   INFURA_API_KEY: z.string().optional(),
 
-  // Rate Limiting (Upstash Redis)
-  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
-  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  // Rate Limiting (Upstash Redis via Vercel Marketplace)
+  KV_REST_API_URL: z.string().url().optional(),
+  KV_REST_API_TOKEN: z.string().optional(),
 })
 
 export type EnvConfig = z.infer<typeof envSchema>
