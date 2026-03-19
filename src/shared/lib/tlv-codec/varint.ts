@@ -113,15 +113,15 @@ export function readBigIntVarInt(bytes: Uint8Array, offset: number): { value: bi
  * writeMantissa(buf, 100000000n)  // $100 USDC → mantissa=1, zeros=8 → 2 bytes
  */
 export function writeMantissa(buf: number[], value: bigint): void {
-  if (value === BigInt(0)) {
-    writeBigIntVarInt(buf, BigInt(0))
+  if (value === 0n) {
+    writeBigIntVarInt(buf, 0n)
     buf.push(0)
     return
   }
   let zeros = 0
   let mantissa = value
-  while (mantissa > BigInt(0) && mantissa % BigInt(10) === BigInt(0)) {
-    mantissa /= BigInt(10)
+  while (mantissa > 0n && mantissa % 10n === 0n) {
+    mantissa /= 10n
     zeros++
   }
   writeBigIntVarInt(buf, mantissa)
@@ -139,10 +139,7 @@ export function readMantissa(
 ): { mantissa: bigint; zeros: number; value: bigint; bytesRead: number } {
   const { value: mantissa, bytesRead: mBytes } = readBigIntVarInt(bytes, offset)
   const zeros = bytes[offset + mBytes]!
-  let value = mantissa
-  for (let i = 0; i < zeros; i++) {
-    value = value * BigInt(10)
-  }
+  const value = mantissa * 10n ** BigInt(zeros)
   return { mantissa, zeros, value, bytesRead: mBytes + 1 }
 }
 
