@@ -3,19 +3,18 @@ import type { TlvRecord, CompressedField } from '@/shared/lib/tlv-codec'
 import {
   writeTlv,
   sortCanonical,
-  encodeBase62,
+  encodeBase64url,
   writeVarInt,
-  writeBigIntVarInt,
+  writeMantissa,
+  writeQuantity,
   groupedDeflate,
 } from '@/shared/lib/tlv-codec'
 import { getAppBaseUrl } from '@/shared/config'
-import { keccak256, toBytes } from 'viem'
 import { encodeOGPreview } from './og-preview'
 import { TlvType, encodeCurrency, encodeTokenAddress, COMPRESSED_TEXT_WHITELIST } from './tlv-map'
-import { generateSalt, computeDomainSeparator } from './security'
-
-/** Mix prefix size in bytes — prepended for full Base62 avalanche diffusion */
-export const MIX_PREFIX_SIZE = 2
+import { generateSalt, computeDomainSeparator, deriveMagicDust } from './security'
+import { encodeChainId } from './chain-dict'
+import { applyDict } from './app-dict'
 
 /** Encode a UTF-8 string to Uint8Array */
 function utf8(str: string): Uint8Array {
@@ -52,10 +51,10 @@ function varintBytes(value: number): Uint8Array {
   return new Uint8Array(buf)
 }
 
-/** Encode a BigInt varint into a Uint8Array */
-function bigintVarintBytes(value: bigint): Uint8Array {
+/** Encode a BigInt as mantissa + trailing zeros into a Uint8Array */
+function mantissaBytes(value: bigint): Uint8Array {
   const buf: number[] = []
-  writeBigIntVarInt(buf, value)
+  writeMantissa(buf, value)
   return new Uint8Array(buf)
 }
 
@@ -68,14 +67,10 @@ function packItems(items: Invoice['items']): Uint8Array {
     const descBytes = utf8(item.description)
     writeVarInt(buf, descBytes.length)
     for (let i = 0; i < descBytes.length; i++) buf.push(descBytes[i]!)
-    // quantity: 4 bytes float32 BE
-    const qtyView = new DataView(new ArrayBuffer(4))
-    qtyView.setFloat32(0, item.quantity, false)
-    for (let i = 0; i < 4; i++) buf.push(qtyView.getUint8(i))
-    // rate: [len: varint] [BigInt varint bytes]
-    const rateBytes = bigintVarintBytes(BigInt(item.rate || '0'))
-    writeVarInt(buf, rateBytes.length)
-    for (let i = 0; i < rateBytes.length; i++) buf.push(rateBytes[i]!)
+    // quantity: scale + varint (replaces float32)
+    writeQuantity(buf, item.quantity)
+    // rate: mantissa + trailing_zeros (replaces length-prefixed BigInt varint)
+    writeMantissa(buf, BigInt(item.rate || '0'))
   }
   return new Uint8Array(buf)
 }
@@ -85,15 +80,24 @@ function packItems(items: Invoice['items']): Uint8Array {
  * Uses binary TLV format with salt, compression, and domain separator.
  *
  * @param invoice The invoice data to encode
- * @returns The Base62-encoded binary string (no prefix — magic byte is inside)
+ * @returns The Base64url-encoded binary string (no prefix — magic byte is inside)
  */
 export function encodeInvoice(invoice: Invoice): string {
   const records: TlvRecord[] = []
 
   // --- Required fields (even types) ---
-  records.push({ type: TlvType.CHAIN_ID, value: varintBytes(invoice.networkId) })
+
+  // chainId (Type 2): dict code for known chains, raw varint for unknown
+  const chainBuf: number[] = []
+  encodeChainId(chainBuf, invoice.networkId)
+  records.push({ type: TlvType.CHAIN_ID, value: new Uint8Array(chainBuf) })
+
   records.push({ type: TlvType.ISSUED_AT, value: uint32BE(invoice.issuedAt) })
-  records.push({ type: TlvType.DUE_AT, value: uint32BE(invoice.dueAt) })
+
+  // dueAt (Type 6): delta from issuedAt (varint)
+  const dueDelta = invoice.dueAt - invoice.issuedAt
+  records.push({ type: TlvType.DUE_AT, value: varintBytes(dueDelta) })
+
   records.push({ type: TlvType.DECIMALS, value: new Uint8Array([invoice.decimals]) })
   records.push({ type: TlvType.FROM_WALLET, value: addressToBytes(invoice.from.walletAddress) })
 
@@ -123,38 +127,39 @@ export function encodeInvoice(invoice: Invoice): string {
   const textFields: CompressedField[] = []
 
   // FROM_NAME (Type 16) — required, always present
-  textFields.push({ typeId: TlvType.FROM_NAME, value: utf8(invoice.from.name) })
+  // Apply app-level dictionary substitution before adding to text fields
+  textFields.push({ typeId: TlvType.FROM_NAME, value: applyDict(utf8(invoice.from.name)) })
 
   // CLIENT_NAME (Type 18) — required, always present
-  textFields.push({ typeId: TlvType.CLIENT_NAME, value: utf8(invoice.client.name) })
+  textFields.push({ typeId: TlvType.CLIENT_NAME, value: applyDict(utf8(invoice.client.name)) })
 
   // Optional text fields
   if (invoice.notes) {
-    textFields.push({ typeId: TlvType.NOTES, value: utf8(invoice.notes) })
+    textFields.push({ typeId: TlvType.NOTES, value: applyDict(utf8(invoice.notes)) })
   }
   if (invoice.from.email) {
-    textFields.push({ typeId: TlvType.FROM_EMAIL, value: utf8(invoice.from.email) })
+    textFields.push({ typeId: TlvType.FROM_EMAIL, value: applyDict(utf8(invoice.from.email)) })
   }
   if (invoice.from.phone) {
-    textFields.push({ typeId: TlvType.FROM_PHONE, value: utf8(invoice.from.phone) })
+    textFields.push({ typeId: TlvType.FROM_PHONE, value: applyDict(utf8(invoice.from.phone)) })
   }
   if (invoice.from.physicalAddress) {
-    textFields.push({ typeId: TlvType.FROM_ADDRESS, value: utf8(invoice.from.physicalAddress) })
+    textFields.push({ typeId: TlvType.FROM_ADDRESS, value: applyDict(utf8(invoice.from.physicalAddress)) })
   }
   if (invoice.from.taxId) {
-    textFields.push({ typeId: TlvType.FROM_TAX_ID, value: utf8(invoice.from.taxId) })
+    textFields.push({ typeId: TlvType.FROM_TAX_ID, value: applyDict(utf8(invoice.from.taxId)) })
   }
   if (invoice.client.email) {
-    textFields.push({ typeId: TlvType.CLIENT_EMAIL, value: utf8(invoice.client.email) })
+    textFields.push({ typeId: TlvType.CLIENT_EMAIL, value: applyDict(utf8(invoice.client.email)) })
   }
   if (invoice.client.phone) {
-    textFields.push({ typeId: TlvType.CLIENT_PHONE, value: utf8(invoice.client.phone) })
+    textFields.push({ typeId: TlvType.CLIENT_PHONE, value: applyDict(utf8(invoice.client.phone)) })
   }
   if (invoice.client.physicalAddress) {
-    textFields.push({ typeId: TlvType.CLIENT_ADDRESS, value: utf8(invoice.client.physicalAddress) })
+    textFields.push({ typeId: TlvType.CLIENT_ADDRESS, value: applyDict(utf8(invoice.client.physicalAddress)) })
   }
   if (invoice.client.taxId) {
-    textFields.push({ typeId: TlvType.CLIENT_TAX_ID, value: utf8(invoice.client.taxId) })
+    textFields.push({ typeId: TlvType.CLIENT_TAX_ID, value: applyDict(utf8(invoice.client.taxId)) })
   }
 
   // Try grouped compression — only whitelisted types
@@ -203,10 +208,13 @@ export function encodeInvoice(invoice: Invoice): string {
   if (!invoice.total) {
     throw new Error('Invoice total is required for encoding')
   }
-  records.push({ type: TlvType.TOTAL, value: bigintVarintBytes(BigInt(invoice.total)) })
-  if (invoice.magicDust) {
-    records.push({ type: TlvType.MAGIC_DUST, value: bigintVarintBytes(BigInt(invoice.magicDust)) })
-  }
+
+  // Compute subtotal (total WITHOUT magicDust) — magicDust is derived from salt on decode
+  const subtotal = invoice.magicDust
+    ? BigInt(invoice.total) - BigInt(invoice.magicDust)
+    : BigInt(invoice.total)
+  records.push({ type: TlvType.TOTAL, value: mantissaBytes(subtotal) })
+  // NO MAGIC_DUST record — derived from salt on decode
 
   // --- Sort canonical ---
   const sorted = sortCanonical(records)
@@ -221,15 +229,7 @@ export function encodeInvoice(invoice: Invoice): string {
   // --- Serialize ---
   const bytes = writeTlv(finalRecords)
 
-  // Mix prefix: 2 bytes of keccak256(payload) prepended for full Base62 avalanche diffusion.
-  // Any single-bit change in TLV → completely different keccak → different high-order BigInt bits
-  // → entire Base62 string changes. Stripped on decode (not verified — domain separator handles integrity).
-  const mixHash = toBytes(keccak256(bytes))
-  const withMix = new Uint8Array(MIX_PREFIX_SIZE + bytes.length)
-  withMix.set(mixHash.slice(0, MIX_PREFIX_SIZE))
-  withMix.set(bytes, MIX_PREFIX_SIZE)
-
-  return encodeBase62(withMix)
+  return encodeBase64url(bytes)
 }
 
 /**
