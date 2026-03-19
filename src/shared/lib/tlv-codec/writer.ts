@@ -30,8 +30,8 @@ export function writeTlv(records: TlvRecord[]): Uint8Array {
   for (const record of records) {
     bytes.push(record.type)
     writeVarInt(bytes, record.value.length)
-    for (const b of record.value) {
-      bytes.push(b)
+    for (let i = 0; i < record.value.length; i++) {
+      bytes.push(record.value[i]!)
     }
   }
 
