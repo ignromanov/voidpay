@@ -1,0 +1,17 @@
+{
+  "name": "codec-benchmark",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "benchmark": "tsx benchmark.ts"
+  },
+  "dependencies": {
+    "lz-string": "^1.5.0",
+    "pako": "^2.1.0",
+    "@noble/hashes": "^1.7.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.1",
+    "typescript": "^5.7.0"
+  }
+}

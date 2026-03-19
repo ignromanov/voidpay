@@ -65,9 +65,6 @@ importers:
       next-sitemap:
         specifier: ^4.2.3
         version: 4.2.3(next@15.5.9(@babel/core@7.28.5)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
-      pako:
-        specifier: ^2.1.0
-        version: 2.1.0
       pixi.js:
         specifier: ^8.14.3
         version: 8.14.3
@@ -135,9 +132,6 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.3
-      '@types/pako':
-        specifier: ^2.0.4
-        version: 2.0.4
       '@types/react':
         specifier: ^19.2.7
         version: 19.2.7
@@ -1936,9 +1930,6 @@ packages:
 
   '@types/node@22.19.3':
     resolution: {integrity: sha512-1N9SBnWYOJTrNZCdh/yJE+t910Y128BoyY+zBLWhL3r0TYzlTmFdXrPwHL9DyFZmlEXNQQolTZh3KHV31QDhyA==}
-
-  '@types/pako@2.0.4':
-    resolution: {integrity: sha512-VWDCbrLeVXJM9fihYodcLiIv0ku+AlOa/TQ1SvYOaBuyrSKgEcro95LJyIsJ4vSo6BXIxOKxiJAat04CmST9Fw==}
 
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
@@ -4031,9 +4022,6 @@ packages:
   p-try@2.2.0:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
     engines: {node: '>=6'}
-
-  pako@2.1.0:
-    resolution: {integrity: sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug==}
 
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -7337,8 +7325,6 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  '@types/pako@2.0.4': {}
-
   '@types/react-dom@19.2.3(@types/react@19.2.7)':
     dependencies:
       '@types/react': 19.2.7
@@ -10149,8 +10135,6 @@ snapshots:
       p-limit: 3.1.0
 
   p-try@2.2.0: {}
-
-  pako@2.1.0: {}
 
   parent-module@1.0.1:
     dependencies:
