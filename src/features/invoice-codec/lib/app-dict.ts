@@ -18,7 +18,7 @@ const DICT_ENTRIES: [string, number][] = [
   ['Payment', 0x07],
   ['.eth', 0x08],
   ['.com', 0x09],
-  ['0x', 0x0A],
+  ['0x', 0x0B],
 ]
 
 /** Substitute known patterns with 1-byte codes before compression */

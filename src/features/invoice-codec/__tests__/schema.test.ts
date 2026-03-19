@@ -15,11 +15,27 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { encodeInvoice, generateInvoiceUrl } from '../lib/encode'
 import { decodeInvoice } from '../lib/decode'
+import type { Invoice } from '@/entities/invoice'
 import {
   TEST_INVOICES,
   normalizeInvoiceAddresses,
   createLargeInvoice,
 } from '@/shared/lib/test-utils'
+
+/**
+ * Normalize invoice for roundtrip comparison.
+ * Decoder always derives magicDust from salt and adds it to total.
+ * For roundtrip tests, we strip magicDust and compare subtotals.
+ */
+function normalizeForRoundtrip(inv: Invoice): Invoice {
+  const { magicDust, ...rest } = inv as Invoice & { magicDust?: string }
+  if (magicDust) {
+    // Subtract magicDust from total to get subtotal for comparison
+    const subtotal = (BigInt(rest.total!) - BigInt(magicDust)).toString()
+    return normalizeInvoiceAddresses({ ...rest, total: subtotal })
+  }
+  return normalizeInvoiceAddresses(rest)
+}
 
 describe('Invoice Schema V1 Encoding', () => {
   describe('Snapshot Tests - Backward Compatibility Protection', () => {
@@ -68,8 +84,9 @@ describe('Invoice Schema V1 Encoding', () => {
       const encoded = encodeInvoice(original)
       const decoded = decodeInvoice(encoded)
 
-      // Addresses are normalized to lowercase by TLV codec
-      expect(normalizeInvoiceAddresses(decoded)).toEqual(normalizeInvoiceAddresses(original))
+      // Decoder derives magicDust from salt and adjusts total.
+      // Compare subtotals (total without magicDust) for roundtrip correctness.
+      expect(normalizeForRoundtrip(decoded)).toEqual(normalizeForRoundtrip(original))
     })
 
     it('should perfectly round-trip minimal invoice', () => {
@@ -77,7 +94,7 @@ describe('Invoice Schema V1 Encoding', () => {
       const encoded = encodeInvoice(original)
       const decoded = decodeInvoice(encoded)
 
-      expect(normalizeInvoiceAddresses(decoded)).toEqual(normalizeInvoiceAddresses(original))
+      expect(normalizeForRoundtrip(decoded)).toEqual(normalizeForRoundtrip(original))
     })
 
     it('should preserve all optional fields when present', () => {
@@ -134,8 +151,8 @@ describe('Invoice Schema V1 Encoding', () => {
     })
 
     it('should throw on truncated binary data', () => {
-      // Short Base62 that decodes to invalid TLV
-      expect(() => decodeInvoice('1')).toThrow()
+      // Short Base64url that decodes to invalid TLV
+      expect(() => decodeInvoice('AQ')).toThrow()
     })
   })
 
@@ -144,12 +161,12 @@ describe('Invoice Schema V1 Encoding', () => {
       const invoice = TEST_INVOICES.minimal()
       const url = generateInvoiceUrl(invoice)
 
-      // TLV v1: raw Base62 in hash fragment (no H prefix)
+      // TLV v1: Base64url in hash fragment
       expect(url).toContain('/pay#')
       expect(url).toMatch(/^https?:\/\//)
-      // Verify it's valid Base62 after #
+      // Verify it's valid Base64url after #
       const hash = url.split('#')[1]
-      expect(hash).toMatch(/^[0-9A-Za-z]+$/)
+      expect(hash).toMatch(/^[A-Za-z0-9_-]+=*$/)
     })
 
     it('should generate URL with custom base URL', () => {
@@ -171,7 +188,7 @@ describe('Invoice Schema V1 Encoding', () => {
       expect(compressed).toBeTruthy()
       const decoded = decodeInvoice(compressed)
 
-      expect(normalizeInvoiceAddresses(decoded)).toEqual(normalizeInvoiceAddresses(invoice))
+      expect(normalizeForRoundtrip(decoded)).toEqual(normalizeForRoundtrip(invoice))
     })
 
     it('should throw when URL exceeds size limits', () => {

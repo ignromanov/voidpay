@@ -37,7 +37,7 @@ import { SYNC_STATUS_CONFIG } from './constants'
  * - Left pane: InvoiceForm with toggles and Generate button
  * - Right pane: Live preview with ScaledInvoicePreview
  * - Mobile: Tab bar to switch between editor and preview
- * - URL hash decoding (e.g., /create#<Base62 TLV>)
+ * - URL hash decoding (e.g., /create#<Base64url TLV>)
  * - Fullscreen preview modal on click
  * - Sets network theme in store for dynamic background
  */
