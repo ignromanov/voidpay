@@ -1,5 +1,5 @@
 import type { TlvRecord } from '@/shared/lib/tlv-codec'
-import { derivePRNG } from '@/shared/lib/tlv-codec'
+import { derivePRNG, writeVarInt } from '@/shared/lib/tlv-codec'
 import { keccak256, toBytes, toHex } from 'viem'
 import { TlvType } from './tlv-map'
 
@@ -11,6 +11,8 @@ export function generateSalt(): Uint8Array {
 /**
  * Compute domain separator: keccak256("VOIDPAY_INVOICE_V1" || canonical TLV body excluding Type 31).
  * Ensures invoice integrity — any field change invalidates the separator.
+ *
+ * Uses varint length encoding to match the new TLV wire format.
  */
 export function computeDomainSeparator(records: TlvRecord[]): Uint8Array {
   const prefix = new TextEncoder().encode('VOIDPAY_INVOICE_V1')
@@ -19,12 +21,13 @@ export function computeDomainSeparator(records: TlvRecord[]): Uint8Array {
   const parts: Uint8Array[] = [prefix]
   for (const record of records) {
     if (record.type === TlvType.DOMAIN_SEPARATOR) continue
-    // Serialize: type(1) + length(2 BE) + value — matches wire TLV format
-    const chunk = new Uint8Array(3 + record.value.length)
+    // Serialize: type(1) + length(varint) + value — matches wire TLV format
+    const lenBuf: number[] = []
+    writeVarInt(lenBuf, record.value.length)
+    const chunk = new Uint8Array(1 + lenBuf.length + record.value.length)
     chunk[0] = record.type
-    chunk[1] = (record.value.length >> 8) & 0xff
-    chunk[2] = record.value.length & 0xff
-    chunk.set(record.value, 3)
+    chunk.set(new Uint8Array(lenBuf), 1)
+    chunk.set(record.value, 1 + lenBuf.length)
     parts.push(chunk)
   }
 

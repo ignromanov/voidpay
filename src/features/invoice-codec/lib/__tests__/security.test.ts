@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { TlvRecord } from '@/shared/lib/tlv-codec'
-import { toHex } from 'viem'
+import { writeVarInt } from '@/shared/lib/tlv-codec'
+import { toHex, keccak256, toBytes } from 'viem'
 import { TlvType } from '../tlv-map'
 import {
   generateSalt,
@@ -84,6 +85,65 @@ describe('computeDomainSeparator', () => {
     const h1 = computeDomainSeparator(records1)
     const h2 = computeDomainSeparator(records2)
     expect(toHex(h1)).not.toBe(toHex(h2))
+  })
+
+  it('uses varint length encoding (not 2-byte BE)', () => {
+    // Record with a small value (1 byte) — varint length = 1 byte (0x01)
+    // Old format: type(1) + len_be(2) + value = 4 bytes per record chunk
+    // New format: type(1) + len_varint(1) + value = 3 bytes per record chunk (for small values)
+    const records: TlvRecord[] = [
+      makeRecord(TlvType.CHAIN_ID, new Uint8Array([0x01])),
+    ]
+
+    const sep = computeDomainSeparator(records)
+
+    // Verify by manually computing what the hash input should be with varint encoding
+    const prefix = new TextEncoder().encode('VOIDPAY_INVOICE_V1')
+    const lenBuf: number[] = []
+    writeVarInt(lenBuf, 1) // length of value (1 byte)
+    // chunk: type(1) + varint_len + value
+    const chunk = new Uint8Array(1 + lenBuf.length + 1)
+    chunk[0] = TlvType.CHAIN_ID // 2
+    chunk.set(new Uint8Array(lenBuf), 1)
+    chunk.set(new Uint8Array([0x01]), 1 + lenBuf.length)
+
+    const body = new Uint8Array(prefix.length + chunk.length)
+    body.set(prefix, 0)
+    body.set(chunk, prefix.length)
+
+    // Import keccak256 to verify
+    // keccak256, toBytes imported at top level
+    const expected = toBytes(keccak256(body))
+    expect(toHex(sep)).toBe(toHex(expected))
+  })
+
+  it('varint encoding differs from old 2-byte BE for large values', () => {
+    // Record with value length 200 — varint = [0xC8, 0x01] (2 bytes),
+    // while 2-byte BE = [0x00, 0xC8] (2 bytes but different encoding)
+    const largeValue = new Uint8Array(200).fill(0x42)
+    const records: TlvRecord[] = [
+      makeRecord(TlvType.CHAIN_ID, largeValue),
+    ]
+
+    const sep = computeDomainSeparator(records)
+
+    // Manually compute with old 2-byte BE to verify it's different
+    const prefix = new TextEncoder().encode('VOIDPAY_INVOICE_V1')
+    const oldChunk = new Uint8Array(3 + 200)
+    oldChunk[0] = TlvType.CHAIN_ID
+    oldChunk[1] = (200 >> 8) & 0xff // 0x00
+    oldChunk[2] = 200 & 0xff        // 0xC8
+    oldChunk.set(largeValue, 3)
+
+    const oldBody = new Uint8Array(prefix.length + oldChunk.length)
+    oldBody.set(prefix, 0)
+    oldBody.set(oldChunk, prefix.length)
+
+    // keccak256, toBytes imported at top level
+    const oldHash = toBytes(keccak256(oldBody))
+
+    // New varint hash should differ from old 2-byte BE hash
+    expect(toHex(sep)).not.toBe(toHex(oldHash))
   })
 })
 
