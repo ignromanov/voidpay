@@ -1,6 +1,6 @@
-import pako from 'pako'
+import { brotliCompressSync, brotliDecompressSync, constants } from 'node:zlib'
 import { writeVarInt, readVarInt } from './varint'
-import { MAX_INFLATE_SIZE } from './types'
+import { MAX_INFLATE_SIZE, MAX_PAYLOAD_SIZE } from './types'
 
 export interface CompressedField {
   typeId: number
@@ -8,7 +8,7 @@ export interface CompressedField {
 }
 
 /**
- * Compress multiple text fields into a single deflated block.
+ * Compress multiple text fields into a single Brotli block.
  * Format: [field_count: uint8] per field: [type_id: uint8] [value_len: varint] [value: bytes]
  * Returns null if compression not beneficial (< 100 bytes raw, or compressed >= raw).
  */
@@ -18,7 +18,6 @@ export function groupedDeflate(
 ): Uint8Array | null {
   if (fields.length === 0) return null
 
-  // Build raw payload
   const rawParts: number[] = [fields.length]
   for (const field of fields) {
     rawParts.push(field.typeId)
@@ -31,16 +30,18 @@ export function groupedDeflate(
   if (raw.length > maxInflate) {
     throw new Error(`Raw size ${raw.length} exceeds max inflate size ${maxInflate}`)
   }
-  if (raw.length < 100) return null // Not worth compressing
+  if (raw.length < 100) return null
 
-  const compressed = pako.deflate(raw)
-  if (compressed.length >= raw.length) return null // Compression not beneficial
+  const compressed = brotliCompressSync(Buffer.from(raw), {
+    params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
+  })
+  if (compressed.length >= raw.length) return null
 
-  return compressed
+  return new Uint8Array(compressed)
 }
 
 /**
- * Decompress a grouped deflate block back to fields.
+ * Decompress a Brotli block back to fields.
  * Throws if inflated size exceeds limit (decompression bomb protection).
  */
 export function groupedInflate(
@@ -49,33 +50,14 @@ export function groupedInflate(
 ): CompressedField[] {
   const maxInflate = opts?.maxInflateSize ?? MAX_INFLATE_SIZE
 
-  // Streaming inflate with size limit — prevents OOM on decompression bombs
-  const inflator = new pako.Inflate()
-  const chunks: Uint8Array[] = []
-  let totalSize = 0
-
-  inflator.onData = (chunk: Uint8Array) => {
-    totalSize += chunk.length
-    if (totalSize > maxInflate) {
-      throw new Error(`Inflated size exceeds max ${maxInflate}`)
-    }
-    chunks.push(chunk)
+  if (data.length > MAX_PAYLOAD_SIZE) {
+    throw new Error(`Compressed size ${data.length} exceeds max ${MAX_PAYLOAD_SIZE}`)
   }
 
-  inflator.push(data, true)
-  if (inflator.err) {
-    throw new Error(`Decompression failed: ${inflator.msg}`)
-  }
-  if (totalSize > maxInflate) {
-    throw new Error(`Inflated size ${totalSize} exceeds max ${maxInflate}`)
-  }
+  const inflated = new Uint8Array(brotliDecompressSync(Buffer.from(data)))
 
-  // Concatenate chunks
-  const inflated = new Uint8Array(totalSize)
-  let pos = 0
-  for (const chunk of chunks) {
-    inflated.set(chunk, pos)
-    pos += chunk.length
+  if (inflated.length > maxInflate) {
+    throw new Error(`Inflated size ${inflated.length} exceeds max ${maxInflate}`)
   }
 
   const fieldCount = inflated[0]!
@@ -83,18 +65,12 @@ export function groupedInflate(
   let offset = 1
 
   for (let i = 0; i < fieldCount; i++) {
-    if (offset >= inflated.length) {
-      throw new Error(`Truncated compressed block at field ${i}`)
-    }
+    if (offset >= inflated.length) throw new Error(`Truncated compressed block at field ${i}`)
     const typeId = inflated[offset]!
     offset++
-
     const { value: valueLen, bytesRead } = readVarInt(inflated, offset)
     offset += bytesRead
-
-    if (offset + valueLen > inflated.length) {
-      throw new Error(`Truncated value in compressed block at field ${i}`)
-    }
+    if (offset + valueLen > inflated.length) throw new Error(`Truncated value at field ${i}`)
     const value = inflated.slice(offset, offset + valueLen)
     offset += valueLen
     fields.push({ typeId, value })

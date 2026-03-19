@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import pako from 'pako'
+import { brotliCompressSync } from 'node:zlib'
 import { groupedDeflate, groupedInflate } from '../compress'
-import { MAX_INFLATE_SIZE } from '../types'
+import { MAX_INFLATE_SIZE, MAX_PAYLOAD_SIZE } from '../types'
 import { writeVarInt } from '../varint'
 
 function makeField(typeId: number, text: string): { typeId: number; value: Uint8Array } {
@@ -85,21 +85,24 @@ describe('groupedDeflate / groupedInflate', () => {
   })
 
   describe('threshold: compressed >= raw → returns null', () => {
-    it('returns null when deflated output is not smaller than raw', () => {
+    it('returns null when brotli output is not smaller than raw', () => {
       // Random-like bytes (incompressible) of >= 100 bytes
-      // Use a payload that pako won't compress well
       const entropy = new Uint8Array(120)
       for (let i = 0; i < 120; i++) entropy[i] = (i * 137 + 43) % 256
       const fields = [makeFieldBytes(0x01, entropy)]
 
-      // Build the raw to check how large it is (overhead from format adds ~3 bytes)
+      // Build the raw to check format overhead (~3 bytes)
       const raw = buildRawPayload(fields)
-      const compressed = pako.deflate(raw)
 
-      // Only run this test if pako actually fails to compress (compressed >= raw)
-      // If pako manages to compress the entropy below raw size, skip the assertion
-      if (compressed.length < raw.length) {
-        // pako compressed it anyway — skip this specific assertion
+      // Manually compress with node:zlib to check if it beats raw size
+      const { constants } = require('node:zlib') as typeof import('node:zlib')
+      const manualCompressed = brotliCompressSync(Buffer.from(raw), {
+        params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
+      })
+
+      // Only assert if brotli actually fails to compress (compressed >= raw)
+      if (manualCompressed.length < raw.length) {
+        // brotli compressed it anyway — skip this specific assertion
         return
       }
 
@@ -110,26 +113,38 @@ describe('groupedDeflate / groupedInflate', () => {
 
   describe('decompression bomb protection', () => {
     it('throws when inflated size exceeds maxInflateSize', () => {
-      // Craft a deflated payload that expands to > maxInflateSize when inflated
+      // Craft a brotli-compressed payload that expands to > maxInflateSize when inflated
       const maxInflate = 200 // very small limit for testing
-      // Build a raw payload that is > maxInflate when inflated
       const bigField = makeField(0x01, 'X'.repeat(300))
       const raw = buildRawPayload([bigField])
-      const deflated = pako.deflate(raw)
 
-      expect(() => groupedInflate(deflated, { maxInflateSize: maxInflate })).toThrow(
+      const { constants } = require('node:zlib') as typeof import('node:zlib')
+      const compressed = brotliCompressSync(Buffer.from(raw), {
+        params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
+      })
+
+      expect(() => groupedInflate(new Uint8Array(compressed), { maxInflateSize: maxInflate })).toThrow(
         /exceeds max/,
       )
     })
 
     it('throws with default MAX_INFLATE_SIZE when inflated size exceeds 16KB', () => {
       // Build a payload that inflates to > MAX_INFLATE_SIZE (16384)
-      // A highly compressible string will expand greatly
       const bigField = makeField(0x01, 'A'.repeat(MAX_INFLATE_SIZE + 100))
       const raw = buildRawPayload([bigField])
-      const deflated = pako.deflate(raw)
 
-      expect(() => groupedInflate(deflated)).toThrow(/exceeds max/)
+      const { constants } = require('node:zlib') as typeof import('node:zlib')
+      const compressed = brotliCompressSync(Buffer.from(raw), {
+        params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
+      })
+
+      expect(() => groupedInflate(new Uint8Array(compressed))).toThrow(/exceeds max/)
+    })
+
+    it('throws pre-decompress when compressed input exceeds MAX_PAYLOAD_SIZE', () => {
+      // Craft a buffer that is larger than MAX_PAYLOAD_SIZE
+      const oversized = new Uint8Array(MAX_PAYLOAD_SIZE + 1)
+      expect(() => groupedInflate(oversized)).toThrow(/exceeds max/)
     })
   })
 
@@ -144,6 +159,19 @@ describe('groupedDeflate / groupedInflate', () => {
       const recovered = groupedInflate(compressed!)
       expect(recovered).toHaveLength(1)
       expect(new TextDecoder().decode(recovered[0]!.value)).toBe(longText)
+    })
+  })
+
+  describe('truncation errors', () => {
+    it('throws on truncated compressed block', () => {
+      // First compress a valid payload
+      const fields = [makeField(0x01, 'A'.repeat(60)), makeField(0x02, 'B'.repeat(60))]
+      const compressed = groupedDeflate(fields)
+      expect(compressed).not.toBeNull()
+
+      // Truncate the compressed data (corrupt it)
+      const truncated = compressed!.slice(0, Math.floor(compressed!.length / 2))
+      expect(() => groupedInflate(truncated)).toThrow()
     })
   })
 })
