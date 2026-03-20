@@ -32,9 +32,20 @@ const DICT_ENTRIES: [string, number][] = [
   ['INV-', 0x0f],
 ]
 
+/** Code points used by dictionary substitution */
+const DICT_CODES = new Set(DICT_ENTRIES.map(([, code]) => code))
+
 /** Substitute known patterns with 1-byte codes before compression */
 export function applyDict(input: Uint8Array): Uint8Array {
   let text = new TextDecoder().decode(input)
+  // Validate: input must not contain control chars used by dictionary
+  for (let i = 0; i < text.length; i++) {
+    if (DICT_CODES.has(text.charCodeAt(i))) {
+      throw new Error(
+        `Input contains reserved control character U+${text.charCodeAt(i).toString(16).padStart(4, '0')} at position ${i}`
+      )
+    }
+  }
   for (const [pattern, code] of DICT_ENTRIES) {
     text = text.replaceAll(pattern, String.fromCharCode(code))
   }
@@ -47,8 +58,9 @@ export function reverseDict(input: Uint8Array): Uint8Array {
   for (const [pattern, code] of [...DICT_ENTRIES].reverse()) {
     text = text.replaceAll(String.fromCharCode(code), pattern)
   }
-  if (text.length > 4096) {
-    throw new Error(`Dictionary expansion exceeds maximum field size: ${text.length}`)
+  const encoded = new TextEncoder().encode(text)
+  if (encoded.length > 4096) {
+    throw new Error(`Dictionary expansion exceeds maximum field size: ${encoded.length} bytes`)
   }
-  return new TextEncoder().encode(text)
+  return encoded
 }

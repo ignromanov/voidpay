@@ -71,6 +71,7 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
       ],
       tax: '0',
       discount: '5',
+      total: '5510000000000000000',
     },
   },
   // --- Arbitrum (42161) - Game Asset Design [PENDING] ---
@@ -111,6 +112,7 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
       ],
       tax: '8',
       discount: '8', // 8% discount (~$192)
+      total: '2400000000',
     },
   },
   // --- Optimism (10) - Public Goods Grant [PAID + NOT VALIDATED] ---
@@ -154,6 +156,7 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
       ],
       tax: '0',
       discount: '0',
+      total: '25000000000000000000000',
     },
   },
   // --- Polygon (137) - Data Analytics Service [OVERDUE] ---
@@ -196,6 +199,7 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
       ],
       tax: '18',
       discount: '10',
+      total: '6210000000',
     },
   },
 ]

@@ -51,7 +51,7 @@ export const TlvType = {
   CLIENT_NAME: 18,       // client.name — UTF-8 string
   SALT: 20,              // codec-only: 16 random bytes (crypto.getRandomValues)
   INVOICE_ID: 22,        // invoiceId — UTF-8 string
-  TOTAL: 24,             // subtotal WITHOUT magicDust — BigInt varint (atomic units)
+  TOTAL: 24,             // total payment amount INCLUDING magicDust — mantissa-encoded (atomic units), REQUIRED
 } as const
 
 export type TlvTypeValue = (typeof TlvType)[keyof typeof TlvType]

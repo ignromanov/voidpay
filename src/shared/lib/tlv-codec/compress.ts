@@ -2,13 +2,14 @@ import type { BrotliWasmType } from 'brotli-wasm'
 import { writeVarInt, readVarInt } from './varint'
 import { COMPRESSED_FLAG, MAX_INFLATE_SIZE, MAX_PAYLOAD_SIZE } from './types'
 
-type BrotliModule = BrotliWasmType
-let brotli: BrotliModule | null = null
+let brotli: BrotliWasmType | null = null
 
-async function getBrotli(): Promise<BrotliModule> {
+async function getBrotli(): Promise<BrotliWasmType> {
   if (!brotli) {
-    // .default is already a Promise<BrotliModule> in brotli-wasm v3
-    brotli = await (await import('brotli-wasm')).default
+    const mod = await import('brotli-wasm')
+    const instance = await mod.default
+    // Only cache after both import and init succeed — failed init retries on next call
+    brotli = instance
   }
   return brotli
 }

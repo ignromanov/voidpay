@@ -203,7 +203,12 @@ export async function decodeInvoice(compressed: string): Promise<Invoice> {
 
     // Derive possibleDust from salt and check if dust was actually applied.
     // Dust was applied iff: total - sum(item.rate * item.quantity) == possibleDust
-    // Uses the same quantity scaling as calculateTotalsBigInt (scale = 10^decimals).
+    //
+    // PRECISION NOTE: This uses the same float-to-BigInt conversion as
+    // calculateTotalsBigInt (amount-utils): BigInt(Math.round(qty * Number(scale))).
+    // Both encoder and decoder share this formula, so dust detection is consistent.
+    // For decimals >= 16, Number(10^decimals) exceeds MAX_SAFE_INTEGER, but since
+    // both sides use the same imprecise conversion, the results match.
     const possibleDustRaw = deriveMagicDust(saltRecord.value)
     const possibleDustAtomic = BigInt(possibleDustRaw)
     const scale = BigInt(10 ** decimals)
