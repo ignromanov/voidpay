@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs'
-import type { CodecModule, CodecInfo } from './shared/types.js'
+import type { CodecModule } from './shared/types.js'
 
 // Deterministic crypto — applied BEFORE dynamic codec imports
 globalThis.crypto.getRandomValues = <T extends ArrayBufferView>(array: T): T => {

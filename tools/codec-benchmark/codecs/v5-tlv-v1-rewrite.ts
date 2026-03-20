@@ -3,7 +3,7 @@ import { brotliCompressSync, constants } from 'node:zlib'
 import type { Invoice, CodecModule } from '../shared/types.js'
 import { encodeBase64url } from '../shared/encoding.js'
 import {
-  addressToBytes, writeVarInt, writeBigIntVarInt, writeMantissa, writeQuantity,
+  addressToBytes, writeVarInt, writeMantissa, writeQuantity,
 } from '../shared/binary-helpers.js'
 
 interface TlvRecord { type: number; value: Uint8Array }

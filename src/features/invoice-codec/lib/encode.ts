@@ -12,7 +12,7 @@ import {
 import { getAppBaseUrl } from '@/shared/config'
 import { encodeOGPreview } from './og-preview'
 import { TlvType, encodeCurrency, encodeTokenAddress } from './tlv-map'
-import { generateSalt, computeDomainSeparator, deriveMagicDust } from './security'
+import { generateSalt, computeDomainSeparator } from './security'
 import { encodeChainId } from './chain-dict'
 import { applyDict } from './app-dict'
 
