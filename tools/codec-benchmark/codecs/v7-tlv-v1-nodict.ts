@@ -93,7 +93,7 @@ function writeTlv(records: TlvRecord[]): Uint8Array {
   return new Uint8Array(bytes)
 }
 
-// --- Domain separator: keccak256 truncated to 16 bytes (128 bits) ---
+// --- Domain separator: full keccak256 (32 bytes) ---
 function computeDomainSeparator(records: TlvRecord[]): Uint8Array {
   const prefix = new TextEncoder().encode('VOIDPAY_INVOICE_V1')
   const parts: Uint8Array[] = [prefix]
@@ -111,7 +111,7 @@ function computeDomainSeparator(records: TlvRecord[]): Uint8Array {
   const body = new Uint8Array(totalLen)
   let offset = 0
   for (const p of parts) { body.set(p, offset); offset += p.length }
-  return keccak_256(body).slice(0, 16) // ← truncated from 32 to 16
+  return keccak_256(body) // full 32 bytes (restored from truncated 16)
 }
 
 // --- Helpers ---
@@ -195,17 +195,14 @@ export const codec: CodecModule = {
     // CLIENT_NAME (Type 18): app-dict
     records.push({ type: 18, value: applyDict(utf8(invoice.client.name)) })
 
-    // SALT (Type 20): 8 bytes (was 16 in v5)
-    records.push({ type: 20, value: crypto.getRandomValues(new Uint8Array(8)) })
+    // SALT (Type 20): 16 bytes (128-bit, NIST SP 800-132)
+    records.push({ type: 20, value: crypto.getRandomValues(new Uint8Array(16)) })
 
     // INVOICE_ID (Type 22)
     records.push({ type: 22, value: utf8(invoice.invoiceId) })
 
-    // TOTAL (Type 24): mantissa
-    const subtotal = invoice.magicDust
-      ? BigInt(invoice.total) - BigInt(invoice.magicDust)
-      : BigInt(invoice.total)
-    records.push({ type: 24, value: mantissaBytes(subtotal) })
+    // TOTAL (Type 24): final payment amount (includes magicDust if applied)
+    records.push({ type: 24, value: mantissaBytes(BigInt(invoice.total)) })
 
     // --- Optional text fields: individual TLVs (Brotli handles compression) ---
     if (invoice.notes)                  records.push({ type: 5,  value: applyDict(utf8(invoice.notes)) })

@@ -270,11 +270,8 @@ export const codec: CodecModule = {
     // INVOICE_ID (Type 22): UTF-8
     records.push({ type: 22, value: utf8(invoice.invoiceId) })
 
-    // TOTAL (Type 24): mantissa encoding of subtotal (total - magicDust, no magic dust TLV)
-    const subtotal = invoice.magicDust
-      ? BigInt(invoice.total) - BigInt(invoice.magicDust)
-      : BigInt(invoice.total)
-    records.push({ type: 24, value: mantissaBytes(subtotal) })
+    // TOTAL (Type 24): final payment amount (includes magicDust if applied)
+    records.push({ type: 24, value: mantissaBytes(BigInt(invoice.total)) })
 
     // Optional text fields — grouped Brotli compress if beneficial
     const textFields: { typeId: number; value: Uint8Array }[] = []
