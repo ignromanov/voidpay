@@ -161,16 +161,16 @@ describe('Invoice Codec TLV v1', () => {
       const encoded = encodeInvoice(createMinimalInvoice())
       const bytes = decodeBase64url(encoded)
       expect(bytes[0]).toBe(0x56) // MAGIC
-      expect(bytes[1]).toBe(0x01) // VERSION
+      expect(bytes[1]! & 0x7f).toBe(0x01) // VERSION (high bit = compression flag)
     })
 
-    it('encoded TLV contains salt (Type 20, 16 bytes)', () => {
+    it('encoded TLV contains salt (Type 20, 8 bytes)', () => {
       const encoded = encodeInvoice(createMinimalInvoice())
       const bytes = decodeBase64url(encoded)
       const { records } = readTlv(bytes)
       const salt = records.find((r) => r.type === TlvType.SALT)
       expect(salt).toBeDefined()
-      expect(salt!.value.length).toBe(16)
+      expect(salt!.value.length).toBe(8)
     })
 
     it('records are in canonical order', () => {

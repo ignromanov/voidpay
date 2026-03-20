@@ -1,5 +1,5 @@
 import type { Invoice } from '@/entities/invoice'
-import type { TlvRecord, CompressedField } from '@/shared/lib/tlv-codec'
+import type { TlvRecord } from '@/shared/lib/tlv-codec'
 import {
   writeTlv,
   sortCanonical,
@@ -7,11 +7,11 @@ import {
   writeVarInt,
   writeMantissa,
   writeQuantity,
-  groupedDeflate,
+  compressPayload,
 } from '@/shared/lib/tlv-codec'
 import { getAppBaseUrl } from '@/shared/config'
 import { encodeOGPreview } from './og-preview'
-import { TlvType, encodeCurrency, encodeTokenAddress, COMPRESSED_TEXT_WHITELIST } from './tlv-map'
+import { TlvType, encodeCurrency, encodeTokenAddress } from './tlv-map'
 import { generateSalt, computeDomainSeparator, deriveMagicDust } from './security'
 import { encodeChainId } from './chain-dict'
 import { applyDict } from './app-dict'
@@ -63,8 +63,8 @@ function packItems(items: Invoice['items']): Uint8Array {
   const buf: number[] = []
   writeVarInt(buf, items.length)
   for (const item of items) {
-    // description: [len: varint] [utf8 bytes]
-    const descBytes = utf8(item.description)
+    // description: [len: varint] [utf8 bytes] (app-dict applied for better compression)
+    const descBytes = applyDict(utf8(item.description))
     writeVarInt(buf, descBytes.length)
     for (let i = 0; i < descBytes.length; i++) buf.push(descBytes[i]!)
     // quantity: scale + varint (replaces float32)
@@ -123,62 +123,36 @@ export function encodeInvoice(invoice: Invoice): string {
   const salt = generateSalt()
   records.push({ type: TlvType.SALT, value: salt })
 
-  // --- Compressible text fields ---
-  const textFields: CompressedField[] = []
+  // --- Text fields (individual TLVs — whole-payload Brotli handles compression) ---
+  records.push({ type: TlvType.FROM_NAME, value: applyDict(utf8(invoice.from.name)) })
+  records.push({ type: TlvType.CLIENT_NAME, value: applyDict(utf8(invoice.client.name)) })
 
-  // FROM_NAME (Type 16) — required, always present
-  // Apply app-level dictionary substitution before adding to text fields
-  textFields.push({ typeId: TlvType.FROM_NAME, value: applyDict(utf8(invoice.from.name)) })
-
-  // CLIENT_NAME (Type 18) — required, always present
-  textFields.push({ typeId: TlvType.CLIENT_NAME, value: applyDict(utf8(invoice.client.name)) })
-
-  // Optional text fields
   if (invoice.notes) {
-    textFields.push({ typeId: TlvType.NOTES, value: applyDict(utf8(invoice.notes)) })
+    records.push({ type: TlvType.NOTES, value: applyDict(utf8(invoice.notes)) })
   }
   if (invoice.from.email) {
-    textFields.push({ typeId: TlvType.FROM_EMAIL, value: applyDict(utf8(invoice.from.email)) })
+    records.push({ type: TlvType.FROM_EMAIL, value: applyDict(utf8(invoice.from.email)) })
   }
   if (invoice.from.phone) {
-    textFields.push({ typeId: TlvType.FROM_PHONE, value: applyDict(utf8(invoice.from.phone)) })
+    records.push({ type: TlvType.FROM_PHONE, value: applyDict(utf8(invoice.from.phone)) })
   }
   if (invoice.from.physicalAddress) {
-    textFields.push({ typeId: TlvType.FROM_ADDRESS, value: applyDict(utf8(invoice.from.physicalAddress)) })
+    records.push({ type: TlvType.FROM_ADDRESS, value: applyDict(utf8(invoice.from.physicalAddress)) })
   }
   if (invoice.from.taxId) {
-    textFields.push({ typeId: TlvType.FROM_TAX_ID, value: applyDict(utf8(invoice.from.taxId)) })
+    records.push({ type: TlvType.FROM_TAX_ID, value: applyDict(utf8(invoice.from.taxId)) })
   }
   if (invoice.client.email) {
-    textFields.push({ typeId: TlvType.CLIENT_EMAIL, value: applyDict(utf8(invoice.client.email)) })
+    records.push({ type: TlvType.CLIENT_EMAIL, value: applyDict(utf8(invoice.client.email)) })
   }
   if (invoice.client.phone) {
-    textFields.push({ typeId: TlvType.CLIENT_PHONE, value: applyDict(utf8(invoice.client.phone)) })
+    records.push({ type: TlvType.CLIENT_PHONE, value: applyDict(utf8(invoice.client.phone)) })
   }
   if (invoice.client.physicalAddress) {
-    textFields.push({ typeId: TlvType.CLIENT_ADDRESS, value: applyDict(utf8(invoice.client.physicalAddress)) })
+    records.push({ type: TlvType.CLIENT_ADDRESS, value: applyDict(utf8(invoice.client.physicalAddress)) })
   }
   if (invoice.client.taxId) {
-    textFields.push({ typeId: TlvType.CLIENT_TAX_ID, value: applyDict(utf8(invoice.client.taxId)) })
-  }
-
-  // Try grouped compression — only whitelisted types
-  const compressibleFields = textFields.filter((f) => COMPRESSED_TEXT_WHITELIST.has(f.typeId))
-  const nonCompressibleFields = textFields.filter((f) => !COMPRESSED_TEXT_WHITELIST.has(f.typeId))
-
-  // Non-compressible text fields (FROM_NAME=16, CLIENT_NAME=18 are even/required) go as individual TLVs
-  for (const field of nonCompressibleFields) {
-    records.push({ type: field.typeId, value: field.value })
-  }
-
-  const compressed = compressibleFields.length > 0 ? groupedDeflate(compressibleFields) : null
-  if (compressed) {
-    records.push({ type: TlvType.COMPRESSED_TEXT, value: compressed })
-  } else {
-    // Compression not beneficial — add individual TLVs
-    for (const field of compressibleFields) {
-      records.push({ type: field.typeId, value: field.value })
-    }
+    records.push({ type: TlvType.CLIENT_TAX_ID, value: applyDict(utf8(invoice.client.taxId)) })
   }
 
   // --- Optional non-text fields (odd types) ---
@@ -226,10 +200,11 @@ export function encodeInvoice(invoice: Invoice): string {
   // Re-sort after adding domain separator
   const finalRecords = sortCanonical(sorted)
 
-  // --- Serialize ---
+  // --- Serialize → whole-payload Brotli → Base64url ---
   const bytes = writeTlv(finalRecords)
+  const compressed = compressPayload(bytes)
 
-  return encodeBase64url(bytes)
+  return encodeBase64url(compressed)
 }
 
 /**

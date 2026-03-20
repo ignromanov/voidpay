@@ -3,9 +3,9 @@ import { derivePRNG, writeVarInt } from '@/shared/lib/tlv-codec'
 import { keccak256, toBytes, toHex } from 'viem'
 import { TlvType } from './tlv-map'
 
-/** Generate 16 random bytes for invoice salt */
+/** Generate 8 random bytes for invoice salt (64 bits — sufficient for magic dust derivation) */
 export function generateSalt(): Uint8Array {
-  return crypto.getRandomValues(new Uint8Array(16))
+  return crypto.getRandomValues(new Uint8Array(8))
 }
 
 /**
@@ -40,9 +40,9 @@ export function computeDomainSeparator(records: TlvRecord[]): Uint8Array {
     offset += part.length
   }
 
-  // keccak256 hash
+  // keccak256 hash, truncated to 16 bytes (128 bits — standard integrity tag size)
   const hash = keccak256(body)
-  return toBytes(hash)
+  return toBytes(hash).slice(0, 16)
 }
 
 /**
@@ -55,8 +55,8 @@ export function validateSecurity(records: TlvRecord[]): void {
   if (!saltRecord) {
     throw new Error('Missing required salt (Type 20)')
   }
-  if (saltRecord.value.length < 16) {
-    throw new Error(`Salt too short: ${saltRecord.value.length} bytes, need >= 16`)
+  if (saltRecord.value.length < 8) {
+    throw new Error(`Salt too short: ${saltRecord.value.length} bytes, need >= 8`)
   }
 
   const domSepRecord = records.find((r) => r.type === TlvType.DOMAIN_SEPARATOR)

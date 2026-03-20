@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode full invoice to stable compressed format > full-invoice-v1-encoded 1`] = `"VgESAQIAAQICAAEDFKvN76vN76vN76vN76vN76vN76vNBARlkgCABgSAvaMBCAEGChQSNFZ4kBI0VniQEjRWeJASNFZ4kAwCAAEOTAMURnJvbnRlbmQgRGV2ZWxvcG1lbnQAKA8HF0JhY2tlbmQgQVBJIERldmVsb3BtZW50ADyvAQYQQ29kZSBSZXZpZXcgJiBRQQAKfQYQFEFjbWUgRGV2ZWxvcG1lbnQgTExDEhJDbGllbnQgQ29ycG9yYXRpb24TBDguNSUUEAABAgMEBQYHCAkKCwwNDg8VAjUlFgxJTlYtMjAyNC0wMDEYAg8JHyBYlo2-6mEMAwsDdsCxoltC6-XavL6H8Hir_6nLDANt7P2JARu0ALCMlO4K1xGSzA5uM2EWiojMGpRINH3kNeSkkwP2rwUtCgK5UWBpJmlcKLjBIYaB9NsDzuvyZCidqaz_16kNFAWjBvmev70b53fNl_XjlKTKAABZVTdZCyASAqzccjGq_JRc9CZpqxJIqk3vpJJTmINglEHQNprTAmg6mP238j99puYha6sA"`;
+exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode full invoice to stable compressed format > full-invoice-v1-encoded 1`] = `"VoEboQFgLAps1xxz0Z1cOpQun8OsaKOBa3kRZV95119NxUWRdP_2iwQcDWRUoNPZiKdzGxMcLl3R7p_eDsohp6h8eP1uJ6gxO5Y75AfQ30tbkmfZ50nblQZWmCbYPAgp4lTPZ4njHSLDIlpFDBACQGgNK5-_f5YjyP6BZ1TBF2RytZsoG-0GMeT5-w3EhY2u-5-O3XXh3trtLwSIkXzBNUulkul6vhmUyhVKkYLp9UtxdKYCPwQXFaSWwjQPelMLXKfEQADICvNhu6GOZCawwoDq96cdEqJAFq7Tm9gx9hw6tRmICZcfcgTEdPQeqAeMH_R7rVoxy6XAF5ReocJSMZkMxERQKuM0c-899eV_KEZbbD7vShIbpA4-yEjVKqWKyLAbFSqlmhkyNTOVMZtdGhBPRoSz7-s15Fr4-_-y_g8"`;
 
-exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode minimal invoice to stable compressed format > minimal-invoice-v1-encoded 1`] = `"VgENAgIABAQEZZIAgAYEgL2jAQgBEgoUEREREREREREREREREREREREREREMAgAGDhABCkNvbnN1bHRpbmcAAQESEApGcmVlbGFuY2VyEgZDbGllbnQUEAABAgMEBQYHCAkKCwwNDg8WC0lOVi1NSU4tMDAxGAIFFB8gmMjxZc6hVjrGxHnSxyoyUHcinfSchE7d5w7H_bDZwoY"`;
+exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode minimal invoice to stable compressed format > minimal-invoice-v1-encoded 1`] = `"VoEbgADgHQk2LvGNnsg7OvXvs6cFNOHQ2B3ge_oGqQZrBa8WqNiS868WK9iAE7GEAxnEplVvxOJ18yZhjEiSHD3RmSbPnxewoPOmRogY0bIK_Iitm60nCEBX-dxotOytB6O9Tn-PMNly2Baqbh0Hvh-4mDI99XeaN8w7bEb_R_EbxQ"`;
 
 exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should preserve exact JSON structure in encoding > full-invoice-v1-structure 1`] = `
 {
@@ -45,11 +45,11 @@ San Francisco, CA 94105",
       "rate": "125000000",
     },
   ],
-  "magicDust": "968",
+  "magicDust": "702",
   "networkId": 1,
   "notes": "Payment for web development services",
   "tax": "8.5%",
   "tokenAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-  "total": "15000000968",
+  "total": "15000000702",
 }
 `;

@@ -1,6 +1,6 @@
 # VoidPay Invoice Codec v1 — Format Specification
 
-> **Version**: 1.1 (rewrite)
+> **Version**: 1.2 (optimized)
 > **Status**: Stable (format locked)
 > **Date**: 2026-03-19
 > **Reference Implementation**: `@voidpay/codec` (TypeScript)
@@ -20,8 +20,8 @@ https://voidpay.xyz/pay#<Base64url-encoded binary>
 
 - **Self-describing**: Each field carries its own type tag — decoders skip unknown fields gracefully
 - **Forward-compatible**: Even types = required (reject if unknown), odd types = optional (skip if unknown)
-- **Compact**: Chain/token/currency dictionaries, varint encoding, mantissa+zeros for amounts, delta timestamps, Brotli compression, app-level text dictionary
-- **Secure**: Per-invoice random salt, keccak256 domain separator, type spoofing protection, optional EIP-712 signatures
+- **Compact**: Chain/token/currency dictionaries, varint encoding, mantissa+zeros for amounts, delta timestamps, whole-payload Brotli compression, app-level text dictionary
+- **Secure**: Per-invoice random salt (8 bytes), truncated keccak256 domain separator (16 bytes, 128-bit), type spoofing protection, optional EIP-712 signatures
 - **URL-safe**: Base64url encoding (RFC 4648 §5) fits within 2000-byte URL limit for QR compatibility
 
 ---
@@ -35,12 +35,12 @@ Invoice Object
   → Encode dueAt as delta from issuedAt (varint)
   → Encode quantities with scale encoding (§5.1)
   → Encode rates/total with mantissa + trailing zeros (§5.2)
-  → Apply app-level text dictionary substitution (§6.1)
-  → Generate 16-byte random salt (Type 20)
-  → Optionally Brotli-compress text fields into Type 253 (§6.2)
+  → Apply app-level text dictionary to all text fields + item descriptions (§6.1)
+  → Generate 8-byte random salt (Type 20)
   → Sort records ascending by type (canonical ordering)
-  → Compute domain separator hash (Type 31)
+  → Compute truncated domain separator hash, 16 bytes (Type 31)
   → Serialize: 3-byte header + TLV records
+  → Whole-payload Brotli compression (§6.2) — VERSION high bit signals compression
   → Base64url encode (no padding)
   → Append to URL as hash fragment
 ```
@@ -62,9 +62,15 @@ No padding (`=` stripped). Uses native `btoa`/`atob` with `+/` → `-_` translat
 ```
 Offset  Size  Field       Value
 0       1     Magic       0x56 ('V')
-1       1     Version     0x01
+1       1     Version     0x01 (low 7 bits) | compression flag (high bit)
 2       1     TLV Count   Number of TLV records in payload (max 64)
 ```
+
+**Version byte encoding**: `version & 0x7F` = codec version (always `0x01`). `version & 0x80` = whole-payload Brotli flag:
+- `0x01` — uncompressed: bytes 2+ are `[COUNT][TLV records...]`
+- `0x81` — compressed: bytes 2+ are `brotli([COUNT][TLV records...])`
+
+Decoder MUST check the high bit. If set, decompress before parsing TLV records. If Brotli expansion occurs (compressed >= raw), the encoder falls back to `0x01` (uncompressed).
 
 ### 3.2 TLV Record Structure
 
@@ -110,7 +116,7 @@ This enables future codec versions to add optional fields without breaking exist
 | 14 | `items` | packed binary (§5) | variable |
 | 16 | `fromName` | UTF-8 string (app-dict applied) | variable |
 | 18 | `clientName` | UTF-8 string (app-dict applied) | variable |
-| 20 | `salt` | random bytes (`crypto.getRandomValues`) | 16 |
+| 20 | `salt` | random bytes (`crypto.getRandomValues`) | 8 |
 | 22 | `invoiceId` | UTF-8 string | variable |
 | 24 | `total` | mantissa + trailing zeros (§5.2) — **subtotal without magicDust** | variable |
 
@@ -131,7 +137,7 @@ This enables future codec versions to add optional fields without breaking exist
 | 21 | `discount` | UTF-8 string (percentage) | variable |
 | 27 | `memo` | UTF-8 string (reserved) | variable |
 | 29 | `ttl` | uint32 BE (unix timestamp, ERC-3009 validBefore) | 4 |
-| 31 | `domainSeparator` | keccak256 hash (§7.3) — **mandatory** | 32 |
+| 31 | `domainSeparator` | truncated keccak256 hash (§7.3) — **mandatory** | 16 |
 | 33 | `signature` | EIP-712 typed data signature (§7.5) | 65 |
 | 35 | `fromTaxId` | UTF-8 string | variable |
 | 37 | `clientTaxId` | UTF-8 string | variable |
@@ -234,54 +240,57 @@ The total stored is the **subtotal without magicDust**. MagicDust is derived det
 
 ### 6.1 Application-Level Text Dictionary
 
-Before Brotli compression, common text patterns are replaced with single-byte control characters (0x02–0x0B range):
+Before Brotli compression, common text patterns are replaced with single-byte control characters (0x02–0x0F range):
 
-| Code | Pattern |
-|------|---------|
-| 0x02 | `@outlook.com` |
-| 0x03 | `@gmail.com` |
-| 0x04 | `@yahoo.com` |
-| 0x05 | `https://` |
-| 0x06 | `Invoice` |
-| 0x07 | `Payment` |
-| 0x08 | `.eth` |
-| 0x09 | `.com` |
-| 0x0B | `0x` |
+| Code | Pattern | Bytes saved |
+|------|---------|-------------|
+| 0x02 | `@outlook.com` | 11 |
+| 0x0C | `@hotmail.com` | 11 |
+| 0x0D | `development` | 10 |
+| 0x0E | `consulting` | 9 |
+| 0x03 | `@gmail.com` | 9 |
+| 0x04 | `@yahoo.com` | 9 |
+| 0x05 | `https://` | 7 |
+| 0x06 | `Invoice` | 6 |
+| 0x07 | `Payment` | 6 |
+| 0x09 | `.com` | 3 |
+| 0x0F | `INV-` | 3 |
 
-Applied to all text fields before encoding. Reversed after decoding. Substitutions are sorted by length descending (longest match first) to avoid partial replacements.
+Applied to all text fields **and item descriptions** before encoding. Reversed after decoding. Substitutions are sorted by length descending (longest match first) to avoid partial replacements.
 
-> **Note**: `0x0A` (newline) is intentionally skipped to avoid collision with `\n` in multiline address fields.
+Pattern selection criteria (validated via benchmark):
+- Patterns ≥ 4 bytes preferred — Brotli's static dictionary handles shorter patterns efficiently
+- ROI = `(pattern.length - 1) × expected_frequency` — higher is better
+- Removed from v1.1: `0x` (2 chars, too short), `.eth` (ROI 0.2, Brotli handles it)
+- Added in v1.2: `INV-` (ROI 2.4), `development` (ROI 2.0), `@hotmail.com` (ROI 1.1), `consulting` (ROI 0.5)
 
-### 6.2 Grouped Brotli Compression (Type 253)
+> **Note**: `0x0A` (newline) and `0x0B` are intentionally skipped to avoid collision with `\n` in multiline address fields.
 
-Optional optimization for text-heavy invoices. When total text exceeds 100 bytes:
+### 6.2 Whole-Payload Brotli Compression
 
-1. Collect values from eligible text types: 5, 7, 9, 11, 13, 15, 17, 35, 37
-2. Encode as length-prefixed records:
+Instead of compressing individual text fields, the **entire TLV payload** is Brotli-compressed after serialization. This gives the compressor maximum context across all fields — binary headers, text, addresses — in one pass.
 
 ```
-[field_count: uint8]
-  per field:
-    [type_id: uint8]
-    [value_len: varint] [value: UTF-8 bytes]
+Encode: writeTlv(records) → [MAGIC][VERSION][COUNT][TLV...]
+        → brotli(body) where body = [COUNT][TLV...]
+        → [MAGIC][VERSION|0x80][compressed_body]
+        → Base64url
+
+Decode: Base64url → bytes
+        → check VERSION high bit
+        → if 0x80: decompress bytes[2:] → prepend [MAGIC][VERSION&0x7F]
+        → readTlv normally
 ```
 
-3. Brotli compress (quality level 11, synchronous via `node:zlib`)
-4. Store as Type 253 value; remove individual text TLV records
+Compression uses Brotli quality 11 (maximum) via `node:zlib` (`brotliCompressSync`).
 
-If Brotli output is larger than raw input, skip compression and keep individual TLV records.
+If Brotli output is **larger** than raw input (possible for very small payloads), the encoder falls back to uncompressed format (VERSION = `0x01`, no high bit).
 
-### Whitelist
+**No threshold**: unlike the previous Type 253 approach (100-byte minimum), whole-payload compression has no minimum size — the `compressed < raw` check is the only gate.
 
-Decoder MUST reject Type 253 blocks containing type_ids not in: `{5, 7, 9, 11, 13, 15, 17, 35, 37}`.
+### Type 253 (Legacy)
 
-This prevents **type spoofing** — a malicious compressed block cannot overwrite business-critical fields like `total` (24) or `fromWallet` (10).
-
-### Excluded from Compression
-
-- Type 22 (`invoiceId`) — required even type, MUST appear as individual TLV
-- Types 16, 18 (`fromName`, `clientName`) — required even types
-- Types 19, 21 (`tax`, `discount`) — too short for compression benefit
+Type 253 (`compressedText`) is retained in the type registry for backward compatibility but is **no longer emitted** by the encoder. Decoders SHOULD still handle Type 253 if encountered (for URLs generated by older codec versions). The whitelist rule still applies: only type_ids `{5, 7, 9, 11, 13, 15, 17, 35, 37}` are allowed inside a Type 253 block.
 
 ---
 
@@ -289,9 +298,9 @@ This prevents **type spoofing** — a malicious compressed block cannot overwrit
 
 ### 7.1 Salt & Magic Dust (Type 20, required)
 
-16 bytes from `crypto.getRandomValues()`. Prevents preimage dictionary attacks on public URLs.
+8 bytes (64 bits) from `crypto.getRandomValues()`. Provides 2^64 uniqueness space — sufficient for invoice deduplication and magic dust derivation. HMAC-SHA256 with 64-bit key remains cryptographically secure.
 
-Decoder MUST reject invoices with missing or < 16-byte salt.
+Decoder MUST reject invoices with missing or < 8-byte salt.
 
 Salt serves as a derivation primitive:
 
@@ -310,14 +319,19 @@ Records sorted ascending by type. Decoder validates — rejects non-ascending or
 ### 7.3 Domain Separator (Type 31, mandatory)
 
 ```
-hash = keccak256( UTF-8("VOIDPAY_INVOICE_V1") || serialized_body )
+hash = keccak256( UTF-8("VOIDPAY_INVOICE_V1") || serialized_body ).slice(0, 16)
 ```
 
 Where `serialized_body` = concatenation of `[type(1)] [length(varint)] [value(n)]` for all records **except** Type 31 itself, in canonical order. The length uses varint encoding matching the on-wire TLV format, preventing field boundary confusion in the hash preimage.
 
-- Encoder: MUST compute after all other records, insert at canonical position
-- Decoder: MUST recompute and compare — reject on mismatch or if absent
-- Despite Type 31 being odd (normally optional by the even/odd rule), this implementation requires it for integrity protection
+The full 32-byte keccak256 output is **truncated to 16 bytes** (128 bits). This provides:
+- 2^64 birthday collision resistance — standard for integrity tags (matches AES-GCM, TLS HMAC truncation)
+- 2^128 preimage resistance — infeasible for any attacker
+- 16 bytes saved per invoice vs full 32-byte hash
+
+Encoder: MUST compute after all other records, insert at canonical position.
+Decoder: MUST recompute and compare — reject on mismatch or if absent.
+Despite Type 31 being odd (normally optional by the even/odd rule), this implementation requires it for integrity protection.
 
 > **Note**: Domain separator is an integrity checksum, not a cryptographic signature. It protects against data corruption and cross-protocol collision, but not intentional forgery. For anti-tampering, use EIP-712 signatures (§7.5).
 
@@ -365,7 +379,7 @@ Since Type 33 is odd, decoders that don't support signatures skip it silently.
 | Max single value | 4,096 bytes | Reject |
 | Max total payload | 1,481 bytes (pre-Base64url) | Reject at encode |
 | Max inflated size | 16,384 bytes | Reject (decompression bomb) |
-| Min salt length | 16 bytes | Reject |
+| Min salt length | 8 bytes | Reject |
 
 ### 7.7 URL Budget
 
@@ -517,10 +531,10 @@ Type 12 (currency):    [0x00, 0x01] (dict: USDC=1)
 Type 14 (items):       [count=1][descLen][desc][scale=0][qty=1][mantissa=15][zeros=7]
 Type 16 (fromName):    UTF-8("Alice")
 Type 18 (clientName):  UTF-8("Bob")
-Type 20 (salt):        <16 random bytes>
+Type 20 (salt):        <8 random bytes>
 Type 22 (invoiceId):   UTF-8("INV-001")
 Type 24 (total):       [mantissa=15] [zeros=7] — 150000000 = 15×10^7
-Type 31 (domainSep):   keccak256(prefix || body)
+Type 31 (domainSep):   keccak256(prefix || body)[0:16]  — truncated to 16 bytes
 ```
 
 ### Final URL
@@ -533,10 +547,11 @@ https://voidpay.xyz/pay#VgEMAAE...  (Base64url of binary)
 
 ## 11. Versioning
 
-- Codec version is in header byte 1 (currently `0x01`)
+- Codec version is in header byte 1, low 7 bits (currently `0x01`). High bit = compression flag.
 - No separate "invoice schema version" field — the codec version is the single version identifier
 - Format is **locked** once deployed — changes require a new codec version
 - Forward compatibility via odd/even rule: new optional types can be added without version bump
+- Compression is transparent: same version, just a flag bit. Decoders handle both compressed and uncompressed payloads.
 
 ---
 
@@ -546,6 +561,7 @@ https://voidpay.xyz/pay#VgEMAAE...  (Base64url of binary)
 |------|--------|
 | 2026-03-17 | v1.0 — Initial TLV format |
 | 2026-03-19 | v1.1 — Full rewrite: Base62→Base64url, DEFLATE→Brotli, 4B→3B header (removed flags), 2B BE→varint TLV lengths, float32→scale quantity, BigInt varint→mantissa+zeros amounts, chain dictionary, app-level text dictionary, delta dueAt, subtotal (no magicDust in TLV), EIP-712 signatures (Type 33), `0x0A`→`0x0B` dict code fix |
+| 2026-03-19 | v1.2 — Compression optimization: salt 16→8 bytes (64-bit sufficient for HMAC-SHA256 derivation), domain separator 32→16 bytes (truncated keccak256, 128-bit integrity), Type 253 grouped compression → whole-payload Brotli (VERSION high bit 0x80 signals compression, no threshold), app-dict applied to item descriptions, updated dictionary (removed `0x`/`.eth`, added `INV-`/`development`/`consulting`/`@hotmail.com`) |
 
 ---
 

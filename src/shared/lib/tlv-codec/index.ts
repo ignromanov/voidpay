@@ -2,6 +2,7 @@ export type { TlvRecord, TlvHeader } from './types'
 export {
   MAGIC,
   VERSION,
+  COMPRESSED_FLAG,
   MAX_TLV_COUNT,
   MAX_VALUE_SIZE,
   MAX_PAYLOAD_SIZE,
@@ -17,6 +18,6 @@ export {
   writeVarInt, readVarInt, writeBigIntVarInt, readBigIntVarInt,
   writeMantissa, readMantissa, writeQuantity, readQuantity,
 } from './varint'
-export { groupedDeflate, groupedInflate } from './compress'
+export { groupedDeflate, groupedInflate, compressPayload, decompressPayload } from './compress'
 export type { CompressedField } from './compress'
 export { derivePRNG } from './crypto'

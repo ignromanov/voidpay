@@ -70,7 +70,7 @@ function unpackItems(data: Uint8Array): Invoice['items'] {
     offset += descLenResult.bytesRead
     const descBytes = data.slice(offset, offset + descLenResult.value)
     offset += descLenResult.value
-    const description = decodeUtf8(descBytes)
+    const description = decodeUtf8(reverseDict(descBytes))
 
     // quantity: scale + varint
     const qtyResult = readQuantity(data, offset)

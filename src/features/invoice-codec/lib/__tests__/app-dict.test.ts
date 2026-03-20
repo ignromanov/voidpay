@@ -39,8 +39,14 @@ describe('applyDict', () => {
     expect(result.length).toBeLessThan(input.length)
   })
 
-  it('0x prefix is substituted', () => {
-    const input = encode('0x1234abcd')
+  it('INV- prefix is substituted', () => {
+    const input = encode('INV-001')
+    const result = applyDict(input)
+    expect(result.length).toBeLessThan(input.length)
+  })
+
+  it('development is substituted', () => {
+    const input = encode('Smart Contract development')
     const result = applyDict(input)
     expect(result.length).toBeLessThan(input.length)
   })
@@ -86,7 +92,7 @@ describe('applyDict / reverseDict roundtrip', () => {
   })
 
   it('roundtrips multiple patterns in one string', () => {
-    const original = 'Invoice from alice@gmail.com, Payment via https://pay.example.com, addr: 0xabcdef'
+    const original = 'Invoice INV-001 from alice@gmail.com, Payment for development consulting via https://pay.example.com'
     const compressed = applyDict(encode(original))
     const restored = reverseDict(compressed)
     expect(decode(restored)).toBe(original)
@@ -99,14 +105,14 @@ describe('applyDict / reverseDict roundtrip', () => {
   })
 
   it('roundtrips all dictionary patterns together', () => {
-    const original = '@outlook.com @gmail.com @yahoo.com https:// Invoice Payment .eth .com 0x'
+    const original = '@outlook.com @hotmail.com @gmail.com @yahoo.com https:// Invoice Payment development consulting .com INV-'
     const compressed = applyDict(encode(original))
     const restored = reverseDict(compressed)
     expect(decode(restored)).toBe(original)
   })
 
-  it('roundtrips .eth domain', () => {
-    const original = 'vitalik.eth'
+  it('roundtrips INV- prefix', () => {
+    const original = 'INV-2024-042'
     const compressed = applyDict(encode(original))
     const restored = reverseDict(compressed)
     expect(decode(restored)).toBe(original)

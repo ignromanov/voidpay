@@ -14,7 +14,7 @@ import {
 function makeSaltRecord(bytes?: Uint8Array): TlvRecord {
   return {
     type: TlvType.SALT,
-    value: bytes ?? new Uint8Array(16).fill(0xab),
+    value: bytes ?? new Uint8Array(8).fill(0xab),
   }
 }
 
@@ -31,10 +31,10 @@ function makeValidRecords(): TlvRecord[] {
 }
 
 describe('generateSalt', () => {
-  it('returns 16 bytes', () => {
+  it('returns 8 bytes', () => {
     const salt = generateSalt()
     expect(salt).toBeInstanceOf(Uint8Array)
-    expect(salt.length).toBe(16)
+    expect(salt.length).toBe(8)
   })
 
   it('returns different values each call', () => {
@@ -46,11 +46,11 @@ describe('generateSalt', () => {
 })
 
 describe('computeDomainSeparator', () => {
-  it('returns a 32-byte Uint8Array', () => {
+  it('returns a 16-byte Uint8Array (truncated keccak256)', () => {
     const records = makeValidRecords()
     const sep = computeDomainSeparator(records)
     expect(sep).toBeInstanceOf(Uint8Array)
-    expect(sep.length).toBe(32)
+    expect(sep.length).toBe(16)
   })
 
   it('excludes Type 31 (DOMAIN_SEPARATOR) from hash input', () => {
@@ -113,7 +113,7 @@ describe('computeDomainSeparator', () => {
 
     // Import keccak256 to verify
     // keccak256, toBytes imported at top level
-    const expected = toBytes(keccak256(body))
+    const expected = toBytes(keccak256(body)).slice(0, 16)
     expect(toHex(sep)).toBe(toHex(expected))
   })
 
@@ -162,10 +162,10 @@ describe('validateSecurity', () => {
     expect(() => validateSecurity(records)).toThrow('Missing required salt (Type 20)')
   })
 
-  it('rejects salt shorter than 16 bytes', () => {
+  it('rejects salt shorter than 8 bytes', () => {
     const records: TlvRecord[] = [
       makeRecord(TlvType.CHAIN_ID, new Uint8Array([1])),
-      makeRecord(TlvType.SALT, new Uint8Array(8).fill(0xaa)),
+      makeRecord(TlvType.SALT, new Uint8Array(4).fill(0xaa)),
     ]
     expect(() => validateSecurity(records)).toThrow('Salt too short')
   })
@@ -175,7 +175,7 @@ describe('validateSecurity', () => {
     // Add a domain separator with wrong value
     const tampered: TlvRecord[] = [
       ...records,
-      makeRecord(TlvType.DOMAIN_SEPARATOR, new Uint8Array(32).fill(0x00)),
+      makeRecord(TlvType.DOMAIN_SEPARATOR, new Uint8Array(16).fill(0x00)),
     ]
     expect(() => validateSecurity(tampered)).toThrow('Domain separator mismatch')
   })
@@ -205,7 +205,7 @@ describe('deriveMagicDust', () => {
   })
 
   it('is deterministic for the same salt', () => {
-    const salt = new Uint8Array(16).fill(0x42)
+    const salt = new Uint8Array(8).fill(0x42)
     expect(deriveMagicDust(salt)).toBe(deriveMagicDust(salt))
   })
 
@@ -213,7 +213,7 @@ describe('deriveMagicDust', () => {
     // Test with several different salts — extremely unlikely all yield same dust
     const results = new Set<number>()
     for (let i = 0; i < 10; i++) {
-      const salt = new Uint8Array(16).fill(i)
+      const salt = new Uint8Array(8).fill(i)
       results.add(deriveMagicDust(salt))
     }
     expect(results.size).toBeGreaterThan(1)
