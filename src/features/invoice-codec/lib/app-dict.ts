@@ -47,5 +47,8 @@ export function reverseDict(input: Uint8Array): Uint8Array {
   for (const [pattern, code] of [...DICT_ENTRIES].reverse()) {
     text = text.replaceAll(String.fromCharCode(code), pattern)
   }
+  if (text.length > 4096) {
+    throw new Error(`Dictionary expansion exceeds maximum field size: ${text.length}`)
+  }
   return new TextEncoder().encode(text)
 }

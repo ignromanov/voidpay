@@ -196,13 +196,24 @@ export async function decodeInvoice(compressed: string): Promise<Invoice> {
     const fromName = decodeUtf8(reverseDict(fromNameRecord.value))
     const clientName = decodeUtf8(reverseDict(clientNameRecord.value))
 
-    // Total: read subtotal via mantissa, derive magicDust from salt
-    const subtotalResult = readMantissa(totalRecord.value, 0)
-    const subtotal = subtotalResult.value
-    const magicDustRaw = deriveMagicDust(saltRecord.value)
-    const magicDustAtomic = BigInt(magicDustRaw)
-    const total = (subtotal + magicDustAtomic).toString()
-    const magicDust = magicDustAtomic.toString()
+    // Total: read as-is — it IS the final payment amount (may include magicDust)
+    const totalResult = readMantissa(totalRecord.value, 0)
+    const totalAtomic = totalResult.value
+    const total = totalAtomic.toString()
+
+    // Derive possibleDust from salt and check if dust was actually applied.
+    // Dust was applied iff: total - sum(item.rate * item.quantity) == possibleDust
+    // Uses the same quantity scaling as calculateTotalsBigInt (scale = 10^decimals).
+    const possibleDustRaw = deriveMagicDust(saltRecord.value)
+    const possibleDustAtomic = BigInt(possibleDustRaw)
+    const scale = BigInt(10 ** decimals)
+    const itemsSubtotal = items.reduce((acc, item) => {
+      const rate = BigInt(item.rate || '0')
+      const qtyScaled = BigInt(Math.round(item.quantity * Number(scale)))
+      return acc + (qtyScaled * rate) / scale
+    }, 0n)
+    const diff = totalAtomic - itemsSubtotal
+    const magicDust = diff === possibleDustAtomic ? possibleDustAtomic.toString() : undefined
 
     // 9. Decode optional fields
     const tokenAddressRecord = findRecord(allRecords, TlvType.TOKEN_ADDRESS)
@@ -287,7 +298,7 @@ export async function decodeInvoice(compressed: string): Promise<Invoice> {
       ...(tax && { tax }),
       ...(discount && { discount }),
       total,
-      magicDust,
+      ...(magicDust !== undefined && { magicDust }),
     }
 
     // 11. Validate against schema

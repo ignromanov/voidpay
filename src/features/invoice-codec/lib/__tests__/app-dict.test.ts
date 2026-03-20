@@ -127,6 +127,26 @@ describe('applyDict / reverseDict roundtrip', () => {
 })
 
 // ---------------------------------------------------------------------------
+// reverseDict — expansion overflow guard
+// ---------------------------------------------------------------------------
+
+describe('reverseDict — overflow guard', () => {
+  it('throws when expanded result exceeds 4096 bytes', () => {
+    // Build a synthetic compressed buffer that has many substitution codes.
+    // Each code expands to its pattern (e.g., 0x02 → "@outlook.com" = 12 chars).
+    // Fill 400 bytes with 0x02 → expands to 400 * 12 = 4800 bytes > 4096.
+    const manySubstitutions = new Uint8Array(400).fill(0x02)
+    expect(() => reverseDict(manySubstitutions)).toThrow(/exceeds maximum field size/)
+  })
+
+  it('does NOT throw when expanded result is exactly at the limit (4096 bytes)', () => {
+    // Use a plain ASCII string of exactly 4096 bytes (no substitutions, passthrough).
+    const atLimit = new TextEncoder().encode('A'.repeat(4096))
+    expect(() => reverseDict(atLimit)).not.toThrow()
+  })
+})
+
+// ---------------------------------------------------------------------------
 // reverseDict — applies in reverse order (no double-substitution)
 // ---------------------------------------------------------------------------
 

@@ -22,6 +22,7 @@ export function decodeBase64url(str: string): Uint8Array {
   if (str.length === 0) return new Uint8Array(0)
   let base64 = str.replace(/-/g, '+').replace(/_/g, '/')
   const pad = base64.length % 4
+  if (pad === 1) throw new Error('Invalid Base64url: illegal length')
   if (pad === 2) base64 += '=='
   else if (pad === 3) base64 += '='
   const binary = atob(base64)

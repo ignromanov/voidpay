@@ -7,7 +7,8 @@
  * Spec reference: 027-codec-v1-rewrite — optional EIP-712 signature support.
  */
 
-import { recoverTypedDataAddress, hashTypedData, type Address } from 'viem'
+import { recoverTypedDataAddress, hashTypedData, hexToBytes, bytesToHex, type Address } from 'viem'
+import { addressesMatch } from '@/shared/lib/validation'
 
 // ---------------------------------------------------------------------------
 // EIP-712 domain and types
@@ -43,7 +44,7 @@ export interface InvoiceTypedDataParams {
 }
 
 export interface InvoiceTypedData {
-  domain: typeof INVOICE_DOMAIN
+  domain: typeof INVOICE_DOMAIN & { chainId: number }
   types: typeof INVOICE_TYPES
   primaryType: 'Invoice'
   message: {
@@ -62,12 +63,10 @@ export interface InvoiceTypedData {
 export function buildInvoiceTypedData(params: InvoiceTypedDataParams): InvoiceTypedData {
   const { invoiceId, chainId, subtotal, fromAddress, salt } = params
 
-  const saltHex = `0x${Array.from(salt)
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')}` as `0x${string}`
+  const saltHex = bytesToHex(salt)
 
   return {
-    domain: INVOICE_DOMAIN,
+    domain: { ...INVOICE_DOMAIN, chainId },
     types: INVOICE_TYPES,
     primaryType: 'Invoice',
     message: {
@@ -102,13 +101,24 @@ export async function verifyInvoiceSignature(
 
   const sigHex = decodeSignature(signature)
 
-  const recovered = await recoverTypedDataAddress({
-    domain: typed.domain,
-    types: typed.types,
-    primaryType: typed.primaryType,
-    message: typed.message,
-    signature: sigHex,
-  })
+  let recovered: Address
+  try {
+    recovered = await recoverTypedDataAddress({
+      domain: typed.domain,
+      types: typed.types,
+      primaryType: typed.primaryType,
+      message: typed.message,
+      signature: sigHex,
+    })
+  } catch (err) {
+    throw new Error(
+      `Signature recovery failed: ${err instanceof Error ? err.message : String(err)}`
+    )
+  }
+
+  if (!addressesMatch(recovered, fromAddress)) {
+    throw new Error('Signature signer does not match invoice creator')
+  }
 
   return recovered
 }
@@ -128,11 +138,7 @@ export function encodeSignature(hexSignature: `0x${string}`): Uint8Array {
       `Invalid signature length: expected 65 bytes (130 hex chars), got ${hex.length / 2} bytes`
     )
   }
-  const bytes = new Uint8Array(65)
-  for (let i = 0; i < 65; i++) {
-    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
-  }
-  return bytes
+  return hexToBytes(hexSignature)
 }
 
 /**
@@ -145,10 +151,7 @@ export function decodeSignature(value: Uint8Array): `0x${string}` {
       `Invalid signature value length: expected 65 bytes, got ${value.length}`
     )
   }
-  const hex = Array.from(value)
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-  return `0x${hex}`
+  return bytesToHex(value)
 }
 
 // ---------------------------------------------------------------------------

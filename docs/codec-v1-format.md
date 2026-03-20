@@ -21,7 +21,7 @@ https://voidpay.xyz/pay#<Base64url-encoded binary>
 - **Self-describing**: Each field carries its own type tag — decoders skip unknown fields gracefully
 - **Forward-compatible**: Even types = required (reject if unknown), odd types = optional (skip if unknown)
 - **Compact**: Chain/token/currency dictionaries, varint encoding, mantissa+zeros for amounts, delta timestamps, whole-payload Brotli compression, app-level text dictionary
-- **Secure**: Per-invoice random salt (8 bytes), truncated keccak256 domain separator (16 bytes, 128-bit), type spoofing protection, optional EIP-712 signatures
+- **Secure**: Per-invoice random salt (16 bytes, 128-bit), full keccak256 domain separator (32 bytes), type spoofing protection, optional EIP-712 signatures
 - **URL-safe**: Base64url encoding (RFC 4648 §5) fits within 2000-byte URL limit for QR compatibility
 
 ---
@@ -36,9 +36,9 @@ Invoice Object
   → Encode quantities with scale encoding (§5.1)
   → Encode rates/total with mantissa + trailing zeros (§5.2)
   → Apply app-level text dictionary to all text fields + item descriptions (§6.1)
-  → Generate 8-byte random salt (Type 20)
+  → Generate 16-byte random salt (Type 20)
   → Sort records ascending by type (canonical ordering)
-  → Compute truncated domain separator hash, 16 bytes (Type 31)
+  → Compute full keccak256 domain separator hash, 32 bytes (Type 31)
   → Serialize: 3-byte header + TLV records
   → Whole-payload Brotli compression (§6.2) — VERSION high bit signals compression
   → Base64url encode (no padding)
@@ -116,9 +116,9 @@ This enables future codec versions to add optional fields without breaking exist
 | 14 | `items` | packed binary (§5) | variable |
 | 16 | `fromName` | UTF-8 string (app-dict applied) | variable |
 | 18 | `clientName` | UTF-8 string (app-dict applied) | variable |
-| 20 | `salt` | random bytes (`crypto.getRandomValues`) | 8 |
+| 20 | `salt` | random bytes (`crypto.getRandomValues`) | 16 |
 | 22 | `invoiceId` | UTF-8 string | variable |
-| 24 | `total` | mantissa + trailing zeros (§5.2) — **subtotal without magicDust** | variable |
+| 24 | `total` | mantissa + trailing zeros (§5.2) — **final payment amount (includes magicDust if applied)** | variable |
 
 ### 4.2 Optional Types (odd)
 
@@ -137,7 +137,7 @@ This enables future codec versions to add optional fields without breaking exist
 | 21 | `discount` | UTF-8 string (percentage) | variable |
 | 27 | `memo` | UTF-8 string (reserved) | variable |
 | 29 | `ttl` | uint32 BE (unix timestamp, ERC-3009 validBefore) | 4 |
-| 31 | `domainSeparator` | truncated keccak256 hash (§7.3) — **mandatory** | 16 |
+| 31 | `domainSeparator` | full keccak256 hash (§7.3) — **mandatory** | 32 |
 | 33 | `signature` | EIP-712 typed data signature (§7.5) | 65 |
 | 35 | `fromTaxId` | UTF-8 string | variable |
 | 37 | `clientTaxId` | UTF-8 string | variable |
@@ -232,7 +232,7 @@ Decoder reconstructs: `value = mantissa × 10^zeros`
 
 ### 5.3 Total Encoding (Type 24)
 
-The total stored is the **subtotal without magicDust**. MagicDust is derived deterministically from salt on decode (see §7.1), so it doesn't need to be stored. This preserves trailing zeros in the subtotal for efficient mantissa encoding.
+The total stored is the **final payment amount**. If magicDust was applied at creation time, the total already includes it (total = subtotal + magicDust). If magicDust was not applied (user disabled it), the total equals the subtotal. The decoder reads this value as-is — it is the definitive amount the payer must send. MagicDust can be derived from salt for display purposes (showing the subtotal/dust breakdown).
 
 ---
 
@@ -298,9 +298,9 @@ Type 253 (`compressedText`) is retained in the type registry for backward compat
 
 ### 7.1 Salt & Magic Dust (Type 20, required)
 
-8 bytes (64 bits) from `crypto.getRandomValues()`. Provides 2^64 uniqueness space — sufficient for invoice deduplication and magic dust derivation. HMAC-SHA256 with 64-bit key remains cryptographically secure.
+16 bytes (128 bits) from `crypto.getRandomValues()`, per NIST SP 800-132 recommendation for salts in integrity constructions. Provides 2^64 birthday collision resistance at ~2^64 invoices — far beyond any realistic usage.
 
-Decoder MUST reject invoices with missing or < 8-byte salt.
+Decoder MUST reject invoices with missing or < 16-byte salt.
 
 Salt serves as a derivation primitive:
 
@@ -310,7 +310,7 @@ derivePRNG(salt, label) = HMAC-SHA256(salt, UTF-8(label))
 
 Used for deterministic magic dust generation: `(uint32(derived[0..3]) % 999) + 1`
 
-Magic dust is NOT stored in TLV — it is derived from salt on decode and added to the subtotal (Type 24) to produce the final total. This means the same salt always produces the same magic dust value.
+Magic dust is applied at **creation time**: if the user enables magic dust, the encoder derives it from salt, adds it to the subtotal, and stores the result as TOTAL (Type 24). The decoder reads TOTAL as-is — it is the definitive payment amount. For display purposes (showing the subtotal/dust breakdown), the decoder can re-derive magic dust from salt and check if `total - sumOfItems == derivedDust`.
 
 ### 7.2 Canonical Ordering
 
@@ -319,15 +319,14 @@ Records sorted ascending by type. Decoder validates — rejects non-ascending or
 ### 7.3 Domain Separator (Type 31, mandatory)
 
 ```
-hash = keccak256( UTF-8("VOIDPAY_INVOICE_V1") || serialized_body ).slice(0, 16)
+hash = keccak256( UTF-8("VOIDPAY_INVOICE_V1") || serialized_body )
 ```
 
 Where `serialized_body` = concatenation of `[type(1)] [length(varint)] [value(n)]` for all records **except** Type 31 itself, in canonical order. The length uses varint encoding matching the on-wire TLV format, preventing field boundary confusion in the hash preimage.
 
-The full 32-byte keccak256 output is **truncated to 16 bytes** (128 bits). This provides:
-- 2^64 birthday collision resistance — standard for integrity tags (matches AES-GCM, TLS HMAC truncation)
-- 2^128 preimage resistance — infeasible for any attacker
-- 16 bytes saved per invoice vs full 32-byte hash
+The full 32-byte keccak256 output is used without truncation. This provides:
+- 2^128 birthday collision resistance — far exceeds any realistic attack
+- 2^256 preimage resistance — infeasible for any attacker
 
 Encoder: MUST compute after all other records, insert at canonical position.
 Decoder: MUST recompute and compare — reject on mismatch or if absent.
@@ -379,7 +378,7 @@ Since Type 33 is odd, decoders that don't support signatures skip it silently.
 | Max single value | 4,096 bytes | Reject |
 | Max total payload | 1,481 bytes (pre-Base64url) | Reject at encode |
 | Max inflated size | 16,384 bytes | Reject (decompression bomb) |
-| Min salt length | 8 bytes | Reject |
+| Min salt length | 16 bytes | Reject |
 
 ### 7.7 URL Budget
 
@@ -531,10 +530,10 @@ Type 12 (currency):    [0x00, 0x01] (dict: USDC=1)
 Type 14 (items):       [count=1][descLen][desc][scale=0][qty=1][mantissa=15][zeros=7]
 Type 16 (fromName):    UTF-8("Alice")
 Type 18 (clientName):  UTF-8("Bob")
-Type 20 (salt):        <8 random bytes>
+Type 20 (salt):        <16 random bytes>
 Type 22 (invoiceId):   UTF-8("INV-001")
-Type 24 (total):       [mantissa=15] [zeros=7] — 150000000 = 15×10^7
-Type 31 (domainSep):   keccak256(prefix || body)[0:16]  — truncated to 16 bytes
+Type 24 (total):       [mantissa=15] [zeros=7] — 150000000 = 15×10^7 (final amount, includes magicDust if applied)
+Type 31 (domainSep):   keccak256(prefix || body)  — full 32 bytes
 ```
 
 ### Final URL
@@ -561,7 +560,8 @@ https://voidpay.xyz/pay#VgEMAAE...  (Base64url of binary)
 |------|--------|
 | 2026-03-17 | v1.0 — Initial TLV format |
 | 2026-03-19 | v1.1 — Full rewrite: Base62→Base64url, DEFLATE→Brotli, 4B→3B header (removed flags), 2B BE→varint TLV lengths, float32→scale quantity, BigInt varint→mantissa+zeros amounts, chain dictionary, app-level text dictionary, delta dueAt, subtotal (no magicDust in TLV), EIP-712 signatures (Type 33), `0x0A`→`0x0B` dict code fix |
-| 2026-03-19 | v1.2 — Compression optimization: salt 16→8 bytes (64-bit sufficient for HMAC-SHA256 derivation), domain separator 32→16 bytes (truncated keccak256, 128-bit integrity), Type 253 grouped compression → whole-payload Brotli (VERSION high bit 0x80 signals compression, no threshold), app-dict applied to item descriptions, updated dictionary (removed `0x`/`.eth`, added `INV-`/`development`/`consulting`/`@hotmail.com`) |
+| 2026-03-19 | v1.2 — Compression optimization: Type 253 grouped compression → whole-payload Brotli (VERSION high bit 0x80 signals compression, no threshold), app-dict applied to item descriptions, updated dictionary (removed `0x`/`.eth`, added `INV-`/`development`/`consulting`/`@hotmail.com`) |
+| 2026-03-20 | v1.3 — Security hardening: salt restored to 16 bytes (128-bit, NIST SP 800-132), domain separator restored to full 32-byte keccak256 (no truncation), TOTAL stores final payment amount (includes magicDust if applied at creation), MAGIC byte validated before decompression, Base64url pad=1 rejection, mantissa zeros capped at 30, reverseDict output length capped at 4096, EIP-712 domain includes chainId, viem hex utilities |
 
 ---
 

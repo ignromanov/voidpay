@@ -29,6 +29,14 @@ describe('base64url', () => {
     it('decodes empty string to empty array', () => {
       expect(decodeBase64url('')).toEqual(new Uint8Array(0))
     })
+
+    it('rejects strings with length % 4 === 1 (illegal Base64 length)', () => {
+      // A single trailing character (pad=1) cannot represent any valid byte sequence.
+      // Valid Base64url lengths mod 4 are: 0 (clean), 2 (1 pad byte needed), 3 (2 pad bytes needed).
+      expect(() => decodeBase64url('A')).toThrow(/Invalid Base64url/)
+      expect(() => decodeBase64url('AAAAA')).toThrow(/Invalid Base64url/)
+      expect(() => decodeBase64url('AAAAAAAAA')).toThrow(/Invalid Base64url/)
+    })
   })
 
   describe('roundtrip', () => {

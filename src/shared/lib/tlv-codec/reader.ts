@@ -10,6 +10,11 @@ import { decompressPayload } from './compress'
  * Each TLV: [TYPE(1), LENGTH(varint), VALUE(length)]
  */
 export async function readTlv(bytes: Uint8Array): Promise<{ header: TlvHeader; records: TlvRecord[] }> {
+  // Validate MAGIC byte before any decompression attempt (prevents wasted work on garbage input)
+  if (bytes.length < 2 || bytes[0] !== MAGIC) {
+    throw new Error(`Invalid magic byte: expected 0x${MAGIC.toString(16)}, got 0x${bytes[0]?.toString(16)}`)
+  }
+
   // Transparently decompress if VERSION high bit is set
   const data = await decompressPayload(bytes)
 

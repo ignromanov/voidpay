@@ -1,6 +1,6 @@
 'use client'
 
-import { useLayoutEffect, useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import {
   Edit3Icon,
   EyeIcon,
@@ -75,12 +75,14 @@ export function CreateWorkspace() {
     []
   )
 
-  // Decode URL hash on mount/change (useLayoutEffect for no visual flicker)
-  useLayoutEffect(() => {
+  // Decode URL hash on mount/change
+  useEffect(() => {
     if (!hash) return
 
+    let cancelled = false
     void (async () => {
       const result = await parseInvoiceHash(hash)
+      if (cancelled) return
       if (result.success) {
         // updateDraft auto-syncs lineItems when items provided
         updateDraft(result.data)
@@ -90,6 +92,7 @@ export function CreateWorkspace() {
         // Do NOT clear store on error (per spec edge case)
       }
     })()
+    return () => { cancelled = true }
   }, [hash, updateDraft])
 
   const invoiceData = useMemo(() => activeDraft?.data, [activeDraft])

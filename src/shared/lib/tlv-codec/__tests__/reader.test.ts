@@ -104,6 +104,18 @@ describe('readTlv', () => {
       const bytes = makeBytes([buildHeader(0xff, VERSION, 0)])
       await expect(readTlv(bytes)).rejects.toThrow(/Invalid magic byte/)
     })
+
+    it('rejects bad magic BEFORE attempting Brotli decompression (compression flag set)', async () => {
+      // VERSION | 0x80 sets the compression flag — without the pre-check, decompression
+      // would be attempted on garbage data before the MAGIC validation runs.
+      const COMPRESSED_FLAG = 0x80
+      const bytes = new Uint8Array([0x00, VERSION | COMPRESSED_FLAG, 0x00])
+      await expect(readTlv(bytes)).rejects.toThrow(/Invalid magic byte/)
+    })
+
+    it('rejects 1-byte input (too short to contain MAGIC + VERSION)', async () => {
+      await expect(readTlv(new Uint8Array([MAGIC]))).rejects.toThrow(/Invalid magic byte/)
+    })
   })
 
   describe('error: unsupported version', () => {
@@ -124,7 +136,7 @@ describe('readTlv', () => {
     })
 
     it('rejects empty input', async () => {
-      await expect(readTlv(new Uint8Array([]))).rejects.toThrow(/too short/)
+      await expect(readTlv(new Uint8Array([]))).rejects.toThrow(/Invalid magic byte/)
     })
 
     it('rejects truncated TLV where header says 1 record but no record bytes follow', async () => {

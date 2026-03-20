@@ -58,6 +58,27 @@ describe('writeMantissa / readMantissa', () => {
     expect(result.bytesRead).toBe(buf.length)
   })
 
+  it('readMantissa rejects zeros byte > 30 (decompression bomb guard)', () => {
+    // Craft a byte array: mantissa=1 (single byte 0x01), zeros=31 (0x1f)
+    const buf = new Uint8Array([0x01, 31])
+    expect(() => readMantissa(buf, 0)).toThrow(/exceeds maximum 30/)
+  })
+
+  it('readMantissa rejects zeros byte = 255 (max uint8)', () => {
+    const buf = new Uint8Array([0x01, 255])
+    expect(() => readMantissa(buf, 0)).toThrow(/exceeds maximum 30/)
+  })
+
+  it('readMantissa accepts zeros byte = 30 (boundary — valid)', () => {
+    const buf: number[] = []
+    writeMantissa(buf, 1n)
+    // Overwrite the zeros byte (index 1) with 30
+    buf[1] = 30
+    const result = readMantissa(new Uint8Array(buf), 0)
+    expect(result.zeros).toBe(30)
+    expect(result.value).toBe(10n ** 30n)
+  })
+
   it('mantissa encoding is more compact than raw varint for 10^18', () => {
     const value = 10n ** 18n
 

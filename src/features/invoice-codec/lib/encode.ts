@@ -183,12 +183,10 @@ export async function encodeInvoice(invoice: Invoice): Promise<string> {
     throw new Error('Invoice total is required for encoding')
   }
 
-  // Compute subtotal (total WITHOUT magicDust) — magicDust is derived from salt on decode
-  const subtotal = invoice.magicDust
-    ? BigInt(invoice.total) - BigInt(invoice.magicDust)
-    : BigInt(invoice.total)
-  records.push({ type: TlvType.TOTAL, value: mantissaBytes(subtotal) })
-  // NO MAGIC_DUST record — derived from salt on decode
+  // TOTAL = final payment amount (already includes magicDust if applied by caller)
+  // No subtraction — the caller sets total = subtotal + magicDust before encoding
+  const total = BigInt(invoice.total)
+  records.push({ type: TlvType.TOTAL, value: mantissaBytes(total) })
 
   // --- Sort canonical ---
   const sorted = sortCanonical(records)

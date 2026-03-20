@@ -87,14 +87,21 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
         setInvoiceUrl(undefined)
         return
       }
-      void generateInvoiceUrl(result.data).then(setInvoiceUrl).catch((error) => {
-        // Log encoder errors for debugging (shouldn't happen after Zod validation)
-        console.error('[InvoicePreviewModal] URL generation failed:', {
-          invoiceId: result.data.invoiceId,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        })
-        setInvoiceUrl(undefined)
-      })
+      let cancelled = false
+      void (async () => {
+        try {
+          const url = await generateInvoiceUrl(result.data)
+          if (!cancelled) setInvoiceUrl(url)
+        } catch (error) {
+          // Log encoder errors for debugging (shouldn't happen after Zod validation)
+          console.error('[InvoicePreviewModal] URL generation failed:', {
+            invoiceId: result.data.invoiceId,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          })
+          if (!cancelled) setInvoiceUrl(undefined)
+        }
+      })()
+      return () => { cancelled = true }
     }, [data])
 
     // Print handler

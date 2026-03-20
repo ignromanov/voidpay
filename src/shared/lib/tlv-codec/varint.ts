@@ -139,6 +139,7 @@ export function readMantissa(
 ): { mantissa: bigint; zeros: number; value: bigint; bytesRead: number } {
   const { value: mantissa, bytesRead: mBytes } = readBigIntVarInt(bytes, offset)
   const zeros = bytes[offset + mBytes]!
+  if (zeros > 30) throw new Error(`Mantissa trailing zeros ${zeros} exceeds maximum 30`)
   const value = mantissa * 10n ** BigInt(zeros)
   return { mantissa, zeros, value, bytesRead: mBytes + 1 }
 }

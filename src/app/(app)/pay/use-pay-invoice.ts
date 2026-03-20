@@ -77,8 +77,10 @@ export function usePayInvoice(): PayInvoiceState {
       return
     }
 
+    let cancelled = false
     void (async () => {
       const result = await parseInvoiceHash(hash)
+      if (cancelled) return
 
       if (result.success) {
         setInvoice(result.data)
@@ -100,6 +102,7 @@ export function usePayInvoice(): PayInvoiceState {
         setErrorType(mapParseErrorToDecodeType(result.error.message))
       }
     })()
+    return () => { cancelled = true }
   }, [hash, isHydrated, addInvoice])
 
   // 3. Sync network theme for background

@@ -35,9 +35,9 @@ const TEST_PARAMS = {
 describe('buildInvoiceTypedData', () => {
   it('returns correct domain', () => {
     const typed = buildInvoiceTypedData(TEST_PARAMS)
-    expect(typed.domain).toEqual(INVOICE_DOMAIN)
     expect(typed.domain.name).toBe('VoidPay Invoice')
     expect(typed.domain.version).toBe('1')
+    expect(typed.domain.chainId).toBe(TEST_PARAMS.chainId)
   })
 
   it('returns correct types', () => {
@@ -118,7 +118,7 @@ describe('verifyInvoiceSignature', () => {
     expect(recovered.toLowerCase()).toBe(TEST_PARAMS.fromAddress.toLowerCase())
   })
 
-  it('tampered invoice — recovered address differs from original signer', async () => {
+  it('tampered invoice — throws because recovered address does not match fromAddress', async () => {
     const typed = buildInvoiceTypedData(TEST_PARAMS)
     const hexSig = await testAccount.signTypedData({
       domain: typed.domain,
@@ -128,15 +128,14 @@ describe('verifyInvoiceSignature', () => {
     })
     const sigBytes = encodeSignature(hexSig)
 
-    // Different subtotal — tampered invoice
+    // Different subtotal — tampered invoice; recovered address will not match fromAddress
     const tamperedParams = { ...TEST_PARAMS, subtotal: 9_999_999n, signature: sigBytes }
-    const recoveredFromTampered = await verifyInvoiceSignature(tamperedParams)
-
-    // Recovered address should NOT match the original signer
-    expect(recoveredFromTampered.toLowerCase()).not.toBe(testAccount.address.toLowerCase())
+    await expect(verifyInvoiceSignature(tamperedParams)).rejects.toThrow(
+      'Signature signer does not match invoice creator'
+    )
   })
 
-  it('tampered salt — recovered address differs from original signer', async () => {
+  it('tampered salt — throws because recovered address does not match fromAddress', async () => {
     const typed = buildInvoiceTypedData(TEST_PARAMS)
     const hexSig = await testAccount.signTypedData({
       domain: typed.domain,
@@ -146,15 +145,11 @@ describe('verifyInvoiceSignature', () => {
     })
     const sigBytes = encodeSignature(hexSig)
 
-    // Different salt — tampered invoice
+    // Different salt — tampered invoice; recovered address will not match fromAddress
     const tamperedSalt = new Uint8Array(16).fill(0xde)
-    const recoveredFromTampered = await verifyInvoiceSignature({
-      ...TEST_PARAMS,
-      salt: tamperedSalt,
-      signature: sigBytes,
-    })
-
-    expect(recoveredFromTampered.toLowerCase()).not.toBe(testAccount.address.toLowerCase())
+    await expect(
+      verifyInvoiceSignature({ ...TEST_PARAMS, salt: tamperedSalt, signature: sigBytes })
+    ).rejects.toThrow('Signature signer does not match invoice creator')
   })
 })
 

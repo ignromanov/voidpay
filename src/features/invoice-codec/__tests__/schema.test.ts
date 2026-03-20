@@ -24,16 +24,12 @@ import {
 
 /**
  * Normalize invoice for roundtrip comparison.
- * Decoder always derives magicDust from salt and adds it to total.
- * For roundtrip tests, we strip magicDust and compare subtotals.
+ * Encoder stores total as-is (final payment amount, inclusive of magicDust if applied).
+ * Decoder reads total as-is and only conditionally sets magicDust via salt verification.
+ * For roundtrip tests, strip magicDust from both sides — total is directly comparable.
  */
 function normalizeForRoundtrip(inv: Invoice): Invoice {
-  const { magicDust, ...rest } = inv as Invoice & { magicDust?: string }
-  if (magicDust) {
-    // Subtract magicDust from total to get subtotal for comparison
-    const subtotal = (BigInt(rest.total!) - BigInt(magicDust)).toString()
-    return normalizeInvoiceAddresses({ ...rest, total: subtotal })
-  }
+  const { magicDust: _magicDust, ...rest } = inv as Invoice & { magicDust?: string }
   return normalizeInvoiceAddresses(rest)
 }
 
@@ -84,8 +80,8 @@ describe('Invoice Schema V1 Encoding', () => {
       const encoded = await encodeInvoice(original)
       const decoded = await decodeInvoice(encoded)
 
-      // Decoder derives magicDust from salt and adjusts total.
-      // Compare subtotals (total without magicDust) for roundtrip correctness.
+      // Total is stored and decoded as-is. Strip magicDust field for comparison
+      // (decoder sets it only when salt verification succeeds).
       expect(normalizeForRoundtrip(decoded)).toEqual(normalizeForRoundtrip(original))
     })
 
