@@ -82,7 +82,7 @@ function packItems(items: Invoice['items']): Uint8Array {
  * @param invoice The invoice data to encode
  * @returns The Base64url-encoded binary string (no prefix — magic byte is inside)
  */
-export async function encodeInvoice(invoice: Invoice): Promise<string> {
+export async function encodeInvoice(invoice: Invoice, salt?: Uint8Array): Promise<string> {
   const records: TlvRecord[] = []
 
   // --- Required fields (even types) ---
@@ -119,9 +119,9 @@ export async function encodeInvoice(invoice: Invoice): Promise<string> {
   // InvoiceId (Type 22): UTF-8 — individual TLV, NOT compressed
   records.push({ type: TlvType.INVOICE_ID, value: utf8(invoice.invoiceId) })
 
-  // Salt (Type 20): 16 random bytes
-  const salt = generateSalt()
-  records.push({ type: TlvType.SALT, value: salt })
+  // Salt (Type 20): 16 random bytes (or provided by caller for deterministic magic dust)
+  const actualSalt = salt ?? generateSalt()
+  records.push({ type: TlvType.SALT, value: actualSalt })
 
   // --- Text fields (individual TLVs — whole-payload Brotli handles compression) ---
   records.push({ type: TlvType.FROM_NAME, value: applyDict(utf8(invoice.from.name)) })
@@ -222,11 +222,11 @@ export interface GenerateUrlOptions {
  */
 export async function generateInvoiceUrl(
   invoice: Invoice,
-  options: GenerateUrlOptions | string = {}
+  options: (GenerateUrlOptions & { salt?: Uint8Array }) | string = {}
 ): Promise<string> {
-  const opts: GenerateUrlOptions = typeof options === 'string' ? { baseUrl: options } : options
+  const opts: GenerateUrlOptions & { salt?: Uint8Array } = typeof options === 'string' ? { baseUrl: options } : options
 
-  const compressed = await encodeInvoice(invoice)
+  const compressed = await encodeInvoice(invoice, opts.salt)
   const appUrl = opts.baseUrl ?? getAppBaseUrl()
 
   let finalUrl: string

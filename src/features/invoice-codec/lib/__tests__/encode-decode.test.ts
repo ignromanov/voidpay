@@ -16,7 +16,7 @@ import { decodeInvoice } from '../decode'
 import type { Invoice } from '@/entities/invoice'
 import { readTlv, decodeBase64url, readVarInt } from '@/shared/lib/tlv-codec'
 import { TlvType } from '../tlv-map'
-import { deriveMagicDust } from '../security'
+import { generateSalt, deriveMagicDust } from '../security'
 
 vi.mock('@/shared/config', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/shared/config')>()
@@ -368,31 +368,28 @@ describe('Invoice Codec TLV v1', () => {
       expect(decoded.dueAt).toBe(original.dueAt)
     })
 
-    it('roundtrips magicDust invoice: total preserved, magicDust field verified from salt', async () => {
-      const original = createInvoiceWithMagicDust()
-      // original.total = '150000042' (subtotal 150000000 + dust 42)
-      // Encoder stores total as-is (150000042)
+    it('roundtrips magicDust invoice: dust deterministically derived from salt', async () => {
+      // Generate a known salt and derive the exact dust from it
+      const salt = generateSalt()
+      const dust = deriveMagicDust(salt)
 
-      const encoded = await encodeInvoice(original)
+      // subtotal = 1 × 150000000 = 150000000, no tax/discount
+      const subtotal = 150000000n
+      const totalWithDust = (subtotal + BigInt(dust)).toString()
+
+      const original: Invoice = {
+        ...createInvoiceWithMagicDust(),
+        total: totalWithDust,
+        magicDust: dust.toString(),
+      }
+
+      // Pass the same salt to encoder — decoder will derive the same dust
+      const encoded = await encodeInvoice(original, salt)
       const decoded = await decodeInvoice(encoded)
 
-      // Decoded total must equal original total (not inflated)
-      expect(decoded.total).toBe(original.total)
-
-      // magicDust is set only if decoder can verify it via salt check.
-      // Since deriveMagicDust(salt) produces a random value from the new salt
-      // (not necessarily 42), the check total - itemsSubtotal == possibleDust
-      // will only match if the salt happens to produce 42. In practice, magicDust
-      // field may or may not be set — but total is always correct.
-      // What we guarantee: if magicDust IS set, it equals deriveMagicDust(salt).
-      if (decoded.magicDust !== undefined) {
-        const decodedDust = BigInt(decoded.magicDust)
-        expect(decodedDust).toBeGreaterThanOrEqual(1n)
-        expect(decodedDust).toBeLessThanOrEqual(999n)
-        // And total = itemsSubtotal + magicDust
-        const itemsSubtotal = BigInt(original.total!) - decodedDust
-        expect(BigInt(decoded.total!)).toBe(itemsSubtotal + decodedDust)
-      }
+      expect(decoded.total).toBe(totalWithDust)
+      // Dust MUST be detected — salt→dust link is deterministic
+      expect(decoded.magicDust).toBe(dust.toString())
     })
 
     it('handles invoice without magicDust: total preserved, magicDust field absent', async () => {
@@ -407,6 +404,35 @@ describe('Invoice Codec TLV v1', () => {
       // magicDust field must not be set: itemsSubtotal == total (diff == 0),
       // which can never equal deriveMagicDust(salt) (always 1-999)
       expect(decoded.magicDust).toBeUndefined()
+    })
+
+    it('detects magicDust correctly when tax and discount are present', async () => {
+      const salt = generateSalt()
+      const dust = deriveMagicDust(salt)
+
+      // subtotal = 1 × 150000000 = 150000000
+      // tax 10% = 150000000 * 1000 / 10000 = 15000000
+      // discount 5% = 150000000 * 500 / 10000 = 7500000
+      // expectedTotal = 150000000 + 15000000 - 7500000 = 157500000
+      const expectedTotal = 157500000n
+      const totalWithDust = (expectedTotal + BigInt(dust)).toString()
+
+      const invoice: Invoice = {
+        ...createInvoiceWithMagicDust(),
+        tax: '10',
+        discount: '5',
+        total: totalWithDust,
+        magicDust: dust.toString(),
+      }
+
+      const encoded = await encodeInvoice(invoice, salt)
+      const decoded = await decodeInvoice(encoded)
+
+      expect(decoded.total).toBe(totalWithDust)
+      expect(decoded.tax).toBe('10')
+      expect(decoded.discount).toBe('5')
+      // Dust MUST be detected even with tax+discount
+      expect(decoded.magicDust).toBe(dust.toString())
     })
 
     it('chainId encoding: Arbitrum (42161) uses dict code', async () => {

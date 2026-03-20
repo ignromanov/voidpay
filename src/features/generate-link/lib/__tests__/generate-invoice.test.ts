@@ -17,6 +17,8 @@ vi.mock('@/features/invoice-codec', () => ({
     }
     return `${base}${hash}`
   }),
+  generateSalt: vi.fn(() => new Uint8Array(16)),
+  deriveMagicDust: vi.fn(() => 42),
 }))
 
 // Mock the creator store

@@ -202,22 +202,42 @@ export async function decodeInvoice(compressed: string): Promise<Invoice> {
     const total = totalAtomic.toString()
 
     // Derive possibleDust from salt and check if dust was actually applied.
-    // Dust was applied iff: total - sum(item.rate * item.quantity) == possibleDust
     //
-    // PRECISION NOTE: This uses the same float-to-BigInt conversion as
-    // calculateTotalsBigInt (amount-utils): BigInt(Math.round(qty * Number(scale))).
-    // Both encoder and decoder share this formula, so dust detection is consistent.
-    // For decimals >= 16, Number(10^decimals) exceeds MAX_SAFE_INTEGER, but since
-    // both sides use the same imprecise conversion, the results match.
+    // Replicates calculateTotalsBigInt (amount-utils) formula exactly:
+    //   subtotal = Σ(qtyScaled * rate / scale)
+    //   taxAmount = subtotal * round(taxPct * 100) / 10000
+    //   discountAmount = subtotal * round(discPct * 100) / 10000
+    //   expectedTotal = subtotal + taxAmount - discountAmount
+    //   dust = totalAtomic - expectedTotal
+    //
+    // PRECISION NOTE: Uses the same float-to-BigInt conversion as the encoder:
+    // BigInt(Math.round(qty * Number(scale))). Both sides share this formula.
     const possibleDustRaw = deriveMagicDust(saltRecord.value)
     const possibleDustAtomic = BigInt(possibleDustRaw)
     const scale = BigInt(10 ** decimals)
+    const HUNDRED_SQUARED = 10000n
     const itemsSubtotal = items.reduce((acc, item) => {
       const rate = BigInt(item.rate || '0')
       const qtyScaled = BigInt(Math.round(item.quantity * Number(scale)))
       return acc + (qtyScaled * rate) / scale
     }, 0n)
-    const diff = totalAtomic - itemsSubtotal
+
+    // Read tax/discount early (also decoded below for the invoice object)
+    const taxRecordEarly = findRecord(allRecords, TlvType.TAX)
+    const discountRecordEarly = findRecord(allRecords, TlvType.DISCOUNT)
+    const taxPct = taxRecordEarly ? parseFloat(decodeUtf8(taxRecordEarly.value)) : 0
+    const discPct = discountRecordEarly ? parseFloat(decodeUtf8(discountRecordEarly.value)) : 0
+
+    let expectedTotal = itemsSubtotal
+    if (taxPct > 0) {
+      expectedTotal += (itemsSubtotal * BigInt(Math.round(taxPct * 100))) / HUNDRED_SQUARED
+    }
+    if (discPct > 0) {
+      expectedTotal -= (itemsSubtotal * BigInt(Math.round(discPct * 100))) / HUNDRED_SQUARED
+    }
+    if (expectedTotal < 0n) expectedTotal = 0n
+
+    const diff = totalAtomic - expectedTotal
     const magicDust = diff === possibleDustAtomic ? possibleDustAtomic.toString() : undefined
 
     // 9. Decode optional fields
