@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { motion } from '@/shared/ui/motion'
 import { XIcon, PrinterIcon, DownloadIcon } from '@/shared/ui/icons'
 import { Dialog, DialogContent, DialogTitle, DialogClose, DialogDescription } from '@/shared/ui/dialog'
@@ -80,21 +80,21 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
   ({ data, status = 'pending', txHash, txHashValidated = true, open, onOpenChange }) => {
     // Generate invoice URL only when data passes full schema validation
     // Uses Zod safeParse — no errors thrown, no toasts, silent fail
-    const invoiceUrl = useMemo(() => {
+    const [invoiceUrl, setInvoiceUrl] = useState<string | undefined>(undefined)
+    useEffect(() => {
       const result = invoiceSchema.safeParse(data)
       if (!result.success) {
-        return undefined
+        setInvoiceUrl(undefined)
+        return
       }
-      try {
-        return generateInvoiceUrl(result.data)
-      } catch (error) {
+      void generateInvoiceUrl(result.data).then(setInvoiceUrl).catch((error) => {
         // Log encoder errors for debugging (shouldn't happen after Zod validation)
         console.error('[InvoicePreviewModal] URL generation failed:', {
           invoiceId: result.data.invoiceId,
           error: error instanceof Error ? error.message : 'Unknown error',
         })
-        return undefined
-      }
+        setInvoiceUrl(undefined)
+      })
     }, [data])
 
     // Print handler

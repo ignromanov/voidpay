@@ -95,7 +95,7 @@ function unpackItems(data: Uint8Array): Invoice['items'] {
  * @returns The decoded invoice object
  * @throws Error if decoding fails, security validation fails, or schema invalid
  */
-export function decodeInvoice(compressed: string): Invoice {
+export async function decodeInvoice(compressed: string): Promise<Invoice> {
   if (!compressed) {
     throw new Error('Empty invoice data')
   }
@@ -105,7 +105,7 @@ export function decodeInvoice(compressed: string): Invoice {
     const bytes = decodeBase64url(compressed)
 
     // 2. Parse TLV structure
-    const { records } = readTlv(bytes)
+    const { records } = await readTlv(bytes)
 
     // 3. Validate canonical ordering (ascending by type, no duplicates)
     validateCanonical(records)
@@ -117,7 +117,7 @@ export function decodeInvoice(compressed: string): Invoice {
     let allRecords = [...records]
     const compressedRecord = findRecord(allRecords, TlvType.COMPRESSED_TEXT)
     if (compressedRecord) {
-      const inflatedFields = groupedInflate(compressedRecord.value)
+      const inflatedFields = await groupedInflate(compressedRecord.value)
       // Validate whitelist — reject spoofed type_ids
       for (const field of inflatedFields) {
         if (!COMPRESSED_TEXT_WHITELIST.has(field.typeId)) {

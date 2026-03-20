@@ -140,69 +140,69 @@ const createInvoiceWithMagicDust = (): Invoice => ({
 
 describe('Invoice Codec TLV v1', () => {
   describe('encodeInvoice', () => {
-    it('encodes minimal invoice without error', () => {
-      const encoded = encodeInvoice(createMinimalInvoice())
+    it('encodes minimal invoice without error', async () => {
+      const encoded = await encodeInvoice(createMinimalInvoice())
       expect(encoded).toBeTruthy()
       expect(encoded.length).toBeGreaterThan(1)
     })
 
-    it('encodes full invoice without error', () => {
-      const encoded = encodeInvoice(createFullInvoice())
+    it('encodes full invoice without error', async () => {
+      const encoded = await encodeInvoice(createFullInvoice())
       expect(encoded).toBeTruthy()
     })
 
-    it('output is valid Base64url (no padding, URL-safe chars)', () => {
-      const encoded = encodeInvoice(createMinimalInvoice())
+    it('output is valid Base64url (no padding, URL-safe chars)', async () => {
+      const encoded = await encodeInvoice(createMinimalInvoice())
       // Base64url: A-Z a-z 0-9 - _ (no + / =)
       expect(encoded).toMatch(/^[A-Za-z0-9_-]+$/)
     })
 
-    it('encoded binary has correct magic byte and version', () => {
-      const encoded = encodeInvoice(createMinimalInvoice())
+    it('encoded binary has correct magic byte and version', async () => {
+      const encoded = await encodeInvoice(createMinimalInvoice())
       const bytes = decodeBase64url(encoded)
       expect(bytes[0]).toBe(0x56) // MAGIC
       expect(bytes[1]! & 0x7f).toBe(0x01) // VERSION (high bit = compression flag)
     })
 
-    it('encoded TLV contains salt (Type 20, 8 bytes)', () => {
-      const encoded = encodeInvoice(createMinimalInvoice())
+    it('encoded TLV contains salt (Type 20, 8 bytes)', async () => {
+      const encoded = await encodeInvoice(createMinimalInvoice())
       const bytes = decodeBase64url(encoded)
-      const { records } = readTlv(bytes)
+      const { records } = await readTlv(bytes)
       const salt = records.find((r) => r.type === TlvType.SALT)
       expect(salt).toBeDefined()
       expect(salt!.value.length).toBe(8)
     })
 
-    it('records are in canonical order', () => {
-      const encoded = encodeInvoice(createFullInvoice())
+    it('records are in canonical order', async () => {
+      const encoded = await encodeInvoice(createFullInvoice())
       const bytes = decodeBase64url(encoded)
-      const { records } = readTlv(bytes)
+      const { records } = await readTlv(bytes)
       for (let i = 1; i < records.length; i++) {
         expect(records[i]!.type).toBeGreaterThan(records[i - 1]!.type)
       }
     })
 
-    it('invoiceId is individual TLV (Type 22), not in compressed block', () => {
-      const encoded = encodeInvoice(createFullInvoice())
+    it('invoiceId is individual TLV (Type 22), not in compressed block', async () => {
+      const encoded = await encodeInvoice(createFullInvoice())
       const bytes = decodeBase64url(encoded)
-      const { records } = readTlv(bytes)
+      const { records } = await readTlv(bytes)
       const invoiceIdRecord = records.find((r) => r.type === TlvType.INVOICE_ID)
       expect(invoiceIdRecord).toBeDefined()
     })
 
-    it('does not emit MAGIC_DUST TLV record (Type 25 removed)', () => {
-      const encoded = encodeInvoice(createInvoiceWithMagicDust())
+    it('does not emit MAGIC_DUST TLV record (Type 25 removed)', async () => {
+      const encoded = await encodeInvoice(createInvoiceWithMagicDust())
       const bytes = decodeBase64url(encoded)
-      const { records } = readTlv(bytes)
+      const { records } = await readTlv(bytes)
       // Type 25 was the old MAGIC_DUST — should not exist
       const magicDustRecord = records.find((r) => r.type === 25)
       expect(magicDustRecord).toBeUndefined()
     })
 
-    it('chainId uses dict encoding for known chains', () => {
-      const encoded = encodeInvoice(createUSDCInvoiceWith3Items())
+    it('chainId uses dict encoding for known chains', async () => {
+      const encoded = await encodeInvoice(createUSDCInvoiceWith3Items())
       const bytes = decodeBase64url(encoded)
-      const { records } = readTlv(bytes)
+      const { records } = await readTlv(bytes)
       const chainIdRecord = records.find((r) => r.type === TlvType.CHAIN_ID)
       expect(chainIdRecord).toBeDefined()
       // Arbitrum (42161) → dict: 0x00, 0x02
@@ -210,11 +210,11 @@ describe('Invoice Codec TLV v1', () => {
       expect(chainIdRecord!.value[1]).toBe(0x02)
     })
 
-    it('dueAt is encoded as delta from issuedAt', () => {
+    it('dueAt is encoded as delta from issuedAt', async () => {
       const invoice = createMinimalInvoice()
-      const encoded = encodeInvoice(invoice)
+      const encoded = await encodeInvoice(invoice)
       const bytes = decodeBase64url(encoded)
-      const { records } = readTlv(bytes)
+      const { records } = await readTlv(bytes)
       const dueAtRecord = records.find((r) => r.type === TlvType.DUE_AT)
       expect(dueAtRecord).toBeDefined()
       // dueAt - issuedAt = 2678400 (~31 days in seconds)
@@ -227,10 +227,10 @@ describe('Invoice Codec TLV v1', () => {
   })
 
   describe('decodeInvoice', () => {
-    it('decodes minimal invoice correctly', () => {
+    it('decodes minimal invoice correctly', async () => {
       const original = createMinimalInvoice()
-      const encoded = encodeInvoice(original)
-      const decoded = decodeInvoice(encoded)
+      const encoded = await encodeInvoice(original)
+      const decoded = await decodeInvoice(encoded)
 
       expect(decoded.invoiceId).toBe(original.invoiceId)
       expect(decoded.networkId).toBe(original.networkId)
@@ -240,44 +240,44 @@ describe('Invoice Codec TLV v1', () => {
       expect(decoded.client.name).toBe(original.client.name)
     })
 
-    it('throws on empty string', () => {
-      expect(() => decodeInvoice('')).toThrow('Empty invoice data')
+    it('throws on empty string', async () => {
+      await expect(decodeInvoice('')).rejects.toThrow('Empty invoice data')
     })
 
-    it('throws on invalid Base64url', () => {
-      expect(() => decodeInvoice('!!invalid!!')).toThrow()
+    it('throws on invalid Base64url', async () => {
+      await expect(decodeInvoice('!!invalid!!')).rejects.toThrow()
     })
 
-    it('validates against schema', () => {
-      const encoded = encodeInvoice(createMinimalInvoice())
-      const decoded = decodeInvoice(encoded)
+    it('validates against schema', async () => {
+      const encoded = await encodeInvoice(createMinimalInvoice())
+      const decoded = await decodeInvoice(encoded)
       expect(decoded.from.walletAddress).toMatch(/^0x[a-fA-F0-9]{40}$/)
     })
   })
 
   describe('generateInvoiceUrl', () => {
-    it('generates URL with hash fragment (Base64url)', () => {
-      const url = generateInvoiceUrl(createMinimalInvoice())
+    it('generates URL with hash fragment (Base64url)', async () => {
+      const url = await generateInvoiceUrl(createMinimalInvoice())
       expect(url).toMatch(/^https:\/\/voidpay\.xyz\/pay#[A-Za-z0-9_-]+$/)
     })
 
-    it('uses custom base URL', () => {
-      const url = generateInvoiceUrl(createMinimalInvoice(), { baseUrl: 'https://custom.domain' })
+    it('uses custom base URL', async () => {
+      const url = await generateInvoiceUrl(createMinimalInvoice(), { baseUrl: 'https://custom.domain' })
       expect(url).toMatch(/^https:\/\/custom\.domain\/pay#/)
     })
 
-    it('supports legacy string baseUrl argument', () => {
-      const url = generateInvoiceUrl(createMinimalInvoice(), 'https://legacy.domain')
+    it('supports legacy string baseUrl argument', async () => {
+      const url = await generateInvoiceUrl(createMinimalInvoice(), 'https://legacy.domain')
       expect(url).toMatch(/^https:\/\/legacy\.domain\/pay#/)
     })
 
-    it('generates URL with OG preview', () => {
-      const url = generateInvoiceUrl(createMinimalInvoice(), { includeOG: true })
+    it('generates URL with OG preview', async () => {
+      const url = await generateInvoiceUrl(createMinimalInvoice(), { includeOG: true })
       expect(url).toContain('?og=')
       expect(url).toMatch(/#[A-Za-z0-9_-]+$/)
     })
 
-    it('throws when URL exceeds 2000 bytes', () => {
+    it('throws when URL exceeds 2000 bytes', async () => {
       const invoice = createMinimalInvoice()
       let seed = 12345
       const pseudoRandom = () => {
@@ -288,20 +288,20 @@ describe('Invoice Codec TLV v1', () => {
         String.fromCharCode(32 + (pseudoRandom() % 95))
       ).join('')
 
-      expect(() => generateInvoiceUrl(invoice)).toThrow(/exceeds|size/i)
+      await expect(generateInvoiceUrl(invoice)).rejects.toThrow(/exceeds|size/i)
     })
 
-    it('stays under 2000 bytes for typical invoice', () => {
-      const url = generateInvoiceUrl(createFullInvoice())
+    it('stays under 2000 bytes for typical invoice', async () => {
+      const url = await generateInvoiceUrl(createFullInvoice())
       const byteSize = new TextEncoder().encode(url).length
       expect(byteSize).toBeLessThanOrEqual(2000)
     })
   })
 
   describe('roundtrip encode/decode', () => {
-    it('preserves minimal invoice fields', () => {
+    it('preserves minimal invoice fields', async () => {
       const original = createMinimalInvoice()
-      const decoded = decodeInvoice(encodeInvoice(original))
+      const decoded = await decodeInvoice(await encodeInvoice(original))
 
       expect(decoded.invoiceId).toBe(original.invoiceId)
       expect(decoded.issuedAt).toBe(original.issuedAt)
@@ -319,9 +319,9 @@ describe('Invoice Codec TLV v1', () => {
       expect(decoded.items[0]!.rate).toBe(original.items[0]!.rate)
     })
 
-    it('preserves full invoice fields (all optional fields)', () => {
+    it('preserves full invoice fields (all optional fields)', async () => {
       const original = createFullInvoice()
-      const decoded = decodeInvoice(encodeInvoice(original))
+      const decoded = await decodeInvoice(await encodeInvoice(original))
 
       expect(decoded.invoiceId).toBe(original.invoiceId)
       expect(decoded.notes).toBe(original.notes)
@@ -342,9 +342,9 @@ describe('Invoice Codec TLV v1', () => {
       expect(decoded.items[1]!.description).toBe(original.items[1]!.description)
     })
 
-    it('preserves USDC invoice with 3 items (integer quantities, 6 decimals)', () => {
+    it('preserves USDC invoice with 3 items (integer quantities, 6 decimals)', async () => {
       const original = createUSDCInvoiceWith3Items()
-      const decoded = decodeInvoice(encodeInvoice(original))
+      const decoded = await decodeInvoice(await encodeInvoice(original))
 
       expect(decoded.networkId).toBe(42161) // Arbitrum chain dict roundtrip
       expect(decoded.currency).toBe('USDC')
@@ -357,9 +357,9 @@ describe('Invoice Codec TLV v1', () => {
       }
     })
 
-    it('preserves ETH invoice (18 decimals — large trailing zeros in mantissa)', () => {
+    it('preserves ETH invoice (18 decimals — large trailing zeros in mantissa)', async () => {
       const original = createETHInvoice()
-      const decoded = decodeInvoice(encodeInvoice(original))
+      const decoded = await decodeInvoice(await encodeInvoice(original))
 
       expect(decoded.currency).toBe('ETH')
       expect(decoded.decimals).toBe(18)
@@ -368,13 +368,13 @@ describe('Invoice Codec TLV v1', () => {
       expect(decoded.dueAt).toBe(original.dueAt)
     })
 
-    it('derives magicDust from salt and total = subtotal + magicDust', () => {
+    it('derives magicDust from salt and total = subtotal + magicDust', async () => {
       const original = createInvoiceWithMagicDust()
       // original.total = '150000042', original.magicDust = '42'
       // subtotal stored = 150000042 - 42 = 150000000
 
-      const encoded = encodeInvoice(original)
-      const decoded = decodeInvoice(encoded)
+      const encoded = await encodeInvoice(original)
+      const decoded = await decodeInvoice(encoded)
 
       // The decoder derives magicDust from salt (not from a stored TLV record)
       // So the decoded magicDust will differ from the original (42) since
@@ -388,11 +388,11 @@ describe('Invoice Codec TLV v1', () => {
       expect(BigInt(decoded.total!)).toBe(originalSubtotal + decodedMagicDust)
     })
 
-    it('handles invoice without magicDust (total stored as-is)', () => {
+    it('handles invoice without magicDust (total stored as-is)', async () => {
       const original = createMinimalInvoice()
       // No magicDust → subtotal = total
-      const encoded = encodeInvoice(original)
-      const decoded = decodeInvoice(encoded)
+      const encoded = await encodeInvoice(original)
+      const decoded = await decodeInvoice(encoded)
 
       // Decoder always derives magicDust from salt and adds it
       const decodedMagicDust = BigInt(decoded.magicDust!)
@@ -403,30 +403,30 @@ describe('Invoice Codec TLV v1', () => {
       expect(BigInt(decoded.total!)).toBe(BigInt(original.total!) + decodedMagicDust)
     })
 
-    it('chainId encoding: Arbitrum (42161) uses dict code', () => {
+    it('chainId encoding: Arbitrum (42161) uses dict code', async () => {
       const original = createUSDCInvoiceWith3Items() // networkId: 42161
-      const decoded = decodeInvoice(encodeInvoice(original))
+      const decoded = await decodeInvoice(await encodeInvoice(original))
       expect(decoded.networkId).toBe(42161)
     })
 
-    it('chainId encoding: unknown chain uses raw varint', () => {
+    it('chainId encoding: unknown chain uses raw varint', async () => {
       const original: Invoice = {
         ...createMinimalInvoice(),
         networkId: 56, // BSC — not in chain dict
       }
-      const decoded = decodeInvoice(encodeInvoice(original))
+      const decoded = await decodeInvoice(await encodeInvoice(original))
       expect(decoded.networkId).toBe(56)
     })
 
-    it('dueAt correctly reconstructed from issuedAt + delta', () => {
+    it('dueAt correctly reconstructed from issuedAt + delta', async () => {
       const original = createMinimalInvoice()
       // issuedAt: 1704067200, dueAt: 1706745600, delta: 2678400
-      const decoded = decodeInvoice(encodeInvoice(original))
+      const decoded = await decodeInvoice(await encodeInvoice(original))
       expect(decoded.issuedAt).toBe(1704067200)
       expect(decoded.dueAt).toBe(1706745600)
     })
 
-    it('handles native ETH (no tokenAddress)', () => {
+    it('handles native ETH (no tokenAddress)', async () => {
       const original: Invoice = {
         ...createMinimalInvoice(),
         currency: 'ETH',
@@ -434,34 +434,34 @@ describe('Invoice Codec TLV v1', () => {
       }
       delete (original as Record<string, unknown>).tokenAddress
 
-      const decoded = decodeInvoice(encodeInvoice(original))
+      const decoded = await decodeInvoice(await encodeInvoice(original))
       expect(decoded.currency).toBe('ETH')
       expect(decoded.tokenAddress).toBeUndefined()
     })
 
-    it('handles Unicode characters', () => {
+    it('handles Unicode characters', async () => {
       const original = createMinimalInvoice()
       original.from.name = '日本株式会社'
       original.client.name = 'Société Française'
       original.items[0]!.description = 'Услуги консалтинга'
 
-      const decoded = decodeInvoice(encodeInvoice(original))
+      const decoded = await decodeInvoice(await encodeInvoice(original))
       expect(decoded.from.name).toBe(original.from.name)
       expect(decoded.client.name).toBe(original.client.name)
       expect(decoded.items[0]!.description).toBe(original.items[0]!.description)
     })
 
-    it('handles ERC-20 with dict token address', () => {
+    it('handles ERC-20 with dict token address', async () => {
       const original: Invoice = {
         ...createMinimalInvoice(),
         tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC on Ethereum
       }
 
-      const decoded = decodeInvoice(encodeInvoice(original))
+      const decoded = await decodeInvoice(await encodeInvoice(original))
       expect(decoded.tokenAddress?.toLowerCase()).toBe(original.tokenAddress?.toLowerCase())
     })
 
-    it('handles multiple line items with fractional quantities', () => {
+    it('handles multiple line items with fractional quantities', async () => {
       const original = createMinimalInvoice()
       original.items = [
         { description: 'Hours', quantity: 1.5, rate: '100000000' },
@@ -469,14 +469,14 @@ describe('Invoice Codec TLV v1', () => {
         { description: 'Bulk', quantity: 100, rate: '50000000' },
       ]
 
-      const decoded = decodeInvoice(encodeInvoice(original))
+      const decoded = await decodeInvoice(await encodeInvoice(original))
       expect(decoded.items).toHaveLength(3)
       expect(decoded.items[0]!.quantity).toBeCloseTo(1.5, 4)
       expect(decoded.items[1]!.quantity).toBeCloseTo(0.25, 4)
       expect(decoded.items[2]!.quantity).toBe(100)
     })
 
-    it('app-dict roundtrip: email with @gmail.com', () => {
+    it('app-dict roundtrip: email with @gmail.com', async () => {
       const original: Invoice = {
         ...createMinimalInvoice(),
         from: {
@@ -484,16 +484,16 @@ describe('Invoice Codec TLV v1', () => {
           email: 'user@gmail.com',
         },
       }
-      const decoded = decodeInvoice(encodeInvoice(original))
+      const decoded = await decodeInvoice(await encodeInvoice(original))
       expect(decoded.from.email).toBe('user@gmail.com')
     })
 
-    it('handles zero dueAt delta (dueAt === issuedAt)', () => {
+    it('handles zero dueAt delta (dueAt === issuedAt)', async () => {
       const original: Invoice = {
         ...createMinimalInvoice(),
         dueAt: createMinimalInvoice().issuedAt, // same as issuedAt → delta = 0
       }
-      const decoded = decodeInvoice(encodeInvoice(original))
+      const decoded = await decodeInvoice(await encodeInvoice(original))
       expect(decoded.dueAt).toBe(decoded.issuedAt)
     })
   })

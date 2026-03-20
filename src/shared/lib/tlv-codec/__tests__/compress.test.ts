@@ -25,17 +25,17 @@ function buildRawPayload(fields: { typeId: number; value: Uint8Array }[]): Uint8
 
 describe('groupedDeflate / groupedInflate', () => {
   describe('roundtrip', () => {
-    it('compresses and decompresses multiple fields correctly', () => {
+    it('compresses and decompresses multiple fields correctly', async () => {
       // Need >= 100 bytes raw to trigger compression
       const fields = [
         makeField(0x01, 'A'.repeat(60)),
         makeField(0x02, 'B'.repeat(60)),
         makeField(0x03, 'C'.repeat(60)),
       ]
-      const compressed = groupedDeflate(fields)
+      const compressed = await groupedDeflate(fields)
       expect(compressed).not.toBeNull()
 
-      const recovered = groupedInflate(compressed!)
+      const recovered = await groupedInflate(compressed!)
       expect(recovered).toHaveLength(fields.length)
       for (let i = 0; i < fields.length; i++) {
         expect(recovered[i]!.typeId).toBe(fields[i]!.typeId)
@@ -43,16 +43,16 @@ describe('groupedDeflate / groupedInflate', () => {
       }
     })
 
-    it('preserves typeId ordering and values across roundtrip', () => {
+    it('preserves typeId ordering and values across roundtrip', async () => {
       const fields = [
         makeField(0x10, 'invoice-number-'.repeat(8)),
         makeField(0x20, 'client-name-acme-corp-'.repeat(6)),
         makeField(0x30, 'notes-field-'.repeat(10)),
       ]
-      const compressed = groupedDeflate(fields)
+      const compressed = await groupedDeflate(fields)
       expect(compressed).not.toBeNull()
 
-      const recovered = groupedInflate(compressed!)
+      const recovered = await groupedInflate(compressed!)
       for (let i = 0; i < fields.length; i++) {
         expect(recovered[i]!.typeId).toBe(fields[i]!.typeId)
         expect(new TextDecoder().decode(recovered[i]!.value)).toBe(
@@ -63,29 +63,29 @@ describe('groupedDeflate / groupedInflate', () => {
   })
 
   describe('threshold: < 100 bytes raw → returns null', () => {
-    it('returns null for a single small field', () => {
+    it('returns null for a single small field', async () => {
       const fields = [makeField(0x01, 'short text')]
-      const result = groupedDeflate(fields)
+      const result = await groupedDeflate(fields)
       expect(result).toBeNull()
     })
 
-    it('returns null for multiple fields totalling < 100 bytes raw', () => {
+    it('returns null for multiple fields totalling < 100 bytes raw', async () => {
       const fields = [
         makeField(0x01, 'hello'),
         makeField(0x02, 'world'),
       ]
-      const result = groupedDeflate(fields)
+      const result = await groupedDeflate(fields)
       expect(result).toBeNull()
     })
 
-    it('returns null for empty fields array', () => {
-      const result = groupedDeflate([])
+    it('returns null for empty fields array', async () => {
+      const result = await groupedDeflate([])
       expect(result).toBeNull()
     })
   })
 
   describe('threshold: compressed >= raw → returns null', () => {
-    it('returns null when brotli output is not smaller than raw', () => {
+    it('returns null when brotli output is not smaller than raw', async () => {
       // Random-like bytes (incompressible) of >= 100 bytes
       const entropy = new Uint8Array(120)
       for (let i = 0; i < 120; i++) entropy[i] = (i * 137 + 43) % 256
@@ -106,13 +106,13 @@ describe('groupedDeflate / groupedInflate', () => {
         return
       }
 
-      const result = groupedDeflate(fields)
+      const result = await groupedDeflate(fields)
       expect(result).toBeNull()
     })
   })
 
   describe('decompression bomb protection', () => {
-    it('throws when inflated size exceeds maxInflateSize', () => {
+    it('throws when inflated size exceeds maxInflateSize', async () => {
       // Craft a brotli-compressed payload that expands to > maxInflateSize when inflated
       const maxInflate = 200 // very small limit for testing
       const bigField = makeField(0x01, 'X'.repeat(300))
@@ -123,12 +123,12 @@ describe('groupedDeflate / groupedInflate', () => {
         params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
       })
 
-      expect(() => groupedInflate(new Uint8Array(compressed), { maxInflateSize: maxInflate })).toThrow(
+      await expect(groupedInflate(new Uint8Array(compressed), { maxInflateSize: maxInflate })).rejects.toThrow(
         /exceeds max/,
       )
     })
 
-    it('throws with default MAX_INFLATE_SIZE when inflated size exceeds 16KB', () => {
+    it('throws with default MAX_INFLATE_SIZE when inflated size exceeds 16KB', async () => {
       // Build a payload that inflates to > MAX_INFLATE_SIZE (16384)
       const bigField = makeField(0x01, 'A'.repeat(MAX_INFLATE_SIZE + 100))
       const raw = buildRawPayload([bigField])
@@ -138,40 +138,40 @@ describe('groupedDeflate / groupedInflate', () => {
         params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
       })
 
-      expect(() => groupedInflate(new Uint8Array(compressed))).toThrow(/exceeds max/)
+      await expect(groupedInflate(new Uint8Array(compressed))).rejects.toThrow(/exceeds max/)
     })
 
-    it('throws pre-decompress when compressed input exceeds MAX_PAYLOAD_SIZE', () => {
+    it('throws pre-decompress when compressed input exceeds MAX_PAYLOAD_SIZE', async () => {
       // Craft a buffer that is larger than MAX_PAYLOAD_SIZE
       const oversized = new Uint8Array(MAX_PAYLOAD_SIZE + 1)
-      expect(() => groupedInflate(oversized)).toThrow(/exceeds max/)
+      await expect(groupedInflate(oversized)).rejects.toThrow(/exceeds max/)
     })
   })
 
   describe('single large field', () => {
-    it('roundtrips a single large field correctly', () => {
+    it('roundtrips a single large field correctly', async () => {
       // Compressible string of > 100 bytes
       const longText = 'The quick brown fox jumps over the lazy dog. '.repeat(10)
       const fields = [makeField(0x01, longText)]
-      const compressed = groupedDeflate(fields)
+      const compressed = await groupedDeflate(fields)
       expect(compressed).not.toBeNull()
 
-      const recovered = groupedInflate(compressed!)
+      const recovered = await groupedInflate(compressed!)
       expect(recovered).toHaveLength(1)
       expect(new TextDecoder().decode(recovered[0]!.value)).toBe(longText)
     })
   })
 
   describe('truncation errors', () => {
-    it('throws on truncated compressed block', () => {
+    it('throws on truncated compressed block', async () => {
       // First compress a valid payload
       const fields = [makeField(0x01, 'A'.repeat(60)), makeField(0x02, 'B'.repeat(60))]
-      const compressed = groupedDeflate(fields)
+      const compressed = await groupedDeflate(fields)
       expect(compressed).not.toBeNull()
 
       // Truncate the compressed data (corrupt it)
       const truncated = compressed!.slice(0, Math.floor(compressed!.length / 2))
-      expect(() => groupedInflate(truncated)).toThrow()
+      await expect(groupedInflate(truncated)).rejects.toThrow()
     })
   })
 })

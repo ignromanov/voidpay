@@ -168,7 +168,7 @@ export async function generateAndTrackInvoice(
   // generateInvoiceUrl throws if URL > 2000 bytes
   let invoiceUrl: string
   try {
-    invoiceUrl = generateInvoiceUrl(invoice, {
+    invoiceUrl = await generateInvoiceUrl(invoice, {
       includeOG: options.includeOG ?? false,
     })
   } catch (error) {

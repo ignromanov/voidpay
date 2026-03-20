@@ -77,27 +77,29 @@ export function usePayInvoice(): PayInvoiceState {
       return
     }
 
-    const result = parseInvoiceHash(hash)
+    void (async () => {
+      const result = await parseInvoiceHash(hash)
 
-    if (result.success) {
-      setInvoice(result.data)
-      setErrorType(null)
+      if (result.success) {
+        setInvoice(result.data)
+        setErrorType(null)
 
-      try {
-        addInvoice({
-          invoiceId: result.data.invoiceId,
-          invoiceUrl: `${window.location.origin}/pay#${hash}`,
-          source: 'received',
-          viewedAt: nowISO(),
-        })
-      } catch (error) {
-        console.error('[usePayInvoice] Failed to track invoice view:', error)
-        toast.info('Could not save invoice to history. Your payment experience is unaffected.')
+        try {
+          addInvoice({
+            invoiceId: result.data.invoiceId,
+            invoiceUrl: `${window.location.origin}/pay#${hash}`,
+            source: 'received',
+            viewedAt: nowISO(),
+          })
+        } catch (error) {
+          console.error('[usePayInvoice] Failed to track invoice view:', error)
+          toast.info('Could not save invoice to history. Your payment experience is unaffected.')
+        }
+      } else {
+        setInvoice(null)
+        setErrorType(mapParseErrorToDecodeType(result.error.message))
       }
-    } else {
-      setInvoice(null)
-      setErrorType(mapParseErrorToDecodeType(result.error.message))
-    }
+    })()
   }, [hash, isHydrated, addInvoice])
 
   // 3. Sync network theme for background

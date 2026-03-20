@@ -82,7 +82,7 @@ function packItems(items: Invoice['items']): Uint8Array {
  * @param invoice The invoice data to encode
  * @returns The Base64url-encoded binary string (no prefix — magic byte is inside)
  */
-export function encodeInvoice(invoice: Invoice): string {
+export async function encodeInvoice(invoice: Invoice): Promise<string> {
   const records: TlvRecord[] = []
 
   // --- Required fields (even types) ---
@@ -202,7 +202,7 @@ export function encodeInvoice(invoice: Invoice): string {
 
   // --- Serialize → whole-payload Brotli → Base64url ---
   const bytes = writeTlv(finalRecords)
-  const compressed = compressPayload(bytes)
+  const compressed = await compressPayload(bytes)
 
   return encodeBase64url(compressed)
 }
@@ -222,13 +222,13 @@ export interface GenerateUrlOptions {
  * Hash fragments are never sent to the server (Privacy-First principle).
  * Validates that the final URL does not exceed 2000 bytes.
  */
-export function generateInvoiceUrl(
+export async function generateInvoiceUrl(
   invoice: Invoice,
   options: GenerateUrlOptions | string = {}
-): string {
+): Promise<string> {
   const opts: GenerateUrlOptions = typeof options === 'string' ? { baseUrl: options } : options
 
-  const compressed = encodeInvoice(invoice)
+  const compressed = await encodeInvoice(invoice)
   const appUrl = opts.baseUrl ?? getAppBaseUrl()
 
   let finalUrl: string

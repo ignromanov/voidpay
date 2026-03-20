@@ -28,7 +28,7 @@ export type HashParseResult = { success: true; data: Invoice } | { success: fals
  * }
  * ```
  */
-export function parseInvoiceHash(hash: string): HashParseResult {
+export async function parseInvoiceHash(hash: string): Promise<HashParseResult> {
   if (!hash) {
     return {
       success: false,
@@ -37,7 +37,7 @@ export function parseInvoiceHash(hash: string): HashParseResult {
   }
 
   try {
-    const data = decodeInvoice(hash)
+    const data = await decodeInvoice(hash)
     return { success: true, data }
   } catch (error) {
     return {

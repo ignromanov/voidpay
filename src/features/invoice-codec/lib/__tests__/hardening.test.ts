@@ -48,13 +48,13 @@ function createTestInvoice(): Invoice {
 // ---------------------------------------------------------------------------
 
 describe('hardening: truncated binary', () => {
-  it('throws when encoded binary is truncated to half length', () => {
-    const encoded = encodeInvoice(createTestInvoice())
+  it('throws when encoded binary is truncated to half length', async () => {
+    const encoded = await encodeInvoice(createTestInvoice())
     const bytes = decodeBase64url(encoded)
     const truncated = bytes.slice(0, Math.floor(bytes.length / 2))
     const reEncoded = encodeBase64url(truncated)
 
-    expect(() => decodeInvoice(reEncoded)).toThrow()
+    await expect(decodeInvoice(reEncoded)).rejects.toThrow()
   })
 })
 
@@ -63,7 +63,7 @@ describe('hardening: truncated binary', () => {
 // ---------------------------------------------------------------------------
 
 describe('hardening: random bytes', () => {
-  it('throws on random payload with valid magic byte prepended', () => {
+  it('throws on random payload with valid magic byte prepended', async () => {
     // Build 32 pseudo-random bytes after the magic/version/count header
     const random = new Uint8Array(32)
     for (let i = 0; i < 32; i++) {
@@ -77,7 +77,7 @@ describe('hardening: random bytes', () => {
     payload.set(random, 3)
 
     const encoded = encodeBase64url(payload)
-    expect(() => decodeInvoice(encoded)).toThrow()
+    await expect(decodeInvoice(encoded)).rejects.toThrow()
   })
 })
 
@@ -86,8 +86,8 @@ describe('hardening: random bytes', () => {
 // ---------------------------------------------------------------------------
 
 describe('hardening: empty input', () => {
-  it('throws on empty string', () => {
-    expect(() => decodeInvoice('')).toThrow('Empty invoice data')
+  it('throws on empty string', async () => {
+    await expect(decodeInvoice('')).rejects.toThrow('Empty invoice data')
   })
 })
 
@@ -96,7 +96,7 @@ describe('hardening: empty input', () => {
 // ---------------------------------------------------------------------------
 
 describe('hardening: type 253 whitelist — reject spoofed type_id', () => {
-  it('throws when compressed block contains non-whitelisted type_id (CHAIN_ID=2)', () => {
+  it('throws when compressed block contains non-whitelisted type_id (CHAIN_ID=2)', async () => {
     // Build a valid full invoice binary, then replace (or inject) the
     // COMPRESSED_TEXT (Type 253) TLV with a crafted block containing type_id=2.
     //
@@ -182,7 +182,7 @@ describe('hardening: type 253 whitelist — reject spoofed type_id', () => {
     const bytes = writeTlv(finalRecords)
     const encoded = encodeBase64url(bytes)
 
-    expect(() => decodeInvoice(encoded)).toThrow(/Type spoofing/)
+    await expect(decodeInvoice(encoded)).rejects.toThrow(/Type spoofing/)
   })
 })
 
@@ -191,7 +191,7 @@ describe('hardening: type 253 whitelist — reject spoofed type_id', () => {
 // ---------------------------------------------------------------------------
 
 describe('hardening: maximum items', () => {
-  it('encodes invoice with 5 items without error', () => {
+  it('encodes invoice with 5 items without error', async () => {
     const invoice = createTestInvoice()
     invoice.items = Array.from({ length: 5 }, (_, i) => ({
       description: `Service item ${i + 1}`,
@@ -199,8 +199,8 @@ describe('hardening: maximum items', () => {
       rate: String((i + 1) * 50000000),
     }))
 
-    const encoded = encodeInvoice(invoice)
-    const decoded = decodeInvoice(encoded)
+    const encoded = await encodeInvoice(invoice)
+    const decoded = await decodeInvoice(encoded)
 
     expect(decoded.items).toHaveLength(5)
     for (let i = 0; i < 5; i++) {
@@ -215,7 +215,7 @@ describe('hardening: maximum items', () => {
 // ---------------------------------------------------------------------------
 
 describe('hardening: roundtrip with dictionary token', () => {
-  it('preserves tokenAddress for a known dict token (USDC on Ethereum)', () => {
+  it('preserves tokenAddress for a known dict token (USDC on Ethereum)', async () => {
     // USDC on Ethereum is in TOKEN_DICT — uses compact dict code
     const usdcAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
     expect(TOKEN_DICT[usdcAddress]).toBeDefined()
@@ -225,7 +225,7 @@ describe('hardening: roundtrip with dictionary token', () => {
       tokenAddress: usdcAddress as `0x${string}`,
     }
 
-    const decoded = decodeInvoice(encodeInvoice(invoice))
+    const decoded = await decodeInvoice(await encodeInvoice(invoice))
     expect(decoded.tokenAddress?.toLowerCase()).toBe(usdcAddress.toLowerCase())
   })
 })
@@ -235,7 +235,7 @@ describe('hardening: roundtrip with dictionary token', () => {
 // ---------------------------------------------------------------------------
 
 describe('hardening: roundtrip with non-dictionary token', () => {
-  it('preserves tokenAddress for a custom (non-dict) token address', () => {
+  it('preserves tokenAddress for a custom (non-dict) token address', async () => {
     const customAddress = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
     expect(TOKEN_DICT[customAddress.toLowerCase()]).toBeUndefined()
 
@@ -244,7 +244,7 @@ describe('hardening: roundtrip with non-dictionary token', () => {
       tokenAddress: customAddress as `0x${string}`,
     }
 
-    const decoded = decodeInvoice(encodeInvoice(invoice))
+    const decoded = await decodeInvoice(await encodeInvoice(invoice))
     expect(decoded.tokenAddress?.toLowerCase()).toBe(customAddress.toLowerCase())
   })
 })
@@ -254,14 +254,14 @@ describe('hardening: roundtrip with non-dictionary token', () => {
 // ---------------------------------------------------------------------------
 
 describe('hardening: roundtrip with non-dictionary currency', () => {
-  it('preserves currency for a custom symbol not in CURRENCY_DICT (DOGE)', () => {
+  it('preserves currency for a custom symbol not in CURRENCY_DICT (DOGE)', async () => {
     const invoice: Invoice = {
       ...createTestInvoice(),
       currency: 'DOGE',
       decimals: 8,
     }
 
-    const decoded = decodeInvoice(encodeInvoice(invoice))
+    const decoded = await decodeInvoice(await encodeInvoice(invoice))
     expect(decoded.currency).toBe('DOGE')
     expect(decoded.decimals).toBe(8)
   })

@@ -30,5 +30,5 @@ export type HashParseResult = {
  * }
  * ```
  */
-export declare function parseInvoiceHash(hash: string): HashParseResult;
+export declare function parseInvoiceHash(hash: string): Promise<HashParseResult>;
 //# sourceMappingURL=parse-hash.d.ts.map

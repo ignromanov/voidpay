@@ -202,22 +202,26 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
 
 /**
  * Demo invoices with pre-computed createHash for /create page navigation
- * Hash is computed at module load time (build time for SSG)
+ * Hash is computed asynchronously (encodeInvoice is async due to Brotli WASM)
  */
-export const DEMO_INVOICES: DemoInvoice[] = RAW_DEMO_INVOICES.map((invoice) => {
-  try {
-    return {
-      ...invoice,
-      createHash: encodeInvoice(invoice.data),
-    }
-  } catch (error) {
-    // Graceful degradation: button won't work but page loads
-    console.error('[DEMO_INVOICES] Failed to encode:', invoice.invoiceId, error)
-    return {
-      ...invoice,
-      createHash: '',
-    }
-  }
-})
+export async function getDemoInvoices(): Promise<DemoInvoice[]> {
+  return Promise.all(
+    RAW_DEMO_INVOICES.map(async (invoice) => {
+      try {
+        return {
+          ...invoice,
+          createHash: await encodeInvoice(invoice.data),
+        }
+      } catch (error) {
+        // Graceful degradation: button won't work but page loads
+        console.error('[DEMO_INVOICES] Failed to encode:', invoice.invoiceId, error)
+        return {
+          ...invoice,
+          createHash: '',
+        }
+      }
+    }),
+  )
+}
 
 export const ROTATION_INTERVAL_MS = 60_000 // 60 seconds for viewing animations

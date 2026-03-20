@@ -9,9 +9,9 @@ import { decompressPayload } from './compress'
  * Header: [MAGIC(1), VERSION(1), COUNT(1)]
  * Each TLV: [TYPE(1), LENGTH(varint), VALUE(length)]
  */
-export function readTlv(bytes: Uint8Array): { header: TlvHeader; records: TlvRecord[] } {
+export async function readTlv(bytes: Uint8Array): Promise<{ header: TlvHeader; records: TlvRecord[] }> {
   // Transparently decompress if VERSION high bit is set
-  const data = decompressPayload(bytes)
+  const data = await decompressPayload(bytes)
 
   if (data.length < 3) {
     throw new Error('TLV data too short: need at least 3 bytes for header')

@@ -79,15 +79,17 @@ export function CreateWorkspace() {
   useLayoutEffect(() => {
     if (!hash) return
 
-    const result = parseInvoiceHash(hash)
-    if (result.success) {
-      // updateDraft auto-syncs lineItems when items provided
-      updateDraft(result.data)
-      // Silent success - no toast per spec (avoid notification fatigue)
-    } else {
-      toast.error(result.error.message)
-      // Do NOT clear store on error (per spec edge case)
-    }
+    void (async () => {
+      const result = await parseInvoiceHash(hash)
+      if (result.success) {
+        // updateDraft auto-syncs lineItems when items provided
+        updateDraft(result.data)
+        // Silent success - no toast per spec (avoid notification fatigue)
+      } else {
+        toast.error(result.error.message)
+        // Do NOT clear store on error (per spec edge case)
+      }
+    })()
   }, [hash, updateDraft])
 
   const invoiceData = useMemo(() => activeDraft?.data, [activeDraft])

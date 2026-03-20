@@ -39,6 +39,9 @@ const nextConfig = {
 
   // Webpack fallback for production builds (still uses webpack)
   webpack: (config) => {
+    // Enable WebAssembly for brotli-wasm (codec compression)
+    config.experiments = { ...config.experiments, asyncWebAssembly: true }
+
     // Polyfills for Web3 libraries in the browser
     config.resolve.fallback = {
       ...config.resolve.fallback,

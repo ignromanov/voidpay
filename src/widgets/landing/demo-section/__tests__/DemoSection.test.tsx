@@ -4,7 +4,7 @@
  * User Story: US4 (Interactive Demo)
  */
 
-import { render, screen, fireEvent, act } from '@/shared/lib/test-utils'
+import { render, screen, fireEvent, act, waitFor } from '@/shared/lib/test-utils'
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import * as React from 'react'
 import type { ReactNode } from 'react'
@@ -60,7 +60,7 @@ vi.mock('@/shared/ui', async () => {
 
 describe('DemoSection', () => {
   beforeEach(() => {
-    vi.useFakeTimers()
+    vi.useFakeTimers({ shouldAdvanceTime: true })
   })
 
   afterEach(() => {
@@ -68,32 +68,40 @@ describe('DemoSection', () => {
   })
 
   describe('T027-test: Invoice paper rendering', () => {
-    it('should render invoice preview card', () => {
+    it('should render invoice preview card', async () => {
       renderWithProviders(<DemoSection />)
 
-      expect(screen.getAllByText(/INVOICE/i)[0]).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getAllByText(/INVOICE/i)[0]).toBeInTheDocument()
+      })
     })
 
-    it('should display company name from invoice', () => {
+    it('should display company name from invoice', async () => {
       renderWithProviders(<DemoSection />)
 
       // First demo invoice (Ethereum) - company name
-      expect(screen.getByText('EtherScale Solutions')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText('EtherScale Solutions')).toBeInTheDocument()
+      })
     })
 
-    it('should display line items', () => {
+    it('should display line items', async () => {
       renderWithProviders(<DemoSection />)
 
       // First demo invoice line item
-      expect(screen.getByText(/Smart Contract.*Audit/i)).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText(/Smart Contract.*Audit/i)).toBeInTheDocument()
+      })
     })
 
-    it('should display total amount with token', () => {
+    it('should display total amount with token', async () => {
       renderWithProviders(<DemoSection />)
 
       // First invoice: (40*0.125 + 8*0.1) - 5% = 5.51 ETH total
-      expect(screen.getAllByText(/5\.51/)[0]).toBeInTheDocument()
-      expect(screen.getAllByText(/ETH/)[0]).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getAllByText(/5\.51/)[0]).toBeInTheDocument()
+        expect(screen.getAllByText(/ETH/)[0]).toBeInTheDocument()
+      })
     })
   })
 
@@ -107,8 +115,10 @@ describe('DemoSection', () => {
     it('should NOT auto-rotate when reduced motion is preferred (accessibility)', async () => {
       renderWithProviders(<DemoSection />)
 
-      // Initially shows first invoice (Ethereum) - company name
-      expect(screen.getByText('EtherScale Solutions')).toBeInTheDocument()
+      // Wait for async demo invoices to load
+      await waitFor(() => {
+        expect(screen.getByText('EtherScale Solutions')).toBeInTheDocument()
+      })
 
       // Fast-forward 15 seconds - should NOT rotate because reduced motion is preferred
       await act(async () => {
@@ -122,8 +132,10 @@ describe('DemoSection', () => {
     it('should allow manual navigation via pagination dots', async () => {
       renderWithProviders(<DemoSection />)
 
-      // Initially shows first invoice
-      expect(screen.getByText('EtherScale Solutions')).toBeInTheDocument()
+      // Wait for async demo invoices to load
+      await waitFor(() => {
+        expect(screen.getByText('EtherScale Solutions')).toBeInTheDocument()
+      })
 
       // Click on Arbitrum pagination dot to manually navigate (second invoice)
       const dots = screen.getAllByRole('button', { name: /view invoice/i })
@@ -140,8 +152,10 @@ describe('DemoSection', () => {
     it.skip('should stay on first invoice after time passes (reduced motion mode)', async () => {
       renderWithProviders(<DemoSection />)
 
-      // Initially shows first invoice (company name appears in PartyInfo)
-      expect(screen.getAllByText(/EtherScale/i).length).toBeGreaterThan(0)
+      // Wait for async demo invoices to load
+      await waitFor(() => {
+        expect(screen.getAllByText(/EtherScale/i).length).toBeGreaterThan(0)
+      })
 
       // Fast-forward 60 seconds - no rotation should happen (reduced motion mode)
       await act(async () => {
@@ -160,11 +174,12 @@ describe('DemoSection', () => {
     it('should show "Use This Template" button on hover', async () => {
       renderWithProviders(<DemoSection />)
 
-      const hoverZone = getHoverZone()
-      expect(hoverZone).not.toBeNull()
+      await waitFor(() => {
+        expect(getHoverZone()).not.toBeNull()
+      })
 
       await act(async () => {
-        fireEvent.mouseEnter(hoverZone!)
+        fireEvent.mouseEnter(getHoverZone()!)
       })
 
       expect(screen.getByRole('link', { name: /use this template/i })).toBeInTheDocument()
@@ -173,11 +188,12 @@ describe('DemoSection', () => {
     it('should link to /create with template parameter', async () => {
       renderWithProviders(<DemoSection />)
 
-      const hoverZone = getHoverZone()
-      expect(hoverZone).not.toBeNull()
+      await waitFor(() => {
+        expect(getHoverZone()).not.toBeNull()
+      })
 
       await act(async () => {
-        fireEvent.mouseEnter(hoverZone!)
+        fireEvent.mouseEnter(getHoverZone()!)
       })
 
       const link = screen.getByRole('link', { name: /use this template/i })
@@ -189,19 +205,20 @@ describe('DemoSection', () => {
     it('should hide button on mouse leave', async () => {
       renderWithProviders(<DemoSection />)
 
-      const hoverZone = getHoverZone()
-      expect(hoverZone).not.toBeNull()
+      await waitFor(() => {
+        expect(getHoverZone()).not.toBeNull()
+      })
 
       // Mouse enter - show button (opacity-100)
       await act(async () => {
-        fireEvent.mouseEnter(hoverZone!)
+        fireEvent.mouseEnter(getHoverZone()!)
       })
       const link = screen.getByRole('link', { name: /use this template/i })
       expect(link).toBeInTheDocument()
 
       // Mouse leave - button hidden via CSS (opacity-0, pointer-events-none)
       await act(async () => {
-        fireEvent.mouseLeave(hoverZone!)
+        fireEvent.mouseLeave(getHoverZone()!)
       })
       // Button stays in DOM but is visually hidden via CSS opacity
       const container = link.closest('div')
@@ -210,16 +227,23 @@ describe('DemoSection', () => {
   })
 
   describe('Navigation dots', () => {
-    it('should render 4 navigation dots', () => {
+    it('should render 4 navigation dots', async () => {
       renderWithProviders(<DemoSection />)
 
       // Dots have aria-label="View invoice {id}" format
-      const dots = screen.getAllByRole('button', { name: /view invoice/i })
-      expect(dots).toHaveLength(4)
+      await waitFor(() => {
+        const dots = screen.getAllByRole('button', { name: /view invoice/i })
+        expect(dots).toHaveLength(4)
+      })
     })
 
     it('should navigate to specific invoice on dot click', async () => {
       renderWithProviders(<DemoSection />)
+
+      // Wait for async demo invoices to load
+      await waitFor(() => {
+        expect(screen.getAllByRole('button', { name: /view invoice/i }).length).toBe(4)
+      })
 
       // Click on third dot (Optimism - index 2)
       const dots = screen.getAllByRole('button', { name: /view invoice/i })
@@ -234,6 +258,11 @@ describe('DemoSection', () => {
     it('should navigate to fourth invoice (Polygon)', async () => {
       renderWithProviders(<DemoSection />)
 
+      // Wait for async demo invoices to load
+      await waitFor(() => {
+        expect(screen.getAllByRole('button', { name: /view invoice/i }).length).toBe(4)
+      })
+
       // Click on fourth dot (Polygon - index 3)
       const dots = screen.getAllByRole('button', { name: /view invoice/i })
       await act(async () => {
@@ -246,29 +275,35 @@ describe('DemoSection', () => {
   })
 
   describe('Network theme', () => {
-    it('should render invoice paper with network information', () => {
+    it('should render invoice paper with network information', async () => {
       renderWithProviders(<DemoSection />)
 
       // The first invoice is Ethereum network (net: 1)
       // InvoicePaper renders Payment Info section
-      expect(screen.getByText(/Payment Info/i)).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText(/Payment Info/i)).toBeInTheDocument()
+      })
     })
   })
 
   describe('Accessibility', () => {
-    it('should have proper aria-labelledby on section', () => {
+    it('should have proper aria-labelledby on section', async () => {
       renderWithProviders(<DemoSection />)
 
-      const section = document.querySelector('section')
-      expect(section).toHaveAttribute('aria-labelledby', 'demo-heading')
+      await waitFor(() => {
+        const section = document.querySelector('section')
+        expect(section).toHaveAttribute('aria-labelledby', 'demo-heading')
+      })
     })
 
-    it('should have aria-labels on navigation dots', () => {
+    it('should have aria-labels on navigation dots', async () => {
       renderWithProviders(<DemoSection />)
 
-      const dots = screen.getAllByRole('button')
-      dots.forEach((dot) => {
-        expect(dot).toHaveAttribute('aria-label')
+      await waitFor(() => {
+        const dots = screen.getAllByRole('button')
+        dots.forEach((dot) => {
+          expect(dot).toHaveAttribute('aria-label')
+        })
       })
     })
   })

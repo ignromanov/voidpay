@@ -13,26 +13,26 @@ import { encodeInvoice, generateInvoiceUrl } from '../encode'
 import type { Invoice } from '@/entities/invoice'
 import { TEST_INVOICES } from '@/shared/lib/test-utils'
 
-function measureUrl(invoice: Invoice): { chars: number; bytes: number; encoded: string } {
-  const encoded = encodeInvoice(invoice)
-  const url = generateInvoiceUrl(invoice, { baseUrl: 'https://voidpay.xyz' })
+async function measureUrl(invoice: Invoice): Promise<{ chars: number; bytes: number; encoded: string }> {
+  const encoded = await encodeInvoice(invoice)
+  const url = await generateInvoiceUrl(invoice, { baseUrl: 'https://voidpay.xyz' })
   const bytes = new TextEncoder().encode(url).length
   return { chars: encoded.length, bytes, encoded }
 }
 
 describe('URL Size Benchmarks', () => {
-  it('minimal invoice (Polygon MATIC) < 300 chars encoded', () => {
+  it('minimal invoice (Polygon MATIC) < 300 chars encoded', async () => {
     const invoice = TEST_INVOICES.minimal()
-    const { chars, bytes } = measureUrl(invoice)
+    const { chars, bytes } = await measureUrl(invoice)
 
     console.log(`Minimal invoice: ${chars} chars encoded, ${bytes} bytes URL`)
     expect(chars).toBeLessThan(300)
     expect(bytes).toBeLessThan(2000)
   })
 
-  it('full USDC invoice (Ethereum, all optional fields) < 600 chars encoded', () => {
+  it('full USDC invoice (Ethereum, all optional fields) < 600 chars encoded', async () => {
     const invoice = TEST_INVOICES.full()
-    const { chars, bytes } = measureUrl(invoice)
+    const { chars, bytes } = await measureUrl(invoice)
 
     // Full invoice includes email, phone, address for both parties + tax + discount + notes
     console.log(`Full USDC invoice: ${chars} chars encoded, ${bytes} bytes URL`)
@@ -40,7 +40,7 @@ describe('URL Size Benchmarks', () => {
     expect(bytes).toBeLessThan(2000)
   })
 
-  it('ETH native payment < 420 chars encoded', () => {
+  it('ETH native payment < 420 chars encoded', async () => {
     const invoice: Invoice = {
       invoiceId: 'INV-ETH-001',
       issuedAt: 1704067200,
@@ -64,14 +64,14 @@ describe('URL Size Benchmarks', () => {
       total: '2000000000000000000',
     }
 
-    const { chars, bytes } = measureUrl(invoice)
+    const { chars, bytes } = await measureUrl(invoice)
 
     console.log(`ETH native invoice: ${chars} chars encoded, ${bytes} bytes URL`)
     expect(chars).toBeLessThan(420)
     expect(bytes).toBeLessThan(2000)
   })
 
-  it('Arbitrum USDC with all optional fields < 500 chars', () => {
+  it('Arbitrum USDC with all optional fields < 500 chars', async () => {
     const invoice: Invoice = {
       invoiceId: 'INV-ARB-001',
       issuedAt: 1704067200,
@@ -100,14 +100,14 @@ describe('URL Size Benchmarks', () => {
       total: '14000000000',
     }
 
-    const { chars, bytes } = measureUrl(invoice)
+    const { chars, bytes } = await measureUrl(invoice)
 
     console.log(`Arbitrum USDC (all fields): ${chars} chars encoded, ${bytes} bytes URL`)
     expect(chars).toBeLessThan(500)
     expect(bytes).toBeLessThan(2000)
   })
 
-  it('5 line items invoice stays under 600 chars', () => {
+  it('5 line items invoice stays under 600 chars', async () => {
     const invoice: Invoice = {
       invoiceId: 'INV-MULTI-001',
       issuedAt: 1704067200,
@@ -133,14 +133,14 @@ describe('URL Size Benchmarks', () => {
       total: '22100000000',
     }
 
-    const { chars, bytes } = measureUrl(invoice)
+    const { chars, bytes } = await measureUrl(invoice)
 
     console.log(`5-item invoice: ${chars} chars encoded, ${bytes} bytes URL`)
     expect(chars).toBeLessThan(600)
     expect(bytes).toBeLessThan(2000)
   })
 
-  it('mantissa encoding saves bytes for round amounts', () => {
+  it('mantissa encoding saves bytes for round amounts', async () => {
     // 1 ETH = 10^18 wei — should compress well with mantissa+zeros
     const roundInvoice: Invoice = {
       invoiceId: 'INV-ROUND',
@@ -163,8 +163,8 @@ describe('URL Size Benchmarks', () => {
       total: '1234567890123456789',
     }
 
-    const round = measureUrl(roundInvoice)
-    const odd = measureUrl(oddInvoice)
+    const round = await measureUrl(roundInvoice)
+    const odd = await measureUrl(oddInvoice)
 
     console.log(`Round amount (10^18): ${round.chars} chars`)
     console.log(`Odd amount (1234...789): ${odd.chars} chars`)
@@ -173,7 +173,7 @@ describe('URL Size Benchmarks', () => {
     expect(round.chars).toBeLessThan(odd.chars)
   })
 
-  it('all URLs stay under 2000 byte hard limit', () => {
+  it('all URLs stay under 2000 byte hard limit', async () => {
     const scenarios = [
       { name: 'minimal', invoice: TEST_INVOICES.minimal() },
       { name: 'full', invoice: TEST_INVOICES.full() },
@@ -182,7 +182,7 @@ describe('URL Size Benchmarks', () => {
     ]
 
     for (const { name, invoice } of scenarios) {
-      const { bytes } = measureUrl(invoice)
+      const { bytes } = await measureUrl(invoice)
       console.log(`${name}: ${bytes} bytes URL`)
       expect(bytes, `${name} URL exceeds 2000 bytes`).toBeLessThan(2000)
     }
