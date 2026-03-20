@@ -83,7 +83,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
     const [invoiceUrl, setInvoiceUrl] = useState<string | undefined>(undefined)
     useEffect(() => {
       const result = invoiceSchema.safeParse(data)
-      if (!result.success) {
+      if (!result.success || !result.data.total) {
         setInvoiceUrl(undefined)
         return
       }
@@ -93,7 +93,6 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
           const url = await generateInvoiceUrl(result.data)
           if (!cancelled) setInvoiceUrl(url)
         } catch (error) {
-          // Log encoder errors for debugging (shouldn't happen after Zod validation)
           console.error('[InvoicePreviewModal] URL generation failed:', {
             invoiceId: result.data.invoiceId,
             error: error instanceof Error ? error.message : 'Unknown error',
