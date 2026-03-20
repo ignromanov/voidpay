@@ -9,7 +9,8 @@
  * encodeInvoice runs during `next build`, not on client.
  */
 
-import { encodeInvoice } from '@/features/invoice-codec'
+import { encodeInvoice, generateSalt, deriveMagicDust } from '@/features/invoice-codec'
+import { addMagicDust } from '@/shared/lib/amount-utils'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import type { InvoiceStatus } from '@/widgets/invoice-paper/types'
 
@@ -205,16 +206,27 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
 ]
 
 /**
- * Demo invoices with pre-computed createHash for /create page navigation
- * Hash is computed asynchronously (encodeInvoice is async due to Brotli WASM)
+ * Demo invoices with pre-computed createHash for /create page navigation.
+ * Each demo gets a deterministic salt → magicDust linkage so the dust badge
+ * shows correctly when decoded on /pay.
  */
 export async function getDemoInvoices(): Promise<DemoInvoice[]> {
   return Promise.all(
     RAW_DEMO_INVOICES.map(async (invoice) => {
       try {
+        // Generate salt and derive dust deterministically
+        const salt = generateSalt()
+        const dust = deriveMagicDust(salt)
+        const totalWithDust = addMagicDust(invoice.data.total!, dust)
+        const dataWithDust: Invoice = {
+          ...invoice.data,
+          total: totalWithDust,
+          magicDust: dust.toString(),
+        }
         return {
           ...invoice,
-          createHash: await encodeInvoice(invoice.data),
+          data: dataWithDust,
+          createHash: await encodeInvoice(dataWithDust, salt),
         }
       } catch (error) {
         // Graceful degradation: button won't work but page loads
