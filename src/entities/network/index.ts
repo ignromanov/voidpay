@@ -10,7 +10,7 @@ export { NETWORKS, NETWORK_CODES, NETWORK_CODES_REVERSE } from './config/network
 export type { NetworkId } from './config/networks'
 
 // Token registry (from config layer)
-export { NETWORK_TOKENS } from './config/tokens'
+export { NETWORK_TOKENS, findTokenForNetwork } from './config/tokens'
 export type { TokenInfo } from './config/tokens'
 
 // Chain configuration (from config layer)

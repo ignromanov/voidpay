@@ -229,3 +229,11 @@ export const NETWORK_TOKENS: Record<number, TokenInfo[]> = {
     },
   ],
 }
+
+/**
+ * Find a token by symbol on a specific network.
+ * Returns undefined if not found.
+ */
+export function findTokenForNetwork(chainId: number, symbol: string): TokenInfo | undefined {
+  return NETWORK_TOKENS[chainId]?.find((t) => t.symbol === symbol)
+}
