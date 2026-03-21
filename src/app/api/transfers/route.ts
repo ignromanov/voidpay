@@ -10,7 +10,7 @@
 
 import { isAddress, getAddress } from 'viem'
 import { Ratelimit } from '@upstash/ratelimit'
-import { kv } from '@vercel/kv'
+import { Redis } from '@upstash/redis'
 import { getMaxBlockAge, estimateCurrentBlock } from '@/entities/network'
 
 export const runtime = 'edge'
@@ -56,13 +56,17 @@ function tryBuildRateLimiter(): Ratelimit | null {
     return null
   }
   try {
+    const redis = new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    })
     // Guard: slidingWindow may not be available on the mock in tests
     const limiter =
       typeof Ratelimit.slidingWindow === 'function'
         ? Ratelimit.slidingWindow(RATE_LIMIT_MAX, RATE_LIMIT_WINDOW)
         : (undefined as unknown as ReturnType<typeof Ratelimit.slidingWindow>)
     return new Ratelimit({
-      redis: kv,
+      redis,
       limiter,
       analytics: false,
       prefix: 'transfers_ratelimit',

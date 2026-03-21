@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   ScaledInvoicePreview,
@@ -173,10 +172,10 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                     {/* "Pay this invoice" escape route for wrong-page visitors */}
                     {payUrl && (
                       <Button variant="outline" asChild className="w-full border-zinc-700 text-zinc-300 hover:border-violet-500/50 hover:text-violet-300 hover:bg-violet-500/5">
-                        <Link href={payUrl}>
+                        <a href={payUrl}>
                           Pay this invoice
                           <ExternalLinkIcon size={14} />
-                        </Link>
+                        </a>
                       </Button>
                     )}
                   </PaymentPanel>

@@ -21,8 +21,8 @@ vi.mock('@upstash/ratelimit', () => ({
   })),
 }))
 
-vi.mock('@vercel/kv', () => ({
-  kv: {},
+vi.mock('@upstash/redis', () => ({
+  Redis: vi.fn().mockImplementation(() => ({})),
 }))
 
 // Spy on global fetch so we can intercept Alchemy calls
@@ -440,32 +440,31 @@ describe('POST /api/transfers', () => {
   // -------------------------------------------------------------------------
   describe('TC-9: rate limit → 429 with Retry-After header', () => {
     it('returns 429 when rate limit exceeded', async () => {
-      // Override the Ratelimit mock to simulate exhaustion
-      const { Ratelimit } = await import('@upstash/ratelimit')
-      // Use function() instead of arrow — vitest 4 calls `new implementation()`
-      vi.mocked(Ratelimit).mockImplementationOnce(function (this: any) {
-        this.limit = vi.fn().mockResolvedValue({ success: false, remaining: 0, limit: 10 })
-        return this
-      } as any)
+      // Exhaust the in-memory rate limiter (limit = 10 per window)
+      // No KV env vars → falls back to in-memory path
+      delete process.env.KV_REST_API_URL
+      delete process.env.KV_REST_API_TOKEN
 
-      // Force rate limiter to use KV path (set env vars)
-      const originalUrl = process.env.KV_REST_API_URL
-      const originalToken = process.env.KV_REST_API_TOKEN
-      process.env.KV_REST_API_URL = 'https://fake-kv.example.com'
-      process.env.KV_REST_API_TOKEN = 'fake-token'
+      vi.resetModules()
+      const mod = await import('../route')
+      const localPost = mod.POST
 
-      try {
-        vi.resetModules()
-        const mod = await import('../route')
-        const localPost = mod.POST
-        const response = await localPost(makeRequest(VALID_BODY))
+      // Mock Alchemy response for the first 10 allowed requests
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ jsonrpc: '2.0', id: 1, result: { transfers: [] } }),
+      })
 
-        expect(response.status).toBe(429)
-        expect(response.headers.get('Retry-After')).toBe('60')
-      } finally {
-        process.env.KV_REST_API_URL = originalUrl
-        process.env.KV_REST_API_TOKEN = originalToken
+      // Send 10 requests to exhaust the in-memory rate limit
+      for (let i = 0; i < 10; i++) {
+        const r = await localPost(makeRequest(VALID_BODY))
+        expect(r.status).toBe(200)
       }
+
+      // 11th request should be rate limited
+      const response = await localPost(makeRequest(VALID_BODY))
+      expect(response.status).toBe(429)
+      expect(response.headers.get('Retry-After')).toBe('60')
     })
 
     it('returns error body with 429', async () => {

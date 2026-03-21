@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { STORAGE_KEYS } from '@/shared/config'
 import { XIcon } from '@/shared/ui/icons'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
@@ -50,12 +49,12 @@ export function CreatorHintBanner({ isCreator }: CreatorHintBannerProps) {
         >
           <p className="text-sm text-zinc-300">
             This is your invoice{' · '}
-            <Link
+            <a
               href={invoiceUrl}
               className="font-medium text-white underline underline-offset-2 hover:text-zinc-200"
             >
               Track status →
-            </Link>
+            </a>
           </p>
           <button
             onClick={handleDismiss}
