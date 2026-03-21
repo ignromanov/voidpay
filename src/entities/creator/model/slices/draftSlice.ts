@@ -14,6 +14,7 @@ import {
   type DraftState,
   type LineItem,
 } from '@/entities/invoice'
+import { findTokenForNetwork } from '@/entities/network'
 import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
 import type { UserPreferences } from '../types'
 import type { CreatorStore } from './types'
@@ -94,6 +95,9 @@ function createDefaultDraft(
   invoiceId: string,
   preferences: UserPreferences
 ): DraftState {
+  const networkId = preferences.defaultNetworkId ?? 42161
+  const defaultToken = findTokenForNetwork(networkId, preferences.defaultCurrency ?? 'USDC')
+
   return {
     meta: {
       draftId,
@@ -103,9 +107,10 @@ function createDefaultDraft(
       invoiceId,
       issuedAt: nowUnix(),
       dueAt: daysFromNowUnix(30), // Default: 30 days from now
-      networkId: preferences.defaultNetworkId ?? 42161, // Default: Arbitrum
-      currency: preferences.defaultCurrency ?? 'USDC',
-      decimals: 6, // Default for USDC
+      networkId,
+      currency: defaultToken?.symbol ?? 'USDC',
+      decimals: defaultToken?.decimals ?? 6,
+      ...(defaultToken?.address && { tokenAddress: defaultToken.address }),
       from: {
         name: preferences.defaultSenderName ?? '',
         walletAddress: preferences.defaultSenderWallet as Address,
