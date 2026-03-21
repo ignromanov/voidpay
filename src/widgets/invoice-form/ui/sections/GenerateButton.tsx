@@ -9,13 +9,18 @@ export interface GenerateButtonProps {
   onGenerate: (() => void) | undefined
   canGenerate: boolean
   isGenerating?: boolean | undefined
+  onSubmitAttempt?: () => void
 }
 
 /**
  * Generate invoice link button with glow variant.
  */
-export function GenerateButton({ onGenerate, canGenerate, isGenerating = false }: GenerateButtonProps) {
+export function GenerateButton({ onGenerate, canGenerate, isGenerating = false, onSubmitAttempt }: GenerateButtonProps) {
   const handleClick = () => {
+    if (!canGenerate) {
+      onSubmitAttempt?.()
+      return
+    }
     if (onGenerate) {
       onGenerate()
     } else {
@@ -29,7 +34,7 @@ export function GenerateButton({ onGenerate, canGenerate, isGenerating = false }
     <div className="pt-4">
       <Button
         onClick={handleClick}
-        disabled={!canGenerate || isGenerating}
+        disabled={isGenerating}
         variant="glow"
         className="h-14 w-full cursor-pointer text-base"
       >

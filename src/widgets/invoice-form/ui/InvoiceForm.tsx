@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+
 import { cn } from '@/shared/lib/utils'
 
 import { useInvoiceForm } from '../lib/use-invoice-form'
@@ -44,14 +46,15 @@ export interface InvoiceFormProps {
 export function InvoiceForm({ className, onGenerate, isGenerating = false }: InvoiceFormProps) {
   const { form, fieldValidation, formState, canGenerate } = useInvoiceForm()
   const decimals = form.watch('decimals')
+  const [submitAttempted, setSubmitAttempted] = useState(false)
 
   return (
     <div className={cn('space-y-8', className)}>
-      <MetadataSection form={form} fieldValidation={fieldValidation} />
+      <MetadataSection form={form} fieldValidation={fieldValidation} submitAttempted={submitAttempted} />
 
-      <PartySection partyType="from" form={form} fieldValidation={fieldValidation} formState={formState} />
+      <PartySection partyType="from" form={form} fieldValidation={fieldValidation} formState={formState} submitAttempted={submitAttempted} />
 
-      <PartySection partyType="client" form={form} fieldValidation={fieldValidation} formState={formState} />
+      <PartySection partyType="client" form={form} fieldValidation={fieldValidation} formState={formState} submitAttempted={submitAttempted} />
 
       <LineItemsSection decimals={decimals ?? 6} />
 
@@ -63,7 +66,7 @@ export function InvoiceForm({ className, onGenerate, isGenerating = false }: Inv
 
       <LinkOptionsSection />
 
-      <GenerateButton onGenerate={onGenerate} canGenerate={canGenerate} isGenerating={isGenerating} />
+      <GenerateButton onGenerate={onGenerate} canGenerate={canGenerate} isGenerating={isGenerating} onSubmitAttempt={() => setSubmitAttempted(true)} />
     </div>
   )
 }
