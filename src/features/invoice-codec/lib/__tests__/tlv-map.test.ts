@@ -62,11 +62,13 @@ describe('TlvType', () => {
       TlvType.CLIENT_ADDRESS,
       TlvType.TAX,
       TlvType.DISCOUNT,
-      TlvType.MAGIC_DUST,
+      TlvType.MEMO,
       TlvType.TTL,
       TlvType.DOMAIN_SEPARATOR,
+      TlvType.SIGNATURE,
       TlvType.FROM_TAX_ID,
       TlvType.CLIENT_TAX_ID,
+      TlvType.RECURRING,
       TlvType.COMPRESSED_TEXT,
     ]
     for (const t of optionalTypes) {
@@ -101,11 +103,13 @@ describe('TlvType', () => {
     expect(TlvType.TAX).toBe(19)
     expect(TlvType.DISCOUNT).toBe(21)
     expect(TlvType.TOTAL).toBe(24)
-    expect(TlvType.MAGIC_DUST).toBe(25)
+    expect(TlvType.MEMO).toBe(27)
     expect(TlvType.TTL).toBe(29)
     expect(TlvType.DOMAIN_SEPARATOR).toBe(31)
+    expect(TlvType.SIGNATURE).toBe(33)
     expect(TlvType.FROM_TAX_ID).toBe(35)
     expect(TlvType.CLIENT_TAX_ID).toBe(37)
+    expect(TlvType.RECURRING).toBe(39)
     expect(TlvType.COMPRESSED_TEXT).toBe(253)
   })
 })
@@ -539,9 +543,11 @@ describe('COMPRESSED_TEXT_WHITELIST', () => {
     expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.TOKEN_ADDRESS)).toBe(false) // 1
     expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.CLIENT_WALLET)).toBe(false) // 3
     expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.TOTAL)).toBe(false)         // 24
-    expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.MAGIC_DUST)).toBe(false)    // 25
+    expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.MEMO)).toBe(false)          // 27 (reserved)
     expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.TTL)).toBe(false)           // 29
     expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.DOMAIN_SEPARATOR)).toBe(false) // 31
+    expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.SIGNATURE)).toBe(false)     // 33 (reserved)
+    expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.RECURRING)).toBe(false)     // 39 (reserved)
     expect(COMPRESSED_TEXT_WHITELIST.has(TlvType.COMPRESSED_TEXT)).toBe(false)  // 253
 
     // TAX (19) and DISCOUNT (21) excluded — short values, not worth compressing

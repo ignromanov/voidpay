@@ -152,7 +152,7 @@ function estimateUrlSize(draft: PartialInvoice, lineItems: LineItem[]): number {
     items: lineItems.map(({ id: _id, ...item }) => item),
   }).length
 
-  // Binary encoding + Base62 compression typically achieves ~60% of JSON size
+  // Binary encoding + Brotli + Base64url typically achieves ~60% of JSON size
   size += Math.ceil(jsonSize * 0.6)
 
   return size

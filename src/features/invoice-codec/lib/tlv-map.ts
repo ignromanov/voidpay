@@ -30,14 +30,13 @@ export const TlvType = {
   CLIENT_ADDRESS: 17,    // client.physicalAddress — UTF-8 string
   TAX: 19,               // tax — UTF-8 string (percentage)
   DISCOUNT: 21,          // discount — UTF-8 string (percentage)
-  TOTAL: 24,             // total — BigInt varint (atomic units), REQUIRED (even)
-  MAGIC_DUST: 25,        // magicDust — BigInt varint (atomic units)
-  // 27: reserved
   TTL: 29,               // codec-only: uint32 BE unix timestamp (ERC-3009 validBefore)
   DOMAIN_SEPARATOR: 31,  // codec-only: 32 bytes keccak256 hash
-  // 33: meta — reserved, encoder MUST skip
   FROM_TAX_ID: 35,       // from.taxId — UTF-8 string
   CLIENT_TAX_ID: 37,     // client.taxId — UTF-8 string
+  MEMO: 27,              // memo — UTF-8 string (reserved, optional)
+  SIGNATURE: 33,         // EIP-712 signature (reserved, optional)
+  RECURRING: 39,         // recurring billing config (reserved, optional)
   COMPRESSED_TEXT: 253,  // codec-only: grouped deflate block (§3.4)
 
   // --- Required (even) types -----------------------------------------------
@@ -52,6 +51,7 @@ export const TlvType = {
   CLIENT_NAME: 18,       // client.name — UTF-8 string
   SALT: 20,              // codec-only: 16 random bytes (crypto.getRandomValues)
   INVOICE_ID: 22,        // invoiceId — UTF-8 string
+  TOTAL: 24,             // total payment amount INCLUDING magicDust — mantissa-encoded (atomic units), REQUIRED
 } as const
 
 export type TlvTypeValue = (typeof TlvType)[keyof typeof TlvType]

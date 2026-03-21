@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useTrackedInvoiceStore, computeInvoiceStatus } from '@/entities/invoice'
 import { parseInvoiceHash } from '@/features/invoice-codec'
@@ -17,20 +17,35 @@ export function useReceivedInvoices(): DecodedReceivedInvoice[] {
     useShallow((s) => s.invoices.filter((t) => t.source === 'received')),
   )
 
-  return useMemo(
-    () =>
-      receivedTracked.map((tracked) => {
-        const hash = tracked.invoiceUrl.split('#')[1] ?? ''
-        const result = parseInvoiceHash(hash)
-        return {
-          tracked,
-          invoice: result.success ? result.data : null,
-          status: computeInvoiceStatus({
+  const [decoded, setDecoded] = useState<DecodedReceivedInvoice[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+
+    void (async () => {
+      const results = await Promise.all(
+        receivedTracked.map(async (tracked) => {
+          const hash = tracked.invoiceUrl.split('#')[1] ?? ''
+          const result = await parseInvoiceHash(hash)
+          return {
             tracked,
-            dueAt: result.success ? result.data.dueAt : undefined,
-          }),
-        }
-      }),
-    [receivedTracked],
-  )
+            invoice: result.success ? result.data : null,
+            status: computeInvoiceStatus({
+              tracked,
+              dueAt: result.success ? result.data.dueAt : undefined,
+            }),
+          }
+        }),
+      )
+      if (!cancelled) {
+        setDecoded(results)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [receivedTracked])
+
+  return decoded
 }

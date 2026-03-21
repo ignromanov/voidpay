@@ -14,30 +14,38 @@ import { getNetworkTheme } from '@/entities/network'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
 import { InvoicePaper, ScaledInvoicePreview, InvoicePaperProps } from '@/widgets/invoice-paper'
-import { DEMO_INVOICES, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
+import { getDemoInvoices, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
 import { useDemoRotation } from '../hooks/use-demo-rotation'
 
 import { DemoPagination } from './ui/DemoPagination'
 
+// Resolved type of getDemoInvoices element
+type DemoInvoice = Awaited<ReturnType<typeof getDemoInvoices>>[number]
+
 export function DemoSection() {
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const [isHovered, setIsHovered] = useState(false)
+  const [demoInvoices, setDemoInvoices] = useState<DemoInvoice[]>([])
+
+  useEffect(() => {
+    void getDemoInvoices().then(setDemoInvoices)
+  }, [])
 
   const { activeIndex, pause, resume, goTo } = useDemoRotation({
-    itemCount: DEMO_INVOICES.length,
+    itemCount: demoInvoices.length,
     interval: ROTATION_INTERVAL_MS,
     autoStart: true,
   })
 
   // Sync network theme with active invoice
   useEffect(() => {
-    const currentInvoice = DEMO_INVOICES[activeIndex]
+    const currentInvoice = demoInvoices[activeIndex]
     if (currentInvoice) {
       setNetworkTheme(getNetworkTheme(currentInvoice.data.networkId))
     }
-  }, [activeIndex, setNetworkTheme])
+  }, [activeIndex, demoInvoices, setNetworkTheme])
 
-  const currentInvoice = DEMO_INVOICES[activeIndex]
+  const currentInvoice = demoInvoices[activeIndex]
 
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true)
@@ -113,7 +121,7 @@ export function DemoSection() {
         </ScaledInvoicePreview>
 
         {/* Pagination inside container for glow effect coverage */}
-        <DemoPagination items={DEMO_INVOICES} activeIndex={activeIndex} onSelect={handleDotSelect} />
+        <DemoPagination items={demoInvoices} activeIndex={activeIndex} onSelect={handleDotSelect} />
       </div>
     </section>
   )

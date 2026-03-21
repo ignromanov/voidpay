@@ -41,8 +41,8 @@ describe('PayError — error classification', () => {
       expect(screen.getByTestId('decode-error-screen')).toBeInTheDocument()
     })
 
-    it('shows DecodeErrorScreen for "base62" keyword', () => {
-      const error = Object.assign(new Error('base62 decoding failed'), { digest: undefined })
+    it('shows DecodeErrorScreen for "base64" keyword', () => {
+      const error = Object.assign(new Error('base64 decoding failed'), { digest: undefined })
       render(<PayError error={error} reset={reset} />)
       expect(screen.getByTestId('decode-error-screen')).toBeInTheDocument()
     })

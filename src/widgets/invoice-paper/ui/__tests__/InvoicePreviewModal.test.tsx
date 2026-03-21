@@ -7,9 +7,9 @@ import { renderWithUser, screen } from '@/shared/ui/__tests__/test-utils'
 import { InvoicePreviewModal } from '../InvoicePreviewModal'
 import { PartialInvoice } from '@/entities/invoice'
 
-// Mock generateInvoiceUrl
+// Mock generateInvoiceUrl (async — must return Promise)
 vi.mock('@/features/invoice-codec', () => ({
-  generateInvoiceUrl: vi.fn(),
+  generateInvoiceUrl: vi.fn().mockResolvedValue('https://voidpay.xyz/pay#mock'),
 }))
 
 // Mock data with atomic units ($100 = 100000000 with 6 decimals)
@@ -30,6 +30,7 @@ const mockInvoiceData: PartialInvoice = {
     name: 'Client Inc',
   },
   items: [{ description: 'Development services', quantity: 10, rate: '100000000' }], // $100/hr × 10 = $1000
+  total: '1000000000', // $1000 in atomic units (6 decimals)
 }
 
 describe('InvoicePreviewModal', () => {
@@ -181,9 +182,7 @@ describe('InvoicePreviewModal', () => {
       // Import the mock to control its behavior
       const { generateInvoiceUrl } = await import('@/features/invoice-codec')
       const mockGenerateInvoiceUrl = vi.mocked(generateInvoiceUrl)
-      mockGenerateInvoiceUrl.mockImplementation(() => {
-        throw new Error('Encoding failed')
-      })
+      mockGenerateInvoiceUrl.mockRejectedValue(new Error('Encoding failed'))
 
       // Should not throw - component handles errors gracefully via try/catch
       expect(() => {
@@ -196,7 +195,7 @@ describe('InvoicePreviewModal', () => {
     it('generates URL when data is valid', async () => {
       const { generateInvoiceUrl } = await import('@/features/invoice-codec')
       const mockGenerateInvoiceUrl = vi.mocked(generateInvoiceUrl)
-      mockGenerateInvoiceUrl.mockReturnValue('https://voidpay.xyz/pay#abc123')
+      mockGenerateInvoiceUrl.mockResolvedValue('https://voidpay.xyz/pay#abc123')
 
       renderWithUser(
         <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => {}} />

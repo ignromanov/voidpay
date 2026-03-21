@@ -4,9 +4,10 @@ import type { TlvRecord } from '@/shared/lib/tlv-codec'
 import {
   readTlv,
   validateCanonical,
-  decodeBase62,
+  decodeBase64url,
   readVarInt,
-  readBigIntVarInt,
+  readMantissa,
+  readQuantity,
   groupedInflate,
   isRequired,
 } from '@/shared/lib/tlv-codec'
@@ -16,8 +17,9 @@ import {
   decodeTokenAddress,
   COMPRESSED_TEXT_WHITELIST,
 } from './tlv-map'
-import { validateSecurity } from './security'
-import { MIX_PREFIX_SIZE } from './encode'
+import { validateSecurity, deriveMagicDust } from './security'
+import { decodeChainId } from './chain-dict'
+import { reverseDict } from './app-dict'
 import type { Address } from 'viem'
 
 /** Decode a Uint8Array to UTF-8 string */
@@ -32,11 +34,6 @@ function bytesToAddress(bytes: Uint8Array): string {
     hex += bytes[i]!.toString(16).padStart(2, '0')
   }
   return hex
-}
-
-/** Read uint32 big-endian from 4 bytes */
-function readUint32BE(bytes: Uint8Array): number {
-  return ((bytes[0]! << 24) | (bytes[1]! << 16) | (bytes[2]! << 8) | bytes[3]!) >>> 0
 }
 
 /** Find a record by type, return undefined if not found */
@@ -73,20 +70,17 @@ function unpackItems(data: Uint8Array): Invoice['items'] {
     offset += descLenResult.bytesRead
     const descBytes = data.slice(offset, offset + descLenResult.value)
     offset += descLenResult.value
-    const description = decodeUtf8(descBytes)
+    const description = decodeUtf8(reverseDict(descBytes))
 
-    // quantity: 4 bytes float32 BE
-    const qtyView = new DataView(data.buffer, data.byteOffset + offset, 4)
-    const quantity = qtyView.getFloat32(0, false)
-    offset += 4
+    // quantity: scale + varint
+    const qtyResult = readQuantity(data, offset)
+    const quantity = qtyResult.value
+    offset += qtyResult.bytesRead
 
-    // rate: [len: varint] [BigInt varint bytes]
-    const rateLenResult = readVarInt(data, offset)
-    offset += rateLenResult.bytesRead
-    const rateBytes = data.slice(offset, offset + rateLenResult.value)
-    offset += rateLenResult.value
-    const rateResult = readBigIntVarInt(rateBytes, 0)
+    // rate: mantissa + trailing zeros
+    const rateResult = readMantissa(data, offset)
     const rate = rateResult.value.toString()
+    offset += rateResult.bytesRead
 
     items.push({ description, quantity, rate })
   }
@@ -97,22 +91,21 @@ function unpackItems(data: Uint8Array): Invoice['items'] {
  * Decodes a TLV v1 compressed string into an invoice object.
  * Validates canonical ordering, security constraints, and schema.
  *
- * @param compressed The Base62-encoded string from the URL hash fragment (no prefix)
+ * @param compressed The Base64url-encoded string from the URL hash fragment (no prefix)
  * @returns The decoded invoice object
  * @throws Error if decoding fails, security validation fails, or schema invalid
  */
-export function decodeInvoice(compressed: string): Invoice {
+export async function decodeInvoice(compressed: string): Promise<Invoice> {
   if (!compressed) {
     throw new Error('Empty invoice data')
   }
 
   try {
-    // 1. Base62 → binary, strip mix prefix (avalanche diffusion bytes)
-    const allBytes = decodeBase62(compressed)
-    const bytes = allBytes.slice(MIX_PREFIX_SIZE)
+    // 1. Base64url → binary (no mix prefix to strip)
+    const bytes = decodeBase64url(compressed)
 
     // 2. Parse TLV structure
-    const { records } = readTlv(bytes)
+    const { records } = await readTlv(bytes)
 
     // 3. Validate canonical ordering (ascending by type, no duplicates)
     validateCanonical(records)
@@ -124,7 +117,7 @@ export function decodeInvoice(compressed: string): Invoice {
     let allRecords = [...records]
     const compressedRecord = findRecord(allRecords, TlvType.COMPRESSED_TEXT)
     if (compressedRecord) {
-      const inflatedFields = groupedInflate(compressedRecord.value)
+      const inflatedFields = await groupedInflate(compressedRecord.value)
       // Validate whitelist — reject spoofed type_ids
       for (const field of inflatedFields) {
         if (!COMPRESSED_TEXT_WHITELIST.has(field.typeId)) {
@@ -164,13 +157,25 @@ export function decodeInvoice(compressed: string): Invoice {
     const invoiceIdRecord = requireRecord(allRecords, TlvType.INVOICE_ID, 'invoiceId')
     const fromNameRecord = requireRecord(allRecords, TlvType.FROM_NAME, 'fromName')
     const clientNameRecord = requireRecord(allRecords, TlvType.CLIENT_NAME, 'clientName')
+    const saltRecord = requireRecord(allRecords, TlvType.SALT, 'salt')
+    const totalRecord = requireRecord(allRecords, TlvType.TOTAL, 'total')
 
     // 8. Decode required fields
-    const networkIdResult = readVarInt(chainIdRecord.value, 0)
-    const networkId = networkIdResult.value
 
-    const issuedAt = readUint32BE(issuedAtRecord.value)
-    const dueAt = readUint32BE(dueAtRecord.value)
+    // chainId: dict code for known chains, raw varint for unknown
+    const chainIdResult = decodeChainId(chainIdRecord.value, 0)
+    const networkId = chainIdResult.chainId
+
+    const issuedAt =
+      ((issuedAtRecord.value[0]! << 24) |
+        (issuedAtRecord.value[1]! << 16) |
+        (issuedAtRecord.value[2]! << 8) |
+        issuedAtRecord.value[3]!) >>> 0
+
+    // dueAt: delta from issuedAt (varint)
+    const dueDeltaResult = readVarInt(dueAtRecord.value, 0)
+    const dueAt = issuedAt + dueDeltaResult.value
+
     const decimals = decimalsRecord.value[0]!
 
     const fromWalletAddress = bytesToAddress(fromWalletRecord.value)
@@ -186,8 +191,54 @@ export function decodeInvoice(compressed: string): Invoice {
 
     const items = unpackItems(itemsRecord.value)
     const invoiceId = decodeUtf8(invoiceIdRecord.value)
-    const fromName = decodeUtf8(fromNameRecord.value)
-    const clientName = decodeUtf8(clientNameRecord.value)
+
+    // Text fields: reverse app-level dictionary substitution
+    const fromName = decodeUtf8(reverseDict(fromNameRecord.value))
+    const clientName = decodeUtf8(reverseDict(clientNameRecord.value))
+
+    // Total: read as-is — it IS the final payment amount (may include magicDust)
+    const totalResult = readMantissa(totalRecord.value, 0)
+    const totalAtomic = totalResult.value
+    const total = totalAtomic.toString()
+
+    // Derive possibleDust from salt and check if dust was actually applied.
+    //
+    // Replicates calculateTotalsBigInt (amount-utils) formula exactly:
+    //   subtotal = Σ(qtyScaled * rate / scale)
+    //   taxAmount = subtotal * round(taxPct * 100) / 10000
+    //   discountAmount = subtotal * round(discPct * 100) / 10000
+    //   expectedTotal = subtotal + taxAmount - discountAmount
+    //   dust = totalAtomic - expectedTotal
+    //
+    // PRECISION NOTE: Uses the same float-to-BigInt conversion as the encoder:
+    // BigInt(Math.round(qty * Number(scale))). Both sides share this formula.
+    const possibleDustRaw = deriveMagicDust(saltRecord.value)
+    const possibleDustAtomic = BigInt(possibleDustRaw)
+    const scale = BigInt(10 ** decimals)
+    const HUNDRED_SQUARED = 10000n
+    const itemsSubtotal = items.reduce((acc, item) => {
+      const rate = BigInt(item.rate || '0')
+      const qtyScaled = BigInt(Math.round(item.quantity * Number(scale)))
+      return acc + (qtyScaled * rate) / scale
+    }, 0n)
+
+    // Read tax/discount early (also decoded below for the invoice object)
+    const taxRecordEarly = findRecord(allRecords, TlvType.TAX)
+    const discountRecordEarly = findRecord(allRecords, TlvType.DISCOUNT)
+    const taxPct = taxRecordEarly ? parseFloat(decodeUtf8(taxRecordEarly.value)) : 0
+    const discPct = discountRecordEarly ? parseFloat(decodeUtf8(discountRecordEarly.value)) : 0
+
+    let expectedTotal = itemsSubtotal
+    if (taxPct > 0) {
+      expectedTotal += (itemsSubtotal * BigInt(Math.round(taxPct * 100))) / HUNDRED_SQUARED
+    }
+    if (discPct > 0) {
+      expectedTotal -= (itemsSubtotal * BigInt(Math.round(discPct * 100))) / HUNDRED_SQUARED
+    }
+    if (expectedTotal < 0n) expectedTotal = 0n
+
+    const diff = totalAtomic - expectedTotal
+    const magicDust = diff === possibleDustAtomic ? possibleDustAtomic.toString() : undefined
 
     // 9. Decode optional fields
     const tokenAddressRecord = findRecord(allRecords, TlvType.TOKEN_ADDRESS)
@@ -208,50 +259,39 @@ export function decodeInvoice(compressed: string): Invoice {
       : undefined
 
     const notesRecord = findRecord(allRecords, TlvType.NOTES)
-    const notes = notesRecord ? decodeUtf8(notesRecord.value) : undefined
+    const notes = notesRecord ? decodeUtf8(reverseDict(notesRecord.value)) : undefined
 
     const fromEmailRecord = findRecord(allRecords, TlvType.FROM_EMAIL)
-    const fromEmail = fromEmailRecord ? decodeUtf8(fromEmailRecord.value) : undefined
+    const fromEmail = fromEmailRecord ? decodeUtf8(reverseDict(fromEmailRecord.value)) : undefined
 
     const fromPhoneRecord = findRecord(allRecords, TlvType.FROM_PHONE)
-    const fromPhone = fromPhoneRecord ? decodeUtf8(fromPhoneRecord.value) : undefined
+    const fromPhone = fromPhoneRecord ? decodeUtf8(reverseDict(fromPhoneRecord.value)) : undefined
 
     const fromAddressRecord = findRecord(allRecords, TlvType.FROM_ADDRESS)
-    const fromPhysicalAddress = fromAddressRecord ? decodeUtf8(fromAddressRecord.value) : undefined
+    const fromPhysicalAddress = fromAddressRecord ? decodeUtf8(reverseDict(fromAddressRecord.value)) : undefined
 
     const fromTaxIdRecord = findRecord(allRecords, TlvType.FROM_TAX_ID)
-    const fromTaxId = fromTaxIdRecord ? decodeUtf8(fromTaxIdRecord.value) : undefined
+    const fromTaxId = fromTaxIdRecord ? decodeUtf8(reverseDict(fromTaxIdRecord.value)) : undefined
 
     const clientEmailRecord = findRecord(allRecords, TlvType.CLIENT_EMAIL)
-    const clientEmail = clientEmailRecord ? decodeUtf8(clientEmailRecord.value) : undefined
+    const clientEmail = clientEmailRecord ? decodeUtf8(reverseDict(clientEmailRecord.value)) : undefined
 
     const clientPhoneRecord = findRecord(allRecords, TlvType.CLIENT_PHONE)
-    const clientPhone = clientPhoneRecord ? decodeUtf8(clientPhoneRecord.value) : undefined
+    const clientPhone = clientPhoneRecord ? decodeUtf8(reverseDict(clientPhoneRecord.value)) : undefined
 
     const clientAddressRecord = findRecord(allRecords, TlvType.CLIENT_ADDRESS)
     const clientPhysicalAddress = clientAddressRecord
-      ? decodeUtf8(clientAddressRecord.value)
+      ? decodeUtf8(reverseDict(clientAddressRecord.value))
       : undefined
 
     const clientTaxIdRecord = findRecord(allRecords, TlvType.CLIENT_TAX_ID)
-    const clientTaxId = clientTaxIdRecord ? decodeUtf8(clientTaxIdRecord.value) : undefined
+    const clientTaxId = clientTaxIdRecord ? decodeUtf8(reverseDict(clientTaxIdRecord.value)) : undefined
 
     const taxRecord = findRecord(allRecords, TlvType.TAX)
     const tax = taxRecord ? decodeUtf8(taxRecord.value) : undefined
 
     const discountRecord = findRecord(allRecords, TlvType.DISCOUNT)
     const discount = discountRecord ? decodeUtf8(discountRecord.value) : undefined
-
-    const totalRecord = requireRecord(allRecords, TlvType.TOTAL, 'total')
-    const totalResult = readBigIntVarInt(totalRecord.value, 0)
-    const total = totalResult.value.toString()
-
-    const magicDustRecord = findRecord(allRecords, TlvType.MAGIC_DUST)
-    let magicDust: string | undefined
-    if (magicDustRecord) {
-      const result = readBigIntVarInt(magicDustRecord.value, 0)
-      magicDust = result.value.toString()
-    }
 
     // 10. Construct invoice
     const invoice: Invoice = {
@@ -283,7 +323,7 @@ export function decodeInvoice(compressed: string): Invoice {
       ...(tax && { tax }),
       ...(discount && { discount }),
       total,
-      ...(magicDust && { magicDust }),
+      ...(magicDust !== undefined && { magicDust }),
     }
 
     // 11. Validate against schema

@@ -165,7 +165,7 @@ describe('CreateWorkspace', () => {
   describe('URL hash decoding', () => {
     it('decodes invoice from URL hash on mount', async () => {
       const testInvoice = TEST_INVOICES.full()
-      const encodedHash = encodeInvoice(testInvoice)
+      const encodedHash = await encodeInvoice(testInvoice)
 
       mockUseHashFragment.mockReturnValue(encodedHash)
 
@@ -186,7 +186,7 @@ describe('CreateWorkspace', () => {
 
       // Change hash
       const testInvoice = TEST_INVOICES.full()
-      const encodedHash = encodeInvoice(testInvoice)
+      const encodedHash = await encodeInvoice(testInvoice)
       mockUseHashFragment.mockReturnValue(encodedHash)
 
       rerender(<CreateWorkspace />)
@@ -235,7 +235,7 @@ describe('CreateWorkspace', () => {
 
     it('does not show success toast on successful decode (silent)', async () => {
       const testInvoice = TEST_INVOICES.full()
-      const encodedHash = encodeInvoice(testInvoice)
+      const encodedHash = await encodeInvoice(testInvoice)
 
       mockUseHashFragment.mockReturnValue(encodedHash)
 
@@ -597,7 +597,7 @@ describe('CreateWorkspace', () => {
       invoice2.invoiceId = 'RAPID-002'
 
       // First hash
-      mockUseHashFragment.mockReturnValue(encodeInvoice(invoice1))
+      mockUseHashFragment.mockReturnValue(await encodeInvoice(invoice1))
       const { rerender } = renderWithUser(<CreateWorkspace />)
 
       await waitFor(() => {
@@ -605,7 +605,7 @@ describe('CreateWorkspace', () => {
       })
 
       // Second hash
-      mockUseHashFragment.mockReturnValue(encodeInvoice(invoice2))
+      mockUseHashFragment.mockReturnValue(await encodeInvoice(invoice2))
       rerender(<CreateWorkspace />)
 
       await waitFor(() => {

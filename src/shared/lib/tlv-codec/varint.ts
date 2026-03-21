@@ -101,3 +101,79 @@ export function readBigIntVarInt(bytes: Uint8Array, offset: number): { value: bi
 
   return { value, bytesRead }
 }
+
+/**
+ * Writes a BigInt amount as mantissa + trailing zero count.
+ *
+ * Format: [mantissa: BigInt varint][trailing_zero_count: uint8]
+ * Saves bytes for amounts like 10^18 (1 ETH) or 10^8 (1 USDC).
+ *
+ * @example
+ * const buf: number[] = []
+ * writeMantissa(buf, 100000000n)  // $100 USDC → mantissa=1, zeros=8 → 2 bytes
+ */
+export function writeMantissa(buf: number[], value: bigint): void {
+  if (value === 0n) {
+    writeBigIntVarInt(buf, 0n)
+    buf.push(0)
+    return
+  }
+  let zeros = 0
+  let mantissa = value
+  while (mantissa > 0n && mantissa % 10n === 0n) {
+    mantissa /= 10n
+    zeros++
+  }
+  writeBigIntVarInt(buf, mantissa)
+  buf.push(zeros)
+}
+
+/**
+ * Reads a mantissa-encoded BigInt from a Uint8Array at the given offset.
+ *
+ * @returns mantissa, zeros, reconstructed value, and total bytes consumed
+ */
+export function readMantissa(
+  bytes: Uint8Array,
+  offset: number,
+): { mantissa: bigint; zeros: number; value: bigint; bytesRead: number } {
+  const { value: mantissa, bytesRead: mBytes } = readBigIntVarInt(bytes, offset)
+  const zeros = bytes[offset + mBytes]!
+  if (zeros > 30) throw new Error(`Mantissa trailing zeros ${zeros} exceeds maximum 30`)
+  const value = mantissa * 10n ** BigInt(zeros)
+  return { mantissa, zeros, value, bytesRead: mBytes + 1 }
+}
+
+/**
+ * Writes a fractional quantity as [scale: uint8][scaled_value: varint].
+ *
+ * Finds minimum scale (0–9) such that qty * 10^scale is an integer.
+ *
+ * @example
+ * const buf: number[] = []
+ * writeQuantity(buf, 1.5)   // scale=1, value=15 → 2 bytes
+ * writeQuantity(buf, 0.25)  // scale=2, value=25 → 2 bytes
+ */
+export function writeQuantity(buf: number[], qty: number): void {
+  let scale = 0
+  let scaled = qty
+  while (scale < 9 && Math.round(scaled) !== scaled) {
+    scale++
+    scaled = qty * Math.pow(10, scale)
+  }
+  scaled = Math.round(scaled)
+  buf.push(scale)
+  writeVarInt(buf, scaled)
+}
+
+/**
+ * Reads a quantity-encoded number from a Uint8Array at the given offset.
+ */
+export function readQuantity(
+  bytes: Uint8Array,
+  offset: number,
+): { value: number; bytesRead: number } {
+  const scale = bytes[offset]!
+  const { value: scaled, bytesRead } = readVarInt(bytes, offset + 1)
+  return { value: scaled / Math.pow(10, scale), bytesRead: 1 + bytesRead }
+}

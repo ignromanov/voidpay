@@ -121,6 +121,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const ipAddress = extractIpAddress(request.headers)
       storedRateLimitResult = await checkRateLimit(ipAddress)
 
+      // Fail-closed: rate limiter unavailable (no Redis) → 503
+      if (storedRateLimitResult.unavailable) {
+        return NextResponse.json(
+          {
+            jsonrpc: '2.0',
+            error: {
+              code: -32603,
+              message: 'Service temporarily unavailable. Please try again later.',
+            },
+            id: body.id || null,
+          } as JsonRpcResponse,
+          {
+            status: 503,
+            headers: {
+              'Retry-After': '30',
+            },
+          }
+        )
+      }
+
       if (!storedRateLimitResult.allowed) {
         return NextResponse.json(
           {
