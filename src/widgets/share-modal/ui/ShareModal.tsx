@@ -86,9 +86,9 @@ export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgTo
                 includeOg={includeOg}
                 onOgToggle={onOgToggle}
               />
-            ) : invoice ? (
-              <QRTab invoice={invoice} />
-            ) : null}
+            ) : (
+              <QRTab url={url} />
+            )}
           </div>
         </div>
       </DialogContent>
