@@ -7,6 +7,7 @@ import { motion } from '@/shared/ui/motion'
 import { Button } from '@/shared/ui/button'
 import { type LineItem, FIELD_LIMITS } from '@/shared/lib/invoice-types'
 import { parseAmount, formatAmount } from '@/shared/lib/amount-utils'
+import { cn } from '@/shared/lib/utils'
 
 export interface InvoiceItemRowProps {
   item: LineItem
@@ -99,72 +100,75 @@ export function InvoiceItemRow({
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
-      className="group flex items-start gap-2 overflow-hidden rounded border border-transparent bg-zinc-900/40 p-2 transition-colors hover:border-zinc-800"
+      className="flex flex-col gap-2 overflow-hidden rounded-lg border border-transparent bg-zinc-900/40 p-3 transition-colors hover:border-zinc-800"
     >
-      {/* Description — flexible width */}
-      <div className="flex-1 min-w-0">
-        <input
-          type="text"
-          placeholder="Description *"
-          value={item.description}
-          maxLength={FIELD_LIMITS.description}
-          onChange={(e) => onUpdate({ description: e.target.value })}
-          aria-label="Item description"
-          autoComplete="off"
-          className="w-full border-b border-zinc-800 bg-transparent py-1 text-sm text-zinc-200 transition-colors outline-none placeholder:text-zinc-700 focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
-        />
-      </div>
-      {/* Qty — fixed width */}
-      <div className="w-14 flex-shrink-0">
-        <input
-          type="number"
-          placeholder="Qty"
-          value={item.quantity}
-          min={1}
-          max={FIELD_LIMITS.maxQuantity}
-          onChange={(e) => onUpdate({ quantity: parseFloat(e.target.value) || 1 })}
-          aria-label="Item quantity"
-          autoComplete="off"
-          className="w-full border-b border-zinc-800 bg-transparent py-1 text-center text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
-        />
-      </div>
-      {/* Price — fixed width */}
-      <div className="w-20 flex-shrink-0">
-        <input
-          type="text"
-          inputMode="decimal"
-          placeholder="Price *"
-          value={rateInput}
-          maxLength={FIELD_LIMITS.rate}
-          onChange={handleRateChange}
-          onBlur={handleRateBlur}
-          aria-label="Item price"
-          autoComplete="off"
-          className="w-full border-b border-zinc-800 bg-transparent py-1 text-right text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
-        />
-      </div>
-      {/* Total — fixed width with truncate */}
-      <div className="w-24 flex-shrink-0 overflow-hidden">
-        <div
-          className="border-b border-zinc-800 py-1 text-right font-mono text-sm text-zinc-400 truncate"
-          title={lineTotal}
-        >
-          {lineTotal}
+      {/* Top row: Description + Delete */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0">
+          <input
+            type="text"
+            placeholder="Item description"
+            value={item.description}
+            maxLength={FIELD_LIMITS.description}
+            onChange={(e) => onUpdate({ description: e.target.value })}
+            aria-label="Item description"
+            autoComplete="off"
+            className="w-full border-b border-zinc-800 bg-transparent py-1 text-sm text-zinc-200 transition-colors outline-none placeholder:text-zinc-700 focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
+          />
         </div>
+        <Button
+          onClick={onRemove}
+          variant="ghost"
+          size="icon"
+          aria-label="Remove item"
+          className={cn(
+            'min-w-[44px] min-h-[44px] p-0 text-zinc-500 opacity-50 transition-opacity hover:text-red-400 hover:opacity-100 hover:bg-red-500/10',
+            !canRemove && 'invisible'
+          )}
+        >
+          <Trash2Icon className="h-3.5 w-3.5" />
+        </Button>
       </div>
-      {/* Delete button — fixed width */}
-      <div className="w-6 flex-shrink-0 flex justify-end pt-1">
-        {canRemove && (
-          <Button
-            onClick={onRemove}
-            variant="ghost"
-            size="icon"
-            aria-label="Delete item"
-            className="h-6 w-6 p-0 text-zinc-500 hover:text-red-400"
+
+      {/* Bottom row: Qty + Price + Total (right-aligned) */}
+      <div className="flex items-start justify-end gap-2">
+        <div className="w-14 flex-shrink-0">
+          <input
+            type="number"
+            placeholder="Qty"
+            value={item.quantity}
+            min={1}
+            max={FIELD_LIMITS.maxQuantity}
+            onChange={(e) => onUpdate({ quantity: parseFloat(e.target.value) || 1 })}
+            aria-label="Item quantity"
+            autoComplete="off"
+            className="w-full border-b border-zinc-800 bg-transparent py-1 text-center text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
+          />
+        </div>
+        <div className="w-24 flex-shrink-0">
+          <input
+            type="text"
+            inputMode="decimal"
+            placeholder="0.00"
+            value={rateInput}
+            maxLength={FIELD_LIMITS.rate}
+            onChange={handleRateChange}
+            onBlur={handleRateBlur}
+            aria-label="Item price"
+            autoComplete="off"
+            className="w-full border-b border-zinc-800 bg-transparent py-1 text-right text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
+          />
+        </div>
+        <div className="w-24 flex-shrink-0 overflow-hidden">
+          <div
+            className="border-b border-zinc-800 py-1 text-right font-mono text-sm text-zinc-400 truncate"
+            title={lineTotal}
           >
-            <Trash2Icon className="h-3 w-3" />
-          </Button>
-        )}
+            {lineTotal}
+          </div>
+        </div>
+        {/* Spacer matching delete button width */}
+        <div className="min-w-[44px] flex-shrink-0" />
       </div>
     </motion.div>
   )
