@@ -44,13 +44,12 @@ export function LineItemsSection({ decimals }: LineItemsSectionProps) {
       </div>
 
       <div className="space-y-2">
-        {/* Table Header — matches InvoiceItemRow flex layout */}
-        <div className="flex gap-2 px-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
-          <div className="flex-1 min-w-0">Description</div>
+        {/* Column headers — Qty/Price/Total only, aligned with bottom row */}
+        <div className="flex justify-end gap-2 px-3 pb-1 text-xs font-medium uppercase tracking-wide text-zinc-500">
           <div className="w-14 flex-shrink-0 text-center">Qty</div>
-          <div className="w-20 flex-shrink-0 text-right">Price</div>
+          <div className="w-24 flex-shrink-0 text-right">Price</div>
           <div className="w-24 flex-shrink-0 text-right">Total</div>
-          <div className="w-6 flex-shrink-0" />
+          <div className="min-w-[44px] flex-shrink-0" />
         </div>
 
         <AnimatePresence>
