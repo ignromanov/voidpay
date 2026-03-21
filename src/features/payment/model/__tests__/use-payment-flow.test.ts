@@ -98,7 +98,6 @@ import { usePaymentFlow } from '../use-payment-flow'
 import type { Invoice } from '@/entities/invoice'
 
 const mockInvoice: Invoice = {
-  version: 2,
   invoiceId: 'INV-001',
   currency: 'ETH',
   networkId: 1,

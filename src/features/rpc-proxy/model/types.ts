@@ -75,6 +75,7 @@ export interface ProxyResult {
   requestId: string
 }
 
+/** @deprecated Use RateLimitResponse from rate-limit.ts instead */
 export interface RateLimitResult {
   allowed: boolean
   remaining: number

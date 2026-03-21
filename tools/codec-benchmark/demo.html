@@ -1,0 +1,2399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoidPay Codec Evolution — Size Benchmark</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #0a0a0a; color: #e5e5e5; margin: 0; padding: 2rem; }
+    h1 { color: #fff; font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .subtitle { color: #737373; font-size: 0.9rem; margin-bottom: 2rem; }
+    h2 { color: #a3a3a3; margin-top: 2.5rem; font-size: 1.1rem; border-bottom: 1px solid #262626; padding-bottom: 0.5rem; }
+    .summary { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0; }
+    .card { background: #171717; border: 1px solid #262626; border-radius: 8px; padding: 1rem 1.5rem; }
+    .card .label { color: #737373; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .card .value { font-size: 1.4rem; font-weight: 700; margin-top: 0.25rem; }
+    .card .sub { font-size: 0.8rem; color: #525252; margin-top: 0.25rem; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.9rem; }
+    th, td { padding: 0.5rem 0.75rem; text-align: right; border: 1px solid #262626; }
+    th { background: #111; color: #a3a3a3; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    td:first-child, th:first-child { text-align: left; }
+    .best { font-weight: 700; color: #22c55e; }
+    .reduction { display: block; font-size: 0.72rem; margin-top: 2px; }
+    .pos { color: #22c55e; } .neg { color: #ef4444; } .zero { color: #737373; }
+    .results td { padding: 0.35rem 0.5rem; vertical-align: middle; min-width: 80px; }
+    .results .raw-cell { opacity: 0.5; }
+    .results .scenario-name { font-weight: 500; white-space: nowrap; min-width: 0; }
+    .cell-bar { height: 6px; background: #1a1a1a; border-radius: 3px; margin-bottom: 4px; overflow: hidden; }
+    .cell-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+    .cell-val { display: flex; justify-content: space-between; align-items: baseline; gap: 4px; }
+    .cell-val span:first-child { font-size: 0.9rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .meta td, .meta th { border-color: #1a1a1a; padding: 0.35rem 0.75rem; font-size: 0.82rem; }
+    .meta td:nth-child(7) { text-align: center; }
+    .meta .meta-desc { color: #737373; font-size: 0.78rem; max-width: 280px; text-align: left; }
+    .era-sep td { background: #111; border-color: #1a1a1a; padding: 0.5rem 0.75rem; color: #a3a3a3; font-size: 0.78rem; }
+    .era-tag { background: #262626; color: #e5e5e5; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.15rem 0.5rem; border-radius: 3px; margin-right: 0.5rem; }
+    .charts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .url-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .url-tab { background: #171717; border: 1px solid #262626; color: #737373; padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.82rem; transition: all 0.1s; }
+    .url-tab:hover { border-color: #404040; color: #a3a3a3; }
+    .url-tab.active { background: #262626; color: #e5e5e5; border-color: #404040; }
+    .url-panel { display: flex; flex-direction: column; gap: 0.5rem; }
+    .url-panel.hidden { display: none; }
+    .url-row { background: #111; border: 1px solid #1e1e1e; border-radius: 6px; padding: 0.6rem 0.75rem; display: flex; flex-direction: column; gap: 0.35rem; }
+    .url-row.url-best { border-color: #166534; }
+    .url-meta { display: flex; align-items: center; gap: 0.5rem; }
+    .url-ver { background: #1e1e1e; color: #a3a3a3; font-family: monospace; font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 3px; }
+    .url-name { color: #525252; font-size: 0.8rem; }
+    .url-len { margin-left: auto; font-size: 0.78rem; font-family: monospace; font-weight: 600; }
+    .url-content { display: flex; align-items: flex-start; gap: 0.5rem; }
+    .url-text { font-family: monospace; font-size: 0.7rem; color: #525252; word-break: break-all; flex: 1; line-height: 1.6; }
+    .url-best .url-text { color: #737373; }
+    .copy-btn { background: #1e1e1e; border: 1px solid #333; color: #737373; padding: 0.25rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; white-space: nowrap; flex-shrink: 0; transition: all 0.1s; }
+    .copy-btn:hover { background: #262626; color: #e5e5e5; border-color: #404040; }
+    .edu-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .edu-tab { background: #171717; border: 1px solid #262626; color: #737373; padding: 0.4rem 0.85rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; font-family: monospace; transition: all 0.15s; }
+    .edu-tab:hover { border-color: #404040; color: #a3a3a3; }
+    .edu-tab.active { background: #262626; color: #e5e5e5; border-color: #404040; }
+    .edu-panel { background: #111; border: 1px solid #1e1e1e; border-radius: 8px; padding: 1.25rem; }
+    .edu-panel.hidden { display: none; }
+    .edu-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 0.75rem; }
+    .edu-ver { font-family: monospace; font-size: 1.1rem; font-weight: 700; color: #e5e5e5; margin-right: 0.5rem; }
+    .edu-name { color: #a3a3a3; font-size: 0.95rem; }
+    .edu-era { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.15rem 0.5rem; border-radius: 3px; color: #fff; margin-left: 0.5rem; }
+    .edu-section { margin-bottom: 1rem; }
+    .edu-section-title { color: #737373; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 0.5rem; }
+    .edu-dim { font-weight: 400; text-transform: none; letter-spacing: 0; }
+    .edu-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .pipe-flow { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+    .pipe-step { border: 1px solid; padding: 0.3rem 0.6rem; border-radius: 5px; font-size: 0.8rem; font-weight: 500; white-space: nowrap; }
+    .pipe-arrow { color: #404040; font-size: 0.9rem; }
+    .struct-bar-container { display: flex; height: 28px; border-radius: 5px; overflow: hidden; margin-bottom: 0.35rem; }
+    .struct-seg { display: flex; align-items: center; justify-content: center; min-width: 0; overflow: hidden; transition: width 0.3s; }
+    .struct-label { font-size: 0.68rem; color: rgba(255,255,255,0.85); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+    .struct-note { color: #525252; font-size: 0.78rem; font-style: italic; }
+    .edu-item { font-size: 0.82rem; padding: 0.2rem 0; display: flex; gap: 0.4rem; line-height: 1.4; }
+    .edu-icon { font-weight: 700; width: 14px; flex-shrink: 0; text-align: center; }
+    .edu-pro { color: #a3a3a3; } .edu-pro .edu-icon { color: #22c55e; }
+    .edu-con { color: #737373; } .edu-con .edu-icon { color: #ef4444; }
+    .edu-insight { background: #1a1a2e; border: 1px solid #262650; border-radius: 6px; padding: 0.6rem 0.85rem; font-size: 0.82rem; color: #a3a3d4; display: flex; gap: 0.5rem; align-items: flex-start; line-height: 1.5; }
+    .edu-insight-icon { font-size: 1rem; flex-shrink: 0; }
+    .field-table { border-collapse: collapse; width: 100%; font-size: 0.82rem; }
+    .field-table th { background: #111; color: #737373; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.4rem 0.6rem; text-align: left; border: 1px solid #1a1a1a; }
+    .field-table td { padding: 0.35rem 0.6rem; border: 1px solid #1a1a1a; vertical-align: middle; }
+    .field-name { background: #0d0d0d; font-weight: 600; color: #e5e5e5; white-space: nowrap; }
+    .field-desc { color: #525252; font-size: 0.75rem; font-weight: 400; margin-top: 0.15rem; }
+    .field-first td { border-top: 1px solid #333; }
+    .field-ver { font-family: monospace; color: #a3a3a3; font-size: 0.78rem; white-space: nowrap; }
+    .field-enc { color: #a3a3a3; }
+    .field-hex code { color: #525252; font-size: 0.72rem; word-break: break-all; }
+    .field-size { min-width: 80px; }
+    .field-size-row { display: flex; align-items: center; gap: 6px; }
+    .field-size-row span { font-family: monospace; font-weight: 600; font-size: 0.8rem; color: #a3a3a3; white-space: nowrap; min-width: 28px; }
+    .field-bar { height: 8px; border-radius: 4px; min-width: 3px; transition: width 0.3s; }
+    @media (max-width: 600px) { body { padding: 1rem; } .summary { flex-direction: column; } .edu-columns { grid-template-columns: 1fr; } }
+    .intro { max-width: 720px; margin: 0 auto 2.5rem; }
+    .intro h1 { font-size: 1.8rem; color: #fff; margin-bottom: 0.25rem; }
+    .intro .tagline { color: #737373; font-size: 1rem; margin-bottom: 2rem; font-style: italic; }
+    .intro h3 { color: #e5e5e5; font-size: 1.1rem; margin: 1.5rem 0 0.5rem; border-left: 3px solid #3b82f6; padding-left: 0.75rem; }
+    .intro p { color: #a3a3a3; font-size: 0.9rem; line-height: 1.7; margin: 0.5rem 0; }
+    .intro .key-insight { background: #1a1a2e; border: 1px solid #262650; border-radius: 8px; padding: 1rem 1.25rem; font-size: 0.95rem; color: #a3a3d4; line-height: 1.6; margin: 1.5rem 0; }
+    .intro .key-insight::before { content: '💡 '; }
+    .intro hr { border: none; border-top: 1px solid #262626; margin: 2rem 0; }
+</style>
+</head>
+<body>
+  <div class="intro">
+    <h1>The Evolution of VoidPay's Invoice Codec</h1>
+    <div class="tagline">How we compressed a full crypto invoice into a URL that fits in a QR code</div>
+    <h3>The Problem</h3>
+      <p>Crypto invoicing is broken. Sending a raw wallet address via Telegram or Discord is unprofessional and dangerous — clipboard hijacking, wrong network, wrong token decimals. Existing solutions like Request Finance require KYC, accounts, and organizational setup.</p>
+      <p>VoidPay takes a radical approach: the URL IS the invoice. No backend, no database, no signup. A self-contained link carries all payment details in its hash fragment — invisible to the server, visible only to the sender and recipient.</p>
+      <h3>The Constraint</h3>
+      <p>A full invoice (two parties with names, emails, addresses, multiple line items, tax, notes) can easily reach 1KB of structured data. But URLs have hard limits: QR codes become unreadable above ~2000 bytes, and older HTTP clients truncate long URLs.</p>
+      <p>Since the hash fragment carries ALL the data (zero-backend principle), every byte of the invoice must fit in the URL. This constraint drove 7 codec iterations over 4 months.</p>
+      <h3>Three Eras of Compression</h3>
+      <p>v0 (Baseline): JSON + lz-string. Simple but wasteful — JSON keys like &quot;walletAddress&quot; repeat for every invoice, consuming ~40% of space.</p>
+      <p>v1–v3 (Ad-hoc Binary): Hand-crafted binary formats. Each iteration added optimizations: raw 20-byte addresses (−22 bytes each), bit flags for optional fields, currency dictionaries, DEFLATE compression on text blobs.</p>
+      <p>v4–v6 (TLV Structured): Type-Length-Value format inspired by Lightning's BOLT12. Forward-compatible, extensible, with security primitives (salt for privacy, keccak256 domain separator for integrity). v6 adds whole-payload Brotli compression for maximum density.</p>
+    <div class="key-insight">From 1043 chars (v0) to 698 chars (v6) for a full invoice with all fields — 33% smaller while adding salt, domain separator, and forward compatibility.</div>
+    <hr>
+  </div>
+  <h1>VoidPay Codec Evolution — Size Benchmark</h1>
+  <div class="subtitle">Encoded URL character count across 7 historical codec versions · 8 test scenarios</div>
+
+  <div class="summary">
+    <div class="card">
+      <div class="label">Best Overall</div>
+      <div class="value">v3 — Binary v3</div>
+      <div class="sub">Avg 45% smaller than v0</div>
+    </div>
+    <div class="card">
+      <div class="label">Codecs Compared</div>
+      <div class="value">7</div>
+      <div class="sub">v0 (2025-11) → v6 (2026-03)</div>
+    </div>
+    <div class="card">
+      <div class="label">v0 Baseline</div>
+      <div class="value">JSON + lz-string</div>
+      <div class="sub">URI-encoded, LZ77 compression</div>
+    </div>
+  </div>
+
+  <h2>Results</h2>
+  <p style="color:#525252;font-size:0.8rem;margin:-0.5rem 0 1rem">Encoded string length in chars · bar scaled to Raw baseline per row · <span class="pos">green</span> = best, <span class="neg">red</span> = worst per scenario</p>
+  <table class="results">
+    <thead>
+      <tr>
+        <th></th>
+        <th style="text-align:center;color:#525252;font-weight:400;border-bottom:2px solid #262626;letter-spacing:0">Baseline</th>
+        <th colspan="4" style="text-align:center;color:#737373;font-weight:400;border-bottom:2px solid #333;letter-spacing:0">Ad-hoc Binary</th>
+        <th colspan="3" style="text-align:center;color:#737373;font-weight:400;border-bottom:2px solid #525252;letter-spacing:0">TLV Structured</th>
+      </tr>
+      <tr>
+        <th>Scenario</th>
+        <th style="color:#525252">Raw</th>
+        <th style="">v0</th>
+        <th style="">v1</th>
+        <th style="">v2</th>
+        <th style="">v3</th>
+        <th style="border-left:2px solid #404040;">v4</th>
+        <th style="">v5</th>
+        <th style="">v6</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="scenario-name">Minimal</td><td class="raw-cell">
+          <div class="cell-bar"><div class="cell-fill" style="width:100%;background:#525252"></div></div>
+          <div class="cell-val"><span>347</span><span class="reduction zero">0%</span></div>
+        </td><td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:72%;background:rgb(239,68,68)"></div></div>
+          <div class="cell-val">
+            <span>250</span>
+            <span class="reduction" style="color:rgb(236,130,68)">−28%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:41%;background:rgb(73,173,89)"></div></div>
+          <div class="cell-val">
+            <span>143</span>
+            <span class="reduction" style="color:rgb(198,182,68)">−59%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:34%;background:rgb(34,197,94)"></div></div>
+          <div class="cell-val">
+            <span class="best">118</span>
+            <span class="reduction" style="color:rgb(170,185,68)">−66%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:35%;background:rgb(37,195,94)"></div></div>
+          <div class="cell-val">
+            <span>120</span>
+            <span class="reduction" style="color:rgb(174,184,68)">−65%</span>
+          </div>
+        </td>
+<td style="border-left:2px solid #404040;">
+          <div class="cell-bar"><div class="cell-fill" style="width:71%;background:rgb(231,73,69)"></div></div>
+          <div class="cell-val">
+            <span>245</span>
+            <span class="reduction" style="color:rgb(236,132,68)">−29%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:59%;background:rgb(166,114,77)"></div></div>
+          <div class="cell-val">
+            <span>203</span>
+            <span class="reduction" style="color:rgb(235,159,68)">−41%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:59%;background:rgb(166,114,77)"></div></div>
+          <div class="cell-val">
+            <span>203</span>
+            <span class="reduction" style="color:rgb(235,159,68)">−41%</span>
+          </div>
+        </td></tr>
+<tr><td class="scenario-name">Standard USDC</td><td class="raw-cell">
+          <div class="cell-bar"><div class="cell-fill" style="width:100%;background:#525252"></div></div>
+          <div class="cell-val"><span>517</span><span class="reduction zero">0%</span></div>
+        </td><td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:77%;background:rgb(239,68,68)"></div></div>
+          <div class="cell-val">
+            <span>398</span>
+            <span class="reduction" style="color:rgb(237,119,68)">−23%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:49%;background:rgb(97,157,86)"></div></div>
+          <div class="cell-val">
+            <span>253</span>
+            <span class="reduction" style="color:rgb(230,179,68)">−51%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:39%;background:rgb(48,188,92)"></div></div>
+          <div class="cell-val">
+            <span>203</span>
+            <span class="reduction" style="color:rgb(190,183,68)">−61%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:37%;background:rgb(34,197,94)"></div></div>
+          <div class="cell-val">
+            <span class="best">189</span>
+            <span class="reduction" style="color:rgb(182,184,68)">−63%</span>
+          </div>
+        </td>
+<td style="border-left:2px solid #404040;">
+          <div class="cell-bar"><div class="cell-fill" style="width:65%;background:rgb(177,107,76)"></div></div>
+          <div class="cell-val">
+            <span>335</span>
+            <span class="reduction" style="color:rgb(236,146,68)">−35%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:55%;background:rgb(127,138,82)"></div></div>
+          <div class="cell-val">
+            <span>284</span>
+            <span class="reduction" style="color:rgb(235,168,68)">−45%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:55%;background:rgb(127,138,82)"></div></div>
+          <div class="cell-val">
+            <span>284</span>
+            <span class="reduction" style="color:rgb(235,168,68)">−45%</span>
+          </div>
+        </td></tr>
+<tr><td class="scenario-name">Full</td><td class="raw-cell">
+          <div class="cell-bar"><div class="cell-fill" style="width:100%;background:#525252"></div></div>
+          <div class="cell-val"><span>1283</span><span class="reduction zero">0%</span></div>
+        </td><td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:81%;background:rgb(239,68,68)"></div></div>
+          <div class="cell-val">
+            <span>1043</span>
+            <span class="reduction" style="color:rgb(237,110,68)">−19%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:77%;background:rgb(208,87,72)"></div></div>
+          <div class="cell-val">
+            <span>991</span>
+            <span class="reduction" style="color:rgb(237,119,68)">−23%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:75%;background:rgb(193,97,74)"></div></div>
+          <div class="cell-val">
+            <span>966</span>
+            <span class="reduction" style="color:rgb(237,124,68)">−25%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:54%;background:rgb(34,197,94)"></div></div>
+          <div class="cell-val">
+            <span class="best">698</span>
+            <span class="reduction" style="color:rgb(234,170,68)">−46%</span>
+          </div>
+        </td>
+<td style="border-left:2px solid #404040;">
+          <div class="cell-bar"><div class="cell-fill" style="width:75%;background:rgb(190,99,74)"></div></div>
+          <div class="cell-val">
+            <span>960</span>
+            <span class="reduction" style="color:rgb(237,124,68)">−25%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:59%;background:rgb(70,175,89)"></div></div>
+          <div class="cell-val">
+            <span>758</span>
+            <span class="reduction" style="color:rgb(235,159,68)">−41%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:54%;background:rgb(34,197,94)"></div></div>
+          <div class="cell-val">
+            <span>698</span>
+            <span class="reduction" style="color:rgb(234,170,68)">−46%</span>
+          </div>
+        </td></tr>
+<tr><td class="scenario-name">Multi-item</td><td class="raw-cell">
+          <div class="cell-bar"><div class="cell-fill" style="width:100%;background:#525252"></div></div>
+          <div class="cell-val"><span>924</span><span class="reduction zero">0%</span></div>
+        </td><td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:78%;background:rgb(239,68,68)"></div></div>
+          <div class="cell-val">
+            <span>717</span>
+            <span class="reduction" style="color:rgb(237,117,68)">−22%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:70%;background:rgb(185,102,75)"></div></div>
+          <div class="cell-val">
+            <span>643</span>
+            <span class="reduction" style="color:rgb(236,135,68)">−30%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:67%;background:rgb(167,114,77)"></div></div>
+          <div class="cell-val">
+            <span>618</span>
+            <span class="reduction" style="color:rgb(236,141,68)">−33%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:47%;background:rgb(34,197,94)"></div></div>
+          <div class="cell-val">
+            <span class="best">437</span>
+            <span class="reduction" style="color:rgb(222,180,68)">−53%</span>
+          </div>
+        </td>
+<td style="border-left:2px solid #404040;">
+          <div class="cell-bar"><div class="cell-fill" style="width:77%;background:rgb(237,69,68)"></div></div>
+          <div class="cell-val">
+            <span>714</span>
+            <span class="reduction" style="color:rgb(237,119,68)">−23%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:69%;background:rgb(184,103,75)"></div></div>
+          <div class="cell-val">
+            <span>642</span>
+            <span class="reduction" style="color:rgb(236,137,68)">−31%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:50%;background:rgb(52,185,92)"></div></div>
+          <div class="cell-val">
+            <span>462</span>
+            <span class="reduction" style="color:rgb(234,179,68)">−50%</span>
+          </div>
+        </td></tr>
+<tr><td class="scenario-name">Unknown token</td><td class="raw-cell">
+          <div class="cell-bar"><div class="cell-fill" style="width:100%;background:#525252"></div></div>
+          <div class="cell-val"><span>534</span><span class="reduction zero">0%</span></div>
+        </td><td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:75%;background:rgb(239,68,68)"></div></div>
+          <div class="cell-val">
+            <span>398</span>
+            <span class="reduction" style="color:rgb(237,124,68)">−25%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:51%;background:rgb(99,156,86)"></div></div>
+          <div class="cell-val">
+            <span>273</span>
+            <span class="reduction" style="color:rgb(234,177,68)">−49%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:48%;background:rgb(78,170,88)"></div></div>
+          <div class="cell-val">
+            <span>254</span>
+            <span class="reduction" style="color:rgb(226,180,68)">−52%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:40%;background:rgb(34,197,94)"></div></div>
+          <div class="cell-val">
+            <span class="best">215</span>
+            <span class="reduction" style="color:rgb(194,183,68)">−60%</span>
+          </div>
+        </td>
+<td style="border-left:2px solid #404040;">
+          <div class="cell-bar"><div class="cell-fill" style="width:70%;background:rgb(212,85,71)"></div></div>
+          <div class="cell-val">
+            <span>374</span>
+            <span class="reduction" style="color:rgb(236,135,68)">−30%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:59%;background:rgb(147,126,80)"></div></div>
+          <div class="cell-val">
+            <span>316</span>
+            <span class="reduction" style="color:rgb(235,159,68)">−41%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:57%;background:rgb(137,132,81)"></div></div>
+          <div class="cell-val">
+            <span>307</span>
+            <span class="reduction" style="color:rgb(235,163,68)">−43%</span>
+          </div>
+        </td></tr>
+<tr><td class="scenario-name">Large amounts</td><td class="raw-cell">
+          <div class="cell-bar"><div class="cell-fill" style="width:100%;background:#525252"></div></div>
+          <div class="cell-val"><span>363</span><span class="reduction zero">0%</span></div>
+        </td><td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:72%;background:rgb(237,69,68)"></div></div>
+          <div class="cell-val">
+            <span>260</span>
+            <span class="reduction" style="color:rgb(236,130,68)">−28%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:44%;background:rgb(73,172,89)"></div></div>
+          <div class="cell-val">
+            <span>160</span>
+            <span class="reduction" style="color:rgb(210,181,68)">−56%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:37%;background:rgb(34,197,94)"></div></div>
+          <div class="cell-val">
+            <span class="best">136</span>
+            <span class="reduction" style="color:rgb(182,184,68)">−63%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:38%;background:rgb(36,196,94)"></div></div>
+          <div class="cell-val">
+            <span>137</span>
+            <span class="reduction" style="color:rgb(186,183,68)">−62%</span>
+          </div>
+        </td>
+<td style="border-left:2px solid #404040;">
+          <div class="cell-bar"><div class="cell-fill" style="width:72%;background:rgb(239,68,68)"></div></div>
+          <div class="cell-val">
+            <span>261</span>
+            <span class="reduction" style="color:rgb(236,130,68)">−28%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:60%;background:rgb(170,111,77)"></div></div>
+          <div class="cell-val">
+            <span>219</span>
+            <span class="reduction" style="color:rgb(235,157,68)">−40%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:60%;background:rgb(170,111,77)"></div></div>
+          <div class="cell-val">
+            <span>219</span>
+            <span class="reduction" style="color:rgb(235,157,68)">−40%</span>
+          </div>
+        </td></tr>
+<tr><td class="scenario-name">Short notes</td><td class="raw-cell">
+          <div class="cell-bar"><div class="cell-fill" style="width:100%;background:#525252"></div></div>
+          <div class="cell-val"><span>390</span><span class="reduction zero">0%</span></div>
+        </td><td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:76%;background:rgb(239,68,68)"></div></div>
+          <div class="cell-val">
+            <span>295</span>
+            <span class="reduction" style="color:rgb(237,121,68)">−24%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:48%;background:rgb(75,171,89)"></div></div>
+          <div class="cell-val">
+            <span>186</span>
+            <span class="reduction" style="color:rgb(226,180,68)">−52%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:41%;background:rgb(34,197,94)"></div></div>
+          <div class="cell-val">
+            <span class="best">159</span>
+            <span class="reduction" style="color:rgb(198,182,68)">−59%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:41%;background:rgb(36,196,94)"></div></div>
+          <div class="cell-val">
+            <span>160</span>
+            <span class="reduction" style="color:rgb(198,182,68)">−59%</span>
+          </div>
+        </td>
+<td style="border-left:2px solid #404040;">
+          <div class="cell-bar"><div class="cell-fill" style="width:74%;background:rgb(228,75,69)"></div></div>
+          <div class="cell-val">
+            <span>288</span>
+            <span class="reduction" style="color:rgb(236,126,68)">−26%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:60%;background:rgb(149,125,79)"></div></div>
+          <div class="cell-val">
+            <span>235</span>
+            <span class="reduction" style="color:rgb(235,157,68)">−40%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:60%;background:rgb(149,125,79)"></div></div>
+          <div class="cell-val">
+            <span>235</span>
+            <span class="reduction" style="color:rgb(235,157,68)">−40%</span>
+          </div>
+        </td></tr>
+<tr><td class="scenario-name">Unicode</td><td class="raw-cell">
+          <div class="cell-bar"><div class="cell-fill" style="width:100%;background:#525252"></div></div>
+          <div class="cell-val"><span>616</span><span class="reduction zero">0%</span></div>
+        </td><td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:83%;background:rgb(239,68,68)"></div></div>
+          <div class="cell-val">
+            <span>511</span>
+            <span class="reduction" style="color:rgb(237,106,68)">−17%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:65%;background:rgb(141,130,80)"></div></div>
+          <div class="cell-val">
+            <span>400</span>
+            <span class="reduction" style="color:rgb(236,146,68)">−35%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:57%;background:rgb(96,158,86)"></div></div>
+          <div class="cell-val">
+            <span>349</span>
+            <span class="reduction" style="color:rgb(235,163,68)">−43%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:45%;background:rgb(34,197,94)"></div></div>
+          <div class="cell-val">
+            <span class="best">279</span>
+            <span class="reduction" style="color:rgb(214,181,68)">−55%</span>
+          </div>
+        </td>
+<td style="border-left:2px solid #404040;">
+          <div class="cell-bar"><div class="cell-fill" style="width:78%;background:rgb(211,86,72)"></div></div>
+          <div class="cell-val">
+            <span>479</span>
+            <span class="reduction" style="color:rgb(237,117,68)">−22%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:70%;background:rgb(169,112,77)"></div></div>
+          <div class="cell-val">
+            <span>432</span>
+            <span class="reduction" style="color:rgb(236,135,68)">−30%</span>
+          </div>
+        </td>
+<td style="">
+          <div class="cell-bar"><div class="cell-fill" style="width:66%;background:rgb(146,126,80)"></div></div>
+          <div class="cell-val">
+            <span>406</span>
+            <span class="reduction" style="color:rgb(236,143,68)">−34%</span>
+          </div>
+        </td></tr>
+    </tbody>
+  </table>
+
+  <h2>Visual Comparison</h2>
+  <div class="charts-grid"><div class="card">
+      <div style="color:#a3a3a3;font-size:0.9rem;margin-bottom:0.5rem">Minimal</div>
+      <div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v0</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(239,68,68);height:20px;width:100%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">250</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v1</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(73,173,89);height:20px;width:57%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">143</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v2</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(34,197,94);height:20px;width:47%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">118</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v3</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(37,195,94);height:20px;width:48%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">120</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v4</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(231,73,69);height:20px;width:98%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">245</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v5</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(166,114,77);height:20px;width:81%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">203</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v6</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(166,114,77);height:20px;width:81%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">203</span>
+          </div>
+        </div>
+    </div>
+<div class="card">
+      <div style="color:#a3a3a3;font-size:0.9rem;margin-bottom:0.5rem">Standard USDC</div>
+      <div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v0</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(239,68,68);height:20px;width:100%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">398</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v1</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(97,157,86);height:20px;width:64%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">253</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v2</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(48,188,92);height:20px;width:51%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">203</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v3</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(34,197,94);height:20px;width:47%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">189</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v4</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(177,107,76);height:20px;width:84%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">335</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v5</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(127,138,82);height:20px;width:71%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">284</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v6</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(127,138,82);height:20px;width:71%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">284</span>
+          </div>
+        </div>
+    </div>
+<div class="card">
+      <div style="color:#a3a3a3;font-size:0.9rem;margin-bottom:0.5rem">Full</div>
+      <div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v0</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(239,68,68);height:20px;width:100%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">1043</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v1</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(208,87,72);height:20px;width:95%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">991</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v2</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(193,97,74);height:20px;width:93%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">966</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v3</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(34,197,94);height:20px;width:67%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">698</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v4</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(190,99,74);height:20px;width:92%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">960</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v5</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(70,175,89);height:20px;width:73%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">758</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v6</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(34,197,94);height:20px;width:67%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">698</span>
+          </div>
+        </div>
+    </div>
+<div class="card">
+      <div style="color:#a3a3a3;font-size:0.9rem;margin-bottom:0.5rem">Multi-item</div>
+      <div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v0</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(239,68,68);height:20px;width:100%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">717</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v1</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(185,102,75);height:20px;width:90%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">643</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v2</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(167,114,77);height:20px;width:86%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">618</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v3</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(34,197,94);height:20px;width:61%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">437</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v4</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(237,69,68);height:20px;width:100%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">714</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v5</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(184,103,75);height:20px;width:90%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">642</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v6</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(52,185,92);height:20px;width:64%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">462</span>
+          </div>
+        </div>
+    </div>
+<div class="card">
+      <div style="color:#a3a3a3;font-size:0.9rem;margin-bottom:0.5rem">Unknown token</div>
+      <div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v0</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(239,68,68);height:20px;width:100%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">398</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v1</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(99,156,86);height:20px;width:69%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">273</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v2</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(78,170,88);height:20px;width:64%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">254</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v3</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(34,197,94);height:20px;width:54%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">215</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v4</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(212,85,71);height:20px;width:94%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">374</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v5</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(147,126,80);height:20px;width:79%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">316</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v6</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(137,132,81);height:20px;width:77%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">307</span>
+          </div>
+        </div>
+    </div>
+<div class="card">
+      <div style="color:#a3a3a3;font-size:0.9rem;margin-bottom:0.5rem">Large amounts</div>
+      <div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v0</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(237,69,68);height:20px;width:100%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">260</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v1</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(73,172,89);height:20px;width:61%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">160</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v2</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(34,197,94);height:20px;width:52%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">136</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v3</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(36,196,94);height:20px;width:52%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">137</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v4</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(239,68,68);height:20px;width:100%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">261</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v5</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(170,111,77);height:20px;width:84%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">219</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v6</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(170,111,77);height:20px;width:84%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">219</span>
+          </div>
+        </div>
+    </div>
+<div class="card">
+      <div style="color:#a3a3a3;font-size:0.9rem;margin-bottom:0.5rem">Short notes</div>
+      <div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v0</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(239,68,68);height:20px;width:100%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">295</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v1</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(75,171,89);height:20px;width:63%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">186</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v2</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(34,197,94);height:20px;width:54%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">159</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v3</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(36,196,94);height:20px;width:54%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">160</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v4</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(228,75,69);height:20px;width:98%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">288</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v5</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(149,125,79);height:20px;width:80%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">235</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v6</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(149,125,79);height:20px;width:80%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">235</span>
+          </div>
+        </div>
+    </div>
+<div class="card">
+      <div style="color:#a3a3a3;font-size:0.9rem;margin-bottom:0.5rem">Unicode</div>
+      <div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v0</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(239,68,68);height:20px;width:100%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">511</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v1</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(141,130,80);height:20px;width:78%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">400</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v2</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(96,158,86);height:20px;width:68%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">349</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v3</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(34,197,94);height:20px;width:55%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">279</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v4</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(211,86,72);height:20px;width:94%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">479</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v5</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(169,112,77);height:20px;width:85%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">432</span>
+          </div>
+        </div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <span style="width:32px;text-align:right;color:#a3a3a3;font-size:0.8rem;flex-shrink:0">v6</span>
+          <div style="flex:1;display:flex;align-items:center;gap:8px">
+            <div style="background:rgb(146,126,80);height:20px;width:79%;border-radius:3px;min-width:4px"></div>
+            <span style="color:#e5e5e5;font-size:0.85rem;flex-shrink:0">406</span>
+          </div>
+        </div>
+    </div></div>
+
+  <h2>Format Anatomy</h2>
+  <p style="color:#525252;font-size:0.8rem;margin:-0.5rem 0 1rem">How each format encodes the same invoice — click a version to explore its encoding pipeline, structure, and trade-offs</p>
+  
+    <div class="edu-tabs" id="eduTabs"><button class="edu-tab active" data-ver="v0" onclick="showEdu(this)">v0</button>
+    <button class="edu-tab" data-ver="v1" onclick="showEdu(this)">v1</button>
+    <button class="edu-tab" data-ver="v2" onclick="showEdu(this)">v2</button>
+    <button class="edu-tab" data-ver="v3" onclick="showEdu(this)">v3</button>
+    <button class="edu-tab" data-ver="v4" onclick="showEdu(this)">v4</button>
+    <button class="edu-tab" data-ver="v5" onclick="showEdu(this)">v5</button>
+    <button class="edu-tab" data-ver="v6" onclick="showEdu(this)">v6</button></div>
+    <div class="edu-panel" id="edu-v0">
+        <div class="edu-header">
+          <div>
+            <span class="edu-ver">v0</span>
+            <span class="edu-name">JSON + lz-string</span>
+            <span class="edu-era" style="background:#525252">Baseline</span>
+          </div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Encoding Pipeline</div>
+          <div class="pipe-flow"><span class="pipe-step" style="border-color:#404040;color:#a3a3a3">Invoice Object</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#f59e0b;color:#f59e0b">JSON.stringify</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#6366f1;color:#6366f1">LZ77 compress</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#737373;color:#737373">URI-encode</span></div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Byte Structure <span class="edu-dim">(approximate allocation)</span></div>
+          <div class="struct-bar-container"><div class="struct-seg" style="width:100%;background:#6366f1" title="Compressed JSON blob: ~100%">
+              <span class="struct-label">Compressed JSON blob</span>
+            </div></div>
+          <div class="struct-note">Opaque — no field access without full decompression</div>
+        </div>
+        <div class="edu-columns">
+          <div class="edu-section">
+            <div class="edu-section-title">Innovations</div>
+            <div class="edu-item edu-pro"><span class="edu-icon">+</span>Browser-compatible</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Zero dependencies beyond lz-string</div>
+          </div>
+          <div class="edu-section">
+            <div class="edu-section-title">Limitations</div>
+            <div class="edu-item edu-con"><span class="edu-icon">−</span>JSON keys waste ~40% space (&quot;invoiceId&quot;:, &quot;walletAddress&quot;:)</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>LZ77 is weakest modern compressor</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>URI encoding expands data ~30%</div>
+          </div>
+        </div>
+        <div class="edu-insight">
+          <span class="edu-insight-icon">&#x1f4a1;</span>
+          <span>Every invoice repeats the same JSON keys. For a known schema, these keys are pure overhead — the decoder already knows the field names.</span>
+        </div>
+      </div>
+    <div class="edu-panel hidden" id="edu-v1">
+        <div class="edu-header">
+          <div>
+            <span class="edu-ver">v1</span>
+            <span class="edu-name">Binary v1</span>
+            <span class="edu-era" style="background:#f59e0b">Ad-hoc Binary</span>
+          </div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Encoding Pipeline</div>
+          <div class="pipe-flow"><span class="pipe-step" style="border-color:#404040;color:#a3a3a3">Invoice Object</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#22c55e;color:#22c55e">Sequential binary fields</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#737373;color:#737373">Base62 encode</span></div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Byte Structure <span class="edu-dim">(approximate allocation)</span></div>
+          <div class="struct-bar-container"><div class="struct-seg" style="width:1%;background:#a3a3a3" title="Ver: ~1%">
+              <span class="struct-label">Ver</span>
+            </div>
+          <div class="struct-seg" style="width:14%;background:#ef4444" title="UUID: ~14%">
+              <span class="struct-label">UUID</span>
+            </div>
+          <div class="struct-seg" style="width:7%;background:#f59e0b" title="Dates: ~7%">
+              <span class="struct-label">Dates</span>
+            </div>
+          <div class="struct-seg" style="width:4%;background:#8b5cf6" title="Chain+Currency: ~4%">
+              <span class="struct-label">Chain+Currency</span>
+            </div>
+          <div class="struct-seg" style="width:18%;background:#3b82f6" title="Addresses: ~18%">
+              <span class="struct-label">Addresses</span>
+            </div>
+          <div class="struct-seg" style="width:35%;background:#22c55e" title="Names+Text: ~35%">
+              <span class="struct-label">Names+Text</span>
+            </div>
+          <div class="struct-seg" style="width:21%;background:#06b6d4" title="Items: ~21%">
+              <span class="struct-label">Items</span>
+            </div></div>
+          <div class="struct-note">Fixed field order — decoder reads sequentially, position = meaning</div>
+        </div>
+        <div class="edu-columns">
+          <div class="edu-section">
+            <div class="edu-section-title">Innovations</div>
+            <div class="edu-item edu-pro"><span class="edu-icon">+</span>Eliminated JSON key overhead</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Wallet addresses as raw 20 bytes (not 42-char hex strings)</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Varint encoding for small numbers</div>
+          </div>
+          <div class="edu-section">
+            <div class="edu-section-title">Limitations</div>
+            <div class="edu-item edu-con"><span class="edu-icon">−</span>No optional field flags — null markers still consume 1 byte each</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>InvoiceId stored as 16-byte UUID (wasteful for short IDs)</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>Text stored as raw UTF-8 (no compression)</div>
+          </div>
+        </div>
+        <div class="edu-insight">
+          <span class="edu-insight-icon">&#x1f4a1;</span>
+          <span>A 42-character hex address &quot;0xd8dA6BF2...&quot; becomes 20 raw bytes — saving 22 bytes per address. This single change saves ~44 bytes for a two-party invoice.</span>
+        </div>
+      </div>
+    <div class="edu-panel hidden" id="edu-v2">
+        <div class="edu-header">
+          <div>
+            <span class="edu-ver">v2</span>
+            <span class="edu-name">Binary v2</span>
+            <span class="edu-era" style="background:#f59e0b">Ad-hoc Binary</span>
+          </div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Encoding Pipeline</div>
+          <div class="pipe-flow"><span class="pipe-step" style="border-color:#404040;color:#a3a3a3">Invoice Object</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#f59e0b;color:#f59e0b">Bit flags + dicts</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#22c55e;color:#22c55e">Sequential binary</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#737373;color:#737373">Base62 encode</span></div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Byte Structure <span class="edu-dim">(approximate allocation)</span></div>
+          <div class="struct-bar-container"><div class="struct-seg" style="width:1%;background:#a3a3a3" title="Ver: ~1%">
+              <span class="struct-label">Ver</span>
+            </div>
+          <div class="struct-seg" style="width:2%;background:#ef4444" title="Flags: ~2%">
+              <span class="struct-label">Flags</span>
+            </div>
+          <div class="struct-seg" style="width:12%;background:#f59e0b" title="ID+Dates: ~12%">
+              <span class="struct-label">ID+Dates</span>
+            </div>
+          <div class="struct-seg" style="width:4%;background:#8b5cf6" title="Dict fields: ~4%">
+              <span class="struct-label">Dict fields</span>
+            </div>
+          <div class="struct-seg" style="width:18%;background:#3b82f6" title="Addresses: ~18%">
+              <span class="struct-label">Addresses</span>
+            </div>
+          <div class="struct-seg" style="width:38%;background:#22c55e" title="Names+Text: ~38%">
+              <span class="struct-label">Names+Text</span>
+            </div>
+          <div class="struct-seg" style="width:25%;background:#06b6d4" title="Items: ~25%">
+              <span class="struct-label">Items</span>
+            </div></div>
+          <div class="struct-note">2-byte bit flags control which optional fields are present</div>
+        </div>
+        <div class="edu-columns">
+          <div class="edu-section">
+            <div class="edu-section-title">Innovations</div>
+            <div class="edu-item edu-pro"><span class="edu-icon">+</span>Bit flags: 2 bytes encode presence of 11 optional fields</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Delta due-date: dueAt − issuedAt as varint (4B → 3B)</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Currency dictionary: &quot;USDC&quot; → 0x01 (4B → 2B)</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Token address dictionary: 20B → 2B for known tokens</div>
+          </div>
+          <div class="edu-section">
+            <div class="edu-section-title">Limitations</div>
+            <div class="edu-item edu-con"><span class="edu-icon">−</span>Text still uncompressed</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>Adding new optional fields requires new flag bits</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>Fixed field order limits extensibility</div>
+          </div>
+        </div>
+        <div class="edu-insight">
+          <span class="edu-insight-icon">&#x1f4a1;</span>
+          <span>Bit flags eliminate null markers: 11 optional fields × 1 byte each = 11 bytes saved. The currency dict turns &quot;USDC&quot; into a single byte.</span>
+        </div>
+      </div>
+    <div class="edu-panel hidden" id="edu-v3">
+        <div class="edu-header">
+          <div>
+            <span class="edu-ver">v3</span>
+            <span class="edu-name">Binary v3 (Hybrid)</span>
+            <span class="edu-era" style="background:#f59e0b">Ad-hoc Binary</span>
+          </div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Encoding Pipeline</div>
+          <div class="pipe-flow"><span class="pipe-step" style="border-color:#404040;color:#a3a3a3">Invoice Object</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#3b82f6;color:#3b82f6">Binary header</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#22c55e;color:#22c55e">Text blob assembly</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#6366f1;color:#6366f1">DEFLATE text (optional)</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#737373;color:#737373">Base62 encode</span></div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Byte Structure <span class="edu-dim">(approximate allocation)</span></div>
+          <div class="struct-bar-container"><div class="struct-seg" style="width:3%;background:#a3a3a3" title="Header: ~3%">
+              <span class="struct-label">Header</span>
+            </div>
+          <div class="struct-seg" style="width:30%;background:#3b82f6" title="Binary fields: ~30%">
+              <span class="struct-label">Binary fields</span>
+            </div>
+          <div class="struct-seg" style="width:55%;background:#6366f1" title="Compressed text blob: ~55%">
+              <span class="struct-label">Compressed text blob</span>
+            </div>
+          <div class="struct-seg" style="width:12%;background:#737373" title="Base62 overhead: ~12%">
+              <span class="struct-label">Base62 overhead</span>
+            </div></div>
+          <div class="struct-note">Two zones: binary header (addresses, dates) + text blob (names, notes, items)</div>
+        </div>
+        <div class="edu-columns">
+          <div class="edu-section">
+            <div class="edu-section-title">Innovations</div>
+            <div class="edu-item edu-pro"><span class="edu-icon">+</span>Hybrid architecture: binary for structured data, blob for text</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>DEFLATE compression on text blob (when &gt; 100 bytes)</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>TEXT_COMPRESSED flag bit signals compression to decoder</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Text fields joined with \x00 separator for better compression context</div>
+          </div>
+          <div class="edu-section">
+            <div class="edu-section-title">Limitations</div>
+            <div class="edu-item edu-con"><span class="edu-icon">−</span>DEFLATE is weaker than Brotli (zlib level 6 vs Brotli q11)</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>No security primitives (salt, domain separator)</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>No forward compatibility (new fields break old decoders)</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>Base62 encoding: 1.37× expansion (vs 1.33× for Base64url)</div>
+          </div>
+        </div>
+        <div class="edu-insight">
+          <span class="edu-insight-icon">&#x1f4a1;</span>
+          <span>Joining all text into one blob before compressing gives DEFLATE more context to find repeated patterns — &quot;alice@studio.com&quot; and &quot;bob@corp.io&quot; share the &quot;.com&quot; suffix that gets deduplicated.</span>
+        </div>
+      </div>
+    <div class="edu-panel hidden" id="edu-v4">
+        <div class="edu-header">
+          <div>
+            <span class="edu-ver">v4</span>
+            <span class="edu-name">TLV v1</span>
+            <span class="edu-era" style="background:#3b82f6">TLV Structured</span>
+          </div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Encoding Pipeline</div>
+          <div class="pipe-flow"><span class="pipe-step" style="border-color:#404040;color:#a3a3a3">Invoice Object</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#22c55e;color:#22c55e">TLV records</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#6366f1;color:#6366f1">Grouped DEFLATE</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#ef4444;color:#ef4444">keccak256 domain sep</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#f59e0b;color:#f59e0b">Mix prefix</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#737373;color:#737373">Base62 encode</span></div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Byte Structure <span class="edu-dim">(approximate allocation)</span></div>
+          <div class="struct-bar-container"><div class="struct-seg" style="width:1%;background:#f59e0b" title="Mix: ~1%">
+              <span class="struct-label">Mix</span>
+            </div>
+          <div class="struct-seg" style="width:2%;background:#a3a3a3" title="Header: ~2%">
+              <span class="struct-label">Header</span>
+            </div>
+          <div class="struct-seg" style="width:8%;background:#ef4444" title="Salt: ~8%">
+              <span class="struct-label">Salt</span>
+            </div>
+          <div class="struct-seg" style="width:17%;background:#dc2626" title="DomSep: ~17%">
+              <span class="struct-label">DomSep</span>
+            </div>
+          <div class="struct-seg" style="width:30%;background:#3b82f6" title="Binary TLVs: ~30%">
+              <span class="struct-label">Binary TLVs</span>
+            </div>
+          <div class="struct-seg" style="width:30%;background:#22c55e" title="Text TLVs: ~30%">
+              <span class="struct-label">Text TLVs</span>
+            </div>
+          <div class="struct-seg" style="width:12%;background:#737373" title="Encoding: ~12%">
+              <span class="struct-label">Encoding</span>
+            </div></div>
+          <div class="struct-note">Type-Length-Value records: each field self-describes (type=1 byte, length=uint16, value=N bytes)</div>
+        </div>
+        <div class="edu-columns">
+          <div class="edu-section">
+            <div class="edu-section-title">Innovations</div>
+            <div class="edu-item edu-pro"><span class="edu-icon">+</span>TLV format: forward-compatible (unknown types safely skipped)</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Salt (16B): privacy — same invoice produces different URLs</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Domain separator (32B): keccak256 integrity tag</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Canonical ordering: records sorted by type for deterministic hashing</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Even type = required, odd type = optional (BOLT12 convention)</div>
+          </div>
+          <div class="edu-section">
+            <div class="edu-section-title">Limitations</div>
+            <div class="edu-item edu-con"><span class="edu-icon">−</span>Security overhead: Salt(16B) + DomSep(32B) + MixPrefix(2B) = 50 bytes</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>uint16 lengths: 2 bytes per TLV (wasteful for small values)</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>4-byte header: [MAGIC, VERSION, 0x00, COUNT]</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>DEFLATE only on optional text fields (required fields uncompressed)</div>
+          </div>
+        </div>
+        <div class="edu-insight">
+          <span class="edu-insight-icon">&#x1f4a1;</span>
+          <span>The TLV format is the architectural leap — it makes the codec extensible. New field types can be added without breaking old decoders. But the security overhead (50 bytes) makes small invoices much larger.</span>
+        </div>
+      </div>
+    <div class="edu-panel hidden" id="edu-v5">
+        <div class="edu-header">
+          <div>
+            <span class="edu-ver">v5</span>
+            <span class="edu-name">TLV v1 Rewrite</span>
+            <span class="edu-era" style="background:#3b82f6">TLV Structured</span>
+          </div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Encoding Pipeline</div>
+          <div class="pipe-flow"><span class="pipe-step" style="border-color:#404040;color:#a3a3a3">Invoice Object</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#22c55e;color:#22c55e">TLV records</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#f59e0b;color:#f59e0b">App-dict substitution</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#6366f1;color:#6366f1">Grouped Brotli</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#ef4444;color:#ef4444">keccak256 domain sep</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#737373;color:#737373">Base64url encode</span></div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Byte Structure <span class="edu-dim">(approximate allocation)</span></div>
+          <div class="struct-bar-container"><div class="struct-seg" style="width:2%;background:#a3a3a3" title="Header: ~2%">
+              <span class="struct-label">Header</span>
+            </div>
+          <div class="struct-seg" style="width:9%;background:#ef4444" title="Salt: ~9%">
+              <span class="struct-label">Salt</span>
+            </div>
+          <div class="struct-seg" style="width:18%;background:#dc2626" title="DomSep: ~18%">
+              <span class="struct-label">DomSep</span>
+            </div>
+          <div class="struct-seg" style="width:32%;background:#3b82f6" title="Binary TLVs: ~32%">
+              <span class="struct-label">Binary TLVs</span>
+            </div>
+          <div class="struct-seg" style="width:27%;background:#22c55e" title="Compressed text: ~27%">
+              <span class="struct-label">Compressed text</span>
+            </div>
+          <div class="struct-seg" style="width:12%;background:#737373" title="Encoding: ~12%">
+              <span class="struct-label">Encoding</span>
+            </div></div>
+          <div class="struct-note">3-byte header [MAGIC, VERSION, COUNT] + varint lengths (1 byte for values &lt; 128)</div>
+        </div>
+        <div class="edu-columns">
+          <div class="edu-section">
+            <div class="edu-section-title">Innovations</div>
+            <div class="edu-item edu-pro"><span class="edu-icon">+</span>Brotli q11: ~20% better than DEFLATE on typical payloads</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>App-level text dictionary: @gmail.com → 1 byte</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Varint TLV lengths: 1 byte (not 2) for values &lt; 128</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Chain dictionary: chainId 42161 → 0x02 (3B → 2B)</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Mantissa encoding: 500000000000000000 → [5, 17] (18B → 2B)</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Base64url: 1.33× expansion (vs 1.37× for Base62)</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Removed keccak mix prefix (−2B)</div>
+          </div>
+          <div class="edu-section">
+            <div class="edu-section-title">Limitations</div>
+            <div class="edu-item edu-con"><span class="edu-icon">−</span>Salt still 16B, DomSep still 32B</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>Grouped Brotli only compresses optional text fields</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>Required fields (names, items) not in compression scope</div>
+          </div>
+        </div>
+        <div class="edu-insight">
+          <span class="edu-insight-icon">&#x1f4a1;</span>
+          <span>Mantissa encoding is the biggest win for amount fields: &quot;500000000000000000&quot; (18 chars as text) becomes mantissa=5 + exponent=17 → just 2 bytes. This matters because crypto amounts routinely have 18 decimal places.</span>
+        </div>
+      </div>
+    <div class="edu-panel hidden" id="edu-v6">
+        <div class="edu-header">
+          <div>
+            <span class="edu-ver">v6</span>
+            <span class="edu-name">TLV v1 Optimized</span>
+            <span class="edu-era" style="background:#3b82f6">TLV Structured</span>
+          </div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Encoding Pipeline</div>
+          <div class="pipe-flow"><span class="pipe-step" style="border-color:#404040;color:#a3a3a3">Invoice Object</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#22c55e;color:#22c55e">TLV records</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#f59e0b;color:#f59e0b">App-dict substitution</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#3b82f6;color:#3b82f6">Serialize TLV</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#6366f1;color:#6366f1">Whole-payload Brotli</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step" style="border-color:#737373;color:#737373">Base64url encode</span></div>
+        </div>
+        <div class="edu-section">
+          <div class="edu-section-title">Byte Structure <span class="edu-dim">(approximate allocation)</span></div>
+          <div class="struct-bar-container"><div class="struct-seg" style="width:2%;background:#a3a3a3" title="Header: ~2%">
+              <span class="struct-label">Header</span>
+            </div>
+          <div class="struct-seg" style="width:9%;background:#ef4444" title="Salt: ~9%">
+              <span class="struct-label">Salt</span>
+            </div>
+          <div class="struct-seg" style="width:18%;background:#dc2626" title="DomSep: ~18%">
+              <span class="struct-label">DomSep</span>
+            </div>
+          <div class="struct-seg" style="width:59%;background:#6366f1" title="Binary+Text (Brotli): ~59%">
+              <span class="struct-label">Binary+Text (Brotli)</span>
+            </div>
+          <div class="struct-seg" style="width:12%;background:#737373" title="Encoding: ~12%">
+              <span class="struct-label">Encoding</span>
+            </div></div>
+          <div class="struct-note">Same security as v5 (Salt 16B + DomSep 32B) — whole-payload Brotli gives compressor full context over all TLV records</div>
+        </div>
+        <div class="edu-columns">
+          <div class="edu-section">
+            <div class="edu-section-title">Innovations</div>
+            <div class="edu-item edu-pro"><span class="edu-icon">+</span>Whole-payload Brotli: compresses ALL TLV body, not just text fields</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Updated app-dict: +development, +consulting, +INV-, +@hotmail.com</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>App-dict applied to item descriptions (not just text fields)</div>
+          <div class="edu-item edu-pro"><span class="edu-icon">+</span>Brotli guard: picks raw TLV when compression expands tiny payloads</div>
+          </div>
+          <div class="edu-section">
+            <div class="edu-section-title">Limitations</div>
+            <div class="edu-item edu-con"><span class="edu-icon">−</span>Brotli requires Node.js (not browser-native)</div>
+          <div class="edu-item edu-con"><span class="edu-icon">−</span>Irreducible security overhead: Salt(16B) + DomSep(32B) = 48B</div>
+          </div>
+        </div>
+        <div class="edu-insight">
+          <span class="edu-insight-icon">&#x1f4a1;</span>
+          <span>Whole-payload Brotli gives the compressor full context — binary addresses, TLV headers, and text all contribute to the compression dictionary. For full invoices this beats selective compression by 40+ characters.</span>
+        </div>
+      </div>
+    <div class="edu-section" style="margin-top:2rem">
+      <h3 style="color:#e5e5e5;font-size:1rem;margin-bottom:0.75rem">Field Encoding Comparison</h3>
+      <p style="color:#525252;font-size:0.8rem;margin:-0.25rem 0 1rem">Same invoice fields — how each version encodes them</p>
+      <table class="field-table">
+        <thead>
+          <tr><th>Field</th><th>Version</th><th>Encoding</th><th>Hex</th><th>Size</th></tr>
+        </thead>
+        <tbody><tr class="field-first">
+          <td rowspan="5" class="field-name"><div>currency</div><div class="field-desc">&quot;USDC&quot;</div></td>
+          <td class="field-ver">v0</td>
+          <td class="field-enc">&quot;cur&quot;:&quot;USDC&quot;</td>
+          <td class="field-hex"><code>22 63 75 72 22 3A 22 55 53 44 43 22</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>12B</span>
+              <div class="field-bar" style="width:100%;background:#ef4444"></div>
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v1</td>
+          <td class="field-enc">length(4) + &quot;USDC&quot;</td>
+          <td class="field-hex"><code>04 55 53 44 43</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>5B</span>
+              <div class="field-bar" style="width:42%;background:#f59e0b"></div>
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v2</td>
+          <td class="field-enc">0x00 (dict) + 0x01 (code)</td>
+          <td class="field-hex"><code>00 01</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>2B</span>
+              <div class="field-bar" style="width:17%;background:#22c55e"></div>
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v3</td>
+          <td class="field-enc">0x01 (dict flag) + 0x01</td>
+          <td class="field-hex"><code>01 01</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>2B</span>
+              <div class="field-bar" style="width:17%;background:#22c55e"></div>
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v4+</td>
+          <td class="field-enc">TLV type=12: 0x00 + 0x01</td>
+          <td class="field-hex"><code>0C 02 00 01</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>4B</span>
+              <div class="field-bar" style="width:33%;background:#22c55e"></div>
+            </div>
+          </td>
+        </tr>
+      <tr class="field-first">
+          <td rowspan="3" class="field-name"><div>walletAddress</div><div class="field-desc">&quot;0xd8dA6BF2...&quot;</div></td>
+          <td class="field-ver">v0</td>
+          <td class="field-enc">&quot;a&quot;:&quot;0xd8dA6BF2...&quot;</td>
+          <td class="field-hex"><code>22 61 22 3A 22 30 78 64 38 ...</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>46B</span>
+              <div class="field-bar" style="width:100%;background:#ef4444"></div>
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v1+</td>
+          <td class="field-enc">Raw 20 bytes</td>
+          <td class="field-hex"><code>d8 dA 6B F2 69 64 AF 9D ...</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>20B</span>
+              <div class="field-bar" style="width:43%;background:#ef4444"></div>
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v2+ (dict)</td>
+          <td class="field-enc">Known token: 0x00 + code</td>
+          <td class="field-hex"><code>00 01</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>2B</span>
+              <div class="field-bar" style="width:4%;background:#22c55e"></div>
+            </div>
+          </td>
+        </tr>
+      <tr class="field-first">
+          <td rowspan="3" class="field-name"><div>dueAt</div><div class="field-desc">1702592000 (30 days)</div></td>
+          <td class="field-ver">v0</td>
+          <td class="field-enc">&quot;due&quot;:1702592000</td>
+          <td class="field-hex"><code>22 64 75 65 22 3A 31 37 ...</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>16B</span>
+              <div class="field-bar" style="width:100%;background:#ef4444"></div>
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v1</td>
+          <td class="field-enc">uint32 BE</td>
+          <td class="field-hex"><code>65 81 84 00</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>4B</span>
+              <div class="field-bar" style="width:25%;background:#22c55e"></div>
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v2+</td>
+          <td class="field-enc">Delta varint (dueAt−issuedAt)</td>
+          <td class="field-hex"><code>C0 A8 A0 14</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>3B</span>
+              <div class="field-bar" style="width:19%;background:#22c55e"></div>
+            </div>
+          </td>
+        </tr>
+      <tr class="field-first">
+          <td rowspan="4" class="field-name"><div>total</div><div class="field-desc">&quot;500000000000000000&quot; (0.5 ETH)</div></td>
+          <td class="field-ver">v0</td>
+          <td class="field-enc">JSON string &quot;500000000000000000&quot;</td>
+          <td class="field-hex"><code>22 35 30 30 30 30 ...</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>20B</span>
+              <div class="field-bar" style="width:100%;background:#ef4444"></div>
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v1–v3</td>
+          <td class="field-enc">length + &quot;500000000000000000&quot;</td>
+          <td class="field-hex"><code>12 35 30 30 30 ...</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>19B</span>
+              <div class="field-bar" style="width:95%;background:#ef4444"></div>
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v4</td>
+          <td class="field-enc">BigInt varint</td>
+          <td class="field-hex"><code>06 F4 61 4D C5 ...</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>9B</span>
+              <div class="field-bar" style="width:45%;background:#f59e0b"></div>
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v5+</td>
+          <td class="field-enc">Mantissa: 5 × 10¹⁷</td>
+          <td class="field-hex"><code>05 11</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>2B</span>
+              <div class="field-bar" style="width:10%;background:#22c55e"></div>
+            </div>
+          </td>
+        </tr>
+      <tr class="field-first">
+          <td rowspan="4" class="field-name"><div>security</div><div class="field-desc">Anti-replay + integrity</div></td>
+          <td class="field-ver">v0–v3</td>
+          <td class="field-enc">None</td>
+          <td class="field-hex"><code>—</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>—</span>
+              
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v4</td>
+          <td class="field-enc">Salt(16B) + DomSep(32B) + Mix(2B)</td>
+          <td class="field-hex"><code>...</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>50B</span>
+              
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v5</td>
+          <td class="field-enc">Salt(16B) + DomSep(32B)</td>
+          <td class="field-hex"><code>...</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>48B</span>
+              
+            </div>
+          </td>
+        </tr>
+      <tr>
+          
+          <td class="field-ver">v6</td>
+          <td class="field-enc">Salt(16B) + DomSep(32B)</td>
+          <td class="field-hex"><code>...</code></td>
+          <td class="field-size">
+            <div class="field-size-row">
+              <span>48B</span>
+              
+            </div>
+          </td>
+        </tr></tbody>
+      </table>
+    </div>
+
+  <h2>Encoded URLs</h2>
+  <div class="url-tabs" id="urlTabs"><button class="url-tab active" data-scenario="Minimal" onclick="showScenario(this)">Minimal</button>
+  <button class="url-tab" data-scenario="Standard USDC" onclick="showScenario(this)">Standard USDC</button>
+  <button class="url-tab" data-scenario="Full" onclick="showScenario(this)">Full</button>
+  <button class="url-tab" data-scenario="Multi-item" onclick="showScenario(this)">Multi-item</button>
+  <button class="url-tab" data-scenario="Unknown token" onclick="showScenario(this)">Unknown token</button>
+  <button class="url-tab" data-scenario="Large amounts" onclick="showScenario(this)">Large amounts</button>
+  <button class="url-tab" data-scenario="Short notes" onclick="showScenario(this)">Short notes</button>
+  <button class="url-tab" data-scenario="Unicode" onclick="showScenario(this)">Unicode</button></div>
+  <div class="url-panel" id="panel-Minimal">
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v0</span>
+          <span class="url-name">JSON + lz-string</span>
+          <span class="url-len" style="color:rgb(239,68,68)">250 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Minimal-v0">https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABj2hHgQGdSpoB2A22+JAVwFNKaAmAVgE536QAdswAuleAGNGAJ1QBRACoAJYiCTNxlABzwAZlFADUAQQA2Cca3gBDVHgAeSTUiMA2AEIAxdi+4uALFYe3AAiVMyySNzMeADMspwxftCcwTFUVka+eH6cIAC+EvqCqG4A9gBG+SSikADaoCiQIMHMYAAEAMrMUmDmzBTwAI5iIDJNnHSTUwT5ALp5QA</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABj2hHgQGdSpoB2A22+JAVwFNKaAmAVgE536QAdswAuleAGNGAJ1QBRACoAJYiCTNxlABzwAZlFADUAQQA2Cca3gBDVHgAeSTUiMA2AEIAxdi+4uALFYe3AAiVMyySNzMeADMspwxftCcwTFUVka+eH6cIAC+EvqCqG4A9gBG+SSikADaoCiQIMHMYAAEAMrMUmDmzBTwAI5iIDJNnHSTUwT5ALp5QA" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v1</span>
+          <span class="url-name">Binary v1</span>
+          <span class="url-len" style="color:rgb(73,173,89)">143 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Minimal-v1">https://voidpay.xyz/pay#7irIyC4cINw33XBS0gC1l1sx7GsCchEMvGtEeUeud1T0Qf30PQb3ptMK2bt1x1T8ZuVHY6cHiWEOm99hQmfIYbY9jQ1h0T0YWePq5x78158jleYIbLLeUnDlRsFz79lssalDekVXBzRneEw</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#7irIyC4cINw33XBS0gC1l1sx7GsCchEMvGtEeUeud1T0Qf30PQb3ptMK2bt1x1T8ZuVHY6cHiWEOm99hQmfIYbY9jQ1h0T0YWePq5x78158jleYIbLLeUnDlRsFz79lssalDekVXBzRneEw" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row url-best">
+        <div class="url-meta">
+          <span class="url-ver">v2</span>
+          <span class="url-name">Binary v2</span>
+          <span class="url-len" style="color:rgb(34,197,94)">118 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Minimal-v2">https://voidpay.xyz/pay#BDL5C6NZkSuVOzQRUncaqU2nSyWDH0H1B4ojV4m6QpkKnIsK72uPQJUhETVxwH1Qp07cbGVYn2hBKwHe3c3UaHEFU00KbyvMxIhOMe4IN8naVHfZL60uqI</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#BDL5C6NZkSuVOzQRUncaqU2nSyWDH0H1B4ojV4m6QpkKnIsK72uPQJUhETVxwH1Qp07cbGVYn2hBKwHe3c3UaHEFU00KbyvMxIhOMe4IN8naVHfZL60uqI" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v3</span>
+          <span class="url-name">Binary v3</span>
+          <span class="url-len" style="color:rgb(37,195,94)">120 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Minimal-v3">https://voidpay.xyz/pay#H7Wvj05fHcg9mLAbrnXsLCZtmhDMuQZJyoQRHfOk9864HKWRsIshh6RL7zxKbtXuOKPxnaMOQcYv8gp3HYVkLIZvDzKhooV3x1H1IxJYr4PWc4rHS6rEMT4Y</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#H7Wvj05fHcg9mLAbrnXsLCZtmhDMuQZJyoQRHfOk9864HKWRsIshh6RL7zxKbtXuOKPxnaMOQcYv8gp3HYVkLIZvDzKhooV3x1H1IxJYr4PWc4rHS6rEMT4Y" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v4</span>
+          <span class="url-name">TLV v1</span>
+          <span class="url-len" style="color:rgb(231,73,69)">245 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Minimal-v4">https://voidpay.xyz/pay#7uhBKImP7wgCkA4fDegwJ7fKx8mt1dhGS18EJXqfv5fT3qH1EOTKjub2r1U85G61iuDWPwnwsYo7aFcBAueUMLdhJHxLtL1kLJRm4C7rWyqdjhly0iehJx07N594TJptqmb25UGvjUEC6DUjgr7J8wYPqrww0diit8ra1C0zy0NbfXwcHnDtxckjd1bf5tpsKfg4iqM53PfxeetQMErMrc0YERsMCIDUB8axAOYToFG9ccDpQVcUS</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#7uhBKImP7wgCkA4fDegwJ7fKx8mt1dhGS18EJXqfv5fT3qH1EOTKjub2r1U85G61iuDWPwnwsYo7aFcBAueUMLdhJHxLtL1kLJRm4C7rWyqdjhly0iehJx07N594TJptqmb25UGvjUEC6DUjgr7J8wYPqrww0diit8ra1C0zy0NbfXwcHnDtxckjd1bf5tpsKfg4iqM53PfxeetQMErMrc0YERsMCIDUB8axAOYToFG9ccDpQVcUS" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v5</span>
+          <span class="url-name">TLV v1 Rewrite</span>
+          <span class="url-len" style="color:rgb(166,114,77)">203 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Minimal-v5">https://voidpay.xyz/pay#VgENAgIAAQQEZVPxAAYEgJqeAQgBEgoU2Npr8mlkr51-7Z4D5TQV03qpYEUMAgAEDhIBDERldiBTZXJ2aWNlcwABBREQBUFsaWNlEgNCb2IUEAECAwQFBgcICQoLDA0ODxAWB0lOVi0wMDEYCb2AlPbC1-hYAR8gUwYB5lN6GOGnKM_aRXZIeHdFvkJ3U4kBHMx5DPXA_sM</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#VgENAgIAAQQEZVPxAAYEgJqeAQgBEgoU2Npr8mlkr51-7Z4D5TQV03qpYEUMAgAEDhIBDERldiBTZXJ2aWNlcwABBREQBUFsaWNlEgNCb2IUEAECAwQFBgcICQoLDA0ODxAWB0lOVi0wMDEYCb2AlPbC1-hYAR8gUwYB5lN6GOGnKM_aRXZIeHdFvkJ3U4kBHMx5DPXA_sM" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v6</span>
+          <span class="url-name">TLV v1 Optimized</span>
+          <span class="url-len" style="color:rgb(166,114,77)">203 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Minimal-v6">https://voidpay.xyz/pay#VgENAgIAAQQEZVPxAAYEgJqeAQgBEgoU2Npr8mlkr51-7Z4D5TQV03qpYEUMAgAEDhIBDERldiBTZXJ2aWNlcwABBREQBUFsaWNlEgNCb2IUEAECAwQFBgcICQoLDA0ODxAWB0lOVi0wMDEYCb2AlPbC1-hYAR8gUwYB5lN6GOGnKM_aRXZIeHdFvkJ3U4kBHMx5DPXA_sM</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#VgENAgIAAQQEZVPxAAYEgJqeAQgBEgoU2Npr8mlkr51-7Z4D5TQV03qpYEUMAgAEDhIBDERldiBTZXJ2aWNlcwABBREQBUFsaWNlEgNCb2IUEAECAwQFBgcICQoLDA0ODxAWB0lOVi0wMDEYCb2AlPbC1-hYAR8gUwYB5lN6GOGnKM_aRXZIeHdFvkJ3U4kBHMx5DPXA_sM" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+    </div>
+<div class="url-panel hidden" id="panel-Standard-USDC">
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v0</span>
+          <span class="url-name">JSON + lz-string</span>
+          <span class="url-len" style="color:rgb(239,68,68)">398 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Standard-USDC-v0">https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwCYR4EBnMqaAdgLrviQFcBTK2wgVgE5CGQAdiwAuVeAGMmAJ1QBVAMoARAMIkQSFuKgA2eADMooAagCCAGwTiWAAnnCmSBAHs1AQ1R4AHkgAcSE9oAQgBihNrc2gAsrsHcitQsAKJI3Cx4AMyJnOmR0JyK6dSuJhF4kZxqbJAgrhZWAAJk9o5OAHTiTgC2IAC+EoaCqIFOAEbWyk5SAA6VqCOj9R3Trc69pKKQANqgKNWyaNaKLGQIAObG8ACOYiAy1Xn0dGs7Q67iANYsAkiHLGAsZicU06X1EVxudxAfEeBF6AF14BsQF5XHgRj5wtxoOJtIRoD4RultOJoEhoNwkNFCCxUiM8FYiXhtCwRpEfL0gA</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwCYR4EBnMqaAdgLrviQFcBTK2wgVgE5CGQAdiwAuVeAGMmAJ1QBVAMoARAMIkQSFuKgA2eADMooAagCCAGwTiWAAnnCmSBAHs1AQ1R4AHkgAcSE9oAQgBihNrc2gAsrsHcitQsAKJI3Cx4AMyJnOmR0JyK6dSuJhF4kZxqbJAgrhZWAAJk9o5OAHTiTgC2IAC+EoaCqIFOAEbWyk5SAA6VqCOj9R3Trc69pKKQANqgKNWyaNaKLGQIAObG8ACOYiAy1Xn0dGs7Q67iANYsAkiHLGAsZicU06X1EVxudxAfEeBF6AF14BsQF5XHgRj5wtxoOJtIRoD4RultOJoEhoNwkNFCCxUiM8FYiXhtCwRpEfL0gA" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v1</span>
+          <span class="url-name">Binary v1</span>
+          <span class="url-len" style="color:rgb(97,157,86)">253 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Standard-USDC-v1">https://voidpay.xyz/pay#eZj1bq3MnwkKFAjXgTbYUOctcHx3eaK9UG0U9F6yNDjEOApJQBYpIvldW5fHdgdepkroaWWjFE0qFRI24YbsmpPlNJF8xRvDz5xCRxKAPcBf4WfJif5ItfdNf6JjRYVkltoTB5WJ4TBwg0ku1eXf4cWkJZOw5XC2s9AfgmytUZH6NEgDbjr0vJ2fJv8GVW0GuEgXYLLt2G4MvTu09oWRpvOYZUpz4y2PMspbajqLwxmyXveLpnwo1Aft9V1gQ</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#eZj1bq3MnwkKFAjXgTbYUOctcHx3eaK9UG0U9F6yNDjEOApJQBYpIvldW5fHdgdepkroaWWjFE0qFRI24YbsmpPlNJF8xRvDz5xCRxKAPcBf4WfJif5ItfdNf6JjRYVkltoTB5WJ4TBwg0ku1eXf4cWkJZOw5XC2s9AfgmytUZH6NEgDbjr0vJ2fJv8GVW0GuEgXYLLt2G4MvTu09oWRpvOYZUpz4y2PMspbajqLwxmyXveLpnwo1Aft9V1gQ" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v2</span>
+          <span class="url-name">Binary v2</span>
+          <span class="url-len" style="color:rgb(48,188,92)">203 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Standard-USDC-v2">https://voidpay.xyz/pay#B9eXe2ni4qYvQlxWLUEVMsn407n3z5MBqV30I8maz38WWIvYbNXIGgPSl4uMy5Q6mTtaCqMi3vkNi7Aca7K0kTQZxZvJJyhS9E8oYBhDJDviYzNTzJxYn35kgZ1ZbPY2SayU64fDFSgGmSOdkwwBk9s8PiRXLPW7JL4z9tTNhjdQe025lRXhrKrgH2oABfalyk8avTMfHcQ</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#B9eXe2ni4qYvQlxWLUEVMsn407n3z5MBqV30I8maz38WWIvYbNXIGgPSl4uMy5Q6mTtaCqMi3vkNi7Aca7K0kTQZxZvJJyhS9E8oYBhDJDviYzNTzJxYn35kgZ1ZbPY2SayU64fDFSgGmSOdkwwBk9s8PiRXLPW7JL4z9tTNhjdQe025lRXhrKrgH2oABfalyk8avTMfHcQ" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row url-best">
+        <div class="url-meta">
+          <span class="url-ver">v3</span>
+          <span class="url-name">Binary v3</span>
+          <span class="url-len" style="color:rgb(34,197,94)">189 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Standard-USDC-v3">https://voidpay.xyz/pay#H17xT2pm3j9BeZt1NirmORmOl80eNik6jifnrD9qGMu68q37nNehvGwxgKBONlGW1P2nqocqazqfWO7e1of2qr4YMXiEKEHggsv1fnqCGlzzi8HcabVd8lPGmJdA21vHJNBI6g96UUS5apAtqIUVYaq6UxETpn1DszBeXqtOeaIvZEc99YEiRHN9L5vFb</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#H17xT2pm3j9BeZt1NirmORmOl80eNik6jifnrD9qGMu68q37nNehvGwxgKBONlGW1P2nqocqazqfWO7e1of2qr4YMXiEKEHggsv1fnqCGlzzi8HcabVd8lPGmJdA21vHJNBI6g96UUS5apAtqIUVYaq6UxETpn1DszBeXqtOeaIvZEc99YEiRHN9L5vFb" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v4</span>
+          <span class="url-name">TLV v1</span>
+          <span class="url-len" style="color:rgb(177,107,76)">335 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Standard-USDC-v4">https://voidpay.xyz/pay#3jbLc9KGr1lGuwiN9Vm8Bv5Mmd2ClOMtlot5A3Uf1iTOhxu3BuMEXxIgN1fk3IZYYhsqHXTMGaw4azq21aQjGJfcNwR61imnDhj2wR1o1URA1SkbJTLdOAGql9SBrGG2gXVVjw8RQ4IRPAQiiDy1NMrkLQ45AyEeDLBCyL7e90Mt1oJ2fGhol6ySWEXH90KBVDYs86YsGBFyGNRB1PQuK5IZ4CinRE66bkUSSbllWYZLaX2UB3mqoWrgnUmK9cjKNkrMwLlOrJDck8A7B8y45UFg5rUB6locaf88ZyGZ1rkWWGMIQlqfAtPPOlqNXvWCjqxYHc1vjTqvh3A</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#3jbLc9KGr1lGuwiN9Vm8Bv5Mmd2ClOMtlot5A3Uf1iTOhxu3BuMEXxIgN1fk3IZYYhsqHXTMGaw4azq21aQjGJfcNwR61imnDhj2wR1o1URA1SkbJTLdOAGql9SBrGG2gXVVjw8RQ4IRPAQiiDy1NMrkLQ45AyEeDLBCyL7e90Mt1oJ2fGhol6ySWEXH90KBVDYs86YsGBFyGNRB1PQuK5IZ4CinRE66bkUSSbllWYZLaX2UB3mqoWrgnUmK9cjKNkrMwLlOrJDck8A7B8y45UFg5rUB6locaf88ZyGZ1rkWWGMIQlqfAtPPOlqNXvWCjqxYHc1vjTqvh3A" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v5</span>
+          <span class="url-name">TLV v1 Rewrite</span>
+          <span class="url-len" style="color:rgb(127,138,82)">284 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Standard-USDC-v5">https://voidpay.xyz/pay#VgEQAQIAAQICAAEEBGVT8QAGBICangEHDWFsaWNlQHN0dWRpbwkIAQYKFNjaa_JpZK-dfu2eA-U0FdN6qWBFDAIAAQ0LYm9iQGNvcnAuaW8OJwIJVUkgRGVzaWduAAEPBxNCYWNrZW5kIERldmVsb3BtZW50AAECCBAMQWxpY2UgU3R1ZGlvEghCb2IgQ29ycBQQAQIDBAUGBwgJCgsMDQ4PEBYHSU5WLTAwMhgF_Z3YEAEfIINNmA5bg0ux-2sm0xMS6CQsLeRgNKQIOcjJvPO9x77e</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#VgEQAQIAAQICAAEEBGVT8QAGBICangEHDWFsaWNlQHN0dWRpbwkIAQYKFNjaa_JpZK-dfu2eA-U0FdN6qWBFDAIAAQ0LYm9iQGNvcnAuaW8OJwIJVUkgRGVzaWduAAEPBxNCYWNrZW5kIERldmVsb3BtZW50AAECCBAMQWxpY2UgU3R1ZGlvEghCb2IgQ29ycBQQAQIDBAUGBwgJCgsMDQ4PEBYHSU5WLTAwMhgF_Z3YEAEfIINNmA5bg0ux-2sm0xMS6CQsLeRgNKQIOcjJvPO9x77e" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v6</span>
+          <span class="url-name">TLV v1 Optimized</span>
+          <span class="url-len" style="color:rgb(127,138,82)">284 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Standard-USDC-v6">https://voidpay.xyz/pay#VgEQAQIAAQICAAEEBGVT8QAGBICangEHDWFsaWNlQHN0dWRpbwkIAQYKFNjaa_JpZK-dfu2eA-U0FdN6qWBFDAIAAQ0LYm9iQGNvcnAuaW8OJwIJVUkgRGVzaWduAAEPBxNCYWNrZW5kIERldmVsb3BtZW50AAECCBAMQWxpY2UgU3R1ZGlvEghCb2IgQ29ycBQQAQIDBAUGBwgJCgsMDQ4PEBYHSU5WLTAwMhgF_Z3YEAEfIINNmA5bg0ux-2sm0xMS6CQsLeRgNKQIOcjJvPO9x77e</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#VgEQAQIAAQICAAEEBGVT8QAGBICangEHDWFsaWNlQHN0dWRpbwkIAQYKFNjaa_JpZK-dfu2eA-U0FdN6qWBFDAIAAQ0LYm9iQGNvcnAuaW8OJwIJVUkgRGVzaWduAAEPBxNCYWNrZW5kIERldmVsb3BtZW50AAECCBAMQWxpY2UgU3R1ZGlvEghCb2IgQ29ycBQQAQIDBAUGBwgJCgsMDQ4PEBYHSU5WLTAwMhgF_Z3YEAEfIINNmA5bg0ux-2sm0xMS6CQsLeRgNKQIOcjJvPO9x77e" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+    </div>
+<div class="url-panel hidden" id="panel-Full">
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v0</span>
+          <span class="url-name">JSON + lz-string</span>
+          <span class="url-len" style="color:rgb(239,68,68)">1043 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Full-v0">https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwGYR4EBnMqaAdgLrviQFcBTK2gJgFYBODhkADsWAFyqFq8AMZMATqgCqAZQAiAYRIgkLKVABs8AGZRQg1AEEANgiksABAHUWAI0J2lIpkgQB7OwBl-DXgAQ1Q8AA8kAA4kcz0AIQAxDj0ePQAWEKSeFWoWAFEkHhYiAq5CDOguFQkQ83S8DK5NNkgQZwRLa0EAcwABEOtbMk9vHwA6KR8AW00QpEp26A43BMsfKQBrKQALEIRBO3MwFlh3JgQRe2aDdxCjpNkHqXJp87VzOx4qvBb4AAOu1QAGpoDguJD8CtiABfaQmISoBI+Zx2AqCa6yAGycgsMh2NCCXShcIRWg8HjUKl4NRcaDRFZIKSEcx4aC06hIdnOLh4UpIGjM6lqaKtVAhKTTJiYsj9ZyoliYljY3FkfETXzzRaoW52FQsJIIdwiWQsUTnJIbHyyOwrc7+HyCJBO9FqDhfaAYAAq5wUAGlNEDQRkMjh+DhqRk9PgeFwxfDEGJIABtUAodpKGYhWQiOxqJ2myV58xeK6aACOVHg8nafPodBA8PTqCehaVSEJyt6zxEvjM8CrkA4NdQ1QbBCbsBb7RUmyYMyVIhCfadlerIFrIGo9foTYAuvBMagAAohACei8xdkMNrsZGzubs00xzykee0pw2AKveYenfVGRcREc87BCMs83VWQwBsfE7DNZ0VRYTtDjsABFDI7H4bgJjsb1dnIOxDjAHxYOfHxTlkAkRF2exphmAFLFEexDFkdtnXg5D8QQXpBHOZxJS2DtjhPNA7B8AE+xmBAAC8V37c5-3IhizVowQyAQU47GuUZDl6e9LmuXCrEsOxtGsSiQmcJiCX2LTnHNI4zRglgAHdkLAjiQgBHEKI85xQJo+xfIAKx0PNs0EEJehVXCMFEOxCDwbSVRmAlvMY0CARVcS5DAntzV-CZNGTEBIkIKQMkpKQuAyDhbEMLgWEIRloBYaBoD4WxaBiKUiCQLgWUIXgSpCCIxzwABSTRFl0OtpthIA</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwGYR4EBnMqaAdgLrviQFcBTK2gJgFYBODhkADsWAFyqFq8AMZMATqgCqAZQAiAYRIgkLKVABs8AGZRQg1AEEANgiksABAHUWAI0J2lIpkgQB7OwBl-DXgAQ1Q8AA8kAA4kcz0AIQAxDj0ePQAWEKSeFWoWAFEkHhYiAq5CDOguFQkQ83S8DK5NNkgQZwRLa0EAcwABEOtbMk9vHwA6KR8AW00QpEp26A43BMsfKQBrKQALEIRBO3MwFlh3JgQRe2aDdxCjpNkHqXJp87VzOx4qvBb4AAOu1QAGpoDguJD8CtiABfaQmISoBI+Zx2AqCa6yAGycgsMh2NCCXShcIRWg8HjUKl4NRcaDRFZIKSEcx4aC06hIdnOLh4UpIGjM6lqaKtVAhKTTJiYsj9ZyoliYljY3FkfETXzzRaoW52FQsJIIdwiWQsUTnJIbHyyOwrc7+HyCJBO9FqDhfaAYAAq5wUAGlNEDQRkMjh+DhqRk9PgeFwxfDEGJIABtUAodpKGYhWQiOxqJ2myV58xeK6aACOVHg8nafPodBA8PTqCehaVSEJyt6zxEvjM8CrkA4NdQ1QbBCbsBb7RUmyYMyVIhCfadlerIFrIGo9foTYAuvBMagAAohACei8xdkMNrsZGzubs00xzykee0pw2AKveYenfVGRcREc87BCMs83VWQwBsfE7DNZ0VRYTtDjsABFDI7H4bgJjsb1dnIOxDjAHxYOfHxTlkAkRF2exphmAFLFEexDFkdtnXg5D8QQXpBHOZxJS2DtjhPNA7B8AE+xmBAAC8V37c5-3IhizVowQyAQU47GuUZDl6e9LmuXCrEsOxtGsSiQmcJiCX2LTnHNI4zRglgAHdkLAjiQgBHEKI85xQJo+xfIAKx0PNs0EEJehVXCMFEOxCDwbSVRmAlvMY0CARVcS5DAntzV-CZNGTEBIkIKQMkpKQuAyDhbEMLgWEIRloBYaBoD4WxaBiKUiCQLgWUIXgSpCCIxzwABSTRFl0OtpthIA" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v1</span>
+          <span class="url-name">Binary v1</span>
+          <span class="url-len" style="color:rgb(208,87,72)">991 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Full-v1">https://voidpay.xyz/pay#3gGNWcrR5nqKZJi2z897f72Z8eC46Xl8jG5P6enEwCtTrfEw1fnXc4CMqeoxc6boWZ0bI1G0X63rzofZUMr9devp5Fg4RDgHlPF8NMFYAljzn11oKBNVahU5kK5yJmVjAplgPBDfQYB9Yojvp0haB58Tq2UbAHApOtEBT7dYtwRgyAiq3cZdzldIqqNX1PTrc1mzUJUlCXu2FSnfHc0911aAa9HVuNkMyjua2BWpE79YgIjQP2dCPR7R6dr9uRiL6vybmuAeskLA8X1cXcuk0JXlLr8eIjzs2Ejtq6SbnCbpC6ygN98pPWxZAa56jF1bxPNoNwUpOGoz01JPRmzKCMnCFWpnQ7Og8T70KIkg7fa9LEk9SEEagvSsvBJtb9Y3LejRkI1M7kLvEj0M03c3k49YYFnUsUdtWrpqOuKPd3rPPmQkEZAPgFAbeCeWGRL3F3iX73He4KeA2hdInmKCBLoxj27h7psvq8yuRtkUoKHeDJ3P4BLixb3LkOyEbUFSVU0HArk1bNbUhhtwKwCOyvLXQfVFGDACZTrERW1F4k3d28pNnKQVNppAxdL0kA3nYfNWjdRdYrFaWDPKcunIv0kR8okONYhnIZZmLbi3vwXi85IiN3PvPphImE3WhMHXhYjChe3IdyARif7G6sTv0nwKYuQ6e7h9B8TZLAXrepOOUHRPxDom2pDwsF3bvcB0pvhpe5aq8flcltEBO0oRv3eknElM5w6cAQWmdtZ0X0E9kwT7TIcWr0WJ5zfmyMMtKSw1t0WCgbbWW7H3xKXxn3NfRJETVzNnBDVraCIarF6ObVv5bkxWU1D8OuwY7jKRvAF7r9MnsqGMWxMIeOGwvq72OEliF5tq97h6IkF1VEVf4TvNXRdHnaUxKoolSryOncFUoUMRujJigbFI8y3aHAR3YAfy2vdJEvHOaYTCG1v5WZpwy2qaSS07bsrfeKB6ch9l32x6HLD5GyOmnP3ngJYMYXeFhnn</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#3gGNWcrR5nqKZJi2z897f72Z8eC46Xl8jG5P6enEwCtTrfEw1fnXc4CMqeoxc6boWZ0bI1G0X63rzofZUMr9devp5Fg4RDgHlPF8NMFYAljzn11oKBNVahU5kK5yJmVjAplgPBDfQYB9Yojvp0haB58Tq2UbAHApOtEBT7dYtwRgyAiq3cZdzldIqqNX1PTrc1mzUJUlCXu2FSnfHc0911aAa9HVuNkMyjua2BWpE79YgIjQP2dCPR7R6dr9uRiL6vybmuAeskLA8X1cXcuk0JXlLr8eIjzs2Ejtq6SbnCbpC6ygN98pPWxZAa56jF1bxPNoNwUpOGoz01JPRmzKCMnCFWpnQ7Og8T70KIkg7fa9LEk9SEEagvSsvBJtb9Y3LejRkI1M7kLvEj0M03c3k49YYFnUsUdtWrpqOuKPd3rPPmQkEZAPgFAbeCeWGRL3F3iX73He4KeA2hdInmKCBLoxj27h7psvq8yuRtkUoKHeDJ3P4BLixb3LkOyEbUFSVU0HArk1bNbUhhtwKwCOyvLXQfVFGDACZTrERW1F4k3d28pNnKQVNppAxdL0kA3nYfNWjdRdYrFaWDPKcunIv0kR8okONYhnIZZmLbi3vwXi85IiN3PvPphImE3WhMHXhYjChe3IdyARif7G6sTv0nwKYuQ6e7h9B8TZLAXrepOOUHRPxDom2pDwsF3bvcB0pvhpe5aq8flcltEBO0oRv3eknElM5w6cAQWmdtZ0X0E9kwT7TIcWr0WJ5zfmyMMtKSw1t0WCgbbWW7H3xKXxn3NfRJETVzNnBDVraCIarF6ObVv5bkxWU1D8OuwY7jKRvAF7r9MnsqGMWxMIeOGwvq72OEliF5tq97h6IkF1VEVf4TvNXRdHnaUxKoolSryOncFUoUMRujJigbFI8y3aHAR3YAfy2vdJEvHOaYTCG1v5WZpwy2qaSS07bsrfeKB6ch9l32x6HLD5GyOmnP3ngJYMYXeFhnn" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v2</span>
+          <span class="url-name">Binary v2</span>
+          <span class="url-len" style="color:rgb(193,97,74)">966 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Full-v2">https://voidpay.xyz/pay#BimOXxla5nNYXl8mazyu7eB4LePq8hZZPloD3J60MGMPYFrscCiMSSoHVyNjItTmIcnHHhCg9dlhgX0jJBszuitSQTUZP7SGPEj6YalgsGeleeyHj6RIct620hm9v8EUM9T9w9yuiVSdcnvKI5uBhyWhKjLJbbLTr9bMcBEatFKpO7nrHsFnVgTeX5VbRU4GCggIP6WPQnHxQRv0vr2y3A7A5oWGnBJsq2rKIC4CrN8HddEmFzTgNNPlhe5bGDHsVxzyj8W4YDgIzUyT95MwnccKv34dtOk4RBrNUxDCeA543sqhsQE762Emx1pnLqUQ6S1xDuOVZ7rpbhTsPJ6rO1jB7iQxrq5JtyovIbUzDs6lwOBJ608OZTiw5iAPTH50ymCOBCA7w1cgBLkGuYR3HwnA3WNNgoQDnaKqn2ZYFXSBts4OfH1bmAaDDZ0dLncpvbzzIw5E0cZ4XJeC5o1mW1Dr2GQKofBVGAHLr6A4p6qsvEAbtnj9hjkpoFZ318lmCDLsbHZrcqAQpiqEe59jfXBMV0yebFxP6UeaLh522JjuPyNP9v2sm8Vbgy8o2GuhzhmVniEOig5b3jfLSW6dVSEFmJ2LXv2Qhrppf8MJKj5YYwnvzNSjZfAKlCxMJmt1vWrN1qOqMPcd6GlPzFDbTSjfzzLJZTfvyjOhml9q07OKRR3yv7prw0dWQwbFoEMcTOEq7weWI1rRzY0ake8UFuQ9u14lTRLwlVELQOnytgcdJD1kxBY51wk5vXIRYDjn7bVvk4ZcSpAeY9QyhVAfSAcH8HcAv8RP20sBk46s1dmTqo2uS31gpTKTnPPYjggBQhBDTkNz3c3cjS3DVRXByrzkAW6HidP1BIh79IZ5zyaHZlvTmCFOTbWr9mFwLN6T0wA01ZyeWVfjQ7ks6AvG2wlYdA00GKaXZOzDDOqXMCK6yVhPzzeS1ggL9ryKWq5qpTgMrb</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#BimOXxla5nNYXl8mazyu7eB4LePq8hZZPloD3J60MGMPYFrscCiMSSoHVyNjItTmIcnHHhCg9dlhgX0jJBszuitSQTUZP7SGPEj6YalgsGeleeyHj6RIct620hm9v8EUM9T9w9yuiVSdcnvKI5uBhyWhKjLJbbLTr9bMcBEatFKpO7nrHsFnVgTeX5VbRU4GCggIP6WPQnHxQRv0vr2y3A7A5oWGnBJsq2rKIC4CrN8HddEmFzTgNNPlhe5bGDHsVxzyj8W4YDgIzUyT95MwnccKv34dtOk4RBrNUxDCeA543sqhsQE762Emx1pnLqUQ6S1xDuOVZ7rpbhTsPJ6rO1jB7iQxrq5JtyovIbUzDs6lwOBJ608OZTiw5iAPTH50ymCOBCA7w1cgBLkGuYR3HwnA3WNNgoQDnaKqn2ZYFXSBts4OfH1bmAaDDZ0dLncpvbzzIw5E0cZ4XJeC5o1mW1Dr2GQKofBVGAHLr6A4p6qsvEAbtnj9hjkpoFZ318lmCDLsbHZrcqAQpiqEe59jfXBMV0yebFxP6UeaLh522JjuPyNP9v2sm8Vbgy8o2GuhzhmVniEOig5b3jfLSW6dVSEFmJ2LXv2Qhrppf8MJKj5YYwnvzNSjZfAKlCxMJmt1vWrN1qOqMPcd6GlPzFDbTSjfzzLJZTfvyjOhml9q07OKRR3yv7prw0dWQwbFoEMcTOEq7weWI1rRzY0ake8UFuQ9u14lTRLwlVELQOnytgcdJD1kxBY51wk5vXIRYDjn7bVvk4ZcSpAeY9QyhVAfSAcH8HcAv8RP20sBk46s1dmTqo2uS31gpTKTnPPYjggBQhBDTkNz3c3cjS3DVRXByrzkAW6HidP1BIh79IZ5zyaHZlvTmCFOTbWr9mFwLN6T0wA01ZyeWVfjQ7ks6AvG2wlYdA00GKaXZOzDDOqXMCK6yVhPzzeS1ggL9ryKWq5qpTgMrb" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row url-best">
+        <div class="url-meta">
+          <span class="url-ver">v3</span>
+          <span class="url-name">Binary v3</span>
+          <span class="url-len" style="color:rgb(34,197,94)">698 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Full-v3">https://voidpay.xyz/pay#H2ODSGsIK8BtvCme2BdSIXzpUc1AI258v6pfUPQ6PC6UBHj651ZRSz4opEtAPnB9Ak1PzECfwWpkqRuBCD74UsoG6MFC2JgzRieaRDmEuc7cIxoqvIwfxhLuUIwamWVWUdf3CkJclFp4gqbgCkya5PUwBNLJbSUCzWqfrDzdIelCNcDaijMKZN1FllVnw8gLPwPSr6qMxatjkICQ7z8S7m1rGG5NmIfTqWPgLGthCqbjVS1IKQ6hBH4A4GU0OJPdxhcGPQtVQBfn8ilDIvTvAqjkUH66qoBVvltcCOqThFrwl1aP2eMF7iMNq6lzpcRHMgp4QCFzNqJRKbvBmtI6pei6RclFsf6FI7xpGB5Qsz8pimHhc5t0bOPP2yZbXtEegz9PwDncQiRzUyFKSYBHH1rpeW42UNDTVCvYVrhFL6lbi4lBuYfC4jIGM4relZCNyzhGcCad9KmX0f1UaT3iDXvhXOPFhdYFV0c0sL8dzLRkMehSkqxGFC3TzDIanOoumr1KA61EP2LgVJQxinOESk9AOoF5WYZUteVPfJhjXriu4RKbbmELfhn6Z2f1ZR319yGitUKyuCEyE5q4VZYxRi2st5SMne9o7KiPqNZ0zxEwCsH6Osh6mKZWNej5Dhf1pXKfGwgQn1b56751E0Jqco5gyqX7E8Dl5cPzrPgBkDrx4JtR1zDB24W6ZT</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#H2ODSGsIK8BtvCme2BdSIXzpUc1AI258v6pfUPQ6PC6UBHj651ZRSz4opEtAPnB9Ak1PzECfwWpkqRuBCD74UsoG6MFC2JgzRieaRDmEuc7cIxoqvIwfxhLuUIwamWVWUdf3CkJclFp4gqbgCkya5PUwBNLJbSUCzWqfrDzdIelCNcDaijMKZN1FllVnw8gLPwPSr6qMxatjkICQ7z8S7m1rGG5NmIfTqWPgLGthCqbjVS1IKQ6hBH4A4GU0OJPdxhcGPQtVQBfn8ilDIvTvAqjkUH66qoBVvltcCOqThFrwl1aP2eMF7iMNq6lzpcRHMgp4QCFzNqJRKbvBmtI6pei6RclFsf6FI7xpGB5Qsz8pimHhc5t0bOPP2yZbXtEegz9PwDncQiRzUyFKSYBHH1rpeW42UNDTVCvYVrhFL6lbi4lBuYfC4jIGM4relZCNyzhGcCad9KmX0f1UaT3iDXvhXOPFhdYFV0c0sL8dzLRkMehSkqxGFC3TzDIanOoumr1KA61EP2LgVJQxinOESk9AOoF5WYZUteVPfJhjXriu4RKbbmELfhn6Z2f1ZR319yGitUKyuCEyE5q4VZYxRi2st5SMne9o7KiPqNZ0zxEwCsH6Osh6mKZWNej5Dhf1pXKfGwgQn1b56751E0Jqco5gyqX7E8Dl5cPzrPgBkDrx4JtR1zDB24W6ZT" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v4</span>
+          <span class="url-name">TLV v1</span>
+          <span class="url-len" style="color:rgb(190,99,74)">960 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Full-v4">https://voidpay.xyz/pay#3lZPJhPZcVsKVM3XJ7VzZGRWCei3Bi5ytQWqAnF0EhVEJ0XmMU5uK19gm9FdraE4ERh9sXUlG0nyKiwJ4i8NY9y8ArpDfUUt3kmRKgxRzcMDo1v7DOlN3BHqR3Jsveb2Czgubo4upR64Wb7EwRwXVWOXgqctXQVomkEgkEh4L8Vfhz2fO2QHep2YrdaXRPJHCs4FNSNcgD6Ge5D2wCVGgldqEwY5hTXUoVtTEQqNHwyvRZwjOu6qgSidLgU4Vbuw1LWdybnyo8XPj0xENFRS1orQXYz45eP2t060ptT0TU5cktmiaUbHvSZ8WkaIg9HFw1AI6cY6tMrXMBozn3zI2ADTepeweMzz3a9f8c8YQqd7PI7EdsL1hTfElvkxdOCosoazBj3tl5vNRi6mAsFEekRtx1zy3XDmIHy8Z0wC7VbgqGfWxcWFiWYXwBx09rQMlHqXZxmSEoONGVPJJdhkmceZTSkiXsFt4rOQBxoPtTkmeqDYvov4M7hvUF00R3mHrEsCNz2AKpOXgQ81Gt7yN6TpD5HRZgI5YKCFJ7Ew912m0Lb5LYS3Y87bpGBolMUNkyTkh6LEAvg1cguOtgLypZPurN2zV9uaereBTnFkuXq3E4Yy6F9SorHFPIGymf01N2XNr4ST1qKLKr4BOILmIVTnu4Gpc56H24lrXpTzeuBbQUOu1OYscKVsPqXeEsZRI23PT62sofHaboKOM1tgxE2EyZEN8k6RnXqKBRTlZSzF6in5dysbjCAMz453XzHYkCfyvavsfzV6TQEEBpOltohwjWy6b1U4TUSgzn4xg77vPoOgYPTJtyn6ag0Qbcp4aK9UWLIP6oGjov8FQP3ZTmDOuI44F0sTkK2maf6UE6pxYczWD75XsQnSX7UM4SIXEAGOyut3dQEY6cWLZsHICi8BN0MmEJElN5ZxgySY9YNlrEJJ2QsgMRXbYvmbNzZh</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#3lZPJhPZcVsKVM3XJ7VzZGRWCei3Bi5ytQWqAnF0EhVEJ0XmMU5uK19gm9FdraE4ERh9sXUlG0nyKiwJ4i8NY9y8ArpDfUUt3kmRKgxRzcMDo1v7DOlN3BHqR3Jsveb2Czgubo4upR64Wb7EwRwXVWOXgqctXQVomkEgkEh4L8Vfhz2fO2QHep2YrdaXRPJHCs4FNSNcgD6Ge5D2wCVGgldqEwY5hTXUoVtTEQqNHwyvRZwjOu6qgSidLgU4Vbuw1LWdybnyo8XPj0xENFRS1orQXYz45eP2t060ptT0TU5cktmiaUbHvSZ8WkaIg9HFw1AI6cY6tMrXMBozn3zI2ADTepeweMzz3a9f8c8YQqd7PI7EdsL1hTfElvkxdOCosoazBj3tl5vNRi6mAsFEekRtx1zy3XDmIHy8Z0wC7VbgqGfWxcWFiWYXwBx09rQMlHqXZxmSEoONGVPJJdhkmceZTSkiXsFt4rOQBxoPtTkmeqDYvov4M7hvUF00R3mHrEsCNz2AKpOXgQ81Gt7yN6TpD5HRZgI5YKCFJ7Ew912m0Lb5LYS3Y87bpGBolMUNkyTkh6LEAvg1cguOtgLypZPurN2zV9uaereBTnFkuXq3E4Yy6F9SorHFPIGymf01N2XNr4ST1qKLKr4BOILmIVTnu4Gpc56H24lrXpTzeuBbQUOu1OYscKVsPqXeEsZRI23PT62sofHaboKOM1tgxE2EyZEN8k6RnXqKBRTlZSzF6in5dysbjCAMz453XzHYkCfyvavsfzV6TQEEBpOltohwjWy6b1U4TUSgzn4xg77vPoOgYPTJtyn6ag0Qbcp4aK9UWLIP6oGjov8FQP3ZTmDOuI44F0sTkK2maf6UE6pxYczWD75XsQnSX7UM4SIXEAGOyut3dQEY6cWLZsHICi8BN0MmEJElN5ZxgySY9YNlrEJJ2QsgMRXbYvmbNzZh" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v5</span>
+          <span class="url-name">TLV v1 Rewrite</span>
+          <span class="url-len" style="color:rgb(70,175,89)">758 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Full-v5">https://voidpay.xyz/pay#VgESAQIAHgICAAQDFHCZeXDFGBLcOgEMfQG1Dg0X3HnIBARlU_EABgSAmp4BCAEGChTY2mvyaWSvnX7tngPlNBXTeqlgRQwCAAEORQMUU21hcnQgQ29udHJhY3QgQXVkaXQAAQUIFEZyb250ZW5kIEludGVncmF0aW9uAAIPBw1Eb2N1bWVudGF0aW9uAAFLBhAVQWxpY2UgV2ViMyBTdHVkaW8gTExDEhNCb2IgRW50ZXJwcmlzZXMgSW5jEwMxMCUUEAECAwQFBgcICQoLDA0ODxAVAjUlFgdJTlYtMDAzGAWdytwpAR8gVMxsFyjs8oA6rqHy94Myu7AIgnyL5HDjB1hq9hQJxSD9qwIbCAIAHAk2LnGTRXNP64OElVdX_vmxqlQbde9ycBfwC9MHYLrB1f2_Mw1U__m80ijMagddONDZRnxcNt87o8d_RiRpua0t6d8DwxEJVdMZBwwqQAMGjxdnbYJfJCpbgG8Bk_dyCwKOo0lVFBHuAG2AWxgiSri7Vf_qw67zYrN4poXOB8aCTniQrtkU6ut1UhVSYHLyTfnjpATk2KIvdJVXFCo-JmfgRHkiud3eT46w-zhMHRvMcUtnsZ3VBuvFSCV6DBuNIiklIpTxqFqQk41OuFi_TpyiAGshlVO946RZBysokfE82y1rw92wIOfPxS6ZSgjECNJWKESsNOmqkApak87iGymQdc5T1knqW7vJ6kA__hz4fy3F_38RZYiDvmtjK7FuA1mjlRScUQ</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#VgESAQIAHgICAAQDFHCZeXDFGBLcOgEMfQG1Dg0X3HnIBARlU_EABgSAmp4BCAEGChTY2mvyaWSvnX7tngPlNBXTeqlgRQwCAAEORQMUU21hcnQgQ29udHJhY3QgQXVkaXQAAQUIFEZyb250ZW5kIEludGVncmF0aW9uAAIPBw1Eb2N1bWVudGF0aW9uAAFLBhAVQWxpY2UgV2ViMyBTdHVkaW8gTExDEhNCb2IgRW50ZXJwcmlzZXMgSW5jEwMxMCUUEAECAwQFBgcICQoLDA0ODxAVAjUlFgdJTlYtMDAzGAWdytwpAR8gVMxsFyjs8oA6rqHy94Myu7AIgnyL5HDjB1hq9hQJxSD9qwIbCAIAHAk2LnGTRXNP64OElVdX_vmxqlQbde9ycBfwC9MHYLrB1f2_Mw1U__m80ijMagddONDZRnxcNt87o8d_RiRpua0t6d8DwxEJVdMZBwwqQAMGjxdnbYJfJCpbgG8Bk_dyCwKOo0lVFBHuAG2AWxgiSri7Vf_qw67zYrN4poXOB8aCTniQrtkU6ut1UhVSYHLyTfnjpATk2KIvdJVXFCo-JmfgRHkiud3eT46w-zhMHRvMcUtnsZ3VBuvFSCV6DBuNIiklIpTxqFqQk41OuFi_TpyiAGshlVO946RZBysokfE82y1rw92wIOfPxS6ZSgjECNJWKESsNOmqkApak87iGymQdc5T1knqW7vJ6kA__hz4fy3F_38RZYiDvmtjK7FuA1mjlRScUQ" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v6</span>
+          <span class="url-name">TLV v1 Optimized</span>
+          <span class="url-len" style="color:rgb(34,197,94)">698 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Full-v6">https://voidpay.xyz/pay#GwcDoIzDOBZcGLgoiiRsTdnlgQ_eB3xUIasHI7YPbSAXjVCxSpVJl1SAWrmTqVueITAEgqqZo8l73SoRhgQvGbypQ5zr-drA8n8w0KyIiwfSB00o1bmD54KY6JylGdhFECqAfWAECkD2YyhTMdpYseYluk2GOa3wEo973DZuYpgj9wvCZxDSI4mNORXyuGQps9MIz1JrBzUkg25UVASUSbNjaUG-HFCGe3SSKUcocknoQCClmQ3xmeKKNVWWicorakApaHpbdGops-Mfo6ZEfpN9FxsDW2yYUfWQlalyKEMOA_3M3GxzhWIZjhppjHAqAuf5CkeVtLy2ao11KgTWMTYFk4wrtUCZS2kpATa-9B5NwQTdQqIYAIuaL8zldfE3sC9Otr1NoXex-0nTglnX4lvI0BzpF11VnSNUSmAZi7w1PywaFSWFClYEgrmXw86V1nKrlGcMlPN0KBMg44EsrbpZGQjGKUZv8eE0NA9C-CT36ablOJxK8AUhscEmPCqSpTA3iaoE2BzSQoc1JuH3dlqaRhgeSNI69OD3ViBRQxNlGa7-6zTRD0W9eaGUnyoSq8ut6gN2U5lNjEZJZwQwgmI4QfZNnxRIkLjuQZoyCsJE_MQnt2-D4EApfnKqZdJWpfvTj9qI_0fzT9UaB6O-lfJlzUDv2aFTwc3PDVNjD-SY1TkGdVjNkQg3BQ</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#GwcDoIzDOBZcGLgoiiRsTdnlgQ_eB3xUIasHI7YPbSAXjVCxSpVJl1SAWrmTqVueITAEgqqZo8l73SoRhgQvGbypQ5zr-drA8n8w0KyIiwfSB00o1bmD54KY6JylGdhFECqAfWAECkD2YyhTMdpYseYluk2GOa3wEo973DZuYpgj9wvCZxDSI4mNORXyuGQps9MIz1JrBzUkg25UVASUSbNjaUG-HFCGe3SSKUcocknoQCClmQ3xmeKKNVWWicorakApaHpbdGops-Mfo6ZEfpN9FxsDW2yYUfWQlalyKEMOA_3M3GxzhWIZjhppjHAqAuf5CkeVtLy2ao11KgTWMTYFk4wrtUCZS2kpATa-9B5NwQTdQqIYAIuaL8zldfE3sC9Otr1NoXex-0nTglnX4lvI0BzpF11VnSNUSmAZi7w1PywaFSWFClYEgrmXw86V1nKrlGcMlPN0KBMg44EsrbpZGQjGKUZv8eE0NA9C-CT36ablOJxK8AUhscEmPCqSpTA3iaoE2BzSQoc1JuH3dlqaRhgeSNI69OD3ViBRQxNlGa7-6zTRD0W9eaGUnyoSq8ut6gN2U5lNjEZJZwQwgmI4QfZNnxRIkLjuQZoyCsJE_MQnt2-D4EApfnKqZdJWpfvTj9qI_0fzT9UaB6O-lfJlzUDv2aFTwc3PDVNjD-SY1TkGdVjNkQg3BQ" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+    </div>
+<div class="url-panel hidden" id="panel-Multi-item">
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v0</span>
+          <span class="url-name">JSON + lz-string</span>
+          <span class="url-len" style="color:rgb(239,68,68)">717 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Multi-item-v0">https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwBYR4EBnMqaAdgLrviQFcBTK2gJgFYBODhkADsWAFyiEO0AGxwQAYyYAnVAFUAygBEAwiRBIWcqFPgAzKKEGoNLMAAIAggHMWguQE9dAQ1R4AHkgAOJHspACEAMQ4pHilCT3CeDWoWAFEkHhY8AGYUrizCaC4NLOpPexiiLl02SERBMAB7BDkWMgABfTBPZ1c3ADpfNwAvEABfeENICysWcIRbAAVFBpEGuQaAG1sNewB5MdIxSABtUBRagBlPQSQEQUdbAAdullt9MgRHQVtrpFsEAC2jw2LABLhEnhECAa3wA7g1FABrXQARyo8GUtX49DoBzOqAWnjcYMEIlsjkhLFhRP+pJYjkUkOhcIQIgAFrY1CJFAhHq97As0Kj0SBMSAsjjceN8bUVGQWIofkx2eDmkyYbYyG4yCJQbZYayObt7MqORw+nhhTAMahuJLLdK9FZIZ4AEaeeWauRs0GeN6tT7fX62AGfRlQjVkOQ8x4iSjwNHW0WoQr2vFO2paBpAxQsH2CD5gV4uJA4VY4Eu2XU6u4PMhMVmveUiJiPK2yMXQe0OgC68FJqAAsggQTqYa8OP6Nggi4o3LZACgEPw2WxMLEhSla-yBIJJur+wer+90RxAfk8JgCQTwUi4LGo1DkATkcg4HCyPCyHEfd6QrqyniEF+UQBCwXABFk0BjEAA</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwBYR4EBnMqaAdgLrviQFcBTK2gJgFYBODhkADsWAFyiEO0AGxwQAYyYAnVAFUAygBEAwiRBIWcqFPgAzKKEGoNLMAAIAggHMWguQE9dAQ1R4AHkgAOJHspACEAMQ4pHilCT3CeDWoWAFEkHhY8AGYUrizCaC4NLOpPexiiLl02SERBMAB7BDkWMgABfTBPZ1c3ADpfNwAvEABfeENICysWcIRbAAVFBpEGuQaAG1sNewB5MdIxSABtUBRagBlPQSQEQUdbAAdullt9MgRHQVtrpFsEAC2jw2LABLhEnhECAa3wA7g1FABrXQARyo8GUtX49DoBzOqAWnjcYMEIlsjkhLFhRP+pJYjkUkOhcIQIgAFrY1CJFAhHq97As0Kj0SBMSAsjjceN8bUVGQWIofkx2eDmkyYbYyG4yCJQbZYayObt7MqORw+nhhTAMahuJLLdK9FZIZ4AEaeeWauRs0GeN6tT7fX62AGfRlQjVkOQ8x4iSjwNHW0WoQr2vFO2paBpAxQsH2CD5gV4uJA4VY4Eu2XU6u4PMhMVmveUiJiPK2yMXQe0OgC68FJqAAsggQTqYa8OP6Nggi4o3LZACgEPw2WxMLEhSla-yBIJJur+wer+90RxAfk8JgCQTwUi4LGo1DkATkcg4HCyPCyHEfd6QrqyniEF+UQBCwXABFk0BjEAA" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v1</span>
+          <span class="url-name">Binary v1</span>
+          <span class="url-len" style="color:rgb(185,102,75)">643 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Multi-item-v1">https://voidpay.xyz/pay#3plkJ7IoSHx5dDs7g6mGQDyMuqIvt5MAlgX85d374c6M4NJkeGJZZBX7ZZiNgg4vZlGxYKIlenXSsIo1EDPC0XbnQwdmfDjojYMtbShzWBFCkawHNCl3sJOSmGouBbw9QIAx2gAOmAp335fei0oBY4t7xV9Br4Y8DoZoqV2DJwaGQwJceMMUqLkBJZ2HIHwgrEmgtbzqfvz1uLqPlL9qqFfMYJi1Zb0WnPUD4iKTDXFAEP55zzrwjb6iWVLCgAVMwSHnYEIiGkwApT4z1QsI1gnLGzKCkm1PXPCWF62xTAadUvVnTWFRJa23WWKIKPJfuGNJkTKIN2hOqEilhyqt2P6wAYR2Samf6pMBDpCzQjhTKzqFmVpeUCx1Y1yza93u1fohRJkNAPzlBF6HhVJx1xSymB81IhhQhbXog3gdOx6YktgZG4NtcJLicEM12P1ezrBRp03Y99vTSxeJlBHvOfJWierg5divBz7vOllYZA7cDJ2cOpUQNKC62ejxVMsE0QrSmd3A1fOebDa1lsz3E6UiXT92wI0aSsN5bw9ETc4eiUWUMomOSl6CJG9D2Fu3Hjy1WmhTFOo9mZnXE1qFg5mANpjsHmw51747dUFuiEU8KAgKDWQd0JYlQfLNtU6AnHW</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#3plkJ7IoSHx5dDs7g6mGQDyMuqIvt5MAlgX85d374c6M4NJkeGJZZBX7ZZiNgg4vZlGxYKIlenXSsIo1EDPC0XbnQwdmfDjojYMtbShzWBFCkawHNCl3sJOSmGouBbw9QIAx2gAOmAp335fei0oBY4t7xV9Br4Y8DoZoqV2DJwaGQwJceMMUqLkBJZ2HIHwgrEmgtbzqfvz1uLqPlL9qqFfMYJi1Zb0WnPUD4iKTDXFAEP55zzrwjb6iWVLCgAVMwSHnYEIiGkwApT4z1QsI1gnLGzKCkm1PXPCWF62xTAadUvVnTWFRJa23WWKIKPJfuGNJkTKIN2hOqEilhyqt2P6wAYR2Samf6pMBDpCzQjhTKzqFmVpeUCx1Y1yza93u1fohRJkNAPzlBF6HhVJx1xSymB81IhhQhbXog3gdOx6YktgZG4NtcJLicEM12P1ezrBRp03Y99vTSxeJlBHvOfJWierg5divBz7vOllYZA7cDJ2cOpUQNKC62ejxVMsE0QrSmd3A1fOebDa1lsz3E6UiXT92wI0aSsN5bw9ETc4eiUWUMomOSl6CJG9D2Fu3Hjy1WmhTFOo9mZnXE1qFg5mANpjsHmw51747dUFuiEU8KAgKDWQd0JYlQfLNtU6AnHW" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v2</span>
+          <span class="url-name">Binary v2</span>
+          <span class="url-len" style="color:rgb(167,114,77)">618 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Multi-item-v2">https://voidpay.xyz/pay#BizBbVUai4M79njm40RMWeD59FJK79iRMfJPJHtiP7qmOQ1TmeJAfzfc202mTSztEaGXjiG6RkDka2eAFSZOCPxSTs6yvRER9ABg7PQKzdZQK3TbppOdWZPxRf5NIPQPBy0NdSAM293bdp0G4K37Rpn2D79YzKCyp0K1PhOuyJTqdg7LzNqnF8cYUTuhQoXBZqQp6BocS55wQMX7IapqE3yLXpk9A7AJ5Xq9aN2OhOzMVIuC49fP6U0Sn0QSrKQ4rSxec9LlErF1SL1kwMaegpUZixDffDuvUnP5pAWU8YrvvAC2B3xAYXvRYHETs2lvDLDzKk0FGTSxQwULK9btt4zniYX9r2dXgByvDdIOvrRPsYY8ZqE5qblSstoTTUVVbkcH5YVzYz4o30KiRaxx3JGhatbomk88ZzqTkeTloXo7MOVbV6HvYyn8A4vqikfETyHEZsBeNMO7lOn0aCEsriMa1T5g81QzmCp8pIxhpljPjV8zWvxZcO7Vm0ZCw8Glcm2VTHmYJLZieB0PcNDWr0ohXi7BmX40g8hG6e1cBKZ1m4OVXl0gRdQpXExPeOqZbD5rLZEBSIznqppHIdGRNul5q6n09A2MiIbVv7ZJp6</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#BizBbVUai4M79njm40RMWeD59FJK79iRMfJPJHtiP7qmOQ1TmeJAfzfc202mTSztEaGXjiG6RkDka2eAFSZOCPxSTs6yvRER9ABg7PQKzdZQK3TbppOdWZPxRf5NIPQPBy0NdSAM293bdp0G4K37Rpn2D79YzKCyp0K1PhOuyJTqdg7LzNqnF8cYUTuhQoXBZqQp6BocS55wQMX7IapqE3yLXpk9A7AJ5Xq9aN2OhOzMVIuC49fP6U0Sn0QSrKQ4rSxec9LlErF1SL1kwMaegpUZixDffDuvUnP5pAWU8YrvvAC2B3xAYXvRYHETs2lvDLDzKk0FGTSxQwULK9btt4zniYX9r2dXgByvDdIOvrRPsYY8ZqE5qblSstoTTUVVbkcH5YVzYz4o30KiRaxx3JGhatbomk88ZzqTkeTloXo7MOVbV6HvYyn8A4vqikfETyHEZsBeNMO7lOn0aCEsriMa1T5g81QzmCp8pIxhpljPjV8zWvxZcO7Vm0ZCw8Glcm2VTHmYJLZieB0PcNDWr0ohXi7BmX40g8hG6e1cBKZ1m4OVXl0gRdQpXExPeOqZbD5rLZEBSIznqppHIdGRNul5q6n09A2MiIbVv7ZJp6" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row url-best">
+        <div class="url-meta">
+          <span class="url-ver">v3</span>
+          <span class="url-name">Binary v3</span>
+          <span class="url-len" style="color:rgb(34,197,94)">437 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Multi-item-v3">https://voidpay.xyz/pay#HbvuRygeNftaiyZlk1imDoQtLEKMRS3iHm16xvUzvQdA5TRXa3FlaL9tPZwmJLtrVLdTmhibyS35QEBUn3wSSAeCqdHrG2dQXlC2QIoUx8TTKWqG9QsbSTDfTpJYrvlWCNEPKWq50ek0ipusnwMbRpAaCq1iHmNy37hQzlhMimxlyDVxSAl86XYEpsT4OjqAiOV29XU9zsMJq0jEpZUhsYvSLUJNImSy3VkDFlZjJypPTnZ2lvU5vMBrgPPyoBd6AudlaHAhBDi0NCu6CHnUfHWNIWqqc6Cxlm6o5w1EB6bGjyiAOl44DErGa7RCR2GXxYRID1V5sxZK3Okjcy6XR9hI6vWFJbvqZwUl0iivTmUEvJlx0tfhKbDhcycgNgGSq6xXRaKgpNXhRvGWpyapxhAgMMPEHhrcPICwsEB8Bey4eSDU31kr3</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#HbvuRygeNftaiyZlk1imDoQtLEKMRS3iHm16xvUzvQdA5TRXa3FlaL9tPZwmJLtrVLdTmhibyS35QEBUn3wSSAeCqdHrG2dQXlC2QIoUx8TTKWqG9QsbSTDfTpJYrvlWCNEPKWq50ek0ipusnwMbRpAaCq1iHmNy37hQzlhMimxlyDVxSAl86XYEpsT4OjqAiOV29XU9zsMJq0jEpZUhsYvSLUJNImSy3VkDFlZjJypPTnZ2lvU5vMBrgPPyoBd6AudlaHAhBDi0NCu6CHnUfHWNIWqqc6Cxlm6o5w1EB6bGjyiAOl44DErGa7RCR2GXxYRID1V5sxZK3Okjcy6XR9hI6vWFJbvqZwUl0iivTmUEvJlx0tfhKbDhcycgNgGSq6xXRaKgpNXhRvGWpyapxhAgMMPEHhrcPICwsEB8Bey4eSDU31kr3" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v4</span>
+          <span class="url-name">TLV v1</span>
+          <span class="url-len" style="color:rgb(237,69,68)">714 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Multi-item-v4">https://voidpay.xyz/pay#5PEKxGXfUsnO7lbX0WsgCoIquJirTGVNXrJFHo4jIVZ3rdqmKg41sszGRUGKbez4s7mg4iviFby0xeHqMwsV4GhHqs7KLqHIDsCK6HKXB05m8yKM6my983XEpc34Wt0mmckcv67BWzsjimLMyn0a3oBTK1NBH7XnIO919RrkHSRURZd55PmWoanaRKJHLzGXlijE3pztRD1touS4iGhbJIkbROkZh5KqvTnZ0VhJyssmSrwi1w6GNdzboDl88D2FkqLWY539DXRjtnO04iy0chZ4opqAB2yADd0bjEmpFYJ5f3PRNLgipq4tMA9YPsrfVVjISe1jfgcwfYDgtDvW6tMYQYDuSwmuZNEFaLzqGT0nrQRTTEWF2AAgrRd98hSFgD3UMPionds3N7HikQTEZzwfUvEm0cvz49lN7R4EVyKCE7OqNLoEKHUiouSA4r2CPQqkHd2lLQKpm6Qvachq7le3KqXTVRTo0Vd17BfcbC4odBkIdDrywD8DBcxWynrS3NUVkSfGQdLZojM29wQTV9D4ZuCblEt2H6s3xdCGvzusabQoL1IXLsZ4Wz9xfKpysaYgtST2ouejYPj05OCLW5cDGRDBlYJ3cvJlpIgN2sTMHOEQyK9c14BikmN70bJLmrUqqlGu51fzYKEaUS1mhZTuzT6u5ld2ZUVKWGde1BWz8vIovBtCb6phWVUmsLoZ4fRMCi8LIN</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#5PEKxGXfUsnO7lbX0WsgCoIquJirTGVNXrJFHo4jIVZ3rdqmKg41sszGRUGKbez4s7mg4iviFby0xeHqMwsV4GhHqs7KLqHIDsCK6HKXB05m8yKM6my983XEpc34Wt0mmckcv67BWzsjimLMyn0a3oBTK1NBH7XnIO919RrkHSRURZd55PmWoanaRKJHLzGXlijE3pztRD1touS4iGhbJIkbROkZh5KqvTnZ0VhJyssmSrwi1w6GNdzboDl88D2FkqLWY539DXRjtnO04iy0chZ4opqAB2yADd0bjEmpFYJ5f3PRNLgipq4tMA9YPsrfVVjISe1jfgcwfYDgtDvW6tMYQYDuSwmuZNEFaLzqGT0nrQRTTEWF2AAgrRd98hSFgD3UMPionds3N7HikQTEZzwfUvEm0cvz49lN7R4EVyKCE7OqNLoEKHUiouSA4r2CPQqkHd2lLQKpm6Qvachq7le3KqXTVRTo0Vd17BfcbC4odBkIdDrywD8DBcxWynrS3NUVkSfGQdLZojM29wQTV9D4ZuCblEt2H6s3xdCGvzusabQoL1IXLsZ4Wz9xfKpysaYgtST2ouejYPj05OCLW5cDGRDBlYJ3cvJlpIgN2sTMHOEQyK9c14BikmN70bJLmrUqqlGu51fzYKEaUS1mhZTuzT6u5ld2ZUVKWGde1BWz8vIovBtCb6phWVUmsLoZ4fRMCi8LIN" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v5</span>
+          <span class="url-name">TLV v1 Rewrite</span>
+          <span class="url-len" style="color:rgb(184,103,75)">642 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Multi-item-v5">https://voidpay.xyz/pay#VgEQAQIACgICAAIEBGVT8QAFPE1pbGVzdG9uZSAyIGRlbGl2ZXJ5IOKAlCBhbGwgZmVhdHVyZXMgaW1wbGVtZW50ZWQgYW5kIHRlc3RlZAYEgJqeAQcWaW52b2ljZXNAZGV2YWdlbmN5Lnh5eggBBgoU2Npr8mlkr51-7Z4D5TQV03qpYEUMAgABDvEBBStMYW5kaW5nIHBhZ2UgZGVzaWduIGFuZCBpbXBsZW1lbnRhdGlvbiB3b3JrAAECCCtQYXltZW50IGdhdGV3YXkgaW50ZWdyYXRpb24gd2l0aCBTdHJpcGUgQVBJAAEDCClVc2VyIGF1dGhlbnRpY2F0aW9uIHN5c3RlbSB3aXRoIE9BdXRoIDIuMAABGQcsRGF0YWJhc2Ugc2NoZW1hIGRlc2lnbiBhbmQgbWlncmF0aW9uIHNjcmlwdHMAAQ8HLENvbXByZWhlbnNpdmUgZW5kLXRvLWVuZCB0ZXN0aW5nIHN1aXRlIHNldHVwAAEBCBAKRGV2IEFnZW5jeRIRRGVGaSBQcm90b2NvbCBEQU8UEAECAwQFBgcICQoLDA0ODxAWB0lOVi0wMDQYBb3C1y8BHyDG_2ArZ9lC8pT3K3WC-jWaoxaaEloj_mdQP_x0F5TaQg</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#VgEQAQIACgICAAIEBGVT8QAFPE1pbGVzdG9uZSAyIGRlbGl2ZXJ5IOKAlCBhbGwgZmVhdHVyZXMgaW1wbGVtZW50ZWQgYW5kIHRlc3RlZAYEgJqeAQcWaW52b2ljZXNAZGV2YWdlbmN5Lnh5eggBBgoU2Npr8mlkr51-7Z4D5TQV03qpYEUMAgABDvEBBStMYW5kaW5nIHBhZ2UgZGVzaWduIGFuZCBpbXBsZW1lbnRhdGlvbiB3b3JrAAECCCtQYXltZW50IGdhdGV3YXkgaW50ZWdyYXRpb24gd2l0aCBTdHJpcGUgQVBJAAEDCClVc2VyIGF1dGhlbnRpY2F0aW9uIHN5c3RlbSB3aXRoIE9BdXRoIDIuMAABGQcsRGF0YWJhc2Ugc2NoZW1hIGRlc2lnbiBhbmQgbWlncmF0aW9uIHNjcmlwdHMAAQ8HLENvbXByZWhlbnNpdmUgZW5kLXRvLWVuZCB0ZXN0aW5nIHN1aXRlIHNldHVwAAEBCBAKRGV2IEFnZW5jeRIRRGVGaSBQcm90b2NvbCBEQU8UEAECAwQFBgcICQoLDA0ODxAWB0lOVi0wMDQYBb3C1y8BHyDG_2ArZ9lC8pT3K3WC-jWaoxaaEloj_mdQP_x0F5TaQg" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v6</span>
+          <span class="url-name">TLV v1 Optimized</span>
+          <span class="url-len" style="color:rgb(52,185,92)">462 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Multi-item-v6">https://voidpay.xyz/pay#G9oBIKwKbHD7wsBBdCGMFIsUuOT9OEKS2aNxtXOUH0AEGbIY6ocEZqkxgTo5vJzodNRvBXnA0lbG4CmWbn-m7sp32VuevsFzxgObY7-wEuiUaXbRJOtaNHSbz9mhtC0xCwuqBhZgEAVTx-BwzRWH8LEyNyqGpkdlDVlewnR1RQ7j-keGnA0Cbm59G4iC9h7fosFUMdK74TU1QQIChXf_2Hl7087WzOc29s3Hv5pQl0UMAsY74K2lGpRH7G7DGdQSR2IIMCQ99q946-jjJmqUCiysNKvSSvMQYEnmjIlaPzyN_lB741D2DTJOSdrwnsdhBGKiLcvCODGxRlRfzuklAibRFoghoMm-2nmyjEYElI1tBEBiUTKbR161nOOwM5uz59T2aWZaCY8FGCwOTyBq8h8sATGvuNpul0-E3z26c4JS9TRdu5inSV0rXZnnCFo7C5FmJrb008P_bw</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#G9oBIKwKbHD7wsBBdCGMFIsUuOT9OEKS2aNxtXOUH0AEGbIY6ocEZqkxgTo5vJzodNRvBXnA0lbG4CmWbn-m7sp32VuevsFzxgObY7-wEuiUaXbRJOtaNHSbz9mhtC0xCwuqBhZgEAVTx-BwzRWH8LEyNyqGpkdlDVlewnR1RQ7j-keGnA0Cbm59G4iC9h7fosFUMdK74TU1QQIChXf_2Hl7087WzOc29s3Hv5pQl0UMAsY74K2lGpRH7G7DGdQSR2IIMCQ99q946-jjJmqUCiysNKvSSvMQYEnmjIlaPzyN_lB741D2DTJOSdrwnsdhBGKiLcvCODGxRlRfzuklAibRFoghoMm-2nmyjEYElI1tBEBiUTKbR161nOOwM5uz59T2aWZaCY8FGCwOTyBq8h8sATGvuNpul0-E3z26c4JS9TRdu5inSV0rXZnnCFo7C5FmJrb008P_bw" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+    </div>
+<div class="url-panel hidden" id="panel-Unknown-token">
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v0</span>
+          <span class="url-name">JSON + lz-string</span>
+          <span class="url-len" style="color:rgb(239,68,68)">398 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unknown-token-v0">https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwFYR4EBnMqaAdgLrviQFcBTK2gJkIE4OGQAdiwAuVPPADGTAE6oAwgFUAygBUA8gFkSIJCwlUAHPABmUUANQBBADYIJbeAENUeAB5IDSSwDYAQgDEOb25vABZHf24AEWoWAFEkbhY8AGY4whTQ6EIolOpHSxC8UOIAX0kzQXkAC0dpWwcQNkgQCVr6hBYAASRHAHsAOlcATwAvEHLEUUgAbVAUFpU+gGsWAQACMgB3RwAHdYQBYRYAc2lHYQQ+i3gARyp4WRboele3ugnYedQAGQRbpjIBDCYbrXZ9PrWTYiJi7bT3GCPVB8d6oggTAC68GmIDc0A4mUI3moBm4eEcACMJLpjPjCcTSeSqTS6SUGRMgA</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwFYR4EBnMqaAdgLrviQFcBTK2gJkIE4OGQAdiwAuVPPADGTAE6oAwgFUAygBUA8gFkSIJCwlUAHPABmUUANQBBADYIJbeAENUeAB5IDSSwDYAQgDEOb25vABZHf24AEWoWAFEkbhY8AGY4whTQ6EIolOpHSxC8UOIAX0kzQXkAC0dpWwcQNkgQCVr6hBYAASRHAHsAOlcATwAvEHLEUUgAbVAUFpU+gGsWAQACMgB3RwAHdYQBYRYAc2lHYQQ+i3gARyp4WRboele3ugnYedQAGQRbpjIBDCYbrXZ9PrWTYiJi7bT3GCPVB8d6oggTAC68GmIDc0A4mUI3moBm4eEcACMJLpjPjCcTSeSqTS6SUGRMgA" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v1</span>
+          <span class="url-name">Binary v1</span>
+          <span class="url-len" style="color:rgb(99,156,86)">273 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unknown-token-v1">https://voidpay.xyz/pay#shzL8AyzfBJgzX5zGWvh7rSScnil6LgEhtH6epfsp1oZYm60xAgP0nAp6CsdXYY7qsQvxVwDqli9Gu6dolXgCei1ZK7nlOw44nTzNotQSLe6tA5mGsnipzaI26496baDSSvvIFSoWE5Bn2azZpTv45LbZUodYSKVB9BvbM4kduMb5YRvD231okRDH2F9ZmcixzycxzdwVBzC772EF8ua15TFbn0kJmcxzSxxZ5KrBmIyM0meFjrOM2ASMFle9ScKfew0FC80hhvmokj1m</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#shzL8AyzfBJgzX5zGWvh7rSScnil6LgEhtH6epfsp1oZYm60xAgP0nAp6CsdXYY7qsQvxVwDqli9Gu6dolXgCei1ZK7nlOw44nTzNotQSLe6tA5mGsnipzaI26496baDSSvvIFSoWE5Bn2azZpTv45LbZUodYSKVB9BvbM4kduMb5YRvD231okRDH2F9ZmcixzycxzdwVBzC772EF8ua15TFbn0kJmcxzSxxZ5KrBmIyM0meFjrOM2ASMFle9ScKfew0FC80hhvmokj1m" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v2</span>
+          <span class="url-name">Binary v2</span>
+          <span class="url-len" style="color:rgb(78,170,88)">254 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unknown-token-v2">https://voidpay.xyz/pay#BbFaa7vL8K5DNhA3uH57Wv8OMok0IQSmYmfrwWn2LwZamNzngiZHocDnqHSm1PsULwLtcjTqGfmQXZp0bzX3vGK0Fh3pYd4P3hK7iTChgW8t9LVpY9J4bWAEKP1v9yZNHfSBv9wxoiDbob4uRYDnYUmmogF26cFXc6FiEKSFDH2JbXO1k92inlfvR8vEfjllZ0JXI5nP0ffDj3DMFwN3wcHcwYk3w2aFmB5FwtjNMkmbb6DlzP8eBnjBJoCU7K</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#BbFaa7vL8K5DNhA3uH57Wv8OMok0IQSmYmfrwWn2LwZamNzngiZHocDnqHSm1PsULwLtcjTqGfmQXZp0bzX3vGK0Fh3pYd4P3hK7iTChgW8t9LVpY9J4bWAEKP1v9yZNHfSBv9wxoiDbob4uRYDnYUmmogF26cFXc6FiEKSFDH2JbXO1k92inlfvR8vEfjllZ0JXI5nP0ffDj3DMFwN3wcHcwYk3w2aFmB5FwtjNMkmbb6DlzP8eBnjBJoCU7K" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row url-best">
+        <div class="url-meta">
+          <span class="url-ver">v3</span>
+          <span class="url-name">Binary v3</span>
+          <span class="url-len" style="color:rgb(34,197,94)">215 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unknown-token-v3">https://voidpay.xyz/pay#HEYhEnc8tMkrBHAmoxo7inXc8SD7PziZKGQlbcRXLv4uVDLZx60FQNlCBOkP1BuHUTlHPUHK1f01u7YR4Nc2TZm4z9A5MBfQ38C35OsocK38Ncg2plJByKwkaE3KNst42cRxcDBBQBzdvvjtxgpprtbE8bkN6jQu2WQ25137TmHu5uTgecJC5H1nU6dr5Fr7M3xz0arbOQbINJdtRaMDKXt</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#HEYhEnc8tMkrBHAmoxo7inXc8SD7PziZKGQlbcRXLv4uVDLZx60FQNlCBOkP1BuHUTlHPUHK1f01u7YR4Nc2TZm4z9A5MBfQ38C35OsocK38Ncg2plJByKwkaE3KNst42cRxcDBBQBzdvvjtxgpprtbE8bkN6jQu2WQ25137TmHu5uTgecJC5H1nU6dr5Fr7M3xz0arbOQbINJdtRaMDKXt" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v4</span>
+          <span class="url-name">TLV v1</span>
+          <span class="url-len" style="color:rgb(212,85,71)">374 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unknown-token-v4">https://voidpay.xyz/pay#4HUgIbJtpLuIcy8HbrDviGY0kWVkfiQrfgd1Z9CrFYLyrh3agF0Bw2u6n9hGSAQWZ63AwhmnhaoatGfXs3V8HmoONiZr1B34WRhS0MyUs2lH6KV1x2f559Ojc7ILz7q08yyGFWI6qg3grVjCiX7i5a5lD41Yq0ihUkIUQ2sgzKy589hYfj29bEmnx23pKllrHwP0sSIMtCBSlwOy8YM58c9RN4OVFNUsPJKt7RNUf8rmQYw6Kn8Nd1EYLtGEjiwgmrxVqaOqKSMiiv0Hey8goarQPffUQqLAMV6FJzDPiOgbAONG6tMpCShHNabFDOvPqcH7dyuAp1Kds6VUrRxH4m1jqMn5LZjwVI1S1hkXX3eC9c8k61YyVP</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#4HUgIbJtpLuIcy8HbrDviGY0kWVkfiQrfgd1Z9CrFYLyrh3agF0Bw2u6n9hGSAQWZ63AwhmnhaoatGfXs3V8HmoONiZr1B34WRhS0MyUs2lH6KV1x2f559Ojc7ILz7q08yyGFWI6qg3grVjCiX7i5a5lD41Yq0ihUkIUQ2sgzKy589hYfj29bEmnx23pKllrHwP0sSIMtCBSlwOy8YM58c9RN4OVFNUsPJKt7RNUf8rmQYw6Kn8Nd1EYLtGEjiwgmrxVqaOqKSMiiv0Hey8goarQPffUQqLAMV6FJzDPiOgbAONG6tMpCShHNabFDOvPqcH7dyuAp1Kds6VUrRxH4m1jqMn5LZjwVI1S1hkXX3eC9c8k61YyVP" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v5</span>
+          <span class="url-name">TLV v1 Rewrite</span>
+          <span class="url-len" style="color:rgb(147,126,80)">316 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unknown-token-v5">https://voidpay.xyz/pay#VgEPARUBEjRWeJCrze8SNFZ4kKvN7xI0VngCAgADBARlU_EABgSAmp4BCAESChTY2mvyaWSvnX7tngPlNBXTeqlgRQwHAUNVU1RPTQ0PY2hhcmxpZUBkYW8ueHl6DjUCFlRva2VuIHN3YXAgaW50ZWdyYXRpb24AAQESFExpcXVpZGl0eSBwb29sIHNldHVwAAECEhAFQWxpY2USB0NoYXJsaWUUEAECAwQFBgcICQoLDA0ODxAWB0lOVi0wMDUYCr2A-MSRjfSUBAEfIIKWDX_To0fp6KIOevHmWoPicU82fB4W8cdQ_HYqlPNL</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#VgEPARUBEjRWeJCrze8SNFZ4kKvN7xI0VngCAgADBARlU_EABgSAmp4BCAESChTY2mvyaWSvnX7tngPlNBXTeqlgRQwHAUNVU1RPTQ0PY2hhcmxpZUBkYW8ueHl6DjUCFlRva2VuIHN3YXAgaW50ZWdyYXRpb24AAQESFExpcXVpZGl0eSBwb29sIHNldHVwAAECEhAFQWxpY2USB0NoYXJsaWUUEAECAwQFBgcICQoLDA0ODxAWB0lOVi0wMDUYCr2A-MSRjfSUBAEfIIKWDX_To0fp6KIOevHmWoPicU82fB4W8cdQ_HYqlPNL" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v6</span>
+          <span class="url-name">TLV v1 Optimized</span>
+          <span class="url-len" style="color:rgb(137,132,81)">307 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unknown-token-v6">https://voidpay.xyz/pay#G-wAAIyT5TI3R8fvr_68NdtuZkKGkHCgMoB0Duma0iUoQigPGDc4cAgw84gzrgWnyfaUhSZLZsZe_ogACwTAVUdqe5Z2nrCKEIbD47OCLxgR3zo2BWTgUvlHJwWveZlrk80PU7gLtWC3fiFpppPgI8FksE5EWmFeli4zVaKqratnapCwq_GKmlTpzhEwAC7flVdWlZeZV1mXVyHVAQPEZRP0hXkZWVySkVL5bEA4PIFIcqgztpBk90SUa8TU9dbvjd7O9wE8SKTtQ4yW3XnrzfUcs_7lMtFxWubVNhK-bPv-q2UDb04</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#G-wAAIyT5TI3R8fvr_68NdtuZkKGkHCgMoB0Duma0iUoQigPGDc4cAgw84gzrgWnyfaUhSZLZsZe_ogACwTAVUdqe5Z2nrCKEIbD47OCLxgR3zo2BWTgUvlHJwWveZlrk80PU7gLtWC3fiFpppPgI8FksE5EWmFeli4zVaKqratnapCwq_GKmlTpzhEwAC7flVdWlZeZV1mXVyHVAQPEZRP0hXkZWVySkVL5bEA4PIFIcqgztpBk90SUa8TU9dbvjd7O9wE8SKTtQ4yW3XnrzfUcs_7lMtFxWubVNhK-bPv-q2UDb04" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+    </div>
+<div class="url-panel hidden" id="panel-Large-amounts">
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v0</span>
+          <span class="url-name">JSON + lz-string</span>
+          <span class="url-len" style="color:rgb(237,69,68)">260 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Large-amounts-v0">https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwDYR4EBnMqaAdgLrviQFcBTK2gJgFYBODhkADsWAFyrwAxkwBOqAKIAVABIkQSFhKoAOeADMooQagDqACwCGAGzbxzqPAA8kWpAEFCAIQBiHQj0IALOZePAAi1CxySDwseADMclxxAdBcoXHU5q7+eAFcIAC+kgZCqArSLOZkMgCehaRikADaoCiQIOWV1dI1AAQi0uaCZLossvAAjuIgsu3Q9AuLC4UAugVAA</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwDYR4EBnMqaAdgLrviQFcBTK2gJgFYBODhkADsWAFyrwAxkwBOqAKIAVABIkQSFhKoAOeADMooQagDqACwCGAGzbxzqPAA8kWpAEFCAIQBiHQj0IALOZePAAi1CxySDwseADMclxxAdBcoXHU5q7+eAFcIAC+kgZCqArSLOZkMgCehaRikADaoCiQIOWV1dI1AAQi0uaCZLossvAAjuIgsu3Q9AuLC4UAugVAA" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v1</span>
+          <span class="url-name">Binary v1</span>
+          <span class="url-len" style="color:rgb(73,172,89)">160 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Large-amounts-v1">https://voidpay.xyz/pay#O4LnkOygmcs0P44SwTwVBrWF319RpmgEF2zhZsdbBdtEU4ch1M3fAx085AosMHOfgJMukstFPqCWI5Mlte3feAlzaCiBLOYinNJUcVKO3fPBfA0Os6bK2T5ZttolKhBW0SHNkN7QcdyQnhWhN67GeolgUBOtlv5C</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#O4LnkOygmcs0P44SwTwVBrWF319RpmgEF2zhZsdbBdtEU4ch1M3fAx085AosMHOfgJMukstFPqCWI5Mlte3feAlzaCiBLOYinNJUcVKO3fPBfA0Os6bK2T5ZttolKhBW0SHNkN7QcdyQnhWhN67GeolgUBOtlv5C" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row url-best">
+        <div class="url-meta">
+          <span class="url-ver">v2</span>
+          <span class="url-name">Binary v2</span>
+          <span class="url-len" style="color:rgb(34,197,94)">136 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Large-amounts-v2">https://voidpay.xyz/pay#B4oPQpww9QHw4rgvpxRvtvCUTHUPoIs8FO50c3aOt6giEJ1bil8KEEeUKZOxoMwWxu9gAhZJgn8OeLaaeFlfwDt66DQpVtiuLh9YcJOQsREjTJjgcMBrUoulFwNxnwg5sQ2GeLXW</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#B4oPQpww9QHw4rgvpxRvtvCUTHUPoIs8FO50c3aOt6giEJ1bil8KEEeUKZOxoMwWxu9gAhZJgn8OeLaaeFlfwDt66DQpVtiuLh9YcJOQsREjTJjgcMBrUoulFwNxnwg5sQ2GeLXW" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v3</span>
+          <span class="url-name">Binary v3</span>
+          <span class="url-len" style="color:rgb(36,196,94)">137 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Large-amounts-v3">https://voidpay.xyz/pay#HSvE9sXQMeFa0gLiCq1I22oYGgDXmN4FicGjEIMi9Q7S1Yp8rh8LElvNA1nUPP1Sr95s5suDxIQnOzpkZ0m5cVuHcHMo5XljsSGWfAHg63By9Ref0MhDHFkFLVBd8IgmZVovlTXJC</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#HSvE9sXQMeFa0gLiCq1I22oYGgDXmN4FicGjEIMi9Q7S1Yp8rh8LElvNA1nUPP1Sr95s5suDxIQnOzpkZ0m5cVuHcHMo5XljsSGWfAHg63By9Ref0MhDHFkFLVBd8IgmZVovlTXJC" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v4</span>
+          <span class="url-name">TLV v1</span>
+          <span class="url-len" style="color:rgb(239,68,68)">261 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Large-amounts-v4">https://voidpay.xyz/pay#4Cbzphge06BdpuQiDvNa9ifcerBDc4xNoDKkBEuxVdr8gpIEIOTiPuaFO1kK8Id8k9SiRUCZbWgxIFUJpyLGEvyRMz7gRG6GPCroWgkvfj2rKh8oTjxNGgnoiVefE5eTt7YWRZBM7xzrwgst19jGW2Advet94xXLEb1W1hOGMfmXutjFh5KT1fNXefQKtTDTWmaUyXA1ivdOiujisnqZkVJI0fToFHXBJGNb66R5FlF8sP8PRuvFxpxU6ABGUGtKQuck3</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#4Cbzphge06BdpuQiDvNa9ifcerBDc4xNoDKkBEuxVdr8gpIEIOTiPuaFO1kK8Id8k9SiRUCZbWgxIFUJpyLGEvyRMz7gRG6GPCroWgkvfj2rKh8oTjxNGgnoiVefE5eTt7YWRZBM7xzrwgst19jGW2Advet94xXLEb1W1hOGMfmXutjFh5KT1fNXefQKtTDTWmaUyXA1ivdOiujisnqZkVJI0fToFHXBJGNb66R5FlF8sP8PRuvFxpxU6ABGUGtKQuck3" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v5</span>
+          <span class="url-name">TLV v1 Rewrite</span>
+          <span class="url-len" style="color:rgb(170,111,77)">219 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Large-amounts-v5">https://voidpay.xyz/pay#VgENAgIAAQQEZVPxAAYEgJqeAQgBEgoU2Npr8mlkr51-7Z4D5TQV03qpYEUMAgAEDhcBEVRyZWFzdXJ5IHRyYW5zZmVyAAEBFBAFV2hhbGUSCFRyZWFzdXJ5FBABAgMEBQYHCAkKCwwNDg8QFgdJTlYtMDA2GAu9gKDPyODI44oBAR8gxIjJ3F_ZRelhxFMV5x0Vrb19QFSevR1CpFsDvrwjGHA</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#VgENAgIAAQQEZVPxAAYEgJqeAQgBEgoU2Npr8mlkr51-7Z4D5TQV03qpYEUMAgAEDhcBEVRyZWFzdXJ5IHRyYW5zZmVyAAEBFBAFV2hhbGUSCFRyZWFzdXJ5FBABAgMEBQYHCAkKCwwNDg8QFgdJTlYtMDA2GAu9gKDPyODI44oBAR8gxIjJ3F_ZRelhxFMV5x0Vrb19QFSevR1CpFsDvrwjGHA" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v6</span>
+          <span class="url-name">TLV v1 Optimized</span>
+          <span class="url-len" style="color:rgb(170,111,77)">219 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Large-amounts-v6">https://voidpay.xyz/pay#VgENAgIAAQQEZVPxAAYEgJqeAQgBEgoU2Npr8mlkr51-7Z4D5TQV03qpYEUMAgAEDhcBEVRyZWFzdXJ5IHRyYW5zZmVyAAEBFBAFV2hhbGUSCFRyZWFzdXJ5FBABAgMEBQYHCAkKCwwNDg8QFgdJTlYtMDA2GAu9gKDPyODI44oBAR8gxIjJ3F_ZRelhxFMV5x0Vrb19QFSevR1CpFsDvrwjGHA</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#VgENAgIAAQQEZVPxAAYEgJqeAQgBEgoU2Npr8mlkr51-7Z4D5TQV03qpYEUMAgAEDhcBEVRyZWFzdXJ5IHRyYW5zZmVyAAEBFBAFV2hhbGUSCFRyZWFzdXJ5FBABAgMEBQYHCAkKCwwNDg8QFgdJTlYtMDA2GAu9gKDPyODI44oBAR8gxIjJ3F_ZRelhxFMV5x0Vrb19QFSevR1CpFsDvrwjGHA" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+    </div>
+<div class="url-panel hidden" id="panel-Short-notes">
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v0</span>
+          <span class="url-name">JSON + lz-string</span>
+          <span class="url-len" style="color:rgb(239,68,68)">295 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Short-notes-v0">https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwHYR4EBnMqaQg22+JAVwFMqaAmAVgE536QAdswAuVAMyF4AY0YAnVAFkAggBU0AYRIgkzKVQAc8AGZRQA1ADFZzZgBsAhgKnN58e6jwAPJPqRKAbABCFuz+3P4ALPYW3AAihMwAokjczHhiiZxiEdCcsRL2SuF4EZwgAL7SpoKo6rYIzAKilYiikADaoCiQIACKjPaywi62AJ4ABNbC9ghCriAAjlTw8j2cdBubBBUAuvBNqAAK9qMAto3C40YA9rLjvREVQA</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwHYR4EBnMqaQg22+JAVwFMqaAmAVgE536QAdswAuVAMyF4AY0YAnVAFkAggBU0AYRIgkzKVQAc8AGZRQA1ADFZzZgBsAhgKnN58e6jwAPJPqRKAbABCFuz+3P4ALPYW3AAihMwAokjczHhiiZxiEdCcsRL2SuF4EZwgAL7SpoKo6rYIzAKilYiikADaoCiQIACKjPaywi62AJ4ABNbC9ghCriAAjlTw8j2cdBubBBUAuvBNqAAK9qMAto3C40YA9rLjvREVQA" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v1</span>
+          <span class="url-name">Binary v1</span>
+          <span class="url-len" style="color:rgb(75,171,89)">186 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Short-notes-v1">https://voidpay.xyz/pay#7901b6UPN0WMf3tIIMXXZNhaelly1nS8XO7qqYHRvBCNChimVChZCgd08DFUotaUNagwvzn5sJwPBjm9qQzBd8La3sa4Pvial2KSHjJuXSO77YAtafb7skIbxS1RVoSEOXlyq9cvTxorTWRwvXY3dKfpFuds7vHgbuRHckMe4XpABqcEnNp5sVEARa</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#7901b6UPN0WMf3tIIMXXZNhaelly1nS8XO7qqYHRvBCNChimVChZCgd08DFUotaUNagwvzn5sJwPBjm9qQzBd8La3sa4Pvial2KSHjJuXSO77YAtafb7skIbxS1RVoSEOXlyq9cvTxorTWRwvXY3dKfpFuds7vHgbuRHckMe4XpABqcEnNp5sVEARa" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row url-best">
+        <div class="url-meta">
+          <span class="url-ver">v2</span>
+          <span class="url-name">Binary v2</span>
+          <span class="url-len" style="color:rgb(34,197,94)">159 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Short-notes-v2">https://voidpay.xyz/pay#B2hzv3BVrLGph3SmRGBIiRoK6ocRa6CNfRR7N03BdMDZfgCjWysQQSJMwYvQqECA2NBpyx8Gph0DRthss63vxAMbQAqQxcN42Y24O3h1MKmU3fBKuoe8FeATZUGaSHXIpjUgRlZHBn9YYtdGOIxjWRGS0iSr6wg</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#B2hzv3BVrLGph3SmRGBIiRoK6ocRa6CNfRR7N03BdMDZfgCjWysQQSJMwYvQqECA2NBpyx8Gph0DRthss63vxAMbQAqQxcN42Y24O3h1MKmU3fBKuoe8FeATZUGaSHXIpjUgRlZHBn9YYtdGOIxjWRGS0iSr6wg" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v3</span>
+          <span class="url-name">Binary v3</span>
+          <span class="url-len" style="color:rgb(36,196,94)">160 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Short-notes-v3">https://voidpay.xyz/pay#HshECcc5b9xerYgDvzre4qBxGnKeIuQGZgCorPuKA2HvJFysIGu7rN4z0OMLiD5mwQs6qQtyzIBxW2PSEW4hqyJEpzmDCmcaMEz1nD3Ct6nVDnPB3jXDZo8oA1PB0wJDFG1PtKlfY4sYef6NlpqGuIeIgKlgbBW8</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#HshECcc5b9xerYgDvzre4qBxGnKeIuQGZgCorPuKA2HvJFysIGu7rN4z0OMLiD5mwQs6qQtyzIBxW2PSEW4hqyJEpzmDCmcaMEz1nD3Ct6nVDnPB3jXDZo8oA1PB0wJDFG1PtKlfY4sYef6NlpqGuIeIgKlgbBW8" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v4</span>
+          <span class="url-name">TLV v1</span>
+          <span class="url-len" style="color:rgb(228,75,69)">288 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Short-notes-v4">https://voidpay.xyz/pay#4hnbZ6DWXmqARszrkirXudtQhSDOW2HL9m6JK4yQA7VZYBM7tdpXpqQQBYfymODbr03S97Na7UjlgttFINUdNcjJrO0xEFjBchxeG9wGe3IQCWrybNqSgUvv5MZ19bGMbrjEPaHbkoLcrIRjbo1zyrA9F86mmVmkvczzmUuGn68V34b5stmDiJN7rAb1cpyhkjbPCvzrMtqi1zH2YMuxwa4YGXMRNWVBK3xZnszLe3wqJm0D9IQOJZyxinA9Nd4mYruilW6UNUPV1bAtiNKzJk5In8q8ECRD</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#4hnbZ6DWXmqARszrkirXudtQhSDOW2HL9m6JK4yQA7VZYBM7tdpXpqQQBYfymODbr03S97Na7UjlgttFINUdNcjJrO0xEFjBchxeG9wGe3IQCWrybNqSgUvv5MZ19bGMbrjEPaHbkoLcrIRjbo1zyrA9F86mmVmkvczzmUuGn68V34b5stmDiJN7rAb1cpyhkjbPCvzrMtqi1zH2YMuxwa4YGXMRNWVBK3xZnszLe3wqJm0D9IQOJZyxinA9Nd4mYruilW6UNUPV1bAtiNKzJk5In8q8ECRD" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v5</span>
+          <span class="url-name">TLV v1 Rewrite</span>
+          <span class="url-len" style="color:rgb(149,125,79)">235 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Short-notes-v5">https://voidpay.xyz/pay#VgEOAgIABAQEZVPxAAUIByBmb3IgUTQGBICangEIARIKFNjaa_JpZK-dfu2eA-U0FdN6qWBFDAIABg4YARJRdWFydGVybHkgcmV0YWluZXIAAQUREApGcmVlbGFuY2VyEgZDbGllbnQUEAECAwQFBgcICQoLDA0ODxAWB0lOVi0wMDcYCb2AlPbC1-hYAR8gylSHAGg3FT-obMJNlCm4S1XkHVOdRxBW8rL4EEGLqcA</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#VgEOAgIABAQEZVPxAAUIByBmb3IgUTQGBICangEIARIKFNjaa_JpZK-dfu2eA-U0FdN6qWBFDAIABg4YARJRdWFydGVybHkgcmV0YWluZXIAAQUREApGcmVlbGFuY2VyEgZDbGllbnQUEAECAwQFBgcICQoLDA0ODxAWB0lOVi0wMDcYCb2AlPbC1-hYAR8gylSHAGg3FT-obMJNlCm4S1XkHVOdRxBW8rL4EEGLqcA" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v6</span>
+          <span class="url-name">TLV v1 Optimized</span>
+          <span class="url-len" style="color:rgb(149,125,79)">235 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Short-notes-v6">https://voidpay.xyz/pay#VgEOAgIABAQEZVPxAAUIByBmb3IgUTQGBICangEIARIKFNjaa_JpZK-dfu2eA-U0FdN6qWBFDAIABg4YARJRdWFydGVybHkgcmV0YWluZXIAAQUREApGcmVlbGFuY2VyEgZDbGllbnQUEAECAwQFBgcICQoLDA0ODxAWB0lOVi0wMDcYCb2AlPbC1-hYAR8gylSHAGg3FT-obMJNlCm4S1XkHVOdRxBW8rL4EEGLqcA</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#VgEOAgIABAQEZVPxAAUIByBmb3IgUTQGBICangEIARIKFNjaa_JpZK-dfu2eA-U0FdN6qWBFDAIABg4YARJRdWFydGVybHkgcmV0YWluZXIAAQUREApGcmVlbGFuY2VyEgZDbGllbnQUEAECAwQFBgcICQoLDA0ODxAWB0lOVi0wMDcYCb2AlPbC1-hYAR8gylSHAGg3FT-obMJNlCm4S1XkHVOdRxBW8rL4EEGLqcA" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+    </div>
+<div class="url-panel hidden" id="panel-Unicode">
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v0</span>
+          <span class="url-name">JSON + lz-string</span>
+          <span class="url-len" style="color:rgb(239,68,68)">511 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unicode-v0">https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwA4R4EBnMqaAdgLrviQFcBTK2gJgFYBODhkADsWAFyrwAxkwBOqAKoBlACIBhEiCQsJUAGzwAZlFCDUgQhBAQiCBhEEAsIIA4QQPIgAAkBYIID4Qa4AYQdQENUeAB5IhEgAgjoAQgBiHDo8OgAs3pE8StQsAKJIPCx4AMzpXLnx0FxKudTeIXF48VwgAL6SRkKoboA8IID8IB6AvCAOjoB4IIMNpGKQANqgKJAggAQgHoDsIIACIB6AjCCu5oBcIB6Ott3mgKwgi4AiIPuAnCCAgiBe8ACO4iCy0-z0dMOTqIBEIPvn5raLroBMID1bPsdo51oBuEA81i26luMHgDxA0GeL3qAF14IJRiB+h1IeZtvNtsslqt1htLI5ALwbgAC9xwAJRY3iQAE9HCIAPaOMgACwQAAcAITqbEBbx4ABGhFiPGgEh0HGghAluR0EmgSGgPCQiQ4LGyErwEhYqrwOhYEvixHqQA</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#N4IgbiBcCMA0IEsAmUQEkByA1AtABjwA4R4EBnMqaAdgLrviQFcBTK2gJgFYBODhkADsWAFyrwAxkwBOqAKoBlACIBhEiCQsJUAGzwAZlFCDUgQhBAQiCBhEEAsIIA4QQPIgAAkBYIID4Qa4AYQdQENUeAB5IhEgAgjoAQgBiHDo8OgAs3pE8StQsAKJIPCx4AMzpXLnx0FxKudTeIXF48VwgAL6SRkKoboA8IID8IB6AvCAOjoB4IIMNpGKQANqgKJAggAQgHoDsIIACIB6AjCCu5oBcIB6Ott3mgKwgi4AiIPuAnCCAgiBe8ACO4iCy0-z0dMOTqIBEIPvn5raLroBMID1bPsdo51oBuEA81i26luMHgDxA0GeL3qAF14IJRiB+h1IeZtvNtsslqt1htLI5ALwbgAC9xwAJRY3iQAE9HCIAPaOMgACwQAAcAITqbEBbx4ABGhFiPGgEh0HGghAluR0EmgSGgPCQiQ4LGyErwEhYqrwOhYEvixHqQA" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v1</span>
+          <span class="url-name">Binary v1</span>
+          <span class="url-len" style="color:rgb(141,130,80)">400 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unicode-v1">https://voidpay.xyz/pay#1yxT6KcXryQa34LwEJ85ZyMZTLfqlttC5CnGsDS8mwPnK9xvuffGjk3fCGS62ab0RjMgBPnYHtLtRTdfUHhHLqYpIIuiTPISVUcMeYFWoOQ3AgIAUeF8vZcaCXsVGtZbHTRgRVBZVB6tfIHeblUp3hIvvYUun7GHDuk5QQTJHlp2ltGVRKtKpUQmhY0DR28XyD94jmDtYbhm2DwciY6gOogf4Wiaop6Zc7BQkReqjxRCihejk0vzpqbyedfZG0Feh2gNQH0QBDTlo6VJsKHRDSpZsV9qiKlP7YVQXRNADsjpwqZT1vzji2vlX0t5CcdYUB840MmVJ2ln9ulddKf0prsMSbiHmt0zTdfMCBcI3liTVfM8PTm1p7qdC4T5dtEMjnaySENYKlTHenkI</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#1yxT6KcXryQa34LwEJ85ZyMZTLfqlttC5CnGsDS8mwPnK9xvuffGjk3fCGS62ab0RjMgBPnYHtLtRTdfUHhHLqYpIIuiTPISVUcMeYFWoOQ3AgIAUeF8vZcaCXsVGtZbHTRgRVBZVB6tfIHeblUp3hIvvYUun7GHDuk5QQTJHlp2ltGVRKtKpUQmhY0DR28XyD94jmDtYbhm2DwciY6gOogf4Wiaop6Zc7BQkReqjxRCihejk0vzpqbyedfZG0Feh2gNQH0QBDTlo6VJsKHRDSpZsV9qiKlP7YVQXRNADsjpwqZT1vzji2vlX0t5CcdYUB840MmVJ2ln9ulddKf0prsMSbiHmt0zTdfMCBcI3liTVfM8PTm1p7qdC4T5dtEMjnaySENYKlTHenkI" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v2</span>
+          <span class="url-name">Binary v2</span>
+          <span class="url-len" style="color:rgb(96,158,86)">349 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unicode-v2">https://voidpay.xyz/pay#BXsLZjE7wygly9dWQvemYotX1IS9rojnTnItSk5kLnefGMEodmCN7bqfNrTYx90gSPaoVT2WRQoy6D0d7EtjZVrhb8aNrrBTkLk3iTrLXu86fw6j9rZJVnU7ov9dJ62w1Aef1X3PGtv3gG2xGOAz76j18aWN8OaFbRzCXVSW6KcUNKkHPInoJL0csVpTcghZVwyqEbJMT9rPKFPE9aRA7LtLd9tffkAwnT50MvTU9GEBVGEXTssWO43P5D4FHZB5qYBvXEpz1vUiiRAW07XGyl0XHo4cgXrsSgyzlMXceaFWREUXvfDTRy1BscnMyGpUeRPBeruNpaXahtk0IKg4ZyNKSgjTO</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#BXsLZjE7wygly9dWQvemYotX1IS9rojnTnItSk5kLnefGMEodmCN7bqfNrTYx90gSPaoVT2WRQoy6D0d7EtjZVrhb8aNrrBTkLk3iTrLXu86fw6j9rZJVnU7ov9dJ62w1Aef1X3PGtv3gG2xGOAz76j18aWN8OaFbRzCXVSW6KcUNKkHPInoJL0csVpTcghZVwyqEbJMT9rPKFPE9aRA7LtLd9tffkAwnT50MvTU9GEBVGEXTssWO43P5D4FHZB5qYBvXEpz1vUiiRAW07XGyl0XHo4cgXrsSgyzlMXceaFWREUXvfDTRy1BscnMyGpUeRPBeruNpaXahtk0IKg4ZyNKSgjTO" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row url-best">
+        <div class="url-meta">
+          <span class="url-ver">v3</span>
+          <span class="url-name">Binary v3</span>
+          <span class="url-len" style="color:rgb(34,197,94)">279 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unicode-v3">https://voidpay.xyz/pay#H1dFSncVwXsyHC0mMLYA0pL70hjzaMNVJM4E3OetKjkkLHXbluynFIOq0EJLIN0VsxNiwBL89svTo6eytZ5c71JLB3sLEXm79dyxrPyiaBWZx2m5u8iQCzbjglX5AtJm1HqBxGp314SPdnMk6GKSIDYzI54KLq83XVdutZejGNIeYlwok9xIjVYsY4mnxXzsaadjT8GgsQ0c3iXCcmIx1qmf6gEp0Upftjlk6UIuDHTUPu3PTj0LEEv8x45wWT36Txs1OOJHogE0Ugb527BOk4X</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#H1dFSncVwXsyHC0mMLYA0pL70hjzaMNVJM4E3OetKjkkLHXbluynFIOq0EJLIN0VsxNiwBL89svTo6eytZ5c71JLB3sLEXm79dyxrPyiaBWZx2m5u8iQCzbjglX5AtJm1HqBxGp314SPdnMk6GKSIDYzI54KLq83XVdutZejGNIeYlwok9xIjVYsY4mnxXzsaadjT8GgsQ0c3iXCcmIx1qmf6gEp0Upftjlk6UIuDHTUPu3PTj0LEEv8x45wWT36Txs1OOJHogE0Ugb527BOk4X" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v4</span>
+          <span class="url-name">TLV v1</span>
+          <span class="url-len" style="color:rgb(211,86,72)">479 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unicode-v4">https://voidpay.xyz/pay#1ydclpgg5xTlP4sYbuDhKtFBJMehED1av9QCaOU6PVNB2Eq6PgMU2rNE1Xd1SMw1VDfomNcTdOYLT5o4spmhmMvZZxPBwHe3kkI7kAplWX5cWyDNB82WhwDEjx56irjq3ajvMcMPdtbiEltMljgYRSam4R0XJkphjpZHktetGgjZfig00ErkxTaeZkrsFEf3gESVrp6zZPVVOeKwhgnVXO6cYry6pGaS619lV3QFBgy6Eb99vlZJsbfzrWmKbWeiXf29l8oyeGZvovtQ1cVPvOsdi0qHGubXc8kgYhuBSUtFH9z19eMMp200zWRzYuPSQYNNaixk3OeMlobaUMO1XaENTMyOWdxUvNazEZjuFCi3HgkxTX6beVNxCVFmZBXPH1y4gNrIA5SzC5289puJibX7rVz3CzRegC7NLLcIgWHEdFEZq00L2amKwb3iTCaEnHTTUqgYU0RjG1aemH7OTPHVuwEdaQW</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#1ydclpgg5xTlP4sYbuDhKtFBJMehED1av9QCaOU6PVNB2Eq6PgMU2rNE1Xd1SMw1VDfomNcTdOYLT5o4spmhmMvZZxPBwHe3kkI7kAplWX5cWyDNB82WhwDEjx56irjq3ajvMcMPdtbiEltMljgYRSam4R0XJkphjpZHktetGgjZfig00ErkxTaeZkrsFEf3gESVrp6zZPVVOeKwhgnVXO6cYry6pGaS619lV3QFBgy6Eb99vlZJsbfzrWmKbWeiXf29l8oyeGZvovtQ1cVPvOsdi0qHGubXc8kgYhuBSUtFH9z19eMMp200zWRzYuPSQYNNaixk3OeMlobaUMO1XaENTMyOWdxUvNazEZjuFCi3HgkxTX6beVNxCVFmZBXPH1y4gNrIA5SzC5289puJibX7rVz3CzRegC7NLLcIgWHEdFEZq00L2amKwb3iTCaEnHTTUqgYU0RjG1aemH7OTPHVuwEdaQW" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v5</span>
+          <span class="url-name">TLV v1 Rewrite</span>
+          <span class="url-len" style="color:rgb(169,112,77)">432 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unicode-v5">https://voidpay.xyz/pay#VgEPAQIAAQICAAEEBGVT8QAFOtCe0L_Qu9Cw0YLQsCDQt9CwINGA0LDQt9GA0LDQsdC-0YLQutGDIPCfmoAgUmVhZHkgdG8gc2hpcCEGBICangEIAQYKFNjaa_JpZK-dfu2eA-U0FdN6qWBFDAIAAQ5eAinQoNCw0LfRgNCw0LHQvtGC0LrQsCDQuNC90YLQtdGA0YTQtdC50YHQsAABAggq0KLQtdGB0YLQuNGA0L7QstCw0L3QuNC1INC4INC-0YLQu9Cw0LTQutCwAAEBCBAV0KHRgtGD0LTQuNGPINCa0L7QtNCwEhfQmtC-0LzQv9Cw0L3QuNGPINCe0J7QnhQQAQIDBAUGBwgJCgsMDQ4PEBYHSU5WLTAwOBgFvYenDgEfILlGjXf3ZoBdDW_oz1ULSNTUvPlAtgjiLIvHSd41WyPH</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#VgEPAQIAAQICAAEEBGVT8QAFOtCe0L_Qu9Cw0YLQsCDQt9CwINGA0LDQt9GA0LDQsdC-0YLQutGDIPCfmoAgUmVhZHkgdG8gc2hpcCEGBICangEIAQYKFNjaa_JpZK-dfu2eA-U0FdN6qWBFDAIAAQ5eAinQoNCw0LfRgNCw0LHQvtGC0LrQsCDQuNC90YLQtdGA0YTQtdC50YHQsAABAggq0KLQtdGB0YLQuNGA0L7QstCw0L3QuNC1INC4INC-0YLQu9Cw0LTQutCwAAEBCBAV0KHRgtGD0LTQuNGPINCa0L7QtNCwEhfQmtC-0LzQv9Cw0L3QuNGPINCe0J7QnhQQAQIDBAUGBwgJCgsMDQ4PEBYHSU5WLTAwOBgFvYenDgEfILlGjXf3ZoBdDW_oz1ULSNTUvPlAtgjiLIvHSd41WyPH" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+      <div class="url-row">
+        <div class="url-meta">
+          <span class="url-ver">v6</span>
+          <span class="url-name">TLV v1 Optimized</span>
+          <span class="url-len" style="color:rgb(146,126,80)">406 chars</span>
+        </div>
+        <div class="url-content">
+          <code class="url-text" id="url-Unicode-v6">https://voidpay.xyz/pay#G0MBqK0K7MbHG6QWO5pbRXWWjb52Ynqh4Okbazt7ru223mWFJP46NNOQVCPdPGTNRP40skWrGHTzmxpJGnjkEQcyFtj92gI99fRAwua1OKO2JI0gzyDBNMHr-y1V_l7C0NnmgpO3Tk75AHrAk377Ek45oYAzyikHnGgcpi0NfhisBrFG7NzrnbJvutY7JeOBbgGHBj-5EqPjdNv93YcbB2cFeT3KvXfj8FSC4g_j2780l3Oy9n3afFVz35Kj3VAbiQ_bMudyC9zcPKA7SKxuAiM2WOESqZu6hdENEgwQMUiHcSTdwgMEDhiRYDLHq1u6jcDogWMjIUC6wEYikAGReCGzSbEer88f6NxGMh_oz5VmsXvev4tLyd33rPNP11CM9zpgLiX8tx18H_ul_ylkAQ</code>
+          <button class="copy-btn" data-url="https://voidpay.xyz/pay#G0MBqK0K7MbHG6QWO5pbRXWWjb52Ynqh4Okbazt7ru223mWFJP46NNOQVCPdPGTNRP40skWrGHTzmxpJGnjkEQcyFtj92gI99fRAwua1OKO2JI0gzyDBNMHr-y1V_l7C0NnmgpO3Tk75AHrAk377Ek45oYAzyikHnGgcpi0NfhisBrFG7NzrnbJvutY7JeOBbgGHBj-5EqPjdNv93YcbB2cFeT3KvXfj8FSC4g_j2780l3Oy9n3afFVz35Kj3VAbiQ_bMudyC9zcPKA7SKxuAiM2WOESqZu6hdENEgwQMUiHcSTdwgMEDhiRYDLHq1u6jcDogWMjIUC6wEYikAGReCGzSbEer88f6NxGMh_oz5VmsXvev4tLyd33rPNP11CM9zpgLiX8tx18H_ul_ylkAQ" onclick="copyUrl(this,'Copied!','Failed','Copy')">Copy</button>
+        </div>
+      </div>
+    </div>
+
+  <h2>Codec Metadata</h2>
+  <table class="meta">
+    <thead>
+      <tr><th>Ver</th><th>Name</th><th>Date</th><th>Description</th><th>Compression</th><th>Encoding</th><th>Browser</th><th>Commit</th></tr>
+    </thead>
+    <tbody><tr class="era-sep"><td colspan="8"><span class="era-tag">Ad-hoc Binary</span> Sequential field layout, no type tags</td></tr>
+<tr>
+      <td><strong>v0</strong></td>
+      <td>JSON + lz-string</td>
+      <td>2025-11-20</td>
+      <td class="meta-desc">JSON.stringify → lz-string compressToEncodedURIComponent</td>
+      <td>LZ77 (lz-string)</td>
+      <td>lz-string URI-encoded</td>
+      <td>✓</td>
+      <td style="font-family:monospace">19b3f62</td>
+    </tr>
+<tr>
+      <td><strong>v1</strong></td>
+      <td>Binary v1</td>
+      <td>2025-12-24</td>
+      <td class="meta-desc">Sequential binary fields, no compression, Base62</td>
+      <td>None</td>
+      <td>Base62</td>
+      <td>✓</td>
+      <td style="font-family:monospace">397537c</td>
+    </tr>
+<tr>
+      <td><strong>v2</strong></td>
+      <td>Binary v2</td>
+      <td>2025-12-28</td>
+      <td class="meta-desc">Bit flags, delta due-date, currency/token dicts, Base62</td>
+      <td>None</td>
+      <td>Base62</td>
+      <td>✓</td>
+      <td style="font-family:monospace">397537c</td>
+    </tr>
+<tr>
+      <td><strong>v3</strong></td>
+      <td>Binary v3</td>
+      <td>2025-12-30</td>
+      <td class="meta-desc">Hybrid: binary header + text blob (optional DEFLATE), Base62</td>
+      <td>DEFLATE (pako, optional)</td>
+      <td>Base62</td>
+      <td>✓</td>
+      <td style="font-family:monospace">007-binary-codec</td>
+    </tr>
+<tr class="era-sep"><td colspan="8"><span class="era-tag">TLV Structured</span> Type-Length-Value, forward-compatible, security primitives</td></tr>
+<tr>
+      <td><strong>v4</strong></td>
+      <td>TLV v1</td>
+      <td>2026-03-17</td>
+      <td class="meta-desc">TLV binary (4B header, uint16 len) + DEFLATE + keccak mix + Base62</td>
+      <td>DEFLATE (pako)</td>
+      <td>Base62</td>
+      <td>✓</td>
+      <td style="font-family:monospace">develop</td>
+    </tr>
+<tr>
+      <td><strong>v5</strong></td>
+      <td>TLV v1 Rewrite</td>
+      <td>2026-03-19</td>
+      <td class="meta-desc">TLV binary (3B header, varint len) + Brotli + app-dict + Base64url</td>
+      <td>Brotli (node:zlib, quality=11)</td>
+      <td>Base64url</td>
+      <td>✗</td>
+      <td style="font-family:monospace">027-codec-v1-rewrite</td>
+    </tr>
+<tr>
+      <td><strong>v6</strong></td>
+      <td>TLV v1 Optimized</td>
+      <td>2026-03-19</td>
+      <td class="meta-desc">Salt(16B) + DomSep(32B) + whole-payload Brotli + app-dict + Base64url</td>
+      <td>Brotli (whole-payload, quality=11)</td>
+      <td>Base64url</td>
+      <td>✗</td>
+      <td style="font-family:monospace">027-poc</td>
+    </tr></tbody>
+  </table>
+
+  <p style="color:#3f3f46;font-size:0.75rem;margin-top:2rem">
+    Generated 2026-03-21T02:59:00.809Z · 8 test invoices (minimal → unicode) · Salt deterministic for reproducibility
+  </p>
+
+  <script>
+    function showEdu(btn) {
+      const ver = btn.dataset.ver;
+      document.querySelectorAll('.edu-panel').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.edu-tab').forEach(t => t.classList.remove('active'));
+      const panel = document.getElementById('edu-' + ver);
+      if (panel) panel.classList.remove('hidden');
+      btn.classList.add('active');
+    }
+    function showScenario(btn) {
+      const name = btn.dataset.scenario;
+      document.querySelectorAll('.url-panel').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.url-tab').forEach(t => t.classList.remove('active'));
+      const panel = document.getElementById('panel-' + name.replace(/\s+/g, '-'));
+      if (panel) panel.classList.remove('hidden');
+      btn.classList.add('active');
+    }
+    function copyUrl(btn, successText, failText, defaultText) {
+      const url = btn.dataset.url;
+      navigator.clipboard.writeText(url).then(() => {
+        btn.textContent = successText;
+        btn.style.color = '#22c55e';
+        setTimeout(() => { btn.textContent = defaultText; btn.style.color = ''; }, 1500);
+      }).catch(() => {
+        btn.textContent = failText;
+        setTimeout(() => { btn.textContent = defaultText; }, 1500);
+      });
+    }
+</script>
+</body>
+</html>

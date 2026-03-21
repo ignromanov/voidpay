@@ -4,7 +4,6 @@ import { PaymentPanel } from '../ui/PaymentPanel'
 import type { Invoice } from '@/shared/lib/invoice-types'
 
 const mockInvoice: Invoice = {
-  version: 2,
   invoiceId: 'INV-TEST-001',
   issuedAt: 1704067200,
   dueAt: 1706745600,

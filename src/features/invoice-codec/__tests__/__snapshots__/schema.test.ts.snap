@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode full invoice to stable compressed format > full-invoice-v1-encoded 1`] = `"H1H2HuwPI0yJ5RzJwhhvK0StthWa94fYffkXZ51gYIzYrrRgYZ7LuNQLBhh3cVPhdkip07FvRrGoGTPsQ0u4P4cMkBG8NQjQacIYmTk6EbXw3CbYDFqc3Cca0Bn9lVuLCOSRLkWcUdQ5hD9YoQNxGrneOdaxEgfiomsq6IODQ0fJ8BDsnO0YAFfxmLRWswgc6AjjuSdj1se59J2bbXdyT8T2xseU7mOJI2Qqq6PnMLTVjBw2PkQHsNz6NYazhNFh2Ghgnw9oVYsKV85rwjEukyNUO3ZScDMCF0obslPkPVa3rd0A6DaMvkiv9tkCtGKQHoDRCCSEDANqzDTamXZMU8K6mjpPxyNf06QrqKfIZnkZXGaJ9h7JxFHn25dkbJHw1A0rTAclgALh5mByzPVOCUV0drSJ5SVD6ZaF"`;
+exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode full invoice to stable compressed format > full-invoice-v1-encoded 1`] = `"VoEbuQFgjMM4FjwKN4q0N7XWTsTaiykmskN6okkjineihkQik4ifCEmTWd66GSaJinjm-XukomaWO-QA9Pdra0vyLPs8abvSwArTBJsnEFHEqZ7PEsc7RIZGtEaxYASCkTWq3b68W45h4BQ6wDVyQSbrYNHO27tBAjt4uoFJaTGv-59W6heWKiC6DNYomKDFkIAkZC4obTtNSb-N4-JYXwV6CM5ZkFqG0zw0NdgLKoMegWBemg9bH-pIC92opoDqweoyEyKQXyRNeRM5xob-DqeUH2FCuvzgIyB660ADxOwS4qDf79kw6kpaw1Ilw1LR3d0ku5TG08wNa4D58j-E7b0Tm89LVtQgdfBBxfKdTZMQVmPtRkcyzeA6ekcjiGXQ_FJBRNpmPwqFPvU_9Q-rtdffzW9oy8z5zzPUPBeV6ulr-0Eb"`;
 
-exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode minimal invoice to stable compressed format > minimal-invoice-v1-encoded 1`] = `"H2bqGApJYO6Kye1cuFdMh5O3uM1hfWytNl4q3ZbajIKguEmwp44Qh2SsiDS8Q6wjwdEXgt5hJN7V52w9ulBTQR2mjH6ime7FvZG6mBdPnUqaBBj2yId7FtIPCud"`;
+exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should encode minimal invoice to stable compressed format > minimal-invoice-v1-encoded 1`] = `"VgENAgIABAQEZZIAgAYEgL2jAQgBEgoUEREREREREREREREREREREREREREMAgAGDhABCkNvbnN1bHRpbmcAAQESEApGcmVlbGFuY2VyEgZDbGllbnQUEAABAgMEBQYHCAkKCwwNDg8WC0lOVi1NSU4tMDAxGAIFFB8gmMjxZc6hVjrGxHnSxyoyUHcinfSchE7d5w7H_bDZwoY"`;
 
 exports[`Invoice Schema V1 Encoding > Snapshot Tests - Backward Compatibility Protection > should preserve exact JSON structure in encoding > full-invoice-v1-structure 1`] = `
 {
@@ -45,12 +45,10 @@ San Francisco, CA 94105",
       "rate": "125000000",
     },
   ],
-  "magicDust": undefined,
   "networkId": 1,
   "notes": "Payment for web development services",
   "tax": "8.5%",
   "tokenAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-  "total": undefined,
-  "version": 2,
+  "total": "15000000000",
 }
 `;

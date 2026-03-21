@@ -48,7 +48,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     question: 'Is this secure?',
     answer:
-      'Your data never touches our servers. Invoice information is compressed and encoded directly into the URL. We use industry-standard compression (pako) and base64url encoding.',
+      'Your data never touches our servers. Invoice information is compressed and encoded directly into the URL. We use industry-standard compression (Brotli) and Base64url encoding.',
   },
   {
     question: 'Can I export to PDF?',

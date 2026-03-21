@@ -9,7 +9,8 @@
  * encodeInvoice runs during `next build`, not on client.
  */
 
-import { encodeInvoice } from '@/features/invoice-codec'
+import { encodeInvoice, generateSalt, deriveMagicDust } from '@/features/invoice-codec'
+import { addMagicDust } from '@/shared/lib/amount-utils'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import type { InvoiceStatus } from '@/widgets/invoice-paper/types'
 
@@ -41,7 +42,6 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
     txHash: '0x0000000000000000000000000000000000000000000000000000000000000001',
     txHashValidated: true,
     data: {
-      version: 2,
       invoiceId: 'eth-inv-001',
       issuedAt: BASE_TIMESTAMP,
       dueAt: BASE_TIMESTAMP + 86400 * 14,
@@ -72,6 +72,7 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
       ],
       tax: '0',
       discount: '5',
+      total: '5510000000000000000',
     },
   },
   // --- Arbitrum (42161) - Game Asset Design [PENDING] ---
@@ -82,7 +83,6 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
     createdAt: '2024-01-03T09:30:00.000Z',
     status: 'pending',
     data: {
-      version: 2,
       invoiceId: 'arb-inv-001',
       issuedAt: BASE_TIMESTAMP + 86400 * 2,
       dueAt: BASE_TIMESTAMP + 86400 * 32,
@@ -113,6 +113,7 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
       ],
       tax: '8',
       discount: '8', // 8% discount (~$192)
+      total: '2400000000',
     },
   },
   // --- Optimism (10) - Public Goods Grant [PAID + NOT VALIDATED] ---
@@ -125,7 +126,6 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
     txHash: '0x0000000000000000000000000000000000000000000000000000000000000002',
     txHashValidated: false, // Shows warning indicator
     data: {
-      version: 2,
       invoiceId: 'opt-inv-001',
       issuedAt: BASE_TIMESTAMP + 86400 * 5,
       dueAt: BASE_TIMESTAMP + 86400 * 35,
@@ -157,6 +157,7 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
       ],
       tax: '0',
       discount: '0',
+      total: '25000000000000000000000',
     },
   },
   // --- Polygon (137) - Data Analytics Service [OVERDUE] ---
@@ -167,7 +168,6 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
     createdAt: '2024-01-02T16:45:00.000Z',
     status: 'overdue',
     data: {
-      version: 2,
       invoiceId: 'poly-inv-001',
       issuedAt: BASE_TIMESTAMP + 86400 * 1,
       dueAt: BASE_TIMESTAMP + 86400 * 15,
@@ -200,28 +200,44 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
       ],
       tax: '18',
       discount: '10',
+      total: '6210000000',
     },
   },
 ]
 
 /**
- * Demo invoices with pre-computed createHash for /create page navigation
- * Hash is computed at module load time (build time for SSG)
+ * Demo invoices with pre-computed createHash for /create page navigation.
+ * Each demo gets a deterministic salt → magicDust linkage so the dust badge
+ * shows correctly when decoded on /pay.
  */
-export const DEMO_INVOICES: DemoInvoice[] = RAW_DEMO_INVOICES.map((invoice) => {
-  try {
-    return {
-      ...invoice,
-      createHash: encodeInvoice(invoice.data),
-    }
-  } catch (error) {
-    // Graceful degradation: button won't work but page loads
-    console.error('[DEMO_INVOICES] Failed to encode:', invoice.invoiceId, error)
-    return {
-      ...invoice,
-      createHash: '',
-    }
-  }
-})
+export async function getDemoInvoices(): Promise<DemoInvoice[]> {
+  return Promise.all(
+    RAW_DEMO_INVOICES.map(async (invoice) => {
+      try {
+        // Generate salt and derive dust deterministically
+        const salt = generateSalt()
+        const dust = deriveMagicDust(salt)
+        const totalWithDust = addMagicDust(invoice.data.total!, dust)
+        const dataWithDust: Invoice = {
+          ...invoice.data,
+          total: totalWithDust,
+          magicDust: dust.toString(),
+        }
+        return {
+          ...invoice,
+          data: dataWithDust,
+          createHash: await encodeInvoice(dataWithDust, salt),
+        }
+      } catch (error) {
+        // Graceful degradation: button won't work but page loads
+        console.error('[DEMO_INVOICES] Failed to encode:', invoice.invoiceId, error)
+        return {
+          ...invoice,
+          createHash: '',
+        }
+      }
+    }),
+  )
+}
 
 export const ROTATION_INTERVAL_MS = 60_000 // 60 seconds for viewing animations

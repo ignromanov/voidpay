@@ -5,6 +5,7 @@ import { Navigation } from '@/widgets/navigation'
 import { Footer } from '@/widgets/footer'
 import { NetworkBackground } from '@/widgets/network-background'
 import { Toaster } from '@/shared/ui/toaster'
+import { UmamiScript } from '@/features/analytics'
 import './globals.css'
 
 /**
@@ -65,6 +66,7 @@ export default function RootLayout({
 
         <Footer />
         <Toaster />
+        <UmamiScript />
       </body>
     </html>
   )

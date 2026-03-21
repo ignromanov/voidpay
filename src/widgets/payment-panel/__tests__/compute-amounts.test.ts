@@ -8,7 +8,6 @@ import type { Invoice } from '@/shared/lib/invoice-types'
  */
 function createInvoice(overrides: Partial<Invoice> = {}): Invoice {
   return {
-    version: 2,
     invoiceId: 'INV-TEST',
     issuedAt: 1704067200,
     dueAt: 1706745600,

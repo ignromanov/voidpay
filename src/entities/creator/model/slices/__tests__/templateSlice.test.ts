@@ -214,7 +214,6 @@ describe('templateSlice', () => {
             name: 'String Qty',
             createdAt: new Date().toISOString(),
             invoiceData: {
-              version: 2,
               invoiceId: 'QTY-TEST',
               issuedAt: 1704067200,
               dueAt: 1706745600,

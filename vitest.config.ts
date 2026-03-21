@@ -27,6 +27,8 @@ export default defineConfig({
     alias: {
       'framer-motion': path.resolve(__dirname, '__mocks__/framer-motion.tsx'),
       sonner: path.resolve(__dirname, '__mocks__/sonner.tsx'),
+      // Force Node.js entry for brotli-wasm (web entry uses fetch for WASM loading)
+      'brotli-wasm': path.resolve(__dirname, 'node_modules/brotli-wasm/index.node.js'),
     },
 
     // MINIMAL coverage config

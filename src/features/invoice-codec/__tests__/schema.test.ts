@@ -12,37 +12,62 @@
  * 3. Consider adding a new schema version instead of modifying v1
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { encodeInvoice, generateInvoiceUrl } from '../lib/encode'
 import { decodeInvoice } from '../lib/decode'
+import type { Invoice } from '@/entities/invoice'
 import {
   TEST_INVOICES,
   normalizeInvoiceAddresses,
   createLargeInvoice,
 } from '@/shared/lib/test-utils'
 
+/**
+ * Normalize invoice for roundtrip comparison.
+ * Encoder stores total as-is (final payment amount, inclusive of magicDust if applied).
+ * Decoder reads total as-is and only conditionally sets magicDust via salt verification.
+ * For roundtrip tests, strip magicDust from both sides — total is directly comparable.
+ */
+function normalizeForRoundtrip(inv: Invoice): Invoice {
+  const { magicDust: _magicDust, ...rest } = inv as Invoice & { magicDust?: string }
+  return normalizeInvoiceAddresses(rest)
+}
+
 describe('Invoice Schema V1 Encoding', () => {
   describe('Snapshot Tests - Backward Compatibility Protection', () => {
-    it('should encode full invoice to stable compressed format', () => {
+    // Mock crypto.getRandomValues for deterministic salt in snapshots
+    const originalGetRandomValues = globalThis.crypto.getRandomValues.bind(globalThis.crypto)
+    beforeEach(() => {
+      vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation((array) => {
+        const bytes = array as Uint8Array
+        for (let i = 0; i < bytes.length; i++) bytes[i] = i & 0xff
+        return array
+      })
+    })
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it('should encode full invoice to stable compressed format', async () => {
       const invoice = TEST_INVOICES.full()
-      const encoded = encodeInvoice(invoice)
+      const encoded = await encodeInvoice(invoice)
 
       // Snapshot ensures encoding doesn't change unexpectedly
       // If this fails, existing URLs might break!
       expect(encoded).toMatchSnapshot('full-invoice-v1-encoded')
     })
 
-    it('should encode minimal invoice to stable compressed format', () => {
+    it('should encode minimal invoice to stable compressed format', async () => {
       const invoice = TEST_INVOICES.minimal()
-      const encoded = encodeInvoice(invoice)
+      const encoded = await encodeInvoice(invoice)
 
       expect(encoded).toMatchSnapshot('minimal-invoice-v1-encoded')
     })
 
-    it('should preserve exact JSON structure in encoding', () => {
+    it('should preserve exact JSON structure in encoding', async () => {
       const invoice = TEST_INVOICES.full()
-      const encoded = encodeInvoice(invoice)
-      const decoded = decodeInvoice(encoded)
+      const encoded = await encodeInvoice(invoice)
+      const decoded = await decodeInvoice(encoded)
 
       // Snapshot the decoded structure to catch structural changes
       expect(decoded).toMatchSnapshot('full-invoice-v1-structure')
@@ -50,29 +75,29 @@ describe('Invoice Schema V1 Encoding', () => {
   })
 
   describe('Round-trip Tests - Encode/Decode Consistency', () => {
-    it('should perfectly round-trip full invoice', () => {
+    it('should perfectly round-trip full invoice', async () => {
       const original = TEST_INVOICES.full()
-      const encoded = encodeInvoice(original)
-      const decoded = decodeInvoice(encoded)
+      const encoded = await encodeInvoice(original)
+      const decoded = await decodeInvoice(encoded)
 
-      // Addresses are normalized to lowercase by binary codec
-      expect(normalizeInvoiceAddresses(decoded)).toEqual(normalizeInvoiceAddresses(original))
+      // Total is stored and decoded as-is. Strip magicDust field for comparison
+      // (decoder sets it only when salt verification succeeds).
+      expect(normalizeForRoundtrip(decoded)).toEqual(normalizeForRoundtrip(original))
     })
 
-    it('should perfectly round-trip minimal invoice', () => {
+    it('should perfectly round-trip minimal invoice', async () => {
       const original = TEST_INVOICES.minimal()
-      const encoded = encodeInvoice(original)
-      const decoded = decodeInvoice(encoded)
+      const encoded = await encodeInvoice(original)
+      const decoded = await decodeInvoice(encoded)
 
-      expect(normalizeInvoiceAddresses(decoded)).toEqual(normalizeInvoiceAddresses(original))
+      expect(normalizeForRoundtrip(decoded)).toEqual(normalizeForRoundtrip(original))
     })
 
-    it('should preserve all optional fields when present', () => {
+    it('should preserve all optional fields when present', async () => {
       const invoice = TEST_INVOICES.full()
-      const encoded = encodeInvoice(invoice)
-      const decoded = decodeInvoice(encoded)
+      const encoded = await encodeInvoice(invoice)
+      const decoded = await decodeInvoice(encoded)
 
-      // Verify optional fields are preserved (addresses normalized to lowercase)
       expect(decoded.notes).toBe(invoice.notes)
       expect(decoded.tokenAddress?.toLowerCase()).toBe(invoice.tokenAddress?.toLowerCase())
       expect(decoded.tax).toBe(invoice.tax)
@@ -88,104 +113,91 @@ describe('Invoice Schema V1 Encoding', () => {
       expect(decoded.client.phone).toBe(invoice.client.phone)
     })
 
-    it('should handle unicode characters in notes and names', () => {
+    it('should handle unicode characters in notes and names', async () => {
       const invoice = TEST_INVOICES.unicode()
-      const encoded = encodeInvoice(invoice)
-      const decoded = decodeInvoice(encoded)
+      const encoded = await encodeInvoice(invoice)
+      const decoded = await decodeInvoice(encoded)
 
       expect(decoded.notes).toBe(invoice.notes)
       expect(decoded.from.name).toBe(invoice.from.name)
       expect(decoded.client.name).toBe(invoice.client.name)
     })
 
-    it('should handle line items with various quantity formats', () => {
+    it('should handle line items with various quantity formats', async () => {
       const invoice = TEST_INVOICES.variousQuantities()
-      const encoded = encodeInvoice(invoice)
-      const decoded = decodeInvoice(encoded)
+      const encoded = await encodeInvoice(invoice)
+      const decoded = await decodeInvoice(encoded)
 
       // Decoder normalizes numeric string quantities to numbers
       expect(decoded.items).toEqual(invoice.items)
     })
   })
 
-  describe('Version Detection', () => {
-    it('should correctly identify schema version 2', () => {
-      const invoice = TEST_INVOICES.full()
-      const encoded = encodeInvoice(invoice)
-      const decoded = decodeInvoice(encoded)
-
-      expect(decoded.version).toBe(2)
-    })
-  })
-
   describe('Error Handling', () => {
-    it('should throw on invalid compressed data', () => {
-      expect(() => decodeInvoice('invalid-data-not-compressed')).toThrow()
+    it('should throw on invalid compressed data', async () => {
+      await expect(decodeInvoice('invalid-data-not-compressed')).rejects.toThrow()
     })
 
-    it('should throw on missing H prefix', () => {
-      // Binary V3 requires 'H' prefix
-      expect(() => decodeInvoice('ABCD1234')).toThrow(/expected Binary V3/)
+    it('should throw on empty input', async () => {
+      await expect(decodeInvoice('')).rejects.toThrow(/Empty invoice data/)
     })
 
-    it('should throw on corrupted base62 data', () => {
-      // Valid H prefix but corrupted data
-      expect(() => decodeInvoice('H!!!invalid!!!')).toThrow()
+    it('should throw on corrupted data', async () => {
+      await expect(decodeInvoice('ABCD1234')).rejects.toThrow()
     })
 
-    it('should throw on truncated binary data', () => {
-      // Valid H prefix but too short
-      expect(() => decodeInvoice('H1')).toThrow()
+    it('should throw on truncated binary data', async () => {
+      // Short Base64url that decodes to invalid TLV
+      await expect(decodeInvoice('AQ')).rejects.toThrow()
     })
   })
 
   describe('URL Generation', () => {
-    it('should generate valid URL with hash fragment', () => {
+    it('should generate valid URL with hash fragment', async () => {
       const invoice = TEST_INVOICES.minimal()
-      const url = generateInvoiceUrl(invoice)
+      const url = await generateInvoiceUrl(invoice)
 
-      expect(url).toContain('/pay#H') // Binary V3 prefix
+      // TLV v1: Base64url in hash fragment
+      expect(url).toContain('/pay#')
       expect(url).toMatch(/^https?:\/\//)
+      // Verify it's valid Base64url after #
+      const hash = url.split('#')[1]
+      expect(hash).toMatch(/^[A-Za-z0-9_-]+=*$/)
     })
 
-    it('should generate URL with custom base URL', () => {
+    it('should generate URL with custom base URL', async () => {
       const invoice = TEST_INVOICES.minimal()
       const customBase = 'https://custom.voidpay.xyz'
-      const url = generateInvoiceUrl(invoice, { baseUrl: customBase })
+      const url = await generateInvoiceUrl(invoice, { baseUrl: customBase })
 
       expect(url.startsWith(customBase)).toBe(true)
-      expect(url).toContain('/pay#H')
+      expect(url).toContain('/pay#')
     })
 
-    it('should generate URL that can be decoded back', () => {
+    it('should generate URL that can be decoded back', async () => {
       const invoice = TEST_INVOICES.full()
-      const url = generateInvoiceUrl(invoice, { baseUrl: 'https://voidpay.xyz' })
+      const url = await generateInvoiceUrl(invoice, { baseUrl: 'https://voidpay.xyz' })
 
-      // Extract the compressed data from hash fragment
       const hashIndex = url.indexOf('#')
       const compressed = url.slice(hashIndex + 1)
 
       expect(compressed).toBeTruthy()
-      expect(compressed.startsWith('H')).toBe(true)
-      const decoded = decodeInvoice(compressed)
+      const decoded = await decodeInvoice(compressed)
 
-      expect(normalizeInvoiceAddresses(decoded)).toEqual(normalizeInvoiceAddresses(invoice))
+      expect(normalizeForRoundtrip(decoded)).toEqual(normalizeForRoundtrip(invoice))
     })
 
-    it('should throw when URL exceeds 2000 bytes', () => {
+    it('should throw when URL exceeds size limits', async () => {
       const largeInvoice = createLargeInvoice()
-      expect(() => generateInvoiceUrl(largeInvoice)).toThrow(/exceeds 2000 byte limit/)
+      await expect(generateInvoiceUrl(largeInvoice)).rejects.toThrow(/exceeds/i)
     })
 
-    it('should calculate correct byte size for unicode characters', () => {
-      // Unicode characters take more bytes than ASCII
+    it('should calculate correct byte size for unicode characters', async () => {
       const invoice = TEST_INVOICES.japaneseUnicode()
 
-      // Should not throw for reasonable unicode content
-      const url = generateInvoiceUrl(invoice)
+      const url = await generateInvoiceUrl(invoice)
       expect(url).toBeDefined()
 
-      // Verify byte calculation uses TextEncoder
       const byteSize = new TextEncoder().encode(url).length
       expect(byteSize).toBeLessThanOrEqual(2000)
     })

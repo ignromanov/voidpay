@@ -1,6 +1,6 @@
 'use client'
 
-import { useLayoutEffect, useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import {
   Edit3Icon,
   EyeIcon,
@@ -37,7 +37,7 @@ import { SYNC_STATUS_CONFIG } from './constants'
  * - Left pane: InvoiceForm with toggles and Generate button
  * - Right pane: Live preview with ScaledInvoicePreview
  * - Mobile: Tab bar to switch between editor and preview
- * - URL hash decoding (e.g., /create#H4sI...)
+ * - URL hash decoding (e.g., /create#<Base64url TLV>)
  * - Fullscreen preview modal on click
  * - Sets network theme in store for dynamic background
  */
@@ -75,19 +75,24 @@ export function CreateWorkspace() {
     []
   )
 
-  // Decode URL hash on mount/change (useLayoutEffect for no visual flicker)
-  useLayoutEffect(() => {
+  // Decode URL hash on mount/change
+  useEffect(() => {
     if (!hash) return
 
-    const result = parseInvoiceHash(hash)
-    if (result.success) {
-      // updateDraft auto-syncs lineItems when items provided
-      updateDraft(result.data)
-      // Silent success - no toast per spec (avoid notification fatigue)
-    } else {
-      toast.error(result.error.message)
-      // Do NOT clear store on error (per spec edge case)
-    }
+    let cancelled = false
+    void (async () => {
+      const result = await parseInvoiceHash(hash)
+      if (cancelled) return
+      if (result.success) {
+        // updateDraft auto-syncs lineItems when items provided
+        updateDraft(result.data)
+        // Silent success - no toast per spec (avoid notification fatigue)
+      } else {
+        toast.error(result.error.message)
+        // Do NOT clear store on error (per spec edge case)
+      }
+    })()
+    return () => { cancelled = true }
   }, [hash, updateDraft])
 
   const invoiceData = useMemo(() => activeDraft?.data, [activeDraft])
@@ -115,7 +120,7 @@ export function CreateWorkspace() {
    * Handle "Generate Invoice Link" button click
    *
    * 1. Validate invoice data
-   * 2. Generate URL with Binary V3 encoding
+   * 2. Generate URL with TLV v1 encoding
    * 3. Add to history
    * 4. Open ShareModal
    */

@@ -10,7 +10,7 @@ import type { DecodeErrorType } from '@/shared/ui/decode-error-screen'
 const CODEC_KEYWORDS = [
   'decode',
   'binary',
-  'base62',
+  'base64',
   'codec',
   'decompress',
   'inflate',
