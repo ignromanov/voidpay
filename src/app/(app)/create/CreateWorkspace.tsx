@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState, useCallback, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
 import {
   Edit3Icon,
   EyeIcon,
@@ -53,7 +52,6 @@ export function CreateWorkspace() {
   const [generatedInvoice, setGeneratedInvoice] = useState<Invoice | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
 
-  const router = useRouter()
 
   const activeDraft = useCreatorStore((s) => s.activeDraft)
   const includeOgImage = useCreatorStore((s) => s.preferences.includeOgImage)
@@ -182,9 +180,10 @@ export function CreateWorkspace() {
       setGeneratedInvoice(invoice)
       setIsShareModalOpen(true)
 
-      // Redirect to /invoice so closing modal lands on invoice page
+      // Update URL silently so closing modal lands on invoice page
+      // Using pushState to avoid re-render (modal stays open) and keep /create in history
       const invoicePageUrl = url.replace('/pay', '/invoice')
-      router.replace(invoicePageUrl, { scroll: false })
+      window.history.pushState(null, '', invoicePageUrl)
 
       toast.success('Invoice link generated!', {
         description: 'Share it with your client to get paid',
@@ -202,7 +201,7 @@ export function CreateWorkspace() {
     } finally {
       setIsGenerating(false)
     }
-  }, [includeOgImage, isGenerating, router])
+  }, [includeOgImage, isGenerating])
 
   return (
     <>
