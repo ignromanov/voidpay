@@ -13,8 +13,8 @@ export type ShareTab = 'link' | 'qr'
 export interface ShareModalProps {
   /** Invoice URL to share (the /pay URL with hash) */
   url: string
-  /** Invoice data for display */
-  invoice: Invoice
+  /** Invoice data for display (null while decoding) */
+  invoice: Invoice | null
   /** Modal open state */
   open: boolean
   /** Close handler */

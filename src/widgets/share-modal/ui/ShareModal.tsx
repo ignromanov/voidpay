@@ -71,7 +71,7 @@ export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgTo
 
         {/* Body */}
         <div className="space-y-4 px-6 pb-6">
-          <InvoiceSummary invoice={invoice} />
+          {invoice && <InvoiceSummary invoice={invoice} />}
           <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
 
           <div className="min-h-[200px]">
@@ -86,9 +86,9 @@ export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgTo
                 includeOg={includeOg}
                 onOgToggle={onOgToggle}
               />
-            ) : (
+            ) : invoice ? (
               <QRTab invoice={invoice} />
-            )}
+            ) : null}
           </div>
         </div>
       </DialogContent>

@@ -86,13 +86,13 @@ export function InvoiceWorkspace() {
     }
   }, [hash, isHydrated])
 
-  // Auto-open ShareModal once invoice is decoded (triggered by ?share=1)
+  // Auto-open ShareModal immediately when ?share=1 is detected (no wait for decode)
   useEffect(() => {
-    if (shouldAutoShare && invoice) {
+    if (shouldAutoShare) {
       setIsShareOpen(true)
       setShouldAutoShare(false)
     }
-  }, [shouldAutoShare, invoice])
+  }, [shouldAutoShare])
 
   const handleOgToggle = useCallback(() => {
     // OG toggle is read-only on /invoice — was set during creation
