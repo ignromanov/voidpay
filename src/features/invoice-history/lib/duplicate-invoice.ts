@@ -29,7 +29,7 @@ function createDefaultLineItem() {
  * @param invoiceUrl - Full invoice URL with hash fragment
  * @returns Draft ID if successful, null if decode failed
  */
-export function duplicateFromUrl(invoiceUrl: string): string | null {
+export async function duplicateFromUrl(invoiceUrl: string): Promise<string | null> {
   let hash: string
   try {
     hash = new URL(invoiceUrl).hash.slice(1)
@@ -37,7 +37,7 @@ export function duplicateFromUrl(invoiceUrl: string): string | null {
     return null
   }
 
-  const result = parseInvoiceHash(hash)
+  const result = await parseInvoiceHash(hash)
   if (!result.success) {
     return null
   }

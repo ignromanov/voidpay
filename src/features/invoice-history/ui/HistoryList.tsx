@@ -8,7 +8,7 @@
  * Allows users to view, duplicate, or delete history entries.
  */
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   formatInvoiceTotal,
@@ -42,30 +42,38 @@ export function HistoryList({ debug = false, className = '' }: HistoryListProps)
   const removeInvoice = useTrackedInvoiceStore((s) => s.removeInvoice)
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [entries, setEntries] = useState<DecodedHistoryEntry[]>([])
 
-  // Filter created invoices and decode from URL
-  const entries = useMemo<DecodedHistoryEntry[]>(() => {
-    return trackedInvoices
-      .filter((inv) => inv.source === 'created')
-      .map((tracked) => {
-        let invoice: Invoice | null = null
-        try {
-          const hash = new URL(tracked.invoiceUrl).hash.slice(1)
-          const result = parseInvoiceHash(hash)
-          if (result.success) {
-            invoice = result.data
+  // Filter created invoices and decode from URL (async)
+  useEffect(() => {
+    let cancelled = false
+    const createdInvoices = trackedInvoices.filter((inv) => inv.source === 'created')
+
+    void (async () => {
+      const decoded = await Promise.all(
+        createdInvoices.map(async (tracked) => {
+          let invoice: Invoice | null = null
+          try {
+            const hash = new URL(tracked.invoiceUrl).hash.slice(1)
+            const result = await parseInvoiceHash(hash)
+            if (result.success) {
+              invoice = result.data
+            }
+          } catch {
+            // URL parsing failed — invoice stays null
           }
-        } catch {
-          // URL parsing failed — invoice stays null
-        }
 
-        const status = computeInvoiceStatus({
-          tracked,
-          dueAt: invoice?.dueAt,
+          const status = computeInvoiceStatus({
+            tracked,
+            dueAt: invoice?.dueAt,
+          })
+
+          return { tracked, invoice, status }
         })
-
-        return { tracked, invoice, status }
-      })
+      )
+      if (!cancelled) setEntries(decoded)
+    })()
+    return () => { cancelled = true }
   }, [trackedInvoices])
 
   const handleDelete = (invoiceId: string) => {
@@ -73,8 +81,8 @@ export function HistoryList({ debug = false, className = '' }: HistoryListProps)
     setDeleteConfirmId(null)
   }
 
-  const handleDuplicate = useCallback((invoiceUrl: string) => {
-    const draftId = duplicateFromUrl(invoiceUrl)
+  const handleDuplicate = useCallback(async (invoiceUrl: string) => {
+    const draftId = await duplicateFromUrl(invoiceUrl)
     if (draftId) {
       router.push('/create')
       toast.success('Invoice duplicated')

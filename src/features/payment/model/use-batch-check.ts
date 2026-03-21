@@ -34,7 +34,7 @@ export interface DecodedBatchInvoice {
 }
 
 export interface UseBatchCheckParams {
-  decodeInvoiceUrl: (url: string) => DecodedBatchInvoice | null
+  decodeInvoiceUrl: (url: string) => Promise<DecodedBatchInvoice | null> | DecodedBatchInvoice | null
 }
 
 export interface UseBatchCheckResult {
@@ -110,7 +110,7 @@ export function useBatchCheck({ decodeInvoiceUrl }: UseBatchCheckParams): UseBat
         try {
           // Decode invoice URL via injected decoder (FSD-compliant)
           if (!invoice.invoiceUrl) continue
-          const decoded = decodeInvoiceUrl(invoice.invoiceUrl)
+          const decoded = await decodeInvoiceUrl(invoice.invoiceUrl)
           if (!decoded) continue
 
           const { toAddress, networkId, tokenAddress, total, issuedAt } = decoded

@@ -136,27 +136,32 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
       return
     }
 
-    const result = parseInvoiceHash(hash)
+    let cancelled = false
+    void (async () => {
+      const result = await parseInvoiceHash(hash)
+      if (cancelled) return
 
-    if (result.success) {
-      setInvoice(result.data)
-      setErrorType(null)
+      if (result.success) {
+        setInvoice(result.data)
+        setErrorType(null)
 
-      try {
-        trackView({
-          invoiceId: result.data.invoiceId,
-          invoiceUrl: `${window.location.origin}/pay#${hash}`,
-          source,
-          viewedAt: nowISO(),
-        })
-      } catch (error) {
-        console.error('[useInvoiceView] Failed to track invoice view:', error)
-        toast.info('Could not save invoice to history. Your payment experience is unaffected.')
+        try {
+          trackView({
+            invoiceId: result.data.invoiceId,
+            invoiceUrl: `${window.location.origin}/pay#${hash}`,
+            source,
+            viewedAt: nowISO(),
+          })
+        } catch (error) {
+          console.error('[useInvoiceView] Failed to track invoice view:', error)
+          toast.info('Could not save invoice to history. Your payment experience is unaffected.')
+        }
+      } else {
+        setInvoice(null)
+        setErrorType(mapParseErrorToDecodeType(result.error.message))
       }
-    } else {
-      setInvoice(null)
-      setErrorType(mapParseErrorToDecodeType(result.error.message))
-    }
+    })()
+    return () => { cancelled = true }
   }, [hash, isHydrated, trackView, source])
 
   const dismissError = useCallback(() => {

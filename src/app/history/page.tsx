@@ -47,10 +47,10 @@ export default function HistoryPage() {
   )
 }
 
-function decodeInvoiceUrl(url: string): DecodedBatchInvoice | null {
+async function decodeInvoiceUrl(url: string): Promise<DecodedBatchInvoice | null> {
   try {
     const hash = new URL(url).hash.slice(1)
-    const result = parseInvoiceHash(hash)
+    const result = await parseInvoiceHash(hash)
     if (!result.success) return null
     const inv = result.data
     return {
