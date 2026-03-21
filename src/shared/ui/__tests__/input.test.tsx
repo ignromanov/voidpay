@@ -43,31 +43,31 @@ describe('Input', () => {
       expect(screen.getByText('Email')).toBeInTheDocument()
     })
 
-    it('renders error message when provided (touched=undefined defaults to true)', () => {
+    it('does NOT render error message when touched=undefined (defaults to false)', () => {
       renderWithUser(<Input error="Required field" data-testid="input" />)
-      expect(screen.getByText('Required field')).toBeInTheDocument()
+      expect(screen.queryByText('Required field')).not.toBeInTheDocument()
     })
 
-    it('applies error styling to input (touched=undefined defaults to true)', () => {
+    it('does NOT apply error styling when touched=undefined (defaults to false)', () => {
       renderWithUser(<Input error="Error" data-testid="input" />)
       const input = screen.getByTestId('input')
-      expect(input).toHaveClass('border-red-500/50')
+      expect(input).not.toHaveClass('border-red-500/50')
+      expect(input).toHaveClass('border-zinc-800')
     })
 
-    it('shows both label and error together', () => {
-      renderWithUser(<Input label="Email" error="Invalid email" data-testid="input" />)
+    it('shows both label and error together when touched', () => {
+      renderWithUser(<Input label="Email" error="Invalid email" touched={true} data-testid="input" />)
       expect(screen.getByText('Email')).toBeInTheDocument()
       expect(screen.getByText('Invalid email')).toBeInTheDocument()
     })
   })
 
-  // T011b-test: Soft error state (touched=false)
-  describe('soft error state (touched=false)', () => {
-    it('shows soft error styling when touched=false', () => {
+  // T011b-test: Error state by touched
+  describe('error state by touched', () => {
+    it('shows default styling when touched=false even with error', () => {
       renderWithUser(<Input error="Error" touched={false} data-testid="input" />)
       const input = screen.getByTestId('input')
-      // Soft error: subtle bg hint, no border change
-      expect(input).toHaveClass('bg-red-900/25')
+      expect(input).toHaveClass('border-zinc-800')
       expect(input).not.toHaveClass('border-red-500/50')
     })
 
@@ -86,7 +86,6 @@ describe('Input', () => {
     it('has no error styling without error prop regardless of touched', () => {
       renderWithUser(<Input touched={false} data-testid="input" />)
       const input = screen.getByTestId('input')
-      expect(input).not.toHaveClass('bg-red-900/25')
       expect(input).not.toHaveClass('border-red-500/50')
     })
   })

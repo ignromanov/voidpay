@@ -13,8 +13,6 @@ export const inputVariants = cva(
     variants: {
       state: {
         default: 'border-zinc-800',
-        /** Soft error: subtle hint while user is still typing (focused) */
-        errorSoft: 'border-zinc-800 bg-red-900/25',
         /** Full error: prominent border after user leaves the field (blurred) */
         error: 'border-red-500/50 focus:border-red-500 focus:ring-red-500/50',
       },
@@ -92,9 +90,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     // - Focused + error → soft error (subtle hint while typing)
     // - Blurred + error → full error (prominent after leaving field)
     // - touched prop is kept for backwards compatibility but focus takes priority
-    const isTouched = touched ?? true
-    const inputState = error ? (isFocused ? 'errorSoft' : isTouched ? 'error' : 'errorSoft') : 'default'
-    // Show error message only when blurred and touched
+    const isTouched = touched ?? false
+    const inputState = error && !isFocused && isTouched ? 'error' : 'default'
     const showErrorMessage = error && !isFocused && isTouched
 
     return (
