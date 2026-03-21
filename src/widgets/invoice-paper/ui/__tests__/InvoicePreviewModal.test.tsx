@@ -30,6 +30,7 @@ const mockInvoiceData: PartialInvoice = {
     name: 'Client Inc',
   },
   items: [{ description: 'Development services', quantity: 10, rate: '100000000' }], // $100/hr × 10 = $1000
+  total: '1000000000', // $1000 in atomic units (6 decimals)
 }
 
 describe('InvoicePreviewModal', () => {

@@ -1,4 +1,4 @@
-import { esc, cellColor, reductionColor } from './helpers.js'
+import { cellColor, reductionColor } from './helpers.js'
 import type { Tr } from '../data/i18n.js'
 import type { CodecInfo } from '../shared/types.js'
 
