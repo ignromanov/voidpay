@@ -171,8 +171,10 @@ export function CreateWorkspace() {
       })
 
       // Navigate to /invoice with ?share=1 to auto-open ShareModal there
-      const invoicePageUrl = url.replace('/pay', '/invoice').replace('#', '?share=1#')
-      router.push(invoicePageUrl)
+      const invoiceUrl = new URL(url, window.location.origin)
+      invoiceUrl.pathname = invoiceUrl.pathname.replace('/pay', '/invoice')
+      invoiceUrl.searchParams.set('share', '1')
+      router.push(invoiceUrl.pathname + invoiceUrl.search + invoiceUrl.hash)
     } catch (error) {
       if (error instanceof UrlSizeError) {
         toast.error('Invoice URL is too large', {

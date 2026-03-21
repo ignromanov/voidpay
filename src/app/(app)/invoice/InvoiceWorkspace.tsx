@@ -33,24 +33,23 @@ export function InvoiceWorkspace() {
   const [payUrl, setPayUrl] = useState('')
   const [includeOg, setIncludeOg] = useState(false)
 
-  // Derive pay URL, OG flag, and auto-open share from current location
+  const [shouldAutoShare, setShouldAutoShare] = useState(false)
+
+  // Derive pay URL, OG flag, and detect ?share intent from URL
   useEffect(() => {
-    const href = window.location.href
-    const url = new URL(href)
-    const shouldShare = url.searchParams.has('share')
+    const url = new URL(window.location.href)
+    const wantsShare = url.searchParams.has('share')
 
     // Build pay URL without ?share param
     url.searchParams.delete('share')
-    const cleanHref = url.toString()
+    const cleanHref = url.pathname + url.search + url.hash
     setPayUrl(cleanHref.replace('/invoice', '/pay'))
-    setIncludeOg(cleanHref.includes('?og='))
+    setIncludeOg(url.searchParams.has('og'))
 
-    // Auto-open ShareModal if ?share=1 was in URL
-    if (shouldShare) {
-      setIsShareOpen(true)
-      // Clean up URL — remove ?share= without navigation
-      url.pathname = url.pathname // keep /invoice
-      window.history.replaceState(null, '', url.toString())
+    if (wantsShare) {
+      setShouldAutoShare(true)
+      // Clean ?share from URL without navigation
+      window.history.replaceState(null, '', cleanHref)
     }
   }, [])
 
@@ -74,10 +73,19 @@ export function InvoiceWorkspace() {
       }
       setIsLoading(false)
     })()
+
     return () => {
       cancelled = true
     }
   }, [hash])
+
+  // Auto-open ShareModal once invoice is decoded (triggered by ?share=1)
+  useEffect(() => {
+    if (shouldAutoShare && invoice && !isLoading) {
+      setIsShareOpen(true)
+      setShouldAutoShare(false)
+    }
+  }, [shouldAutoShare, invoice, isLoading])
 
   const handleOgToggle = useCallback(() => {
     // OG toggle is read-only on /invoice — was set during creation
