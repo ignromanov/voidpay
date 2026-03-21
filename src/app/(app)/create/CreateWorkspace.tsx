@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Edit3Icon,
   EyeIcon,
@@ -27,7 +28,6 @@ import { Heading, Text } from '@/shared/ui/typography'
 import { MobileTabBar, type TabItem } from '@/shared/ui/mobile-tab-bar'
 import { InvoiceForm } from '@/widgets/invoice-form'
 import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widgets/invoice-paper'
-import { ShareModal } from '@/widgets/share-modal'
 import { SYNC_STATUS_CONFIG } from './constants'
 
 /**
@@ -46,17 +46,13 @@ export function CreateWorkspace() {
   const [mobileTab, setMobileTab] = useState<string>('editor')
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
-  // ShareModal state
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
-  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
-  const [generatedInvoice, setGeneratedInvoice] = useState<Invoice | null>(null)
+  const router = useRouter()
   const [isGenerating, setIsGenerating] = useState(false)
 
 
   const activeDraft = useCreatorStore((s) => s.activeDraft)
   const includeOgImage = useCreatorStore((s) => s.preferences.includeOgImage)
   const updateDraft = useCreatorStore((s) => s.updateDraft)
-  const updatePreferences = useCreatorStore((s) => s.updatePreferences)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
   const draftSyncStatus = useCreatorStore((s) => s.draftSyncStatus)
@@ -118,12 +114,6 @@ export function CreateWorkspace() {
     })
   }, [createNewDraft])
 
-  const handleOgToggle = useCallback(
-    (include: boolean) => {
-      updatePreferences({ includeOgImage: include })
-    },
-    [updatePreferences]
-  )
 
   /**
    * Handle "Generate Invoice Link" button click
@@ -176,18 +166,13 @@ export function CreateWorkspace() {
         includeOG: includeOgImage ?? false,
       })
 
-      setGeneratedUrl(url)
-      setGeneratedInvoice(invoice)
-      setIsShareModalOpen(true)
-
-      // Update URL silently so closing modal lands on invoice page
-      // Using pushState to avoid re-render (modal stays open) and keep /create in history
-      const invoicePageUrl = url.replace('/pay', '/invoice')
-      window.history.pushState(null, '', invoicePageUrl)
-
       toast.success('Invoice link generated!', {
         description: 'Share it with your client to get paid',
       })
+
+      // Navigate to /invoice with ?share=1 to auto-open ShareModal there
+      const invoicePageUrl = url.replace('/pay', '/invoice').replace('#', '?share=1#')
+      router.push(invoicePageUrl)
     } catch (error) {
       if (error instanceof UrlSizeError) {
         toast.error('Invoice URL is too large', {
@@ -201,21 +186,10 @@ export function CreateWorkspace() {
     } finally {
       setIsGenerating(false)
     }
-  }, [includeOgImage, isGenerating])
+  }, [includeOgImage, isGenerating, router])
 
   return (
     <>
-      {/* ShareModal for generated invoice URL */}
-      {generatedUrl && generatedInvoice && (
-        <ShareModal
-          url={generatedUrl}
-          invoice={generatedInvoice}
-          open={isShareModalOpen}
-          onOpenChange={setIsShareModalOpen}
-          includeOg={includeOgImage ?? false}
-          onOgToggle={handleOgToggle}
-        />
-      )}
 
       {/* Fullscreen preview modal */}
       {invoiceData && (

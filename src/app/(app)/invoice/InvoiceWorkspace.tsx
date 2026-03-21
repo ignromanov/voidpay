@@ -33,11 +33,25 @@ export function InvoiceWorkspace() {
   const [payUrl, setPayUrl] = useState('')
   const [includeOg, setIncludeOg] = useState(false)
 
-  // Derive pay URL and OG flag from current location
+  // Derive pay URL, OG flag, and auto-open share from current location
   useEffect(() => {
     const href = window.location.href
-    setPayUrl(href.replace('/invoice', '/pay'))
-    setIncludeOg(href.includes('?og='))
+    const url = new URL(href)
+    const shouldShare = url.searchParams.has('share')
+
+    // Build pay URL without ?share param
+    url.searchParams.delete('share')
+    const cleanHref = url.toString()
+    setPayUrl(cleanHref.replace('/invoice', '/pay'))
+    setIncludeOg(cleanHref.includes('?og='))
+
+    // Auto-open ShareModal if ?share=1 was in URL
+    if (shouldShare) {
+      setIsShareOpen(true)
+      // Clean up URL — remove ?share= without navigation
+      url.pathname = url.pathname // keep /invoice
+      window.history.replaceState(null, '', url.toString())
+    }
   }, [])
 
   // Decode invoice from URL hash
