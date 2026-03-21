@@ -155,7 +155,7 @@ export const codec: CodecModule = {
     name: 'TLV v1 Optimized',
     version: 'v6',
     date: '2026-03-19',
-    description: 'Salt(8B) + DomSep(16B) + whole-payload Brotli + app-dict + Base64url',
+    description: 'Salt(16B) + DomSep(32B) + whole-payload Brotli + app-dict + Base64url',
     commit: '027-poc',
     encoding: 'Base64url',
     compression: 'Brotli (whole-payload, quality=11)',
