@@ -26,7 +26,7 @@ export function InvoiceWorkspace() {
 
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [errorType, setErrorType] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isHydrated, setIsHydrated] = useState(false)
 
   const [isShareOpen, setIsShareOpen] = useState(false)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
@@ -34,6 +34,12 @@ export function InvoiceWorkspace() {
   const [includeOg, setIncludeOg] = useState(false)
 
   const [shouldAutoShare, setShouldAutoShare] = useState(false)
+
+  // Wait for hash fragment to stabilize after SSR hydration
+  useEffect(() => {
+    const timer = setTimeout(() => setIsHydrated(true), 200)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Derive pay URL, OG flag, and detect ?share intent from URL
   useEffect(() => {
@@ -53,11 +59,13 @@ export function InvoiceWorkspace() {
     }
   }, [])
 
-  // Decode invoice from URL hash
+  // Decode invoice from URL hash (wait for hydration before treating empty hash as error)
   useEffect(() => {
-    if (!hash) {
-      setIsLoading(false)
+    if (!isHydrated && hash === '') return
+
+    if (hash === '') {
       setErrorType('MISSING_HASH')
+      setInvoice(null)
       return
     }
 
@@ -71,25 +79,26 @@ export function InvoiceWorkspace() {
       } else {
         setErrorType(result.error.message ?? 'CORRUPTED_DATA')
       }
-      setIsLoading(false)
     })()
 
     return () => {
       cancelled = true
     }
-  }, [hash])
+  }, [hash, isHydrated])
 
   // Auto-open ShareModal once invoice is decoded (triggered by ?share=1)
   useEffect(() => {
-    if (shouldAutoShare && invoice && !isLoading) {
+    if (shouldAutoShare && invoice) {
       setIsShareOpen(true)
       setShouldAutoShare(false)
     }
-  }, [shouldAutoShare, invoice, isLoading])
+  }, [shouldAutoShare, invoice])
 
   const handleOgToggle = useCallback(() => {
     // OG toggle is read-only on /invoice — was set during creation
   }, [])
+
+  const isLoading = !invoice && !errorType
 
   if (isLoading) {
     return (
