@@ -258,7 +258,7 @@ export function generateMagicDust(): number {
   if (value === undefined) {
     throw new Error('Failed to generate random value')
   }
-  return (value % 1000) + 1
+  return (value % 999) + 1
 }
 
 /**

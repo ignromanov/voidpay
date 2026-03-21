@@ -248,7 +248,7 @@ describe('ShareModal', () => {
 
       const openLink = screen.getByRole('link', { name: /Open Invoice/i })
       // "Open Invoice" now links to /invoice (creator tracking page), not /pay
-      expect(openLink).toHaveAttribute('href', 'https://voidpay.xyz/invoice#H123abc')
+      expect(openLink).toHaveAttribute('href', 'https://voidpay.xyz/invoice#abc123def')
     })
 
     it('opens in new tab', () => {
