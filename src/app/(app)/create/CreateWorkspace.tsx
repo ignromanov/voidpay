@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Edit3Icon,
   EyeIcon,
@@ -52,9 +53,12 @@ export function CreateWorkspace() {
   const [generatedInvoice, setGeneratedInvoice] = useState<Invoice | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
 
+  const router = useRouter()
+
   const activeDraft = useCreatorStore((s) => s.activeDraft)
   const includeOgImage = useCreatorStore((s) => s.preferences.includeOgImage)
   const updateDraft = useCreatorStore((s) => s.updateDraft)
+  const updatePreferences = useCreatorStore((s) => s.updatePreferences)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
   const draftSyncStatus = useCreatorStore((s) => s.draftSyncStatus)
@@ -116,6 +120,13 @@ export function CreateWorkspace() {
     })
   }, [createNewDraft])
 
+  const handleOgToggle = useCallback(
+    (include: boolean) => {
+      updatePreferences({ includeOgImage: include })
+    },
+    [updatePreferences]
+  )
+
   /**
    * Handle "Generate Invoice Link" button click
    *
@@ -171,6 +182,10 @@ export function CreateWorkspace() {
       setGeneratedInvoice(invoice)
       setIsShareModalOpen(true)
 
+      // Redirect to /invoice so closing modal lands on invoice page
+      const invoicePageUrl = url.replace('/pay', '/invoice')
+      router.replace(invoicePageUrl, { scroll: false })
+
       toast.success('Invoice link generated!', {
         description: 'Share it with your client to get paid',
       })
@@ -187,7 +202,7 @@ export function CreateWorkspace() {
     } finally {
       setIsGenerating(false)
     }
-  }, [includeOgImage, isGenerating])
+  }, [includeOgImage, isGenerating, router])
 
   return (
     <>
@@ -198,6 +213,8 @@ export function CreateWorkspace() {
           invoice={generatedInvoice}
           open={isShareModalOpen}
           onOpenChange={setIsShareModalOpen}
+          includeOg={includeOgImage ?? false}
+          onOgToggle={handleOgToggle}
         />
       )}
 
