@@ -85,6 +85,15 @@ export function ShareModal({ url, invoice, open, onOpenChange }: ShareModalProps
     [url]
   )
 
+  // Memoize URL parsing for display
+  const { basePath, rest } = useMemo(() => {
+    const match = url.match(/^(https?:\/\/[^?#]+)(.*)$/)
+    return {
+      basePath: match?.[1] ?? url,
+      rest: match?.[2] ?? '',
+    }
+  }, [url])
+
   // Invoice tracking URL for creator (replaces /pay with /invoice)
   const invoiceUrl = useMemo(() => {
     try {
@@ -94,8 +103,6 @@ export function ShareModal({ url, invoice, open, onOpenChange }: ShareModalProps
       return url.replace('/pay', '/invoice')
     }
   }, [url])
-
-  // URL parsing removed — LinkTab parses internally via URL Anatomy
 
   // Don't render if not open or not in browser
   if (!open || typeof document === 'undefined') {
@@ -141,10 +148,10 @@ export function ShareModal({ url, invoice, open, onOpenChange }: ShareModalProps
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="rounded-lg p-2 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-white"
+                  className="text-zinc-500 transition-colors hover:text-white"
                   aria-label="Close modal"
                 >
-                  <XIcon size={18} />
+                  <XIcon size={20} />
                 </button>
               </div>
 
@@ -152,10 +159,11 @@ export function ShareModal({ url, invoice, open, onOpenChange }: ShareModalProps
               <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
 
               {/* Tab content */}
-              <div className="min-h-[160px]">
+              <div className="min-h-[200px]">
                 {activeTab === 'link' ? (
                   <LinkTab
-                    url={url}
+                    basePath={basePath}
+                    rest={rest}
                     copied={copied}
                     onCopy={handleCopy}
                     telegramUrl={telegramUrl}

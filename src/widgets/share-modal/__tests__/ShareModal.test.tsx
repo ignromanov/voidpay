@@ -127,22 +127,21 @@ describe('ShareModal', () => {
     it('displays Link and QR Code tabs', () => {
       render(<ShareModal {...defaultProps} />)
 
-      // Tab buttons — use exact text to avoid matching "Copy Link"
-      expect(screen.getByRole('button', { name: /^Link$/ })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Link/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /QR Code/i })).toBeInTheDocument()
     })
   })
 
   describe('Link tab', () => {
-    it('displays URL anatomy with domain and hash', () => {
+    it('displays URL in styled container', () => {
       render(<ShareModal {...defaultProps} />)
 
-      // URL is parsed into anatomy: domain, route, hash
-      expect(screen.getByText('voidpay.xyz')).toBeInTheDocument()
-      expect(screen.getByText('/pay')).toBeInTheDocument()
+      // URL is displayed in a styled div, split into basePath and rest
+      expect(screen.getByText('https://voidpay.xyz/pay')).toBeInTheDocument()
+      expect(screen.getByText('#abc123def')).toBeInTheDocument()
     })
 
-    it('displays Copy Link button', () => {
+    it('displays Copy button', () => {
       render(<ShareModal {...defaultProps} />)
 
       expect(screen.getByRole('button', { name: /Copy/i })).toBeInTheDocument()
@@ -166,7 +165,7 @@ describe('ShareModal', () => {
       })
     })
 
-    it('shows "Copied!" state after successful copy', async () => {
+    it('shows "Copied" state after successful copy', async () => {
       const user = userEvent.setup()
       render(<ShareModal {...defaultProps} />)
 
@@ -174,7 +173,7 @@ describe('ShareModal', () => {
       await user.click(copyButton)
 
       await waitFor(() => {
-        expect(screen.getByText('Copied!')).toBeInTheDocument()
+        expect(screen.getByText('Copied')).toBeInTheDocument()
       })
     })
 
@@ -192,11 +191,14 @@ describe('ShareModal', () => {
       expect(twitterLink).toHaveAttribute('href', expect.stringContaining('twitter.com/intent'))
     })
 
-    it('displays privacy message', () => {
+    it('displays privacy warning', () => {
       render(<ShareModal {...defaultProps} />)
 
       expect(
-        screen.getByText(/All data lives in this link/)
+        screen.getByText(/VoidPay is stateless/)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/invoice is lost forever/)
       ).toBeInTheDocument()
     })
   })
@@ -247,7 +249,6 @@ describe('ShareModal', () => {
       render(<ShareModal {...defaultProps} />)
 
       const openLink = screen.getByRole('link', { name: /Open Invoice/i })
-      // "Open Invoice" now links to /invoice (creator tracking page), not /pay
       expect(openLink).toHaveAttribute('href', 'https://voidpay.xyz/invoice#abc123def')
     })
 
@@ -285,6 +286,16 @@ describe('ShareModal', () => {
     })
   })
 
+  describe('invoice tracking', () => {
+    it('"Open Invoice" links to /invoice URL for creator tracking', () => {
+      render(<ShareModal {...defaultProps} />)
+
+      const openLink = screen.getByRole('link', { name: /Open Invoice/i })
+      expect(openLink.getAttribute('href')).toContain('/invoice')
+      expect(openLink.getAttribute('href')).not.toContain('/pay')
+    })
+  })
+
   describe('accessibility', () => {
     it('close button has aria-label', () => {
       render(<ShareModal {...defaultProps} />)
@@ -301,16 +312,6 @@ describe('ShareModal', () => {
 
       expect(telegramLink).toHaveAttribute('rel', 'noopener noreferrer')
       expect(twitterLink).toHaveAttribute('rel', 'noopener noreferrer')
-    })
-  })
-
-  describe('invoice tracking', () => {
-    it('"Open Invoice" links to /invoice URL for creator tracking', () => {
-      render(<ShareModal {...defaultProps} />)
-
-      const openLink = screen.getByRole('link', { name: /Open Invoice/i })
-      expect(openLink.getAttribute('href')).toContain('/invoice')
-      expect(openLink.getAttribute('href')).not.toContain('/pay')
     })
   })
 })
