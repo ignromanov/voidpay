@@ -6,7 +6,6 @@
 
 import type { DraftSlice } from './draftSlice'
 import type { TemplateSlice } from './templateSlice'
-import type { HistorySlice } from './historySlice'
 import type { PreferencesSlice } from './preferencesSlice'
 import type { IdCounterSlice } from './idCounterSlice'
 import type { UtilitySlice } from './utilitySlice'
@@ -19,10 +18,10 @@ import type { UiSlice } from './uiSlice'
  * Each slice contributes its state and actions to the final store.
  *
  * Note: UiSlice state is transient and excluded from persistence.
+ * Note: HistorySlice removed — history now lives in TrackedInvoiceStore.
  */
 export type CreatorStore = DraftSlice &
   TemplateSlice &
-  HistorySlice &
   PreferencesSlice &
   IdCounterSlice &
   UtilitySlice &

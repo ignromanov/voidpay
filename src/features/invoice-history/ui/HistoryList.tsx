@@ -4,21 +4,32 @@
  * HistoryList Component
  *
  * Displays a chronological list of created invoices with preview information.
+ * Reads from TrackedInvoiceStore and decodes invoice data from URL on demand.
  * Allows users to view, duplicate, or delete history entries.
  */
 
-import { useState, useMemo } from 'react'
-import { useCreatorStore } from '@/entities/creator'
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   formatInvoiceTotal,
   useTrackedInvoiceStore,
   computeInvoiceStatus,
-  type CreationHistoryEntry,
   type TrackedInvoice,
   type InvoiceStatus,
+  type Invoice,
 } from '@/entities/invoice'
+import { parseInvoiceHash } from '@/features/invoice-codec'
+import { toast } from '@/shared/lib/toast'
+import { duplicateFromUrl } from '../lib/duplicate-invoice'
 import { InvoiceStatusBadge } from './InvoiceStatusBadge'
 import { InvoiceCardShell } from './InvoiceCardShell'
+
+/** Decoded invoice entry for display */
+interface DecodedHistoryEntry {
+  tracked: TrackedInvoice
+  invoice: Invoice | null
+  status: InvoiceStatus
+}
 
 interface HistoryListProps {
   debug?: boolean
@@ -26,32 +37,71 @@ interface HistoryListProps {
 }
 
 export function HistoryList({ debug = false, className = '' }: HistoryListProps) {
-  const history = useCreatorStore((s) => s.history)
-  const deleteHistoryEntry = useCreatorStore((s) => s.deleteHistoryEntry)
-  const duplicateHistoryEntry = useCreatorStore((s) => s.duplicateHistoryEntry)
-
+  const router = useRouter()
   const trackedInvoices = useTrackedInvoiceStore((s) => s.invoices)
-  const trackedMap = useMemo(
-    () => new Map<string, TrackedInvoice>(trackedInvoices.map((inv) => [inv.invoiceId, inv])),
-    [trackedInvoices],
-  )
+  const removeInvoice = useTrackedInvoiceStore((s) => s.removeInvoice)
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [entries, setEntries] = useState<DecodedHistoryEntry[]>([])
 
-  const handleDelete = (entryId: string) => {
-    deleteHistoryEntry(entryId)
+  // Filter created invoices and decode from URL (async)
+  useEffect(() => {
+    let cancelled = false
+    const createdInvoices = trackedInvoices.filter((inv) => inv.source === 'created')
+
+    void (async () => {
+      const decoded = await Promise.all(
+        createdInvoices.map(async (tracked) => {
+          let invoice: Invoice | null = null
+          try {
+            const hash = new URL(tracked.invoiceUrl).hash.slice(1)
+            const result = await parseInvoiceHash(hash)
+            if (result.success) {
+              invoice = result.data
+            }
+          } catch {
+            // URL parsing failed — invoice stays null
+          }
+
+          const status = computeInvoiceStatus({
+            tracked,
+            dueAt: invoice?.dueAt,
+          })
+
+          return { tracked, invoice, status }
+        })
+      )
+      if (!cancelled) setEntries(decoded)
+    })()
+    return () => { cancelled = true }
+  }, [trackedInvoices])
+
+  const handleDelete = (invoiceId: string) => {
+    removeInvoice(invoiceId)
     setDeleteConfirmId(null)
   }
 
-  const handleDuplicate = (entryId: string) => {
-    duplicateHistoryEntry(entryId)
-  }
+  const handleDuplicate = useCallback(async (invoiceUrl: string) => {
+    const draftId = await duplicateFromUrl(invoiceUrl)
+    if (draftId) {
+      router.push('/create')
+      toast.success('Invoice duplicated')
+    } else {
+      toast.error('Could not decode invoice for duplication')
+    }
+  }, [router])
 
-  const handleView = (invoiceUrl: string) => {
-    window.open(invoiceUrl, '_blank', 'noopener,noreferrer')
-  }
+  const handleView = useCallback((invoiceUrl: string) => {
+    // Open in /invoice (creator tracking view) instead of /pay
+    try {
+      const hash = new URL(invoiceUrl).hash
+      window.open(`/invoice${hash}`, '_blank', 'noopener,noreferrer')
+    } catch {
+      window.open(invoiceUrl, '_blank', 'noopener,noreferrer')
+    }
+  }, [])
 
-  if (history.length === 0) {
+  if (entries.length === 0) {
     return (
       <div className={`py-12 text-center ${className}`}>
         <div className="mb-2 text-gray-400">
@@ -81,38 +131,30 @@ export function HistoryList({ debug = false, className = '' }: HistoryListProps)
   return (
     <div className={`space-y-3 ${className}`}>
       <div className="space-y-2">
-        {history.map((entry) => {
-          const tracked = trackedMap.get(entry.invoice.invoiceId)
-          const status = computeInvoiceStatus({
-            tracked,
-            dueAt: entry.invoice.dueAt,
-          })
-
-          return (
-            <HistoryEntryCard
-              key={entry.entryId}
-              entry={entry}
-              status={status}
-              tracked={tracked}
-              debug={debug}
-              onView={() => handleView(entry.invoiceUrl)}
-              onDuplicate={() => handleDuplicate(entry.entryId)}
-              onDelete={() => setDeleteConfirmId(entry.entryId)}
-              isDeleteConfirming={deleteConfirmId === entry.entryId}
-              onDeleteConfirm={() => handleDelete(entry.entryId)}
-              onDeleteCancel={() => setDeleteConfirmId(null)}
-            />
-          )
-        })}
+        {entries.map(({ tracked, invoice, status }) => (
+          <HistoryEntryCard
+            key={tracked.invoiceId}
+            tracked={tracked}
+            invoice={invoice}
+            status={status}
+            debug={debug}
+            onView={() => handleView(tracked.invoiceUrl)}
+            onDuplicate={() => handleDuplicate(tracked.invoiceUrl)}
+            onDelete={() => setDeleteConfirmId(tracked.invoiceId)}
+            isDeleteConfirming={deleteConfirmId === tracked.invoiceId}
+            onDeleteConfirm={() => handleDelete(tracked.invoiceId)}
+            onDeleteCancel={() => setDeleteConfirmId(null)}
+          />
+        ))}
       </div>
     </div>
   )
 }
 
 interface HistoryEntryCardProps {
-  entry: CreationHistoryEntry
+  tracked: TrackedInvoice
+  invoice: Invoice | null
   status: InvoiceStatus
-  tracked?: TrackedInvoice | undefined
   debug: boolean
   onView: () => void
   onDuplicate: () => void
@@ -123,9 +165,9 @@ interface HistoryEntryCardProps {
 }
 
 function HistoryEntryCard({
-  entry,
-  status,
   tracked,
+  invoice,
+  status,
   debug,
   onView,
   onDuplicate,
@@ -136,7 +178,7 @@ function HistoryEntryCard({
 }: HistoryEntryCardProps) {
   const [debugOpen, setDebugOpen] = useState(false)
 
-  const formattedDate = new Date(entry.createdAt).toLocaleDateString('en-US', {
+  const formattedDate = new Date(tracked.createdAt).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -151,16 +193,23 @@ function HistoryEntryCard({
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-2">
             <h3 className="truncate text-sm font-semibold text-gray-100">
-              {entry.invoice.invoiceId}
+              {invoice?.invoiceId ?? tracked.invoiceId}
             </h3>
             <InvoiceStatusBadge status={status} />
           </div>
-          <p className="mb-1 text-sm text-gray-300">{entry.invoice.client?.name ?? 'Unknown'}</p>
-          <div className="flex items-center gap-3 text-xs text-gray-400">
-            <span>{formattedDate}</span>
-            <span>•</span>
-            <span className="font-medium text-gray-300">{formatInvoiceTotal(entry.invoice)}</span>
-          </div>
+
+          {invoice ? (
+            <>
+              <p className="mb-1 text-sm text-gray-300">{invoice.client?.name ?? 'Unknown'}</p>
+              <div className="flex items-center gap-3 text-xs text-gray-400">
+                <span>{formattedDate}</span>
+                <span>•</span>
+                <span className="font-medium text-gray-300">{formatInvoiceTotal(invoice)}</span>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-gray-500">Unable to decode invoice data</p>
+          )}
         </div>
 
         {/* Right: Actions */}
@@ -219,7 +268,7 @@ function HistoryEntryCard({
 
       {debug && debugOpen && (
         <pre className="mt-3 max-h-48 overflow-auto rounded bg-gray-900/80 p-3 text-xs text-gray-400">
-          {JSON.stringify({ tracked, entryId: entry.entryId, txHash: entry.txHash }, null, 2)}
+          {JSON.stringify({ tracked, decodeSuccess: invoice !== null }, null, 2)}
         </pre>
       )}
     </InvoiceCardShell>

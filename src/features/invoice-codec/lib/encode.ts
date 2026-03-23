@@ -213,6 +213,8 @@ export interface GenerateUrlOptions {
   baseUrl?: string
   /** Include OG preview data for social sharing (default: false) */
   includeOG?: boolean
+  /** URL path (default: '/pay', use '/invoice' for creator tracking link) */
+  path?: '/pay' | '/invoice'
 }
 
 /**
@@ -228,14 +230,15 @@ export async function generateInvoiceUrl(
 
   const compressed = await encodeInvoice(invoice, opts.salt)
   const appUrl = opts.baseUrl ?? getAppBaseUrl()
+  const path = opts.path ?? '/pay'
 
   let finalUrl: string
 
   if (opts.includeOG) {
     const ogData = encodeOGPreview(invoice)
-    finalUrl = `${appUrl}/pay?og=${ogData}#${compressed}`
+    finalUrl = `${appUrl}${path}?og=${ogData}#${compressed}`
   } else {
-    finalUrl = `${appUrl}/pay#${compressed}`
+    finalUrl = `${appUrl}${path}#${compressed}`
   }
 
   const byteSize = new TextEncoder().encode(finalUrl).length

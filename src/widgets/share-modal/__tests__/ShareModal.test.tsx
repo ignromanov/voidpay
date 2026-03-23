@@ -245,11 +245,11 @@ describe('ShareModal', () => {
       expect(screen.getByRole('link', { name: /Open Invoice/i })).toBeInTheDocument()
     })
 
-    it('links to invoice URL', () => {
+    it('links to invoice tracking URL', () => {
       render(<ShareModal {...defaultProps} />)
 
       const openLink = screen.getByRole('link', { name: /Open Invoice/i })
-      expect(openLink).toHaveAttribute('href', TEST_URL)
+      expect(openLink).toHaveAttribute('href', 'https://voidpay.xyz/invoice#abc123def')
     })
 
     it('opens in new tab', () => {
@@ -283,6 +283,16 @@ describe('ShareModal', () => {
         await user.click(backdrop as HTMLElement)
         expect(onOpenChange).toHaveBeenCalledWith(false)
       }
+    })
+  })
+
+  describe('invoice tracking', () => {
+    it('"Open Invoice" links to /invoice URL for creator tracking', () => {
+      render(<ShareModal {...defaultProps} />)
+
+      const openLink = screen.getByRole('link', { name: /Open Invoice/i })
+      expect(openLink.getAttribute('href')).toContain('/invoice')
+      expect(openLink.getAttribute('href')).not.toContain('/pay')
     })
   })
 

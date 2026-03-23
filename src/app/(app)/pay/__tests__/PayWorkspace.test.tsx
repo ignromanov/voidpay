@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // Stable mock store state — hoisted so it's available inside vi.mock factories
 const mockStoreState = vi.hoisted(() => ({
   addInvoice: vi.fn(),
+  trackView: vi.fn(),
   getInvoice: vi.fn(),
   setTxHash: vi.fn(),
   setError: vi.fn(),
@@ -33,13 +34,19 @@ vi.mock('@/features/invoice-codec', async (importOriginal) => {
 
 vi.mock('@/entities/invoice', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/entities/invoice')>()
+  const hook = vi.fn((selector?: (s: typeof mockStoreState) => unknown) => {
+    if (typeof selector === 'function') return selector(mockStoreState)
+    return mockStoreState
+  })
+  // Static methods used by usePaymentPolling
+  ;(hook as unknown as Record<string, unknown>).getState = () => mockStoreState
+  ;(hook as unknown as Record<string, unknown>).persist = {
+    hasHydrated: () => true,
+    onFinishHydration: vi.fn(),
+  }
   return {
     ...actual,
-    // Supports both plain call and selector call patterns used by Zustand
-    useTrackedInvoiceStore: vi.fn((selector?: (s: typeof mockStoreState) => unknown) => {
-      if (typeof selector === 'function') return selector(mockStoreState)
-      return mockStoreState
-    }),
+    useTrackedInvoiceStore: hook,
   }
 })
 
@@ -83,6 +90,7 @@ const VALID_INVOICE = {
 describe('PayWorkspace', () => {
   const mockRouter = { push: vi.fn() }
   const mockAddInvoice = vi.fn()
+  const mockTrackView = vi.fn()
   const mockGetInvoice = vi.fn()
 
   beforeEach(() => {
@@ -90,6 +98,7 @@ describe('PayWorkspace', () => {
     vi.mocked(useRouter).mockReturnValue(mockRouter as ReturnType<typeof useRouter>)
     // Sync test-local mocks into the shared store state
     mockStoreState.addInvoice = mockAddInvoice
+    mockStoreState.trackView = mockTrackView
     mockStoreState.getInvoice = mockGetInvoice
   })
 
@@ -329,33 +338,34 @@ describe('PayWorkspace', () => {
   })
 
   describe('US5: Track Viewed Invoices', () => {
-    it('calls addInvoice on successful decode', async () => {
+    it('calls trackView on successful decode', async () => {
       vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
       vi.mocked(parseInvoiceHash).mockReturnValue({
         success: true,
         data: VALID_INVOICE,
       })
-      mockGetInvoice.mockReturnValue(undefined) // Not in history yet
+      mockGetInvoice.mockReturnValue(undefined)
 
       render(<PayWorkspace />)
 
       await waitFor(() => {
-        expect(mockAddInvoice).toHaveBeenCalledWith(
+        expect(mockStoreState.trackView).toHaveBeenCalledWith(
           expect.objectContaining({
             invoiceId: 'INV-001',
             source: 'received',
+            viewedAt: expect.any(String),
+            invoiceUrl: expect.stringContaining('/pay#H_valid_hash'),
           })
         )
       })
     })
 
-    it('calls addInvoice as upsert even when invoice already exists', async () => {
+    it('calls trackView as upsert even when invoice already exists', async () => {
       vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
       vi.mocked(parseInvoiceHash).mockReturnValue({
         success: true,
         data: VALID_INVOICE,
       })
-      // Invoice already in history
       mockGetInvoice.mockReturnValue({
         invoiceId: 'INV-001',
         invoiceUrl: '/pay#mock_encoded',
@@ -369,8 +379,7 @@ describe('PayWorkspace', () => {
         expect(screen.getByText(/INV-001/)).toBeInTheDocument()
       })
 
-      // addInvoice is always called as an upsert — store handles deduplication internally
-      expect(mockAddInvoice).toHaveBeenCalledWith(
+      expect(mockStoreState.trackView).toHaveBeenCalledWith(
         expect.objectContaining({
           invoiceId: 'INV-001',
           source: 'received',

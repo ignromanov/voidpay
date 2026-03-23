@@ -6,7 +6,7 @@
  */
 
 import type { StateCreator } from 'zustand'
-import type { NetworkTheme } from '@/shared/ui/constants/brand-tokens'
+import type { NetworkTheme } from '@/shared/ui'
 import type { CreatorStore } from './types'
 
 /**

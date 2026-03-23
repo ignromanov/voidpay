@@ -19,6 +19,7 @@ export {
   TESTNET_CHAINS,
   SUPPORTED_CHAIN_IDS,
   ALL_CHAIN_IDS,
+  ALL_CHAIN_IDS_SET,
   getChainById,
   getSupportedChains,
   isTestnetChain,
@@ -47,3 +48,23 @@ export { useNetworkSwitch, canSwitchNetwork } from './lib/network-switch'
 export type { CanSwitchNetworkParams, UseNetworkSwitchReturn } from './lib/network-switch'
 export { detectNetworkMismatch, useNetworkMismatch } from './lib/network-mismatch'
 export type { DetectNetworkMismatchParams, NetworkMismatchResult } from './lib/network-mismatch'
+
+// Block estimation utilities (no React — safe for Edge runtime)
+export {
+  getMaxBlockAge,
+  getAvgBlockTimeMs,
+  estimateCurrentBlock,
+  estimateFromBlockHex,
+  estimateBlockFromTimestamp,
+} from './lib/block-estimates'
+
+// Provider network slug mappings (from config layer)
+export { ALCHEMY_NETWORK_SLUG, INFURA_NETWORK_SLUG } from './config/provider-slugs'
+
+// Confirmation configuration (from config layer)
+export {
+  CONFIRMATION_CONFIG,
+  getSoftConfirmations,
+  getFinalizationTimeout,
+} from './config/confirmation-config'
+export type { SoftConfirmationConfig } from './config/confirmation-config'

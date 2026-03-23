@@ -94,6 +94,16 @@ export function ShareModal({ url, invoice, open, onOpenChange }: ShareModalProps
     }
   }, [url])
 
+  // Invoice tracking URL for creator (replaces /pay with /invoice)
+  const invoiceUrl = useMemo(() => {
+    try {
+      const parsed = new URL(url)
+      return `${parsed.origin}/invoice${parsed.search}${parsed.hash}`
+    } catch {
+      return url.replace('/pay', '/invoice')
+    }
+  }, [url])
+
   // Don't render if not open or not in browser
   if (!open || typeof document === 'undefined') {
     return null
@@ -164,14 +174,12 @@ export function ShareModal({ url, invoice, open, onOpenChange }: ShareModalProps
                 )}
               </div>
 
-              {/* Footer - Open Invoice button */}
-              <div className="flex gap-3 pt-2">
-                <a href={url} target="_blank" rel="noopener noreferrer" className="flex-1">
-                  <Button variant="default" className="w-full">
-                    Open Invoice <ArrowRightIcon size={16} className="ml-2" />
-                  </Button>
+              {/* Footer - Open Invoice (creator tracking page) */}
+              <Button variant="default" asChild className="w-full">
+                <a href={invoiceUrl} target="_blank" rel="noopener noreferrer">
+                  Open Invoice <ArrowRightIcon size={16} className="ml-2" />
                 </a>
-              </div>
+              </Button>
             </div>
           </motion.div>
         </div>

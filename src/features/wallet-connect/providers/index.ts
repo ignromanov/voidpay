@@ -6,4 +6,5 @@
  */
 
 export { Web3Provider } from './web3-provider'
+export { Web3ReadProvider } from './web3-read-provider'
 export { Web3ScopeProvider, useWeb3Scope, withWeb3Scope } from './web3-scope'

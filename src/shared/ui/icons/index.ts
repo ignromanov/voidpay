@@ -23,6 +23,7 @@ export {
   AlertCircleIcon,
   CheckIcon,
   CheckCircleIcon,
+  CheckCheckIcon,
   XIcon,
   Loader2Icon,
   AlertTriangleIcon,

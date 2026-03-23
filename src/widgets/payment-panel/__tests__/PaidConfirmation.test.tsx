@@ -1,11 +1,27 @@
 import { render, screen } from '@/shared/lib/test-utils'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { PaidConfirmation } from '../ui/PaidConfirmation'
+
+const { mockToastInfo } = vi.hoisted(() => ({
+  mockToastInfo: vi.fn(),
+}))
+
+vi.mock('@/shared/lib/toast', () => ({
+  toast: {
+    info: mockToastInfo,
+    success: vi.fn(),
+    error: vi.fn(),
+    loading: vi.fn(),
+    dismiss: vi.fn(),
+    promise: vi.fn(),
+  },
+}))
 
 describe('PaidConfirmation', () => {
   const defaultProps = {
     subtotal: '1500000000',
     magicDust: '0',
+    exactTotal: '1500000000',
     decimals: 6,
     currency: 'USDC',
   }
@@ -56,5 +72,94 @@ describe('PaidConfirmation', () => {
   it('hides MagicDustBadge when magicDust is zero', () => {
     render(<PaidConfirmation {...defaultProps} />)
     expect(screen.queryByText(/Sent:/)).toBeNull()
+  })
+
+  it('hides confirmation progress when confirmations reach 100%', () => {
+    const { container } = render(
+      <PaidConfirmation
+        {...defaultProps}
+        confirmations={{ current: 15, required: 15 }}
+      />
+    )
+    expect(container.querySelector('[class*="animate-pulse"]')).toBeNull()
+    expect(screen.queryByText(/Protecting against chain reorgs/)).toBeNull()
+  })
+
+  describe('finalized prop', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    it('shows single CheckIcon (not finalized) when finalized is false', () => {
+      const { container } = render(
+        <PaidConfirmation
+          {...defaultProps}
+          confirmations={{ current: 8, required: 15 }}
+          finalized={false}
+        />
+      )
+      const svgs = container.querySelectorAll('svg')
+      // CheckIcon path: "M20 6 9 17l-5-5"
+      const allPaths = Array.from(svgs).flatMap(svg =>
+        Array.from(svg.querySelectorAll('path')).map(p => p.getAttribute('d'))
+      )
+      expect(allPaths).toContain('M20 6 9 17l-5-5')
+    })
+
+    it('shows CheckCheckIcon when finalized is true', () => {
+      const { container } = render(
+        <PaidConfirmation
+          {...defaultProps}
+          confirmations={{ current: 15, required: 15 }}
+          finalized={true}
+        />
+      )
+      const svgs = container.querySelectorAll('svg')
+      const allPaths = Array.from(svgs).flatMap(svg =>
+        Array.from(svg.querySelectorAll('path')).map(p => p.getAttribute('d'))
+      )
+      // CheckCheckIcon has two paths for double checkmark
+      expect(allPaths).toContain('M18 7 9.7 15.3 6 11.6')
+      expect(allPaths).toContain('m22 11-7.5 7.5L13 17')
+    })
+
+    it('icon transitions silently (no toast) when finalized becomes true', () => {
+      const { rerender } = render(
+        <PaidConfirmation
+          {...defaultProps}
+          confirmations={{ current: 8, required: 15 }}
+          finalized={false}
+        />
+      )
+      rerender(
+        <PaidConfirmation
+          {...defaultProps}
+          confirmations={{ current: 15, required: 15 }}
+          finalized={true}
+        />
+      )
+      // No toast should have been called during finalization
+      expect(mockToastInfo).not.toHaveBeenCalled()
+    })
+
+    it('calls toast.info on reorg when reorgDetected becomes true', () => {
+      const { rerender } = render(
+        <PaidConfirmation
+          {...defaultProps}
+          confirmations={{ current: 15, required: 15 }}
+          finalized={true}
+          reorgDetected={false}
+        />
+      )
+      rerender(
+        <PaidConfirmation
+          {...defaultProps}
+          confirmations={{ current: 15, required: 15 }}
+          finalized={true}
+          reorgDetected={true}
+        />
+      )
+      expect(mockToastInfo).toHaveBeenCalledOnce()
+    })
   })
 })
