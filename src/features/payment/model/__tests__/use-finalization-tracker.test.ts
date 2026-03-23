@@ -19,20 +19,28 @@ vi.mock('wagmi', () => ({
 }))
 
 // Mock invoice store
-const mockSetValidated = vi.fn()
-const mockSetFinalized = vi.fn()
-const mockResetPaymentState = vi.fn()
-
-vi.mock('@/entities/invoice', () => ({
-  useTrackedInvoiceStore: vi.fn((selector?: (s: Record<string, unknown>) => unknown) => {
-    const store = {
-      setValidated: mockSetValidated,
-      setFinalized: mockSetFinalized,
-      resetPaymentState: mockResetPaymentState,
-    }
-    return selector ? selector(store) : store
-  }),
+const { mockSetValidated, mockSetFinalized, mockResetPaymentState } = vi.hoisted(() => ({
+  mockSetValidated: vi.fn(),
+  mockSetFinalized: vi.fn(),
+  mockResetPaymentState: vi.fn(),
 }))
+
+vi.mock('@/entities/invoice', () => {
+  const storeState = {
+    invoices: [] as Array<{ invoiceId: string; finalized?: boolean }>,
+    setValidated: mockSetValidated,
+    setFinalized: mockSetFinalized,
+    resetPaymentState: mockResetPaymentState,
+  }
+  return {
+    useTrackedInvoiceStore: Object.assign(
+      vi.fn((selector?: (s: typeof storeState) => unknown) => {
+        return selector ? selector(storeState) : storeState
+      }),
+      { getState: () => storeState },
+    ),
+  }
+})
 
 // Mock toast
 const mockToastError = vi.fn()
