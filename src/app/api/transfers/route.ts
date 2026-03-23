@@ -11,20 +11,13 @@
 import { isAddress, getAddress } from 'viem'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
-import { getMaxBlockAge, estimateCurrentBlock, ALCHEMY_NETWORK_SLUG } from '@/entities/network'
+import { getMaxBlockAge, estimateCurrentBlock, ALL_CHAIN_IDS_SET, ALCHEMY_NETWORK_SLUG } from '@/entities/network'
 
 export const runtime = 'edge'
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-
-const SUPPORTED_CHAIN_IDS = new Set([
-  // Mainnet
-  1, 42161, 10, 137,
-  // Testnet
-  11155111, 421614, 11155420, 80002,
-])
 
 /** W3-015: hardcoded server-side, never from client */
 const MAX_COUNT = '0x14'
@@ -198,7 +191,7 @@ export async function POST(request: Request): Promise<Response> {
   if (chainId === undefined || chainId === null || typeof chainId !== 'number' || !Number.isInteger(chainId)) {
     return json({ error: 'Invalid chainId: must be an integer' }, 400)
   }
-  if (!SUPPORTED_CHAIN_IDS.has(chainId)) {
+  if (!ALL_CHAIN_IDS_SET.has(chainId)) {
     return json({ error: `Unsupported chainId: ${chainId}` }, 400)
   }
 
