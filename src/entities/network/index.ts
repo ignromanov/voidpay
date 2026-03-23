@@ -19,6 +19,7 @@ export {
   TESTNET_CHAINS,
   SUPPORTED_CHAIN_IDS,
   ALL_CHAIN_IDS,
+  ALL_CHAIN_IDS_SET,
   getChainById,
   getSupportedChains,
   isTestnetChain,
@@ -56,3 +57,6 @@ export {
   estimateFromBlockHex,
   estimateBlockFromTimestamp,
 } from './lib/block-estimates'
+
+// Provider network slug mappings (from config layer)
+export { ALCHEMY_NETWORK_SLUG, INFURA_NETWORK_SLUG } from './config/provider-slugs'
