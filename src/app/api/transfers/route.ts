@@ -9,160 +9,16 @@
  */
 
 import { isAddress, getAddress } from 'viem'
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
 import { getMaxBlockAge, estimateCurrentBlock, ALL_CHAIN_IDS_SET, ALCHEMY_NETWORK_SLUG } from '@/entities/network'
+import { checkRateLimit } from './rate-limit'
+import { stripTransfer } from './strip-transfer'
+import { extractIp, isValidHexBlock, json } from './validate'
+import type { TransfersRequest } from './validate'
 
 export const runtime = 'edge'
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
 /** W3-015: hardcoded server-side, never from client */
 const MAX_COUNT = '0x14'
-
-/** Rate limit: 10 requests per minute per IP */
-const RATE_LIMIT_WINDOW = '60 s'
-const RATE_LIMIT_MAX = 10
-
-// ---------------------------------------------------------------------------
-// Rate limiter — created eagerly at module level so mockImplementationOnce
-// on the Ratelimit constructor is consumed when the module is (re-)imported
-// ---------------------------------------------------------------------------
-
-function tryBuildRateLimiter(): Ratelimit | null {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-    return null
-  }
-  try {
-    const redis = new Redis({
-      url: process.env.KV_REST_API_URL,
-      token: process.env.KV_REST_API_TOKEN,
-    })
-    // Guard: slidingWindow may not be available on the mock in tests
-    const limiter =
-      typeof Ratelimit.slidingWindow === 'function'
-        ? Ratelimit.slidingWindow(RATE_LIMIT_MAX, RATE_LIMIT_WINDOW)
-        : (undefined as unknown as ReturnType<typeof Ratelimit.slidingWindow>)
-    return new Ratelimit({
-      redis,
-      limiter,
-      analytics: false,
-      prefix: 'transfers_ratelimit',
-    })
-  } catch {
-    // Construction failed (e.g. arrow fn used as constructor in test env)
-    return null
-  }
-}
-
-const rateLimiter = tryBuildRateLimiter()
-
-// ---------------------------------------------------------------------------
-// In-memory fallback (when KV not configured)
-// ---------------------------------------------------------------------------
-
-interface MemoryRecord {
-  count: number
-  resetAt: number
-}
-
-const memoryStore = new Map<string, MemoryRecord>()
-const WINDOW_MS = 60 * 1000
-
-function memoryRateLimit(identifier: string): { allowed: boolean; remaining: number; limit: number } {
-  const now = Date.now()
-  const record = memoryStore.get(identifier)
-
-  if (!record || now > record.resetAt) {
-    memoryStore.set(identifier, { count: 1, resetAt: now + WINDOW_MS })
-    return { allowed: true, remaining: RATE_LIMIT_MAX - 1, limit: RATE_LIMIT_MAX }
-  }
-
-  if (record.count >= RATE_LIMIT_MAX) {
-    return { allowed: false, remaining: 0, limit: RATE_LIMIT_MAX }
-  }
-
-  record.count++
-  return { allowed: true, remaining: RATE_LIMIT_MAX - record.count, limit: RATE_LIMIT_MAX }
-}
-
-async function checkRateLimit(ip: string): Promise<{ allowed: boolean; remaining: number; limit: number }> {
-  if (!rateLimiter) {
-    return memoryRateLimit(ip)
-  }
-  const result = await rateLimiter.limit(ip)
-  return { allowed: result.success, remaining: result.remaining, limit: result.limit }
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function extractIp(headers: Headers): string {
-  const forwarded = headers.get('x-forwarded-for')
-  if (forwarded) {
-    const last = forwarded.split(',').at(-1)?.trim()
-    if (last) return last
-  }
-  return headers.get('x-real-ip') ?? 'unknown'
-}
-
-function isValidHexBlock(value: string): boolean {
-  return /^0x[0-9a-fA-F]+$/.test(value)
-}
-
-function json(data: unknown, status: number, extraHeaders: Record<string, string> = {}): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-      ...extraHeaders,
-    },
-  })
-}
-
-// ---------------------------------------------------------------------------
-// Request body type
-// ---------------------------------------------------------------------------
-
-interface TransfersRequest {
-  chainId: number
-  toAddress: string
-  contractAddress?: string
-  fromBlock: string
-  category: 'external' | 'erc20'
-}
-
-// ---------------------------------------------------------------------------
-// Stripped transfer type (W3-009)
-// ---------------------------------------------------------------------------
-
-interface TransferResult {
-  hash: string
-  rawContract: {
-    value: string
-    address: string | null
-    decimal: string
-  }
-  category: string
-  blockTimestamp: string
-}
-
-function stripTransfer(raw: Record<string, unknown>): TransferResult {
-  const rc = raw.rawContract as Record<string, unknown> | undefined
-  return {
-    hash: raw.hash as string,
-    rawContract: rc ? { value: rc.value as string, address: (rc.address as string) ?? null, decimal: rc.decimal as string } : { value: '0', address: null, decimal: '0' },
-    category: raw.category as string,
-    blockTimestamp: raw.blockTimestamp as string,
-  }
-}
-
-// ---------------------------------------------------------------------------
-// POST handler
-// ---------------------------------------------------------------------------
 
 export async function POST(request: Request): Promise<Response> {
   // Rate limiting
