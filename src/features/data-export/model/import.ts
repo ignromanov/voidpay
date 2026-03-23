@@ -1,9 +1,8 @@
 import { z } from 'zod'
 import { useCreatorStore } from '@/entities/creator'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
-import { ExportDataV1 } from './export'
 
-// Validation schema for import data
+// Validation schema for import data (accepts old exports with history[] for backward compat)
 const importSchema = z.object({
   version: z.literal(1),
   exportedAt: z.string(),
@@ -11,7 +10,7 @@ const importSchema = z.object({
     version: z.number(),
     activeDraft: z.any().nullable(),
     templates: z.array(z.any()),
-    history: z.array(z.any()),
+    history: z.array(z.any()).optional(),
     preferences: z.any(),
     idCounter: z.any(),
   }),
@@ -39,7 +38,7 @@ export interface ImportResult {
 export const importUserData = (data: unknown): ImportResult => {
   try {
     // Validate structure
-    const validData = importSchema.parse(data) as ExportDataV1
+    const validData = importSchema.parse(data)
 
     const creatorStore = useCreatorStore.getState()
 
@@ -53,17 +52,9 @@ export const importUserData = (data: unknown): ImportResult => {
     // For now, we skip template import - need to extend store API.
     templatesAdded = validData.creator.templates.length
 
-    // Merge History
-    validData.creator.history.forEach((entry) => {
-      const exists = creatorStore.history.some((h) => h.entryId === entry.entryId)
-      if (!exists) {
-        creatorStore.addHistoryEntry({
-          invoice: entry.invoice,
-          invoiceUrl: entry.invoiceUrl,
-        })
-        historyAdded++
-      }
-    })
+    // Note: history import removed — history now lives in TrackedInvoiceStore.
+    // Old export files may contain history[] but it is imported via trackedInvoices instead.
+    historyAdded = 0
 
     // Merge Preferences (overwrite if keys exist in import)
     creatorStore.updatePreferences(validData.creator.preferences)

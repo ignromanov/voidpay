@@ -7,32 +7,8 @@
  * Provider subdomain prefixes are provider-specific config that lives here.
  */
 
-import { getChainById } from '@/entities/network'
+import { getChainById, ALCHEMY_NETWORK_SLUG, INFURA_NETWORK_SLUG } from '@/entities/network'
 import type { RpcConfig, RpcProviderConfig } from '../model/types'
-
-/** Alchemy subdomain prefixes per chain ID */
-const ALCHEMY_PREFIXES: Record<number, string> = {
-  1: 'eth-mainnet',
-  42161: 'arb-mainnet',
-  10: 'opt-mainnet',
-  137: 'polygon-mainnet',
-  11155111: 'eth-sepolia',
-  421614: 'arb-sepolia',
-  11155420: 'opt-sepolia',
-  80002: 'polygon-amoy',
-}
-
-/** Infura subdomain prefixes per chain ID */
-const INFURA_PREFIXES: Record<number, string> = {
-  1: 'mainnet',
-  42161: 'arbitrum-mainnet',
-  10: 'optimism-mainnet',
-  137: 'polygon-mainnet',
-  11155111: 'sepolia',
-  421614: 'arbitrum-sepolia',
-  11155420: 'optimism-sepolia',
-  80002: 'polygon-amoy',
-}
 
 /**
  * Load and validate RPC configuration from environment variables
@@ -46,8 +22,8 @@ export function loadRpcConfig(chainId: number = 1): RpcConfig {
     throw new Error(`Unsupported chain ID: ${chainId}`)
   }
 
-  const alchemyPrefix = ALCHEMY_PREFIXES[chainId]
-  const infuraPrefix = INFURA_PREFIXES[chainId]
+  const alchemyPrefix = ALCHEMY_NETWORK_SLUG[chainId]
+  const infuraPrefix = INFURA_NETWORK_SLUG[chainId]
   if (!alchemyPrefix || !infuraPrefix) {
     throw new Error(`No provider configuration for chain ID: ${chainId} (${chain.name})`)
   }

@@ -163,3 +163,15 @@ export function ShieldCheckIcon({ size = 24, ...props }: IconProps) {
     </svg>
   )
 }
+
+/**
+ * CheckCheck icon - Used for finalized/double-confirmed states
+ */
+export function CheckCheckIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...defaultProps} width={size} height={size} {...props}>
+      <path d="M18 7 9.7 15.3 6 11.6" />
+      <path d="m22 11-7.5 7.5L13 17" />
+    </svg>
+  )
+}

@@ -58,6 +58,11 @@ export const ALL_CHAIN_IDS = [
 ] as const
 
 /**
+ * Pre-computed Set for O(1) chain ID validation (mainnet + testnet)
+ */
+export const ALL_CHAIN_IDS_SET = new Set<number>(ALL_CHAIN_IDS)
+
+/**
  * Pre-computed Set for O(1) testnet chain ID lookup
  */
 const TESTNET_CHAIN_IDS_SET = new Set<number>(SUPPORTED_CHAIN_IDS.testnet)

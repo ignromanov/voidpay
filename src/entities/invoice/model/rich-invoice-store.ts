@@ -26,6 +26,8 @@ export interface TrackedInvoice {
   txHash?: `0x${string}`
   /** Whether txHash has been validated on-chain */
   txHashValidated?: boolean
+  /** Whether payment has been fully finalized (deep confirmation) */
+  finalized?: boolean
   /** Block confirmation progress (during polling) */
   confirmations?: ConfirmationProgress
   /** Last payment error message */
@@ -43,12 +45,37 @@ export interface TrackedInvoice {
  */
 const MAX_INVOICES = 50
 
+/**
+ * Shared upsert logic for addInvoice and trackView.
+ * Merges data into existing entry (or creates new), returns updated array.
+ */
+function _upsertInvoice(
+  invoices: TrackedInvoice[],
+  data: Partial<TrackedInvoice> & { invoiceId: string },
+): TrackedInvoice[] {
+  const existing = invoices.find((inv) => inv.invoiceId === data.invoiceId)
+  const merged = {
+    ...existing,
+    ...data,
+    createdAt: existing?.createdAt ?? new Date().toISOString(),
+  } as TrackedInvoice
+  const filtered = invoices.filter((inv) => inv.invoiceId !== data.invoiceId)
+  return [merged, ...filtered].slice(0, MAX_INVOICES)
+}
+
 interface TrackedInvoiceStore {
   invoices: TrackedInvoice[]
   // actions:
   addInvoice: (invoice: Omit<TrackedInvoice, 'createdAt'>) => void
+  trackView: (data: {
+    invoiceId: string
+    invoiceUrl: string
+    source: InvoiceSource
+    viewedAt: string
+  }) => void
   setTxHash: (invoiceId: string, txHash: `0x${string}`, validated?: boolean) => void
   setValidated: (invoiceId: string, validated: boolean) => void
+  setFinalized: (invoiceId: string) => void
   setConfirmations: (invoiceId: string, confirmations?: ConfirmationProgress) => void
   setError: (invoiceId: string, error: string | null) => void
   getInvoice: (invoiceId: string) => TrackedInvoice | undefined
@@ -70,19 +97,35 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
           const existing = state.invoices.find(
             (inv) => inv.invoiceId === invoice.invoiceId
           )
-          const merged = {
-            ...existing,
-            ...invoice,
-            createdAt: existing?.createdAt ?? new Date().toISOString(),
-          } as TrackedInvoice
-          const filtered = state.invoices.filter(
-            (inv) => inv.invoiceId !== invoice.invoiceId
-          )
-          return { invoices: [merged, ...filtered].slice(0, MAX_INVOICES) }
+          // W3-013: reset payment-critical fields on merge to prevent stale state
+          const safeDefaults = {
+            txHash: undefined,
+            txHashValidated: undefined,
+            paidAt: undefined,
+            finalized: undefined,
+            confirmations: undefined,
+            error: undefined,
+          } as unknown as Partial<TrackedInvoice>
+          return {
+            invoices: _upsertInvoice(state.invoices, {
+              ...safeDefaults,
+              ...invoice,
+              createdAt: existing?.createdAt ?? new Date().toISOString(),
+            }),
+          }
         })
       },
 
+      trackView: (data) => {
+        set((state) => ({
+          invoices: _upsertInvoice(state.invoices, data),
+        }))
+      },
+
       setTxHash: (invoiceId, txHash, validated = false) => {
+        const TX_HASH_REGEX = /^0x[a-fA-F0-9]{64}$/
+        if (!TX_HASH_REGEX.test(txHash)) return
+
         const exists = get().invoices.some(inv => inv.invoiceId === invoiceId)
         if (!exists) {
           console.warn('[TrackedInvoiceStore] setTxHash called for unknown invoice:', { invoiceId, txHash })
@@ -102,10 +145,10 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
       },
 
       setValidated: (invoiceId, validated) => {
-        const exists = get().invoices.some(inv => inv.invoiceId === invoiceId)
-        if (!exists) {
-          console.warn('[TrackedInvoiceStore] setValidated called for unknown invoice:', { invoiceId, validated })
-        }
+        // W3-014: guard against missing txHash
+        const invoice = get().invoices.find(inv => inv.invoiceId === invoiceId)
+        if (!invoice?.txHash) return
+
         set((state) => ({
           invoices: state.invoices.map((inv) =>
             inv.invoiceId === invoiceId
@@ -114,6 +157,18 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
                   txHashValidated: validated,
                   ...(validated ? { paidAt: new Date().toISOString() } : {}),
                 }
+              : inv
+          ),
+        }))
+      },
+
+      setFinalized: (invoiceId) => {
+        const invoice = get().invoices.find(inv => inv.invoiceId === invoiceId)
+        if (!invoice?.txHashValidated) return
+        set((state) => ({
+          invoices: state.invoices.map((inv) =>
+            inv.invoiceId === invoiceId
+              ? { ...inv, finalized: true }
               : inv
           ),
         }))
@@ -162,7 +217,7 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
           invoices: state.invoices.map((inv) => {
             if (inv.invoiceId !== invoiceId) return inv
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { txHash, txHashValidated, paidAt, confirmations, ...rest } = inv
+            const { txHash, txHashValidated, paidAt, confirmations, finalized, ...rest } = inv
             return rest
           }),
         }))
@@ -171,7 +226,17 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
     {
       name: INVOICE_VIEW_STORE_KEY,
       version: 1,
-      migrate: (persisted) => persisted as TrackedInvoiceStore,
+      migrate: (persisted) => {
+        try {
+          const state = persisted as Record<string, unknown>
+          if (!state || typeof state !== 'object' || !Array.isArray(state.invoices)) {
+            return { invoices: [] } as unknown as TrackedInvoiceStore
+          }
+          return persisted as TrackedInvoiceStore
+        } catch {
+          return { invoices: [] } as unknown as TrackedInvoiceStore
+        }
+      },
     }
   )
 )

@@ -15,6 +15,16 @@ import { cleanup } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, vi } from 'vitest'
 
 // ============================================================================
+// JEST COMPAT SHIM
+// RTL's waitFor detects fake timers via `typeof jest !== 'undefined'` and then
+// calls `jest.advanceTimersByTime()`. Without this shim, waitFor hangs when
+// vi.useFakeTimers() is active because RTL falls back to real setInterval (also faked).
+// @see https://github.com/testing-library/dom-testing-library/blob/main/src/wait-for.ts
+// ============================================================================
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+;(globalThis as any).jest = vi
+
+// ============================================================================
 // HOISTED MOCKS - Run before any imports
 // ============================================================================
 

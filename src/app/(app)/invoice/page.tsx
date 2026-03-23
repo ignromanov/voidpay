@@ -42,10 +42,10 @@ export async function generateMetadata({
 }
 
 /**
- * Invoice Page — Creator invoice tracking
+ * Invoice Page — Creator/viewer invoice tracking
  *
  * Same hash fragment privacy model as /pay.
- * Shows invoice preview with a Share button to re-open ShareModal.
+ * Renders InvoiceWorkspace (observation-only, no SmartPayButton).
  */
 export default function InvoicePage() {
   return <InvoiceWorkspace />

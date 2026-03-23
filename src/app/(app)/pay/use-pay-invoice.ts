@@ -1,132 +1,34 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useHashFragment } from '@/shared/lib/hooks'
-import { parseInvoiceHash, mapParseErrorToDecodeType } from '@/features/invoice-codec'
-import { useTrackedInvoiceStore, computeInvoiceStatus } from '@/entities/invoice'
+import { useState, useEffect } from 'react'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
-import { nowISO } from '@/shared/lib/date-time'
-import { toast } from '@/shared/lib/toast'
-import type { InvoiceStatus } from '@/entities/invoice'
-import type { DecodeErrorType } from '@/shared/ui/decode-error-screen'
-import type { Invoice, ConfirmationProgress } from '@/shared/lib/invoice-types'
-import type { InvoiceSource } from '@/entities/invoice'
+import { useInvoiceView } from '@/widgets/payment-panel'
+import type { InvoiceViewState } from '@/widgets/payment-panel'
 
-/** Time to wait for hash fragment to stabilize after SSR hydration */
-const HYDRATION_TIMEOUT = 200
-
-export interface PayInvoiceState {
-  invoice: Invoice | null
-  errorType: DecodeErrorType | null
-  isLoading: boolean
-  panelStatus: InvoiceStatus
-  source: InvoiceSource | undefined
-  dismissError: () => void
-  txHash: `0x${string}` | undefined
-  confirmations: ConfirmationProgress | undefined
-  storedError: string | null | undefined
+export interface PayInvoiceState extends InvoiceViewState {
+  paymentError: string | null
+  setPaymentError: (error: string | null) => void
 }
 
 /**
  * Orchestration hook for the /pay page.
  *
- * Composes lower-layer logic:
- * - Hash decoding via parseInvoiceHash (features/invoice-codec)
- * - Error mapping via mapParseErrorToDecodeType (features/invoice-codec)
- * - Status derivation via computeInvoiceStatus (widgets/payment-panel)
- *
- * Side effects (app-layer composition):
- * - Hydration timeout for SSR
- * - View history tracking in RichInvoiceStore
- * - Network theme syncing for background
- * - Overdue status sync back to store
+ * Composes useInvoiceView (shared observation logic) with:
+ * - Network theme sync for background
+ * - Payment error state for SmartPayButton
  */
 export function usePayInvoice(): PayInvoiceState {
-  const hash = useHashFragment()
+  const view = useInvoiceView({ source: 'received' })
+  const [paymentError, setPaymentError] = useState<string | null>(null)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
-  const addInvoice = useTrackedInvoiceStore((s) => s.addInvoice)
-  const setError = useTrackedInvoiceStore((s) => s.setError)
 
-  const [isHydrated, setIsHydrated] = useState(false)
-  const [invoice, setInvoice] = useState<Invoice | null>(null)
-  const [errorType, setErrorType] = useState<DecodeErrorType | null>(null)
-
-  const tracked = useTrackedInvoiceStore((s) =>
-    invoice ? s.invoices.find((inv) => inv.invoiceId === invoice.invoiceId) : undefined
-  )
-
-  const panelStatus = computeInvoiceStatus({
-    tracked,
-    dueAt: invoice?.dueAt,
-  })
-
-  // 1. Hydration detection: wait for hash to stabilize
+  // Sync network theme for background
   useEffect(() => {
-    const timer = setTimeout(() => setIsHydrated(true), HYDRATION_TIMEOUT)
-    return () => clearTimeout(timer)
-  }, [])
-
-  // 2. Decode hash + track view
-  useEffect(() => {
-    if (!isHydrated && hash === '') return
-
-    if (hash === '') {
-      setErrorType('EMPTY_HASH')
-      setInvoice(null)
-      return
+    if (view.invoice?.networkId) {
+      setNetworkTheme(getNetworkTheme(view.invoice.networkId))
     }
+  }, [view.invoice?.networkId, setNetworkTheme])
 
-    let cancelled = false
-    void (async () => {
-      const result = await parseInvoiceHash(hash)
-      if (cancelled) return
-
-      if (result.success) {
-        setInvoice(result.data)
-        setErrorType(null)
-
-        try {
-          addInvoice({
-            invoiceId: result.data.invoiceId,
-            invoiceUrl: `${window.location.origin}/pay#${hash}`,
-            source: 'received',
-            viewedAt: nowISO(),
-          })
-        } catch (error) {
-          console.error('[usePayInvoice] Failed to track invoice view:', error)
-          toast.info('Could not save invoice to history. Your payment experience is unaffected.')
-        }
-      } else {
-        setInvoice(null)
-        setErrorType(mapParseErrorToDecodeType(result.error.message))
-      }
-    })()
-    return () => { cancelled = true }
-  }, [hash, isHydrated, addInvoice])
-
-  // 3. Sync network theme for background
-  useEffect(() => {
-    if (invoice?.networkId) {
-      setNetworkTheme(getNetworkTheme(invoice.networkId))
-    }
-  }, [invoice?.networkId, setNetworkTheme])
-
-  const dismissError = useCallback(() => {
-    if (invoice) setError(invoice.invoiceId, null)
-  }, [invoice, setError])
-
-  const isLoading = !invoice && !errorType
-
-  return {
-    invoice,
-    errorType,
-    isLoading,
-    panelStatus,
-    source: tracked?.source,
-    dismissError,
-    txHash: tracked?.txHash,
-    confirmations: tracked?.confirmations,
-    storedError: tracked?.error,
-  }
+  return { ...view, paymentError, setPaymentError }
 }
