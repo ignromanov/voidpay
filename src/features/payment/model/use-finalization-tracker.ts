@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { usePublicClient } from 'wagmi'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { toast } from '@/shared/lib/toast'
-import { getFinalizationTimeout } from '../lib/confirmation-config'
+import { getFinalizationTimeout } from '@/entities/network'
 
 export interface UseFinalizationTrackerParams {
   invoiceId: string

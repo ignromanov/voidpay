@@ -60,3 +60,11 @@ export {
 
 // Provider network slug mappings (from config layer)
 export { ALCHEMY_NETWORK_SLUG, INFURA_NETWORK_SLUG } from './config/provider-slugs'
+
+// Confirmation configuration (from config layer)
+export {
+  CONFIRMATION_CONFIG,
+  getSoftConfirmations,
+  getFinalizationTimeout,
+} from './config/confirmation-config'
+export type { SoftConfirmationConfig } from './config/confirmation-config'

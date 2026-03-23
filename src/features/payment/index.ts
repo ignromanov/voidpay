@@ -11,9 +11,9 @@ export type { SmartPayButtonProps, PaymentError, PaymentStep, DevPaymentVisualSt
 export { verifyNativeReceipt, verifyErc20Receipt } from './lib/verify-receipt'
 export type { VerificationResult } from './lib/verify-receipt'
 
-// Confirmation config
-export { getSoftConfirmations, getFinalizationTimeout } from './lib/confirmation-config'
-export type { SoftConfirmationConfig } from './lib/confirmation-config'
+// Confirmation config (canonical source: entities/network)
+export { getSoftConfirmations, getFinalizationTimeout } from '@/entities/network'
+export type { SoftConfirmationConfig } from '@/entities/network'
 
 // Transfer matching
 export { matchTransfer } from './lib/match-transfer'

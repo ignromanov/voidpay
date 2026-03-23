@@ -3,7 +3,7 @@ import { useWaitForTransactionReceipt, useBlockNumber, usePublicClient } from 'w
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { verifyNativeReceipt, verifyErc20Receipt } from '../lib/verify-receipt'
 import type { VerificationResult } from '../lib/verify-receipt'
-import { getSoftConfirmations } from '../lib/confirmation-config'
+import { getSoftConfirmations } from '@/entities/network'
 import type { Invoice } from '@/entities/invoice'
 import type { ConfirmationProgress } from '@/shared/lib/invoice-types'
 
