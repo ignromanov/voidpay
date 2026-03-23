@@ -69,35 +69,35 @@ function getIntensity(step: PaymentStep): Intensity {
 // ---------------------------------------------------------------------------
 
 const LAYER1_ANIMATE: Record<Intensity, TargetAndTransition> = {
-  calm:    { opacity: [0.3, 0.4, 0.3], scale: [1, 1.03, 1] },
+  calm:    { opacity: [0.15, 0.22, 0.15], scale: [1, 1.04, 1] },
   active:  { opacity: [0.4, 0.55, 0.4], scale: [1, 1.05, 1] },
   intense: { opacity: [0.6, 0.75, 0.6], scale: [1, 1.08, 1] },
 }
 const LAYER1_ANIMATE_SUCCESS: TargetAndTransition = { opacity: [0.5, 0.9, 0.3], scale: [1, 1.4, 1.1] }
 
 const LAYER1_TRANSITION: Record<Intensity, Transition> = {
-  calm:    { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+  calm:    { duration: 9, repeat: Infinity, ease: 'easeInOut' },
   active:  { duration: 2, repeat: Infinity, ease: 'easeInOut' },
   intense: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
 }
 const LAYER1_TRANSITION_SUCCESS: Transition = { duration: 1.2, times: [0, 0.4, 1], ease: 'easeOut' }
 
 const LAYER2_ANIMATE: Record<Intensity, TargetAndTransition> = {
-  calm:    { opacity: [0.2, 0.3, 0.2], x: [-2, 2, -2], y: [1, -1, 1] },
+  calm:    { opacity: [0.1, 0.18, 0.1], x: [-1, 1, -1], y: [1, -1, 1] },
   active:  { opacity: [0.25, 0.4, 0.25], x: [-2, 2, -2], y: [1, -1, 1] },
   intense: { opacity: [0.4, 0.55, 0.4], x: [-3, 3, -3], y: [2, -2, 2] },
 }
 const LAYER2_ANIMATE_SUCCESS: TargetAndTransition = { opacity: [0.3, 0.7, 0.2], x: [0, 5, 0], y: [0, -5, 0] }
 
 const LAYER2_TRANSITION: Record<Intensity, Transition> = {
-  calm:    { duration: 5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.5, 1] },
+  calm:    { duration: 11, repeat: Infinity, ease: 'easeInOut', times: [0, 0.5, 1] },
   active:  { duration: 3.5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.5, 1] },
   intense: { duration: 2.5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.5, 1] },
 }
 const LAYER2_TRANSITION_SUCCESS: Transition = { duration: 1, times: [0, 0.5, 1], ease: 'easeOut' }
 
 const LAYER3_OPACITY: Record<Intensity, number> = {
-  calm:    0.06,
+  calm:    0.04,
   active:  0.1,
   intense: 0.15,
 }

@@ -172,8 +172,16 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
   const verifyTxHash = useCallback(({ txHash: hash }: { txHash: string }) => {
     if (!invoice || !/^0x[a-fA-F0-9]{64}$/.test(hash)) return
 
+    const store = useTrackedInvoiceStore.getState()
+
+    const current = store.invoices.find((inv) => inv.invoiceId === invoice.invoiceId)
+    if (current?.txHash === hash) {
+      toast.info('This transaction is already linked to this invoice')
+      return
+    }
+
     // W3-006: reject if already linked to a different invoice
-    const alreadyLinked = useTrackedInvoiceStore.getState().invoices.some(
+    const alreadyLinked = store.invoices.some(
       (inv) => inv.txHash === hash && inv.invoiceId !== invoice.invoiceId,
     )
     if (alreadyLinked) {

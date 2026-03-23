@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useAccount } from 'wagmi'
 import { Button } from '@/shared/ui/button'
 import { Loader2Icon, CheckCircleIcon } from '@/shared/ui/icons'
 import { formatAmount } from '@/shared/lib/amount-utils'
@@ -130,6 +131,8 @@ export function SmartPayButton({
     exactTotal,
   })
 
+  const { isReconnecting } = useAccount()
+
   // Dev override: swap visual step while real flow continues underneath
   const { step, idleSubState } = devOverride
     ? parseDevOverride(devOverride)
@@ -160,13 +163,16 @@ export function SmartPayButton({
     }
   }, [realStep, txHash, onSuccess, devOverride])
 
-  const label = getButtonLabel(step, idleSubState, invoice.currency, subtotal, invoice.decimals)
+  const baseLabel = getButtonLabel(step, idleSubState, invoice.currency, subtotal, invoice.decimals)
+  const label = (isReconnecting && step === 'idle' && idleSubState === 'disconnected')
+    ? { primary: 'Reconnecting...', secondary: 'Please wait' }
+    : baseLabel
   const ariaLabel = getAriaLabel(step, idleSubState, invoice.currency, subtotal, invoice.decimals)
   const progress = getProgress(step)
   const isInProgress = IN_PROGRESS_STEPS.has(step)
   const isSuccess = step === 'success'
   // Success: not disabled (keeps colorful overlay), but not interactive
-  const buttonDisabled = devOverride ? false : isInProgress
+  const buttonDisabled = devOverride ? false : (isInProgress || isReconnecting)
   const isSuccessState = isSuccess && !devOverride
   const canInteract = !buttonDisabled && !isSuccessState
 

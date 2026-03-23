@@ -93,6 +93,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
   const networkId = invoice.networkId
   const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
   const invoiceStatus = panelStatus === 'overdue' ? 'overdue' as const : 'pending' as const
+  const isNotYetPayable = invoice.issuedAt > Math.floor(Date.now() / 1000)
   const [payUrl, setPayUrl] = useState('')
 
   useEffect(() => {
@@ -101,7 +102,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
 
   return (
     <>
-      {txHash && (
+      {txHash && !finalized && (
         <InvoiceVerifier
           invoice={invoice}
           invoiceId={invoice.invoiceId}
@@ -166,9 +167,15 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                     onDismissError={dismissError}
                     pollingMode={polling.mode}
                     onVerifyTxHash={verifyTxHash}
-                    onCheckPayment={polling.startAggressivePolling}
+                    onCheckPayment={polling.startManualCheck}
+                    {...(polling.cooldownUntil !== undefined && { cooldownUntil: polling.cooldownUntil })}
                     onStopPolling={polling.stop}
                   >
+                    {isNotYetPayable && (
+                      <p className="text-xs text-center text-amber-400">
+                        This invoice opens for payment on {new Date(invoice.issuedAt * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </p>
+                    )}
                     {/* "Pay this invoice" escape route for wrong-page visitors */}
                     {payUrl && (
                       <Button variant="outline" asChild className="w-full border-zinc-700 text-zinc-300 hover:border-violet-500/50 hover:text-violet-300 hover:bg-violet-500/5">

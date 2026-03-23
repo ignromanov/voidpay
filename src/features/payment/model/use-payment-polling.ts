@@ -236,7 +236,7 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
       const tracked = useTrackedInvoiceStore.getState().invoices.find(
         (inv) => inv.invoiceId === invoiceId,
       )
-      if (tracked?.txHash) return
+      if (tracked?.txHash || tracked?.finalized) return
       startAutoCheck()
     }
 

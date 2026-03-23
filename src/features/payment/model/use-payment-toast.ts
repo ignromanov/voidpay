@@ -88,7 +88,7 @@ function getStepStatus(stepDef: StepDef, activeKey: string | null, failed: boole
 
 const STATUS_ICONS: Record<StepStatus, string> = {
   pending: '\u25CB',  // ○
-  active: '\u27F3',   // ⟳
+  active: '\u25CF',   // ●
   done: '\u2713',     // ✓
   failed: '\u2717',   // ✗
 }
@@ -99,13 +99,41 @@ function buildChecklist(steps: StepDef[], activeKey: string | null, failed: bool
     const icon = STATUS_ICONS[status]
     const label = status === 'active' ? s.activeLabel : s.doneLabel
     const color =
-      status === 'done' ? 'rgb(74 222 128)' :     // green-400
-      status === 'active' ? 'rgb(196 181 253)' :   // violet-300
-      status === 'failed' ? 'rgb(248 113 113)' :   // red-400
-      'rgb(161 161 170)'                            // zinc-400
-    return createElement('div', { key: s.key, style: { color } }, `${icon} ${label}`)
+      status === 'done' ? '#34d399' :     // emerald-400
+      status === 'active' ? '#a78bfa' :   // violet-400
+      status === 'failed' ? '#f87171' :   // red-400
+      '#71717a'                            // zinc-500
+    const fontWeight = status === 'active' ? '500' : '400'
+    return createElement('div', {
+      key: s.key,
+      style: {
+        color,
+        fontWeight,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        padding: '2px 0',
+      },
+    },
+      createElement('span', {
+        style: {
+          width: '16px',
+          textAlign: 'center' as const,
+          fontSize: status === 'active' ? '10px' : '13px',
+          ...(status === 'active' ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
+        },
+      }, icon),
+      createElement('span', { style: { fontSize: '13px' } }, label),
+    )
   })
-  return createElement('div', { style: { display: 'flex', flexDirection: 'column' as const, gap: '2px', fontSize: '13px' } }, ...lines)
+  return createElement('div', {
+    style: {
+      display: 'flex',
+      flexDirection: 'column' as const,
+      gap: '1px',
+      padding: '4px 0',
+    },
+  }, ...lines)
 }
 
 function countDone(steps: StepDef[], activeKey: string | null): number {
@@ -168,16 +196,49 @@ export function usePaymentToast({
     // Success — update toast to success + pending finalization
     if (step === 'success') {
       const allDone = steps.map((s) =>
-        createElement('div', { key: s.key, style: { color: 'rgb(74 222 128)' } }, `\u2713 ${s.doneLabel}`)
+        createElement('div', {
+          key: s.key,
+          style: {
+            color: '#34d399',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '2px 0',
+          },
+        },
+          createElement('span', { style: { width: '16px', textAlign: 'center' as const, fontSize: '13px' } }, '\u2713'),
+          createElement('span', { style: { fontSize: '13px' } }, s.doneLabel),
+        )
       )
       const finalizeLine = createElement('div', {
         key: 'finalize',
-        style: { color: 'rgb(161 161 170)', marginTop: '4px', borderTop: '1px solid rgb(63 63 70)', paddingTop: '4px' },
-      }, '\u25CB Finalizing on-chain...')
+        style: {
+          color: '#71717a',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '2px 0',
+          marginTop: '6px',
+          borderTop: '1px solid rgba(63, 63, 70, 0.5)',
+          paddingTop: '6px',
+        },
+      },
+        createElement('span', {
+          style: {
+            width: '16px',
+            textAlign: 'center' as const,
+            fontSize: '10px',
+            animation: 'pulse 1.5s ease-in-out infinite',
+          },
+        }, '\u25CF'),
+        createElement('span', { style: { fontSize: '13px' } }, 'Finalizing on-chain...'),
+      )
 
       sonnerToast.success('Payment sent \u2713', {
         id: TOAST_ID,
-        description: createElement('div', { style: { display: 'flex', flexDirection: 'column' as const, gap: '2px', fontSize: '13px' } }, ...allDone, finalizeLine),
+        description: createElement('div', {
+          style: { display: 'flex', flexDirection: 'column' as const, gap: '1px', padding: '4px 0' },
+        }, ...allDone, finalizeLine),
         duration: 15000,
       })
       stepsRef.current = null
@@ -244,7 +305,7 @@ export function useFinalizationToast({
   decimals: number
   networkId: number
 }): void {
-  const prevFinalized = useRef(false)
+  const prevFinalized = useRef(finalized)
 
   useEffect(() => {
     if (finalized && !prevFinalized.current) {

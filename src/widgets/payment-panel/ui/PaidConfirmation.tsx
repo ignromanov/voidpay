@@ -90,7 +90,7 @@ export function PaidConfirmation({
       </div>
 
       {/* Confirmation progress — hide once soft-confirmed */}
-      {confirmations && confirmations.current < confirmations.required && (
+      {confirmations && confirmations.required >= 3 && confirmations.current < confirmations.required && (
         <div className="bg-blue-900/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
           <span className={cn(
             'p-1.5 bg-blue-500/10 rounded-full shrink-0',

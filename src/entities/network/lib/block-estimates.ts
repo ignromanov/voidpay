@@ -96,7 +96,10 @@ export function estimateFromBlockHex(chainId: number, issuedAtUnix: number): str
   const avgBlockTimeMs = AVG_BLOCK_TIME_MS[chainId]
   if (!avgBlockTimeMs) return '0x1'
 
-  const issuedAtMs = issuedAtUnix * 1000
+  const twoDaysAgoSec = Math.floor(Date.now() / 1000) - 2 * 86400
+  const clampedIssuedAt = Math.min(issuedAtUnix, twoDaysAgoSec)
+
+  const issuedAtMs = clampedIssuedAt * 1000
   const elapsedMs = issuedAtMs - ref.timestampMs
   const blocksSinceRef = Math.floor(elapsedMs / avgBlockTimeMs)
   const estimated = ref.block + blocksSinceRef - FROM_BLOCK_BUFFER

@@ -284,13 +284,13 @@ export function PaymentPanel({
                         <Button
                           variant="outline"
                           size="sm"
-                          className="shrink-0 border-zinc-700 text-violet-400 hover:text-white hover:border-violet-500/50 hover:bg-violet-500/10 disabled:opacity-40 disabled:text-zinc-600"
+                          className="shrink-0 h-[42px] w-[42px] border-zinc-700 text-violet-400 hover:text-white hover:border-violet-500/50 hover:bg-violet-500/10 disabled:opacity-40 disabled:text-zinc-600"
                           disabled={!txHashValid}
                           onClick={() => onVerifyTxHash({ txHash: txHashInput })}
                           data-testid="verify-txhash-button"
                           aria-label="Verify transaction hash"
                         >
-                          <SearchIcon size={14} />
+                          <SearchIcon size={16} />
                         </Button>
                       </div>
                       <p id="txhash-hint" className="text-[10px] text-zinc-600">

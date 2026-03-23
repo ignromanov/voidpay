@@ -131,11 +131,12 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
   const networkId = invoice.networkId
   const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
   const invoiceStatus = panelStatus === 'overdue' ? 'overdue' as const : 'pending' as const
+  const isNotYetPayable = invoice.issuedAt > Math.floor(Date.now() / 1000)
 
   return (
     <>
-      {/* Headless verification: mounts when txHash exists, writes to store */}
-      {txHash && (
+      {/* Headless verification: mounts when txHash exists and not yet finalized */}
+      {txHash && !finalized && (
         <PaymentVerifier
           invoice={invoice}
           invoiceId={invoice.invoiceId}
@@ -205,15 +206,26 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                     onIvePaid={polling.startAggressivePolling}
                     onStopPolling={polling.stop}
                   >
-                    <PayButton
-                      invoice={invoice}
-                      invoiceId={invoice.invoiceId}
-                      exactTotal={exactTotal}
-                      subtotal={subtotal}
-                      onSuccess={handlePaymentSuccess}
-                      onError={handlePaymentError}
-                      devOverride={devPaymentStep}
-                    />
+                    {isNotYetPayable ? (
+                      <div className="space-y-2 text-center">
+                        <Button variant="void" size="lg" className="h-14 w-full opacity-60" disabled>
+                          Payment not yet open
+                        </Button>
+                        <p className="text-xs text-amber-400">
+                          This invoice opens for payment on {new Date(invoice.issuedAt * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                    ) : (
+                      <PayButton
+                        invoice={invoice}
+                        invoiceId={invoice.invoiceId}
+                        exactTotal={exactTotal}
+                        subtotal={subtotal}
+                        onSuccess={handlePaymentSuccess}
+                        onError={handlePaymentError}
+                        devOverride={devPaymentStep}
+                      />
+                    )}
                   </PaymentPanel>
                 )}
                 <button

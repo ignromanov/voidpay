@@ -23,12 +23,17 @@ export function useFinalizationTracker({
 }: UseFinalizationTrackerParams): void {
   const publicClient = usePublicClient({ chainId: networkId })
   const setFinalized = useTrackedInvoiceStore((s) => s.setFinalized)
+  const setValidated = useTrackedInvoiceStore((s) => s.setValidated)
   const resetPaymentState = useTrackedInvoiceStore((s) => s.resetPaymentState)
   // Internal state triggers re-render so waitFor can detect mock calls via MutationObserver
   const [, setTrackingState] = useState<TrackingState>('idle')
 
   useEffect(() => {
     if (!enabled) return
+    const tracked = useTrackedInvoiceStore.getState().invoices.find(
+      (inv) => inv.invoiceId === invoiceId,
+    )
+    if (tracked?.finalized) return
     if (!publicClient || !txHash || !invoiceId) return
 
     const timeoutMs = getFinalizationTimeout(networkId)
@@ -49,6 +54,7 @@ export function useFinalizationTracker({
       .then(() => {
         if (cancelled) return
         clearTimeout(timeoutId)
+        setValidated(invoiceId, true)
         setFinalized(invoiceId)
         setTrackingState('finalized')
       })
@@ -66,5 +72,5 @@ export function useFinalizationTracker({
       cancelled = true
       clearTimeout(timeoutId)
     }
-  }, [enabled, invoiceId, txHash, networkId, publicClient, setFinalized, resetPaymentState, onReorgDetected])
+  }, [enabled, invoiceId, txHash, networkId, publicClient, setFinalized, setValidated, resetPaymentState, onReorgDetected])
 }
