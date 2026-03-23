@@ -1,7 +1,7 @@
 'use client'
 
 import { CheckIcon, CopyIcon, LockIcon, MailIcon, SendIcon, TwitterIcon } from '@/shared/ui/icons'
-import { motion } from '@/shared/ui/motion'
+import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { Button } from '@/shared/ui/button'
 import { Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
@@ -27,7 +27,7 @@ interface LinkTabProps {
 
 /**
  * Parse a full invoice URL into color-coded parts:
- * - domain (e.g. voidpay.xyz)
+ * - domain (e.g. voidpay.xyz or localhost:3000)
  * - path (e.g. /pay)
  * - ogParams (e.g. ?og=...) — only present when includeOg=true
  * - hash (e.g. #N4Ig...)
@@ -39,9 +39,11 @@ function parseUrlParts(url: string): {
   hash: string
 } {
   try {
-    const parsed = new URL(url)
+    // Ensure absolute URL for parsing (handles relative URLs in dev)
+    const absolute = url.startsWith('http') ? url : `${window.location.origin}${url}`
+    const parsed = new URL(absolute)
     return {
-      domain: parsed.hostname,
+      domain: parsed.host, // host includes port (e.g. localhost:3000)
       path: parsed.pathname,
       ogParams: parsed.search,
       hash: parsed.hash,
@@ -96,26 +98,48 @@ export function LinkTab({
         </div>
       </div>
 
-      {/* 2. Primary CTA — Copy Link */}
-      <Button
-        variant="void"
-        size="lg"
-        className={cn(
-          'w-full',
-          copied && 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-none hover:bg-emerald-500/25'
-        )}
-        onClick={onCopy}
+      {/* 2. Primary CTA — Copy Link (void without overlay) */}
+      <motion.div
+        className="relative w-full"
+        whileHover={{ scale: 1.015 }}
+        whileTap={{ scale: 0.985 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
       >
-        {copied ? (
-          <>
-            <CheckIcon size={16} /> Copied
-          </>
-        ) : (
-          <>
-            <CopyIcon size={16} /> Copy Link
-          </>
-        )}
-      </Button>
+        <Button
+          variant="void"
+          noOverlay
+          className="h-auto w-full py-4"
+          onClick={onCopy}
+        >
+          <AnimatePresence mode="wait">
+            {copied ? (
+              <motion.span
+                key="copied"
+                className="relative z-10 flex flex-col items-center gap-1.5"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 250, damping: 20 }}
+              >
+                <CheckIcon size={20} className="text-emerald-400" />
+                <span className="text-sm font-medium">Copied!</span>
+              </motion.span>
+            ) : (
+              <motion.span
+                key="copy"
+                className="relative z-10 flex flex-col items-center gap-1.5"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <CopyIcon size={20} />
+                <span className="text-sm font-medium">Copy Link</span>
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </Button>
+      </motion.div>
 
       {/* 3. Share buttons — 3-column grid */}
       <div className="grid grid-cols-3 gap-2">

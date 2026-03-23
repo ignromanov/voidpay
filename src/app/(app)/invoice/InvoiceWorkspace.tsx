@@ -1,20 +1,21 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   ScaledInvoicePreview,
   InvoicePaper,
 } from '@/widgets/invoice-paper'
 import { PaymentPanel, StatusBadge, MinimizedPill, useInvoiceView } from '@/widgets/payment-panel'
+import { ShareModal } from '@/widgets/share-modal'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import type { InvoiceViewState } from '@/widgets/payment-panel'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
-import { ChevronDownIcon, ExternalLinkIcon } from '@/shared/ui/icons'
+import { ChevronDownIcon, ExternalLinkIcon, Share2Icon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 
 const InvoiceVerifier = dynamic(
@@ -87,8 +88,11 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
     finalized, exactTotal, polling, verifyTxHash, isSyncing,
   } = view
 
+  const searchParams = useSearchParams()
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+  const [isShareOpen, setIsShareOpen] = useState(false)
+  const [includeOg, setIncludeOg] = useState(false)
 
   const networkId = invoice.networkId
   const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
@@ -96,8 +100,17 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
   const isNotYetPayable = invoice.issuedAt > Math.floor(Date.now() / 1000)
   const [payUrl, setPayUrl] = useState('')
 
+  // Derive pay URL and OG flag; auto-open ShareModal on ?share=1
   useEffect(() => {
-    setPayUrl(`/pay${window.location.hash}`)
+    setPayUrl(`/pay${window.location.search}${window.location.hash}`)
+    setIncludeOg(window.location.search.includes('og='))
+    if (searchParams.get('share') === '1') {
+      setIsShareOpen(true)
+    }
+  }, [searchParams])
+
+  const handleOgToggle = useCallback(() => {
+    // OG toggle is read-only on /invoice — was set during creation
   }, [])
 
   return (
@@ -200,6 +213,30 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Share button — floating top-right */}
+      <div className="absolute top-4 right-4 z-50 print:hidden">
+        <Button
+          variant="glow"
+          size="sm"
+          onClick={() => setIsShareOpen(true)}
+        >
+          <Share2Icon size={14} />
+          Share
+        </Button>
+      </div>
+
+      {/* Share modal — uses the /pay URL */}
+      {payUrl && (
+        <ShareModal
+          url={payUrl}
+          invoice={invoice}
+          open={isShareOpen}
+          onOpenChange={setIsShareOpen}
+          includeOg={includeOg}
+          onOgToggle={handleOgToggle}
+        />
+      )}
 
       {isPreviewOpen && (isPaid && txHash ? (
         <InvoicePreviewModal

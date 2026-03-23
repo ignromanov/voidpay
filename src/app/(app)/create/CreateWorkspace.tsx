@@ -18,7 +18,6 @@ import {
 } from '@/features/generate-link'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
-import type { Invoice } from '@/shared/lib/invoice-types'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
@@ -162,7 +161,7 @@ export function CreateWorkspace() {
       }
 
       // Generate URL and get baked invoice (with total + magicDust)
-      const { url, invoice } = await generateAndTrackInvoice(activeDraft, lineItems, {
+      const { url } = await generateAndTrackInvoice(activeDraft, lineItems, {
         includeOG: includeOgImage ?? false,
       })
 
