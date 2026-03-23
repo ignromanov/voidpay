@@ -6,9 +6,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { loadRpcConfig } from '../config'
 
-vi.mock('@/entities/network', () => ({
-  getChainById: vi.fn(),
-}))
+vi.mock('@/entities/network', async () => {
+  const actual = await vi.importActual('@/entities/network')
+  return {
+    ...actual,
+    getChainById: vi.fn(),
+  }
+})
 
 import { getChainById } from '@/entities/network'
 

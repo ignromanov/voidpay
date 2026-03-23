@@ -11,7 +11,7 @@
 import { isAddress, getAddress } from 'viem'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
-import { getMaxBlockAge, estimateCurrentBlock } from '@/entities/network'
+import { getMaxBlockAge, estimateCurrentBlock, ALCHEMY_NETWORK_SLUG } from '@/entities/network'
 
 export const runtime = 'edge'
 
@@ -25,19 +25,6 @@ const SUPPORTED_CHAIN_IDS = new Set([
   // Testnet
   11155111, 421614, 11155420, 80002,
 ])
-
-const CHAIN_NETWORK_SLUG: Record<number, string> = {
-  // Mainnet
-  1:     'eth-mainnet',
-  42161: 'arb-mainnet',
-  10:    'opt-mainnet',
-  137:   'polygon-mainnet',
-  // Testnet
-  11155111: 'eth-sepolia',
-  421614:   'arb-sepolia',
-  11155420: 'opt-sepolia',
-  80002:    'polygon-amoy',
-}
 
 /** W3-015: hardcoded server-side, never from client */
 const MAX_COUNT = '0x14'
@@ -266,7 +253,7 @@ export async function POST(request: Request): Promise<Response> {
   if (!apiKey) {
     return json({ error: 'Service temporarily unavailable' }, 503)
   }
-  const networkSlug = CHAIN_NETWORK_SLUG[chainId]
+  const networkSlug = ALCHEMY_NETWORK_SLUG[chainId]
   const alchemyUrl = `https://${networkSlug}.g.alchemy.com/v2/${apiKey}`
 
   const alchemyParams: Record<string, unknown> = {
