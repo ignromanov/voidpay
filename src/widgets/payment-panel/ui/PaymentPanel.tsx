@@ -42,6 +42,7 @@ export function PaymentPanel({
   onVerifyTxHash,
   finalized,
   reorgDetected,
+  onShareOpen,
 }: PaymentPanelProps) {
   const [qrOpen, setQrOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
@@ -208,6 +209,7 @@ export function PaymentPanel({
         txHash={txHash}
         networkId={invoice.networkId}
         onQrOpen={() => setQrOpen(true)}
+        onShareOpen={onShareOpen}
       />
 
       {/* QR Modal — desktop users scan with mobile wallet */}

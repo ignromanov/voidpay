@@ -10,6 +10,8 @@ import {
   DialogDescription,
 } from '@/shared/ui/dialog'
 import { cn } from '@/shared/lib/utils'
+import { copyToClipboard } from '@/shared/lib/clipboard'
+import { toAbsoluteUrl } from '@/shared/config/urls'
 import { encodeOGPreview } from '@/features/invoice-codec'
 import type { ShareModalProps, ShareTab } from '../lib/types'
 import { getTelegramShareUrl, getTwitterShareUrl, getEmailShareUrl } from '../lib/social-links'
@@ -39,29 +41,26 @@ export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgTo
   const [copied, setCopied] = useState(false)
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Compute share URL: add OG params dynamically from invoice when toggled on
+  // Compute share URL: always absolute, add OG params when toggled on
   const shareUrl = useMemo(() => {
-    if (!includeOg || !invoice) return url
     try {
-      const ogData = encodeOGPreview(invoice)
-      const absolute = url.startsWith('http') ? url : `${window.location.origin}${url}`
+      const absolute = toAbsoluteUrl(url)
       const parsed = new URL(absolute)
-      parsed.searchParams.set('og', ogData)
-      const withOg = parsed.pathname + parsed.search + parsed.hash
-      return url.startsWith('http') ? parsed.href : withOg
+      if (includeOg && invoice) {
+        parsed.searchParams.set('og', encodeOGPreview(invoice))
+      }
+      return parsed.href
     } catch {
-      return url
+      return toAbsoluteUrl(url)
     }
   }, [url, includeOg, invoice])
 
   const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl)
+    const ok = await copyToClipboard(shareUrl)
+    if (ok) {
       setCopied(true)
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current)
       copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // Fallback handled by CopyButton if needed
     }
   }, [shareUrl])
 
@@ -86,10 +85,8 @@ export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgTo
           'transition-shadow duration-500'
         )}
       >
-        {/* Top gradient bar */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-violet-500" />
 
-        {/* Header */}
         <div className="space-y-1 px-6 pt-6">
           <DialogTitle className="flex items-center gap-2 text-xl font-bold tracking-tight text-zinc-100">
             <CheckCircleIcon size={20} className="text-violet-500" />
@@ -100,7 +97,6 @@ export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgTo
           </DialogDescription>
         </div>
 
-        {/* Body */}
         <div className="space-y-4 px-6 pb-6">
           {invoice && <InvoiceSummary invoice={invoice} />}
           <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />

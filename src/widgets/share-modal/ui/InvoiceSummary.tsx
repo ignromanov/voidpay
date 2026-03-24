@@ -1,5 +1,6 @@
 import type { Invoice } from '@/shared/lib/invoice-types'
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { computeAmounts } from '@/entities/invoice'
 import { getNetworkName } from '@/entities/network'
 
 interface InvoiceSummaryProps {
@@ -7,16 +8,8 @@ interface InvoiceSummaryProps {
 }
 
 export function InvoiceSummary({ invoice }: InvoiceSummaryProps) {
-  // Show subtotal (without MagicDust) — the "clean" amount the user set
-  let subtotalAtomic: string
-  try {
-    subtotalAtomic = invoice.total && invoice.magicDust && invoice.magicDust !== '0'
-      ? (BigInt(invoice.total) - BigInt(invoice.magicDust)).toString()
-      : invoice.total || '0'
-  } catch {
-    subtotalAtomic = invoice.total || '0'
-  }
-  const formattedAmount = formatAmount(subtotalAtomic, invoice.decimals)
+  const { subtotal } = computeAmounts(invoice)
+  const formattedAmount = formatAmount(subtotal, invoice.decimals)
   const networkName = getNetworkName(invoice.networkId)
 
   return (

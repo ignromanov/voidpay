@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { Button } from '@/shared/ui/button'
 import { Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
+import { toAbsoluteUrl } from '@/shared/config/urls'
 
 interface LinkTabProps {
   /** Full invoice URL */
@@ -39,9 +40,7 @@ function parseUrlParts(url: string): {
   hash: string
 } {
   try {
-    // Ensure absolute URL for parsing (handles relative URLs in dev)
-    const absolute = url.startsWith('http') ? url : `${window.location.origin}${url}`
-    const parsed = new URL(absolute)
+    const parsed = new URL(toAbsoluteUrl(url))
     return {
       domain: parsed.host, // host includes port (e.g. localhost:3000)
       path: parsed.pathname,
@@ -75,7 +74,7 @@ export function LinkTab({
       animate={{ opacity: 1, x: 0 }}
       className="space-y-4"
     >
-      {/* 1. Link display */}
+      {/* Link display */}
       <div className="space-y-2">
         <Text variant="label">Permalink</Text>
         <div
@@ -97,7 +96,6 @@ export function LinkTab({
         </div>
       </div>
 
-      {/* 2. Primary CTA — Copy Link */}
       <motion.div
         className="w-full"
         whileHover={{ scale: 1.015 }}
@@ -140,7 +138,6 @@ export function LinkTab({
         </Button>
       </motion.div>
 
-      {/* 3. Share buttons — 3-column grid */}
       <div className="grid grid-cols-3 gap-2">
         <a
           href={telegramUrl}
@@ -169,7 +166,6 @@ export function LinkTab({
         </a>
       </div>
 
-      {/* 4. OG toggle — amber color-coded to match ?og= params */}
       <label className="flex cursor-pointer items-center gap-2.5 rounded-md px-1 py-1.5 transition-colors focus-within:ring-2 focus-within:ring-amber-500 focus-within:ring-offset-2 focus-within:ring-offset-zinc-950">
         <input
           type="checkbox"
@@ -199,7 +195,6 @@ export function LinkTab({
         </div>
       </label>
 
-      {/* 5. Privacy hint */}
       <div className="flex items-start gap-2 px-1">
         <LockIcon size={12} className="mt-0.5 shrink-0 text-zinc-600" />
         <p className="text-xs leading-relaxed text-zinc-500">

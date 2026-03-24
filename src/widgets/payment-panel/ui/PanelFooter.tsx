@@ -4,6 +4,7 @@ import {
   ExternalLinkIcon,
   FlagIcon,
   QrCodeIcon,
+  Share2Icon,
 } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 
@@ -13,9 +14,10 @@ interface PanelFooterProps {
   txHash?: string | undefined
   networkId: number
   onQrOpen: () => void
+  onShareOpen?: (() => void) | undefined
 }
 
-export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen }: PanelFooterProps) {
+export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen, onShareOpen }: PanelFooterProps) {
   return (
     <div className="px-4 pb-3">
       <div className="h-px w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
@@ -32,7 +34,18 @@ export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen }: 
             <DownloadIcon size={12} />
             PDF
           </Button>
-          {isPending && (
+          {isPending && (onShareOpen ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onShareOpen}
+              className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-violet-400"
+              aria-label="Share invoice"
+            >
+              <Share2Icon size={12} />
+              Share
+            </Button>
+          ) : (
             <Button
               variant="ghost"
               size="sm"
@@ -43,7 +56,7 @@ export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen }: 
               <QrCodeIcon size={12} />
               QR
             </Button>
-          )}
+          ))}
         </div>
 
         <div className="flex items-center gap-1">

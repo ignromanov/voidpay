@@ -48,7 +48,6 @@ export function CreateWorkspace() {
   const router = useRouter()
   const [isGenerating, setIsGenerating] = useState(false)
 
-
   const activeDraft = useCreatorStore((s) => s.activeDraft)
   const updateDraft = useCreatorStore((s) => s.updateDraft)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
