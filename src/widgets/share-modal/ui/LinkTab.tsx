@@ -71,15 +71,15 @@ export function LinkTab({
   return (
     <motion.div
       key="link-tab"
-      initial={{ opacity: 0, x: -10 }}
+      initial={{ opacity: 0, x: 10 }}
       animate={{ opacity: 1, x: 0 }}
       className="space-y-4"
     >
-      {/* 1. Link display — no inline copy button */}
+      {/* 1. Link display */}
       <div className="space-y-2">
         <Text variant="label">Permalink</Text>
         <div
-          className="max-h-20 cursor-text overflow-y-auto rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2.5 font-mono text-xs leading-relaxed [&::selection]:bg-violet-500/30 [&::selection]:text-white [&_*::selection]:bg-violet-500/30 [&_*::selection]:text-white"
+          className="max-h-28 cursor-text overflow-y-auto rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2.5 font-mono text-xs leading-relaxed [&::selection]:bg-violet-500/15 [&_*::selection]:bg-violet-500/15"
           style={{ wordBreak: 'break-all' }}
           onClick={(e) => {
             const selection = window.getSelection()
@@ -98,9 +98,9 @@ export function LinkTab({
         </div>
       </div>
 
-      {/* 2. Primary CTA — Copy Link (void without overlay) */}
+      {/* 2. Primary CTA — Copy Link */}
       <motion.div
-        className="relative w-full"
+        className="w-full"
         whileHover={{ scale: 1.015 }}
         whileTap={{ scale: 0.985 }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
@@ -108,32 +108,32 @@ export function LinkTab({
         <Button
           variant="void"
           noOverlay
-          className="h-auto w-full py-4"
+          className="h-auto w-full py-3"
           onClick={onCopy}
         >
           <AnimatePresence mode="wait">
             {copied ? (
               <motion.span
                 key="copied"
-                className="relative z-10 flex flex-col items-center gap-1.5"
+                className="relative z-10 flex items-center gap-2"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
                 transition={{ type: 'spring', stiffness: 250, damping: 20 }}
               >
-                <CheckIcon size={20} className="text-emerald-400" />
+                <CheckIcon size={18} className="text-emerald-400" />
                 <span className="text-sm font-medium">Copied!</span>
               </motion.span>
             ) : (
               <motion.span
                 key="copy"
-                className="relative z-10 flex flex-col items-center gap-1.5"
+                className="relative z-10 flex items-center gap-2"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
                 transition={{ duration: 0.15 }}
               >
-                <CopyIcon size={20} />
+                <CopyIcon size={18} />
                 <span className="text-sm font-medium">Copy Link</span>
               </motion.span>
             )}
@@ -147,7 +147,8 @@ export function LinkTab({
           href={telegramUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 rounded-xl border border-[#0088cc]/20 bg-[#0088cc]/8 py-2.5 text-xs font-semibold text-[#0088cc] transition-colors hover:bg-[#0088cc]/15"
+          aria-label="Share invoice via Telegram"
+          className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[#0088cc]/20 bg-[#0088cc]/10 px-3 py-2.5 text-xs font-semibold text-[#0088cc] transition-all hover:bg-[#0088cc]/15 hover:shadow-[0_0_12px_-3px_rgba(0,136,204,0.2)] active:scale-95"
         >
           <SendIcon size={14} /> Telegram
         </a>
@@ -155,48 +156,55 @@ export function LinkTab({
           href={twitterUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-white/8"
+          aria-label="Share invoice via Twitter"
+          className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-semibold text-white transition-all hover:bg-white/10 hover:shadow-[0_0_12px_-3px_rgba(255,255,255,0.1)] active:scale-95"
         >
           <TwitterIcon size={14} /> Twitter
         </a>
         <a
           href={emailUrl}
-          className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/8 py-2.5 text-xs font-semibold text-amber-500 transition-colors hover:bg-amber-500/15"
+          aria-label="Share invoice via Email"
+          className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2.5 text-xs font-semibold text-amber-500 transition-all hover:bg-amber-500/15 hover:shadow-[0_0_12px_-3px_rgba(245,158,11,0.2)] active:scale-95"
         >
           <MailIcon size={14} /> Email
         </a>
       </div>
 
-      {/* 4. OG toggle */}
-      <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 transition-colors hover:border-zinc-700">
+      {/* 4. OG toggle — amber color-coded to match ?og= params */}
+      <label className="flex cursor-pointer items-center gap-2.5 rounded-md px-1 py-1.5 transition-colors focus-within:ring-2 focus-within:ring-amber-500 focus-within:ring-offset-2 focus-within:ring-offset-zinc-950">
         <input
           type="checkbox"
           checked={includeOg}
           onChange={(e) => onOgToggle(e.target.checked)}
           className="sr-only"
+          aria-label="Toggle link preview card"
         />
         <div
           className={cn(
-            'flex h-4 w-4 shrink-0 items-center justify-center rounded border-2 text-[10px] transition-colors',
+            'flex h-4 w-4 shrink-0 items-center justify-center rounded transition-colors',
             includeOg
-              ? 'border-amber-500 bg-amber-500/15 text-amber-500'
-              : 'border-zinc-600 bg-transparent text-transparent'
+              ? 'bg-amber-500 text-white'
+              : 'border border-zinc-600 bg-transparent text-transparent'
           )}
         >
-          ✓
+          <CheckIcon size={10} strokeWidth={3} />
         </div>
         <div>
-          <div className="text-xs font-semibold text-zinc-200">Include public preview</div>
-          <div className="text-[11px] text-zinc-500">Shows amount &amp; token in link previews</div>
+          <span className={cn(
+            'text-xs font-medium transition-colors',
+            includeOg ? 'text-amber-400' : 'text-zinc-500'
+          )}>
+            Link preview card
+          </span>
+          <p className="text-xs text-zinc-600">Shows amount &amp; network in social previews</p>
         </div>
       </label>
 
       {/* 5. Privacy hint */}
-      <div className="flex items-start gap-2 rounded-lg border border-violet-500/15 bg-violet-500/8 px-3 py-2.5">
-        <LockIcon size={14} className="mt-0.5 shrink-0 text-violet-400" />
-        <p className="text-xs leading-relaxed text-violet-300">
-          <strong>Privacy by design.</strong> Your invoice data is encoded directly in this link. No
-          servers. No tracking.
+      <div className="flex items-start gap-2 px-1">
+        <LockIcon size={12} className="mt-0.5 shrink-0 text-zinc-600" />
+        <p className="text-xs leading-relaxed text-zinc-500">
+          <strong className="text-zinc-400">Privacy by design.</strong> Invoice data is encoded in the link. No servers. No tracking.
         </p>
       </div>
     </motion.div>

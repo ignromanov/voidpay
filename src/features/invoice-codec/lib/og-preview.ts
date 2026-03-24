@@ -130,8 +130,13 @@ function calculateTotal(invoice: Invoice): string {
   // OG preview URLs should NOT use thousand separators (avoid URL parsing issues)
   const formatOpts = { useGrouping: false }
 
-  // Use pre-calculated total if available (from URL)
+  // Use pre-calculated total if available, but subtract MagicDust
+  // OG preview should show the "clean" amount the user set, not the MagicDust-enhanced one
   if (invoice.total) {
+    if (invoice.magicDust && invoice.magicDust !== '0') {
+      const subtotal = (BigInt(invoice.total) - BigInt(invoice.magicDust)).toString()
+      return formatAmount(subtotal, decimals, formatOpts)
+    }
     return formatAmount(invoice.total, decimals, formatOpts)
   }
 

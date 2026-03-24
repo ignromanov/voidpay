@@ -50,7 +50,6 @@ export function CreateWorkspace() {
 
 
   const activeDraft = useCreatorStore((s) => s.activeDraft)
-  const includeOgImage = useCreatorStore((s) => s.preferences.includeOgImage)
   const updateDraft = useCreatorStore((s) => s.updateDraft)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
@@ -160,16 +159,15 @@ export function CreateWorkspace() {
         })
       }
 
-      // Generate URL and get baked invoice (with total + magicDust)
-      const { url } = await generateAndTrackInvoice(activeDraft, lineItems, {
-        includeOG: includeOgImage ?? false,
-      })
+      // Generate URL without OG (OG is computed dynamically in ShareModal)
+      const { url } = await generateAndTrackInvoice(activeDraft, lineItems)
 
       toast.success('Invoice link generated!', {
         description: 'Share it with your client to get paid',
       })
 
-      // Navigate to /invoice with ?share=1 to auto-open ShareModal there
+      // Navigate to /invoice with ?share=1 to auto-open ShareModal
+      // URL is clean: /invoice?share=1#hash (no OG params)
       const invoiceUrl = new URL(url, window.location.origin)
       invoiceUrl.pathname = invoiceUrl.pathname.replace('/pay', '/invoice')
       invoiceUrl.searchParams.set('share', '1')
@@ -187,7 +185,7 @@ export function CreateWorkspace() {
     } finally {
       setIsGenerating(false)
     }
-  }, [includeOgImage, isGenerating, router])
+  }, [isGenerating, router])
 
   return (
     <>

@@ -20,7 +20,7 @@ export function QRTab({ url }: QRTabProps) {
   return (
     <motion.div
       key="qr-tab"
-      initial={{ opacity: 0, x: 10 }}
+      initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       className="flex flex-col items-center justify-center space-y-4 py-4"
     >

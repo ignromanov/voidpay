@@ -92,7 +92,8 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [isShareOpen, setIsShareOpen] = useState(false)
-  const [includeOg, setIncludeOg] = useState(false)
+  const includeOg = useCreatorStore((s) => s.preferences.includeOgImage ?? true)
+  const updatePreferences = useCreatorStore((s) => s.updatePreferences)
 
   const networkId = invoice.networkId
   const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
@@ -100,18 +101,17 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
   const isNotYetPayable = invoice.issuedAt > Math.floor(Date.now() / 1000)
   const [payUrl, setPayUrl] = useState('')
 
-  // Derive pay URL and OG flag; auto-open ShareModal on ?share=1
+  // Derive pay URL (clean, no OG/share params); auto-open ShareModal on ?share=1
   useEffect(() => {
-    setPayUrl(`/pay${window.location.search}${window.location.hash}`)
-    setIncludeOg(window.location.search.includes('og='))
+    setPayUrl(`/pay${window.location.hash}`)
     if (searchParams.get('share') === '1') {
       setIsShareOpen(true)
     }
   }, [searchParams])
 
-  const handleOgToggle = useCallback(() => {
-    // OG toggle is read-only on /invoice — was set during creation
-  }, [])
+  const handleOgToggle = useCallback((include: boolean) => {
+    updatePreferences({ includeOgImage: include })
+  }, [updatePreferences])
 
   return (
     <>
