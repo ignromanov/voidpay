@@ -11,6 +11,7 @@ import { PaymentPanel, StatusBadge, MinimizedPill, useInvoiceView } from '@/widg
 import { ShareModal } from '@/widgets/share-modal'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
+import { urlToRoute } from '@/shared/lib/navigation'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import type { InvoiceViewState } from '@/widgets/payment-panel'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
@@ -119,7 +120,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
     } else {
       url.searchParams.delete('share')
     }
-    router.replace(url.pathname + url.search + url.hash)
+    router.replace(urlToRoute(url))
   }, [router])
 
   const handleOgToggle = useCallback((include: boolean) => {

@@ -19,6 +19,7 @@ import {
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
 import { useHashFragment } from '@/shared/lib/hooks'
+import { urlToRoute } from '@/shared/lib/navigation'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
@@ -170,7 +171,7 @@ export function CreateWorkspace() {
       const invoiceUrl = new URL(url, window.location.origin)
       invoiceUrl.pathname = invoiceUrl.pathname.replace('/pay', '/invoice')
       invoiceUrl.searchParams.set('share', '1')
-      router.replace(invoiceUrl.pathname + invoiceUrl.search + invoiceUrl.hash)
+      router.replace(urlToRoute(invoiceUrl))
     } catch (error) {
       if (error instanceof UrlSizeError) {
         toast.error('Invoice URL is too large', {
