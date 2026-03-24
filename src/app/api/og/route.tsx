@@ -13,7 +13,7 @@ import { decodeOGPreview } from '@/features/invoice-codec'
 import { renderInvoiceOG, renderBrandingOG, OG_SIZES } from '@/features/og-image'
 import type { InvoiceOGData } from '@/features/og-image'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 // OG images are deterministic (?og= is content-derived) — cache aggressively.
 // Crawlers (Telegram, Discord, Facebook) re-fetch on every share without this.
