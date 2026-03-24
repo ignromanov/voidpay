@@ -1,17 +1,16 @@
 import type { Metadata } from 'next'
 import { decodeOGPreview } from '@/features/invoice-codec'
+import { defaultOgImages, dynamicOgImages } from '@/features/og-image'
 import { PayWorkspace } from './PayWorkspace'
 
-/**
- * Default metadata when ?og= parameter is missing
- */
+const DEFAULT_OG = defaultOgImages()
+
 const DEFAULT_METADATA: Metadata = {
   title: 'Pay Invoice | VoidPay',
   description: 'View and pay crypto invoices securely. No signup required.',
-  robots: {
-    index: false,
-    follow: false,
-  },
+  openGraph: { images: DEFAULT_OG.openGraph },
+  twitter: { images: DEFAULT_OG.twitter },
+  robots: { index: false, follow: false },
 }
 
 /**
@@ -47,6 +46,8 @@ export async function generateMetadata({
     const title = `Invoice ${preview.id} | VoidPay`
     const description = `${preview.amount} ${preview.currency} on ${networkDisplayName}${preview.from ? ` from ${preview.from}` : ''}`
 
+    const images = dynamicOgImages(og)
+
     return {
       title,
       description,
@@ -55,11 +56,13 @@ export async function generateMetadata({
         description,
         type: 'website',
         siteName: 'VoidPay',
+        images: images.openGraph,
       },
       twitter: {
-        card: 'summary',
+        card: 'summary_large_image',
         title,
         description,
+        images: images.twitter,
       },
       robots: {
         index: false,
