@@ -79,8 +79,7 @@ export function LinkTab({
       <div className="space-y-2">
         <Text variant="label">Permalink</Text>
         <div
-          className="max-h-28 cursor-text overflow-y-auto rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2.5 font-mono text-xs leading-relaxed [&::selection]:bg-violet-500/15 [&_*::selection]:bg-violet-500/15"
-          style={{ wordBreak: 'break-all' }}
+          className="max-h-28 cursor-text overflow-y-auto break-all rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2.5 font-mono text-xs leading-relaxed [&::selection]:bg-violet-500/15 [&_*::selection]:bg-violet-500/15"
           onClick={(e) => {
             const selection = window.getSelection()
             const range = document.createRange()

@@ -92,16 +92,18 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [isShareOpen, setIsShareOpen] = useState(false)
-  const includeOg = useCreatorStore((s) => s.preferences.includeOgImage ?? true)
+  const includeOg = useCreatorStore((s) => s.preferences.includeOgImage ?? false)
   const updatePreferences = useCreatorStore((s) => s.updatePreferences)
 
   const networkId = invoice.networkId
   const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
   const invoiceStatus = panelStatus === 'overdue' ? 'overdue' as const : 'pending' as const
   const isNotYetPayable = invoice.issuedAt > Math.floor(Date.now() / 1000)
-  const [payUrl, setPayUrl] = useState('')
+  const [payUrl, setPayUrl] = useState(() =>
+    typeof window !== 'undefined' ? `/pay${window.location.hash}` : ''
+  )
 
-  // Derive pay URL (clean, no OG/share params); auto-open ShareModal on ?share=1
+  // Auto-open ShareModal on ?share=1; keep payUrl in sync with hash changes
   useEffect(() => {
     setPayUrl(`/pay${window.location.hash}`)
     if (searchParams.get('share') === '1') {

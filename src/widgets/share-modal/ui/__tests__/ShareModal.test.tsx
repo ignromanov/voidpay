@@ -213,7 +213,7 @@ describe('ShareModal', () => {
       vi.stubGlobal('navigator', { clipboard: { writeText } })
 
       renderModal()
-      await screen.getByTestId('link-tab-copy').click()
+      await userEvent.click(screen.getByTestId('link-tab-copy'))
 
       await vi.waitFor(() => {
         expect(writeText).toHaveBeenCalledWith(TEST_URL)
@@ -227,7 +227,7 @@ describe('ShareModal', () => {
       vi.stubGlobal('navigator', { clipboard: { writeText } })
 
       renderModal()
-      await screen.getByTestId('link-tab-copy').click()
+      await userEvent.click(screen.getByTestId('link-tab-copy'))
 
       await vi.waitFor(() => {
         expect(screen.getByTestId('link-tab-copied')).toHaveTextContent('true')
@@ -241,7 +241,7 @@ describe('ShareModal', () => {
       vi.stubGlobal('navigator', { clipboard: { writeText } })
 
       renderModal()
-      await screen.getByTestId('link-tab-copy').click()
+      await userEvent.click(screen.getByTestId('link-tab-copy'))
 
       await vi.waitFor(() => {
         expect(writeText).toHaveBeenCalledWith(TEST_URL)

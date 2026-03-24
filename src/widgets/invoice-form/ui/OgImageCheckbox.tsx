@@ -26,7 +26,7 @@ export function OgImageCheckbox({ className }: OgImageCheckboxProps) {
   // Use shallow comparison to prevent re-renders from unrelated preference changes
   const { includeOgImage, updatePreferences } = useCreatorStore(
     useShallow((s) => ({
-      includeOgImage: s.preferences.includeOgImage ?? true,
+      includeOgImage: s.preferences.includeOgImage ?? false,
       updatePreferences: s.updatePreferences,
     }))
   )

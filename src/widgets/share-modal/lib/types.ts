@@ -24,11 +24,3 @@ export interface ShareModalProps {
   /** Handler for OG toggle change */
   onOgToggle: (include: boolean) => void
 }
-
-/** Internal state for ShareModal (transient, not persisted) */
-export interface ShareModalState {
-  /** Active tab in modal */
-  activeTab: ShareTab
-  /** Copy button success state */
-  copied: boolean
-}

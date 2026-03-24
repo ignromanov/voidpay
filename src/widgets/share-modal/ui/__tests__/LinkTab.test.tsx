@@ -75,13 +75,13 @@ describe('LinkTab', () => {
     const checkbox = screen.getByRole('checkbox')
     expect(checkbox).toBeChecked()
     // The visual indicator div should have amber classes — find the label container
-    expect(screen.getByText('Include public preview')).toBeInTheDocument()
+    expect(screen.getByText('Link preview card')).toBeInTheDocument()
   })
 
   it('calls onOgToggle when checkbox changes', async () => {
     const onOgToggle = vi.fn()
     const { user } = renderWithUser({ ...DEFAULT_PROPS, onOgToggle })
-    const label = screen.getByText('Include public preview').closest('label')!
+    const label = screen.getByText('Link preview card').closest('label')!
     await user.click(label)
     expect(onOgToggle).toHaveBeenCalledWith(false)
   })

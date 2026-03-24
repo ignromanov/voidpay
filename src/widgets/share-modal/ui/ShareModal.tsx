@@ -83,7 +83,7 @@ export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgTo
         className={cn(
           'border-violet-500/25 bg-zinc-950 p-0 overflow-hidden',
           'shadow-[0_25px_60px_-12px_rgba(0,0,0,0.5),0_0_40px_-10px_rgba(139,92,246,0.2)]',
-          'motion-safe:animate-glow-pulse'
+          'transition-shadow duration-500'
         )}
       >
         {/* Top gradient bar */}
