@@ -34,6 +34,7 @@ interface LinkTabProps {
  * - hash (e.g. #N4Ig...)
  */
 function parseUrlParts(url: string): {
+  protocol: string
   domain: string
   path: string
   ogParams: string
@@ -42,13 +43,14 @@ function parseUrlParts(url: string): {
   try {
     const parsed = new URL(toAbsoluteUrl(url))
     return {
+      protocol: parsed.protocol + '//', // e.g. "https://"
       domain: parsed.host, // host includes port (e.g. localhost:3000)
       path: parsed.pathname,
       ogParams: parsed.search,
       hash: parsed.hash,
     }
   } catch {
-    return { domain: '', path: url, ogParams: '', hash: '' }
+    return { protocol: '', domain: '', path: url, ogParams: '', hash: '' }
   }
 }
 
@@ -65,7 +67,7 @@ export function LinkTab({
   includeOg,
   onOgToggle,
 }: LinkTabProps) {
-  const { domain, path, ogParams, hash } = parseUrlParts(url)
+  const { protocol, domain, path, ogParams, hash } = parseUrlParts(url)
 
   return (
     <motion.div
@@ -87,6 +89,7 @@ export function LinkTab({
             selection?.addRange(range)
           }}
         >
+          <span className="text-zinc-600">{protocol}</span>
           <span className="font-semibold text-violet-500">{domain}</span>
           <span className="text-violet-400/70">{path}</span>
           {includeOg && ogParams && (
