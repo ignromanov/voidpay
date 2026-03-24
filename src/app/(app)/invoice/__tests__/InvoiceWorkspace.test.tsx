@@ -66,7 +66,11 @@ vi.mock('@/entities/creator', async (importOriginal) => {
   return {
     ...actual,
     useCreatorStore: vi.fn((selector?: (s: Record<string, unknown>) => unknown) => {
-      const state = { setNetworkTheme: vi.fn() }
+      const state = {
+        setNetworkTheme: vi.fn(),
+        preferences: { includeOgImage: false },
+        updatePreferences: vi.fn(),
+      }
       if (typeof selector === 'function') return selector(state)
       return state
     }),
@@ -76,7 +80,9 @@ vi.mock('@/entities/creator', async (importOriginal) => {
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(() => ({
     push: vi.fn(),
+    replace: vi.fn(),
   })),
+  useSearchParams: vi.fn(() => new URLSearchParams()),
 }))
 
 // Mock next/dynamic to eagerly resolve dynamic imports in tests

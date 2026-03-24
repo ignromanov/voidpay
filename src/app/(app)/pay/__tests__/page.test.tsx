@@ -51,7 +51,7 @@ describe('generateMetadata', () => {
       })
 
       expect(metadata.twitter).toBeDefined()
-      expect(metadata.twitter?.card).toBe('summary')
+      expect(metadata.twitter?.card).toBe('summary_large_image')
     })
 
     it('sets noindex/nofollow robots meta', async () => {
