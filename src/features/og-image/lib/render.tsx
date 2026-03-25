@@ -3,6 +3,7 @@
  *
  * Server-side image generation for social media previews.
  * Uses Satori (via next/og ImageResponse) to render JSX → PNG.
+ * Loads Geist Sans font for brand-consistent typography.
  *
  * Design tokens match the VoidPay dark theme:
  * - Amount: violet-300 (#C4B5FD) — matches PaymentPanel accent
@@ -14,6 +15,7 @@
 
 import { ImageResponse } from 'next/og'
 import { NETWORK_CODE_COLORS, NETWORK_CODE_NAMES } from '@/entities/network'
+import { formatDisplayAmount } from './og-utils'
 
 export const OG_ALT = 'VoidPay - Stateless Crypto Invoicing'
 
@@ -24,11 +26,46 @@ export const OG_SIZES = {
 
 export type OGType = keyof typeof OG_SIZES
 
+/** Font entry for Satori ImageResponse */
+export type OGFont = { name: string; data: ArrayBuffer; weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900; style: 'normal' }
+
+// Geist font loading — dynamic import of node:fs to avoid bundler issues
+// Reads from public/fonts/ (available both locally and on Vercel)
+// Caches the Promise (not the result) to prevent duplicate file reads on concurrent cold-start requests
+let fontsPromise: Promise<OGFont[]> | undefined
+
+function loadFonts(): Promise<OGFont[]> {
+  if (!fontsPromise) {
+    fontsPromise = loadFontsImpl()
+  }
+  return fontsPromise
+}
+
+async function loadFontsImpl(): Promise<OGFont[]> {
+  const { readFile } = await import(/* webpackIgnore: true */ 'node:fs/promises')
+  const { join } = await import(/* webpackIgnore: true */ 'node:path')
+  const fontsDir = join(process.cwd(), 'public', 'fonts')
+
+  const [bold, semiBold, medium] = await Promise.all([
+    readFile(join(fontsDir, 'Geist-Bold.ttf')),
+    readFile(join(fontsDir, 'Geist-SemiBold.ttf')),
+    readFile(join(fontsDir, 'Geist-Medium.ttf')),
+  ])
+
+  const toAB = (buf: Buffer) => buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer
+
+  return [
+    { name: 'Geist', data: toAB(bold), weight: 700, style: 'normal' },
+    { name: 'Geist', data: toAB(semiBold), weight: 600, style: 'normal' },
+    { name: 'Geist', data: toAB(medium), weight: 500, style: 'normal' },
+  ]
+}
+
 /** Default (static branding) image metadata for pages without ?og= */
 export function defaultOgImages() {
   return {
-    openGraph: [{ url: '/opengraph-image', ...OG_SIZES.opengraph, alt: OG_ALT }],
-    twitter: [{ url: '/twitter-image', ...OG_SIZES.twitter, alt: OG_ALT }],
+    openGraph: [{ url: '/og-image.png', ...OG_SIZES.opengraph, alt: OG_ALT }],
+    twitter: [{ url: '/og-image.png', ...OG_SIZES.opengraph, alt: OG_ALT }],
   }
 }
 
@@ -46,12 +83,15 @@ export interface InvoiceOGData {
   currency: string
   networkCode: string
   from?: string | undefined
+  to?: string | undefined
 }
 
 
-/** Render dynamic invoice OG image */
-export function renderInvoiceOG(data: InvoiceOGData, size: { width: number; height: number }) {
-  const formattedAmount = formatWithSeparators(data.amount)
+/** Render dynamic invoice OG image — card-based design.
+ *  KEEP IN SYNC with OGInvoiceCard.tsx (Tailwind version for browser screenshots) */
+export async function renderInvoiceOG(data: InvoiceOGData, size: { width: number; height: number }) {
+  const fonts = await loadFonts()
+  const displayAmount = formatDisplayAmount(data.amount)
   const networkName = NETWORK_CODE_NAMES[data.networkCode.toLowerCase()] ?? data.networkCode.toUpperCase()
   const networkColor = NETWORK_CODE_COLORS[data.networkCode.toLowerCase()] ?? '#A1A1AA'
 
@@ -66,147 +106,206 @@ export function renderInvoiceOG(data: InvoiceOGData, size: { width: number; heig
           alignItems: 'center',
           justifyContent: 'center',
           background: '#09090B',
-          fontFamily: 'system-ui, sans-serif',
+          fontFamily: 'Geist, sans-serif',
           position: 'relative',
         }}
       >
-        {/* Violet glow — brand identity */}
+        {/* Network-colored background glow — primary */}
         <div
           style={{
             position: 'absolute',
-            top: -120,
+            top: '5%',
             left: '50%',
-            width: 600,
-            height: 400,
+            width: 1000,
+            height: 550,
             borderRadius: 9999,
-            background: 'radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%)',
+            background: `radial-gradient(ellipse at center, ${networkColor}45 0%, ${networkColor}20 35%, transparent 65%)`,
             transform: 'translateX(-50%)',
           }}
         />
+        {/* Network-colored secondary glow — bottom-right */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: -60,
+            right: -100,
+            width: 600,
+            height: 400,
+            borderRadius: 9999,
+            background: `radial-gradient(ellipse at center, ${networkColor}20 0%, transparent 60%)`,
+          }}
+        />
 
-        {/* INVOICE label */}
+        {/* Invoice Card */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: 700,
+            padding: '48px 56px',
+            borderRadius: 20,
+            border: '1px solid rgba(63,63,70,0.4)',
+            background: 'linear-gradient(145deg, rgba(24,24,27,0.97) 0%, rgba(9,9,11,0.99) 100%)',
+            boxShadow: `0 20px 60px -12px rgba(0,0,0,0.7), 0 0 40px -15px ${networkColor}20`,
+            position: 'relative',
+          }}
+        >
+          {/* Top gradient bar */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 2,
+              borderRadius: '20px 20px 0 0',
+              background: `linear-gradient(90deg, transparent, ${networkColor}80, transparent)`,
+            }}
+          />
+
+          {/* Header: Invoice ID + Network badge */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 24,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 9999,
+                  background: '#7C3AED',
+                  boxShadow: '0 0 6px rgba(124,58,237,0.5)',
+                }}
+              />
+              <div
+                style={{
+                  fontSize: 18,
+                  fontWeight: 500,
+                  color: '#71717A',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase' as const,
+                }}
+              >
+                {data.id ? `Invoice ${data.id}` : 'Invoice'}
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                fontSize: 17,
+                fontWeight: 600,
+                color: networkColor,
+                padding: '3px 14px',
+                border: `1px solid ${networkColor}25`,
+                borderRadius: 9999,
+                background: `${networkColor}10`,
+              }}
+            >
+              {networkName}
+            </div>
+          </div>
+
+          {/* Amount + Currency */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: 12,
+              marginBottom: 4,
+            }}
+          >
+            <div
+              style={{
+                fontSize: displayAmount.length > 10 ? 60 : 80,
+                fontWeight: 700,
+                color: '#FAFAFA',
+                letterSpacing: '-0.02em',
+                lineHeight: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: 520,
+              }}
+            >
+              {displayAmount}
+            </div>
+            <div
+              style={{
+                fontSize: 40,
+                fontWeight: 500,
+                color: '#71717A',
+              }}
+            >
+              {data.currency}
+            </div>
+          </div>
+
+          {/* From / To — single row */}
+          {(data.from || data.to) ? (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 20,
+                marginTop: 16,
+                paddingTop: 16,
+                borderTop: '1px solid rgba(63,63,70,0.3)',
+              }}
+            >
+              {data.from ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: '0 1 auto' }}>
+                  <div style={{ fontSize: 17, color: '#52525B', flexShrink: 0 }}>from</div>
+                  <div style={{ fontSize: 20, fontWeight: 500, color: '#A1A1AA', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{data.from}</div>
+                </div>
+              ) : null}
+              {data.from && data.to ? (
+                <div style={{ width: 1, height: 18, background: '#27272A', flexShrink: 0 }} />
+              ) : null}
+              {data.to ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: '0 1 auto' }}>
+                  <div style={{ fontSize: 17, color: '#52525B', flexShrink: 0 }}>to</div>
+                  <div style={{ fontSize: 20, fontWeight: 500, color: '#A1A1AA', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{data.to}</div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        {/* VoidPay branding below card */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: 10,
-            marginBottom: 24,
+            marginTop: 32,
           }}
         >
           <div
             style={{
-              width: 12,
-              height: 12,
+              width: 24,
+              height: 24,
               borderRadius: 9999,
-              background: '#7C3AED',
-              boxShadow: '0 0 12px rgba(124, 58, 237, 0.6)',
+              background: 'radial-gradient(circle at 40% 40%, #18181B, #000)',
+              border: '1px solid rgba(124,58,237,0.4)',
+              boxShadow: '0 0 10px rgba(124,58,237,0.2)',
             }}
           />
-          <div
-            style={{
-              fontSize: 16,
-              fontWeight: 600,
-              color: '#7C3AED',
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase' as const,
-            }}
-          >
-            {data.id ? `Invoice ${data.id}` : 'Invoice'}
-          </div>
-        </div>
-
-        {/* Amount + Currency */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'baseline',
-            gap: 20,
-            marginBottom: 24,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 96,
-              fontWeight: 700,
-              color: '#C4B5FD',
-              letterSpacing: '-0.03em',
-              lineHeight: 1,
-            }}
-          >
-            {formattedAmount}
-          </div>
-          <div
-            style={{
-              fontSize: 44,
-              fontWeight: 500,
-              color: '#71717A',
-              letterSpacing: '-0.01em',
-            }}
-          >
-            {data.currency}
-          </div>
-        </div>
-
-        {/* Network + sender */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-            marginBottom: 48,
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              fontSize: 22,
-              fontWeight: 600,
-              color: networkColor,
-              letterSpacing: '0.02em',
-              padding: '6px 20px',
-              border: `1px solid ${networkColor}33`,
-              borderRadius: 9999,
-              background: `${networkColor}12`,
-            }}
-          >
-            {networkName}
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              fontSize: 22,
-              color: '#71717A',
-              letterSpacing: '0.02em',
-            }}
-          >
-            {data.from ? data.from : ''}
-          </div>
-        </div>
-
-        {/* Branding footer */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-          }}
-        >
-          <div style={{ width: 32, height: 1, background: 'linear-gradient(90deg, transparent, #3F3F46)' }} />
-          <div style={{ fontSize: 18, fontWeight: 500, color: '#52525B', letterSpacing: '0.08em' }}>VoidPay</div>
-          <div style={{ width: 32, height: 1, background: 'linear-gradient(90deg, #3F3F46, transparent)' }} />
+          <div style={{ fontSize: 18, fontWeight: 600, color: '#52525B', letterSpacing: '0.02em' }}>VoidPay</div>
         </div>
       </div>
     ),
-    size,
+    { ...size, fonts },
   )
 }
 
-/** Render static VoidPay branding OG image */
-export function renderBrandingOG(size: { width: number; height: number }) {
-  // OpenGraph (630px) gets larger logo, Twitter (600px) gets smaller
+/** Render static VoidPay branding OG image (fallback — main branding uses /public/og-image.png) */
+export async function renderBrandingOG(size: { width: number; height: number }) {
+  const fonts = await loadFonts()
   const coreSize = size.height > 610 ? 200 : 160
 
   return new ImageResponse(
@@ -220,7 +319,7 @@ export function renderBrandingOG(size: { width: number; height: number }) {
           alignItems: 'center',
           justifyContent: 'center',
           background: 'linear-gradient(135deg, #09090B 0%, #18181B 100%)',
-          fontFamily: 'system-ui, sans-serif',
+          fontFamily: 'Geist, sans-serif',
         }}
       >
         <div
@@ -237,17 +336,12 @@ export function renderBrandingOG(size: { width: number; height: number }) {
         <div style={{ fontSize: 72, fontWeight: 700, color: '#FAFAFA', letterSpacing: '-0.02em', marginBottom: 16 }}>
           VoidPay
         </div>
-        <div style={{ fontSize: 28, color: '#A1A1AA', letterSpacing: '0.05em' }}>Stateless Crypto Invoicing</div>
+        <div style={{ fontSize: 28, fontWeight: 500, color: '#A1A1AA', letterSpacing: '0.05em' }}>
+          Stateless Crypto Invoicing
+        </div>
       </div>
     ),
-    size,
+    { ...size, fonts },
   )
 }
 
-/** Add thousand separators (e.g., "1250.00" → "1,250.00") */
-function formatWithSeparators(value: string): string {
-  const [integer, decimal] = value.split('.')
-  if (!integer) return value
-  const formatted = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  return decimal !== undefined ? `${formatted}.${decimal}` : formatted
-}

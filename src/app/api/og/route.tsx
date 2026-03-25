@@ -2,11 +2,12 @@
  * Dynamic OG Image Route Handler
  *
  * Thin proxy — parsing + delegation to features/og-image.
+ * Fonts are loaded internally by the render functions.
  *
  * Routes:
- *   /api/og?og=a1b2c3d4_1250.00_USDC_arb_Acme          → 1200x630 (OpenGraph)
- *   /api/og?og=a1b2c3d4_1250.00_USDC_arb_Acme&t=twitter → 1200x600 (Twitter)
- *   /api/og (no params)                                   → generic VoidPay branding
+ *   /api/og?og=a1b2c3d4_1250.00_USDC_arb_Acme_Client  → 1200x630 (OpenGraph)
+ *   /api/og?og=...&t=twitter                            → 1200x600 (Twitter)
+ *   /api/og (no params)                                  → generic VoidPay branding
  */
 
 import { decodeOGPreview } from '@/features/invoice-codec'
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
   let response: Response
 
   if (!og) {
-    response = renderBrandingOG(size)
+    response = await renderBrandingOG(size)
   } else {
     try {
       const preview = decodeOGPreview(og)
@@ -37,11 +38,12 @@ export async function GET(request: Request) {
         amount: preview.amount,
         currency: preview.currency,
         networkCode: preview.network,
-        from: preview.from?.replace(/-/g, ' '),
+        from: preview.from,
+        to: preview.to,
       }
-      response = renderInvoiceOG(data, size)
+      response = await renderInvoiceOG(data, size)
     } catch {
-      response = renderBrandingOG(size)
+      response = await renderBrandingOG(size)
     }
   }
 

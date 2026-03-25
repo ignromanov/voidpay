@@ -31,10 +31,33 @@ export const metadata: Metadata = {
         : 'https://voidpay.xyz'),
   ),
   title: 'VoidPay',
-  description: 'Stateless Invoicing Platform',
+  description: 'Stateless Crypto Invoicing — no backend, no signup, no tracking. Just links.',
   icons: {
     icon: '/favicon.svg',
     apple: '/favicon.svg',
+  },
+  openGraph: {
+    title: 'VoidPay — Stateless Crypto Invoicing',
+    description: 'Create privacy-first crypto invoices. All data lives in the URL. No backend, no signup, no tracking.',
+    url: 'https://voidpay.xyz',
+    siteName: 'VoidPay',
+    locale: 'en_US',
+    type: 'website',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'VoidPay - Stateless Crypto Invoicing', type: 'image/png' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'VoidPay — Stateless Crypto Invoicing',
+    description: 'Create privacy-first crypto invoices. All data lives in the URL.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'VoidPay - Stateless Crypto Invoicing' }],
+  },
+  other: {
+    'theme-color': '#09090B',
+  },
+  appleWebApp: {
+    title: 'VoidPay',
+    statusBarStyle: 'black-translucent',
+    capable: true,
   },
 }
 
