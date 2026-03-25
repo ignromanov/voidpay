@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   getTelegramShareUrl,
   getTwitterShareUrl,
+  getEmailShareUrl,
   isWebShareSupported,
   nativeShare,
 } from '../social-links'
@@ -101,6 +102,54 @@ describe('isWebShareSupported', () => {
     })
 
     expect(isWebShareSupported()).toBe(false)
+  })
+})
+
+describe('getEmailShareUrl', () => {
+  it('returns a mailto: link', () => {
+    const result = getEmailShareUrl(TEST_URL)
+    expect(result).toMatch(/^mailto:\?/)
+  })
+
+  it('includes subject param with default value', () => {
+    const result = getEmailShareUrl(TEST_URL)
+    const params = new URLSearchParams(result.replace('mailto:?', ''))
+    expect(params.get('subject')).toBe('Crypto invoice via VoidPay')
+  })
+
+  it('includes body param containing the invoice URL', () => {
+    const result = getEmailShareUrl(TEST_URL)
+    const params = new URLSearchParams(result.replace('mailto:?', ''))
+    expect(params.get('body')).toContain(TEST_URL)
+  })
+
+  it('includes default body prefix text', () => {
+    const result = getEmailShareUrl(TEST_URL)
+    const params = new URLSearchParams(result.replace('mailto:?', ''))
+    expect(params.get('body')).toContain(
+      'I just sent you a crypto invoice via VoidPay. Open the link to view and pay:'
+    )
+  })
+
+  it('accepts custom subject override', () => {
+    const result = getEmailShareUrl(TEST_URL, { subject: 'Your invoice' })
+    const params = new URLSearchParams(result.replace('mailto:?', ''))
+    expect(params.get('subject')).toBe('Your invoice')
+  })
+
+  it('accepts custom body override and still appends the invoice URL', () => {
+    const result = getEmailShareUrl(TEST_URL, { body: 'Here is your invoice:' })
+    const params = new URLSearchParams(result.replace('mailto:?', ''))
+    const body = params.get('body')
+    expect(body).toContain('Here is your invoice:')
+    expect(body).toContain(TEST_URL)
+  })
+
+  it('properly encodes special characters in URL within body', () => {
+    const urlWithSpecialChars = 'https://voidpay.xyz/pay#data=foo&bar=baz'
+    const result = getEmailShareUrl(urlWithSpecialChars)
+    const params = new URLSearchParams(result.replace('mailto:?', ''))
+    expect(params.get('body')).toContain(urlWithSpecialChars)
   })
 })
 

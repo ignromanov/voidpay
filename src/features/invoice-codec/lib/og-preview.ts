@@ -17,6 +17,8 @@ export interface OGPreviewData {
   network: string
   /** Sender name (optional, max 20 chars) */
   from?: string
+  /** Recipient name (optional, max 20 chars) */
+  to?: string
   /** Due date in MMDD format (optional) */
   due?: string
 }
@@ -53,15 +55,19 @@ export function encodeOGPreview(invoice: Invoice): string {
   parts.push(networkCode)
 
   // 5. Sender name (optional, truncate to 20 chars, URL-safe)
+  //    Spaces encoded as ~ (tilde) to preserve hyphens in names like "Smith-Johnson"
   if (invoice.from.name) {
-    const safeName = invoice.from.name
-      .slice(0, 20)
-      .replace(/[_#?&=%]/g, '') // Remove URL-unsafe chars and delimiter
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-') // Collapse multiple hyphens
-      .replace(/^-|-$/g, '') // Trim leading/trailing hyphens
+    const safeName = sanitizeOGName(invoice.from.name)
     if (safeName) {
       parts.push(safeName)
+
+      // 5b. Recipient name (optional, only if from was encoded)
+      if (invoice.client.name) {
+        const safeToName = sanitizeOGName(invoice.client.name)
+        if (safeToName) {
+          parts.push(safeToName)
+        }
+      }
     }
   }
 
@@ -96,15 +102,34 @@ export function decodeOGPreview(ogString: string): OGPreviewData {
     network: parts[3] ?? '',
   }
 
-  // Optional: sender name (5th part)
-  if (parts.length >= 5 && parts[4] && !/^\d{4}$/.test(parts[4])) {
-    result.from = parts[4]
-  }
+  // Parse optional trailing parts: [from[_to]][_due]
+  // Due is always 4 digits (MMDD), distinguishable from name fields.
+  const extra = parts.slice(4)
 
-  // Optional: due date (5th or 6th part, always 4 digits MMDD)
-  const lastPart = parts[parts.length - 1]
-  if (lastPart && /^\d{4}$/.test(lastPart)) {
-    result.due = lastPart
+  if (extra.length === 1) {
+    // 5 parts: if 4 digits → due, else → from
+    if (/^\d{4}$/.test(extra[0]!)) {
+      result.due = extra[0]!
+    } else {
+      result.from = restoreOGName(extra[0]!)
+    }
+  } else if (extra.length === 2) {
+    // 6 parts: if last is 4 digits → from + due, else → from + to
+    if (/^\d{4}$/.test(extra[1]!)) {
+      result.from = restoreOGName(extra[0]!)
+      result.due = extra[1]!
+    } else {
+      result.from = restoreOGName(extra[0]!)
+      result.to = restoreOGName(extra[1]!)
+    }
+  } else if (extra.length >= 3) {
+    // 7+ parts: from + to + due (last 4 digits)
+    result.from = restoreOGName(extra[0]!)
+    result.to = restoreOGName(extra[1]!)
+    const lastPart = extra[extra.length - 1]
+    if (lastPart && /^\d{4}$/.test(lastPart)) {
+      result.due = lastPart
+    }
   }
 
   return result
@@ -115,6 +140,25 @@ export function decodeOGPreview(ogString: string): OGPreviewData {
  */
 export function getNetworkIdFromCode(code: string): number | undefined {
   return NETWORK_CODES_REVERSE[code.toLowerCase()]
+}
+
+/**
+ * Sanitize a name for OG URL encoding.
+ * Spaces → ~ (tilde, URL-safe, preserves hyphens in names like "Smith-Johnson").
+ * Only alphanumeric, hyphens, and tildes allowed.
+ */
+function sanitizeOGName(name: string): string {
+  return name
+    .slice(0, 20)
+    .replace(/[\s_]+/g, '~')          // Spaces and underscores → ~ (both are word separators)
+    .replace(/[^a-zA-Z0-9~-]/g, '')   // Allowlist: alphanumeric, ~, -
+    .replace(/~+/g, '~')              // Collapse multiple tildes
+    .replace(/^[~-]+|[~-]+$/g, '')    // Trim leading/trailing separators
+}
+
+/** Restore ~ back to spaces in decoded OG name */
+function restoreOGName(encoded: string): string {
+  return encoded.replace(/~/g, ' ')
 }
 
 /**
@@ -130,8 +174,13 @@ function calculateTotal(invoice: Invoice): string {
   // OG preview URLs should NOT use thousand separators (avoid URL parsing issues)
   const formatOpts = { useGrouping: false }
 
-  // Use pre-calculated total if available (from URL)
+  // Use pre-calculated total if available, but subtract MagicDust
+  // OG preview should show the "clean" amount the user set, not the MagicDust-enhanced one
   if (invoice.total) {
+    if (invoice.magicDust && invoice.magicDust !== '0') {
+      const subtotal = (BigInt(invoice.total) - BigInt(invoice.magicDust)).toString()
+      return formatAmount(subtotal, decimals, formatOpts)
+    }
     return formatAmount(invoice.total, decimals, formatOpts)
   }
 

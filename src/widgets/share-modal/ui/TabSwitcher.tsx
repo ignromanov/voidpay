@@ -14,14 +14,16 @@ interface TabSwitcherProps {
  */
 export function TabSwitcher({ activeTab, onTabChange }: TabSwitcherProps) {
   return (
-    <div className="flex rounded-xl border border-zinc-800 bg-zinc-950/50 p-1">
+    <div role="tablist" className="flex rounded-lg border border-zinc-800 bg-zinc-950/50 p-1">
       <button
         type="button"
+        role="tab"
+        aria-selected={activeTab === 'link'}
         onClick={() => onTabChange('link')}
         className={cn(
           'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-2 text-sm font-bold transition-colors',
           activeTab === 'link'
-            ? 'bg-zinc-800 text-white shadow-sm'
+            ? 'bg-zinc-800 text-zinc-100 shadow-sm'
             : 'text-zinc-500 hover:text-zinc-300'
         )}
       >
@@ -29,11 +31,13 @@ export function TabSwitcher({ activeTab, onTabChange }: TabSwitcherProps) {
       </button>
       <button
         type="button"
+        role="tab"
+        aria-selected={activeTab === 'qr'}
         onClick={() => onTabChange('qr')}
         className={cn(
           'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-2 text-sm font-bold transition-colors',
           activeTab === 'qr'
-            ? 'bg-zinc-800 text-white shadow-sm'
+            ? 'bg-zinc-800 text-zinc-100 shadow-sm'
             : 'text-zinc-500 hover:text-zinc-300'
         )}
       >

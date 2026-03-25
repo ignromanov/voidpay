@@ -56,4 +56,6 @@ export interface PaymentPanelProps {
   finalized?: boolean
   /** Whether a chain reorg was detected */
   reorgDetected?: boolean
+  /** Called to open the share modal (creator side — replaces QR in footer) */
+  onShareOpen?: () => void
 }

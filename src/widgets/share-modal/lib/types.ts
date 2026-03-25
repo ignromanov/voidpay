@@ -11,20 +11,16 @@ export type ShareTab = 'link' | 'qr'
 
 /** Props for the ShareModal component */
 export interface ShareModalProps {
-  /** Invoice URL to share */
+  /** Invoice URL to share (the /pay URL with hash) */
   url: string
-  /** Invoice data for display */
-  invoice: Invoice
+  /** Invoice data for display (null while decoding) */
+  invoice: Invoice | null
   /** Modal open state */
   open: boolean
   /** Close handler */
   onOpenChange: (open: boolean) => void
-}
-
-/** Internal state for ShareModal (transient, not persisted) */
-export interface ShareModalState {
-  /** Active tab in modal */
-  activeTab: ShareTab
-  /** Copy button success state */
-  copied: boolean
+  /** Whether OG preview params are included in URL */
+  includeOg: boolean
+  /** Handler for OG toggle change */
+  onOgToggle: (include: boolean) => void
 }

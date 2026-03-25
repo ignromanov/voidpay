@@ -17,6 +17,7 @@ import {
   polygonAmoy,
 } from 'viem/chains'
 import { HexagonIcon, TriangleIcon, ZapIcon } from '@/shared/ui/icons'
+import { NETWORK_CODES, type NetworkId } from './networks'
 
 /**
  * Network name type for UI theming
@@ -123,6 +124,17 @@ const TESTNET_NETWORK_CONFIG: NetworkConfig[] = Object.entries(TESTNET_PARENT).m
 )
 
 /**
+ * Network short code → display name (derived from NETWORK_CONFIG + TESTNET_NETWORK_CONFIG).
+ * Used by server-side renderers (OG images, PDF) where chain objects are unavailable.
+ */
+export const NETWORK_CODE_NAMES: Record<string, string> = Object.fromEntries(
+  [...NETWORK_CONFIG, ...TESTNET_NETWORK_CONFIG].map((c) => [
+    NETWORK_CODES[c.chainId as NetworkId],
+    c.name,
+  ]),
+)
+
+/**
  * Get network configs based on environment configuration
  * Returns mainnet-only by default, includes testnets when NEXT_PUBLIC_ENABLE_TESTNETS=true
  * Mirrors getSupportedChains() pattern from chains.ts
@@ -167,6 +179,24 @@ export const BLOCK_EXPLORERS: Record<number, { name: string; url: string }> = {
   [arbitrumSepolia.id]: { name: 'Arbiscan Sepolia', url: 'https://sepolia.arbiscan.io' },
   [optimismSepolia.id]: { name: 'OP Sepolia Blockscout', url: 'https://optimism-sepolia.blockscout.com' },
   [polygonAmoy.id]: { name: 'Amoy Polygonscan', url: 'https://amoy.polygonscan.com' },
+}
+
+/**
+ * Network brand colors as hex values (for server-side rendering: OG images, PDF, etc.)
+ * Mirrors colorClass Tailwind values — keep in sync with NETWORK_CONFIG above.
+ *
+ * Keyed by network short code (from NETWORK_CODES) for use in OG preview routes
+ * where chain IDs are not available.
+ */
+export const NETWORK_CODE_COLORS: Record<string, string> = {
+  eth: '#818CF8', // indigo-400
+  arb: '#60A5FA', // blue-400
+  op: '#F87171', // red-400
+  poly: '#C084FC', // purple-400
+  sep: '#818CF8', // inherits ethereum
+  'arb-sep': '#60A5FA', // inherits arbitrum
+  'op-sep': '#F87171', // inherits optimism
+  amoy: '#C084FC', // inherits polygon
 }
 
 /**

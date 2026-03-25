@@ -188,7 +188,6 @@ export function SmartPayButton({
       <Button
         variant="void"
         size="lg"
-        noOverlay
         className={`h-14 w-full ${isSuccessState ? 'pointer-events-none' : ''}`}
         disabled={buttonDisabled}
         onClick={devOverride ? undefined : handlePay}

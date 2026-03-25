@@ -1,15 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   ScaledInvoicePreview,
   InvoicePaper,
 } from '@/widgets/invoice-paper'
 import { PaymentPanel, StatusBadge, MinimizedPill, useInvoiceView } from '@/widgets/payment-panel'
+import { ShareModal } from '@/widgets/share-modal'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
+import { urlToRoute } from '@/shared/lib/navigation'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import type { InvoiceViewState } from '@/widgets/payment-panel'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
@@ -87,18 +89,43 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
     finalized, exactTotal, polling, verifyTxHash, isSyncing,
   } = view
 
+  const searchParams = useSearchParams()
+  const shareParam = searchParams.get('share')
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+  const router = useRouter()
+  const [isShareOpen, setIsShareOpen] = useState(false)
+  const includeOg = useCreatorStore((s) => s.preferences.includeOgImage ?? true)
+  const updatePreferences = useCreatorStore((s) => s.updatePreferences)
 
   const networkId = invoice.networkId
   const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
   const invoiceStatus = panelStatus === 'overdue' ? 'overdue' as const : 'pending' as const
   const isNotYetPayable = invoice.issuedAt > Math.floor(Date.now() / 1000)
-  const [payUrl, setPayUrl] = useState('')
+  const [payUrl] = useState(() => `/pay${typeof window !== 'undefined' ? window.location.hash : ''}`)
 
+  // Auto-open ShareModal on ?share=1
   useEffect(() => {
-    setPayUrl(`/pay${window.location.hash}`)
-  }, [])
+    if (shareParam === '1') {
+      setIsShareOpen(true)
+    }
+  }, [shareParam])
+
+  // Sync ?share= param with modal state
+  const handleShareOpenChange = useCallback((open: boolean) => {
+    setIsShareOpen(open)
+    const url = new URL(window.location.href)
+    if (open) {
+      url.searchParams.set('share', '1')
+    } else {
+      url.searchParams.delete('share')
+    }
+    router.replace(urlToRoute(url))
+  }, [router])
+
+  const handleOgToggle = useCallback((include: boolean) => {
+    updatePreferences({ includeOgImage: include })
+  }, [updatePreferences])
 
   return (
     <>
@@ -157,12 +184,14 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                     {...(confirmations ? { confirmations } : {})}
                     finalized={finalized}
                     pollingMode={polling.mode}
+                    onShareOpen={() => handleShareOpenChange(true)}
                   />
                 ) : (
                   <PaymentPanel
                     invoice={invoice}
                     status={panelStatus}
                     source="created"
+                    onShareOpen={() => handleShareOpenChange(true)}
                     {...(storedError ? { error: storedError } : {})}
                     onDismissError={dismissError}
                     pollingMode={polling.mode}
@@ -200,6 +229,18 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Share modal — uses the /pay URL */}
+      {payUrl && (
+        <ShareModal
+          url={payUrl}
+          invoice={invoice}
+          open={isShareOpen}
+          onOpenChange={handleShareOpenChange}
+          includeOg={includeOg}
+          onOgToggle={handleOgToggle}
+        />
+      )}
 
       {isPreviewOpen && (isPaid && txHash ? (
         <InvoicePreviewModal

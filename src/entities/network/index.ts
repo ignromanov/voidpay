@@ -30,6 +30,8 @@ export {
 // Network UI configuration (from config layer)
 export {
   NETWORK_CONFIG,
+  NETWORK_CODE_COLORS,
+  NETWORK_CODE_NAMES,
   NETWORK_GLOWS,
   NETWORK_GLOW_SHADOWS,
   NETWORK_GLOW_BORDERS,
