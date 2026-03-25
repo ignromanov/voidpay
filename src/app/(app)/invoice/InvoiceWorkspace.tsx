@@ -95,7 +95,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
   const [isMinimized, setIsMinimized] = useState(false)
   const router = useRouter()
   const [isShareOpen, setIsShareOpen] = useState(false)
-  const includeOg = useCreatorStore((s) => s.preferences.includeOgImage ?? false)
+  const includeOg = useCreatorStore((s) => s.preferences.includeOgImage ?? true)
   const updatePreferences = useCreatorStore((s) => s.updatePreferences)
 
   const networkId = invoice.networkId

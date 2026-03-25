@@ -1,7 +1,7 @@
 'use client'
 
 import { CheckIcon, CopyIcon, LockIcon, MailIcon, SendIcon, TwitterIcon } from '@/shared/ui/icons'
-import { motion, AnimatePresence } from '@/shared/ui/motion'
+import { motion } from '@/shared/ui/motion'
 import { Button } from '@/shared/ui/button'
 import { Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
@@ -99,47 +99,25 @@ export function LinkTab({
         </div>
       </div>
 
-      <motion.div
-        className="w-full"
-        whileHover={{ scale: 1.015 }}
-        whileTap={{ scale: 0.985 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+      <Button
+        variant="void"
+        className="h-auto w-full py-3"
+        onClick={onCopy}
       >
-        <Button
-          variant="void"
-          noOverlay
-          className="h-auto w-full py-3"
-          onClick={onCopy}
-        >
-          <AnimatePresence mode="wait">
-            {copied ? (
-              <motion.span
-                key="copied"
-                className="relative z-10 flex items-center gap-2"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 250, damping: 20 }}
-              >
-                <CheckIcon size={18} className="text-emerald-400" />
-                <span className="text-sm font-medium">Copied!</span>
-              </motion.span>
-            ) : (
-              <motion.span
-                key="copy"
-                className="relative z-10 flex items-center gap-2"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ duration: 0.15 }}
-              >
-                <CopyIcon size={18} />
-                <span className="text-sm font-medium">Copy Link</span>
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </Button>
-      </motion.div>
+        <span className="relative z-10 flex items-center gap-2">
+          {copied ? (
+            <>
+              <CheckIcon size={18} className="text-emerald-400" />
+              <span className="text-sm font-medium">Copied!</span>
+            </>
+          ) : (
+            <>
+              <CopyIcon size={18} />
+              <span className="text-sm font-medium">Copy Link</span>
+            </>
+          )}
+        </span>
+      </Button>
 
       <div className="grid grid-cols-3 gap-2">
         <a
@@ -147,7 +125,7 @@ export function LinkTab({
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Share invoice via Telegram"
-          className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[#0088cc]/20 bg-[#0088cc]/10 px-3 py-2.5 text-xs font-semibold text-[#0088cc] transition-all hover:bg-[#0088cc]/15 hover:shadow-[0_0_12px_-3px_rgba(0,136,204,0.2)] active:scale-95"
+          className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[#0088cc]/20 bg-[#0088cc]/10 px-3 py-2.5 text-xs font-semibold text-[#0088cc] transition-all hover:bg-[#0088cc]/15 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#0088cc]/50 active:scale-95"
         >
           <SendIcon size={14} /> Telegram
         </a>
@@ -156,20 +134,20 @@ export function LinkTab({
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Share invoice via Twitter"
-          className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-semibold text-white transition-all hover:bg-white/10 hover:shadow-[0_0_12px_-3px_rgba(255,255,255,0.1)] active:scale-95"
+          className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-semibold text-white transition-all hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30 active:scale-95"
         >
           <TwitterIcon size={14} /> Twitter
         </a>
         <a
           href={emailUrl}
           aria-label="Share invoice via Email"
-          className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2.5 text-xs font-semibold text-amber-500 transition-all hover:bg-amber-500/15 hover:shadow-[0_0_12px_-3px_rgba(245,158,11,0.2)] active:scale-95"
+          className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2.5 text-xs font-semibold text-rose-400 transition-all hover:bg-rose-500/15 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-500/50 active:scale-95"
         >
           <MailIcon size={14} /> Email
         </a>
       </div>
 
-      <label className="flex cursor-pointer items-center gap-2.5 rounded-md px-1 py-1.5 transition-colors focus-within:ring-2 focus-within:ring-amber-500 focus-within:ring-offset-2 focus-within:ring-offset-zinc-950">
+      <label className="flex cursor-pointer items-center gap-2.5 rounded-md px-1 py-1.5 transition-colors focus-within:ring-1 focus-within:ring-amber-500/50">
         <input
           type="checkbox"
           checked={includeOg}

@@ -1,32 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
 import { Button } from '../button'
-import * as React from 'react'
-
-// Mock useReducedMotion hook to always return false (enable animations in tests)
-vi.mock('../hooks/use-reduced-motion', () => ({
-  useReducedMotion: vi.fn(() => false),
-}))
-
-// Mock framer-motion components for simplified rendering
-vi.mock('framer-motion', async () => {
-  const actual = await vi.importActual('framer-motion')
-  return {
-    ...actual,
-    motion: {
-      div: ({ children, ...props }: React.ComponentProps<'div'>) => (
-        <div {...props}>{children}</div>
-      ),
-    },
-  }
-})
 
 describe('Button void variant', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  describe('T030-test: Idle state (6s rotation)', () => {
+  describe('Rendering', () => {
     it('should render void variant button', () => {
       const { container } = render(<Button variant="void">Click me</Button>)
 
@@ -35,76 +16,17 @@ describe('Button void variant', () => {
       expect(button?.getAttribute('class')).toContain('relative')
     })
 
-    it('should have accretion disk overlay in idle state', () => {
+    it('should apply void variant classes', () => {
       const { container } = render(<Button variant="void">Click me</Button>)
 
-      // Should contain the accretion disk overlay element
-      const overlay = container.querySelector('[data-accretion-disk]')
-      expect(overlay).toBeInTheDocument()
-    })
-
-    it('should have idle animation class (6s rotation)', () => {
-      const { container } = render(<Button variant="void">Click me</Button>)
-
-      const overlay = container.querySelector('[data-accretion-disk]')
-      expect(overlay?.getAttribute('class')).toContain('animate-accretion-idle')
+      const button = container.querySelector('button')
+      expect(button?.getAttribute('class')).toContain('bg-black')
+      expect(button?.getAttribute('class')).toContain('overflow-hidden')
     })
   })
 
-  describe('T031-test: Hover state (2s rotation, glow intensify)', () => {
-    it('should apply hover animation class', () => {
-      const { container } = render(
-        <Button variant="void" className="hover-test">
-          Hover me
-        </Button>
-      )
-
-      const button = container.querySelector('button')
-      expect(button).toBeInTheDocument()
-
-      // Hover classes should be in the button or overlay
-      const overlay = container.querySelector('[data-accretion-disk]')
-      expect(overlay).toBeInTheDocument()
-    })
-  })
-
-  describe('T032-test: Loading state (0.5s rotation, expanded glow)', () => {
-    it('should render loading state with isLoading prop', () => {
-      const { container } = render(
-        <Button variant="void" isLoading>
-          Loading...
-        </Button>
-      )
-
-      const button = container.querySelector('button')
-      expect(button).toBeInTheDocument()
-    })
-
-    it('should have loading animation class (0.5s rotation)', () => {
-      const { container } = render(
-        <Button variant="void" isLoading>
-          Loading...
-        </Button>
-      )
-
-      const overlay = container.querySelector('[data-accretion-disk]')
-      expect(overlay?.getAttribute('class')).toContain('animate-accretion-loading')
-    })
-
-    it('should disable button when loading', () => {
-      const { container } = render(
-        <Button variant="void" isLoading>
-          Loading...
-        </Button>
-      )
-
-      const button = container.querySelector('button')
-      expect(button).toBeDisabled()
-    })
-  })
-
-  describe('T033-test: Disabled state (no disk, grayscale)', () => {
-    it('should not show accretion disk when disabled', () => {
+  describe('Disabled state', () => {
+    it('should disable button when disabled prop is set', () => {
       const { container } = render(
         <Button variant="void" disabled>
           Disabled
@@ -113,12 +35,6 @@ describe('Button void variant', () => {
 
       const button = container.querySelector('button')
       expect(button).toBeDisabled()
-
-      // Accretion disk should be hidden or have opacity-0
-      const overlay = container.querySelector('[data-accretion-disk]')
-      if (overlay) {
-        expect(overlay.getAttribute('class')).toMatch(/opacity-0|hidden/)
-      }
     })
 
     it('should apply grayscale filter when disabled', () => {
@@ -133,25 +49,20 @@ describe('Button void variant', () => {
     })
   })
 
-  describe('T034-test: Content text compression on hover', () => {
-    it('should have content wrapper for hover effects', () => {
-      const { container } = render(<Button variant="void">Content</Button>)
+  describe('Loading state', () => {
+    it('should disable button when loading', () => {
+      const { container } = render(
+        <Button variant="void" isLoading>
+          Loading...
+        </Button>
+      )
 
-      // Button content should be wrapped for scale effects
       const button = container.querySelector('button')
-      expect(button?.textContent).toBe('Content')
-    })
-
-    it('should have hover scale class on content', () => {
-      const { container } = render(<Button variant="void">Content</Button>)
-
-      // Content wrapper should have hover scale class
-      const button = container.querySelector('button')
-      expect(button).toBeInTheDocument()
+      expect(button).toBeDisabled()
     })
   })
 
-  describe('Additional void variant tests', () => {
+  describe('Sizes and customization', () => {
     it('should work with different sizes', () => {
       const { container } = render(
         <Button variant="void" size="lg">
@@ -173,7 +84,9 @@ describe('Button void variant', () => {
       const button = container.querySelector('button')
       expect(button?.getAttribute('class')).toContain('custom-void')
     })
+  })
 
+  describe('Click handling', () => {
     it('should handle onClick events', () => {
       const handleClick = vi.fn()
       const { container } = render(

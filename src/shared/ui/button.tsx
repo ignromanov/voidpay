@@ -3,7 +3,6 @@ import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/shared/lib/utils'
-import { VoidButtonOverlay } from './button-void-overlay'
 
 const buttonVariants = cva(
   'inline-flex cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all active:scale-[0.97] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
@@ -38,58 +37,14 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
-  /** Loading state for void variant (triggers maximum spin velocity) */
+  /** Loading state — disables the button */
   isLoading?: boolean
-  /** Skip built-in VoidButtonOverlay + z-10 wrapper (consumer provides own overlay) */
-  noOverlay?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, isLoading, noOverlay, disabled, children, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, isLoading, disabled, children, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button'
-    const isVoidVariant = variant === 'void'
     const isButtonDisabled = disabled || isLoading
-
-    if (isVoidVariant && !noOverlay) {
-      // When asChild is used (e.g., with Link), clone the child element with merged props
-      // This avoids Slot's React.Children.only() error with multiple children
-      if (asChild && React.isValidElement(children)) {
-        type ChildProps = { className?: string; children?: React.ReactNode }
-        const childElement = children as React.ReactElement<ChildProps>
-
-        const voidContent = (
-          <>
-            <VoidButtonOverlay isLoading={isLoading ?? false} isDisabled={disabled ?? false} />
-            <span className="relative z-10 transition-transform group-hover:scale-95">
-              {childElement.props.children}
-            </span>
-          </>
-        )
-
-        return React.cloneElement<ChildProps>(
-          childElement,
-          {
-            className: cn(buttonVariants({ variant, size, className }), childElement.props.className),
-            ...props,
-          } as Partial<ChildProps>,
-          voidContent
-        )
-      }
-
-      return (
-        <button
-          className={cn(buttonVariants({ variant, size, className }))}
-          ref={ref}
-          disabled={isButtonDisabled}
-          {...props}
-        >
-          <VoidButtonOverlay isLoading={isLoading ?? false} isDisabled={disabled ?? false} />
-          <span className="relative z-10 transition-transform group-hover:scale-95">
-            {children}
-          </span>
-        </button>
-      )
-    }
 
     return (
       <Comp
