@@ -31,6 +31,12 @@ export const INVOICE_VIEW_STORE_KEY = `${STORAGE_NAMESPACE}:invoices` as const
 export const HINT_DISMISSED_KEY = `${STORAGE_NAMESPACE}:hint-dismissed` as const
 
 /**
+ * Wagmi wallet storage key (used by createStorage in wagmi config)
+ * Note: wagmi uses its own prefix format (no colon namespace)
+ */
+export const WAGMI_STORAGE_KEY = `${STORAGE_NAMESPACE}-wallet` as const
+
+/**
  * All storage keys used by the application
  */
 export const STORAGE_KEYS = {
@@ -38,4 +44,5 @@ export const STORAGE_KEYS = {
   PAYER: PAYER_STORE_KEY,
   INVOICES: INVOICE_VIEW_STORE_KEY,
   HINT_DISMISSED: HINT_DISMISSED_KEY,
+  WAGMI: WAGMI_STORAGE_KEY,
 } as const

@@ -34,8 +34,7 @@ type ErrorType = 'network' | 'unknown'
 type ProviderProps = { children: ReactNode }
 type WalletButtonProps = { autoConnect?: boolean }
 
-/** wagmi storage key configured in features/wallet-connect/config/wagmi.ts */
-const WAGMI_STORAGE_KEY = 'voidpay-wallet'
+import { WAGMI_STORAGE_KEY } from '@/shared/config'
 
 /**
  * Checks localStorage for a persisted wagmi connection.

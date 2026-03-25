@@ -20,6 +20,7 @@ export {
   CREATOR_STORE_KEY,
   PAYER_STORE_KEY,
   INVOICE_VIEW_STORE_KEY,
+  WAGMI_STORAGE_KEY,
 } from './storage-keys'
 
 // URL constants
