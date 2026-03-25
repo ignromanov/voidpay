@@ -16,6 +16,8 @@ export interface InvoiceItemRowProps {
   onUpdate: (updates: Partial<Omit<LineItem, 'id'>>) => void
   onRemove: () => void
   canRemove: boolean
+  /** When true, highlight invalid fields (empty description, zero rate) */
+  showErrors?: boolean | undefined
 }
 
 /**
@@ -31,7 +33,10 @@ export function InvoiceItemRow({
   onUpdate,
   onRemove,
   canRemove,
+  showErrors = false,
 }: InvoiceItemRowProps) {
+  const qtyId = `qty-${item.id}`
+  const priceId = `price-${item.id}`
   // Local state for human-readable rate input
   // This allows users to type intermediate values like "150." without immediate conversion
   const [rateInput, setRateInput] = useState(() => {
@@ -80,6 +85,10 @@ export function InvoiceItemRow({
     }
   }, [item.rate, decimals])
 
+  // Field-level validation for error highlighting
+  const descriptionEmpty = showErrors && !item.description
+  const rateZero = showErrors && (!item.rate || item.rate === '0')
+
   // Calculate line total using BigInt
   const lineTotal = useMemo(() => {
     const ZERO = BigInt(0)
@@ -100,29 +109,30 @@ export function InvoiceItemRow({
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
-      className="flex flex-col gap-2 overflow-hidden rounded-lg border border-transparent bg-zinc-900/40 p-3 transition-colors hover:border-zinc-800"
+      className="overflow-hidden rounded-lg border border-transparent bg-zinc-900/40 p-3 transition-colors hover:border-zinc-800"
     >
       {/* Top row: Description + Delete */}
       <div className="flex items-center gap-2">
-        <div className="flex-1 min-w-0">
-          <input
-            type="text"
-            placeholder="Item description"
-            value={item.description}
-            maxLength={FIELD_LIMITS.description}
-            onChange={(e) => onUpdate({ description: e.target.value })}
-            aria-label="Item description"
-            autoComplete="off"
-            className="w-full border-b border-zinc-800 bg-transparent py-1 text-sm text-zinc-200 transition-colors outline-none placeholder:text-zinc-700 focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Item description"
+          value={item.description}
+          maxLength={FIELD_LIMITS.description}
+          onChange={(e) => onUpdate({ description: e.target.value })}
+          aria-label="Item description"
+          autoComplete="off"
+          className={cn(
+            'min-w-0 flex-1 border-b bg-transparent py-1 text-sm text-zinc-200 transition-colors outline-none placeholder:text-zinc-700 focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50',
+            descriptionEmpty ? 'border-red-500/50' : 'border-zinc-800'
+          )}
+        />
         <Button
           onClick={onRemove}
           variant="ghost"
           size="icon"
           aria-label="Remove item"
           className={cn(
-            'min-w-[44px] min-h-[44px] p-0 text-zinc-500 opacity-50 transition-opacity hover:text-red-400 hover:opacity-100 hover:bg-red-500/10',
+            'min-h-[44px] min-w-[44px] p-0 text-zinc-500 opacity-50 transition-opacity hover:bg-red-500/10 hover:text-red-400 hover:opacity-100',
             !canRemove && 'invisible'
           )}
         >
@@ -130,23 +140,30 @@ export function InvoiceItemRow({
         </Button>
       </div>
 
-      {/* Bottom row: Qty + Price + Total (right-aligned) */}
-      <div className="flex items-start justify-end gap-2">
-        <div className="w-14 flex-shrink-0">
+      {/* Bottom row: Qty + Price + Total (full-width grid with inline labels) */}
+      <div className="mt-2 grid grid-cols-3 gap-3">
+        <div>
+          <label htmlFor={qtyId} className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+            Qty
+          </label>
           <input
+            id={qtyId}
             type="number"
-            placeholder="Qty"
+            placeholder="1"
             value={item.quantity}
             min={1}
             max={FIELD_LIMITS.maxQuantity}
             onChange={(e) => onUpdate({ quantity: parseFloat(e.target.value) || 1 })}
-            aria-label="Item quantity"
             autoComplete="off"
-            className="w-full border-b border-zinc-800 bg-transparent py-1 text-center text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
+            className="w-full border-b border-zinc-800 bg-transparent py-2 tabular-nums text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
           />
         </div>
-        <div className="w-24 flex-shrink-0">
+        <div>
+          <label htmlFor={priceId} className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+            Price
+          </label>
           <input
+            id={priceId}
             type="text"
             inputMode="decimal"
             placeholder="0.00"
@@ -154,21 +171,24 @@ export function InvoiceItemRow({
             maxLength={FIELD_LIMITS.rate}
             onChange={handleRateChange}
             onBlur={handleRateBlur}
-            aria-label="Item price"
             autoComplete="off"
-            className="w-full border-b border-zinc-800 bg-transparent py-1 text-right text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
+            className={cn(
+              'w-full border-b bg-transparent py-2 text-right tabular-nums text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50',
+              rateZero ? 'border-red-500/50' : 'border-zinc-800'
+            )}
           />
         </div>
-        <div className="w-24 flex-shrink-0 overflow-hidden">
+        <div>
+          <span className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+            Total
+          </span>
           <div
-            className="border-b border-zinc-800 py-1 text-right font-mono text-sm text-zinc-400 truncate"
+            className="truncate border-b border-zinc-800 py-2 text-right font-mono tabular-nums text-sm text-zinc-400"
             title={lineTotal}
           >
             {lineTotal}
           </div>
         </div>
-        {/* Spacer matching delete button width */}
-        <div className="min-w-[44px] flex-shrink-0" />
       </div>
     </motion.div>
   )

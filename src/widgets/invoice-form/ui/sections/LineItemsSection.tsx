@@ -11,13 +11,14 @@ import { InvoiceItemRow } from '../InvoiceItemRow'
 
 export interface LineItemsSectionProps {
   decimals: number
+  submitAttempted?: boolean
 }
 
 /**
  * Line items section with add button and item rows.
  * Manages line items directly via store (not form).
  */
-export function LineItemsSection({ decimals }: LineItemsSectionProps) {
+export function LineItemsSection({ decimals, submitAttempted }: LineItemsSectionProps) {
   const lineItems = useCreatorStore((s) => s.lineItems)
   const addLineItem = useCreatorStore((s) => s.addLineItem)
   const updateLineItem = useCreatorStore((s) => s.updateLineItem)
@@ -44,14 +45,6 @@ export function LineItemsSection({ decimals }: LineItemsSectionProps) {
       </div>
 
       <div className="space-y-2">
-        {/* Column headers — Qty/Price/Total only, aligned with bottom row */}
-        <div className="flex justify-end gap-2 px-3 pb-1 text-xs font-medium uppercase tracking-wide text-zinc-500">
-          <div className="w-14 flex-shrink-0 text-center">Qty</div>
-          <div className="w-24 flex-shrink-0 text-right">Price</div>
-          <div className="w-24 flex-shrink-0 text-right">Total</div>
-          <div className="min-w-[44px] flex-shrink-0" />
-        </div>
-
         <AnimatePresence>
           {lineItems.map((item) => (
             <InvoiceItemRow
@@ -61,6 +54,7 @@ export function LineItemsSection({ decimals }: LineItemsSectionProps) {
               onUpdate={(updates) => updateLineItem(item.id, updates)}
               onRemove={() => removeLineItem(item.id)}
               canRemove={lineItems.length > 1}
+              showErrors={submitAttempted}
             />
           ))}
         </AnimatePresence>

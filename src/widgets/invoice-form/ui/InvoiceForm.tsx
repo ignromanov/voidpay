@@ -56,7 +56,7 @@ export function InvoiceForm({ className, onGenerate, isGenerating = false }: Inv
 
       <PartySection partyType="client" form={form} fieldValidation={fieldValidation} formState={formState} submitAttempted={submitAttempted} />
 
-      <LineItemsSection decimals={decimals ?? 6} />
+      <LineItemsSection decimals={decimals ?? 6} submitAttempted={submitAttempted} />
 
       <TaxDiscountSection form={form} formState={formState} submitAttempted={submitAttempted} />
 
