@@ -6,6 +6,7 @@ import { Button } from '@/shared/ui/button'
 import { Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
 import { toAbsoluteUrl } from '@/shared/config/urls'
+import { CopyOverlay } from './CopyOverlay'
 
 interface LinkTabProps {
   /** Full invoice URL */
@@ -104,6 +105,7 @@ export function LinkTab({
         className="h-auto w-full py-3"
         onClick={onCopy}
       >
+        <CopyOverlay copied={copied} />
         <span className="relative z-10 flex items-center gap-2">
           {copied ? (
             <>
