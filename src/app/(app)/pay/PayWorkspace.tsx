@@ -21,6 +21,7 @@ import { usePayInvoice } from './use-pay-invoice'
 import type { PayInvoiceState } from './use-pay-invoice'
 import { StatusBadge, MinimizedPill } from '@/widgets/payment-panel'
 import { CreatorHintBanner } from './CreatorHintBanner'
+import { InAppBrowserGuard } from '@/shared/ui/in-app-browser-guard'
 
 /**
  * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.
@@ -148,6 +149,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
       )}
 
       <div className="relative z-10 h-full w-full" data-network={networkId}>
+        <InAppBrowserGuard />
         <StatusBadge status={panelStatus} isSyncing={isSyncing} />
 
         {/* Invoice Preview — centered in safe zone */}
