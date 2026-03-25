@@ -13,6 +13,7 @@ import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
 import { urlToRoute } from '@/shared/lib/navigation'
 import type { Invoice } from '@/shared/lib/invoice-types'
+import { nowUnix } from '@/shared/lib/date-time'
 import type { InvoiceViewState } from '@/widgets/payment-panel'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
@@ -101,7 +102,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
   const networkId = invoice.networkId
   const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
   const invoiceStatus = panelStatus === 'overdue' ? 'overdue' as const : 'pending' as const
-  const isNotYetPayable = invoice.issuedAt > Math.floor(Date.now() / 1000)
+  const isNotYetPayable = invoice.issuedAt > nowUnix()
   const [payUrl] = useState(() => `/pay${typeof window !== 'undefined' ? window.location.hash : ''}`)
 
   // Auto-open ShareModal on ?share=1

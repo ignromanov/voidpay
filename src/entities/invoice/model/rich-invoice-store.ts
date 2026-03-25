@@ -183,6 +183,9 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
               const { confirmations: _c, ...rest } = inv
               return rest
             }
+            // Same-value guard: skip update if nothing changed
+            if (inv.confirmations?.current === confirmations.current &&
+                inv.confirmations?.required === confirmations.required) return inv
             return { ...inv, confirmations }
           }),
         }))

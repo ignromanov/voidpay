@@ -53,9 +53,19 @@ interface MemoryRecord {
 
 const memoryStore = new Map<string, MemoryRecord>()
 const WINDOW_MS = 60 * 1000
+let memoryCallCount = 0
 
 function memoryRateLimit(identifier: string): { allowed: boolean; remaining: number; limit: number } {
   const now = Date.now()
+
+  // Sweep expired entries every 100 calls to prevent unbounded growth
+  if (++memoryCallCount >= 100) {
+    memoryCallCount = 0
+    for (const [key, rec] of memoryStore) {
+      if (now > rec.resetAt) memoryStore.delete(key)
+    }
+  }
+
   const record = memoryStore.get(identifier)
 
   if (!record || now > record.resetAt) {

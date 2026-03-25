@@ -6,6 +6,8 @@
  * No React dependencies — safe for Edge runtime.
  */
 
+import { nowUnix } from '@/shared/lib/date-time'
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -96,7 +98,7 @@ export function estimateFromBlockHex(chainId: number, issuedAtUnix: number): str
   const avgBlockTimeMs = AVG_BLOCK_TIME_MS[chainId]
   if (!avgBlockTimeMs) return '0x1'
 
-  const twoDaysAgoSec = Math.floor(Date.now() / 1000) - 2 * 86400
+  const twoDaysAgoSec = nowUnix() - 2 * 86400
   const clampedIssuedAt = Math.min(issuedAtUnix, twoDaysAgoSec)
 
   const issuedAtMs = clampedIssuedAt * 1000

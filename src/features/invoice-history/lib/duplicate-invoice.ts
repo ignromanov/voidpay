@@ -63,7 +63,6 @@ export async function duplicateFromUrl(invoiceUrl: string): Promise<string | nul
     ? invoiceItemsToLineItems(invoice.items)
     : [createDefaultLineItem()]
 
-  useCreatorStore.getState()
   useCreatorStore.setState({
     activeDraft: newDraft,
     lineItems: restoredLineItems,

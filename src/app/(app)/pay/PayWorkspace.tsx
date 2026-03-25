@@ -11,6 +11,7 @@ import { PaymentPanel, DevStatusToggle, DevPaymentStepToggle } from '@/widgets/p
 import type { DevPaymentVisualStep, PaymentError } from '@/features/payment'
 import { useFinalizationToast } from '@/features/payment'
 import type { Invoice } from '@/shared/lib/invoice-types'
+import { nowUnix } from '@/shared/lib/date-time'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { ChevronDownIcon } from '@/shared/ui/icons'
@@ -131,7 +132,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
   const networkId = invoice.networkId
   const isPaid = panelStatus === 'paid' || panelStatus === 'confirming'
   const invoiceStatus = panelStatus === 'overdue' ? 'overdue' as const : 'pending' as const
-  const isNotYetPayable = invoice.issuedAt > Math.floor(Date.now() / 1000)
+  const isNotYetPayable = invoice.issuedAt > nowUnix()
 
   return (
     <>

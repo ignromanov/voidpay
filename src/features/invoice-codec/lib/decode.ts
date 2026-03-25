@@ -22,6 +22,9 @@ import { decodeChainId } from './chain-dict'
 import { reverseDict } from './app-dict'
 import type { Address } from 'viem'
 
+/** Pre-computed set of known TLV types (hoisted to avoid per-decode allocation) */
+const KNOWN_TLV_TYPES = new Set<number>(Object.values(TlvType))
+
 /** Decode a Uint8Array to UTF-8 string */
 function decodeUtf8(bytes: Uint8Array): string {
   return new TextDecoder().decode(bytes)
@@ -139,9 +142,8 @@ export async function decodeInvoice(compressed: string): Promise<Invoice> {
     }
 
     // 6. Check for unknown required (even) types
-    const knownTypes = new Set<number>(Object.values(TlvType))
     for (const record of allRecords) {
-      if (isRequired(record.type) && !knownTypes.has(record.type)) {
+      if (isRequired(record.type) && !KNOWN_TLV_TYPES.has(record.type)) {
         throw new Error(`Unknown required TLV type: ${record.type}`)
       }
     }

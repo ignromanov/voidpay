@@ -22,14 +22,10 @@ import { useAccount, useChainId } from 'wagmi'
 import { WalletIcon, ChevronDownIcon } from '@/shared/ui/icons'
 import { NetworkIcon } from '@/shared/ui/network-icon'
 import { Button } from '@/shared/ui/button'
+import { truncateAddress } from '@/shared/lib/validation'
 
 export interface WalletButtonProps {
   autoConnect?: boolean
-}
-
-function truncateAddress(address: string): string {
-  if (address.length <= 10) return address
-  return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
 /**

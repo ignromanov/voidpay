@@ -7,6 +7,7 @@ import { Card } from '@/shared/ui/card'
 import { Heading, Text } from '@/shared/ui/typography'
 import { SOCIAL_URLS } from '@/shared/config/urls'
 import { cn } from '@/shared/lib/utils'
+import { copyToClipboard } from '@/shared/lib/clipboard'
 
 export interface AppErrorScreenProps {
   /** Error title displayed to the user */
@@ -54,12 +55,10 @@ export function AppErrorScreen({
   const errorDetails = buildErrorDetails(error, digest)
 
   const handleCopyDetails = async () => {
-    try {
-      await navigator.clipboard.writeText(errorDetails)
+    const ok = await copyToClipboard(errorDetails)
+    if (ok) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // Clipboard API may not be available
     }
   }
 

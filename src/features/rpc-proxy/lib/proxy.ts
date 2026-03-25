@@ -151,15 +151,10 @@ async function fetchProvider(
 /**
  * Determine if an error code is retryable (should trigger failover)
  */
-function isRetryableError(code: number): boolean {
-  // Retryable errors: rate limits, server errors, timeouts
-  const retryableCodes = [
-    -32603, // Internal error
-    -32000, // Server error
-    429, // Rate limit (some providers use this)
-  ]
+const RETRYABLE_CODES = new Set([-32603, -32000, 429])
 
-  return retryableCodes.includes(code)
+function isRetryableError(code: number): boolean {
+  return RETRYABLE_CODES.has(code)
 }
 
 /**

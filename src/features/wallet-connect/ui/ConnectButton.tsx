@@ -9,20 +9,7 @@
 
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { cn } from '@/shared/lib/utils'
-
-/**
- * Truncate an Ethereum address for display
- *
- * @param address - Full Ethereum address (0x...)
- * @param startChars - Number of characters to show at start (default: 6)
- * @param endChars - Number of characters to show at end (default: 4)
- * @returns Truncated address (e.g., "0x1234...5678")
- */
-export function truncateAddress(address: string, startChars = 6, endChars = 4): string {
-  if (!address) return ''
-  if (address.length <= startChars + endChars) return address
-  return `${address.slice(0, startChars)}...${address.slice(-endChars)}`
-}
+import { truncateAddress } from '@/shared/lib/validation'
 
 /**
  * Props for ConnectWalletButton component

@@ -10,4 +10,5 @@ export {
   validateAddress,
   isValidAddress,
   addressesMatch,
+  truncateAddress,
 } from './ethereum'

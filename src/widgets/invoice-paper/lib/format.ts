@@ -30,15 +30,4 @@ export function formatRate(val: string | number): string {
   return formatted.replace(/(\.\d{2,})0+$/, '$1').replace(/(\.\d{2})0+$/, '$1')
 }
 
-/**
- * Format a wallet address for display (e.g., "0x1234...5678").
- */
-export function formatShortAddress(addr: string): string {
-  if (!addr || addr.length < 10) return addr
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`
-}
-
-/**
- * Alias for formatShortAddress for semantic clarity.
- */
-export const truncateAddress = formatShortAddress
+export { truncateAddress, truncateAddress as formatShortAddress } from '@/shared/lib/validation'
