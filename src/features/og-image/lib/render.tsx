@@ -29,9 +29,9 @@ export type OGType = keyof typeof OG_SIZES
 /** Font entry for Satori ImageResponse */
 export type OGFont = { name: string; data: ArrayBuffer; weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900; style: 'normal' }
 
-// Geist font loading — dynamic import of node:fs to avoid bundler issues
-// Reads from public/fonts/ (available both locally and on Vercel)
-// Caches the Promise (not the result) to prevent duplicate file reads on concurrent cold-start requests
+// Geist font loading via fetch from public/ (served by CDN, not filesystem)
+// On Vercel: public/ files are on CDN, NOT in the serverless function bundle (/var/task/)
+// Caches the Promise to prevent duplicate fetches on concurrent cold-start requests
 let fontsPromise: Promise<OGFont[]> | undefined
 
 function loadFonts(): Promise<OGFont[]> {
@@ -41,23 +41,24 @@ function loadFonts(): Promise<OGFont[]> {
   return fontsPromise
 }
 
+function getFontsBaseUrl(): string {
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  return `http://localhost:${process.env.PORT || 3000}`
+}
+
 async function loadFontsImpl(): Promise<OGFont[]> {
-  const { readFile } = await import(/* webpackIgnore: true */ 'node:fs/promises')
-  const { join } = await import(/* webpackIgnore: true */ 'node:path')
-  const fontsDir = join(process.cwd(), 'public', 'fonts')
+  const base = getFontsBaseUrl()
 
   const [bold, semiBold, medium] = await Promise.all([
-    readFile(join(fontsDir, 'Geist-Bold.ttf')),
-    readFile(join(fontsDir, 'Geist-SemiBold.ttf')),
-    readFile(join(fontsDir, 'Geist-Medium.ttf')),
+    fetch(`${base}/fonts/Geist-Bold.ttf`).then((r) => r.arrayBuffer()),
+    fetch(`${base}/fonts/Geist-SemiBold.ttf`).then((r) => r.arrayBuffer()),
+    fetch(`${base}/fonts/Geist-Medium.ttf`).then((r) => r.arrayBuffer()),
   ])
 
-  const toAB = (buf: Buffer) => buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer
-
   return [
-    { name: 'Geist', data: toAB(bold), weight: 700, style: 'normal' },
-    { name: 'Geist', data: toAB(semiBold), weight: 600, style: 'normal' },
-    { name: 'Geist', data: toAB(medium), weight: 500, style: 'normal' },
+    { name: 'Geist', data: bold, weight: 700, style: 'normal' },
+    { name: 'Geist', data: semiBold, weight: 600, style: 'normal' },
+    { name: 'Geist', data: medium, weight: 500, style: 'normal' },
   ]
 }
 
