@@ -10,7 +10,6 @@ import type {
   DraftState,
   LineItem,
   InvoiceTemplate,
-  CreationHistoryEntry,
 } from '@/entities/invoice'
 
 /**
@@ -95,9 +94,6 @@ export interface CreatorStoreV1 {
   /** Saved templates for reuse */
   templates: InvoiceTemplate[]
 
-  /** Creation history (auto-pruned at 100 entries) */
-  history: CreationHistoryEntry[]
-
   /** User preferences (default settings) */
   preferences: UserPreferences
 
@@ -106,4 +102,4 @@ export interface CreatorStoreV1 {
 }
 
 // Re-export invoice types for convenience
-export type { DraftState, LineItem, InvoiceTemplate, CreationHistoryEntry }
+export type { DraftState, LineItem, InvoiceTemplate }

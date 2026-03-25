@@ -1,17 +1,16 @@
 import type { Metadata } from 'next'
 import { decodeOGPreview } from '@/features/invoice-codec'
+import { defaultOgImages, dynamicOgImages } from '@/features/og-image'
 import { PayWorkspace } from './PayWorkspace'
 
-/**
- * Default metadata when ?og= parameter is missing
- */
+const DEFAULT_OG = defaultOgImages()
+
 const DEFAULT_METADATA: Metadata = {
   title: 'Pay Invoice | VoidPay',
   description: 'View and pay crypto invoices securely. No signup required.',
-  robots: {
-    index: false,
-    follow: false,
-  },
+  openGraph: { images: DEFAULT_OG.openGraph },
+  twitter: { images: DEFAULT_OG.twitter },
+  robots: { index: false, follow: false },
 }
 
 /**
@@ -42,10 +41,15 @@ export async function generateMetadata({
       return DEFAULT_METADATA
     }
 
-    // Network is a short code (eth, arb, op, poly) - capitalize for display
     const networkDisplayName = preview.network.toUpperCase()
-    const title = `Invoice ${preview.id} | VoidPay`
-    const description = `${preview.amount} ${preview.currency} on ${networkDisplayName}${preview.from ? ` from ${preview.from}` : ''}`
+    const fromTo = [
+      preview.from ? `from ${preview.from}` : '',
+      preview.to ? `to ${preview.to}` : '',
+    ].filter(Boolean).join(' ')
+    const title = `Pay ${preview.amount} ${preview.currency} — Invoice ${preview.id} | VoidPay`
+    const description = `Crypto invoice for ${preview.amount} ${preview.currency} on ${networkDisplayName}${fromTo ? ` ${fromTo}` : ''}. Pay instantly with your wallet — no signup, no tracking. Powered by VoidPay.`
+
+    const images = dynamicOgImages(og)
 
     return {
       title,
@@ -55,11 +59,13 @@ export async function generateMetadata({
         description,
         type: 'website',
         siteName: 'VoidPay',
+        images: images.openGraph,
       },
       twitter: {
-        card: 'summary',
+        card: 'summary_large_image',
         title,
         description,
+        images: images.twitter,
       },
       robots: {
         index: false,

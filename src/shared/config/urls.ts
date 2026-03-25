@@ -29,6 +29,14 @@ export const SOCIAL_URLS = {
 } as const
 
 /**
+ * Ensure a URL is absolute.
+ * Relative paths like `/pay#hash` become `https://voidpay.xyz/pay#hash`.
+ */
+export function toAbsoluteUrl(url: string): string {
+  return url.startsWith('http') ? url : `${getAppBaseUrl()}${url}`
+}
+
+/**
  * Get the application base URL
  * Supports environment variable override for staging/preview deployments
  */

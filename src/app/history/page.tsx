@@ -4,15 +4,18 @@
  * Invoice History Page
  *
  * Displays all invoices from both stores:
- * - Created invoices (from useCreatorStore.history)
- * - Received invoices (from useTrackedInvoiceStore, source: 'received')
+ * - Created invoices (from TrackedInvoiceStore, source: 'created')
+ * - Received invoices (from TrackedInvoiceStore, source: 'received')
  */
 
-import { Suspense } from 'react'
+import { Suspense, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { useCreatorStore } from '@/entities/creator'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
+import { parseInvoiceHash } from '@/features/invoice-codec'
+import { useBatchCheck } from '@/features/payment'
+import type { DecodedBatchInvoice } from '@/features/payment'
 import { HistoryList, ReceivedInvoiceList } from '@/features/invoice-history'
+import { Loader2Icon } from '@/shared/ui/icons'
 import { useReceivedInvoices } from './use-received-invoices'
 
 function HistorySkeleton() {
@@ -44,18 +47,43 @@ export default function HistoryPage() {
   )
 }
 
+async function decodeInvoiceUrl(url: string): Promise<DecodedBatchInvoice | null> {
+  try {
+    const hash = new URL(url).hash.slice(1)
+    const result = await parseInvoiceHash(hash)
+    if (!result.success) return null
+    const inv = result.data
+    return {
+      toAddress: inv.from?.walletAddress ?? '',
+      networkId: inv.networkId,
+      ...(inv.tokenAddress ? { tokenAddress: inv.tokenAddress } : {}),
+      total: inv.total ?? '0',
+      issuedAt: inv.issuedAt,
+    }
+  } catch {
+    return null
+  }
+}
+
 function HistoryPageContent() {
   const searchParams = useSearchParams()
   const debug =
     process.env.NODE_ENV === 'development' || searchParams.get('debug') === '1'
 
-  const creatorHydrated = useCreatorStore.persist.hasHydrated()
   const trackedHydrated = useTrackedInvoiceStore.persist.hasHydrated()
 
-  const createdCount = useCreatorStore((s) => s.history.length)
+  const createdCount = useTrackedInvoiceStore((s) =>
+    s.invoices.filter((inv) => inv.source === 'created').length
+  )
+  const pendingCount = useTrackedInvoiceStore((s) =>
+    s.invoices.filter((inv) => inv.source === 'created' && !inv.txHash).length
+  )
   const receivedInvoices = useReceivedInvoices()
 
-  if (!creatorHydrated || !trackedHydrated) {
+  const decode = useCallback(decodeInvoiceUrl, [])
+  const { isChecking, progress, checkAll } = useBatchCheck({ decodeInvoiceUrl: decode })
+
+  if (!trackedHydrated) {
     return <HistorySkeleton />
   }
 
@@ -79,9 +107,27 @@ function HistoryPageContent() {
             <section>
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-gray-100">Created</h2>
-                <span className="text-sm text-gray-400">
-                  {createdCount} invoice{createdCount !== 1 ? 's' : ''}
-                </span>
+                <div className="flex items-center gap-3">
+                  {pendingCount > 0 && (
+                    <button
+                      onClick={checkAll}
+                      disabled={isChecking}
+                      className="flex items-center gap-1.5 rounded-lg bg-violet-600/20 px-3 py-1.5 text-xs font-medium text-violet-300 transition-colors hover:bg-violet-600/30 disabled:opacity-50"
+                    >
+                      {isChecking ? (
+                        <>
+                          <Loader2Icon size={12} className="animate-spin" />
+                          Checking {progress.checked}/{progress.total}...
+                        </>
+                      ) : (
+                        <>Check Unpaid ({pendingCount})</>
+                      )}
+                    </button>
+                  )}
+                  <span className="text-sm text-gray-400">
+                    {createdCount} invoice{createdCount !== 1 ? 's' : ''}
+                  </span>
+                </div>
               </div>
               <HistoryList debug={debug} />
             </section>

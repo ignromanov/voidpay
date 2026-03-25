@@ -53,7 +53,7 @@ export interface UseInvoiceFormReturn {
  * 3. On form change: debounced sync to store
  * 4. On store change (external): update form values
  */
-export function useInvoiceForm(): UseInvoiceFormReturn {
+export function useInvoiceForm({ enabled = true }: { enabled?: boolean } = {}): UseInvoiceFormReturn {
   const activeDraft = useCreatorStore((s) => s.activeDraft)
   const updateDraft = useCreatorStore((s) => s.updateDraft)
   const setDraftSyncStatus = useCreatorStore((s) => s.setDraftSyncStatus)
@@ -179,15 +179,17 @@ export function useInvoiceForm(): UseInvoiceFormReturn {
 
   // Watch form changes and sync to store
   useEffect(() => {
+    if (!enabled) return
     const subscription = form.watch((data) => {
       latestValuesRef.current = data as InvoiceFormValues
       syncToStore()
     })
     return () => subscription.unsubscribe()
-  }, [form, syncToStore])
+  }, [enabled, form, syncToStore])
 
   // Sync store → form when store changes externally (e.g., URL hash decode)
   useEffect(() => {
+    if (!enabled) return
     if (!activeDraft?.data) return
 
     const storeData = activeDraft.data
@@ -226,7 +228,7 @@ export function useInvoiceForm(): UseInvoiceFormReturn {
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: only sync on invoiceId change (new invoice), not every data change
-  }, [activeDraft?.data?.invoiceId])
+  }, [enabled, activeDraft?.data?.invoiceId])
 
   // Cleanup
   useEffect(() => {

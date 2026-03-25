@@ -14,6 +14,8 @@ export interface OGPreviewData {
     network: string;
     /** Sender name (optional, max 20 chars) */
     from?: string;
+    /** Recipient name (optional, max 20 chars) */
+    to?: string;
     /** Due date in MMDD format (optional) */
     due?: string;
 }

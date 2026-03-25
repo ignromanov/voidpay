@@ -266,7 +266,7 @@ describe('usePaymentFlow', () => {
     // Should silently reset to idle (no error state) and show toast
     expect(result.current.step).toBe('idle')
     expect(result.current.error).toBeNull()
-    expect(mockToastInfo).toHaveBeenCalledWith('Payment canceled')
+    expect(mockToastInfo).toHaveBeenCalledWith('Payment canceled', { duration: 4000 })
   })
 
   it('calls store.setError when error occurs', async () => {

@@ -27,7 +27,6 @@ export type {
   DraftMetadata,
   DraftState,
   InvoiceTemplate,
-  CreationHistoryEntry,
   PaymentReceipt,
   ConfirmationProgress,
 } from './types'

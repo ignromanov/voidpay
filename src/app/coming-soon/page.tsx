@@ -10,6 +10,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { AuroraText, Button, Heading, Text, VoidLogo } from '@/shared/ui'
+import { defaultOgImages } from '@/features/og-image'
 
 import { WaitlistForm } from './_components/waitlist-form'
 
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
     title: 'VoidPay — Coming Soon',
     description: 'Privacy-first crypto invoicing. Join the waitlist.',
     type: 'website',
+    images: defaultOgImages().openGraph,
   },
 }
 

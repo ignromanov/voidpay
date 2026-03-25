@@ -16,6 +16,11 @@ vi.mock('../../model/use-payment-flow', () => ({
   })),
 }))
 
+// Mock wagmi
+vi.mock('wagmi', () => ({
+  useAccount: vi.fn(() => ({ isReconnecting: false })),
+}))
+
 // Mock formatAmount from shared
 vi.mock('@/shared/lib/amount-utils', () => ({
   formatAmount: vi.fn((amount: string, decimals: number) => {

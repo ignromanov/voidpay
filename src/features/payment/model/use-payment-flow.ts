@@ -149,6 +149,7 @@ export function usePaymentFlow({
   } = useWaitForTransactionReceipt({
     hash: txHash,
     confirmations: 1,
+    chainId: invoice.networkId,
   })
 
   const idleSubState = deriveIdleSubState(isConnected, hasMismatch)
@@ -275,9 +276,12 @@ export function usePaymentFlow({
 
     const errorType = classifyPaymentError(wagmiError, state.step)
 
-    // User rejected — silent reset with toast, not an error state
+    // Always log the original error for debugging
+    console.error(`[usePaymentFlow] ${state.step} error (${errorType}):`, wagmiError)
+
+    // User rejected — reset with visible toast, not an error banner
     if (errorType === 'USER_REJECTED') {
-      toast.info('Payment canceled')
+      toast.info('Payment canceled', { duration: 4000 })
       dispatch({ type: 'RESET' })
       return
     }

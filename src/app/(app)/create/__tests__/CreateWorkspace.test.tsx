@@ -11,7 +11,6 @@ import { useCreatorStore } from '@/entities/creator'
 import { TEST_INVOICES } from '@/shared/lib/test-utils'
 import { encodeInvoice } from '@/features/invoice-codec'
 import * as toastModule from '@/shared/lib/toast'
-
 // Helper to render with userEvent
 function renderWithUser(ui: React.ReactElement) {
   return {
@@ -19,6 +18,21 @@ function renderWithUser(ui: React.ReactElement) {
     ...render(ui),
   }
 }
+
+// Mock next/navigation (required by useRouter in CreateWorkspace)
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  usePathname: () => '/create',
+  useSearchParams: () => new URLSearchParams(),
+  useParams: () => ({}),
+}))
 
 // Mock hooks from shared/lib/hooks
 const mockUseHashFragment = vi.hoisted(() => vi.fn(() => ''))
