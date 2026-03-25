@@ -192,8 +192,11 @@ describe('CreateWorkspace', () => {
     it('updates store when hash changes', async () => {
       const { rerender } = renderWithUser(<CreateWorkspace />)
 
-      // Initially no hash
-      expect(useCreatorStore.getState().activeDraft).toBeNull()
+      // Initially auto-created draft (no hash data)
+      await waitFor(() => {
+        expect(useCreatorStore.getState().activeDraft).not.toBeNull()
+      })
+      const initialId = useCreatorStore.getState().activeDraft?.data.invoiceId
 
       // Change hash
       const testInvoice = TEST_INVOICES.full()
@@ -205,6 +208,7 @@ describe('CreateWorkspace', () => {
       await waitFor(() => {
         const state = useCreatorStore.getState()
         expect(state.activeDraft?.data.invoiceId).toBe(testInvoice.invoiceId)
+        expect(state.activeDraft?.data.invoiceId).not.toBe(initialId)
       })
     })
 
@@ -369,17 +373,23 @@ describe('CreateWorkspace', () => {
       })
     })
 
-    it('does not open modal when no invoice data', async () => {
+    it('opens modal when clicking preview (draft always exists)', async () => {
       const { user, container } = renderWithUser(<CreateWorkspace />)
 
-      // Preview container exists but clicking it should not open modal
+      // Wait for auto-created draft
+      await waitFor(() => {
+        expect(useCreatorStore.getState().activeDraft).not.toBeNull()
+      })
+
       const previewButton = container.querySelector('[role="button"]') as HTMLElement
       expect(previewButton).toBeInTheDocument()
 
       await user.click(previewButton)
 
-      // Modal should NOT open (no invoice data)
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      // Modal opens because draft is always created on mount
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument()
+      })
     })
 
     it('closes modal when close button clicked', async () => {
