@@ -29,9 +29,10 @@ describe('generateMetadata', () => {
         searchParams: Promise.resolve({ og: 'INV-001_100_USDC_arb_Acme' }),
       })
 
-      expect(metadata.title).toBe('Invoice INV-001 | VoidPay')
+      expect(metadata.title).toBe('Pay 100.00 USDC — Invoice INV-001 | VoidPay')
       expect(metadata.description).toContain('100.00 USDC on ARB')
       expect(metadata.description).toContain('from Acme Corp')
+      expect(metadata.description).toContain('Powered by VoidPay')
     })
 
     it('includes openGraph metadata', async () => {
@@ -40,7 +41,7 @@ describe('generateMetadata', () => {
       })
 
       expect(metadata.openGraph).toBeDefined()
-      expect(metadata.openGraph?.title).toBe('Invoice INV-001 | VoidPay')
+      expect(metadata.openGraph?.title).toBe('Pay 100.00 USDC — Invoice INV-001 | VoidPay')
       expect(metadata.openGraph?.type).toBe('website')
       expect(metadata.openGraph?.siteName).toBe('VoidPay')
     })
