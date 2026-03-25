@@ -196,6 +196,14 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
           data: {
             ...currentDraft.data,
             ...data,
+            // Deep merge party objects to preserve fields not in the partial update
+            // (e.g., walletAddress when sync only sends name)
+            ...(data.from && {
+              from: { ...currentDraft.data.from, ...data.from } as typeof currentDraft.data.from,
+            }),
+            ...(data.client && {
+              client: { ...currentDraft.data.client, ...data.client } as typeof currentDraft.data.client,
+            }),
           },
         },
         lineItems: newLineItems,

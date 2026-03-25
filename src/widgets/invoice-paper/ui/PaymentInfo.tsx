@@ -46,6 +46,8 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
     const isInteractive = variant === 'full'
     // Hide QR when paid — txHash section takes QR's space
     const shouldShowQR = !txHash && status !== 'paid'
+    // Draft mode: show placeholder instead of real QR (invoice not finalized)
+    const isDraft = status === 'draft'
 
     const networkTextClass = 'text-[10px] font-semibold text-zinc-700 capitalize'
 
@@ -80,9 +82,9 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
           {shouldShowQR && (
             <div className="flex flex-col items-center justify-center gap-1 border-r border-zinc-200 p-3">
               <PaymentQR
-                recipientAddress={senderAddress}
+                recipientAddress={isDraft ? undefined : senderAddress}
                 chainId={networkId}
-                amount={amount}
+                amount={isDraft ? undefined : amount}
                 tokenAddress={tokenAddress}
                 size={88}
                 variant="light"

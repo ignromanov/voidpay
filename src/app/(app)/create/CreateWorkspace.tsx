@@ -56,6 +56,11 @@ export function CreateWorkspace() {
   const clearDraft = useCreatorStore((s) => s.clearDraft)
   const draftSyncStatus = useCreatorStore((s) => s.draftSyncStatus)
 
+  // Ensure draft exists for form initialization (provides INV-001 default)
+  useEffect(() => {
+    if (!activeDraft) createNewDraft()
+  }, [activeDraft, createNewDraft])
+
   const tabs = useMemo<TabItem[]>(
     () => [
       {
