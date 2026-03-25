@@ -61,7 +61,7 @@ function BrandingOG() {
       />
 
       {/* Left side — text content */}
-      <div className="relative z-10 flex flex-1 flex-col justify-center pl-20 pr-8">
+      <div className="relative z-10 flex flex-1 flex-col justify-center pl-28 pr-0">
         {/* Logo mark + wordmark */}
         <div className="mb-6 flex items-center gap-4">
           <div
@@ -116,7 +116,7 @@ function BrandingOG() {
       {/* Right side — cascading invoice cards (centered vertically) */}
       <div className="relative flex flex-1 items-center justify-center">
         {/* Back card — Ethereum */}
-        <div className="absolute" style={{ top: '50%', right: 60, transform: 'translateY(-100%)', opacity: 0.3, filter: 'blur(1.5px)' }}>
+        <div className="absolute" style={{ top: '50%', right: 80, transform: 'translateY(-100%)', opacity: 0.3, filter: 'blur(1.5px)' }}>
           <OGInvoiceCard
             id="INV-017"
             amount="5000.00"
@@ -127,7 +127,7 @@ function BrandingOG() {
         </div>
 
         {/* Middle card — Optimism */}
-        <div className="absolute" style={{ top: '50%', right: 100, transform: 'translateY(-58%)', opacity: 0.55, filter: 'blur(0.5px)' }}>
+        <div className="absolute" style={{ top: '50%', right: 120, transform: 'translateY(-58%)', opacity: 0.55, filter: 'blur(0.5px)' }}>
           <OGInvoiceCard
             id="INV-003"
             amount="420.00"
@@ -139,7 +139,7 @@ function BrandingOG() {
         </div>
 
         {/* Front card — Arbitrum */}
-        <div className="absolute" style={{ top: '50%', right: 130, transform: 'translateY(-20%)' }}>
+        <div className="absolute" style={{ top: '50%', right: 150, transform: 'translateY(-20%)' }}>
           <OGInvoiceCard
             id="INV-042"
             amount="1250.00"
