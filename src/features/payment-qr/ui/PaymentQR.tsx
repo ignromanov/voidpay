@@ -54,7 +54,11 @@ export function PaymentQR({
 }: PaymentQRProps) {
   const paymentUri = useMemo(() => {
     if (!recipientAddress || !chainId || !amount) return undefined
-    return buildPaymentUri({ recipientAddress, chainId, amount, tokenAddress })
+    try {
+      return buildPaymentUri({ recipientAddress, chainId, amount, tokenAddress })
+    } catch {
+      return undefined
+    }
   }, [recipientAddress, chainId, amount, tokenAddress])
 
   if (!paymentUri) {

@@ -1,5 +1,8 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+
+import { useCreatorStore } from '@/entities/creator'
 import { cn } from '@/shared/lib/utils'
 
 import { useInvoiceForm } from '../lib/use-invoice-form'
@@ -44,18 +47,39 @@ export interface InvoiceFormProps {
 export function InvoiceForm({ className, onGenerate, isGenerating = false }: InvoiceFormProps) {
   const { form, fieldValidation, formState, canGenerate } = useInvoiceForm()
   const decimals = form.watch('decimals')
+  const [submitAttemptCount, setSubmitAttemptCount] = useState(0)
+  const submitAttempted = submitAttemptCount > 0
+
+  // Reset submitAttempted when draft changes (e.g., Reset button creates new draft)
+  // Uses draftId (not invoiceId) because Reset reuses invoiceId for unconsumed drafts
+  const draftId = useCreatorStore((s) => s.activeDraft?.meta?.draftId)
+  useEffect(() => {
+    setSubmitAttemptCount(0)
+  }, [draftId])
+
+  // Scroll to first error field on each submit attempt
+  useEffect(() => {
+    if (submitAttemptCount === 0) return
+    const raf = requestAnimationFrame(() => {
+      const firstError = document.querySelector<HTMLElement>('[data-field-error]')
+      if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [submitAttemptCount])
 
   return (
     <div className={cn('space-y-8', className)}>
-      <MetadataSection form={form} fieldValidation={fieldValidation} />
+      <MetadataSection form={form} fieldValidation={fieldValidation} submitAttempted={submitAttempted} />
 
-      <PartySection partyType="from" form={form} fieldValidation={fieldValidation} formState={formState} />
+      <PartySection partyType="from" form={form} fieldValidation={fieldValidation} formState={formState} submitAttempted={submitAttempted} />
 
-      <PartySection partyType="client" form={form} fieldValidation={fieldValidation} formState={formState} />
+      <PartySection partyType="client" form={form} fieldValidation={fieldValidation} formState={formState} submitAttempted={submitAttempted} />
 
-      <LineItemsSection decimals={decimals ?? 6} />
+      <LineItemsSection decimals={decimals ?? 6} submitAttempted={submitAttempted} />
 
-      <TaxDiscountSection form={form} formState={formState} />
+      <TaxDiscountSection form={form} formState={formState} submitAttempted={submitAttempted} />
 
       <PaymentSection form={form} />
 
@@ -63,7 +87,7 @@ export function InvoiceForm({ className, onGenerate, isGenerating = false }: Inv
 
       <LinkOptionsSection />
 
-      <GenerateButton onGenerate={onGenerate} canGenerate={canGenerate} isGenerating={isGenerating} />
+      <GenerateButton onGenerate={onGenerate} canGenerate={canGenerate} isGenerating={isGenerating} onSubmitAttempt={() => setSubmitAttemptCount((c) => c + 1)} />
     </div>
   )
 }

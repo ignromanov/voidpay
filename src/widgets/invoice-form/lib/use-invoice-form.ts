@@ -12,7 +12,7 @@ import { useForm, type UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useCreatorStore } from '@/entities/creator'
 import { invoiceFormSchema, type InvoiceFormValues } from '@/shared/lib/invoice-types'
-import { ETH_ADDRESS_REGEX, isValidAddress } from '@/shared/lib/validation'
+import { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
 
 /** Debounce delay for syncing form → store */
 const SYNC_DEBOUNCE_MS = 300
@@ -132,8 +132,8 @@ export function useInvoiceForm({ enabled = true }: { enabled?: boolean } = {}): 
         ...(data.notes !== undefined && { notes: data.notes }),
         ...(data.networkId !== undefined && { networkId: data.networkId }),
         ...(data.currency !== undefined && { currency: data.currency }),
-        ...(data.tokenAddress && isValidAddress(data.tokenAddress) && {
-          tokenAddress: data.tokenAddress as `0x${string}`,
+        ...(data.tokenAddress !== undefined && {
+          tokenAddress: (data.tokenAddress || undefined) as `0x${string}`,
         }),
         ...(data.decimals !== undefined && { decimals: data.decimals }),
         ...(data.tax !== undefined && { tax: data.tax }),
@@ -141,27 +141,27 @@ export function useInvoiceForm({ enabled = true }: { enabled?: boolean } = {}): 
         ...(data.from && {
           from: {
             name: data.from.name ?? '',
-            ...(data.from.walletAddress && isValidAddress(data.from.walletAddress) && {
-              walletAddress: data.from.walletAddress as `0x${string}`,
+            ...(data.from.walletAddress !== undefined && {
+              walletAddress: (data.from.walletAddress || undefined) as `0x${string}`,
             }),
-            ...(data.from.email && { email: data.from.email }),
-            ...(data.from.physicalAddress && { physicalAddress: data.from.physicalAddress }),
-            ...(data.from.phone && { phone: data.from.phone }),
-            ...(data.from.taxId && { taxId: data.from.taxId }),
+            ...(data.from.email !== undefined && { email: data.from.email }),
+            ...(data.from.physicalAddress !== undefined && { physicalAddress: data.from.physicalAddress }),
+            ...(data.from.phone !== undefined && { phone: data.from.phone }),
+            ...(data.from.taxId !== undefined && { taxId: data.from.taxId }),
           },
         }),
         ...(data.client && {
           client: {
             name: data.client.name ?? '',
-            ...(data.client.walletAddress && isValidAddress(data.client.walletAddress) && {
-              walletAddress: data.client.walletAddress as `0x${string}`,
+            ...(data.client.walletAddress !== undefined && {
+              walletAddress: (data.client.walletAddress || undefined) as `0x${string}`,
             }),
-            ...(data.client.email && { email: data.client.email }),
-            ...(data.client.physicalAddress && {
+            ...(data.client.email !== undefined && { email: data.client.email }),
+            ...(data.client.physicalAddress !== undefined && {
               physicalAddress: data.client.physicalAddress,
             }),
-            ...(data.client.phone && { phone: data.client.phone }),
-            ...(data.client.taxId && { taxId: data.client.taxId }),
+            ...(data.client.phone !== undefined && { phone: data.client.phone }),
+            ...(data.client.taxId !== undefined && { taxId: data.client.taxId }),
           },
         }),
       })
@@ -187,48 +187,45 @@ export function useInvoiceForm({ enabled = true }: { enabled?: boolean } = {}): 
     return () => subscription.unsubscribe()
   }, [enabled, form, syncToStore])
 
-  // Sync store → form when store changes externally (e.g., URL hash decode)
+  // Sync store → form when draft identity changes:
+  // - draftId changes: Reset button creates new draft (invoiceId may stay same)
+  // - invoiceId changes: URL hash decode loads different invoice into existing draft
   useEffect(() => {
     if (!enabled) return
     if (!activeDraft?.data) return
 
     const storeData = activeDraft.data
-    const formData = form.getValues()
-
-    // Only update if data actually changed (avoid infinite loop)
-    if (storeData.invoiceId !== formData.invoiceId) {
-      isExternalUpdate.current = true
-      form.reset({
-        invoiceId: storeData.invoiceId,
-        issuedAt: storeData.issuedAt,
-        dueAt: storeData.dueAt,
-        notes: storeData.notes,
-        networkId: storeData.networkId,
-        currency: storeData.currency,
-        tokenAddress: storeData.tokenAddress,
-        decimals: storeData.decimals,
-        tax: storeData.tax,
-        discount: storeData.discount,
-        from: {
-          name: storeData.from?.name ?? '',
-          walletAddress: storeData.from?.walletAddress ?? '',
-          email: storeData.from?.email ?? '',
-          physicalAddress: storeData.from?.physicalAddress ?? '',
-          phone: storeData.from?.phone ?? '',
-          taxId: storeData.from?.taxId ?? '',
-        },
-        client: {
-          name: storeData.client?.name ?? '',
-          walletAddress: storeData.client?.walletAddress ?? '',
-          email: storeData.client?.email ?? '',
-          physicalAddress: storeData.client?.physicalAddress ?? '',
-          phone: storeData.client?.phone ?? '',
-          taxId: storeData.client?.taxId ?? '',
-        },
-      })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: only sync on invoiceId change (new invoice), not every data change
-  }, [enabled, activeDraft?.data?.invoiceId])
+    isExternalUpdate.current = true
+    form.reset({
+      invoiceId: storeData.invoiceId,
+      issuedAt: storeData.issuedAt,
+      dueAt: storeData.dueAt,
+      notes: storeData.notes,
+      networkId: storeData.networkId,
+      currency: storeData.currency,
+      tokenAddress: storeData.tokenAddress,
+      decimals: storeData.decimals,
+      tax: storeData.tax,
+      discount: storeData.discount,
+      from: {
+        name: storeData.from?.name ?? '',
+        walletAddress: storeData.from?.walletAddress ?? '',
+        email: storeData.from?.email ?? '',
+        physicalAddress: storeData.from?.physicalAddress ?? '',
+        phone: storeData.from?.phone ?? '',
+        taxId: storeData.from?.taxId ?? '',
+      },
+      client: {
+        name: storeData.client?.name ?? '',
+        walletAddress: storeData.client?.walletAddress ?? '',
+        email: storeData.client?.email ?? '',
+        physicalAddress: storeData.client?.physicalAddress ?? '',
+        phone: storeData.client?.phone ?? '',
+        taxId: storeData.client?.taxId ?? '',
+      },
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: only sync on draft identity change, not every data change
+  }, [enabled, activeDraft?.meta?.draftId, activeDraft?.data?.invoiceId])
 
   // Cleanup
   useEffect(() => {

@@ -11,12 +11,13 @@ import { getFieldError } from '../../lib/get-field-error'
 export interface TaxDiscountSectionProps {
   form: UseFormReturn<InvoiceFormValues>
   formState: FormState<InvoiceFormValues>
+  submitAttempted?: boolean
 }
 
 /**
  * Tax and discount percentage inputs in a 2-column grid.
  */
-export function TaxDiscountSection({ form, formState }: TaxDiscountSectionProps) {
+export function TaxDiscountSection({ form, formState, submitAttempted }: TaxDiscountSectionProps) {
   const { register } = form
   const { touchedFields, errors } = formState
 
@@ -30,7 +31,7 @@ export function TaxDiscountSection({ form, formState }: TaxDiscountSectionProps)
           placeholder="0"
           maxLength={FIELD_LIMITS.percentage}
           error={getFieldError(errors.tax)}
-          touched={touchedFields.tax}
+          touched={touchedFields.tax || submitAttempted}
           {...register('tax')}
           className="text-sm"
         />
@@ -43,7 +44,7 @@ export function TaxDiscountSection({ form, formState }: TaxDiscountSectionProps)
           placeholder="0"
           maxLength={FIELD_LIMITS.percentage}
           error={getFieldError(errors.discount)}
-          touched={touchedFields.discount}
+          touched={touchedFields.discount || submitAttempted}
           {...register('discount')}
           className="text-sm"
         />

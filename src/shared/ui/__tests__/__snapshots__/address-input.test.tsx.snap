@@ -66,6 +66,7 @@ exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with 
 exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with label and error 1`] = `
 <div
   class="w-full"
+  data-field-error="true"
 >
   <label
     class="mb-1.5 block text-xs font-medium tracking-wide text-zinc-400 uppercase"

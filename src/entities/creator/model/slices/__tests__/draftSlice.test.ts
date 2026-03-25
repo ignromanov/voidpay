@@ -133,6 +133,29 @@ describe('draftSlice', () => {
       expect(state.activeDraft?.data.from.name).toBe('')
     })
 
+    it('sets tokenAddress from token lookup for default Arbitrum USDC', () => {
+      // Reset store with empty preferences (defaults to Arbitrum + USDC)
+      useCreatorStore.setState({
+        activeDraft: null,
+        lineItems: [],
+        templates: [],
+        history: [],
+        preferences: {},
+        networkTheme: 'ethereum',
+        idCounter: { currentValue: 1, prefix: 'INV' },
+      })
+
+      const { createNewDraft } = useCreatorStore.getState()
+
+      createNewDraft()
+
+      const state = useCreatorStore.getState()
+      expect(state.activeDraft?.data.currency).toBe('USDC')
+      expect(state.activeDraft?.data.decimals).toBe(6)
+      expect(state.activeDraft?.data.tokenAddress).toBeDefined()
+      expect(state.activeDraft?.data.tokenAddress).toBe('0xaf88d065e77c8cc2239327c5edb3a432268e5831')
+    })
+
     it('creates one default line item', () => {
       const { createNewDraft } = useCreatorStore.getState()
 

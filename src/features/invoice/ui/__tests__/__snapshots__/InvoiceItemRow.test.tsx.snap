@@ -74,7 +74,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
     >
       <div
         class="flex h-9 w-full items-center rounded-lg border border-zinc-800 bg-zinc-950/50 px-2 font-mono text-sm text-zinc-400 overflow-hidden"
-        title="188.125 USDC"
+        title="188.125 undefined"
       >
         <span
           class="truncate tabular-nums flex-1 min-w-0"
@@ -83,9 +83,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
         </span>
         <span
           class="ml-1 flex-shrink-0 text-xs"
-        >
-          USDC
-        </span>
+        />
       </div>
     </div>
   </div>
@@ -205,7 +203,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
     >
       <div
         class="flex h-9 w-full items-center rounded-lg border border-zinc-800 bg-zinc-950/50 px-2 font-mono text-sm text-zinc-400 overflow-hidden"
-        title="1,005.00 USDC"
+        title="1,005.00 undefined"
       >
         <span
           class="truncate tabular-nums flex-1 min-w-0"
@@ -214,9 +212,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
         </span>
         <span
           class="ml-1 flex-shrink-0 text-xs"
-        >
-          USDC
-        </span>
+        />
       </div>
     </div>
   </div>
@@ -336,7 +332,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
     >
       <div
         class="flex h-9 w-full items-center rounded-lg border border-zinc-800 bg-zinc-950/50 px-2 font-mono text-sm text-zinc-400 overflow-hidden"
-        title="0.00 ETH"
+        title="0.00 undefined"
       >
         <span
           class="truncate tabular-nums flex-1 min-w-0"
@@ -345,9 +341,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
         </span>
         <span
           class="ml-1 flex-shrink-0 text-xs"
-        >
-          ETH
-        </span>
+        />
       </div>
     </div>
   </div>

@@ -15,12 +15,13 @@ import { DateInput } from '../components/DateInput'
 export interface MetadataSectionProps {
   form: UseFormReturn<InvoiceFormValues>
   fieldValidation: RequiredFieldsValidation
+  submitAttempted?: boolean
 }
 
 /**
  * Invoice metadata section: Invoice ID and dates (issued/due).
  */
-export function MetadataSection({ form, fieldValidation }: MetadataSectionProps) {
+export function MetadataSection({ form, fieldValidation, submitAttempted }: MetadataSectionProps) {
   const {
     register,
     setValue,
@@ -54,7 +55,7 @@ export function MetadataSection({ form, fieldValidation }: MetadataSectionProps)
         placeholder="INV-001"
         maxLength={FIELD_LIMITS.invoiceId}
         error={getFieldError(errors.invoiceId, fieldValidation, 'invoiceId', 'Invoice number is required')}
-        touched={touchedFields.invoiceId}
+        touched={touchedFields.invoiceId || submitAttempted}
       />
 
       <div className="space-y-1.5">

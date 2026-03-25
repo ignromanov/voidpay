@@ -30,20 +30,9 @@ import { InvoiceForm } from '@/widgets/invoice-form'
 import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widgets/invoice-paper'
 import { SYNC_STATUS_CONFIG } from './constants'
 
-/**
- * CreateWorkspace — Split-pane invoice creation interface
- *
- * Features:
- * - Left pane: InvoiceForm with toggles and Generate button
- * - Right pane: Live preview with ScaledInvoicePreview
- * - Mobile: Tab bar to switch between editor and preview
- * - URL hash decoding (e.g., /create#<Base64url TLV>)
- * - Fullscreen preview modal on click
- * - Sets network theme in store for dynamic background
- */
 export function CreateWorkspace() {
   const hash = useHashFragment()
-  const [mobileTab, setMobileTab] = useState<string>('editor')
+  const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor')
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
   const router = useRouter()
@@ -53,7 +42,12 @@ export function CreateWorkspace() {
   const updateDraft = useCreatorStore((s) => s.updateDraft)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
+  const clearDraft = useCreatorStore((s) => s.clearDraft)
   const draftSyncStatus = useCreatorStore((s) => s.draftSyncStatus)
+
+  useEffect(() => {
+    if (!activeDraft) createNewDraft()
+  }, [activeDraft, createNewDraft])
 
   const tabs = useMemo<TabItem[]>(
     () => [
@@ -71,7 +65,6 @@ export function CreateWorkspace() {
     []
   )
 
-  // Decode URL hash on mount/change
   useEffect(() => {
     if (!hash) return
 
@@ -80,94 +73,70 @@ export function CreateWorkspace() {
       const result = await parseInvoiceHash(hash)
       if (cancelled) return
       if (result.success) {
-        // updateDraft auto-syncs lineItems when items provided
         updateDraft(result.data)
-        // Silent success - no toast per spec (avoid notification fatigue)
       } else {
-        toast.error(result.error.message)
         // Do NOT clear store on error (per spec edge case)
+        toast.error(result.error.message)
       }
     })()
     return () => { cancelled = true }
   }, [hash, updateDraft])
 
-  const invoiceData = useMemo(() => activeDraft?.data, [activeDraft])
+  const invoiceData = activeDraft?.data
 
-  // Update network theme when invoice networkId changes
   useEffect(() => {
     const theme = getNetworkTheme(invoiceData?.networkId ?? 1)
     setNetworkTheme(theme)
   }, [invoiceData?.networkId, setNetworkTheme])
 
   const handlePreviewClick = useCallback(() => {
-    if (invoiceData) {
+    if (useCreatorStore.getState().activeDraft?.data) {
       setIsPreviewOpen(true)
     }
-  }, [invoiceData])
+  }, [])
 
   const handleResetInvoice = useCallback(() => {
     createNewDraft()
-    toast.success('Invoice reset', {
-      description: 'Started a fresh invoice with default values',
+    toast.success('Form cleared', {
+      description: 'All fields reset to defaults',
     })
   }, [createNewDraft])
 
-
-  /**
-   * Handle "Generate Invoice Link" button click
-   *
-   * 1. Validate invoice data
-   * 2. Generate URL with TLV v1 encoding
-   * 3. Add to history
-   * 4. Open ShareModal
-   */
   const handleGenerateLink = useCallback(async () => {
     if (isGenerating) return
 
-    // Get fresh values from store at click time (not render time)
     const { activeDraft, lineItems } = useCreatorStore.getState()
-
     if (!activeDraft) return
 
     setIsGenerating(true)
 
     try {
-      // Validate INSIDE try block
       const validation = validateInvoiceForGeneration(activeDraft.data, lineItems)
 
       if (!validation.isValid) {
-        // Show first error as toast (most important)
         const firstError = validation.errors[0]
         toast.error('Cannot generate link', {
           description: firstError?.message ?? 'Please fill in all required fields',
         })
-
-        // If multiple errors, show count
-        if (validation.errors.length > 1) {
-          toast.error(`${validation.errors.length - 1} more issue(s) found`, {
-            description: 'Check the form for other missing fields',
-          })
-        }
         return
       }
 
-      // Show size warning if applicable (edge case, not blocking)
       if (validation.sizeWarning) {
-        // Use error style to draw attention to potential issue
         toast.error('URL size approaching limit', {
           description: 'Consider reducing notes or line items if generation fails.',
         })
       }
 
-      // Generate URL without OG (OG is computed dynamically in ShareModal)
       const { url } = await generateAndTrackInvoice(activeDraft, lineItems)
 
       toast.success('Invoice link generated!', {
         description: 'Share it with your client to get paid',
       })
 
-      // Navigate to /invoice with ?share=1 to auto-open ShareModal
-      // URL is clean: /invoice?share=1#hash (no OG params)
+      // Clear draft so next /create visit starts fresh with new ID
+      clearDraft()
+
+      // Navigate to /invoice?share=1#hash to auto-open ShareModal
       const invoiceUrl = new URL(url, window.location.origin)
       invoiceUrl.pathname = invoiceUrl.pathname.replace('/pay', '/invoice')
       invoiceUrl.searchParams.set('share', '1')
@@ -185,12 +154,10 @@ export function CreateWorkspace() {
     } finally {
       setIsGenerating(false)
     }
-  }, [isGenerating, router])
+  }, [isGenerating, clearDraft, router])
 
   return (
     <>
-
-      {/* Fullscreen preview modal */}
       {invoiceData && (
         <InvoicePreviewModal
           data={invoiceData}
@@ -200,18 +167,16 @@ export function CreateWorkspace() {
         />
       )}
 
-      {/* Mobile Tab Bar - fixed above footer (h-10 = 40px), outside document flow */}
       <div className="lg:hidden fixed bottom-12 left-0 right-0 z-30 px-4">
-        <MobileTabBar tabs={tabs} activeTab={mobileTab} onTabChange={setMobileTab} />
+        <MobileTabBar tabs={tabs} activeTab={mobileTab} onTabChange={(id) => setMobileTab(id as 'editor' | 'preview')} />
       </div>
 
-      {/* Main Workspace Container - form and invoice centered together */}
-      {/* Mobile: pb with safe area for tab bar (5rem = 80px base + env safe area) */}
+      {/* Safe area padding for mobile tab bar */}
       <div
         className="mx-auto flex h-[calc(100vh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 lg:pb-6 lg:py-6 print:h-auto print:max-w-none print:overflow-visible print:p-0"
         style={{ paddingBottom: 'max(5rem, calc(env(safe-area-inset-bottom, 0px) + 5rem))' }}
       >
-        {/* LEFT: Editor Pane (form sticks to invoice) */}
+        {/* Editor Pane */}
         <Card
           variant="glass"
           className={cn(
@@ -234,9 +199,9 @@ export function CreateWorkspace() {
                 variant="ghost"
                 size="sm"
                 className="shrink-0 text-zinc-500 hover:text-zinc-300"
-                title="Reset to new invoice"
+                title="Clear form and reset to defaults"
               >
-                <RotateCcwIcon className="mr-1.5 h-3.5 w-3.5" />
+                <RotateCcwIcon className="h-3.5 w-3.5" />
                 Reset
               </Button>
             </div>
@@ -245,18 +210,15 @@ export function CreateWorkspace() {
           </div>
         </Card>
 
-        {/* RIGHT: Preview Pane - stretches to fill available height */}
+        {/* Preview Pane */}
         <div
           className={cn(
             'relative flex items-start justify-center',
-            // Fill available space, let ScaledInvoicePreview handle sizing
             'h-full min-w-[300px] sm:min-w-[400px] lg:min-w-[580px]',
-            // Same padding as form (p-4 sm:p-5 lg:p-6)
             'p-4 sm:p-5 lg:p-6',
             mobileTab === 'editor' ? 'hidden lg:flex' : 'flex'
           )}
         >
-          {/* Screen-only scaled preview (hidden during print to avoid flicker) */}
           <ScaledInvoicePreview
             preset="editor"
             printable
@@ -267,25 +229,24 @@ export function CreateWorkspace() {
             <InvoicePaper data={invoiceData} status="draft" />
           </ScaledInvoicePreview>
 
-          {/* Floating Live Preview badge with sync status */}
-          <div className="absolute bottom-6 sm:bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none">
-            <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
-              {SYNC_STATUS_CONFIG[draftSyncStatus].icon === 'loader' ? (
-                <Loader2Icon className="h-3 w-3 animate-spin text-amber-500" />
-              ) : SYNC_STATUS_CONFIG[draftSyncStatus].icon === 'check' ? (
-                <CheckIcon className="h-3 w-3 text-green-500" />
-              ) : (
-                <div
-                  className={cn(
-                    'h-1.5 w-1.5 rounded-full',
-                    SYNC_STATUS_CONFIG[draftSyncStatus].dotColor,
-                    SYNC_STATUS_CONFIG[draftSyncStatus].animate && 'animate-pulse'
+          {/* Floating sync status badge */}
+          {(() => {
+            const sync = SYNC_STATUS_CONFIG[draftSyncStatus]
+            return (
+              <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none">
+                <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
+                  {sync.icon === 'loader' ? (
+                    <Loader2Icon className="h-3 w-3 animate-spin text-amber-500" />
+                  ) : sync.icon === 'check' ? (
+                    <CheckIcon className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <div className={cn('h-1.5 w-1.5 rounded-full', sync.dotColor, sync.animate && 'animate-pulse')} />
                   )}
-                />
-              )}
-              {SYNC_STATUS_CONFIG[draftSyncStatus].label}
-            </div>
-          </div>
+                  {sync.label}
+                </div>
+              </div>
+            )
+          })()}
         </div>
 
       </div>

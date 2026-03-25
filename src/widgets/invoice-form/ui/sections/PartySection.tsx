@@ -20,6 +20,7 @@ export interface PartySectionProps {
   form: UseFormReturn<InvoiceFormValues>
   fieldValidation: RequiredFieldsValidation
   formState: FormState<InvoiceFormValues>
+  submitAttempted?: boolean
 }
 
 // Configuration per party type
@@ -72,7 +73,7 @@ const PARTY_CONFIG = {
  * Reusable party section for Sender (from) and Recipient (client).
  * Eliminates ~150 lines of duplication between the two sections.
  */
-export function PartySection({ partyType, form, fieldValidation, formState }: PartySectionProps) {
+export function PartySection({ partyType, form, fieldValidation, formState, submitAttempted }: PartySectionProps) {
   const { register, setValue, watch, trigger } = form
   const { touchedFields, errors } = formState
   const config = PARTY_CONFIG[partyType]
@@ -110,7 +111,7 @@ export function PartySection({ partyType, form, fieldValidation, formState }: Pa
         placeholder={config.namePlaceholder}
         maxLength={FIELD_LIMITS.name}
         error={getFieldError(partyErrors?.name, fieldValidation, config.nameValidationKey, config.nameValidationMessage)}
-        touched={partyTouched?.name}
+        touched={partyTouched?.name || submitAttempted}
         autoComplete="organization"
       />
 
@@ -128,7 +129,7 @@ export function PartySection({ partyType, form, fieldValidation, formState }: Pa
             config.walletValidationKey,
             config.walletValidationMessage
           )}
-          touched={partyTouched?.walletAddress}
+          touched={partyTouched?.walletAddress || submitAttempted}
         />
       ) : null}
 
@@ -142,7 +143,7 @@ export function PartySection({ partyType, form, fieldValidation, formState }: Pa
             onBlur={handleWalletBlur}
             placeholder="0x..."
             error={getFieldError(partyErrors?.walletAddress)}
-            touched={partyTouched?.walletAddress}
+            touched={partyTouched?.walletAddress || submitAttempted}
           />
         )}
 
@@ -153,7 +154,7 @@ export function PartySection({ partyType, form, fieldValidation, formState }: Pa
             placeholder={config.emailPlaceholder}
             maxLength={FIELD_LIMITS.email}
             error={getFieldError(partyErrors?.email)}
-            touched={partyTouched?.email}
+            touched={partyTouched?.email || submitAttempted}
             spellCheck={false}
             autoComplete="email"
             {...register(`${partyType}.email`)}
@@ -164,7 +165,7 @@ export function PartySection({ partyType, form, fieldValidation, formState }: Pa
             placeholder="+1..."
             maxLength={FIELD_LIMITS.phone}
             error={getFieldError(partyErrors?.phone)}
-            touched={partyTouched?.phone}
+            touched={partyTouched?.phone || submitAttempted}
             autoComplete="tel"
             {...register(`${partyType}.phone`)}
           />
@@ -184,7 +185,7 @@ export function PartySection({ partyType, form, fieldValidation, formState }: Pa
           placeholder="Tax ID / VAT Number"
           maxLength={FIELD_LIMITS.taxId}
           error={getFieldError(partyErrors?.taxId)}
-          touched={partyTouched?.taxId}
+          touched={partyTouched?.taxId || submitAttempted}
           autoComplete="off"
           {...register(`${partyType}.taxId`)}
         />

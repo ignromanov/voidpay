@@ -159,6 +159,7 @@ describe('AddressInput - Snapshot Tests (T013-test)', () => {
         onChange={() => {}}
         label="Wallet Address"
         error="Invalid address format"
+        touched={true}
       />
     )
     expect(container.firstChild).toMatchSnapshot()

@@ -144,6 +144,16 @@
   }
 }
 
+/* Override browser autofill background for dark theme */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #18181b inset;
+  -webkit-text-fill-color: #f4f4f5;
+  caret-color: #f4f4f5;
+}
+
 /* ============================================
    Print Styles
    Invoice-specific print styles moved to:

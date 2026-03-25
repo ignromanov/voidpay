@@ -6,7 +6,7 @@ import type { UseFormReturn } from 'react-hook-form'
 import { CoinsIcon } from '@/shared/ui/icons'
 
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkTheme } from '@/entities/network'
+import { getNetworkTheme, findTokenForNetwork, NETWORK_TOKENS } from '@/entities/network'
 import { Heading } from '@/shared/ui/typography'
 import { NetworkSelect } from '@/features/wallet-connect'
 import type { TokenInfo } from '@/entities/network'
@@ -46,16 +46,6 @@ export function PaymentSection({ form }: PaymentSectionProps) {
     [currency, tokenAddress, decimals]
   )
 
-  // Network change handler (also updates theme)
-  const handleNetworkChange = useCallback(
-    (chainId: number) => {
-      setValue('networkId', chainId)
-      const theme = getNetworkTheme(chainId)
-      setNetworkTheme(theme)
-    },
-    [setValue, setNetworkTheme]
-  )
-
   // Token change handler
   const handleTokenChange = useCallback(
     (token: TokenInfo) => {
@@ -64,6 +54,24 @@ export function PaymentSection({ form }: PaymentSectionProps) {
       setValue('decimals', token.decimals)
     },
     [setValue]
+  )
+
+  // Network change handler (also updates theme)
+  const handleNetworkChange = useCallback(
+    (chainId: number) => {
+      setValue('networkId', chainId)
+      const theme = getNetworkTheme(chainId)
+      setNetworkTheme(theme)
+
+      // Auto-select USDC for the new network
+      const usdcToken = findTokenForNetwork(chainId, 'USDC')
+      const fallbackToken = NETWORK_TOKENS[chainId]?.[0]
+      const token = usdcToken ?? fallbackToken
+      if (token) {
+        handleTokenChange(token)
+      }
+    },
+    [setValue, setNetworkTheme, handleTokenChange]
   )
 
   return (
