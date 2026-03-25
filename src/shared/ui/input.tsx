@@ -95,7 +95,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const showErrorMessage = error && !isFocused && isTouched
 
     return (
-      <div className="w-full">
+      <div className="w-full" data-field-error={inputState === 'error' || undefined}>
         {label && (
           <label
             htmlFor={id}

@@ -109,6 +109,7 @@ export function InvoiceItemRow({
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
+      data-field-error={(descriptionEmpty || rateZero) || undefined}
       className="overflow-hidden rounded-lg border border-transparent bg-zinc-900/40 p-3 transition-colors hover:border-zinc-800"
     >
       {/* Top row: Description + Delete */}
@@ -139,6 +140,9 @@ export function InvoiceItemRow({
           <Trash2Icon className="h-3.5 w-3.5" />
         </Button>
       </div>
+      {descriptionEmpty && (
+        <p className="mt-1 text-xs text-red-400">Description is required</p>
+      )}
 
       {/* Bottom row: Qty + Price + Total (full-width grid with inline labels) */}
       <div className="mt-2 grid grid-cols-3 gap-3">
@@ -177,6 +181,9 @@ export function InvoiceItemRow({
               rateZero ? 'border-red-500/50' : 'border-zinc-800'
             )}
           />
+          {rateZero && (
+            <p className="mt-1 text-xs text-red-400">Price is required</p>
+          )}
         </div>
         <div>
           <span className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-zinc-500">

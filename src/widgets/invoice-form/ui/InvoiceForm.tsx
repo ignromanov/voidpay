@@ -47,14 +47,27 @@ export interface InvoiceFormProps {
 export function InvoiceForm({ className, onGenerate, isGenerating = false }: InvoiceFormProps) {
   const { form, fieldValidation, formState, canGenerate } = useInvoiceForm()
   const decimals = form.watch('decimals')
-  const [submitAttempted, setSubmitAttempted] = useState(false)
+  const [submitAttemptCount, setSubmitAttemptCount] = useState(0)
+  const submitAttempted = submitAttemptCount > 0
 
   // Reset submitAttempted when draft changes (e.g., Reset button creates new draft)
   // Uses draftId (not invoiceId) because Reset reuses invoiceId for unconsumed drafts
   const draftId = useCreatorStore((s) => s.activeDraft?.meta?.draftId)
   useEffect(() => {
-    setSubmitAttempted(false)
+    setSubmitAttemptCount(0)
   }, [draftId])
+
+  // Scroll to first error field on each submit attempt
+  useEffect(() => {
+    if (submitAttemptCount === 0) return
+    const raf = requestAnimationFrame(() => {
+      const firstError = document.querySelector<HTMLElement>('[data-field-error]')
+      if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [submitAttemptCount])
 
   return (
     <div className={cn('space-y-8', className)}>
@@ -74,7 +87,7 @@ export function InvoiceForm({ className, onGenerate, isGenerating = false }: Inv
 
       <LinkOptionsSection />
 
-      <GenerateButton onGenerate={onGenerate} canGenerate={canGenerate} isGenerating={isGenerating} onSubmitAttempt={() => setSubmitAttempted(true)} />
+      <GenerateButton onGenerate={onGenerate} canGenerate={canGenerate} isGenerating={isGenerating} onSubmitAttempt={() => setSubmitAttemptCount((c) => c + 1)} />
     </div>
   )
 }
