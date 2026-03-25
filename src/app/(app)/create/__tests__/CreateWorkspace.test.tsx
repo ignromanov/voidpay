@@ -2,7 +2,7 @@
  * CreateWorkspace component tests
  * Feature: 015-create-page-preview
  */
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@/shared/lib/test-utils/render'
 import userEvent from '@testing-library/user-event'
 import type React from 'react'
@@ -69,9 +69,6 @@ describe('CreateWorkspace', () => {
     vi.clearAllMocks()
   })
 
-  afterEach(() => {
-    vi.clearAllMocks()
-  })
 
   describe('rendering', () => {
     it('renders preview container', () => {
