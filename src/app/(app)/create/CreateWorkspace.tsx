@@ -53,6 +53,7 @@ export function CreateWorkspace() {
   const updateDraft = useCreatorStore((s) => s.updateDraft)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
+  const clearDraft = useCreatorStore((s) => s.clearDraft)
   const draftSyncStatus = useCreatorStore((s) => s.draftSyncStatus)
 
   const tabs = useMemo<TabItem[]>(
@@ -107,8 +108,8 @@ export function CreateWorkspace() {
 
   const handleResetInvoice = useCallback(() => {
     createNewDraft()
-    toast.success('Invoice reset', {
-      description: 'Started a fresh invoice with default values',
+    toast.success('Form cleared', {
+      description: 'All fields reset to defaults',
     })
   }, [createNewDraft])
 
@@ -166,6 +167,9 @@ export function CreateWorkspace() {
         description: 'Share it with your client to get paid',
       })
 
+      // Draft is consumed — clear so next /create visit starts fresh with new ID
+      clearDraft()
+
       // Navigate to /invoice with ?share=1 to auto-open ShareModal
       // URL is clean: /invoice?share=1#hash (no OG params)
       const invoiceUrl = new URL(url, window.location.origin)
@@ -185,7 +189,7 @@ export function CreateWorkspace() {
     } finally {
       setIsGenerating(false)
     }
-  }, [isGenerating, router])
+  }, [isGenerating, clearDraft, router])
 
   return (
     <>
@@ -234,9 +238,9 @@ export function CreateWorkspace() {
                 variant="ghost"
                 size="sm"
                 className="shrink-0 text-zinc-500 hover:text-zinc-300"
-                title="Reset to new invoice"
+                title="Clear form and reset to defaults"
               >
-                <RotateCcwIcon className="mr-1.5 h-3.5 w-3.5" />
+                <RotateCcwIcon className="h-3.5 w-3.5" />
                 Reset
               </Button>
             </div>

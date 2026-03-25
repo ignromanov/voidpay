@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
+import { useCreatorStore } from '@/entities/creator'
 import { cn } from '@/shared/lib/utils'
 
 import { useInvoiceForm } from '../lib/use-invoice-form'
@@ -47,6 +48,13 @@ export function InvoiceForm({ className, onGenerate, isGenerating = false }: Inv
   const { form, fieldValidation, formState, canGenerate } = useInvoiceForm()
   const decimals = form.watch('decimals')
   const [submitAttempted, setSubmitAttempted] = useState(false)
+
+  // Reset submitAttempted when draft changes (e.g., Reset button creates new draft)
+  // Uses draftId (not invoiceId) because Reset reuses invoiceId for unconsumed drafts
+  const draftId = useCreatorStore((s) => s.activeDraft?.meta?.draftId)
+  useEffect(() => {
+    setSubmitAttempted(false)
+  }, [draftId])
 
   return (
     <div className={cn('space-y-8', className)}>

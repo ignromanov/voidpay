@@ -210,7 +210,9 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
   createNewDraft: () => {
     const draftId = uuidv4()
     const state = get()
-    const invoiceId = state.generateNextInvoiceId()
+    // Reuse current invoiceId if draft exists (Reset doesn't consume the ID)
+    // Counter only advances when a link is generated (in generateAndTrackInvoice)
+    const invoiceId = state.activeDraft?.data?.invoiceId ?? state.generateNextInvoiceId()
 
     const newDraft = createDefaultDraft(draftId, invoiceId, state.preferences)
 

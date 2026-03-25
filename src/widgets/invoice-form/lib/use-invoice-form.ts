@@ -187,48 +187,45 @@ export function useInvoiceForm({ enabled = true }: { enabled?: boolean } = {}): 
     return () => subscription.unsubscribe()
   }, [enabled, form, syncToStore])
 
-  // Sync store → form when store changes externally (e.g., URL hash decode)
+  // Sync store → form when draft identity changes:
+  // - draftId changes: Reset button creates new draft (invoiceId may stay same)
+  // - invoiceId changes: URL hash decode loads different invoice into existing draft
   useEffect(() => {
     if (!enabled) return
     if (!activeDraft?.data) return
 
     const storeData = activeDraft.data
-    const formData = form.getValues()
-
-    // Only update if data actually changed (avoid infinite loop)
-    if (storeData.invoiceId !== formData.invoiceId) {
-      isExternalUpdate.current = true
-      form.reset({
-        invoiceId: storeData.invoiceId,
-        issuedAt: storeData.issuedAt,
-        dueAt: storeData.dueAt,
-        notes: storeData.notes,
-        networkId: storeData.networkId,
-        currency: storeData.currency,
-        tokenAddress: storeData.tokenAddress,
-        decimals: storeData.decimals,
-        tax: storeData.tax,
-        discount: storeData.discount,
-        from: {
-          name: storeData.from?.name ?? '',
-          walletAddress: storeData.from?.walletAddress ?? '',
-          email: storeData.from?.email ?? '',
-          physicalAddress: storeData.from?.physicalAddress ?? '',
-          phone: storeData.from?.phone ?? '',
-          taxId: storeData.from?.taxId ?? '',
-        },
-        client: {
-          name: storeData.client?.name ?? '',
-          walletAddress: storeData.client?.walletAddress ?? '',
-          email: storeData.client?.email ?? '',
-          physicalAddress: storeData.client?.physicalAddress ?? '',
-          phone: storeData.client?.phone ?? '',
-          taxId: storeData.client?.taxId ?? '',
-        },
-      })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: only sync on invoiceId change (new invoice), not every data change
-  }, [enabled, activeDraft?.data?.invoiceId])
+    isExternalUpdate.current = true
+    form.reset({
+      invoiceId: storeData.invoiceId,
+      issuedAt: storeData.issuedAt,
+      dueAt: storeData.dueAt,
+      notes: storeData.notes,
+      networkId: storeData.networkId,
+      currency: storeData.currency,
+      tokenAddress: storeData.tokenAddress,
+      decimals: storeData.decimals,
+      tax: storeData.tax,
+      discount: storeData.discount,
+      from: {
+        name: storeData.from?.name ?? '',
+        walletAddress: storeData.from?.walletAddress ?? '',
+        email: storeData.from?.email ?? '',
+        physicalAddress: storeData.from?.physicalAddress ?? '',
+        phone: storeData.from?.phone ?? '',
+        taxId: storeData.from?.taxId ?? '',
+      },
+      client: {
+        name: storeData.client?.name ?? '',
+        walletAddress: storeData.client?.walletAddress ?? '',
+        email: storeData.client?.email ?? '',
+        physicalAddress: storeData.client?.physicalAddress ?? '',
+        phone: storeData.client?.phone ?? '',
+        taxId: storeData.client?.taxId ?? '',
+      },
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: only sync on draft identity change, not every data change
+  }, [enabled, activeDraft?.meta?.draftId, activeDraft?.data?.invoiceId])
 
   // Cleanup
   useEffect(() => {
