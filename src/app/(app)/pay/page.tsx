@@ -41,10 +41,13 @@ export async function generateMetadata({
       return DEFAULT_METADATA
     }
 
-    // Network is a short code (eth, arb, op, poly) - capitalize for display
     const networkDisplayName = preview.network.toUpperCase()
-    const title = `Invoice ${preview.id} | VoidPay`
-    const description = `${preview.amount} ${preview.currency} on ${networkDisplayName}${preview.from ? ` from ${preview.from}` : ''}`
+    const fromTo = [
+      preview.from ? `from ${preview.from}` : '',
+      preview.to ? `to ${preview.to}` : '',
+    ].filter(Boolean).join(' ')
+    const title = `Pay ${preview.amount} ${preview.currency} — Invoice ${preview.id} | VoidPay`
+    const description = `Crypto invoice for ${preview.amount} ${preview.currency} on ${networkDisplayName}${fromTo ? ` ${fromTo}` : ''}. Pay instantly with your wallet — no signup, no tracking. Powered by VoidPay.`
 
     const images = dynamicOgImages(og)
 

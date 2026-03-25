@@ -218,13 +218,14 @@ function InvoiceOG({
       {/* VoidPay branding below card */}
       <div className="mt-8 flex items-center gap-3">
         <div
-          className="h-6 w-6 rounded-full border border-violet-600/50"
+          className="h-6 w-6 rounded-full"
           style={{
-            background: 'radial-gradient(circle at 40% 40%, #18181B, #000)',
-            boxShadow: '0 0 10px rgba(124,58,237,0.2)',
+            background: 'radial-gradient(circle at 40% 40%, #27272A, #000)',
+            border: '1.5px solid rgba(124,58,237,0.6)',
+            boxShadow: '0 0 12px rgba(124,58,237,0.35)',
           }}
         />
-        <span className="text-[18px] font-semibold text-zinc-500" style={{ letterSpacing: '0.02em' }}>
+        <span className="text-[18px] font-semibold text-zinc-400" style={{ letterSpacing: '0.02em' }}>
           VoidPay
         </span>
       </div>

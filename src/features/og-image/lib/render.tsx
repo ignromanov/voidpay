@@ -145,7 +145,7 @@ export async function renderInvoiceOG(data: InvoiceOGData, size: { width: number
             width: 700,
             padding: '48px 56px',
             borderRadius: 20,
-            border: '1px solid rgba(63,63,70,0.4)',
+            border: '1px solid rgba(63,63,70,0.6)',
             background: 'linear-gradient(145deg, rgba(24,24,27,0.97) 0%, rgba(9,9,11,0.99) 100%)',
             boxShadow: `0 20px 60px -12px rgba(0,0,0,0.7), 0 0 40px -15px ${networkColor}20`,
             position: 'relative',
@@ -291,12 +291,12 @@ export async function renderInvoiceOG(data: InvoiceOGData, size: { width: number
               width: 24,
               height: 24,
               borderRadius: 9999,
-              background: 'radial-gradient(circle at 40% 40%, #18181B, #000)',
-              border: '1px solid rgba(124,58,237,0.4)',
-              boxShadow: '0 0 10px rgba(124,58,237,0.2)',
+              background: 'radial-gradient(circle at 40% 40%, #27272A, #000)',
+              border: '1.5px solid rgba(124,58,237,0.6)',
+              boxShadow: '0 0 12px rgba(124,58,237,0.35)',
             }}
           />
-          <div style={{ fontSize: 18, fontWeight: 600, color: '#52525B', letterSpacing: '0.02em' }}>VoidPay</div>
+          <div style={{ fontSize: 18, fontWeight: 600, color: '#71717A', letterSpacing: '0.02em' }}>VoidPay</div>
         </div>
       </div>
     ),

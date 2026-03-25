@@ -42,7 +42,7 @@ export function OGInvoiceCard({
         width,
         padding: `${width * 0.07}px ${width * 0.08}px`,
         background: 'linear-gradient(145deg, rgba(24,24,27,0.97) 0%, rgba(9,9,11,0.99) 100%)',
-        border: '1px solid rgba(63,63,70,0.4)',
+        border: '1px solid rgba(63,63,70,0.6)',
         boxShadow: `0 20px 60px -12px rgba(0,0,0,0.7), 0 0 40px -15px ${net.color}20`,
         transform: tilt ?? 'none',
       }}
