@@ -66,9 +66,9 @@ function getRateLimiter(): Ratelimit | null {
 export function extractIpAddress(headers: Headers): string {
   const forwardedFor = headers.get('x-forwarded-for')
   if (forwardedFor) {
-    const firstIp = forwardedFor.split(',')[0]?.trim()
-    if (firstIp) {
-      return firstIp
+    const lastIp = forwardedFor.split(',').at(-1)?.trim()
+    if (lastIp) {
+      return lastIp
     }
   }
 

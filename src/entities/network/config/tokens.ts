@@ -78,7 +78,7 @@ export const NETWORK_TOKENS: Record<number, TokenInfo[]> = {
     {
       symbol: 'USDT',
       name: 'Tether',
-      address: '0xfd086bc7cd5c481dcc9c85eb481dad005539f586',
+      address: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
       decimals: 6,
       iconColor: 'bg-emerald-500',
     },
@@ -110,7 +110,7 @@ export const NETWORK_TOKENS: Record<number, TokenInfo[]> = {
     {
       symbol: 'USDT',
       name: 'Tether',
-      address: '0x94b008aa00579c1307b0ef2c499ad98a8ce98e26',
+      address: '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58',
       decimals: 6,
       iconColor: 'bg-emerald-500',
     },

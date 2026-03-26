@@ -66,12 +66,12 @@ describe('rate-limit', () => {
       expect(extractIpAddress(headers)).toBe('192.168.1.1')
     })
 
-    it('extracts first IP from multiple x-forwarded-for values', async () => {
+    it('extracts last IP from multiple x-forwarded-for values (trusted proxy)', async () => {
       const { extractIpAddress } = await loadModule()
       const headers = new Headers()
       headers.set('x-forwarded-for', '192.168.1.1, 10.0.0.1, 172.16.0.1')
 
-      expect(extractIpAddress(headers)).toBe('192.168.1.1')
+      expect(extractIpAddress(headers)).toBe('172.16.0.1')
     })
 
     it('trims whitespace from IP addresses', async () => {
@@ -101,7 +101,7 @@ describe('rate-limit', () => {
     it('prefers x-forwarded-for over x-real-ip', async () => {
       const { extractIpAddress } = await loadModule()
       const headers = new Headers()
-      headers.set('x-forwarded-for', '192.168.1.1')
+      headers.set('x-forwarded-for', '10.0.0.1, 192.168.1.1')
       headers.set('x-real-ip', '10.0.0.1')
 
       expect(extractIpAddress(headers)).toBe('192.168.1.1')
