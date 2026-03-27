@@ -73,6 +73,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900',
           checked ? checkedBg : uncheckedBg,
           disabled && 'cursor-not-allowed! opacity-50',
+          'before:absolute before:-inset-2 before:content-[""]',
           className
         )}
         {...props}
