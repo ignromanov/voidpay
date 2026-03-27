@@ -31,7 +31,7 @@ export function AnalyticsToggle() {
       type="button"
       onClick={handleToggle}
       className={cn(
-        'group relative rounded p-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
+        'group relative cursor-pointer rounded p-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
         enabled
           ? 'text-zinc-500 hover:text-zinc-300'
           : 'text-zinc-600 hover:text-zinc-400',
@@ -41,7 +41,7 @@ export function AnalyticsToggle() {
     >
       <ShieldIcon className="h-3.5 w-3.5" />
       {enabled && (
-        <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
       )}
     </button>
   )
