@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["vitest/globals", "node"],
+    "types": ["vitest/globals", "@testing-library/jest-dom/vitest", "node"],
     // Relaxed rules for tests
     "noUncheckedIndexedAccess": false,
     "exactOptionalPropertyTypes": false,
@@ -15,5 +15,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "assets", "worktrees", "specs"]
+  "exclude": ["node_modules", "assets", "worktrees", "specs", "tools"]
 }
