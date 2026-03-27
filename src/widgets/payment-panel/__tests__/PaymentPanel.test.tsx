@@ -278,11 +278,10 @@ describe('PaymentPanel', () => {
       expect(screen.queryByRole('button', { name: /show qr/i })).toBeNull()
     })
 
-    it('Show QR button has hidden md:inline-flex for desktop-only', () => {
+    it('Show QR button is always visible on all screen sizes', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
       const btn = screen.getByRole('button', { name: /show qr/i })
-      expect(btn.className).toContain('hidden')
-      expect(btn.className).toContain('md:inline-flex')
+      expect(btn.className).not.toContain('hidden')
     })
   })
 

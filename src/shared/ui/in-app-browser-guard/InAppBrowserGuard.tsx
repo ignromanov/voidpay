@@ -40,7 +40,7 @@ export function InAppBrowserGuard() {
                 // Fallback: just inform the user
               }
             }}
-            className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-amber-300 transition-colors hover:text-amber-200"
+            className="mt-2 min-h-[44px] px-3 py-2 rounded-lg inline-flex items-center gap-1.5 text-sm font-medium text-amber-300 transition-colors hover:text-amber-200"
           >
             <ExternalLinkIcon className="h-4 w-4" />
             Open in browser
@@ -49,7 +49,7 @@ export function InAppBrowserGuard() {
         <button
           type="button"
           onClick={() => setVisible(false)}
-          className="shrink-0 text-amber-400/60 transition-colors hover:text-amber-300"
+          className="flex h-11 w-11 items-center justify-center rounded-lg shrink-0 text-amber-400/60 transition-colors hover:text-amber-300"
           aria-label="Dismiss"
         >
           &times;

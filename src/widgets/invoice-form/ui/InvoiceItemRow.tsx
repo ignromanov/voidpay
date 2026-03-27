@@ -164,11 +164,10 @@ export function InvoiceItemRow({
           </label>
           <input
             id={qtyId}
-            type="number"
+            type="text"
+            inputMode="numeric"
             placeholder="1"
             value={item.quantity}
-            min={1}
-            max={FIELD_LIMITS.maxQuantity}
             onChange={(e) => onUpdate({ quantity: parseFloat(e.target.value) || 1 })}
             autoComplete="off"
             className="w-full border-b border-zinc-800 bg-transparent py-2 tabular-nums text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"

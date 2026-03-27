@@ -35,14 +35,14 @@ function BelowFoldPlaceholder() {
     <div className="space-y-32 py-20">
       <section className="container mx-auto px-4">
         <h2 className="sr-only">How VoidPay Works</h2>
-        <div className="h-96 animate-pulse rounded-2xl bg-zinc-900/30" />
-      </section>
-      <section className="container mx-auto px-4">
-        <h2 className="sr-only">Interactive Demo</h2>
         <div className="h-[600px] animate-pulse rounded-2xl bg-zinc-900/30" />
       </section>
       <section className="container mx-auto px-4">
-        <div className="h-80 animate-pulse rounded-2xl bg-zinc-900/30" />
+        <h2 className="sr-only">Interactive Demo</h2>
+        <div className="h-[700px] animate-pulse rounded-2xl bg-zinc-900/30" />
+      </section>
+      <section className="container mx-auto px-4">
+        <div className="h-[500px] animate-pulse rounded-2xl bg-zinc-900/30" />
       </section>
     </div>
   )

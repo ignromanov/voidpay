@@ -200,7 +200,7 @@ export function CreateWorkspace() {
       {/* Safe area padding for mobile tab bar */}
       <div
         className="mx-auto flex h-[calc(100vh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 lg:pb-6 lg:py-6 print:h-auto print:max-w-none print:overflow-visible print:p-0"
-        style={{ paddingBottom: 'max(5rem, calc(env(safe-area-inset-bottom, 0px) + 5rem))' }}
+        style={{ paddingBottom: 'max(7rem, calc(env(safe-area-inset-bottom, 0px) + 7rem))' }}
       >
         {/* Editor Pane */}
         <Card
@@ -224,7 +224,7 @@ export function CreateWorkspace() {
                 onClick={handleResetInvoice}
                 variant="ghost"
                 size="sm"
-                className="shrink-0 text-zinc-500 hover:text-zinc-300"
+                className="shrink-0 min-h-[44px] min-w-[44px] text-zinc-500 hover:text-zinc-300"
                 title="Clear form and reset to defaults"
               >
                 <RotateCcwIcon className="h-3.5 w-3.5" />
@@ -240,7 +240,7 @@ export function CreateWorkspace() {
         <div
           className={cn(
             'relative flex items-start justify-center',
-            'h-full min-w-[300px] sm:min-w-[400px] lg:min-w-[580px]',
+            'h-full w-full sm:min-w-[400px] lg:min-w-[580px]',
             'p-4 sm:p-5 lg:p-6',
             mobileTab === 'editor' ? 'hidden lg:flex' : 'flex'
           )}

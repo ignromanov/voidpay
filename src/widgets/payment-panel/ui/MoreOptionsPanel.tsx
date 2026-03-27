@@ -27,7 +27,7 @@ export function MoreOptionsPanel({
         <button
           type="button"
           className={cn(
-            'cursor-pointer w-full inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
+            'cursor-pointer w-full inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 min-h-[44px]',
             isWatching
               ? 'text-violet-400 bg-violet-500/10'
               : 'text-zinc-400 hover:bg-violet-500/10 hover:text-violet-300',
@@ -68,7 +68,7 @@ export function MoreOptionsPanel({
             <Button
               variant="outline"
               size="sm"
-              className="shrink-0 h-[42px] w-[42px] border-zinc-700 text-violet-400 hover:text-white hover:border-violet-500/50 hover:bg-violet-500/10 disabled:opacity-40 disabled:text-zinc-600"
+              className="shrink-0 h-[44px] w-[44px] border-zinc-700 text-violet-400 hover:text-white hover:border-violet-500/50 hover:bg-violet-500/10 disabled:opacity-40 disabled:text-zinc-600"
               disabled={!txHashValid}
               onClick={() => {
                 track(AnalyticsEvent.PAY_VERIFY, { method: 'tx-hash' })

@@ -67,12 +67,12 @@ export function DemoSection() {
   )
 
   if (!currentInvoice) {
-    return <section className="py-32 text-center text-zinc-500">Demo content unavailable</section>
+    return <section className="py-16 text-center text-zinc-500 md:py-32">Demo content unavailable</section>
   }
 
   return (
     <section
-      className="relative flex w-full flex-col items-center justify-center overflow-visible py-32"
+      className="relative flex w-full flex-col items-center justify-center overflow-visible py-16 md:py-32"
       aria-labelledby="demo-heading"
     >
       {/* Header */}
@@ -94,7 +94,7 @@ export function DemoSection() {
           onMouseLeave={handleMouseLeave}
           overlay={
             <div
-              className={`absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+              className={`absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-200 ${isHovered ? 'opacity-100 md:opacity-100 md:pointer-events-auto' : 'opacity-100 md:pointer-events-none md:opacity-0'}`}
             >
               <Button
                 variant="glow"

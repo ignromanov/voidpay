@@ -7,7 +7,7 @@ import { cn } from '@/shared/lib/utils'
 import { copyToClipboard } from '@/shared/lib/clipboard'
 
 const copyButtonVariants = cva(
-  'inline-flex cursor-pointer items-center justify-center rounded transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring print:hidden',
+  'relative inline-flex cursor-pointer items-center justify-center rounded transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring print:hidden',
   {
     variants: {
       size: {
@@ -73,6 +73,7 @@ const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
         ) : (
           <CopyIcon />
         )}
+        <span className="absolute -inset-2" aria-hidden="true" />
       </button>
     )
   }

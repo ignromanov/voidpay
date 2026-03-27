@@ -21,7 +21,7 @@ export const DemoPagination = React.memo<DemoPaginationProps>(
             key={item.invoiceId}
             type="button"
             aria-label={`View invoice ${item.invoiceId}`}
-            className="group relative flex h-8 w-8 cursor-pointer items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+            className="group relative flex h-11 w-11 cursor-pointer items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
             onClick={() => {
               track(AnalyticsEvent.DEMO_SELECT, { invoice_id: item.invoiceId })
               onSelect(index)

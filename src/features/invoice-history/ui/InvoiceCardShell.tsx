@@ -10,7 +10,7 @@ export function InvoiceCardShell({ children, className }: InvoiceCardShellProps)
   return (
     <div
       className={cn(
-        'rounded-lg border border-gray-700 bg-gray-800/50 p-4 transition-colors hover:border-gray-600',
+        'overflow-hidden rounded-lg border border-gray-700 bg-gray-800/50 p-4 transition-colors hover:border-gray-600',
         className,
       )}
     >

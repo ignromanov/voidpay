@@ -18,9 +18,9 @@ const selectTriggerVariants = cva(
   {
     variants: {
       size: {
-        default: 'h-10 py-2.5',
-        sm: 'h-8 py-2 text-xs',
-        lg: 'h-11 py-3',
+        default: 'h-11 py-3 text-base',
+        sm: 'h-9 py-2 text-sm',
+        lg: 'h-12 py-3 text-base',
       },
       variant: {
         default: 'border-input bg-transparent shadow-sm focus:ring-1 focus:ring-ring',

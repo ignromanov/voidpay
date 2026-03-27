@@ -62,7 +62,7 @@ export function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="relative bg-zinc-950/10 px-6 py-32 backdrop-blur-sm"
+      className="relative bg-zinc-950/10 px-6 py-16 backdrop-blur-sm md:py-32"
       aria-labelledby="how-it-works-heading"
     >
       <div className="mx-auto max-w-5xl space-y-16">

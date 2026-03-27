@@ -11,6 +11,8 @@ import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { cn } from '@/shared/lib/utils'
 import { truncateAddress } from '@/shared/lib/validation'
 
+const FOCUS_RING = 'focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 focus:outline-none'
+
 /**
  * Props for ConnectWalletButton component
  */
@@ -58,8 +60,9 @@ export function ConnectWalletButton({ className, showBalance = false }: ConnectW
                       'inline-flex items-center justify-center gap-2 rounded-lg',
                       'bg-violet-600 text-white hover:bg-violet-700',
                       'px-4 py-2 text-sm font-medium',
+                      'min-h-[44px]',
                       'transition-colors duration-200',
-                      'focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:outline-none',
+                      FOCUS_RING,
                       className
                     )}
                   >
@@ -77,7 +80,9 @@ export function ConnectWalletButton({ className, showBalance = false }: ConnectW
                       'inline-flex items-center justify-center gap-2 rounded-lg',
                       'bg-red-600 text-white hover:bg-red-700',
                       'px-4 py-2 text-sm font-medium',
+                      'min-h-[44px]',
                       'transition-colors duration-200',
+                      FOCUS_RING,
                       className
                     )}
                   >
@@ -92,12 +97,15 @@ export function ConnectWalletButton({ className, showBalance = false }: ConnectW
                   <button
                     onClick={openChainModal}
                     type="button"
+                    aria-label={`Switch network: ${chain.name}`}
                     className={cn(
                       'inline-flex items-center gap-2 rounded-lg',
                       'bg-zinc-800 text-zinc-100 hover:bg-zinc-700',
                       'px-3 py-2 text-sm font-medium',
+                      'min-h-[44px]',
                       'transition-colors duration-200',
-                      'border border-zinc-700'
+                      'border border-zinc-700',
+                      FOCUS_RING
                     )}
                   >
                     {chain.hasIcon && (
@@ -126,8 +134,10 @@ export function ConnectWalletButton({ className, showBalance = false }: ConnectW
                       'inline-flex items-center gap-2 rounded-lg',
                       'bg-zinc-800 text-zinc-100 hover:bg-zinc-700',
                       'px-3 py-2 text-sm font-medium',
+                      'min-h-[44px]',
                       'transition-colors duration-200',
                       'border border-zinc-700',
+                      FOCUS_RING,
                       className
                     )}
                   >

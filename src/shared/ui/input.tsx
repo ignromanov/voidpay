@@ -8,7 +8,7 @@ import { cn } from '@/shared/lib/utils'
  * Input component variants using CVA
  */
 export const inputVariants = cva(
-  'flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50',
+  'flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50',
   {
     variants: {
       state: {

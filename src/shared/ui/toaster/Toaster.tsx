@@ -8,7 +8,7 @@ export function Toaster() {
     <SonnerToaster
       position="bottom-right"
       className="!z-[9999] print:hidden"
-      style={{ bottom: '50px' }}
+      style={{ bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}
       gap={12}
       icons={{
         success: <CheckCircleIcon className="h-5 w-5 text-emerald-400" />,
@@ -20,7 +20,7 @@ export function Toaster() {
         unstyled: true,
         classNames: {
           toast:
-            'group pointer-events-auto bg-zinc-800/80 border border-zinc-600/50 rounded-xl p-4 flex items-center gap-3 shadow-xl backdrop-blur-md transition-all hover:border-zinc-500 hover:bg-zinc-700/80',
+            'group pointer-events-auto bg-zinc-800/80 border border-zinc-600/50 rounded-xl p-4 flex items-center gap-3 shadow-xl backdrop-blur-md transition-all hover:border-zinc-500 hover:bg-zinc-700/80 max-w-[calc(100vw-2rem)]',
           title: 'text-white font-sans text-sm font-medium',
           description: 'text-zinc-400 font-sans text-xs mt-1',
           success: 'border-emerald-500/40',

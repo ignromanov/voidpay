@@ -62,7 +62,7 @@ export function MetadataSection({ form, fieldValidation, submitAttempted }: Meta
         <Text variant="label" className="flex items-center gap-1.5 text-zinc-400">
           <CalendarIcon size={12} /> Dates (Issue / Due) *
         </Text>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <DateInput value={issuedAt} onChange={handleIssuedAtChange} aria-label="Issue date" />
           <DateInput value={dueAt} onChange={handleDueAtChange} aria-label="Due date" />
         </div>

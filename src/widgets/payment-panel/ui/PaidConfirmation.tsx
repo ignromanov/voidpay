@@ -77,8 +77,8 @@ export function PaidConfirmation({
 
       {/* Amount accent */}
       <div className="py-2 pl-2 border-l-2 border-emerald-500/30 bg-emerald-500/5 rounded-r-lg">
-        <div className="flex items-baseline gap-2 pl-2">
-          <span className="text-4xl font-black font-mono tracking-tight text-white">
+        <div className="flex min-w-0 items-baseline gap-2 pl-2">
+          <span className="min-w-0 truncate text-2xl font-black font-mono tracking-tight text-white sm:text-4xl">
             {formattedSubtotal}
           </span>
           <span className="text-xl text-emerald-400/80">{currency}</span>

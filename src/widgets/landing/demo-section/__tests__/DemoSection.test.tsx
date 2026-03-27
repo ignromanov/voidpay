@@ -216,13 +216,13 @@ describe('DemoSection', () => {
       const link = screen.getByRole('link', { name: /use this template/i })
       expect(link).toBeInTheDocument()
 
-      // Mouse leave - button hidden via CSS (opacity-0, pointer-events-none)
+      // Mouse leave - on mobile overlay stays visible (opacity-100 md:opacity-0)
       await act(async () => {
         fireEvent.mouseLeave(getHoverZone()!)
       })
-      // Button stays in DOM but is visually hidden via CSS opacity
+      // Button stays in DOM; base opacity is always visible (hidden only on md+ via md:opacity-0)
       const container = link.closest('div')
-      expect(container).toHaveClass('opacity-0')
+      expect(container).toHaveClass('opacity-100')
     })
   })
 

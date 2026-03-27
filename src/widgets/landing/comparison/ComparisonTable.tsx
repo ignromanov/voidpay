@@ -136,7 +136,7 @@ function ValueCell({ value }: { value: ComparisonValue }) {
 
 export function ComparisonTable() {
   return (
-    <section className="relative border-t border-zinc-900 bg-zinc-950/10 px-6 py-32 backdrop-blur-sm">
+    <section className="relative border-t border-zinc-900 bg-zinc-950/10 px-6 py-16 backdrop-blur-sm md:py-32">
       <div className="mx-auto max-w-4xl">
         {/* Section header - SEO: competitor comparison keywords */}
         <div className="mb-16 text-center">
@@ -149,41 +149,45 @@ export function ComparisonTable() {
         </div>
 
         {/* Comparison table - horizontally scrollable on mobile */}
-        <div className="overflow-x-auto rounded-2xl border border-zinc-800 bg-zinc-900/30">
-          <div className="min-w-[640px]">
-            {/* Table header */}
-            <div className="grid grid-cols-5 gap-2 border-b border-zinc-800 bg-zinc-900/50 px-4 py-4 md:gap-4 md:px-6">
-              <div className="text-left text-sm font-medium text-zinc-400">Feature</div>
-              <div className="text-center text-sm font-bold text-violet-400">VoidPay</div>
-              <div className="text-center text-sm font-medium text-zinc-400">Request</div>
-              <div className="text-center text-sm font-medium text-zinc-400">Basenode</div>
-              <div className="text-center text-sm font-medium text-zinc-400">Traditional</div>
-            </div>
-
-            {/* Table rows */}
-            {COMPARISON_DATA.map((row, index) => (
-              <div
-                key={row.feature}
-                className={`grid grid-cols-5 items-center gap-2 px-4 py-4 md:gap-4 md:px-6 ${
-                  index < COMPARISON_DATA.length - 1 ? 'border-b border-zinc-800/50' : ''
-                }`}
-              >
-                <div className="text-sm font-medium text-zinc-100">{row.feature}</div>
-                <div className="text-center">
-                  <ValueCell value={row.voidpay} />
-                </div>
-                <div className="text-center">
-                  <ValueCell value={row.requestNetwork} />
-                </div>
-                <div className="text-center">
-                  <ValueCell value={row.basenode} />
-                </div>
-                <div className="text-center">
-                  <ValueCell value={row.traditional} />
-                </div>
+        <div className="relative">
+          <div className="overflow-x-auto rounded-2xl border border-zinc-800 bg-zinc-900/30">
+            <div className="min-w-[640px]" role="table">
+              {/* Table header */}
+              <div role="row" className="grid grid-cols-5 gap-2 border-b border-zinc-800 bg-zinc-900/50 px-4 py-4 md:gap-4 md:px-6">
+                <div role="columnheader" className="text-left text-sm font-medium text-zinc-400">Feature</div>
+                <div role="columnheader" className="text-center text-sm font-bold text-violet-400">VoidPay</div>
+                <div role="columnheader" className="text-center text-sm font-medium text-zinc-400">Request</div>
+                <div role="columnheader" className="text-center text-sm font-medium text-zinc-400">Basenode</div>
+                <div role="columnheader" className="text-center text-sm font-medium text-zinc-400">Traditional</div>
               </div>
-            ))}
+
+              {/* Table rows */}
+              {COMPARISON_DATA.map((row, index) => (
+                <div
+                  key={row.feature}
+                  role="row"
+                  className={`grid grid-cols-5 items-center gap-2 px-4 py-4 md:gap-4 md:px-6 ${
+                    index < COMPARISON_DATA.length - 1 ? 'border-b border-zinc-800/50' : ''
+                  }`}
+                >
+                  <div role="cell" className="text-sm font-medium text-zinc-100">{row.feature}</div>
+                  <div role="cell" className="text-center">
+                    <ValueCell value={row.voidpay} />
+                  </div>
+                  <div role="cell" className="text-center">
+                    <ValueCell value={row.requestNetwork} />
+                  </div>
+                  <div role="cell" className="text-center">
+                    <ValueCell value={row.basenode} />
+                  </div>
+                  <div role="cell" className="text-center">
+                    <ValueCell value={row.traditional} />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-zinc-950 to-transparent md:hidden" aria-hidden="true" />
         </div>
 
         {/* Disclaimer */}

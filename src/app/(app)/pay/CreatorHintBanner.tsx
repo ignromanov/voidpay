@@ -58,7 +58,7 @@ export function CreatorHintBanner({ isCreator }: CreatorHintBannerProps) {
           </p>
           <button
             onClick={handleDismiss}
-            className="ml-3 rounded-lg p-2 text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-white"
+            className="ml-3 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-white"
             aria-label="Dismiss hint"
           >
             <XIcon size={14} />

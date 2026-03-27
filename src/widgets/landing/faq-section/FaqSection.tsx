@@ -8,6 +8,7 @@
 
 import { useState } from 'react'
 import { ChevronDownIcon } from '@/shared/ui/icons'
+import { useReducedMotion } from '@/shared/ui'
 
 import { track, AnalyticsEvent } from '@/features/analytics'
 import { cn } from '@/shared/lib/utils'
@@ -16,7 +17,8 @@ import { AnimatePresence, motion } from '@/shared/ui/motion'
 
 import { FAQ_ITEMS, type FaqItem } from '../constants/faq'
 
-function FaqItem({ question, answer, isOpen, onToggle }: FaqItem & { isOpen: boolean; onToggle: () => void }) {
+function FaqItem({ question, answer, isOpen, onToggle, index }: FaqItem & { isOpen: boolean; onToggle: () => void; index: number }) {
+  const shouldReduceMotion = useReducedMotion()
   return (
     <div className="border-b border-zinc-800 last:border-b-0">
       <button
@@ -26,6 +28,7 @@ function FaqItem({ question, answer, isOpen, onToggle }: FaqItem & { isOpen: boo
         }}
         className="flex w-full cursor-pointer items-center justify-between gap-4 py-6 text-left transition-colors hover:text-zinc-100"
         aria-expanded={isOpen}
+        aria-controls={`faq-answer-${index}`}
       >
         <span className="text-lg font-medium text-zinc-100">{question}</span>
         <ChevronDownIcon
@@ -39,10 +42,11 @@ function FaqItem({ question, answer, isOpen, onToggle }: FaqItem & { isOpen: boo
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
+            id={`faq-answer-${index}`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.2, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
             <Text variant="body" className="pb-6 text-zinc-400">
@@ -65,7 +69,7 @@ export function FaqSection() {
   return (
     <section
       id="faq"
-      className="relative border-t border-zinc-900 bg-zinc-950/10 px-6 py-32 backdrop-blur-sm"
+      className="relative border-t border-zinc-900 bg-zinc-950/10 px-4 py-16 backdrop-blur-sm md:px-6 md:py-32"
       aria-labelledby="faq-heading"
     >
       <div className="mx-auto max-w-3xl">
@@ -80,10 +84,11 @@ export function FaqSection() {
         </div>
 
         {/* FAQ Accordion */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/20 px-8 backdrop-blur-sm">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/20 px-4 backdrop-blur-sm md:px-8">
           {FAQ_ITEMS.map((item, index) => (
             <FaqItem
               key={index}
+              index={index}
               question={item.question}
               answer={item.answer}
               isOpen={openIndex === index}

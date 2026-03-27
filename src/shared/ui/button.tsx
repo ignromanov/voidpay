@@ -20,10 +20,10 @@ const buttonVariants = cva(
         void: 'relative bg-black text-white border border-electric-violet/30 shadow-[0_0_20px_-5px_rgba(124,58,237,0.3),0_0_60px_-15px_rgba(124,58,237,0.15)] overflow-hidden group hover:border-electric-violet/50 hover:shadow-[0_0_30px_-5px_rgba(124,58,237,0.5),0_0_80px_-15px_rgba(124,58,237,0.25)] disabled:grayscale',
       },
       size: {
-        default: 'h-9 px-4 py-2',
-        sm: 'h-8 rounded-md px-3 text-xs',
+        default: 'h-10 px-4 py-2',
+        sm: 'h-9 rounded-md px-3 text-xs',
         lg: 'h-12 px-6 text-base rounded-2xl',
-        icon: 'h-9 w-9',
+        icon: 'h-10 w-10',
       },
     },
     defaultVariants: {

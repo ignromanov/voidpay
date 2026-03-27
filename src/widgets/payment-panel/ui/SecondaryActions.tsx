@@ -10,7 +10,7 @@ import { track, AnalyticsEvent } from '@/features/analytics'
 
 /** Shared base classes for secondary action buttons */
 const footerActionBase =
-  'cursor-pointer select-none inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950'
+  'cursor-pointer select-none inline-flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-xs transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 min-h-[44px]'
 
 interface SecondaryActionsProps {
   onIvePaid?: (() => void) | undefined
@@ -38,7 +38,7 @@ export function SecondaryActions({
   if (!onIvePaid && !onCheckPayment && !hasMoreOptions) return null
 
   return (
-    <div className="flex items-center gap-1 -mt-2 -mb-1">
+    <div className="flex items-center gap-2">
       {onIvePaid && (
         <button
           type="button"

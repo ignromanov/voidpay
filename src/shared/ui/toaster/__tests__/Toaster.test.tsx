@@ -43,7 +43,7 @@ describe('Toaster', () => {
       const { container } = render(<Toaster />)
 
       const toaster = container.querySelector('[data-sonner-toaster]')
-      expect(toaster).toHaveStyle({ bottom: '50px' })
+      expect(toaster).toHaveStyle({ bottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' })
     })
   })
 

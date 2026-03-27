@@ -33,8 +33,8 @@ export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen, on
             onClick={onPdfExport}
             className={
               onPdfExport
-                ? 'inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-violet-400'
-                : 'text-xs text-zinc-500 inline-flex items-center gap-1 opacity-50 cursor-not-allowed'
+                ? 'inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-violet-400 min-h-[44px]'
+                : 'text-xs text-zinc-500 inline-flex items-center gap-1 opacity-50 cursor-not-allowed min-h-[44px]'
             }
             aria-label={onPdfExport ? 'Download PDF' : 'Download PDF (coming soon)'}
           >
@@ -46,7 +46,7 @@ export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen, on
               variant="ghost"
               size="sm"
               onClick={onShareOpen}
-              className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-violet-400"
+              className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-violet-400 min-h-[44px]"
               aria-label="Share invoice"
             >
               <Share2Icon size={12} />
@@ -57,7 +57,7 @@ export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen, on
               variant="ghost"
               size="sm"
               onClick={onQrOpen}
-              className="hidden md:inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-white"
+              className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-white min-h-[44px]"
               aria-label="Show QR code for mobile payment"
             >
               <QrCodeIcon size={12} />
@@ -81,7 +81,7 @@ export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen, on
           <Button
             variant="ghost"
             size="sm"
-            className="text-xs text-zinc-500 hover:text-red-400 font-medium group hover:bg-red-500/5"
+            className="text-xs text-zinc-500 hover:text-red-400 font-medium group hover:bg-red-500/5 min-h-[44px]"
             aria-label="Report abuse"
             onClick={() => {
               const url = typeof window !== 'undefined' ? window.location.href : ''

@@ -145,7 +145,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
 
         {/* Invoice Preview */}
         <div
-          className="absolute inset-x-0 top-0 bottom-[70px] z-10 flex items-center justify-center p-2 md:p-4 print:items-start print:justify-start print:bottom-0 print:p-0"
+          className="absolute inset-x-0 top-0 bottom-[calc(70px+env(safe-area-inset-bottom,0px))] z-10 flex items-center justify-center p-2 md:p-4 print:items-start print:justify-start print:bottom-0 print:p-0"
         >
           <ScaledInvoicePreview
             preset="pay"
@@ -163,7 +163,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
         </div>
 
         {/* Payment Panel — observation mode (no SmartPayButton) */}
-        <div className="absolute bottom-4 left-1/2 z-40 w-full max-w-[95%] -translate-x-1/2 px-4 md:bottom-5 md:max-w-xl">
+        <div className="absolute bottom-[max(1rem,env(safe-area-inset-bottom,1rem))] left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5">
           <AnimatePresence mode="wait">
             {isMinimized ? (
               <MinimizedPill key="minimized" status={panelStatus} onExpand={() => setIsMinimized(false)} />
@@ -219,7 +219,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                 )}
                 <button
                   onClick={() => setIsMinimized(true)}
-                  className="absolute top-2.5 right-3 z-10 cursor-pointer rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-white"
+                  className="absolute top-1.5 right-1.5 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-white"
                   title="Minimize"
                   aria-label="Minimize payment panel"
                 >

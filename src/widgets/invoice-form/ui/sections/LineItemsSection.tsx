@@ -34,7 +34,7 @@ export function LineItemsSection({ decimals, submitAttempted }: LineItemsSection
           onClick={addLineItem}
           variant="ghost"
           size="sm"
-          className="text-violet-400 hover:text-violet-300"
+          className="min-h-[44px] text-violet-400 hover:text-violet-300"
           disabled={lineItems.length >= 5}
           title={lineItems.length >= 5 ? 'Maximum 5 items' : undefined}
           aria-label="Add line item"
