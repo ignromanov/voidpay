@@ -184,6 +184,13 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
     const MAX_RETRIES = 20 // ~320ms at 60fps, enough for animations
 
     const updateScale = (width: number, height: number) => {
+      // Skip recalc when only height changes (mobile browser chrome hide/show).
+      // On portrait phones scale is width-limited, so height-only changes
+      // produce the same scale but still trigger expensive paint cycles.
+      // Orientation changes alter width by 100+ px, so they pass through.
+      const widthChanged = Math.abs(width - lastWidthRef.current) > 1
+      if (lastWidthRef.current > 0 && !widthChanged) return
+
       // Cancel any pending RAF
       if (rafId !== null) cancelAnimationFrame(rafId)
 
@@ -226,16 +233,11 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
     })
     observer.observe(container)
 
-    // Window resize — skip when only height changes (mobile browser chrome hide/show).
-    // Width doesn't change in that scenario, so scale recalc is unnecessary and
-    // avoids expensive InvoicePaper repaints on mobile scroll.
+    // Window resize as additional fallback (width-change guard is in updateScale)
     const handleResize = () => {
       const rect = container.getBoundingClientRect()
       if (rect.width > 0 && rect.height > 0) {
-        const widthChanged = Math.abs(rect.width - lastWidthRef.current) > 1
-        if (widthChanged) {
-          updateScale(rect.width, rect.height)
-        }
+        updateScale(rect.width, rect.height)
       }
     }
     window.addEventListener('resize', handleResize, { passive: true })
