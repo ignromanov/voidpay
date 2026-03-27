@@ -92,6 +92,7 @@
     "geist": "^1.5.1",
     "next": "^15.5.9",
     "next-sitemap": "^4.2.3",
+    "pdfmake": "^0.3.7",
     "pixi.js": "^8.14.3",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.4",
