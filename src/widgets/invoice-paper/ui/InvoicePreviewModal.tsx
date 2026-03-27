@@ -12,6 +12,7 @@ import { InvoiceStatus } from '../types'
 import { PartialInvoice, invoiceSchema } from '@/entities/invoice'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
 import { track, AnalyticsEvent } from '@/features/analytics'
+import { exportInvoicePdf } from '@/features/pdf-export'
 
 // Animation variants for smooth enter/exit
 const headerVariants = {
@@ -106,13 +107,22 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
 
     const printedViaButton = useRef(false)
 
-    // Print/Download handler (both trigger browser print dialog)
+    // Print handler (browser print dialog)
     const handlePrint = useCallback(() => {
       printedViaButton.current = true
-      track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
       window.print()
       setTimeout(() => { printedViaButton.current = false }, 1000)
     }, [])
+
+    // PDF download handler (pdfmake generation)
+    const handleDownloadPdf = useCallback(() => {
+      track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
+      void exportInvoicePdf(data, {
+        status: status === 'empty' ? undefined : status,
+        txHash,
+        invoiceUrl,
+      })
+    }, [data, status, txHash, invoiceUrl])
 
     // Keyboard shortcuts
     useEffect(() => {
@@ -250,7 +260,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               variant="ghost"
               size="sm"
               className="gap-2 text-zinc-300 hover:text-white"
-              onClick={handlePrint}
+              onClick={handleDownloadPdf}
             >
               <DownloadIcon className="h-5 w-5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Download PDF</span>
