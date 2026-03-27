@@ -5,14 +5,9 @@ import { formatInvoiceTotal, useTrackedInvoiceStore } from '@/entities/invoice'
 import { cn } from '@/shared/lib/utils'
 import { InvoiceStatusBadge } from './InvoiceStatusBadge'
 import { InvoiceCardShell } from './InvoiceCardShell'
-import type { Invoice } from '@/entities/invoice'
-import type { TrackedInvoice, InvoiceStatus } from '@/entities/invoice'
+import type { DecodedReceivedInvoice } from '../lib/types'
 
-export interface DecodedReceivedInvoice {
-  tracked: TrackedInvoice
-  invoice: Invoice | null
-  status: InvoiceStatus
-}
+export type { DecodedReceivedInvoice }
 
 interface ReceivedInvoiceListProps {
   invoices: DecodedReceivedInvoice[]

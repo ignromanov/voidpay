@@ -1,80 +1,31 @@
 'use client'
 
-/**
- * HistoryList Component
- *
- * Displays a chronological list of created invoices with preview information.
- * Reads from TrackedInvoiceStore and decodes invoice data from URL on demand.
- * Allows users to view, duplicate, or delete history entries.
- */
-
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   formatInvoiceTotal,
   useTrackedInvoiceStore,
-  computeInvoiceStatus,
   type TrackedInvoice,
   type InvoiceStatus,
   type Invoice,
 } from '@/entities/invoice'
-import { parseInvoiceHash } from '@/features/invoice-codec'
 import { toast } from '@/shared/lib/toast'
 import { duplicateFromUrl } from '../lib/duplicate-invoice'
+import type { DecodedHistoryEntry } from '../lib/types'
 import { InvoiceStatusBadge } from './InvoiceStatusBadge'
 import { InvoiceCardShell } from './InvoiceCardShell'
 
-/** Decoded invoice entry for display */
-interface DecodedHistoryEntry {
-  tracked: TrackedInvoice
-  invoice: Invoice | null
-  status: InvoiceStatus
-}
-
 interface HistoryListProps {
-  debug?: boolean
+  entries: DecodedHistoryEntry[]
+  debug: boolean
   className?: string
 }
 
-export function HistoryList({ debug = false, className = '' }: HistoryListProps) {
+export function HistoryList({ entries, debug, className = '' }: HistoryListProps) {
   const router = useRouter()
-  const trackedInvoices = useTrackedInvoiceStore((s) => s.invoices)
   const removeInvoice = useTrackedInvoiceStore((s) => s.removeInvoice)
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
-  const [entries, setEntries] = useState<DecodedHistoryEntry[]>([])
-
-  // Filter created invoices and decode from URL (async)
-  useEffect(() => {
-    let cancelled = false
-    const createdInvoices = trackedInvoices.filter((inv) => inv.source === 'created')
-
-    void (async () => {
-      const decoded = await Promise.all(
-        createdInvoices.map(async (tracked) => {
-          let invoice: Invoice | null = null
-          try {
-            const hash = new URL(tracked.invoiceUrl).hash.slice(1)
-            const result = await parseInvoiceHash(hash)
-            if (result.success) {
-              invoice = result.data
-            }
-          } catch {
-            // URL parsing failed — invoice stays null
-          }
-
-          const status = computeInvoiceStatus({
-            tracked,
-            dueAt: invoice?.dueAt,
-          })
-
-          return { tracked, invoice, status }
-        })
-      )
-      if (!cancelled) setEntries(decoded)
-    })()
-    return () => { cancelled = true }
-  }, [trackedInvoices])
 
   const handleDelete = (invoiceId: string) => {
     removeInvoice(invoiceId)
@@ -92,7 +43,6 @@ export function HistoryList({ debug = false, className = '' }: HistoryListProps)
   }, [router])
 
   const handleView = useCallback((invoiceUrl: string) => {
-    // Open in /invoice (creator tracking view) instead of /pay
     try {
       const hash = new URL(invoiceUrl).hash
       window.open(`/invoice${hash}`, '_blank', 'noopener,noreferrer')
@@ -164,7 +114,7 @@ interface HistoryEntryCardProps {
   onDeleteCancel: () => void
 }
 
-function HistoryEntryCard({
+const HistoryEntryCard = memo(function HistoryEntryCard({
   tracked,
   invoice,
   status,
@@ -273,4 +223,4 @@ function HistoryEntryCard({
       )}
     </InvoiceCardShell>
   )
-}
+})

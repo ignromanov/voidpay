@@ -1,15 +1,6 @@
 'use client'
 
-/**
- * HistoryWorkspace — Client-only history page content.
- *
- * Loaded via next/dynamic with ssr:false because it accesses
- * useTrackedInvoiceStore.persist.hasHydrated() which requires browser APIs.
- * Same pattern as PayWorkspace / InvoiceWorkspace.
- */
-
-import { useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useShallow } from 'zustand/react/shallow'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { parseInvoiceHash } from '@/features/invoice-codec'
 import { useBatchCheck } from '@/features/payment'
@@ -17,28 +8,9 @@ import type { DecodedBatchInvoice } from '@/features/payment'
 import { track, AnalyticsEvent } from '@/features/analytics'
 import { HistoryList, ReceivedInvoiceList } from '@/features/invoice-history'
 import { Loader2Icon } from '@/shared/ui/icons'
+import { HistorySkeleton } from './HistorySkeleton'
 import { useReceivedInvoices } from './use-received-invoices'
-
-function HistorySkeleton() {
-  return (
-    <div className="flex min-h-screen flex-col items-center p-8">
-      <div className="w-full max-w-4xl">
-        <div className="mb-8">
-          <div className="mb-2 h-9 w-64 animate-pulse rounded bg-gray-800" />
-          <div className="h-5 w-96 animate-pulse rounded bg-gray-800" />
-        </div>
-        <div className="space-y-3">
-          {Array.from({ length: 3 }, (_, i) => (
-            <div
-              key={i}
-              className="h-20 animate-pulse rounded-lg border border-gray-700 bg-gray-800/50"
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
+import { useCreatedInvoices } from './use-created-invoices'
 
 async function decodeInvoiceUrl(url: string): Promise<DecodedBatchInvoice | null> {
   try {
@@ -59,22 +31,24 @@ async function decodeInvoiceUrl(url: string): Promise<DecodedBatchInvoice | null
 }
 
 export function HistoryWorkspace() {
-  const searchParams = useSearchParams()
-  const debug =
-    process.env.NODE_ENV === 'development' || searchParams.get('debug') === '1'
+  const debug = process.env.NODE_ENV === 'development'
 
   const trackedHydrated = useTrackedInvoiceStore.persist.hasHydrated()
 
-  const createdCount = useTrackedInvoiceStore((s) =>
-    s.invoices.filter((inv) => inv.source === 'created').length
+  const { createdCount, pendingCount } = useTrackedInvoiceStore(
+    useShallow((s) => {
+      const created = s.invoices.filter((inv) => inv.source === 'created')
+      return {
+        createdCount: created.length,
+        pendingCount: created.filter((inv) => !inv.txHash).length,
+      }
+    }),
   )
-  const pendingCount = useTrackedInvoiceStore((s) =>
-    s.invoices.filter((inv) => inv.source === 'created' && !inv.txHash).length
-  )
-  const receivedInvoices = useReceivedInvoices()
 
-  const decode = useCallback(decodeInvoiceUrl, [])
-  const { isChecking, progress, checkAll } = useBatchCheck({ decodeInvoiceUrl: decode })
+  const receivedInvoices = useReceivedInvoices()
+  const createdEntries = useCreatedInvoices()
+
+  const { isChecking, progress, checkAll } = useBatchCheck({ decodeInvoiceUrl })
 
   if (!trackedHydrated) {
     return <HistorySkeleton />
@@ -96,10 +70,11 @@ export function HistoryWorkspace() {
           <CombinedEmptyState />
         ) : (
           <div className="space-y-10">
-            {/* Created Invoices */}
-            <section>
+            <section aria-labelledby="created-heading">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-100">Created</h2>
+                <h2 id="created-heading" className="text-xl font-semibold text-gray-100">
+                  Created
+                </h2>
                 <div className="flex items-center gap-3">
                   {pendingCount > 0 && (
                     <button
@@ -125,13 +100,14 @@ export function HistoryWorkspace() {
                   </span>
                 </div>
               </div>
-              <HistoryList debug={debug} />
+              <HistoryList debug={debug} entries={createdEntries} />
             </section>
 
-            {/* Received Invoices */}
-            <section>
+            <section aria-labelledby="received-heading">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-100">Received</h2>
+                <h2 id="received-heading" className="text-xl font-semibold text-gray-100">
+                  Received
+                </h2>
                 <span className="text-sm text-gray-400">
                   {receivedInvoices.length} invoice{receivedInvoices.length !== 1 ? 's' : ''}
                 </span>

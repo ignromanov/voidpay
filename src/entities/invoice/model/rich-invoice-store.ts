@@ -49,22 +49,45 @@ const MAX_INVOICES = 50
  * Shared upsert logic for addInvoice and trackView.
  * Merges data into existing entry (or creates new), returns updated array.
  */
+// Allows undefined values for optional fields (needed for exactOptionalPropertyTypes)
+type UpsertData = {
+  [K in keyof TrackedInvoice]?: TrackedInvoice[K] | undefined
+} & { invoiceId: string }
+
 function _upsertInvoice(
   invoices: TrackedInvoice[],
-  data: Partial<TrackedInvoice> & { invoiceId: string },
+  data: UpsertData,
 ): TrackedInvoice[] {
   const existing = invoices.find((inv) => inv.invoiceId === data.invoiceId)
-  const merged = {
+  const base = {
     ...existing,
     ...data,
     createdAt: existing?.createdAt ?? new Date().toISOString(),
+  }
+
+  if (!base.invoiceUrl || !base.source) {
+    console.warn('[TrackedInvoiceStore] Skipping upsert: missing required fields', data.invoiceId)
+    return invoices
+  }
+
+  // Safe: required fields verified by guard above, optional undefined fields are valid at runtime
+  const merged = {
+    ...base,
+    invoiceId: base.invoiceId,
+    invoiceUrl: base.invoiceUrl,
+    source: base.source,
+    createdAt: base.createdAt,
   } as TrackedInvoice
+
   const filtered = invoices.filter((inv) => inv.invoiceId !== data.invoiceId)
   return [merged, ...filtered].slice(0, MAX_INVOICES)
 }
 
-interface TrackedInvoiceStore {
+interface TrackedInvoiceState {
   invoices: TrackedInvoice[]
+}
+
+interface TrackedInvoiceStore extends TrackedInvoiceState {
   // actions:
   addInvoice: (invoice: Omit<TrackedInvoice, 'createdAt'>) => void
   trackView: (data: {
@@ -105,7 +128,7 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
             finalized: undefined,
             confirmations: undefined,
             error: undefined,
-          } as unknown as Partial<TrackedInvoice>
+          }
           return {
             invoices: _upsertInvoice(state.invoices, {
               ...safeDefaults,
@@ -229,15 +252,15 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
     {
       name: INVOICE_VIEW_STORE_KEY,
       version: 1,
-      migrate: (persisted) => {
+      migrate: (persisted): TrackedInvoiceState => {
         try {
           const state = persisted as Record<string, unknown>
           if (!state || typeof state !== 'object' || !Array.isArray(state.invoices)) {
-            return { invoices: [] } as unknown as TrackedInvoiceStore
+            return { invoices: [] }
           }
-          return persisted as TrackedInvoiceStore
+          return { invoices: state.invoices as TrackedInvoice[] }
         } catch {
-          return { invoices: [] } as unknown as TrackedInvoiceStore
+          return { invoices: [] }
         }
       },
     }

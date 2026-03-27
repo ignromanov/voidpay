@@ -26,13 +26,11 @@ import { computeInvoiceStatus } from '@/entities/invoice'
 const mockParseInvoiceHash = vi.mocked(parseInvoiceHash)
 const mockComputeInvoiceStatus = vi.mocked(computeInvoiceStatus)
 
-const makeTracked = (overrides?: object) => ({
+const makeTracked = (overrides?: Record<string, unknown>) => ({
   invoiceId: 'INV-001',
   invoiceUrl: 'https://voidpay.xyz/pay#abc123',
   source: 'received' as const,
   createdAt: '2024-01-15T10:00:00.000Z',
-  txHash: null,
-  validated: false,
   ...overrides,
 })
 
@@ -48,7 +46,7 @@ const mockInvoice = {
 describe('useReceivedInvoices', () => {
   beforeEach(() => {
     useTrackedInvoiceStore.setState({ invoices: [] })
-    mockParseInvoiceHash.mockResolvedValue({ success: true, data: mockInvoice } as ReturnType<typeof parseInvoiceHash> extends Promise<infer T> ? T : never)
+    mockParseInvoiceHash.mockResolvedValue({ success: true, data: mockInvoice } as unknown as Awaited<ReturnType<typeof parseInvoiceHash>>)
     mockComputeInvoiceStatus.mockReturnValue('pending')
     vi.clearAllMocks()
   })
@@ -109,7 +107,7 @@ describe('useReceivedInvoices', () => {
   })
 
   it('sets invoice to null when parsing fails', async () => {
-    mockParseInvoiceHash.mockResolvedValue({ success: false, error: 'parse error' } as ReturnType<typeof parseInvoiceHash> extends Promise<infer T> ? T : never)
+    mockParseInvoiceHash.mockResolvedValue({ success: false, error: new Error('parse error') } as unknown as Awaited<ReturnType<typeof parseInvoiceHash>>)
 
     useTrackedInvoiceStore.setState({
       invoices: [makeTracked()],
@@ -141,7 +139,7 @@ describe('useReceivedInvoices', () => {
 
   it('passes dueAt to computeInvoiceStatus when parse succeeds', async () => {
     const invoiceWithDue = { ...mockInvoice, dueAt: '2024-12-31T00:00:00.000Z' }
-    mockParseInvoiceHash.mockResolvedValue({ success: true, data: invoiceWithDue } as ReturnType<typeof parseInvoiceHash> extends Promise<infer T> ? T : never)
+    mockParseInvoiceHash.mockResolvedValue({ success: true, data: invoiceWithDue } as unknown as Awaited<ReturnType<typeof parseInvoiceHash>>)
 
     useTrackedInvoiceStore.setState({
       invoices: [makeTracked()],
@@ -159,7 +157,7 @@ describe('useReceivedInvoices', () => {
   })
 
   it('passes undefined dueAt when parse fails', async () => {
-    mockParseInvoiceHash.mockResolvedValue({ success: false, error: 'err' } as ReturnType<typeof parseInvoiceHash> extends Promise<infer T> ? T : never)
+    mockParseInvoiceHash.mockResolvedValue({ success: false, error: new Error('err') } as unknown as Awaited<ReturnType<typeof parseInvoiceHash>>)
 
     useTrackedInvoiceStore.setState({
       invoices: [makeTracked()],

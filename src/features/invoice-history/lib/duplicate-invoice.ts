@@ -45,13 +45,16 @@ export async function duplicateFromUrl(invoiceUrl: string): Promise<string | nul
   const invoice = result.data
   const draftId = uuidv4()
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { magicDust, total, ...invoiceWithoutDust } = invoice
+
   const newDraft: DraftState = {
     meta: {
       draftId,
       lastModified: new Date().toISOString(),
     },
     data: {
-      ...invoice,
+      ...invoiceWithoutDust,
       // Reset dates for new invoice
       issuedAt: nowUnix(),
       dueAt: daysFromNowUnix(30),
