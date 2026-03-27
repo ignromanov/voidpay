@@ -129,6 +129,8 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
 
   // Ref to track last scale for avoiding unnecessary updates
   const lastScaleRef = useRef(startScale)
+  // Track last container width to skip recalc when only height changes (mobile chrome hide/show)
+  const lastWidthRef = useRef(0)
 
   // Memoized scale calculation
   const calculateScale = useCallback(
@@ -186,6 +188,7 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
       if (rafId !== null) cancelAnimationFrame(rafId)
 
       rafId = requestAnimationFrame(() => {
+        lastWidthRef.current = width
         const newScale = calculateScale(width, height)
         // Only update if scale actually changed (avoid unnecessary re-renders)
         if (Math.abs(newScale - lastScaleRef.current) > 0.001) {
@@ -223,11 +226,16 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
     })
     observer.observe(container)
 
-    // Window resize as additional fallback
+    // Window resize — skip when only height changes (mobile browser chrome hide/show).
+    // Width doesn't change in that scenario, so scale recalc is unnecessary and
+    // avoids expensive InvoicePaper repaints on mobile scroll.
     const handleResize = () => {
       const rect = container.getBoundingClientRect()
       if (rect.width > 0 && rect.height > 0) {
-        updateScale(rect.width, rect.height)
+        const widthChanged = Math.abs(rect.width - lastWidthRef.current) > 1
+        if (widthChanged) {
+          updateScale(rect.width, rect.height)
+        }
       }
     }
     window.addEventListener('resize', handleResize, { passive: true })

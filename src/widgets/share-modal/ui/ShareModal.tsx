@@ -22,7 +22,7 @@ import { InvoiceSummary } from './InvoiceSummary'
 function QRSkeleton() {
   return (
     <div className="flex flex-col items-center justify-center space-y-4 py-4">
-      <div className="w-full max-w-[300px] rounded-xl bg-zinc-800/50 p-4">
+      <div className="w-full max-w-[280px] sm:max-w-[300px] rounded-xl bg-zinc-800/50 p-4">
         <div className="aspect-square w-full animate-pulse rounded-lg bg-zinc-700/50" />
       </div>
       <div className="h-3 w-40 animate-pulse rounded bg-zinc-800" />
@@ -87,7 +87,7 @@ export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgTo
       >
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-violet-500" />
 
-        <div className="space-y-1 px-6 pt-6">
+        <div className="space-y-1 px-4 pt-4 sm:px-6 sm:pt-6">
           <DialogTitle className="flex items-center gap-2 text-xl font-bold tracking-tight text-zinc-100">
             <CheckCircleIcon size={20} className="text-violet-500" />
             Invoice Ready
@@ -97,7 +97,7 @@ export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgTo
           </DialogDescription>
         </div>
 
-        <div className="space-y-4 px-6 pb-6">
+        <div className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6">
           {invoice && <InvoiceSummary invoice={invoice} />}
           <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
 
