@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ShieldIcon } from '@/shared/ui/icons'
+import { EyeIcon, EyeOffIcon } from '@/shared/ui/icons'
 import { useHydrated } from '@/shared/lib/hooks'
-import { cn } from '@/shared/lib/utils'
 import { isAnalyticsDisabled, setAnalyticsDisabled } from '../lib/analytics-storage'
 
 export function AnalyticsToggle() {
@@ -30,18 +29,14 @@ export function AnalyticsToggle() {
     <button
       type="button"
       onClick={handleToggle}
-      className={cn(
-        'group relative cursor-pointer rounded p-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
-        enabled
-          ? 'text-zinc-500 hover:text-zinc-300'
-          : 'text-zinc-600 hover:text-zinc-400',
-      )}
+      className="cursor-pointer rounded p-1 text-zinc-500 transition-colors hover:text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
       aria-label={enabled ? 'Disable analytics tracking' : 'Enable analytics tracking'}
       title={enabled ? 'Analytics: On' : 'Analytics: Off'}
     >
-      <ShieldIcon className="h-3.5 w-3.5" />
-      {enabled && (
-        <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+      {enabled ? (
+        <EyeIcon className="h-3.5 w-3.5" />
+      ) : (
+        <EyeOffIcon className="h-3.5 w-3.5" />
       )}
     </button>
   )
