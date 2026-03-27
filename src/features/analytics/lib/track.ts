@@ -1,4 +1,4 @@
-/// <reference path="../types/umami.d.ts" />
+import '../types/umami.d.ts'
 
 export const AnalyticsEvent = {
   // Core funnel
