@@ -8,7 +8,7 @@ exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with 
     class="relative"
   >
     <input
-      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 pr-9"
+      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 pr-9 font-mono"
       disabled=""
       id="test-id"
       type="text"
@@ -37,7 +37,7 @@ exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with 
     class="relative"
   >
     <input
-      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800"
+      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 font-mono"
       id="test-id"
       type="text"
       value=""
@@ -54,7 +54,7 @@ exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with 
     class="relative"
   >
     <input
-      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800"
+      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 font-mono"
       id="test-id"
       type="text"
       value="invalid-address"
@@ -80,7 +80,7 @@ exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with 
     <input
       aria-describedby="test-id-error"
       aria-invalid="true"
-      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-red-500/50 focus:border-red-500 focus:ring-red-500/50"
+      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-red-500/50 focus:border-red-500 focus:ring-red-500/50 font-mono"
       id="test-id"
       type="text"
       value="invalid"
@@ -103,7 +103,7 @@ exports[`AddressInput - Snapshot Tests (T013-test) > should match snapshot with 
     class="relative"
   >
     <input
-      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 pr-9"
+      class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 pr-9 font-mono"
       id="test-id"
       type="text"
       value="0x1234567890123456789012345678901234567890"

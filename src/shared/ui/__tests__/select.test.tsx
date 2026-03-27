@@ -108,18 +108,18 @@ describe('Select Component', () => {
 describe('selectTriggerVariants', () => {
   it('should return default size class', () => {
     const classes = selectTriggerVariants()
-    expect(classes).toContain('h-10')
+    expect(classes).toContain('h-11')
   })
 
   it('should return sm size class', () => {
     const classes = selectTriggerVariants({ size: 'sm' })
-    expect(classes).toContain('h-8')
-    expect(classes).toContain('text-xs')
+    expect(classes).toContain('h-9')
+    expect(classes).toContain('text-sm')
   })
 
   it('should return lg size class', () => {
     const classes = selectTriggerVariants({ size: 'lg' })
-    expect(classes).toContain('h-11')
+    expect(classes).toContain('h-12')
   })
 
   it('should include base classes', () => {
