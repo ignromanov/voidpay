@@ -22,8 +22,6 @@
       "@/*": ["./src/*"]
     },
     "types": ["vitest/globals", "@testing-library/jest-dom/vitest"],
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },

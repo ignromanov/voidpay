@@ -2,11 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "types": ["vitest/globals", "@testing-library/jest-dom/vitest", "node"],
-    // Relaxed rules for tests
-    "noUncheckedIndexedAccess": false,
-    "exactOptionalPropertyTypes": false,
-    "noImplicitReturns": false,
-    "noPropertyAccessFromIndexSignature": false
+    "noImplicitReturns": false
   },
   "include": [
     "next-env.d.ts",
