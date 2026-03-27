@@ -5,10 +5,10 @@ import { Footer } from '../Footer'
 
 describe('Footer', () => {
   describe('rendering', () => {
-    it('renders the copyright text', () => {
+    it('renders the copyright text with MIT license', () => {
       render(<Footer />)
 
-      expect(screen.getByText('© 2026 VoidPay')).toBeInTheDocument()
+      expect(screen.getByText('© 2026 VoidPay · MIT')).toBeInTheDocument()
     })
 
     it('renders privacy and terms links', () => {
@@ -21,10 +21,10 @@ describe('Footer', () => {
       expect(termsLink).toHaveAttribute('href', '/terms')
     })
 
-    it('renders contact email link', () => {
+    it('renders contact email link with mail icon', () => {
       render(<Footer />)
 
-      const contactLink = screen.getByRole('link', { name: 'Contact' })
+      const contactLink = screen.getByRole('link', { name: 'Contact email' })
       expect(contactLink).toHaveAttribute('href', 'mailto:hello@voidpay.xyz')
     })
 

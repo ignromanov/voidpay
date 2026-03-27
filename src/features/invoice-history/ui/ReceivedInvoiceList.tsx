@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { formatInvoiceTotal } from '@/entities/invoice'
+import { formatInvoiceTotal, useTrackedInvoiceStore } from '@/entities/invoice'
 import { cn } from '@/shared/lib/utils'
 import { InvoiceStatusBadge } from './InvoiceStatusBadge'
 import { InvoiceCardShell } from './InvoiceCardShell'
@@ -21,6 +21,9 @@ interface ReceivedInvoiceListProps {
 }
 
 export function ReceivedInvoiceList({ invoices, debug = false, className }: ReceivedInvoiceListProps) {
+  const removeInvoice = useTrackedInvoiceStore((s) => s.removeInvoice)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+
   if (invoices.length === 0) {
     return (
       <p className={cn('py-4 text-sm text-gray-500', className)}>
@@ -32,7 +35,18 @@ export function ReceivedInvoiceList({ invoices, debug = false, className }: Rece
   return (
     <div className={cn('space-y-2', className)}>
       {invoices.map((item) => (
-        <ReceivedInvoiceCard key={item.tracked.invoiceId} item={item} debug={debug} />
+        <ReceivedInvoiceCard
+          key={item.tracked.invoiceId}
+          item={item}
+          debug={debug}
+          isDeleteConfirming={deleteConfirmId === item.tracked.invoiceId}
+          onDelete={() => setDeleteConfirmId(item.tracked.invoiceId)}
+          onDeleteConfirm={() => {
+            removeInvoice(item.tracked.invoiceId)
+            setDeleteConfirmId(null)
+          }}
+          onDeleteCancel={() => setDeleteConfirmId(null)}
+        />
       ))}
     </div>
   )
@@ -41,9 +55,20 @@ export function ReceivedInvoiceList({ invoices, debug = false, className }: Rece
 interface ReceivedInvoiceCardProps {
   item: DecodedReceivedInvoice
   debug: boolean
+  isDeleteConfirming: boolean
+  onDelete: () => void
+  onDeleteConfirm: () => void
+  onDeleteCancel: () => void
 }
 
-function ReceivedInvoiceCard({ item, debug }: ReceivedInvoiceCardProps) {
+function ReceivedInvoiceCard({
+  item,
+  debug,
+  isDeleteConfirming,
+  onDelete,
+  onDeleteConfirm,
+  onDeleteCancel,
+}: ReceivedInvoiceCardProps) {
   const { tracked, invoice, status } = item
   const [debugOpen, setDebugOpen] = useState(false)
 
@@ -55,7 +80,7 @@ function ReceivedInvoiceCard({ item, debug }: ReceivedInvoiceCardProps) {
     minute: '2-digit',
   })
 
-  const handleView = () => {
+  const handlePay = () => {
     window.open(tracked.invoiceUrl, '_blank', 'noopener,noreferrer')
   }
 
@@ -91,21 +116,47 @@ function ReceivedInvoiceCard({ item, debug }: ReceivedInvoiceCardProps) {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleView}
-            className="rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
-            title="View Invoice"
-          >
-            View
-          </button>
-          {debug && (
-            <button
-              onClick={() => setDebugOpen((v) => !v)}
-              className="rounded bg-gray-700 px-2 py-1.5 text-xs font-mono text-gray-400 transition-colors hover:bg-gray-600"
-              title="Toggle debug info"
-            >
-              {'</>'}
-            </button>
+          {!isDeleteConfirming ? (
+            <>
+              <button
+                onClick={handlePay}
+                className="cursor-pointer rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
+                title="Open payment page"
+              >
+                Pay
+              </button>
+              <button
+                onClick={onDelete}
+                className="cursor-pointer rounded bg-red-900/20 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-900/30 hover:text-red-300"
+                title="Delete Entry"
+              >
+                Delete
+              </button>
+              {debug && (
+                <button
+                  onClick={() => setDebugOpen((v) => !v)}
+                  className="cursor-pointer rounded bg-gray-700 px-2 py-1.5 text-xs font-mono text-gray-400 transition-colors hover:bg-gray-600"
+                  title="Toggle debug info"
+                >
+                  {'</>'}
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              <button
+                onClick={onDeleteConfirm}
+                className="cursor-pointer rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
+              >
+                Confirm
+              </button>
+              <button
+                onClick={onDeleteCancel}
+                className="cursor-pointer rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </>
           )}
         </div>
       </div>

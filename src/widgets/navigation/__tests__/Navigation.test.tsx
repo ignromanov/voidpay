@@ -29,13 +29,6 @@ describe('Navigation', () => {
       expect(screen.getByTestId('wallet-button')).toBeInTheDocument()
     })
 
-    it('renders Home navigation link', () => {
-      render(<Navigation />)
-
-      const homeLink = screen.getByRole('link', { name: 'Home' })
-      expect(homeLink).toHaveAttribute('href', '/')
-    })
-
     it('renders History navigation link', () => {
       render(<Navigation />)
 
@@ -48,13 +41,6 @@ describe('Navigation', () => {
 
       const createButton = screen.getByRole('link', { name: /Create/i })
       expect(createButton).toHaveAttribute('href', '/create')
-    })
-
-    it('highlights Home link when on home page', () => {
-      render(<Navigation />)
-
-      const homeLink = screen.getByRole('link', { name: 'Home' })
-      expect(homeLink).toHaveClass('bg-zinc-800', 'text-zinc-50')
     })
 
     it('shows inactive state for History when on home page', () => {

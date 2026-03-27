@@ -218,21 +218,21 @@ function HistoryEntryCard({
             <>
               <button
                 onClick={onView}
-                className="rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
+                className="cursor-pointer rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
                 title="View Invoice"
               >
                 View
               </button>
               <button
                 onClick={onDuplicate}
-                className="rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
+                className="cursor-pointer rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
                 title="Duplicate as Draft"
               >
                 Duplicate
               </button>
               <button
                 onClick={onDelete}
-                className="rounded bg-red-900/20 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-900/30 hover:text-red-300"
+                className="cursor-pointer rounded bg-red-900/20 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-900/30 hover:text-red-300"
                 title="Delete Entry"
               >
                 Delete
@@ -240,7 +240,7 @@ function HistoryEntryCard({
               {debug && (
                 <button
                   onClick={() => setDebugOpen((v) => !v)}
-                  className="rounded bg-gray-700 px-2 py-1.5 text-xs font-mono text-gray-400 transition-colors hover:bg-gray-600"
+                  className="cursor-pointer rounded bg-gray-700 px-2 py-1.5 text-xs font-mono text-gray-400 transition-colors hover:bg-gray-600"
                   title="Toggle debug info"
                 >
                   {'</>'}
@@ -251,13 +251,13 @@ function HistoryEntryCard({
             <>
               <button
                 onClick={onDeleteConfirm}
-                className="rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
+                className="cursor-pointer rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
               >
                 Confirm
               </button>
               <button
                 onClick={onDeleteCancel}
-                className="rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
+                className="cursor-pointer rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
               >
                 Cancel
               </button>

@@ -7,6 +7,7 @@ import {
   Share2Icon,
 } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
+import { SOCIAL_URLS } from '@/shared/config'
 
 interface PanelFooterProps {
   isPending: boolean
@@ -76,6 +77,12 @@ export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen, on
             size="sm"
             className="text-xs text-zinc-500 hover:text-red-400 font-medium group hover:bg-red-500/5"
             aria-label="Report abuse"
+            onClick={() => {
+              const url = typeof window !== 'undefined' ? window.location.href : ''
+              const subject = encodeURIComponent('Abuse Report')
+              const body = encodeURIComponent(`I would like to report the following invoice:\n\n${url}\n\nReason:\n`)
+              window.location.href = `mailto:${SOCIAL_URLS.abuseEmail}?subject=${subject}&body=${body}`
+            }}
           >
             <span className="inline-flex items-center gap-1">
               <FlagIcon size={12} className="group-hover:fill-current" />

@@ -300,6 +300,17 @@ describe('PaymentPanel', () => {
       expect(reportBtn).toBeInTheDocument()
     })
 
+    it('Report button opens mailto link', async () => {
+      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      const reportBtn = screen.getByRole('button', { name: /report abuse/i })
+      const hrefSpy = vi.spyOn(window.location, 'href', 'set')
+      await userEvent.click(reportBtn)
+      expect(hrefSpy).toHaveBeenCalledWith(
+        expect.stringContaining('mailto:abuse@voidpay.xyz')
+      )
+      hrefSpy.mockRestore()
+    })
+
     it('renders View Tx link in footer when paid', () => {
       render(
         <PaymentPanel

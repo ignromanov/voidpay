@@ -9,7 +9,7 @@
  * - Single line: copyright, links, social
  */
 
-import { GithubIcon, TwitterIcon } from '@/shared/ui/icons'
+import { GithubIcon, MailIcon, TwitterIcon } from '@/shared/ui/icons'
 
 import { AnalyticsToggle } from '@/features/analytics'
 import { SOCIAL_URLS } from '@/shared/config'
@@ -20,7 +20,7 @@ export function Footer() {
       <div className="mx-auto flex h-10 max-w-7xl items-center justify-between px-4 text-xs text-zinc-400">
         {/* Left: Copyright */}
         <div className="flex items-center gap-3">
-          <span>© 2026 VoidPay</span>
+          <span>© 2026 VoidPay · MIT</span>
           <a href="/privacy" className="transition-colors hover:text-zinc-300">
             Privacy
           </a>
@@ -34,10 +34,10 @@ export function Footer() {
         <div className="flex items-center gap-1">
           <a
             href="mailto:hello@voidpay.xyz"
-            className="rounded p-1.5 text-xs transition-colors hover:bg-zinc-800/50 hover:text-zinc-300"
-            aria-label="Contact"
+            className="rounded p-1.5 transition-colors hover:bg-zinc-800/50 hover:text-zinc-300"
+            aria-label="Contact email"
           >
-            Contact
+            <MailIcon className="h-4 w-4" />
           </a>
           <a
             href={SOCIAL_URLS.github}

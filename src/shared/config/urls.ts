@@ -26,6 +26,7 @@ export const SOCIAL_URLS = {
   githubIssues: 'https://github.com/ignromanov/voidpay/issues/new',
   githubOrg: 'https://github.com/voidpay',
   twitter: 'https://twitter.com/voidpay',
+  abuseEmail: 'abuse@voidpay.xyz',
 } as const
 
 /**
