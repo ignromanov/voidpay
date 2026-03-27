@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { Input, type InputProps } from './input'
 import { AddressAvatar } from './address-avatar'
-import { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
+import { isValidEthAddress } from '@/shared/lib/validation'
 import { cn } from '@/shared/lib/utils'
 
 /**
@@ -51,7 +51,7 @@ export interface AddressInputProps extends Omit<InputProps, 'type' | 'icon' | 'i
 export const AddressInput = React.forwardRef<HTMLInputElement, AddressInputProps>(
   ({ value, onChange, onValidChange, touched, className, ...props }, ref) => {
     const isValid = React.useMemo(() => {
-      return ETH_ADDRESS_REGEX.test(value)
+      return isValidEthAddress(value)
     }, [value])
 
     // Notify parent of validity changes

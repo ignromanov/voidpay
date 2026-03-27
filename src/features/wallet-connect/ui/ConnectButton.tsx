@@ -11,6 +11,8 @@ import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { cn } from '@/shared/lib/utils'
 import { truncateAddress } from '@/shared/lib/validation'
 
+const FOCUS_RING = 'focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 focus:outline-none'
+
 /**
  * Props for ConnectWalletButton component
  */
@@ -60,7 +62,7 @@ export function ConnectWalletButton({ className, showBalance = false }: ConnectW
                       'px-4 py-2 text-sm font-medium',
                       'min-h-[44px]',
                       'transition-colors duration-200',
-                      'focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 focus:outline-none',
+                      FOCUS_RING,
                       className
                     )}
                   >
@@ -80,7 +82,7 @@ export function ConnectWalletButton({ className, showBalance = false }: ConnectW
                       'px-4 py-2 text-sm font-medium',
                       'min-h-[44px]',
                       'transition-colors duration-200',
-                      'focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 focus:outline-none',
+                      FOCUS_RING,
                       className
                     )}
                   >
@@ -103,7 +105,7 @@ export function ConnectWalletButton({ className, showBalance = false }: ConnectW
                       'min-h-[44px]',
                       'transition-colors duration-200',
                       'border border-zinc-700',
-                      'focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 focus:outline-none'
+                      FOCUS_RING
                     )}
                   >
                     {chain.hasIcon && (
@@ -135,7 +137,7 @@ export function ConnectWalletButton({ className, showBalance = false }: ConnectW
                       'min-h-[44px]',
                       'transition-colors duration-200',
                       'border border-zinc-700',
-                      'focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 focus:outline-none',
+                      FOCUS_RING,
                       className
                     )}
                   >
