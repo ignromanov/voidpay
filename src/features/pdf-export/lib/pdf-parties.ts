@@ -35,7 +35,8 @@ function detailRow(
 function partyColumn(
   label: string,
   party: PartialInvoice['from'] | PartialInvoice['client'] | undefined,
-  align: 'left' | 'right'
+  align: 'left' | 'right',
+  showWallet = false
 ): Column {
   const lines: Content[] = [
     { text: label, fontSize: 8, bold: true, color: COLORS.light, alignment: align, characterSpacing: 1.5 },
@@ -80,7 +81,7 @@ function partyColumn(
     }))
   }
 
-  if (label === 'BILL TO' && party.walletAddress) {
+  if (showWallet && party.walletAddress) {
     lines.push(detailRow(ICONS.wallet, party.walletAddress, align, {
       fontSize: 7,
       color: COLORS.zinc600,
@@ -96,7 +97,7 @@ export function buildParties(data: PartialInvoice): ContentColumns {
   return {
     columns: [
       partyColumn('FROM', data.from, 'left'),
-      partyColumn('BILL TO', data.client, 'right'),
+      partyColumn('BILL TO', data.client, 'right', true),
     ],
     margin: [0, 10, 0, 14] as [number, number, number, number],
   }

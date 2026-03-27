@@ -57,12 +57,7 @@ export function buildDocument(
     pageOrientation: 'portrait',
     pageMargins: [50, 50, 50, 60] as [number, number, number, number],
     watermark: options.status && options.status !== 'pending'
-      ? {
-          text: options.status === 'paid' && options.paidAt
-            ? `${options.status.toUpperCase()}\n${formatDateUTC(options.paidAt)}`
-            : options.status.toUpperCase(),
-          opacity: 0.10, bold: true, fontSize: 72, color: COLORS.muted,
-        }
+      ? { text: options.status.toUpperCase(), opacity: 0.10, bold: true, fontSize: 72, color: COLORS.muted }
       : undefined,
     content: [
       buildHeader(invoiceId, data, options),
@@ -92,21 +87,31 @@ export function buildDocument(
   }
 }
 
+/** Strip unsafe characters from filename parts */
+function sanitizeFilenamePart(s: string): string {
+  return s.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 50)
+}
+
 /**
  * Generate PDF filename from invoice data.
  * Format: voidpay-{invoiceId}-{total}-{currency}.pdf
  */
 export function buildFilename(data: PartialInvoice): string {
-  const id = data.invoiceId
-  const currency = data.currency
+  const id = data.invoiceId ? sanitizeFilenamePart(data.invoiceId) : undefined
+  const currency = data.currency ? sanitizeFilenamePart(data.currency) : undefined
   const decimals = data.decimals ?? 6
 
   if (!id && !data.total) return 'voidpay-invoice.pdf'
 
-  const rawTotal = data.total ? getDisplayTotal(data.total, data.magicDust) : undefined
-  const totalStr = rawTotal
-    ? formatAmount(rawTotal, decimals, { useGrouping: false })
-    : undefined
+  let totalStr: string | undefined
+  try {
+    const rawTotal = data.total ? getDisplayTotal(data.total, data.magicDust) : undefined
+    totalStr = rawTotal
+      ? formatAmount(rawTotal, decimals, { useGrouping: false })
+      : undefined
+  } catch {
+    totalStr = undefined
+  }
 
   const parts = ['voidpay']
   if (id) parts.push(id)

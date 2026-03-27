@@ -53,7 +53,6 @@ export function PaymentPanel({
   const handlePdfExport = useCallback(() => {
     track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
     const invoiceUrl = typeof window !== 'undefined' ? window.location.href : undefined
-    const pdfStatus = status === 'confirming' ? undefined : status
     const tracked = invoice.invoiceId
       ? useTrackedInvoiceStore.getState().getInvoice(invoice.invoiceId)
       : undefined
@@ -61,7 +60,7 @@ export function PaymentPanel({
       ? Math.floor(new Date(tracked.paidAt).getTime() / 1000)
       : undefined
     void exportInvoicePdf(invoice, {
-      status: pdfStatus,
+      status: status === 'confirming' ? undefined : status,
       txHash,
       invoiceUrl,
       paidAt,

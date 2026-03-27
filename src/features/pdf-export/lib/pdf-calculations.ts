@@ -12,7 +12,11 @@ export interface FormattedTotals {
 
 /** Total minus magic dust — the amount users see (not the exact payment amount) */
 export function getDisplayTotal(total: string, magicDust?: string): string {
-  return magicDust ? (BigInt(total) - BigInt(magicDust)).toString() : total
+  try {
+    return magicDust ? (BigInt(total) - BigInt(magicDust)).toString() : total
+  } catch {
+    return total
+  }
 }
 
 export function computeTotals(data: PartialInvoice, decimals: number): FormattedTotals {

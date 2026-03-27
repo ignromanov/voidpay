@@ -1,4 +1,4 @@
-/** Status variants for PDF watermark */
+/** Status variants for PDF watermark — intentional subset excluding 'empty' and 'confirming' */
 export type PdfInvoiceStatus = 'draft' | 'pending' | 'paid' | 'overdue'
 
 /** Options for PDF export */

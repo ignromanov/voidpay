@@ -5,6 +5,7 @@ import type { PartialInvoice } from '@/shared/lib/invoice-types'
 
 import { COLORS } from './pdf-theme'
 
+/** Display-only line total — float→BigInt may lose sub-wei precision. Exact totals use calculateTotalsBigInt. */
 function computeLineTotal(qty: number, rate: string, decimals: number): string {
   try {
     const scale = 10n ** BigInt(decimals)

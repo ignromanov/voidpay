@@ -50,7 +50,10 @@ export function buildHeader(
   ]
 
   if (options.status) {
-    metaRows.push(metaRow('STATUS', options.status.toUpperCase(), [0, 4, 0, 0], COLORS.brand))
+    const statusText = options.status === 'paid' && options.paidAt
+      ? `${options.status.toUpperCase()} · ${formatDateUTC(options.paidAt)}`
+      : options.status.toUpperCase()
+    metaRows.push(metaRow('STATUS', statusText, [0, 4, 0, 0], COLORS.brand))
   }
 
   return {

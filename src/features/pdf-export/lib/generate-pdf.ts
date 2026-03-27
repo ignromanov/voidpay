@@ -5,7 +5,7 @@ import type { PdfExportOptions } from '../model/types'
 
 type PdfMakeApi = { createPdf: (doc: TDocumentDefinitions) => { download: (filename: string) => void } }
 
-/** Cached pdfmake load promise — deduplicates concurrent calls */
+/** Cached pdfmake load promise — deduplicates concurrent calls, clears on failure */
 let pdfMakePromise: Promise<PdfMakeApi> | null = null
 
 function loadPdfMake(): Promise<PdfMakeApi> {
@@ -19,7 +19,10 @@ function loadPdfMake(): Promise<PdfMakeApi> {
       const vfs = ('default' in vfsModule ? vfsModule.default : vfsModule) as import('pdfmake/interfaces').TVirtualFileSystem
       pdfMakeModule.addVirtualFileSystem(vfs)
       return pdfMakeModule as PdfMakeApi
-    })()
+    })().catch((err) => {
+      pdfMakePromise = null
+      throw err
+    })
   }
   return pdfMakePromise
 }
@@ -42,7 +45,7 @@ export async function exportInvoicePdf(
     pdfMake.createPdf(docDefinition).download(filename)
     return true
   } catch (error) {
-    console.error('[pdf-export] Failed to generate PDF:', error)
+    console.error('[pdf-export] Failed to generate PDF:', error instanceof Error ? error.message : 'Unknown error')
     toast.error('Failed to generate PDF')
     return false
   }

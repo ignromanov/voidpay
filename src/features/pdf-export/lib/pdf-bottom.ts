@@ -234,8 +234,8 @@ export function buildBottomSection(
 
 /** Content footer with notes and branding */
 export function buildContentFooter(notes: string | undefined): Content {
-  const noteText = notes
-    ?? 'Payment is due by the date shown above. Please send the exact amount to the wallet address provided.'
+  const noteText = (notes
+    ?? 'Payment is due by the date shown above. Please send the exact amount to the wallet address provided.').slice(0, 500)
 
   return {
     columns: [
