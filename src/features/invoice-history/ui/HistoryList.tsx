@@ -44,10 +44,10 @@ export function HistoryList({ entries, debug, className = '' }: HistoryListProps
 
   const handleView = useCallback((invoiceUrl: string) => {
     try {
-      const hash = new URL(invoiceUrl).hash
+      const hash = new URL(invoiceUrl).hash as `#${string}`
       router.push(`/invoice${hash}`)
     } catch {
-      router.push(invoiceUrl)
+      router.push('/invoice')
     }
   }, [router])
 

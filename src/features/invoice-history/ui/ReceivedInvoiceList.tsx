@@ -38,10 +38,10 @@ export function ReceivedInvoiceList({ invoices, debug = false, className }: Rece
           debug={debug}
           onPay={() => {
             try {
-              const hash = new URL(item.tracked.invoiceUrl).hash
+              const hash = new URL(item.tracked.invoiceUrl).hash as `#${string}`
               router.push(`/pay${hash}`)
             } catch {
-              router.push(item.tracked.invoiceUrl)
+              router.push('/pay')
             }
           }}
           isDeleteConfirming={deleteConfirmId === item.tracked.invoiceId}
