@@ -1,4 +1,8 @@
-import '../types/umami.d.ts'
+declare global {
+  interface Window {
+    umami?: { track(name: string, data?: Record<string, unknown>): void }
+  }
+}
 
 export const AnalyticsEvent = {
   // Core funnel
