@@ -92,6 +92,11 @@ describe('buildDocument', () => {
     expect(doc.watermark).toBeUndefined()
   })
 
+  it('omits watermark for pending status (matches web behavior)', () => {
+    const doc = buildDocument(MOCK_INVOICE, { status: 'pending' })
+    expect(doc.watermark).toBeUndefined()
+  })
+
   it('includes QR when invoiceUrl provided', () => {
     const invoiceUrl = 'https://voidpay.xyz/pay#test'
     const doc = buildDocument(MOCK_INVOICE, { invoiceUrl })
@@ -145,7 +150,7 @@ describe('buildDocument', () => {
     }
     const doc = buildDocument(invoiceWithDust, {})
     const text = extractAllText(doc)
-    expect(text).toMatch(/magic dust/i)
+    expect(text).toMatch(/unique id/i)
   })
 
   it('handles empty/minimal invoice gracefully', () => {
@@ -166,6 +171,16 @@ describe('buildFilename', () => {
   it('handles missing fields with default filename', () => {
     const filename = buildFilename({})
     expect(filename).toBe('voidpay-invoice.pdf')
+  })
+
+  it('excludes magic dust from filename total', () => {
+    const invoiceWithDust: PartialInvoice = {
+      ...MOCK_INVOICE,
+      total: '1300000042',
+      magicDust: '42',
+    }
+    const filename = buildFilename(invoiceWithDust)
+    expect(filename).toBe('voidpay-INV-001-1300.00-USDC.pdf')
   })
 
   it('uses human-readable total (not atomic units)', () => {

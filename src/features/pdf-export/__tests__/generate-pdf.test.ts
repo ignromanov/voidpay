@@ -47,7 +47,7 @@ describe('exportInvoicePdf', () => {
 
   it('passes document definition to createPdf', async () => {
     await exportInvoicePdf(MOCK_INVOICE, { status: 'paid' })
-    const docDef = mockCreatePdf.mock.calls[0]?.[0] as Record<string, unknown> | undefined
+    const docDef = (mockCreatePdf.mock.calls as unknown[][])[0]?.[0] as Record<string, unknown> | undefined
     expect(docDef).toBeDefined()
     expect(docDef?.pageSize).toBe('A4')
     expect(docDef?.watermark).toBeDefined()
