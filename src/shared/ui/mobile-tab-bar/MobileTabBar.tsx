@@ -33,7 +33,7 @@ export function MobileTabBar({ tabs, activeTab, onTabChange, className }: Mobile
           aria-selected={activeTab === tab.id}
           onClick={() => onTabChange(tab.id)}
           className={cn(
-            'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-2 text-sm font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500',
+            'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-2.5 min-h-[44px] text-sm font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500',
             activeTab === tab.id
               ? 'bg-zinc-800 text-white shadow-sm'
               : 'text-zinc-500 hover:text-zinc-300'

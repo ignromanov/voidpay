@@ -23,32 +23,28 @@ export function TaxDiscountSection({ form, formState, submitAttempted }: TaxDisc
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      <div>
-        <label className="mb-1 block text-xs text-zinc-500">Tax (%)</label>
-        <Input
-          type="text"
-          inputMode="decimal"
-          placeholder="0"
-          maxLength={FIELD_LIMITS.percentage}
-          error={getFieldError(errors.tax)}
-          touched={touchedFields.tax || submitAttempted}
-          {...register('tax')}
-          className="text-sm"
-        />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs text-zinc-500">Discount (%)</label>
-        <Input
-          type="text"
-          inputMode="decimal"
-          placeholder="0"
-          maxLength={FIELD_LIMITS.percentage}
-          error={getFieldError(errors.discount)}
-          touched={touchedFields.discount || submitAttempted}
-          {...register('discount')}
-          className="text-sm"
-        />
-      </div>
+      <Input
+        label="Tax (%)"
+        type="text"
+        inputMode="decimal"
+        placeholder="0"
+        maxLength={FIELD_LIMITS.percentage}
+        error={getFieldError(errors.tax)}
+        touched={touchedFields.tax || submitAttempted}
+        {...register('tax')}
+        className="text-sm"
+      />
+      <Input
+        label="Discount (%)"
+        type="text"
+        inputMode="decimal"
+        placeholder="0"
+        maxLength={FIELD_LIMITS.percentage}
+        error={getFieldError(errors.discount)}
+        touched={touchedFields.discount || submitAttempted}
+        {...register('discount')}
+        className="text-sm"
+      />
     </div>
   )
 }

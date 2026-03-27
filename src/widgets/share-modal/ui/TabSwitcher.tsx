@@ -18,10 +18,12 @@ export function TabSwitcher({ activeTab, onTabChange }: TabSwitcherProps) {
       <button
         type="button"
         role="tab"
+        id="tab-link"
         aria-selected={activeTab === 'link'}
+        aria-controls="tabpanel-link"
         onClick={() => onTabChange('link')}
         className={cn(
-          'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-2 text-sm font-bold transition-colors',
+          'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-2 min-h-[44px] text-sm font-bold transition-colors',
           activeTab === 'link'
             ? 'bg-zinc-800 text-zinc-100 shadow-sm'
             : 'text-zinc-500 hover:text-zinc-300'
@@ -32,10 +34,12 @@ export function TabSwitcher({ activeTab, onTabChange }: TabSwitcherProps) {
       <button
         type="button"
         role="tab"
+        id="tab-qr"
         aria-selected={activeTab === 'qr'}
+        aria-controls="tabpanel-qr"
         onClick={() => onTabChange('qr')}
         className={cn(
-          'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-2 text-sm font-bold transition-colors',
+          'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-2 min-h-[44px] text-sm font-bold transition-colors',
           activeTab === 'qr'
             ? 'bg-zinc-800 text-zinc-100 shadow-sm'
             : 'text-zinc-500 hover:text-zinc-300'

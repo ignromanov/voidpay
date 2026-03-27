@@ -131,7 +131,7 @@ export function LinkTab({
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Share invoice via Telegram"
-          className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[#0088cc]/20 bg-[#0088cc]/10 px-3 py-2.5 text-xs font-semibold text-[#0088cc] transition-all hover:bg-[#0088cc]/15 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#0088cc]/50 active:scale-95"
+          className="flex min-h-[44px] items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[#0088cc]/20 bg-[#0088cc]/10 px-3 py-2.5 text-xs font-semibold text-[#0088cc] transition-all hover:bg-[#0088cc]/15 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#0088cc]/50 active:scale-95"
           onClick={() => track(AnalyticsEvent.SHARE_SOCIAL, { channel: 'telegram' })}
         >
           <SendIcon size={14} /> Telegram
@@ -141,7 +141,7 @@ export function LinkTab({
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Share invoice via Twitter"
-          className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-semibold text-white transition-all hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30 active:scale-95"
+          className="flex min-h-[44px] items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-semibold text-white transition-all hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30 active:scale-95"
           onClick={() => track(AnalyticsEvent.SHARE_SOCIAL, { channel: 'twitter' })}
         >
           <TwitterIcon size={14} /> Twitter
@@ -149,14 +149,14 @@ export function LinkTab({
         <a
           href={emailUrl}
           aria-label="Share invoice via Email"
-          className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2.5 text-xs font-semibold text-rose-400 transition-all hover:bg-rose-500/15 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-500/50 active:scale-95"
+          className="flex min-h-[44px] items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2.5 text-xs font-semibold text-rose-400 transition-all hover:bg-rose-500/15 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-500/50 active:scale-95"
           onClick={() => track(AnalyticsEvent.SHARE_SOCIAL, { channel: 'email' })}
         >
           <MailIcon size={14} /> Email
         </a>
       </div>
 
-      <label className="flex cursor-pointer items-center gap-2.5 rounded-md px-1 py-1.5 transition-colors focus-within:ring-1 focus-within:ring-amber-500/50">
+      <label className="flex min-h-[44px] cursor-pointer items-center gap-2.5 rounded-md px-1 py-1.5 transition-colors focus-within:ring-1 focus-within:ring-amber-500/50">
         <input
           type="checkbox"
           checked={includeOg}
