@@ -12,6 +12,11 @@ vi.mock('@/features/invoice-codec', () => ({
   generateInvoiceUrl: vi.fn().mockResolvedValue('https://voidpay.xyz/pay#mock'),
 }))
 
+const mockExportInvoicePdf = vi.fn().mockResolvedValue(true)
+vi.mock('@/features/pdf-export', () => ({
+  exportInvoicePdf: (...args: unknown[]) => mockExportInvoicePdf(...args),
+}))
+
 // Mock data with atomic units ($100 = 100000000 with 6 decimals)
 const mockInvoiceData: PartialInvoice = {
   invoiceId: 'INV-001',
@@ -242,7 +247,7 @@ describe('InvoicePreviewModal', () => {
       expect(window.print).toHaveBeenCalled()
     })
 
-    it('triggers print when Download PDF button is clicked', async () => {
+    it('triggers PDF export when Download PDF button is clicked', async () => {
       const { user } = renderWithUser(
         <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => {}} />
       )
@@ -250,7 +255,10 @@ describe('InvoicePreviewModal', () => {
       const downloadButton = screen.getByRole('button', { name: /download pdf|pdf/i })
       await user.click(downloadButton)
 
-      expect(window.print).toHaveBeenCalled()
+      expect(mockExportInvoicePdf).toHaveBeenCalledWith(
+        mockInvoiceData,
+        expect.objectContaining({ status: 'pending' })
+      )
     })
   })
 })

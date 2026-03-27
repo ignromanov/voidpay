@@ -17,6 +17,14 @@ vi.mock('@/shared/lib/toast', () => ({
   toast: { error: vi.fn() },
 }))
 
+const mockBuildDocument = vi.fn(() => ({ pageSize: 'A4', content: [] }))
+const mockBuildFilename = vi.fn(() => 'voidpay-INV-001-1000.00-USDC.pdf')
+
+vi.mock('../lib/build-document', () => ({
+  buildDocument: (...args: unknown[]) => mockBuildDocument(...(args as Parameters<typeof mockBuildDocument>)),
+  buildFilename: (...args: unknown[]) => mockBuildFilename(...(args as Parameters<typeof mockBuildFilename>)),
+}))
+
 import { exportInvoicePdf } from '../lib/generate-pdf'
 import { toast } from '@/shared/lib/toast'
 import type { PartialInvoice } from '@/shared/lib/invoice-types'
@@ -37,6 +45,8 @@ const MOCK_INVOICE: PartialInvoice = {
 describe('exportInvoicePdf', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockBuildDocument.mockReturnValue({ pageSize: 'A4', content: [] })
+    mockBuildFilename.mockReturnValue('voidpay-INV-001-1000.00-USDC.pdf')
   })
 
   it('calls pdfmake createPdf and download with correct filename', async () => {
@@ -46,11 +56,10 @@ describe('exportInvoicePdf', () => {
   })
 
   it('passes document definition to createPdf', async () => {
+    const mockDoc = { pageSize: 'A4', content: [], watermark: { text: 'PAID' } }
+    mockBuildDocument.mockReturnValue(mockDoc)
     await exportInvoicePdf(MOCK_INVOICE, { status: 'paid' })
-    const docDef = (mockCreatePdf.mock.calls as unknown[][])[0]?.[0] as Record<string, unknown> | undefined
-    expect(docDef).toBeDefined()
-    expect(docDef?.pageSize).toBe('A4')
-    expect(docDef?.watermark).toBeDefined()
+    expect(mockCreatePdf).toHaveBeenCalledWith(mockDoc)
   })
 
   it('shows error toast when createPdf throws', async () => {
