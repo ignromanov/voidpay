@@ -11,6 +11,7 @@ import { Heading } from '@/shared/ui/typography'
 import { NetworkSelect } from '@/features/wallet-connect'
 import type { TokenInfo } from '@/entities/network'
 import { TokenSelect } from '@/features/invoice'
+import { formatAmount, parseAmount } from '@/shared/lib/amount-utils'
 
 import type { InvoiceFormValues } from '../../lib/use-invoice-form'
 
@@ -30,6 +31,31 @@ export function PaymentSection({ form }: PaymentSectionProps) {
   const decimals = watch('decimals')
 
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
+  const lineItems = useCreatorStore((s) => s.lineItems)
+  const updateLineItems = useCreatorStore((s) => s.updateLineItems)
+
+  // Re-convert line item rates when token decimals change.
+  // Rates are stored as atomic units tied to current decimals,
+  // so switching tokens requires conversion: old atomic → human → new atomic.
+  const reconvertLineItemRates = useCallback(
+    (oldDecimals: number, newDecimals: number) => {
+      if (oldDecimals === newDecimals) return
+      if (lineItems.length === 0) return
+
+      const hasNonZeroRate = lineItems.some((item) => item.rate && item.rate !== '0' && item.rate !== '')
+      if (!hasNonZeroRate) return
+
+      const reconverted = lineItems.map((item) => {
+        if (!item.rate || item.rate === '0' || item.rate === '') return item
+        const human = formatAmount(item.rate, oldDecimals, { useGrouping: false })
+        const newRate = parseAmount(human, newDecimals)
+        return { ...item, rate: newRate }
+      })
+
+      updateLineItems(reconverted)
+    },
+    [lineItems, updateLineItems]
+  )
 
   // Memoize token value to prevent unnecessary re-renders
   const tokenValue = useMemo(
@@ -46,14 +72,16 @@ export function PaymentSection({ form }: PaymentSectionProps) {
     [currency, tokenAddress, decimals]
   )
 
-  // Token change handler
+  // Token change handler — also re-converts line item rates if decimals differ
   const handleTokenChange = useCallback(
     (token: TokenInfo) => {
+      const oldDecimals = decimals || 18
+      reconvertLineItemRates(oldDecimals, token.decimals)
       setValue('currency', token.symbol)
       setValue('tokenAddress', token.address ?? undefined)
       setValue('decimals', token.decimals)
     },
-    [setValue]
+    [setValue, decimals, reconvertLineItemRates]
   )
 
   // Network change handler (also updates theme)

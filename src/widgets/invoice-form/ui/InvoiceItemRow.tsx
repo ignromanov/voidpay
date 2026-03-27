@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { Trash2Icon } from '@/shared/ui/icons'
 import { motion } from '@/shared/ui/motion'
 
@@ -46,6 +46,18 @@ export function InvoiceItemRow({
     }
     return ''
   })
+
+  // Sync rateInput display when decimals change (token switch).
+  // After PaymentSection re-converts atomic rates, this updates the displayed value.
+  const prevDecimalsRef = useRef(decimals)
+  useEffect(() => {
+    if (prevDecimalsRef.current !== decimals) {
+      prevDecimalsRef.current = decimals
+      if (item.rate && item.rate !== '0' && item.rate !== '') {
+        setRateInput(formatAmount(item.rate, decimals))
+      }
+    }
+  }, [decimals, item.rate])
 
   // Handle rate input change
   const handleRateChange = useCallback(
