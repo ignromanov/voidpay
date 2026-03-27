@@ -47,7 +47,7 @@ const TRUST_BADGES: TrustBadgeData[] = [
 function TrustBadge({ icon: Icon, label, description, href }: TrustBadgeData) {
   const content = (
     <>
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-700/50 bg-zinc-800/50 transition-colors group-hover:border-violet-500/50 group-hover:bg-violet-900/20">
+      <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-zinc-700/50 bg-zinc-800/50 transition-colors group-hover:border-violet-500/50 group-hover:bg-violet-900/20">
         <Icon size={20} className="text-violet-400" aria-hidden="true" />
       </div>
       <span className="text-sm font-medium text-zinc-100">{label}</span>
