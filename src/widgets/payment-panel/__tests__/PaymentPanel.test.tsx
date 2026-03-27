@@ -287,11 +287,11 @@ describe('PaymentPanel', () => {
   })
 
   describe('footer', () => {
-    it('renders Download PDF button (disabled)', () => {
+    it('renders Download PDF button (enabled)', () => {
       render(<PaymentPanel invoice={mockInvoice} status="pending" />)
       const downloadBtn = screen.getByRole('button', { name: /download pdf/i })
       expect(downloadBtn).toBeInTheDocument()
-      expect(downloadBtn.hasAttribute('disabled')).toBe(true)
+      expect(downloadBtn).not.toBeDisabled()
     })
 
     it('renders Report abuse button', () => {

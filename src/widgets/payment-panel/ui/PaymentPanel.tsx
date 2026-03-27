@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { computeAmounts } from '../lib/compute-amounts'
@@ -17,6 +17,9 @@ import { CheckCircleIcon } from '@/shared/ui/icons'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { cn } from '@/shared/lib/utils'
 import type { PaymentPanelProps } from '../types'
+import { exportInvoicePdf } from '@/features/pdf-export'
+import { track, AnalyticsEvent } from '@/features/analytics'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 
 const QRModal = dynamic(
   () => import('@/features/payment-qr').then(mod => ({ default: mod.QRModal })),
@@ -46,6 +49,23 @@ export function PaymentPanel({
 }: PaymentPanelProps) {
   const [qrOpen, setQrOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
+
+  const handlePdfExport = useCallback(() => {
+    track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
+    const invoiceUrl = typeof window !== 'undefined' ? window.location.href : undefined
+    const tracked = invoice.invoiceId
+      ? useTrackedInvoiceStore.getState().getInvoice(invoice.invoiceId)
+      : undefined
+    const paidAt = tracked?.paidAt
+      ? Math.floor(new Date(tracked.paidAt).getTime() / 1000)
+      : undefined
+    void exportInvoicePdf(invoice, {
+      status: status === 'confirming' ? undefined : status,
+      txHash,
+      invoiceUrl,
+      paidAt,
+    })
+  }, [invoice, status, txHash])
 
   const cooldownSeconds = useCooldown(cooldownUntil)
 
@@ -210,6 +230,7 @@ export function PaymentPanel({
         networkId={invoice.networkId}
         onQrOpen={() => setQrOpen(true)}
         onShareOpen={onShareOpen}
+        onPdfExport={handlePdfExport}
       />
 
       {/* QR Modal — desktop users scan with mobile wallet */}
