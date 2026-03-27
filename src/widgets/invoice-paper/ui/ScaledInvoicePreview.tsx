@@ -197,7 +197,7 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
       <div
         className={cn(
           'absolute inset-0 z-20 flex items-end justify-start p-3 transition-opacity duration-200',
-          isHovered ? 'opacity-100' : 'opacity-0'
+          isHovered ? 'opacity-100' : 'opacity-100 md:opacity-0'
         )}
       >
         <button

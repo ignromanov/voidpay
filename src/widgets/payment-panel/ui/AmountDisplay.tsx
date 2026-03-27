@@ -28,8 +28,8 @@ export function AmountDisplay({
         Total Due
       </p>
 
-      <div className="flex items-baseline gap-2">
-        <span className="text-3xl font-mono font-bold text-violet-400">
+      <div className="flex min-w-0 items-baseline gap-2">
+        <span className="min-w-0 truncate text-2xl font-mono font-bold text-violet-400 sm:text-3xl">
           {formattedSubtotal}
         </span>
         <span className="text-lg text-zinc-500">{currency}</span>

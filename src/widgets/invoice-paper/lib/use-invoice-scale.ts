@@ -21,7 +21,7 @@ export const INVOICE_BASE_WIDTH = 794
 export const INVOICE_BASE_HEIGHT = 1123
 
 /** Scale calculation constants */
-const MIN_SCALE = 0.25
+const MIN_SCALE = 0.38
 const HEIGHT_FRACTION = 0.95
 const DEFAULT_INITIAL_SCALE = 0.45
 
