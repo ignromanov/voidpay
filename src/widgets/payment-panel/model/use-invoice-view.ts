@@ -19,10 +19,11 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { parseInvoiceHash, mapParseErrorToDecodeType } from '@/features/invoice-codec'
+import { track, AnalyticsEvent, getReferrerDomain } from '@/features/analytics'
 import { usePaymentPolling } from '@/features/payment'
 import type { UsePaymentPollingResult } from '@/features/payment'
 import { useTrackedInvoiceStore, computeInvoiceStatus, computeAmounts } from '@/entities/invoice'
-import { estimateFromBlockHex } from '@/entities/network'
+import { estimateFromBlockHex, getNetworkName } from '@/entities/network'
 import { nowISO } from '@/shared/lib/date-time'
 import { toast } from '@/shared/lib/toast'
 import type { InvoiceStatus, InvoiceSource } from '@/entities/invoice'
@@ -133,6 +134,7 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
     if (hash === '') {
       setErrorType('EMPTY_HASH')
       setInvoice(null)
+      track(AnalyticsEvent.ERROR_DECODE, { error_type: 'EMPTY_HASH', page: source === 'received' ? 'pay' : 'invoice' })
       return
     }
 
@@ -156,9 +158,19 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
           console.error('[useInvoiceView] Failed to track invoice view:', error)
           toast.info('Could not save invoice to history. Your payment experience is unaffected.')
         }
+
+        if (source === 'received') {
+          track(AnalyticsEvent.PAY_PAGE_LOAD, {
+            network: getNetworkName(result.data.networkId).toLowerCase(),
+            token_symbol: result.data.currency ?? 'ETH',
+            referrer_domain: getReferrerDomain(),
+          })
+        }
       } else {
         setInvoice(null)
-        setErrorType(mapParseErrorToDecodeType(result.error.message))
+        const decodedErrorType = mapParseErrorToDecodeType(result.error.message)
+        setErrorType(decodedErrorType)
+        track(AnalyticsEvent.ERROR_DECODE, { error_type: decodedErrorType, page: source === 'received' ? 'pay' : 'invoice' })
       }
     })()
     return () => { cancelled = true }

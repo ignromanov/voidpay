@@ -10,6 +10,7 @@
 import { GithubIcon, TwitterIcon } from '@/shared/ui/icons'
 import Link from 'next/link'
 
+import { track, AnalyticsEvent } from '@/features/analytics'
 import { SOCIAL_URLS } from '@/shared/config'
 import { AuroraText } from '@/shared/ui/aurora-text'
 import { Button } from '@/shared/ui/button'
@@ -40,7 +41,7 @@ export function FooterCta() {
               variant="glow"
               size="lg"
               className="h-16 rounded-2xl px-12 text-xl shadow-[0_0_60px_-15px_rgba(124,58,237,0.5)]"
-              data-umami-event="cta_footer_create"
+              onClick={() => track(AnalyticsEvent.LANDING_CTA_CLICK, { cta_location: 'footer' })}
             >
               Get Paid Now
             </Button>
@@ -56,7 +57,7 @@ export function FooterCta() {
             rel="noopener noreferrer"
             aria-label="GitHub"
             className="text-zinc-400 transition-colors hover:text-white"
-            data-umami-event="outbound_github"
+            onClick={() => track(AnalyticsEvent.OUTBOUND_CLICK, { target: 'github' })}
           >
             <GithubIcon className="h-6 w-6" />
           </a>
@@ -66,7 +67,7 @@ export function FooterCta() {
             rel="noopener noreferrer"
             aria-label="Twitter"
             className="text-zinc-400 transition-colors hover:text-white"
-            data-umami-event="outbound_twitter"
+            onClick={() => track(AnalyticsEvent.OUTBOUND_CLICK, { target: 'twitter' })}
           >
             <TwitterIcon className="h-6 w-6" />
           </a>

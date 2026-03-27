@@ -10,6 +10,8 @@ import {
   Loader2Icon,
 } from '@/shared/ui/icons'
 
+import { track, AnalyticsEvent } from '@/features/analytics'
+import { getNetworkName } from '@/entities/network'
 import { parseInvoiceHash } from '@/features/invoice-codec'
 import {
   validateInvoiceForGeneration,
@@ -114,6 +116,7 @@ export function CreateWorkspace() {
       const validation = validateInvoiceForGeneration(activeDraft.data, lineItems)
 
       if (!validation.isValid) {
+        track(AnalyticsEvent.ERROR_GENERATE, { error_type: 'VALIDATION' })
         const firstError = validation.errors[0]
         toast.error('Cannot generate link', {
           description: firstError?.message ?? 'Please fill in all required fields',
@@ -129,6 +132,28 @@ export function CreateWorkspace() {
 
       const { url } = await generateAndTrackInvoice(activeDraft, lineItems)
 
+      track(AnalyticsEvent.INVOICE_CREATE, {
+        network: getNetworkName(activeDraft.data.networkId ?? 1).toLowerCase(),
+        token_symbol: activeDraft.data.currency ?? 'ETH',
+        line_item_count: lineItems.length,
+      })
+
+      const fieldsUsed: string[] = []
+      const d = activeDraft.data
+      if (d.notes) fieldsUsed.push('notes')
+      if (d.from?.name) fieldsUsed.push('sender_name')
+      if (d.from?.email) fieldsUsed.push('sender_email')
+      if (d.client?.name) fieldsUsed.push('recipient_name')
+      if (d.client?.email) fieldsUsed.push('recipient_email')
+      if (d.dueAt) fieldsUsed.push('due_date')
+      if (d.tax) fieldsUsed.push('tax')
+      if (d.discount) fieldsUsed.push('discount')
+      if (d.magicDust) fieldsUsed.push('magic_dust')
+      if (useCreatorStore.getState().preferences?.includeOgImage) fieldsUsed.push('og_preview')
+      if (fieldsUsed.length > 0) {
+        track(AnalyticsEvent.INVOICE_FIELD_USAGE, { fields_used: fieldsUsed.join(',') })
+      }
+
       toast.success('Invoice link generated!', {
         description: 'Share it with your client to get paid',
       })
@@ -143,6 +168,7 @@ export function CreateWorkspace() {
       router.replace(urlToRoute(invoiceUrl))
     } catch (error) {
       if (error instanceof UrlSizeError) {
+        track(AnalyticsEvent.ERROR_GENERATE, { error_type: 'URL_TOO_LARGE' })
         toast.error('Invoice URL is too large', {
           description: `${error.size} bytes exceeds the ${error.limit} byte limit. Try reducing notes or line items.`,
         })

@@ -6,6 +6,7 @@ import { Button } from '@/shared/ui/button'
 import { Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
 import { toAbsoluteUrl } from '@/shared/config/urls'
+import { track, AnalyticsEvent } from '@/features/analytics'
 import { CopyOverlay } from './CopyOverlay'
 
 interface LinkTabProps {
@@ -103,7 +104,10 @@ export function LinkTab({
       <Button
         variant="void"
         className="h-auto w-full py-3"
-        onClick={onCopy}
+        onClick={() => {
+          track(AnalyticsEvent.SHARE_LINK_COPY, { has_og: includeOg })
+          onCopy()
+        }}
       >
         <CopyOverlay copied={copied} />
         <span className="relative z-10 flex items-center gap-2">
@@ -128,6 +132,7 @@ export function LinkTab({
           rel="noopener noreferrer"
           aria-label="Share invoice via Telegram"
           className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[#0088cc]/20 bg-[#0088cc]/10 px-3 py-2.5 text-xs font-semibold text-[#0088cc] transition-all hover:bg-[#0088cc]/15 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#0088cc]/50 active:scale-95"
+          onClick={() => track(AnalyticsEvent.SHARE_SOCIAL, { channel: 'telegram' })}
         >
           <SendIcon size={14} /> Telegram
         </a>
@@ -137,6 +142,7 @@ export function LinkTab({
           rel="noopener noreferrer"
           aria-label="Share invoice via Twitter"
           className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-semibold text-white transition-all hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30 active:scale-95"
+          onClick={() => track(AnalyticsEvent.SHARE_SOCIAL, { channel: 'twitter' })}
         >
           <TwitterIcon size={14} /> Twitter
         </a>
@@ -144,6 +150,7 @@ export function LinkTab({
           href={emailUrl}
           aria-label="Share invoice via Email"
           className="flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2.5 text-xs font-semibold text-rose-400 transition-all hover:bg-rose-500/15 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-500/50 active:scale-95"
+          onClick={() => track(AnalyticsEvent.SHARE_SOCIAL, { channel: 'email' })}
         >
           <MailIcon size={14} /> Email
         </a>

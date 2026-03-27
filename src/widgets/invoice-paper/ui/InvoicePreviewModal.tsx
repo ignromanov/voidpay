@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from '@/shared/ui/motion'
 import { XIcon, PrinterIcon, DownloadIcon } from '@/shared/ui/icons'
 import { Dialog, DialogContent, DialogTitle, DialogClose, DialogDescription } from '@/shared/ui/dialog'
@@ -11,6 +11,7 @@ import { ScaledInvoicePreview } from './ScaledInvoicePreview'
 import { InvoiceStatus } from '../types'
 import { PartialInvoice, invoiceSchema } from '@/entities/invoice'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
+import { track, AnalyticsEvent } from '@/features/analytics'
 
 // Animation variants for smooth enter/exit
 const headerVariants = {
@@ -103,15 +104,14 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
       return () => { cancelled = true }
     }, [data])
 
-    // Print handler
-    const handlePrint = useCallback(() => {
-      window.print()
-    }, [])
+    const printedViaButton = useRef(false)
 
-    // Download PDF handler (uses browser's print-to-PDF)
-    const handleDownloadPdf = useCallback(() => {
-      // Trigger print dialog where user can choose "Save as PDF"
+    // Print/Download handler (both trigger browser print dialog)
+    const handlePrint = useCallback(() => {
+      printedViaButton.current = true
+      track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
       window.print()
+      setTimeout(() => { printedViaButton.current = false }, 1000)
     }, [])
 
     // Keyboard shortcuts
@@ -132,6 +132,18 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
       window.addEventListener('keydown', handleKeyDown)
       return () => window.removeEventListener('keydown', handleKeyDown)
     }, [open, handlePrint])
+
+    // Track Cmd+P / browser print (deduped against button click)
+    useEffect(() => {
+      if (!open) return
+      const handleAfterPrint = () => {
+        if (!printedViaButton.current) {
+          track(AnalyticsEvent.PDF_EXPORT, { source: 'browser_print' })
+        }
+      }
+      window.addEventListener('afterprint', handleAfterPrint)
+      return () => window.removeEventListener('afterprint', handleAfterPrint)
+    }, [open])
 
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -238,7 +250,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               variant="ghost"
               size="sm"
               className="gap-2 text-zinc-300 hover:text-white"
-              onClick={handleDownloadPdf}
+              onClick={handlePrint}
             >
               <DownloadIcon className="h-5 w-5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Download PDF</span>

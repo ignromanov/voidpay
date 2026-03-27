@@ -19,7 +19,10 @@
  */
 
 import dynamic from 'next/dynamic'
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { usePathname } from 'next/navigation'
+import { useAccount } from 'wagmi'
+import { track, AnalyticsEvent } from '@/features/analytics'
 
 // Context to track Web3 loading state
 const Web3LoadedContext = createContext(false)
@@ -34,6 +37,29 @@ const Web3Provider = dynamic(
   () => import('./providers').then((mod) => mod.Web3Provider),
   { ssr: false }
 )
+
+/**
+ * Tracks wallet connect events globally — fires once per false→true transition.
+ * Must be rendered inside WagmiProvider context.
+ */
+function WalletConnectTracker() {
+  const pathname = usePathname()
+  const wasConnected = useRef(false)
+  const { isConnected, connector } = useAccount()
+
+  useEffect(() => {
+    if (isConnected && !wasConnected.current) {
+      track(AnalyticsEvent.WALLET_CONNECT, {
+        wallet_type: connector?.name ?? 'unknown',
+        page: pathname,
+      })
+    }
+    wasConnected.current = isConnected
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pathname read at connect time, not a trigger
+  }, [isConnected, connector?.name])
+
+  return null
+}
 
 interface LazyWeb3ProviderProps {
   children: ReactNode
@@ -72,7 +98,10 @@ export function LazyWeb3Provider({ children }: LazyWeb3ProviderProps) {
   // This prevents the unmount/remount cycle that caused flashing
   return (
     <Web3LoadedContext.Provider value={isLoaded}>
-      <Web3Provider>{children}</Web3Provider>
+      <Web3Provider>
+        <WalletConnectTracker />
+        {children}
+      </Web3Provider>
     </Web3LoadedContext.Provider>
   )
 }

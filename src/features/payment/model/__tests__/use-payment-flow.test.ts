@@ -60,7 +60,8 @@ vi.mock('@rainbow-me/rainbowkit', () => ({
 }))
 
 // Mock entities/network
-vi.mock('@/entities/network', () => ({
+vi.mock('@/entities/network', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/entities/network')>()),
   useNetworkSwitch: vi.fn(() => ({
     switchToChain: vi.fn(),
     isSwitching: false,

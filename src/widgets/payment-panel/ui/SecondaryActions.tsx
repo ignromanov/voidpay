@@ -6,6 +6,7 @@ import {
   RefreshCwIcon,
 } from '@/shared/ui/icons'
 import { cn } from '@/shared/lib/utils'
+import { track, AnalyticsEvent } from '@/features/analytics'
 
 /** Shared base classes for secondary action buttons */
 const footerActionBase =
@@ -47,7 +48,10 @@ export function SecondaryActions({
               ? 'text-violet-400 bg-violet-500/10 shadow-[0_0_12px_-3px_rgba(139,92,246,0.3)]'
               : 'text-zinc-400 hover:bg-violet-500/10 hover:text-violet-300 hover:shadow-[0_0_12px_-3px_rgba(139,92,246,0.2)]',
           )}
-          onClick={isSearching ? onStopPolling : onIvePaid}
+          onClick={isSearching ? onStopPolling : () => {
+            track(AnalyticsEvent.PAY_VERIFY, { method: 'ive-paid' })
+            onIvePaid?.()
+          }}
           data-testid="ive-paid-button"
           aria-label={isSearching ? 'Stop searching for payment' : "I've already paid this invoice"}
         >
@@ -75,7 +79,10 @@ export function SecondaryActions({
                 ? 'text-zinc-600 cursor-not-allowed active:scale-100'
                 : 'text-zinc-400 hover:bg-violet-500/10 hover:text-violet-300 hover:shadow-[0_0_12px_-3px_rgba(139,92,246,0.2)]',
           )}
-          onClick={isChecking ? onStopPolling : onCheckPayment}
+          onClick={isChecking ? onStopPolling : () => {
+            track(AnalyticsEvent.PAY_VERIFY, { method: 'check' })
+            onCheckPayment?.()
+          }}
           disabled={cooldownSeconds > 0}
           data-testid="check-payment-button"
           aria-label={

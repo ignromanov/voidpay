@@ -9,6 +9,7 @@
 import { useState } from 'react'
 import { ChevronDownIcon } from '@/shared/ui/icons'
 
+import { track, AnalyticsEvent } from '@/features/analytics'
 import { cn } from '@/shared/lib/utils'
 import { Heading, Text } from '@/shared/ui/typography'
 import { AnimatePresence, motion } from '@/shared/ui/motion'
@@ -19,11 +20,12 @@ function FaqItem({ question, answer, isOpen, onToggle }: FaqItem & { isOpen: boo
   return (
     <div className="border-b border-zinc-800 last:border-b-0">
       <button
-        onClick={onToggle}
+        onClick={() => {
+          track(AnalyticsEvent.FAQ_EXPAND, { question_id: question })
+          onToggle()
+        }}
         className="flex w-full items-center justify-between gap-4 py-6 text-left transition-colors hover:text-zinc-100"
         aria-expanded={isOpen}
-        data-umami-event="faq_toggle"
-        data-umami-event-question={question}
       >
         <span className="text-lg font-medium text-zinc-100">{question}</span>
         <ChevronDownIcon

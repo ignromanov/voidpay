@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { AppErrorScreen } from '@/shared/ui/app-error-screen'
+import { track, AnalyticsEvent } from '@/features/analytics'
 
 export default function RootError({
   error,
@@ -12,6 +13,10 @@ export default function RootError({
 }) {
   useEffect(() => {
     console.error('[RootError]', error)
+    track(AnalyticsEvent.ERROR_BOUNDARY, {
+      page: window.location.pathname,
+      error_message: (error.message || 'Unknown error').slice(0, 200),
+    })
   }, [error])
 
   return (

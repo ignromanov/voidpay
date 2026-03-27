@@ -9,6 +9,7 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
+import { track, AnalyticsEvent } from '@/features/analytics'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
 import { Button } from '@/shared/ui/button'
@@ -99,8 +100,7 @@ export function DemoSection() {
                 variant="glow"
                 size="default"
                 className="rounded-full bg-violet-600 px-8 py-4"
-                data-umami-event="cta_demo_template"
-                data-umami-event-invoice={currentInvoice.data.invoiceId}
+                onClick={() => track(AnalyticsEvent.LANDING_CTA_CLICK, { cta_location: 'demo' })}
                 asChild
               >
                 <Link href={`/create#${currentInvoice.createHash}`}>Use This Template</Link>

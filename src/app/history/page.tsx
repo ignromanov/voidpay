@@ -14,6 +14,7 @@ import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { parseInvoiceHash } from '@/features/invoice-codec'
 import { useBatchCheck } from '@/features/payment'
 import type { DecodedBatchInvoice } from '@/features/payment'
+import { track, AnalyticsEvent } from '@/features/analytics'
 import { HistoryList, ReceivedInvoiceList } from '@/features/invoice-history'
 import { Loader2Icon } from '@/shared/ui/icons'
 import { useReceivedInvoices } from './use-received-invoices'
@@ -110,7 +111,10 @@ function HistoryPageContent() {
                 <div className="flex items-center gap-3">
                   {pendingCount > 0 && (
                     <button
-                      onClick={checkAll}
+                      onClick={() => {
+                        track(AnalyticsEvent.PAY_VERIFY, { method: 'history-batch' })
+                        checkAll()
+                      }}
                       disabled={isChecking}
                       className="flex items-center gap-1.5 rounded-lg bg-violet-600/20 px-3 py-1.5 text-xs font-medium text-violet-300 transition-colors hover:bg-violet-600/30 disabled:opacity-50"
                     >

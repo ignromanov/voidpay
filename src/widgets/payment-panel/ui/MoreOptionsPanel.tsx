@@ -3,6 +3,7 @@ import { EyeIcon, SearchIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { cn } from '@/shared/lib/utils'
+import { track, AnalyticsEvent } from '@/features/analytics'
 
 interface MoreOptionsPanelProps {
   isWatching: boolean
@@ -69,7 +70,10 @@ export function MoreOptionsPanel({
               size="sm"
               className="shrink-0 h-[42px] w-[42px] border-zinc-700 text-violet-400 hover:text-white hover:border-violet-500/50 hover:bg-violet-500/10 disabled:opacity-40 disabled:text-zinc-600"
               disabled={!txHashValid}
-              onClick={() => onVerifyTxHash({ txHash: txHashInput })}
+              onClick={() => {
+                track(AnalyticsEvent.PAY_VERIFY, { method: 'tx-hash' })
+                onVerifyTxHash({ txHash: txHashInput })
+              }}
               data-testid="verify-txhash-button"
               aria-label="Verify transaction hash"
             >
