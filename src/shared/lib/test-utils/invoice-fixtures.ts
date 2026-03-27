@@ -28,7 +28,7 @@ export const TEST_ADDRESSES = {
   // Token addresses (Ethereum mainnet)
   usdc: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' as Address,
   usdt: '0xdAC17F958D2ee523a2206206994597C13D831ec7' as Address,
-  dai: '0x6B175474E89094C44Da98b954EesDeAC495271d0F' as Address,
+  dai: '0x6B175474E89094C44Da98b954EeDeAC495271d0F' as Address,
 } as const
 
 // ============================================================================
@@ -101,8 +101,8 @@ export const TEST_LINE_ITEMS = {
  * Test timestamps (Unix seconds).
  */
 export const TEST_TIMESTAMPS = {
-  issued: 1704067200, // 2024-01-01T00:00:00Z
-  due: 1706745600, // 2024-02-01T00:00:00Z
+  issued: 1798761600, // 2027-01-01T00:00:00Z
+  due: 1801440000, // 2027-02-01T00:00:00Z
 } as const
 
 // ============================================================================
@@ -118,7 +118,7 @@ export const TEST_INVOICES = {
    * Use for complete round-trip tests and snapshot tests.
    */
   full: (): Invoice => ({
-    invoiceId: 'INV-2024-001',
+    invoiceId: 'INV-2026-001',
     issuedAt: TEST_TIMESTAMPS.issued,
     dueAt: TEST_TIMESTAMPS.due,
     notes: 'Payment for web development services',

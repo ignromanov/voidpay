@@ -52,7 +52,7 @@ export function MetadataSection({ form, fieldValidation, submitAttempted }: Meta
         label="Invoice No. *"
         {...register('invoiceId')}
         className="font-mono"
-        placeholder="INV-001"
+        placeholder="INV-2026-001"
         maxLength={FIELD_LIMITS.invoiceId}
         error={getFieldError(errors.invoiceId, fieldValidation, 'invoiceId', 'Invoice number is required')}
         touched={touchedFields.invoiceId || submitAttempted}

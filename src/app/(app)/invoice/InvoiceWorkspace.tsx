@@ -166,7 +166,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
         <div className="absolute bottom-4 left-1/2 z-40 w-full max-w-[95%] -translate-x-1/2 px-4 md:bottom-5 md:max-w-xl">
           <AnimatePresence mode="wait">
             {isMinimized ? (
-              <MinimizedPill key="minimized" isPaid={isPaid} onExpand={() => setIsMinimized(false)} />
+              <MinimizedPill key="minimized" status={panelStatus} onExpand={() => setIsMinimized(false)} />
             ) : (
               <motion.div
                 key="expanded"

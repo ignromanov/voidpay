@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { formatInvoiceTotal, useTrackedInvoiceStore } from '@/entities/invoice'
 import { cn } from '@/shared/lib/utils'
 import { InvoiceStatusBadge } from './InvoiceStatusBadge'
@@ -16,6 +17,7 @@ interface ReceivedInvoiceListProps {
 }
 
 export function ReceivedInvoiceList({ invoices, debug = false, className }: ReceivedInvoiceListProps) {
+  const router = useRouter()
   const removeInvoice = useTrackedInvoiceStore((s) => s.removeInvoice)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
@@ -34,6 +36,14 @@ export function ReceivedInvoiceList({ invoices, debug = false, className }: Rece
           key={item.tracked.invoiceId}
           item={item}
           debug={debug}
+          onPay={() => {
+            try {
+              const hash = new URL(item.tracked.invoiceUrl).hash
+              router.push(`/pay${hash}`)
+            } catch {
+              router.push(item.tracked.invoiceUrl)
+            }
+          }}
           isDeleteConfirming={deleteConfirmId === item.tracked.invoiceId}
           onDelete={() => setDeleteConfirmId(item.tracked.invoiceId)}
           onDeleteConfirm={() => {
@@ -50,6 +60,7 @@ export function ReceivedInvoiceList({ invoices, debug = false, className }: Rece
 interface ReceivedInvoiceCardProps {
   item: DecodedReceivedInvoice
   debug: boolean
+  onPay: () => void
   isDeleteConfirming: boolean
   onDelete: () => void
   onDeleteConfirm: () => void
@@ -59,6 +70,7 @@ interface ReceivedInvoiceCardProps {
 function ReceivedInvoiceCard({
   item,
   debug,
+  onPay,
   isDeleteConfirming,
   onDelete,
   onDeleteConfirm,
@@ -74,10 +86,6 @@ function ReceivedInvoiceCard({
     hour: '2-digit',
     minute: '2-digit',
   })
-
-  const handlePay = () => {
-    window.open(tracked.invoiceUrl, '_blank', 'noopener,noreferrer')
-  }
 
   return (
     <InvoiceCardShell>
@@ -114,7 +122,7 @@ function ReceivedInvoiceCard({
           {!isDeleteConfirming ? (
             <>
               <button
-                onClick={handlePay}
+                onClick={onPay}
                 className="cursor-pointer rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
                 title="Open payment page"
               >

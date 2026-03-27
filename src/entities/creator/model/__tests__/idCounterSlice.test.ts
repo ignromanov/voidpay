@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { useCreatorStore } from '../useCreatorStore'
 
 describe('idCounterSlice', () => {
+  const year = new Date().getFullYear()
+
   beforeEach(() => {
     useCreatorStore.setState({
       idCounter: { currentValue: 1, prefix: 'INV' },
@@ -9,9 +11,9 @@ describe('idCounterSlice', () => {
   })
 
   describe('generateNextInvoiceId', () => {
-    it('generates INV-001 for first invoice', () => {
+    it('generates INV-{year}-001 for first invoice', () => {
       const { generateNextInvoiceId } = useCreatorStore.getState()
-      expect(generateNextInvoiceId()).toBe('INV-001')
+      expect(generateNextInvoiceId()).toBe(`INV-${year}-001`)
     })
 
     it('increments counter after generation', () => {
@@ -25,22 +27,22 @@ describe('idCounterSlice', () => {
     it('pads numbers to 3 digits', () => {
       const { generateNextInvoiceId } = useCreatorStore.getState()
 
-      expect(generateNextInvoiceId()).toBe('INV-001')
-      expect(useCreatorStore.getState().generateNextInvoiceId()).toBe('INV-002')
+      expect(generateNextInvoiceId()).toBe(`INV-${year}-001`)
+      expect(useCreatorStore.getState().generateNextInvoiceId()).toBe(`INV-${year}-002`)
     })
 
     it('handles numbers beyond 3 digits', () => {
       useCreatorStore.setState({ idCounter: { currentValue: 1000, prefix: 'INV' } })
 
       const { generateNextInvoiceId } = useCreatorStore.getState()
-      expect(generateNextInvoiceId()).toBe('INV-1000')
+      expect(generateNextInvoiceId()).toBe(`INV-${year}-1000`)
     })
 
     it('uses custom prefix', () => {
       useCreatorStore.setState({ idCounter: { currentValue: 5, prefix: 'PO' } })
 
       const { generateNextInvoiceId } = useCreatorStore.getState()
-      expect(generateNextInvoiceId()).toBe('PO-005')
+      expect(generateNextInvoiceId()).toBe(`PO-${year}-005`)
     })
   })
 

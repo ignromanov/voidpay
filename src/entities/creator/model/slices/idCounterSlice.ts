@@ -53,8 +53,9 @@ export const createIdCounterSlice: StateCreator<CreatorStore, [], [], IdCounterS
     const state = get()
     const { idCounter } = state
 
+    const year = new Date().getFullYear()
     const paddedNumber = idCounter.currentValue.toString().padStart(3, '0')
-    const invoiceId = `${idCounter.prefix}-${paddedNumber}`
+    const invoiceId = `${idCounter.prefix}-${year}-${paddedNumber}`
 
     // Increment counter
     set((state) => ({

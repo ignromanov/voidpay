@@ -24,7 +24,7 @@ function FaqItem({ question, answer, isOpen, onToggle }: FaqItem & { isOpen: boo
           track(AnalyticsEvent.FAQ_EXPAND, { question_id: question })
           onToggle()
         }}
-        className="flex w-full items-center justify-between gap-4 py-6 text-left transition-colors hover:text-zinc-100"
+        className="flex w-full cursor-pointer items-center justify-between gap-4 py-6 text-left transition-colors hover:text-zinc-100"
         aria-expanded={isOpen}
       >
         <span className="text-lg font-medium text-zinc-100">{question}</span>

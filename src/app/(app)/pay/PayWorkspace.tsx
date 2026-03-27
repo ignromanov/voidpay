@@ -177,7 +177,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
           <CreatorHintBanner isCreator={source === 'created'} />
           <AnimatePresence mode="wait">
             {isMinimized ? (
-              <MinimizedPill key="minimized" isPaid={isPaid} onExpand={() => setIsMinimized(false)} />
+              <MinimizedPill key="minimized" status={panelStatus} onExpand={() => setIsMinimized(false)} />
             ) : (
               <motion.div
                 key="expanded"

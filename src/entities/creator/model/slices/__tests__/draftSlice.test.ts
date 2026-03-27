@@ -124,7 +124,8 @@ describe('draftSlice', () => {
       createNewDraft()
 
       const state = useCreatorStore.getState()
-      expect(state.activeDraft?.data.invoiceId).toBe('INV-001')
+      const year = new Date().getFullYear()
+      expect(state.activeDraft?.data.invoiceId).toBe(`INV-${year}-001`)
       expect(state.activeDraft?.data.networkId).toBe(42161) // Default: Arbitrum
       expect(state.activeDraft?.data.currency).toBe('USDC')
       expect(state.activeDraft?.data.decimals).toBe(6)

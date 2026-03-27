@@ -45,11 +45,11 @@ export function HistoryList({ entries, debug, className = '' }: HistoryListProps
   const handleView = useCallback((invoiceUrl: string) => {
     try {
       const hash = new URL(invoiceUrl).hash
-      window.open(`/invoice${hash}`, '_blank', 'noopener,noreferrer')
+      router.push(`/invoice${hash}`)
     } catch {
-      window.open(invoiceUrl, '_blank', 'noopener,noreferrer')
+      router.push(invoiceUrl)
     }
-  }, [])
+  }, [router])
 
   if (entries.length === 0) {
     return (
