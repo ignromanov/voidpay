@@ -9,6 +9,6 @@ export interface PdfExportOptions {
   txHash?: string | undefined
   /** Full invoice URL for QR code in header */
   invoiceUrl?: string | undefined
-  /** Payment date (shown in watermark when paid) */
+  /** Payment timestamp — shown in watermark when paid */
   paidAt?: number | undefined
 }

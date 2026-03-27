@@ -19,6 +19,7 @@ import { cn } from '@/shared/lib/utils'
 import type { PaymentPanelProps } from '../types'
 import { exportInvoicePdf } from '@/features/pdf-export'
 import { track, AnalyticsEvent } from '@/features/analytics'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 
 const QRModal = dynamic(
   () => import('@/features/payment-qr').then(mod => ({ default: mod.QRModal })),
@@ -52,11 +53,18 @@ export function PaymentPanel({
   const handlePdfExport = useCallback(() => {
     track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
     const invoiceUrl = typeof window !== 'undefined' ? window.location.href : undefined
-    const pdfStatus = status === 'confirming' ? undefined : status as 'draft' | 'pending' | 'paid' | 'overdue'
+    const pdfStatus = status === 'confirming' ? undefined : status
+    const tracked = invoice.invoiceId
+      ? useTrackedInvoiceStore.getState().getInvoice(invoice.invoiceId)
+      : undefined
+    const paidAt = tracked?.paidAt
+      ? Math.floor(new Date(tracked.paidAt).getTime() / 1000)
+      : undefined
     void exportInvoicePdf(invoice, {
       status: pdfStatus,
       txHash,
       invoiceUrl,
+      paidAt,
     })
   }, [invoice, status, txHash])
 

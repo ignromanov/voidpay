@@ -13,6 +13,7 @@ import { PartialInvoice, invoiceSchema } from '@/entities/invoice'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
 import { track, AnalyticsEvent } from '@/features/analytics'
 import { exportInvoicePdf } from '@/features/pdf-export'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 
 // Animation variants for smooth enter/exit
 const headerVariants = {
@@ -114,13 +115,19 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
       setTimeout(() => { printedViaButton.current = false }, 1000)
     }, [])
 
-    // PDF download handler (pdfmake generation)
     const handleDownloadPdf = useCallback(() => {
       track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
+      const tracked = data.invoiceId
+        ? useTrackedInvoiceStore.getState().getInvoice(data.invoiceId)
+        : undefined
+      const paidAt = tracked?.paidAt
+        ? Math.floor(new Date(tracked.paidAt).getTime() / 1000)
+        : undefined
       void exportInvoicePdf(data, {
         status: status === 'empty' ? undefined : status,
         txHash,
         invoiceUrl,
+        paidAt,
       })
     }, [data, status, txHash, invoiceUrl])
 

@@ -1,6 +1,5 @@
 import type { TDocumentDefinitions } from 'pdfmake/interfaces'
 import { toast } from '@/shared/lib/toast'
-import { buildDocument, buildFilename } from './build-document'
 import type { PartialInvoice } from '@/shared/lib/invoice-types'
 import type { PdfExportOptions } from '../model/types'
 
@@ -9,7 +8,7 @@ type PdfMakeApi = { createPdf: (doc: TDocumentDefinitions) => { download: (filen
 /** Cached pdfmake load promise — deduplicates concurrent calls */
 let pdfMakePromise: Promise<PdfMakeApi> | null = null
 
-async function loadPdfMake(): Promise<PdfMakeApi> {
+function loadPdfMake(): Promise<PdfMakeApi> {
   if (!pdfMakePromise) {
     pdfMakePromise = (async () => {
       const [pdfMakeModule, vfsModule] = await Promise.all([
@@ -27,14 +26,17 @@ async function loadPdfMake(): Promise<PdfMakeApi> {
 
 /**
  * Generate and download a PDF invoice.
- * Lazily loads pdfmake on first call (~200KB), cached after that.
+ * Lazily loads pdfmake + build-document on first call, cached after that.
  */
 export async function exportInvoicePdf(
   data: PartialInvoice,
   options: PdfExportOptions
 ): Promise<boolean> {
   try {
-    const pdfMake = await loadPdfMake()
+    const [pdfMake, { buildDocument, buildFilename }] = await Promise.all([
+      loadPdfMake(),
+      import('./build-document'),
+    ])
     const docDefinition = buildDocument(data, options)
     const filename = buildFilename(data)
     pdfMake.createPdf(docDefinition).download(filename)
