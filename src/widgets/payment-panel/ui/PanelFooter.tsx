@@ -16,9 +16,10 @@ interface PanelFooterProps {
   networkId: number
   onQrOpen: () => void
   onShareOpen?: (() => void) | undefined
+  onPdfExport?: (() => void) | undefined
 }
 
-export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen, onShareOpen }: PanelFooterProps) {
+export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen, onShareOpen, onPdfExport }: PanelFooterProps) {
   return (
     <div className="px-4 pb-3">
       <div className="h-px w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
@@ -28,9 +29,14 @@ export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen, on
           <Button
             variant="ghost"
             size="sm"
-            disabled
-            className="text-xs text-zinc-500 inline-flex items-center gap-1 opacity-50 cursor-not-allowed"
-            aria-label="Download PDF (coming soon)"
+            disabled={!onPdfExport}
+            onClick={onPdfExport}
+            className={
+              onPdfExport
+                ? 'inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-violet-400'
+                : 'text-xs text-zinc-500 inline-flex items-center gap-1 opacity-50 cursor-not-allowed'
+            }
+            aria-label={onPdfExport ? 'Download PDF' : 'Download PDF (coming soon)'}
           >
             <DownloadIcon size={12} />
             PDF
