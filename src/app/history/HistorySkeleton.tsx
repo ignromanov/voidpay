@@ -1,6 +1,6 @@
 export function HistorySkeleton() {
   return (
-    <div className="flex min-h-screen flex-col items-center p-8">
+    <div className="flex min-h-screen flex-col items-center p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-4xl">
         <div className="mb-8">
           <div className="mb-2 h-9 w-64 animate-pulse rounded bg-gray-800" />

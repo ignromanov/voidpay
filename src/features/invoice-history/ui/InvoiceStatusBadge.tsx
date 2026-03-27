@@ -30,7 +30,7 @@ export function InvoiceStatusBadge({ status }: InvoiceStatusBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium',
+        'inline-flex shrink-0 items-center rounded border px-2 py-0.5 text-xs font-medium',
         config.className,
       )}
     >

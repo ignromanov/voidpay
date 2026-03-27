@@ -57,7 +57,7 @@ export function HistoryWorkspace() {
   const isEmpty = createdCount === 0 && receivedInvoices.length === 0
 
   return (
-    <div className="flex min-h-screen flex-col items-center p-8">
+    <div className="flex min-h-screen flex-col items-center p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-4xl">
         <div className="mb-8">
           <h1 className="mb-2 text-3xl font-bold text-gray-100">Invoice History</h1>
@@ -71,7 +71,7 @@ export function HistoryWorkspace() {
         ) : (
           <div className="space-y-10">
             <section aria-labelledby="created-heading">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-y-2">
                 <h2 id="created-heading" className="text-xl font-semibold text-gray-100">
                   Created
                 </h2>
@@ -83,7 +83,7 @@ export function HistoryWorkspace() {
                         checkAll()
                       }}
                       disabled={isChecking}
-                      className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-violet-600/20 px-3 py-1.5 text-xs font-medium text-violet-300 transition-colors hover:bg-violet-600/30 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg bg-violet-600/20 px-3 py-2.5 text-xs font-medium text-violet-300 transition-colors hover:bg-violet-600/30 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {isChecking ? (
                         <>
@@ -104,7 +104,7 @@ export function HistoryWorkspace() {
             </section>
 
             <section aria-labelledby="received-heading">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-y-2">
                 <h2 id="received-heading" className="text-xl font-semibold text-gray-100">
                   Received
                 </h2>
@@ -140,7 +140,7 @@ function CombinedEmptyState() {
           />
         </svg>
       </div>
-      <h3 className="mb-1 text-lg font-medium text-gray-200">No invoices yet</h3>
+      <h2 className="mb-1 text-lg font-medium text-gray-200">No invoices yet</h2>
       <p className="text-sm text-gray-400">
         Invoices you create or receive via payment links will appear here.
       </p>

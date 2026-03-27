@@ -23,7 +23,7 @@ export function ReceivedInvoiceList({ invoices, debug = false, className }: Rece
 
   if (invoices.length === 0) {
     return (
-      <p className={cn('py-4 text-sm text-gray-500', className)}>
+      <p className={cn('py-12 text-center text-sm text-gray-500', className)}>
         Invoices you open via payment links will appear here.
       </p>
     )
@@ -89,7 +89,7 @@ function ReceivedInvoiceCard({
 
   return (
     <InvoiceCardShell>
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         {/* Left: Invoice Info */}
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-2">
@@ -105,7 +105,7 @@ function ReceivedInvoiceCard({
                 {invoice.from?.name ?? 'Unknown sender'}
               </p>
               <div className="flex items-center gap-3 text-xs text-gray-400">
-                <span>{formattedDate}</span>
+                <span className="truncate min-w-0">{formattedDate}</span>
                 <span>•</span>
                 <span className="font-medium text-gray-300">
                   {formatInvoiceTotal(invoice)}
@@ -118,20 +118,22 @@ function ReceivedInvoiceCard({
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {!isDeleteConfirming ? (
             <>
               <button
                 onClick={onPay}
-                className="cursor-pointer rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
+                className="min-h-[44px] cursor-pointer rounded bg-gray-700 px-3 py-2.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
                 title="Open payment page"
+                aria-label={`Pay invoice ${tracked.invoiceId}`}
               >
                 Pay
               </button>
               <button
                 onClick={onDelete}
-                className="cursor-pointer rounded bg-red-900/20 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-900/30 hover:text-red-300"
+                className="min-h-[44px] cursor-pointer rounded bg-red-900/20 px-3 py-2.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-900/30 hover:text-red-300"
                 title="Delete Entry"
+                aria-label={`Delete invoice ${tracked.invoiceId}`}
               >
                 Delete
               </button>
