@@ -28,10 +28,10 @@ describe('InvoiceItemRow - Field Updates', () => {
     render(
       <InvoiceItemRow
         item={mockLineItem}
+        currencySymbol="USDC"
         decimals={6}
         onUpdate={onUpdate}
         onRemove={() => {}}
-        canRemove={true}
       />
     )
 
@@ -49,10 +49,10 @@ describe('InvoiceItemRow - Field Updates', () => {
     render(
       <InvoiceItemRow
         item={mockLineItem}
+        currencySymbol="USDC"
         decimals={6}
         onUpdate={onUpdate}
         onRemove={() => {}}
-        canRemove={true}
       />
     )
 
@@ -71,10 +71,10 @@ describe('InvoiceItemRow - Field Updates', () => {
     render(
       <InvoiceItemRow
         item={mockLineItem}
+        currencySymbol="USDC"
         decimals={6}
         onUpdate={onUpdate}
         onRemove={() => {}}
-        canRemove={true}
       />
     )
 
@@ -95,10 +95,10 @@ describe('InvoiceItemRow - Field Updates', () => {
     render(
       <InvoiceItemRow
         item={mockLineItem}
+        currencySymbol="USDC"
         decimals={6}
         onUpdate={onUpdate}
         onRemove={() => {}}
-        canRemove={true}
       />
     )
 
@@ -119,10 +119,10 @@ describe('InvoiceItemRow - Field Updates', () => {
     render(
       <InvoiceItemRow
         item={mockLineItem}
+        currencySymbol="USDC"
         decimals={6}
         onUpdate={onUpdate}
         onRemove={() => {}}
-        canRemove={true}
       />
     )
 
@@ -142,10 +142,10 @@ describe('InvoiceItemRow - Line Total Calculation', () => {
     render(
       <InvoiceItemRow
         item={mockLineItem}
+        currencySymbol="USDC"
         decimals={6}
         onUpdate={() => {}}
         onRemove={() => {}}
-        canRemove={true}
       />
     )
 
@@ -159,10 +159,10 @@ describe('InvoiceItemRow - Line Total Calculation', () => {
       rerender(
         <InvoiceItemRow
           item={item}
+          currencySymbol="USDC"
           decimals={6}
           onUpdate={onUpdate}
           onRemove={() => {}}
-          canRemove={true}
         />
       )
     })
@@ -171,10 +171,10 @@ describe('InvoiceItemRow - Line Total Calculation', () => {
     const { rerender } = render(
       <InvoiceItemRow
         item={mockLineItem}
+        currencySymbol="USDC"
         decimals={6}
         onUpdate={onUpdate}
         onRemove={() => {}}
-        canRemove={true}
       />
     )
 
@@ -192,10 +192,10 @@ describe('InvoiceItemRow - Line Total Calculation', () => {
     render(
       <InvoiceItemRow
         item={zeroItem}
+        currencySymbol="USDC"
         decimals={6}
         onUpdate={() => {}}
         onRemove={() => {}}
-        canRemove={true}
       />
     )
 
@@ -211,10 +211,10 @@ describe('InvoiceItemRow - Remove Action', () => {
     render(
       <InvoiceItemRow
         item={mockLineItem}
+        currencySymbol="USDC"
         decimals={6}
         onUpdate={() => {}}
         onRemove={onRemove}
-        canRemove={true}
       />
     )
 
@@ -230,10 +230,10 @@ describe('InvoiceItemRow - Snapshots', () => {
     const { container } = render(
       <InvoiceItemRow
         item={mockLineItem}
+        currencySymbol="USDC"
         decimals={6}
         onUpdate={() => {}}
         onRemove={() => {}}
-        canRemove={true}
       />
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -250,10 +250,10 @@ describe('InvoiceItemRow - Snapshots', () => {
     const { container } = render(
       <InvoiceItemRow
         item={emptyItem}
+        currencySymbol="USDC"
         decimals={18}
         onUpdate={() => {}}
         onRemove={() => {}}
-        canRemove={true}
       />
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -271,10 +271,10 @@ describe('InvoiceItemRow - Snapshots', () => {
     const { container } = render(
       <InvoiceItemRow
         item={decimalItem}
+        currencySymbol="USDC"
         decimals={6}
         onUpdate={() => {}}
         onRemove={() => {}}
-        canRemove={true}
       />
     )
     expect(container.firstChild).toMatchSnapshot()

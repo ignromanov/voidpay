@@ -28,7 +28,7 @@ vi.mock('@/features/invoice-codec', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/features/invoice-codec')>()
   return {
     ...actual,
-    parseInvoiceHash: vi.fn(() => ({ success: false, error: { message: 'Mock not configured' } })),
+    parseInvoiceHash: vi.fn(() => Promise.resolve({ success: false as const, error: new Error('Mock not configured') })),
   }
 })
 
@@ -95,7 +95,7 @@ describe('PayWorkspace', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(useRouter).mockReturnValue(mockRouter as ReturnType<typeof useRouter>)
+    vi.mocked(useRouter).mockReturnValue(mockRouter as unknown as ReturnType<typeof useRouter>)
     // Sync test-local mocks into the shared store state
     mockStoreState.addInvoice = mockAddInvoice
     mockStoreState.trackView = mockTrackView
@@ -121,7 +121,7 @@ describe('PayWorkspace', () => {
     describe('Valid invoice decoding', () => {
       it('decodes valid hash and displays invoice', async () => {
         vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
-        vi.mocked(parseInvoiceHash).mockReturnValue({
+        vi.mocked(parseInvoiceHash).mockResolvedValue({
           success: true,
           data: VALID_INVOICE,
         })
@@ -136,7 +136,7 @@ describe('PayWorkspace', () => {
 
       it('displays invoice from/client information', async () => {
         vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
-        vi.mocked(parseInvoiceHash).mockReturnValue({
+        vi.mocked(parseInvoiceHash).mockResolvedValue({
           success: true,
           data: VALID_INVOICE,
         })
@@ -153,7 +153,7 @@ describe('PayWorkspace', () => {
     describe('Network data attribute', () => {
       it('sets data-network attribute from decoded invoice networkId', async () => {
         vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
-        vi.mocked(parseInvoiceHash).mockReturnValue({
+        vi.mocked(parseInvoiceHash).mockResolvedValue({
           success: true,
           data: { ...VALID_INVOICE, networkId: 42161 }, // Arbitrum
         })
@@ -169,7 +169,7 @@ describe('PayWorkspace', () => {
 
       it('sets data-network for Ethereum chainId 1', async () => {
         vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
-        vi.mocked(parseInvoiceHash).mockReturnValue({
+        vi.mocked(parseInvoiceHash).mockResolvedValue({
           success: true,
           data: { ...VALID_INVOICE, networkId: 1 }, // Ethereum
         })
@@ -188,7 +188,7 @@ describe('PayWorkspace', () => {
     it('opens InvoicePreviewModal when invoice is clicked', async () => {
       const user = userEvent.setup()
       vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
       })
@@ -215,7 +215,7 @@ describe('PayWorkspace', () => {
     it('closes modal when close button is clicked', async () => {
       const user = userEvent.setup()
       vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
       })
@@ -272,9 +272,9 @@ describe('PayWorkspace', () => {
 
     it('shows INVALID_FORMAT error for malformed hash', async () => {
       vi.mocked(useHashFragment).mockReturnValue('invalid_hash')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: false,
-        error: { code: 'INVALID_FORMAT', message: 'Invalid format' },
+        error: new Error('Invalid format'),
       })
 
       render(<PayWorkspace />)
@@ -286,9 +286,9 @@ describe('PayWorkspace', () => {
 
     it('shows CORRUPTED_DATA error for corrupted hash', async () => {
       vi.mocked(useHashFragment).mockReturnValue('H_corrupted')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: false,
-        error: { code: 'CORRUPTED_DATA', message: 'Data corrupted' },
+        error: new Error('Data corrupted'),
       })
 
       render(<PayWorkspace />)
@@ -301,9 +301,9 @@ describe('PayWorkspace', () => {
     it('navigates to home when Return Home button is clicked', async () => {
       const user = userEvent.setup()
       vi.mocked(useHashFragment).mockReturnValue('invalid')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: false,
-        error: { code: 'INVALID_FORMAT', message: 'Invalid' },
+        error: new Error('Invalid'),
       })
 
       render(<PayWorkspace />)
@@ -320,9 +320,9 @@ describe('PayWorkspace', () => {
 
     it('renders error screen with data-network attribute', async () => {
       vi.mocked(useHashFragment).mockReturnValue('invalid')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: false,
-        error: { code: 'INVALID_FORMAT', message: 'Invalid' },
+        error: new Error('Invalid'),
       })
 
       render(<PayWorkspace />)
@@ -340,7 +340,7 @@ describe('PayWorkspace', () => {
   describe('US5: Track Viewed Invoices', () => {
     it('calls trackView on successful decode', async () => {
       vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
       })
@@ -362,7 +362,7 @@ describe('PayWorkspace', () => {
 
     it('calls trackView as upsert even when invoice already exists', async () => {
       vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
       })

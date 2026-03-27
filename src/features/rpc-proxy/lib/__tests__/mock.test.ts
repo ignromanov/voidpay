@@ -81,7 +81,7 @@ describe('shouldUseMock', () => {
   })
 
   it('returns true when NODE_ENV is development and no API keys', () => {
-    process.env.NODE_ENV = 'development'
+    process.env = { ...process.env, NODE_ENV: 'development' }
     const url = new URL('http://voidpay.xyz/api/rpc')
     expect(shouldUseMock(url)).toBe(true)
   })

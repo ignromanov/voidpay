@@ -61,6 +61,7 @@ vi.mock('@/entities/invoice', () => {
 // Module under test (imported after mocks — does not exist yet → tests FAIL)
 // ---------------------------------------------------------------------------
 import { usePaymentPolling } from '../use-payment-polling'
+import type { TransferResult } from '../../lib/match-transfer'
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -82,14 +83,14 @@ const ERC20_PARAMS = {
   exactTotal: 1_000_000n,
 }
 
-const MOCK_TRANSFER = {
+const MOCK_TRANSFER: TransferResult = {
   hash: '0xdeadbeef00000000000000000000000000000000000000000000000000000001' as `0x${string}`,
   rawContract: {
     value: '1000000000000000000',
     address: null,
     decimal: '18',
   },
-  category: 'external' as const,
+  category: 'external',
   blockTimestamp: '2024-01-01T00:00:00Z',
 }
 

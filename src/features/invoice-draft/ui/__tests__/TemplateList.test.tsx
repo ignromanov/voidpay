@@ -15,7 +15,7 @@ const makeTemplate = (overrides?: Partial<InvoiceTemplate>): InvoiceTemplate => 
   invoiceData: {
     currency: 'USDC',
     client: { name: 'Acme Corp' },
-    items: [{ description: 'Service', quantity: 1, unitPrice: '100' }],
+    items: [{ description: 'Service', quantity: 1, rate: '100' }],
   },
   ...overrides,
 })
@@ -26,7 +26,6 @@ describe('TemplateList', () => {
       templates: [],
       activeDraft: null,
       lineItems: [],
-      history: [],
     })
     vi.clearAllMocks()
   })

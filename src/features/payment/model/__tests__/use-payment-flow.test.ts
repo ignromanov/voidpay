@@ -98,7 +98,7 @@ vi.mock('@/entities/invoice', () => ({
 import { usePaymentFlow } from '../use-payment-flow'
 import type { Invoice } from '@/entities/invoice'
 
-const mockInvoice: Invoice = {
+const mockInvoice = {
   invoiceId: 'INV-001',
   currency: 'ETH',
   networkId: 1,
@@ -107,7 +107,7 @@ const mockInvoice: Invoice = {
     walletAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
   },
   items: [],
-} as Invoice
+} as unknown as Invoice
 
 describe('usePaymentFlow', () => {
   beforeEach(() => {

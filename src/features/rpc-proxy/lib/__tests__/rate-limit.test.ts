@@ -44,7 +44,7 @@ describe('rate-limit', () => {
     vi.resetModules()
     delete process.env.KV_REST_API_URL
     delete process.env.KV_REST_API_TOKEN
-    delete process.env.NODE_ENV
+    process.env = { ...process.env, NODE_ENV: undefined as string | undefined } as NodeJS.ProcessEnv
     mockLimit.mockReset()
     mockPing.mockReset()
   })
@@ -164,7 +164,7 @@ describe('rate-limit', () => {
 
   describe('checkRateLimit — development mode', () => {
     it('always allows in development mode', async () => {
-      process.env.NODE_ENV = 'development'
+      process.env = { ...process.env, NODE_ENV: 'development' }
       const { checkRateLimit } = await loadModule()
 
       const result = await checkRateLimit('test-ip')
@@ -175,7 +175,7 @@ describe('rate-limit', () => {
     })
 
     it('allows even without Redis credentials in dev', async () => {
-      process.env.NODE_ENV = 'development'
+      process.env = { ...process.env, NODE_ENV: 'development' }
       const { checkRateLimit } = await loadModule()
 
       const result = await checkRateLimit('test-ip')

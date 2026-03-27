@@ -4,13 +4,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@/shared/lib/test-utils'
 import userEvent from '@testing-library/user-event'
-import { useCreatorStore } from '@/entities/creator'
+import { useCreatorStore, type CreatorStore } from '@/entities/creator'
 import { NewInvoiceDialog } from '../NewInvoiceDialog'
-import type { Invoice } from '@/entities/invoice'
 
-const mockActiveDraft: { meta: { draftId: string }; invoiceData: Partial<Invoice> } = {
-  meta: { draftId: 'draft-001' },
-  invoiceData: { invoiceId: 'INV-001' },
+const mockActiveDraft = {
+  meta: { draftId: 'draft-001', lastModified: new Date().toISOString() },
+  data: { invoiceId: 'INV-001' },
 }
 
 const defaultProps = {
@@ -22,7 +21,7 @@ const defaultProps = {
 describe('NewInvoiceDialog', () => {
   beforeEach(() => {
     useCreatorStore.setState({
-      activeDraft: mockActiveDraft as Parameters<typeof useCreatorStore.setState>[0]['activeDraft'],
+      activeDraft: mockActiveDraft as CreatorStore['activeDraft'],
       templates: [],
       lineItems: [],
     })

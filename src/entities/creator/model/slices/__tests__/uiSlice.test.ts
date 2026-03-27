@@ -12,7 +12,7 @@ describe('uiSlice', () => {
       activeDraft: null,
       lineItems: [],
       templates: [],
-      history: [],
+
       preferences: {
         defaultNetworkId: 1,
         defaultCurrency: 'USDC',
@@ -251,7 +251,7 @@ describe('uiSlice', () => {
         activeDraft: null,
         lineItems: [],
         templates: [],
-        history: [],
+  
         preferences: {
           defaultNetworkId: 1,
           defaultCurrency: 'USDC',

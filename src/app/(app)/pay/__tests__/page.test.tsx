@@ -42,7 +42,7 @@ describe('generateMetadata', () => {
 
       expect(metadata.openGraph).toBeDefined()
       expect(metadata.openGraph?.title).toBe('Pay 100.00 USDC — Invoice INV-001 | VoidPay')
-      expect(metadata.openGraph?.type).toBe('website')
+      expect((metadata.openGraph as Record<string, unknown>)?.type).toBe('website')
       expect(metadata.openGraph?.siteName).toBe('VoidPay')
     })
 
@@ -52,7 +52,7 @@ describe('generateMetadata', () => {
       })
 
       expect(metadata.twitter).toBeDefined()
-      expect(metadata.twitter?.card).toBe('summary_large_image')
+      expect((metadata.twitter as Record<string, unknown>)?.card).toBe('summary_large_image')
     })
 
     it('sets noindex/nofollow robots meta', async () => {

@@ -17,6 +17,7 @@ describe('TotalsSection', () => {
     discountAmount: '0.00',
     total: '1,000.00',
     magicDust: null,
+    atomicTotal: '1000000000',
   }
 
   describe('Basic rendering', () => {
@@ -184,6 +185,7 @@ describe('TotalsSection', () => {
         discountAmount: '50.00',
         total: '1,050.00',
         magicDust: null,
+        atomicTotal: '1050000000',
       }
       render(
         <TotalsSection totals={totals} currency="USDC" taxPercent="10%" discountPercent="5%" />

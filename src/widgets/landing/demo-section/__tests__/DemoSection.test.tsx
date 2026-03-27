@@ -7,7 +7,7 @@
 import { render, screen, fireEvent, act, waitFor } from '@/shared/lib/test-utils'
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import * as React from 'react'
-import type { ReactNode } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 
 import { NetworkThemeProvider } from '../../context/network-theme-context'
 import { DemoSection } from '../DemoSection'
@@ -18,8 +18,8 @@ function TestWrapper({ children }: { children: ReactNode }) {
 }
 
 // Custom render with providers
-function renderWithProviders(ui: ReactNode) {
-  return render(ui, { wrapper: TestWrapper })
+function renderWithProviders(ui: ReactElement) {
+  return render(ui, { wrapper: TestWrapper } as Record<string, unknown>)
 }
 
 // Note: framer-motion is globally mocked via vitest.config.ts alias

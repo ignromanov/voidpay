@@ -6,6 +6,7 @@ describe('ExpiredState', () => {
   const defaultProps = {
     subtotal: '5000000',
     magicDust: '0',
+    exactTotal: '5000000',
     decimals: 6,
     currency: 'USDC',
   }

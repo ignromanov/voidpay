@@ -94,7 +94,7 @@ describe('useTrackedInvoiceStore', () => {
       const { addInvoice, setTxHash } = useTrackedInvoiceStore.getState()
 
       addInvoice(createMockTrackedInvoice({ invoiceId: 'MERGE-TX' }))
-      setTxHash('MERGE-TX', '0x' + 'a'.repeat(64))
+      setTxHash('MERGE-TX', `0x${'a'.repeat(64)}`)
 
       // Re-add same invoice — payment fields MUST be reset (W3-013)
       addInvoice(createMockTrackedInvoice({ invoiceId: 'MERGE-TX', invoiceUrl: 'https://voidpay.xyz/pay#updated' }))

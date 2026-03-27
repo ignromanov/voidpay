@@ -39,7 +39,7 @@ function createValidDraftState(): DraftState {
   return {
     data: {
       invoiceId: 'INV-001',
-      iss: '2026-01-26',
+      issuedAt: 1737849600,
       from: {
         name: 'Sender Company',
         walletAddress: VALID_ADDRESS,
@@ -54,8 +54,6 @@ function createValidDraftState(): DraftState {
     meta: {
       draftId: 'draft-123',
       lastModified: new Date().toISOString(),
-      autoSaved: true,
-      source: 'new',
     },
   }
 }

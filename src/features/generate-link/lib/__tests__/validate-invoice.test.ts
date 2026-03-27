@@ -80,7 +80,7 @@ describe('validateInvoiceForGeneration', () => {
 
     it('fails when from.walletAddress is missing', () => {
       const draft = createValidDraft()
-      draft.from = { ...draft.from, walletAddress: '' }
+      draft.from = { ...draft.from, walletAddress: '' as `0x${string}` }
       const lineItems = createValidLineItems()
 
       const result = validateInvoiceForGeneration(draft, lineItems)
@@ -94,7 +94,7 @@ describe('validateInvoiceForGeneration', () => {
 
     it('fails when from.walletAddress is invalid', () => {
       const draft = createValidDraft()
-      draft.from = { ...draft.from, walletAddress: 'invalid-address' }
+      draft.from = { ...draft.from, walletAddress: 'invalid-address' as `0x${string}` }
       const lineItems = createValidLineItems()
 
       const result = validateInvoiceForGeneration(draft, lineItems)

@@ -22,7 +22,6 @@ describe('draftSlice', () => {
       lineItems: [],
       draftSyncStatus: 'idle',
       templates: [],
-      history: [],
       preferences: {
         defaultNetworkId: 1,
         defaultCurrency: 'USDC',
@@ -106,7 +105,7 @@ describe('draftSlice', () => {
       const state = useCreatorStore.getState()
       expect(state.activeDraft?.data.networkId).toBe(1)
       expect(state.activeDraft?.data.currency).toBe('USDC')
-      expect(state.activeDraft?.data.from.name).toBe('Test Sender')
+      expect(state.activeDraft?.data.from!.name).toBe('Test Sender')
     })
 
     it('uses fallback defaults when preferences are empty', () => {
@@ -115,7 +114,6 @@ describe('draftSlice', () => {
         activeDraft: null,
         lineItems: [],
         templates: [],
-        history: [],
         preferences: {},
         networkTheme: 'ethereum',
         idCounter: { currentValue: 1, prefix: 'INV' },
@@ -130,7 +128,7 @@ describe('draftSlice', () => {
       expect(state.activeDraft?.data.networkId).toBe(42161) // Default: Arbitrum
       expect(state.activeDraft?.data.currency).toBe('USDC')
       expect(state.activeDraft?.data.decimals).toBe(6)
-      expect(state.activeDraft?.data.from.name).toBe('')
+      expect(state.activeDraft?.data.from!.name).toBe('')
     })
 
     it('sets tokenAddress from token lookup for default Arbitrum USDC', () => {
@@ -139,7 +137,6 @@ describe('draftSlice', () => {
         activeDraft: null,
         lineItems: [],
         templates: [],
-        history: [],
         preferences: {},
         networkTheme: 'ethereum',
         idCounter: { currentValue: 1, prefix: 'INV' },

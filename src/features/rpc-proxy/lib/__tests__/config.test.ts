@@ -30,7 +30,7 @@ describe('loadRpcConfig', () => {
   const originalEnv = { ...process.env }
 
   beforeEach(() => {
-    process.env.NODE_ENV = 'development'
+    process.env = { ...process.env, NODE_ENV: 'development' }
     process.env.ALCHEMY_API_KEY = MOCK_ALCHEMY_KEY
     process.env.INFURA_API_KEY = MOCK_INFURA_KEY
   })
@@ -111,7 +111,7 @@ describe('loadRpcConfig', () => {
 
   it('missing API keys in production throws an error', () => {
     mockGetChainById.mockReturnValue(mockChain(1, 'Ethereum'))
-    process.env.NODE_ENV = 'production'
+    process.env = { ...process.env, NODE_ENV: 'production' }
     delete process.env.ALCHEMY_API_KEY
 
     expect(() => loadRpcConfig(1)).toThrow('ALCHEMY_API_KEY is required in production')
@@ -119,7 +119,7 @@ describe('loadRpcConfig', () => {
 
   it('missing Infura key in production throws an error', () => {
     mockGetChainById.mockReturnValue(mockChain(1, 'Ethereum'))
-    process.env.NODE_ENV = 'production'
+    process.env = { ...process.env, NODE_ENV: 'production' }
     delete process.env.INFURA_API_KEY
 
     expect(() => loadRpcConfig(1)).toThrow('INFURA_API_KEY is required in production')
@@ -127,7 +127,7 @@ describe('loadRpcConfig', () => {
 
   it('in development, missing API keys produce empty URL strings instead of throwing', () => {
     mockGetChainById.mockReturnValue(mockChain(1, 'Ethereum'))
-    process.env.NODE_ENV = 'development'
+    process.env = { ...process.env, NODE_ENV: 'development' }
     delete process.env.ALCHEMY_API_KEY
     delete process.env.INFURA_API_KEY
 

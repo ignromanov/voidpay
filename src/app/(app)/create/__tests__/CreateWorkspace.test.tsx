@@ -58,7 +58,6 @@ describe('CreateWorkspace', () => {
       activeDraft: null,
       lineItems: [],
       templates: [],
-      history: [],
       preferences: {
         defaultNetworkId: 1,
         defaultCurrency: 'USDC',
@@ -90,7 +89,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -118,7 +116,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -148,7 +145,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -228,7 +224,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -285,7 +280,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -315,7 +309,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -331,7 +324,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -354,7 +346,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -398,7 +389,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -432,7 +422,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -451,7 +440,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -476,7 +464,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -505,7 +492,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -526,7 +512,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -549,7 +534,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -569,7 +553,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -589,7 +572,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: {
@@ -639,7 +621,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: {

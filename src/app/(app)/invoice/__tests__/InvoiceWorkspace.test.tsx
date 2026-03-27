@@ -39,7 +39,7 @@ vi.mock('@/features/invoice-codec', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/features/invoice-codec')>()
   return {
     ...actual,
-    parseInvoiceHash: vi.fn(() => ({ success: false, error: { message: 'Mock not configured' } })),
+    parseInvoiceHash: vi.fn(() => Promise.resolve({ success: false as const, error: new Error('Mock not configured') })),
   }
 })
 
@@ -113,7 +113,6 @@ import { InvoiceWorkspace } from '../InvoiceWorkspace'
 
 // Test fixtures matching Invoice schema
 const VALID_INVOICE = {
-  version: 2,
   invoiceId: 'INV-001',
   from: {
     name: 'Test Sender',
@@ -131,7 +130,7 @@ const VALID_INVOICE = {
   decimals: 6,
   networkId: 42161, // Arbitrum
   issuedAt: 1706745600, // 2026-02-01
-  // dueAt omitted — invoice never expires (avoids overdue status in tests)
+  dueAt: 1893456000, // 2029-12-31 — far future to avoid overdue status in tests
 }
 
 describe('InvoiceWorkspace', () => {
@@ -139,7 +138,7 @@ describe('InvoiceWorkspace', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(useRouter).mockReturnValue(mockRouter as ReturnType<typeof useRouter>)
+    vi.mocked(useRouter).mockReturnValue(mockRouter as unknown as ReturnType<typeof useRouter>)
     // Sync test-local mocks into the shared store state
     mockStoreState.addInvoice = vi.fn()
     mockStoreState.trackView = vi.fn()
@@ -166,7 +165,7 @@ describe('InvoiceWorkspace', () => {
   describe('Valid invoice decoding', () => {
     it('decodes valid hash and displays invoice', async () => {
       vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
       })
@@ -181,7 +180,7 @@ describe('InvoiceWorkspace', () => {
 
     it('calls trackView with source "created"', async () => {
       vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
       })
@@ -213,9 +212,9 @@ describe('InvoiceWorkspace', () => {
 
     it('shows INVALID_FORMAT for malformed hash', async () => {
       vi.mocked(useHashFragment).mockReturnValue('invalid_hash')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: false,
-        error: { code: 'INVALID_FORMAT', message: 'Invalid format' },
+        error: new Error('Invalid format'),
       })
 
       render(<InvoiceWorkspace />)
@@ -228,9 +227,9 @@ describe('InvoiceWorkspace', () => {
     it('navigates home on Return Home click', async () => {
       const user = userEvent.setup()
       vi.mocked(useHashFragment).mockReturnValue('invalid')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: false,
-        error: { code: 'INVALID_FORMAT', message: 'Invalid' },
+        error: new Error('Invalid'),
       })
 
       render(<InvoiceWorkspace />)
@@ -249,7 +248,7 @@ describe('InvoiceWorkspace', () => {
   describe('"Pay this invoice" link', () => {
     it('renders "Pay this invoice" link when invoice is unpaid', async () => {
       vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
       })
@@ -263,7 +262,7 @@ describe('InvoiceWorkspace', () => {
 
     it('link href contains /pay and current hash', async () => {
       vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
       })
@@ -281,7 +280,7 @@ describe('InvoiceWorkspace', () => {
   describe('No SmartPayButton', () => {
     it('does NOT render SmartPayButton or PayButton', async () => {
       vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
-      vi.mocked(parseInvoiceHash).mockReturnValue({
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
       })

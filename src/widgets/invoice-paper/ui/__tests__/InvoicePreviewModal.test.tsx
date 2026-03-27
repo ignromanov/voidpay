@@ -14,7 +14,6 @@ vi.mock('@/features/invoice-codec', () => ({
 
 // Mock data with atomic units ($100 = 100000000 with 6 decimals)
 const mockInvoiceData: PartialInvoice = {
-  version: 2, // Required by schema
   invoiceId: 'INV-001',
   issuedAt: 1704067200, // 2024-01-01
   dueAt: 1706745600, // 2024-02-01

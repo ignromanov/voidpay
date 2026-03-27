@@ -62,7 +62,7 @@ import type { Invoice } from '@/entities/invoice'
 
 const MOCK_TX_HASH = '0xdeadbeef00000000000000000000000000000000000000000000000000000001' as `0x${string}`
 
-const mockNativeInvoice: Invoice = {
+const mockNativeInvoice = {
   version: 2,
   invoiceId: 'INV-NATIVE-001',
   currency: 'ETH',
@@ -72,9 +72,9 @@ const mockNativeInvoice: Invoice = {
     walletAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
   },
   items: [],
-} as Invoice
+} as unknown as Invoice
 
-const mockErc20Invoice: Invoice = {
+const mockErc20Invoice = {
   version: 2,
   invoiceId: 'INV-ERC20-001',
   currency: 'USDC',
@@ -85,7 +85,7 @@ const mockErc20Invoice: Invoice = {
     walletAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
   },
   items: [],
-} as Invoice
+} as unknown as Invoice
 
 describe('usePaymentVerification', () => {
   beforeEach(() => {

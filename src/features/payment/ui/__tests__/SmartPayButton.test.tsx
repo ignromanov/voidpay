@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 
 // Mock usePaymentFlow
 const mockHandlePay = vi.fn()
-let mockState = { step: 'idle' as const, error: null, txHash: null }
+let mockState: { step: PaymentStep; error: PaymentError | null; txHash: `0x${string}` | null; intent?: boolean } = { step: 'idle', error: null, txHash: null }
 let mockIdleSubState: 'disconnected' | 'wrong-network' | 'ready' = 'ready'
 
 vi.mock('../../model/use-payment-flow', () => ({
@@ -31,20 +31,22 @@ vi.mock('@/shared/lib/amount-utils', () => ({
 
 import { SmartPayButton } from '../SmartPayButton'
 import type { Invoice } from '@/entities/invoice'
+import type { PaymentStep, PaymentError } from '../../model/types'
 
-const mockInvoice: Invoice = {
+const mockInvoice = {
   invoiceId: 'INV-001',
   currency: 'ETH',
   networkId: 1,
   decimals: 18,
   from: { walletAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045' },
   items: [],
-} as Invoice
+} as unknown as Invoice
 
 const defaultProps = {
   invoice: mockInvoice,
   invoiceId: 'INV-001',
   exactTotal: '1000000000000000000',
+  subtotal: '1000000000000000000',
 }
 
 describe('SmartPayButton', () => {
