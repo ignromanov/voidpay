@@ -16,6 +16,7 @@ import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useNetworkSwitch, useNetworkMismatch } from '@/entities/network'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { toast } from '@/shared/lib/toast'
+import { track, AnalyticsEvent } from '@/features/analytics'
 import { classifyPaymentError } from '../lib/classify-error'
 import { formatErrorMessage } from '../lib/error-messages'
 import { buildNativeTransferParams } from '../lib/send-native'
@@ -251,9 +252,17 @@ export function usePaymentFlow({
   // Effect: TX_SUBMITTED when hash arrives
   useEffect(() => {
     if (state.step === 'sending' && txHash) {
+      const networkName = invoice.networkId === 42161 ? 'arbitrum'
+        : invoice.networkId === 10 ? 'optimism'
+        : invoice.networkId === 137 ? 'polygon'
+        : 'ethereum'
+      track(AnalyticsEvent.PAY_TX_SENT, {
+        network: networkName,
+        token_symbol: invoice.currency ?? 'ETH',
+      })
       dispatch({ type: 'TX_SUBMITTED', hash: txHash })
     }
-  }, [state.step, txHash])
+  }, [state.step, txHash, invoice.networkId, invoice.currency])
 
   // Effect: CONFIRMED when receipt succeeds
   useEffect(() => {
@@ -285,6 +294,8 @@ export function usePaymentFlow({
       dispatch({ type: 'RESET' })
       return
     }
+
+    track(AnalyticsEvent.ERROR_PAYMENT, { error_type: errorType })
 
     const error = createPaymentError(errorType, state.step)
     setError(invoiceId, error.message)
