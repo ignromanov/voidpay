@@ -11,7 +11,7 @@ export default function AppLayout({
   children: React.ReactNode
 }>) {
   return (
-    <div className="flex h-[calc(100vh-104px)] flex-col overflow-hidden print:h-auto print:overflow-visible">
+    <div className="flex h-[calc(100dvh-104px)] flex-col overflow-hidden print:h-auto print:overflow-visible">
       {children}
     </div>
   )
