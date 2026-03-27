@@ -11,6 +11,7 @@ import {
 } from '@/shared/ui/icons'
 
 import { track, AnalyticsEvent } from '@/features/analytics'
+import { getNetworkName } from '@/entities/network'
 import { parseInvoiceHash } from '@/features/invoice-codec'
 import {
   validateInvoiceForGeneration,
@@ -131,12 +132,8 @@ export function CreateWorkspace() {
 
       const { url } = await generateAndTrackInvoice(activeDraft, lineItems)
 
-      const networkName = activeDraft.data.networkId === 42161 ? 'arbitrum'
-        : activeDraft.data.networkId === 10 ? 'optimism'
-        : activeDraft.data.networkId === 137 ? 'polygon'
-        : 'ethereum'
       track(AnalyticsEvent.INVOICE_CREATE, {
-        network: networkName,
+        network: getNetworkName(activeDraft.data.networkId ?? 1).toLowerCase(),
         token_symbol: activeDraft.data.currency ?? 'ETH',
         line_item_count: lineItems.length,
       })

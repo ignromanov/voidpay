@@ -20,7 +20,7 @@ export default function CreateError({
   useEffect(() => {
     console.error('[CreateError]', error)
     track(AnalyticsEvent.ERROR_BOUNDARY, {
-      page: typeof window !== 'undefined' ? window.location.pathname : '/create',
+      page: window.location.pathname,
       error_message: (error.message || 'Unknown error').slice(0, 200),
     })
 

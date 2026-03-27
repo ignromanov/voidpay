@@ -106,19 +106,10 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
 
     const printedViaButton = useRef(false)
 
-    // Print handler
+    // Print/Download handler (both trigger browser print dialog)
     const handlePrint = useCallback(() => {
       printedViaButton.current = true
       track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
-      window.print()
-      setTimeout(() => { printedViaButton.current = false }, 1000)
-    }, [])
-
-    // Download PDF handler (uses browser's print-to-PDF)
-    const handleDownloadPdf = useCallback(() => {
-      printedViaButton.current = true
-      track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
-      // Trigger print dialog where user can choose "Save as PDF"
       window.print()
       setTimeout(() => { printedViaButton.current = false }, 1000)
     }, [])
@@ -259,7 +250,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               variant="ghost"
               size="sm"
               className="gap-2 text-zinc-300 hover:text-white"
-              onClick={handleDownloadPdf}
+              onClick={handlePrint}
             >
               <DownloadIcon className="h-5 w-5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Download PDF</span>

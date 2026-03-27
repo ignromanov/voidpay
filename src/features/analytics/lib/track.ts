@@ -38,19 +38,19 @@ interface EventProperties {
   'share-link-copy': { has_og: boolean }
   'share-qr-download': Record<string, never>
   'pay-to-create-click': Record<string, never>
-  'error-decode': { error_type: string; page: string }
+  'error-decode': { error_type: string; page: 'pay' | 'invoice' }
   'error-payment': { error_type: string }
-  'error-generate': { error_type: string }
+  'error-generate': { error_type: 'VALIDATION' | 'URL_TOO_LARGE' }
   'error-boundary': { page: string; error_message: string }
-  'landing-cta-click': { cta_location: string }
-  'share-social': { channel: string }
-  'pdf-export': { source: string }
+  'landing-cta-click': { cta_location: 'hero' | 'footer' | 'demo' }
+  'share-social': { channel: 'telegram' | 'twitter' | 'email' }
+  'pdf-export': { source: 'button' | 'browser_print' }
   'history-export': { format: string }
   'faq-expand': { question_id: string }
-  'outbound-click': { target: string }
+  'outbound-click': { target: 'github' | 'twitter' }
   'demo-select': { invoice_id: string }
   'invoice-field-usage': { fields_used: string }
-  'pay-verify': { method: string }
+  'pay-verify': { method: 'ive-paid' | 'check' | 'tx-hash' | 'history-batch' }
 }
 
 export function track<E extends AnalyticsEventName>(

@@ -13,7 +13,7 @@ import {
   useWaitForTransactionReceipt,
 } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useNetworkSwitch, useNetworkMismatch } from '@/entities/network'
+import { useNetworkSwitch, useNetworkMismatch, getNetworkName } from '@/entities/network'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { toast } from '@/shared/lib/toast'
 import { track, AnalyticsEvent } from '@/features/analytics'
@@ -252,12 +252,8 @@ export function usePaymentFlow({
   // Effect: TX_SUBMITTED when hash arrives
   useEffect(() => {
     if (state.step === 'sending' && txHash) {
-      const networkName = invoice.networkId === 42161 ? 'arbitrum'
-        : invoice.networkId === 10 ? 'optimism'
-        : invoice.networkId === 137 ? 'polygon'
-        : 'ethereum'
       track(AnalyticsEvent.PAY_TX_SENT, {
-        network: networkName,
+        network: getNetworkName(invoice.networkId).toLowerCase(),
         token_symbol: invoice.currency ?? 'ETH',
       })
       dispatch({ type: 'TX_SUBMITTED', hash: txHash })

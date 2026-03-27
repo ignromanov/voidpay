@@ -14,7 +14,7 @@ export default function RootError({
   useEffect(() => {
     console.error('[RootError]', error)
     track(AnalyticsEvent.ERROR_BOUNDARY, {
-      page: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+      page: window.location.pathname,
       error_message: (error.message || 'Unknown error').slice(0, 200),
     })
   }, [error])

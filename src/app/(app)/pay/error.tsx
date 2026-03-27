@@ -63,7 +63,7 @@ export default function PayError({
   useEffect(() => {
     console.error('[PayPage Error]', error)
     track(AnalyticsEvent.ERROR_BOUNDARY, {
-      page: typeof window !== 'undefined' ? window.location.pathname : '/pay',
+      page: window.location.pathname,
       error_message: (error.message || 'Unknown error').slice(0, 200),
     })
 

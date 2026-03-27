@@ -23,7 +23,7 @@ import { track, AnalyticsEvent, getReferrerDomain } from '@/features/analytics'
 import { usePaymentPolling } from '@/features/payment'
 import type { UsePaymentPollingResult } from '@/features/payment'
 import { useTrackedInvoiceStore, computeInvoiceStatus, computeAmounts } from '@/entities/invoice'
-import { estimateFromBlockHex } from '@/entities/network'
+import { estimateFromBlockHex, getNetworkName } from '@/entities/network'
 import { nowISO } from '@/shared/lib/date-time'
 import { toast } from '@/shared/lib/toast'
 import type { InvoiceStatus, InvoiceSource } from '@/entities/invoice'
@@ -160,12 +160,8 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
         }
 
         if (source === 'received') {
-          const networkName = result.data.networkId === 42161 ? 'arbitrum'
-            : result.data.networkId === 10 ? 'optimism'
-            : result.data.networkId === 137 ? 'polygon'
-            : 'ethereum'
           track(AnalyticsEvent.PAY_PAGE_LOAD, {
-            network: networkName,
+            network: getNetworkName(result.data.networkId).toLowerCase(),
             token_symbol: result.data.currency ?? 'ETH',
             referrer_domain: getReferrerDomain(),
           })

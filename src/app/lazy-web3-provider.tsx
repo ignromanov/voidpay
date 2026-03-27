@@ -55,7 +55,8 @@ function WalletConnectTracker() {
       })
     }
     wasConnected.current = isConnected
-  }, [isConnected, connector?.name, pathname])
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pathname read at connect time, not a trigger
+  }, [isConnected, connector?.name])
 
   return null
 }
