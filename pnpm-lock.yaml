@@ -132,6 +132,9 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.3
+      '@types/pdfmake':
+        specifier: ^0.3.2
+        version: 0.3.2
       '@types/react':
         specifier: ^19.2.7
         version: 19.2.7
@@ -1923,6 +1926,12 @@ packages:
 
   '@types/node@22.19.3':
     resolution: {integrity: sha512-1N9SBnWYOJTrNZCdh/yJE+t910Y128BoyY+zBLWhL3r0TYzlTmFdXrPwHL9DyFZmlEXNQQolTZh3KHV31QDhyA==}
+
+  '@types/pdfkit@0.17.5':
+    resolution: {integrity: sha512-T3ZHnvF91HsEco5ClhBCOuBwobZfPcI2jaiSHybkkKYq4KhVIIurod94JVKvDIG0JXT6o3KiERC0X0//m8dyrg==}
+
+  '@types/pdfmake@0.3.2':
+    resolution: {integrity: sha512-2TZSL8puKJs/rHvMV1b8BhHD+qYyV9da8mVY83/x7ZR/NaEPXbm3+t5SwkwaH6QAIhY1zQVAaFDhHWL0haMstA==}
 
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
@@ -7351,6 +7360,15 @@ snapshots:
   '@types/node@22.19.3':
     dependencies:
       undici-types: 6.21.0
+
+  '@types/pdfkit@0.17.5':
+    dependencies:
+      '@types/node': 22.19.3
+
+  '@types/pdfmake@0.3.2':
+    dependencies:
+      '@types/node': 22.19.3
+      '@types/pdfkit': 0.17.5
 
   '@types/react-dom@19.2.3(@types/react@19.2.7)':
     dependencies:
