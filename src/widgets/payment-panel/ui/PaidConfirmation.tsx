@@ -8,6 +8,7 @@ import { CheckIcon, CheckCheckIcon, ShieldCheckIcon } from '@/shared/ui/icons'
 import { motion } from '@/shared/ui/motion'
 
 import type { ConfirmationProgress } from '../types'
+import { CreateYourOwnCta } from './CreateYourOwnCta'
 
 interface PaidConfirmationProps {
   subtotal: string
@@ -118,6 +119,11 @@ export function PaidConfirmation({
           </div>
         </div>
       )}
+
+      {/* Viral loop CTA */}
+      <div className="flex justify-center pt-1">
+        <CreateYourOwnCta />
+      </div>
     </div>
   )
 }

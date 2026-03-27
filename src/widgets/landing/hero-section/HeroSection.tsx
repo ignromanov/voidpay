@@ -8,8 +8,11 @@
  * Reduced motion is handled via @media (prefers-reduced-motion) in CSS.
  */
 
+'use client'
+
 import Link from 'next/link'
 
+import { track, AnalyticsEvent } from '@/features/analytics'
 import { ArrowRightIcon } from '@/shared/ui/icons'
 import { AuroraText } from '@/shared/ui/aurora-text'
 import { Button } from '@/shared/ui/button'
@@ -61,7 +64,7 @@ export function HeroSection() {
               variant="glow"
               size="lg"
               className="h-14 rounded-2xl px-8 text-base shadow-[0_0_40px_-10px_rgba(124,58,237,0.5)]"
-              data-umami-event="cta_hero_create"
+              onClick={() => track(AnalyticsEvent.LANDING_CTA_CLICK, { cta_location: 'hero' })}
             >
               Create Your Invoice
               <ArrowRightIcon size={16} />

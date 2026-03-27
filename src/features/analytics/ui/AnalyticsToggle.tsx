@@ -1,52 +1,48 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Switch } from '@/shared/ui/switch'
+import { ShieldIcon } from '@/shared/ui/icons'
 import { useHydrated } from '@/shared/lib/hooks'
+import { cn } from '@/shared/lib/utils'
 import { isAnalyticsDisabled, setAnalyticsDisabled } from '../lib/analytics-storage'
 
-/**
- * Analytics opt-out toggle for Footer
- *
- * Provides transparent control over Umami analytics tracking.
- * State persists in localStorage via Umami's built-in key.
- */
 export function AnalyticsToggle() {
   const hydrated = useHydrated()
-  const [enabled, setEnabled] = useState(true) // Default: tracking enabled
+  const [enabled, setEnabled] = useState(true)
 
-  // Sync with localStorage after hydration
   useEffect(() => {
     if (hydrated) {
       setEnabled(!isAnalyticsDisabled())
     }
   }, [hydrated])
 
-  const handleChange = (checked: boolean) => {
-    setEnabled(checked)
-    setAnalyticsDisabled(!checked)
+  const handleToggle = () => {
+    const next = !enabled
+    setEnabled(next)
+    setAnalyticsDisabled(!next)
   }
 
-  // Show placeholder during SSR to avoid hydration mismatch
   if (!hydrated) {
-    return (
-      <div className="flex items-center gap-1.5">
-        <span className="text-zinc-600">Analytics</span>
-        <div className="h-4 w-8 rounded-full bg-zinc-800" />
-      </div>
-    )
+    return <div className="h-4 w-4" />
   }
 
   return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-zinc-600">Analytics</span>
-      <Switch
-        size="sm"
-        variant="subtle"
-        checked={enabled}
-        onCheckedChange={handleChange}
-        aria-label={enabled ? 'Disable analytics tracking' : 'Enable analytics tracking'}
-      />
-    </div>
+    <button
+      type="button"
+      onClick={handleToggle}
+      className={cn(
+        'group relative rounded p-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
+        enabled
+          ? 'text-zinc-500 hover:text-zinc-300'
+          : 'text-zinc-600 hover:text-zinc-400',
+      )}
+      aria-label={enabled ? 'Disable analytics tracking' : 'Enable analytics tracking'}
+      title={enabled ? 'Analytics: On' : 'Analytics: Off'}
+    >
+      <ShieldIcon className="h-3.5 w-3.5" />
+      {enabled && (
+        <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+      )}
+    </button>
   )
 }
