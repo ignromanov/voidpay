@@ -14,7 +14,7 @@ import { cn } from '@/shared/lib/utils'
 export const headingVariants = cva('text-zinc-100', {
   variants: {
     variant: {
-      hero: 'text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.15]',
+      hero: 'text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.15]',
       h1: 'text-3xl md:text-4xl font-black tracking-tighter',
       h2: 'text-2xl font-bold tracking-tight',
       h3: 'text-xl font-bold tracking-tight',
