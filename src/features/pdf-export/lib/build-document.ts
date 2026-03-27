@@ -72,7 +72,12 @@ export function buildDocument(
     pageOrientation: 'portrait',
     pageMargins: [50, 50, 50, 60] as [number, number, number, number],
     watermark: options.status && options.status !== 'pending'
-      ? { text: options.status.toUpperCase(), opacity: 0.10, bold: true, fontSize: 72, color: COLORS.muted }
+      ? {
+          text: options.status === 'paid' && options.paidAt
+            ? `${options.status.toUpperCase()}\n${formatDateUTC(options.paidAt)}`
+            : options.status.toUpperCase(),
+          opacity: 0.10, bold: true, fontSize: 72, color: COLORS.muted,
+        }
       : undefined,
     content: [
       buildHeader(invoiceId, data, options),
@@ -456,8 +461,8 @@ function buildPaymentInfoCard(
     })
   }
 
-  // QR Code
-  if (options.invoiceUrl) {
+  // QR Code — only for pending invoices (paid invoices show tx hash instead)
+  if (options.invoiceUrl && (!options.status || options.status === 'pending')) {
     cardContent.push({
       stack: [
         { qr: options.invoiceUrl, fit: 120, alignment: 'center' as const, margin: [0, 4, 0, 2] },
@@ -466,22 +471,26 @@ function buildPaymentInfoCard(
     })
   }
 
-  // Transaction: icon + full hash in colored background
+  // Transaction: icon + label, then hash on next line (wraps naturally)
   if (options.txHash) {
-    cardContent.push({
-      columns: [
-        { svg: ICONS.hash, width: ICON_SIZE } as Column,
-        {
-          text: options.txHash,
-          fontSize: 6.5,
-          color: COLORS.txText,
-          characterSpacing: 0.2,
-          link: data.networkId ? getExplorerUrl(data.networkId, options.txHash) : undefined,
-        },
-      ],
-      columnGap: 5,
-      margin: [0, 6, 0, 0] as [number, number, number, number],
-    })
+    const explorerUrl = data.networkId ? getExplorerUrl(data.networkId, options.txHash) : undefined
+    cardContent.push(
+      {
+        columns: [
+          { svg: ICONS.hash, width: ICON_SIZE, margin: [0, 1, 0, 0] } as Column,
+          { text: 'Transaction', fontSize: 7.5, bold: true, color: COLORS.muted },
+        ],
+        columnGap: 3,
+        margin: [0, 6, 0, 2],
+      } as Content,
+      {
+        text: options.txHash,
+        fontSize: 6,
+        color: COLORS.txText,
+        characterSpacing: 0.1,
+        link: explorerUrl,
+      } as Content
+    )
   }
 
   // Fallback
