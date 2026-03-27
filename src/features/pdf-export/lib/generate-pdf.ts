@@ -6,23 +6,23 @@ import type { PdfExportOptions } from '../model/types'
 
 type PdfMakeApi = { createPdf: (doc: TDocumentDefinitions) => { download: (filename: string) => void } }
 
-/** Cached pdfmake instance — loaded once on first use */
-let pdfMakeCache: PdfMakeApi | null = null
+/** Cached pdfmake load promise — deduplicates concurrent calls */
+let pdfMakePromise: Promise<PdfMakeApi> | null = null
 
 async function loadPdfMake(): Promise<PdfMakeApi> {
-  if (pdfMakeCache) return pdfMakeCache
-
-  const [pdfMakeModule, vfsModule] = await Promise.all([
-    import('pdfmake/build/pdfmake'),
-    import('pdfmake/build/vfs_fonts'),
-  ])
-
-  // pdfmake 0.3.x: register fonts via addVirtualFileSystem
-  // vfs_fonts exports a plain Record<string, string> (font file contents)
-  const vfs = ('default' in vfsModule ? vfsModule.default : vfsModule) as import('pdfmake/interfaces').TVirtualFileSystem
-  pdfMakeModule.addVirtualFileSystem(vfs)
-  pdfMakeCache = pdfMakeModule
-  return pdfMakeModule
+  if (!pdfMakePromise) {
+    pdfMakePromise = (async () => {
+      const [pdfMakeModule, vfsModule] = await Promise.all([
+        import('pdfmake/build/pdfmake'),
+        import('pdfmake/build/vfs_fonts'),
+      ])
+      // pdfmake 0.3.x: register fonts via addVirtualFileSystem
+      const vfs = ('default' in vfsModule ? vfsModule.default : vfsModule) as import('pdfmake/interfaces').TVirtualFileSystem
+      pdfMakeModule.addVirtualFileSystem(vfs)
+      return pdfMakeModule as PdfMakeApi
+    })()
+  }
+  return pdfMakePromise
 }
 
 /**
@@ -32,14 +32,16 @@ async function loadPdfMake(): Promise<PdfMakeApi> {
 export async function exportInvoicePdf(
   data: PartialInvoice,
   options: PdfExportOptions
-): Promise<void> {
+): Promise<boolean> {
   try {
     const pdfMake = await loadPdfMake()
     const docDefinition = buildDocument(data, options)
     const filename = buildFilename(data)
     pdfMake.createPdf(docDefinition).download(filename)
+    return true
   } catch (error) {
     console.error('[pdf-export] Failed to generate PDF:', error)
     toast.error('Failed to generate PDF')
+    return false
   }
 }

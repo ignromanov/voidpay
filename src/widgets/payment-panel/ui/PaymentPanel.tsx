@@ -52,8 +52,9 @@ export function PaymentPanel({
   const handlePdfExport = useCallback(() => {
     track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
     const invoiceUrl = typeof window !== 'undefined' ? window.location.href : undefined
+    const pdfStatus = status === 'confirming' ? undefined : status as 'draft' | 'pending' | 'paid' | 'overdue'
     void exportInvoicePdf(invoice, {
-      status: status as 'draft' | 'pending' | 'paid' | 'overdue',
+      status: pdfStatus,
       txHash,
       invoiceUrl,
     })
