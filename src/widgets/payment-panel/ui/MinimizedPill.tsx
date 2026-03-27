@@ -50,7 +50,7 @@ export function MinimizedPill({ status, onExpand }: MinimizedPillProps) {
   const Icon = config.icon
 
   return (
-    <motion.div
+    <motion.button
       key="minimized"
       layout
       initial={{ opacity: 0, y: 20, scale: 0.9 }}
@@ -84,6 +84,6 @@ export function MinimizedPill({ status, onExpand }: MinimizedPillProps) {
       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 transition-colors group-hover:bg-zinc-700">
         <ChevronUpIcon size={16} className="text-zinc-400" />
       </div>
-    </motion.div>
+    </motion.button>
   )
 }
