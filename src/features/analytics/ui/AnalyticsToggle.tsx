@@ -29,7 +29,7 @@ export function AnalyticsToggle() {
     <button
       type="button"
       onClick={handleToggle}
-      className="cursor-pointer rounded p-1 text-zinc-500 transition-colors hover:text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+      className="cursor-pointer rounded p-1 text-zinc-400 transition-colors hover:text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
       aria-label={enabled ? 'Disable analytics tracking' : 'Enable analytics tracking'}
       title={enabled ? 'Analytics: On' : 'Analytics: Off'}
     >

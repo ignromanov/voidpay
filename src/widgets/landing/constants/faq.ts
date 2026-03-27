@@ -33,7 +33,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     question: 'Do you collect any data?',
     answer:
-      "Your invoices? Never tracked. We can't see them — the data lives in your URL, not on our servers. This landing page uses cookie-free analytics to count visits, but the invoice creator and payment pages collect nothing.",
+      "Your invoices? Never. We can't see them — the data lives in your URL, not on our servers. We use cookie-free analytics to understand how people use VoidPay (page views, button clicks), but we never track amounts, wallet addresses, or personal data. You can opt out anytime via the eye icon in the footer.",
   },
   {
     question: 'What happens if the link breaks?',
