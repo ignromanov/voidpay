@@ -1,6 +1,5 @@
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces'
 import { formatAmount } from '@/shared/lib/amount-utils'
-import { formatDateUTC } from '@/shared/lib/date-time'
 import { getNetworkName } from '@/entities/network'
 import { APP_URLS } from '@/shared/config'
 
