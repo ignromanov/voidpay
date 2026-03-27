@@ -18,10 +18,10 @@
 @layer invoice-paper.print-base, invoice-paper.print-show, invoice-paper.print-hide;
 
 @media print {
-  /* Page setup — minimal margins for more content space */
+  /* Page setup — 10mm margins for printer hardware safety */
   @page {
     size: A4;
-    margin: 5mm;
+    margin: 10mm;
   }
 
   /* ═══════════════════════════════════════════════════════════════
@@ -35,6 +35,17 @@
     background-color: white !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  /* Reset body flex/min-height to prevent blank second page */
+  body {
+    min-height: 0 !important;
+    display: block !important;
+  }
+
+  /* Prevent clipping of absolute-positioned invoice */
+  html {
+    overflow: visible !important;
   }
 
   /* Disable ALL transitions/animations to prevent glitches when print dialog opens */
@@ -91,8 +102,8 @@
       left: 0;
       top: 0;
       /* A4 printable area — !important overrides inline styles from ScaledInvoicePreview */
-      width: calc(210mm - 10mm) !important;
-      height: calc(297mm - 10mm) !important;
+      width: calc(210mm - 20mm) !important;
+      height: calc(297mm - 20mm) !important;
       max-width: none !important;
       transform: none !important;
       box-shadow: none;
@@ -131,7 +142,7 @@
   @layer invoice-paper.print-hide {
     /* Hide elements with data-print-hide attribute */
     [data-print-hide],
-    button {
+    .invoice-print-target button {
       display: none;
     }
 
