@@ -7,7 +7,6 @@ describe('track', () => {
   })
 
   afterEach(() => {
-    // @ts-expect-error — cleanup
     delete window.umami
   })
 
@@ -38,7 +37,6 @@ describe('track', () => {
   })
 
   it('does not throw when umami is not loaded (ad-blocker)', () => {
-    // @ts-expect-error — cleanup
     delete window.umami
 
     expect(() =>

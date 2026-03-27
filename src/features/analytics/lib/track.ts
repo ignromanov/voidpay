@@ -1,3 +1,5 @@
+/// <reference path="../types/umami.d.ts" />
+
 export const AnalyticsEvent = {
   // Core funnel
   INVOICE_CREATE: 'invoice-create',
