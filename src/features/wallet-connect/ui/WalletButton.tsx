@@ -78,10 +78,10 @@ export function WalletButton({ autoConnect = false }: WalletButtonProps) {
             Connect
           </Button>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button variant="outline" size="sm" className="gap-1.5" onClick={openChainModal}>
               <NetworkIcon chainId={chainId} size={16} className="rounded-full" />
-              <ChevronDownIcon className="h-3 w-3" />
+              <ChevronDownIcon className="hidden h-3 w-3 sm:block" />
             </Button>
 
             <Button
@@ -90,8 +90,9 @@ export function WalletButton({ autoConnect = false }: WalletButtonProps) {
               className="gap-1.5"
               onClick={openAccountModal}
             >
-              {address ? truncateAddress(address) : 'Account'}
-              <ChevronDownIcon className="h-3 w-3" />
+              <WalletIcon className="h-4 w-4 text-emerald-400 sm:hidden" />
+              <span className="hidden sm:inline">{address ? truncateAddress(address) : 'Account'}</span>
+              <ChevronDownIcon className="hidden h-3 w-3 sm:block" />
             </Button>
           </div>
         )}

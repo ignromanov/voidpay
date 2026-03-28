@@ -88,6 +88,7 @@ interface UsePaymentFlowReturn {
   error: PaymentError | null
   txHash: `0x${string}` | null
   handlePay: () => void
+  handleCancel: () => void
   idleSubState: IdleSubState
 }
 
@@ -159,6 +160,16 @@ export function usePaymentFlow({
   const stepFired = useRef<PaymentStep | null>(null)
   // Tracks RainbowKit modal lifecycle (detect close without connecting)
   const modalWasOpen = useRef(false)
+
+  // handleCancel — resets payment flow (e.g. wallet not responding on mobile)
+  const handleCancel = useCallback(() => {
+    resetSend()
+    resetWrite()
+    stepFired.current = null
+    modalWasOpen.current = false
+    dispatch({ type: 'RESET' })
+    toast.info('Payment canceled', { duration: 3000 })
+  }, [resetSend, resetWrite])
 
   // handlePay — dispatches START based on wallet state
   const handlePay = useCallback(() => {
@@ -298,5 +309,5 @@ export function usePaymentFlow({
     dispatch({ type: 'ERROR', error })
   }, [sendError, writeError, receiptError, switchError, state.step, invoiceId, setError])
 
-  return { step: state.step, error: state.error, txHash: state.txHash, handlePay, idleSubState }
+  return { step: state.step, error: state.error, txHash: state.txHash, handlePay, handleCancel, idleSubState }
 }

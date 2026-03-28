@@ -135,7 +135,7 @@ export function InvoiceItemRow({
           aria-label="Item description"
           autoComplete="off"
           className={cn(
-            'min-w-0 flex-1 border-b bg-transparent py-1 text-sm text-zinc-200 transition-colors outline-none placeholder:text-zinc-700 focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50',
+            'min-w-0 flex-1 border-b bg-transparent py-1 text-base text-zinc-200 transition-colors outline-none placeholder:text-zinc-700 focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50',
             descriptionEmpty ? 'border-red-500/50' : 'border-zinc-800'
           )}
         />
@@ -170,7 +170,7 @@ export function InvoiceItemRow({
             value={item.quantity}
             onChange={(e) => onUpdate({ quantity: parseFloat(e.target.value) || 1 })}
             autoComplete="off"
-            className="w-full border-b border-zinc-800 bg-transparent py-2 tabular-nums text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
+            className="w-full border-b border-zinc-800 bg-transparent py-2 tabular-nums text-base text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50"
           />
         </div>
         <div>
@@ -188,7 +188,7 @@ export function InvoiceItemRow({
             onBlur={handleRateBlur}
             autoComplete="off"
             className={cn(
-              'w-full border-b bg-transparent py-2 text-right tabular-nums text-sm text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50',
+              'w-full border-b bg-transparent py-2 text-right tabular-nums text-base text-zinc-200 transition-colors outline-none focus:border-violet-500 focus-visible:ring-2 focus-visible:ring-violet-500/50',
               rateZero ? 'border-red-500/50' : 'border-zinc-800'
             )}
           />

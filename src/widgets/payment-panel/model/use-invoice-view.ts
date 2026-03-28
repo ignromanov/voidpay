@@ -146,6 +146,8 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
       if (result.success) {
         setInvoice(result.data)
         setErrorType(null)
+        // Clear any stored error from previous session on fresh page load
+        setError(result.data.invoiceId, null)
 
         try {
           trackView({
@@ -174,7 +176,7 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
       }
     })()
     return () => { cancelled = true }
-  }, [hash, isHydrated, trackView, source])
+  }, [hash, isHydrated, trackView, source, setError])
 
   const dismissError = useCallback(() => {
     if (invoice) setError(invoice.invoiceId, null)

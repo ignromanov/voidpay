@@ -41,7 +41,7 @@ export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen, on
             <DownloadIcon size={12} />
             PDF
           </Button>
-          {isPending && (onShareOpen ? (
+          {onShareOpen ? (
             <Button
               variant="ghost"
               size="sm"
@@ -52,7 +52,7 @@ export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen, on
               <Share2Icon size={12} />
               Share
             </Button>
-          ) : (
+          ) : isPending ? (
             <Button
               variant="ghost"
               size="sm"
@@ -63,7 +63,7 @@ export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen, on
               <QrCodeIcon size={12} />
               QR
             </Button>
-          ))}
+          ) : null}
         </div>
 
         <div className="flex items-center gap-1">

@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAccount } from 'wagmi'
 import { Button } from '@/shared/ui/button'
-import { Loader2Icon, CheckCircleIcon } from '@/shared/ui/icons'
+import { Loader2Icon, CheckCircleIcon, XIcon } from '@/shared/ui/icons'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { motion } from '@/shared/ui/motion'
 import { FluidOverlay } from './FluidOverlay'
@@ -125,7 +125,7 @@ export function SmartPayButton({
   onError,
   devOverride,
 }: SmartPayButtonProps) {
-  const { step: realStep, error, txHash, handlePay, idleSubState: realIdleSubState } = usePaymentFlow({
+  const { step: realStep, error, txHash, handlePay, handleCancel, idleSubState: realIdleSubState } = usePaymentFlow({
     invoice,
     invoiceId,
     exactTotal,
@@ -171,69 +171,107 @@ export function SmartPayButton({
   const progress = getProgress(step)
   const isInProgress = IN_PROGRESS_STEPS.has(step)
   const isSuccess = step === 'success'
-  // Success: not disabled (keeps colorful overlay), but not interactive
-  const buttonDisabled = devOverride ? false : (isInProgress || isReconnecting)
   const isSuccessState = isSuccess && !devOverride
-  const canInteract = !buttonDisabled && !isSuccessState
+  // Cancel available for steps where wallet may not respond (not confirming — tx already sent)
+  const canCancel = isInProgress && step !== 'confirming' && !devOverride
+
+  // Cancel overlay state (hover on desktop, tap-toggle on mobile)
+  const [showCancel, setShowCancel] = useState(false)
+  useEffect(() => { setShowCancel(false) }, [step])
+
+  const handleClick = useCallback(() => {
+    if (devOverride) return
+    if (canCancel && showCancel) {
+      handleCancel()
+      setShowCancel(false)
+      return
+    }
+    if (canCancel) {
+      setShowCancel(true)
+      return
+    }
+    if (!isSuccessState) {
+      handlePay()
+    }
+  }, [devOverride, canCancel, showCancel, handleCancel, handlePay, isSuccessState])
+
+  const canInteract = !isReconnecting && !isSuccessState
 
   return (
     <motion.div
       className="relative w-full"
-      {...(canInteract && {
+      {...(!isInProgress && canInteract && {
         whileHover: { scale: 1.015 },
         whileTap: { scale: 0.985 },
       })}
+      onMouseEnter={() => canCancel && setShowCancel(true)}
+      onMouseLeave={() => setShowCancel(false)}
       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
     >
       <Button
         variant="void"
         size="lg"
         className={`h-14 w-full ${isSuccessState ? 'pointer-events-none' : ''}`}
-        disabled={buttonDisabled}
-        onClick={devOverride ? undefined : handlePay}
-        aria-label={ariaLabel}
+        disabled={devOverride ? false : isReconnecting}
+        onClick={handleClick}
+        aria-label={showCancel && canCancel ? 'Cancel transaction' : ariaLabel}
         aria-live="polite"
         aria-busy={isInProgress}
       >
         <FluidOverlay step={step} />
 
         <span className="relative z-10 flex items-center justify-center gap-2.5">
-          {/* Spinner — gentle organic rotation */}
-          {isInProgress && (
+          {/* Cancel overlay — replaces spinner content on hover/tap */}
+          {showCancel && canCancel ? (
             <motion.span
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+              className="flex items-center gap-2"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.15 }}
             >
-              <Loader2Icon size={18} className="opacity-80" />
+              <XIcon size={18} />
+              <span className="text-base font-medium">Cancel</span>
             </motion.span>
-          )}
+          ) : (
+            <>
+              {/* Spinner — gentle organic rotation */}
+              {isInProgress && (
+                <motion.span
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                >
+                  <Loader2Icon size={18} className="opacity-80" />
+                </motion.span>
+              )}
 
-          {/* Success checkmark — spring entrance */}
-          {isSuccess && (
-            <motion.span
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 250, damping: 20 }}
-            >
-              <CheckCircleIcon size={18} className="text-emerald-400" />
-            </motion.span>
-          )}
+              {/* Success checkmark — spring entrance */}
+              {isSuccess && (
+                <motion.span
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 250, damping: 20 }}
+                >
+                  <CheckCircleIcon size={18} className="text-emerald-400" />
+                </motion.span>
+              )}
 
-          {/* Labels — subtle breathing scale during loading */}
-          <motion.span
-            className="flex flex-col items-center gap-0.5"
-            animate={isInProgress ? { scale: [1, 1.05, 1] } : { scale: 1 }}
-            transition={
-              isInProgress
-                ? { duration: 2, repeat: Infinity, ease: 'easeInOut' }
-                : { duration: 0.3 }
-            }
-          >
-            <span className="text-base font-medium">{label.primary}</span>
-            {label.secondary && (
-              <span className="text-xs font-normal opacity-60">{label.secondary}</span>
-            )}
-          </motion.span>
+              {/* Labels — subtle breathing scale during loading */}
+              <motion.span
+                className="flex flex-col items-center gap-0.5"
+                animate={isInProgress ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+                transition={
+                  isInProgress
+                    ? { duration: 2, repeat: Infinity, ease: 'easeInOut' }
+                    : { duration: 0.3 }
+                }
+              >
+                <span className="text-base font-medium">{label.primary}</span>
+                {label.secondary && (
+                  <span className="text-xs font-normal opacity-60">{label.secondary}</span>
+                )}
+              </motion.span>
+            </>
+          )}
         </span>
 
         {/* Linear progress bar — bottom edge */}

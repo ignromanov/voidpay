@@ -9,9 +9,9 @@ export function CreateYourOwnCta() {
     <Link
       href="/create"
       onClick={() => track(AnalyticsEvent.PAY_TO_CREATE_CLICK)}
-      className="group inline-flex items-center gap-1.5 text-xs text-zinc-400 transition-colors hover:text-violet-400 py-2 min-h-[44px]"
+      className="group flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-700/50 py-2.5 text-xs text-zinc-500 transition-all hover:border-violet-500/40 hover:text-violet-400 min-h-[44px]"
     >
-      Create your own invoice
+      Create your own invoice with VoidPay
       <ArrowRightIcon size={12} className="transition-transform group-hover:translate-x-0.5" />
     </Link>
   )
