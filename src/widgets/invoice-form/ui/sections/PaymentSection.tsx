@@ -47,7 +47,7 @@ export function PaymentSection({ form }: PaymentSectionProps) {
 
       const reconverted = lineItems.map((item) => {
         if (!item.rate || item.rate === '0' || item.rate === '') return item
-        const human = formatAmount(item.rate, oldDecimals, { useGrouping: false })
+        const human = formatAmount(item.rate, oldDecimals, { useGrouping: false, displayDecimals: oldDecimals })
         const newRate = parseAmount(human, newDecimals)
         return { ...item, rate: newRate }
       })
