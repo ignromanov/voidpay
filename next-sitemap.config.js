@@ -3,13 +3,13 @@ module.exports = {
   siteUrl: process.env.SITE_URL || 'https://voidpay.xyz',
   generateRobotsTxt: true,
   generateIndexSitemap: false,
-  exclude: ['/api/*'],
+  exclude: ['/api/*', '/og-image', '/coming-soon', '/pay', '/invoice'],
   robotsTxtOptions: {
     policies: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/pay?*'], // Don't index individual invoice URLs
+        disallow: ['/api/', '/pay', '/pay?*', '/invoice', '/invoice?*'],
       },
     ],
     additionalSitemaps: [],
