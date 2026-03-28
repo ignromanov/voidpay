@@ -30,6 +30,15 @@ import type { InvoiceStatus, InvoiceSource } from '@/entities/invoice'
 import type { DecodeErrorType } from '@/shared/ui/decode-error-screen'
 import type { Invoice, ConfirmationProgress } from '@/shared/lib/invoice-types'
 
+/** Safely convert string to BigInt, returning 0n for invalid values */
+function safeBigInt(value: string | undefined): bigint {
+  try {
+    return BigInt(value || '0')
+  } catch {
+    return 0n
+  }
+}
+
 /** Time to wait for hash fragment to stabilize after SSR hydration */
 const HYDRATION_TIMEOUT = 200
 
@@ -95,7 +104,7 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
     chainId: networkId,
     ...(invoice?.tokenAddress ? { contractAddress: invoice.tokenAddress } : {}),
     category,
-    exactTotal: BigInt(amounts.exactTotal || '0'),
+    exactTotal: safeBigInt(amounts.exactTotal),
     fromBlock,
   })
 
