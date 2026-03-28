@@ -65,12 +65,12 @@ function PlaceholderButton({ onClick, isLoading }: { onClick: () => void; isLoad
       {isLoading ? (
         <>
           <Loader2Icon className="h-4 w-4 animate-spin" />
-          Loading...
+          <span className="hidden sm:inline">Loading...</span>
         </>
       ) : (
         <>
           <WalletIcon className="h-4 w-4" />
-          Connect
+          <span className="hidden sm:inline">Connect</span>
         </>
       )}
     </Button>
@@ -179,7 +179,7 @@ export function LazyWalletButton() {
         }
       >
         <WalletIcon className="h-4 w-4" />
-        {errorType === 'network' ? 'Retry Connection' : 'Retry'}
+        <span className="hidden sm:inline">{errorType === 'network' ? 'Retry Connection' : 'Retry'}</span>
       </Button>
     )
   }

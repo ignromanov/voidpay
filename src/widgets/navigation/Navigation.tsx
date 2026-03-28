@@ -46,7 +46,7 @@ export function Navigation() {
             <Link href="/create">
               <Button variant="outline" size="sm" className="gap-1.5">
                 <PlusIcon className="h-4 w-4" />
-                Create
+                <span className="hidden sm:inline">Create</span>
               </Button>
             </Link>
 

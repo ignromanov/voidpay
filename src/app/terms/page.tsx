@@ -22,7 +22,7 @@ export default function TermsPage() {
   const { meta, sections } = termsContent
 
   return (
-    <main className="min-h-screen px-4 py-20">
+    <main className="min-h-screen px-4 pt-4 pb-20 sm:py-20">
       <div className="mx-auto max-w-3xl">
         <Link href="/" className="mb-8 inline-block">
           <Button variant="ghost" size="sm">

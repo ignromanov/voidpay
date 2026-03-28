@@ -163,7 +163,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
         </div>
 
         {/* Payment Panel — observation mode (no SmartPayButton) */}
-        <div className="absolute bottom-[max(1rem,env(safe-area-inset-bottom,1rem))] left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5 print:hidden">
+        <div className="absolute bottom-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))] left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5 print:hidden">
           <AnimatePresence mode="wait">
             {isMinimized ? (
               <MinimizedPill key="minimized" status={panelStatus} onExpand={() => setIsMinimized(false)} />

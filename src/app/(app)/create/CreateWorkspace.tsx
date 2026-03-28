@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Edit3Icon,
@@ -97,6 +97,21 @@ export function CreateWorkspace() {
     }
   }, [])
 
+  // Touch swipe to switch between Editor/Preview on mobile
+  const touchStartRef = useRef(0)
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    if (touch) touchStartRef.current = touch.clientX
+  }, [])
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const touch = e.changedTouches[0]
+    if (!touch) return
+    const diff = touch.clientX - touchStartRef.current
+    if (Math.abs(diff) > 50) {
+      setMobileTab(diff > 0 ? 'editor' : 'preview')
+    }
+  }, [])
+
   const handleResetInvoice = useCallback(() => {
     createNewDraft()
     toast.success('Form cleared', {
@@ -190,14 +205,16 @@ export function CreateWorkspace() {
         />
       )}
 
-      <div className="lg:hidden fixed bottom-12 left-0 right-0 z-30 px-4 print:hidden">
+      <div className="lg:hidden fixed bottom-[calc(3.25rem+env(safe-area-inset-bottom,0px))] left-0 right-0 z-30 px-4 print:hidden">
         <MobileTabBar tabs={tabs} activeTab={mobileTab} onTabChange={(id) => setMobileTab(id as 'editor' | 'preview')} />
       </div>
 
       {/* Safe area padding for mobile tab bar */}
       <div
-        className="mx-auto flex h-[calc(100vh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 lg:pb-6 lg:py-6 print:!h-auto print:!max-w-none print:!overflow-visible print:!p-0"
-        style={{ paddingBottom: 'max(7rem, calc(env(safe-area-inset-bottom, 0px) + 7rem))' }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        className="mx-auto flex h-[calc(100dvh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 lg:pb-6 lg:py-6 print:!h-auto print:!max-w-none print:!overflow-visible print:!p-0"
+        style={{ paddingBottom: 'max(8rem, calc(env(safe-area-inset-bottom, 0px) + 8rem))' }}
       >
         {/* Editor Pane */}
         <Card

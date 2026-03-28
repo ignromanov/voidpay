@@ -7,7 +7,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { track, AnalyticsEvent } from '@/features/analytics'
 import { useCreatorStore } from '@/entities/creator'
@@ -58,6 +58,25 @@ export function DemoSection() {
     resume()
   }, [resume])
 
+  // Touch swipe to navigate between demo invoices
+  const touchStartRef = useRef(0)
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    if (touch) touchStartRef.current = touch.clientX
+    pause()
+  }, [pause])
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const touch = e.changedTouches[0]
+    if (!touch || demoInvoices.length === 0) return
+    const diff = touch.clientX - touchStartRef.current
+    if (Math.abs(diff) > 50) {
+      const next = diff > 0
+        ? (activeIndex - 1 + demoInvoices.length) % demoInvoices.length
+        : (activeIndex + 1) % demoInvoices.length
+      goTo(next)
+    }
+  }, [activeIndex, demoInvoices.length, goTo])
+
   const handleDotSelect = useCallback(
     (index: number) => {
       goTo(index)
@@ -86,7 +105,11 @@ export function DemoSection() {
       </header>
 
       {/* Invoice container with pagination */}
-      <div className="relative flex w-full max-w-[1400px] flex-col items-center px-4">
+      <div
+        className="relative flex w-full max-w-[1400px] flex-col items-center px-4"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <ScaledInvoicePreview
           preset="demo"
           networkId={currentInvoice.data.networkId}
