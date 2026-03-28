@@ -42,10 +42,34 @@ describe('og-preview', () => {
       const invoice = createMockInvoice()
       const result = encodeOGPreview(invoice)
 
-      expect(result).toContain('550e8400') // shortened ID
+      expect(result).toContain('550e8400-e29b-41d4-a') // sanitized ID (up to 20 chars, dashes preserved)
       expect(result).toContain('1000.00') // formatted amount
       expect(result).toContain('USDC') // currency
       expect(result).toContain('arb') // network code
+    })
+
+    it('preserves dashes in user-set invoice IDs', () => {
+      const invoice = createMockInvoice({ invoiceId: 'INV-2024-001234' })
+      const result = encodeOGPreview(invoice)
+
+      expect(result).toContain('INV-2024-001234')
+    })
+
+    it('replaces underscores with dashes to protect field separator', () => {
+      const invoice = createMockInvoice({ invoiceId: 'INV_2024_001' })
+      const result = encodeOGPreview(invoice)
+
+      expect(result).toContain('INV-2024-001')
+      expect(result).not.toContain('INV_')
+    })
+
+    it('truncates invoice ID at 20 chars', () => {
+      const invoice = createMockInvoice({ invoiceId: 'ABCDEFGHIJ-1234567890-XYZ' })
+      const encoded = encodeOGPreview(invoice)
+      const decoded = decodeOGPreview(encoded)
+
+      expect(decoded.id).toBe('ABCDEFGHIJ-123456789')
+      expect(decoded.id).toHaveLength(20)
     })
 
     it('includes sender name when present (spaces replaced with tildes)', () => {

@@ -7,7 +7,7 @@ import { calculateTotalsBigInt, formatAmount } from '@/shared/lib/amount-utils'
  * Contains minimal, non-sensitive invoice metadata.
  */
 export interface OGPreviewData {
-  /** Shortened invoice ID (first 8 chars of UUID) */
+  /** Invoice ID (sanitized, up to 20 chars) */
   id: string
   /** Total amount (formatted with 2 decimal places) */
   amount: string
@@ -39,8 +39,11 @@ export interface OGPreviewData {
 export function encodeOGPreview(invoice: Invoice): string {
   const parts: string[] = []
 
-  // 1. Shortened invoice ID (first 8 chars, remove dashes)
-  const shortId = invoice.invoiceId.replace(/-/g, '').slice(0, 8)
+  // 1. Sanitize invoice ID: preserve readability, protect _ field separator
+  const shortId = invoice.invoiceId
+    .replace(/_/g, '-')
+    .replace(/[^a-zA-Z0-9.\-]/g, '')
+    .slice(0, 20)
   parts.push(shortId)
 
   // 2. Calculate total amount from line items
