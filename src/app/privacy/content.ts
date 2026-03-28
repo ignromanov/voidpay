@@ -153,7 +153,7 @@ export const privacyContent = {
       content: "Questions about privacy? We're happy to explain our architecture in more detail:",
       links: [
         { text: 'Open an issue on GitHub', url: 'https://github.com/ignromanov/voidpay/issues' },
-        { text: '@voidpay_xyz on Twitter', url: 'https://twitter.com/voidpay_xyz' },
+        { text: '@voidpay_xyz on Twitter', url: 'https://x.com/voidpay_xyz' },
       ],
     },
   ],

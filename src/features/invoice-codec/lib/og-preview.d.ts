@@ -4,7 +4,7 @@ import type { Invoice } from '@/entities/invoice';
  * Contains minimal, non-sensitive invoice metadata.
  */
 export interface OGPreviewData {
-    /** Shortened invoice ID (first 8 chars of UUID) */
+    /** Invoice ID (sanitized, up to 20 chars) */
     id: string;
     /** Total amount (formatted with 2 decimal places) */
     amount: string;
