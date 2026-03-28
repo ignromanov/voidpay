@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { writeFileSync } from 'node:fs'
 import type { CodecModule } from './shared/types.js'
 
