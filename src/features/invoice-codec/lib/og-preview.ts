@@ -42,7 +42,7 @@ export function encodeOGPreview(invoice: Invoice): string {
   // 1. Sanitize invoice ID: preserve readability, protect _ field separator
   const shortId = invoice.invoiceId
     .replace(/_/g, '-')
-    .replace(/[^a-zA-Z0-9.\-]/g, '')
+    .replace(/[^a-zA-Z0-9.-]/g, '')
     .slice(0, 20)
   parts.push(shortId)
 
