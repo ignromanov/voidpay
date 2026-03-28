@@ -173,7 +173,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
         </div>
 
         {/* Payment Panel — floating bottom overlay */}
-        <div className="absolute bottom-[max(1rem,env(safe-area-inset-bottom,1rem))] left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5">
+        <div className="absolute bottom-[max(1rem,env(safe-area-inset-bottom,1rem))] left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5 print:hidden">
           <CreatorHintBanner isCreator={source === 'created'} />
           <AnimatePresence mode="wait">
             {isMinimized ? (

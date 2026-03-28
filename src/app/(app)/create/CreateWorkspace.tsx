@@ -193,20 +193,20 @@ export function CreateWorkspace() {
         />
       )}
 
-      <div className="lg:hidden fixed bottom-12 left-0 right-0 z-30 px-4">
+      <div className="lg:hidden fixed bottom-12 left-0 right-0 z-30 px-4 print:hidden">
         <MobileTabBar tabs={tabs} activeTab={mobileTab} onTabChange={(id) => setMobileTab(id as 'editor' | 'preview')} />
       </div>
 
       {/* Safe area padding for mobile tab bar */}
       <div
-        className="mx-auto flex h-[calc(100vh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 lg:pb-6 lg:py-6 print:h-auto print:max-w-none print:overflow-visible print:p-0"
+        className="mx-auto flex h-[calc(100vh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 lg:pb-6 lg:py-6 print:!h-auto print:!max-w-none print:!overflow-visible print:!p-0"
         style={{ paddingBottom: 'max(7rem, calc(env(safe-area-inset-bottom, 0px) + 7rem))' }}
       >
         {/* Editor Pane */}
         <Card
           variant="glass"
           className={cn(
-            'w-full lg:w-[400px] xl:w-[440px] 2xl:w-[480px] lg:shrink-0 flex flex-col overflow-hidden lg:max-h-full',
+            'w-full lg:w-[400px] xl:w-[440px] 2xl:w-[480px] lg:shrink-0 flex flex-col overflow-hidden lg:max-h-full print:hidden',
             mobileTab === 'preview' ? 'hidden lg:flex' : 'flex'
           )}
         >
@@ -242,7 +242,7 @@ export function CreateWorkspace() {
             'relative flex items-start justify-center',
             'h-full w-full sm:min-w-[400px] lg:min-w-[580px]',
             'p-4 sm:p-5 lg:p-6',
-            mobileTab === 'editor' ? 'hidden lg:flex' : 'flex'
+            mobileTab === 'editor' ? 'hidden lg:flex print:!block' : 'flex'
           )}
         >
           <ScaledInvoicePreview
@@ -259,7 +259,7 @@ export function CreateWorkspace() {
           {(() => {
             const sync = SYNC_STATUS_CONFIG[draftSyncStatus]
             return (
-              <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none">
+              <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none print:hidden">
                 <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
                   {sync.icon === 'loader' ? (
                     <Loader2Icon className="h-3 w-3 animate-spin text-amber-500" />
