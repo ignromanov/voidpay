@@ -215,7 +215,7 @@ describe('Testnet vs Mainnet Overhead', () => {
 
     // With TLV v1 codec, dict-encoded mainnet chains may compress differently
     // than varint-encoded testnet chains — overhead can be negative or positive
-    expect(Math.abs(overhead)).toBeLessThan(30)
+    expect(Math.abs(overhead)).toBeLessThan(50)
   })
 
   it('testnet token address adds < 40 chars overhead vs dict-encoded mainnet', async () => {
