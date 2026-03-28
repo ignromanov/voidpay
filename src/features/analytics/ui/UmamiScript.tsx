@@ -13,6 +13,7 @@ import { UMAMI_CONFIG } from '../config/umami'
  * Guards:
  * - Not rendered in development (no network request)
  * - data-domains restricts tracking to production domain only (blocks preview deploys)
+ * - data-exclude-hash strips URL hash fragment (PRIVACY-CRITICAL: hash contains full invoice data)
  *
  * @see https://umami.is/docs/tracker-configuration
  */
@@ -24,6 +25,7 @@ export function UmamiScript() {
       src={UMAMI_CONFIG.scriptUrl}
       data-website-id={UMAMI_CONFIG.websiteId}
       data-domains={VOIDPAY_DOMAIN}
+      data-exclude-hash="true"
       strategy="lazyOnload"
     />
   )
