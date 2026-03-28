@@ -217,7 +217,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             variants={invoiceVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-1 cursor-zoom-out items-start overflow-auto"
+            className="flex flex-1 cursor-zoom-out items-start overflow-auto transform-gpu"
           >
             {/* Content wrapper — padding is part of scrollable content (not clipped at edges) */}
             <div

@@ -15,9 +15,9 @@ export interface OGPreviewData {
   currency: string
   /** Network short code (eth, arb, op, poly) */
   network: string
-  /** Sender name (optional, max 20 chars) */
+  /** Sender name (optional, max 40 chars) */
   from?: string
-  /** Recipient name (optional, max 20 chars) */
+  /** Recipient name (optional, max 40 chars) */
   to?: string
   /** Due date in MMDD format (optional) */
   due?: string
@@ -54,7 +54,7 @@ export function encodeOGPreview(invoice: Invoice): string {
   const networkCode = NETWORK_CODES[invoice.networkId as NetworkId] ?? String(invoice.networkId)
   parts.push(networkCode)
 
-  // 5. Sender name (optional, truncate to 20 chars, URL-safe)
+  // 5. Sender name (optional, truncate to 40 chars, URL-safe)
   //    Spaces encoded as ~ (tilde) to preserve hyphens in names like "Smith-Johnson"
   if (invoice.from.name) {
     const safeName = sanitizeOGName(invoice.from.name)
@@ -149,7 +149,7 @@ export function getNetworkIdFromCode(code: string): number | undefined {
  */
 function sanitizeOGName(name: string): string {
   return name
-    .slice(0, 20)
+    .slice(0, 40)
     .replace(/[\s_]+/g, '~')          // Spaces and underscores → ~ (both are word separators)
     .replace(/[^a-zA-Z0-9~-]/g, '')   // Allowlist: alphanumeric, ~, -
     .replace(/~+/g, '~')              // Collapse multiple tildes

@@ -17,7 +17,8 @@ import type { Transport } from 'viem'
  * @returns A viem-compatible transport factory function
  */
 export function createCustomTransport(chainId: number): Transport {
-  return http(`/api/rpc?chainId=${chainId}`, {
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+  return http(`${baseUrl}/api/rpc?chainId=${chainId}`, {
     // Default retry configuration
     retryCount: 3,
     retryDelay: 150,

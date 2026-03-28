@@ -58,7 +58,7 @@ describe('og-preview', () => {
       expect(result).toContain('Acme~Inc')
     })
 
-    it('truncates long sender names to 20 chars', () => {
+    it('truncates long sender names to 40 chars', () => {
       const invoice = createMockInvoice({
         from: {
           name: 'Very Long Company Name That Exceeds Limit',

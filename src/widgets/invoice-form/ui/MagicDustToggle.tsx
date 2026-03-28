@@ -35,12 +35,13 @@ export function MagicDustToggle({ className }: MagicDustToggleProps) {
     }))
   )
 
-  // On mount: if enabled but draft has no dust yet, generate one
+  // When enabled and draft has no dust yet, generate one.
+  // Covers mount AND new draft creation while component is already mounted.
   useEffect(() => {
     if (magicDustEnabled && hasActiveDraft && !hasDraftDust) {
       updateDraft({ magicDust: String(generateMagicDust()) })
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentional mount-only
+  }, [magicDustEnabled, hasActiveDraft, hasDraftDust, updateDraft])
 
   const setMagicDustEnabled = useCallback(
     (enabled: boolean) => {

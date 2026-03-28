@@ -154,18 +154,16 @@ export function CreateWorkspace() {
         track(AnalyticsEvent.INVOICE_FIELD_USAGE, { fields_used: fieldsUsed.join(',') })
       }
 
-      toast.success('Invoice link generated!', {
-        description: 'Share it with your client to get paid',
-      })
-
-      // Clear draft so next /create visit starts fresh with new ID
-      clearDraft()
-
       // Navigate to /invoice?share=1#hash to auto-open ShareModal
       const invoiceUrl = new URL(url, window.location.origin)
       invoiceUrl.pathname = invoiceUrl.pathname.replace('/pay', '/invoice')
       invoiceUrl.searchParams.set('share', '1')
       router.replace(urlToRoute(invoiceUrl))
+
+      // Defer draft clearing so the form stays in loading state during navigation
+      // (prevents visible flash of cleared form before route transition)
+      setTimeout(() => clearDraft(), 300)
+      return
     } catch (error) {
       if (error instanceof UrlSizeError) {
         track(AnalyticsEvent.ERROR_GENERATE, { error_type: 'URL_TOO_LARGE' })
@@ -177,7 +175,6 @@ export function CreateWorkspace() {
           description: error instanceof Error ? error.message : 'Unknown error',
         })
       }
-    } finally {
       setIsGenerating(false)
     }
   }, [isGenerating, clearDraft, router])
