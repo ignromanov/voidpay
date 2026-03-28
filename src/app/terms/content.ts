@@ -248,7 +248,7 @@ export const termsContent = {
       content: 'Questions about these Terms? Reach out:',
       links: [
         { text: 'Open an issue on GitHub', url: 'https://github.com/ignromanov/voidpay/issues' },
-        { text: '@voidpay_xyz on Twitter', url: 'https://twitter.com/voidpay_xyz' },
+        { text: '@voidpay_xyz on Twitter', url: 'https://x.com/voidpay_xyz' },
       ],
     },
   ],
