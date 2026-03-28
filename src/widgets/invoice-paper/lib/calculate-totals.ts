@@ -55,21 +55,28 @@ export function calculateTotals(data: InvoiceData): Totals {
 
   // If total is pre-calculated in URL, use it for consistency
   if (preTotal) {
-    // Calculate breakdown for display (subtotal, tax, discount)
-    const breakdown = calculateBreakdown(items, decimals, tax, discount)
+    try {
+      BigInt(preTotal) // validate: must be integer string
+      if (preMagicDust) BigInt(preMagicDust)
 
-    // Display total = composite minus dust (users see clean amount)
-    const displayTotal = preMagicDust
-      ? (BigInt(preTotal) - BigInt(preMagicDust)).toString()
-      : preTotal
+      // Calculate breakdown for display (subtotal, tax, discount)
+      const breakdown = calculateBreakdown(items, decimals, tax, discount)
 
-    return {
-      subtotal: breakdown.subtotal,
-      taxAmount: breakdown.taxAmount,
-      discountAmount: breakdown.discountAmount,
-      total: formatAmount(displayTotal, decimals),
-      magicDust: preMagicDust ? formatAmount(preMagicDust, decimals, 6) : null,
-      atomicTotal: preTotal,
+      // Display total = composite minus dust (users see clean amount)
+      const displayTotal = preMagicDust
+        ? (BigInt(preTotal) - BigInt(preMagicDust)).toString()
+        : preTotal
+
+      return {
+        subtotal: breakdown.subtotal,
+        taxAmount: breakdown.taxAmount,
+        discountAmount: breakdown.discountAmount,
+        total: formatAmount(displayTotal, decimals),
+        magicDust: preMagicDust ? formatAmount(preMagicDust, decimals, 6) : null,
+        atomicTotal: preTotal,
+      }
+    } catch {
+      // Invalid pre-calculated total — fall through to local calculation
     }
   }
 

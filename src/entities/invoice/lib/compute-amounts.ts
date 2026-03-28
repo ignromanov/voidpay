@@ -47,11 +47,18 @@ export function computeAmounts(invoice: Invoice): ComputedAmounts {
   }
 
   // Case 2: Pre-calculated total without Magic Dust
+  // Validate total is a valid BigInt string before returning — if not, fall through to Case 3
   if (invoice.total) {
-    return {
-      subtotal: invoice.total,
-      magicDust: '0',
-      exactTotal: invoice.total,
+    try {
+      BigInt(invoice.total) // validate: must be integer string
+      return {
+        subtotal: invoice.total,
+        magicDust: '0',
+        exactTotal: invoice.total,
+      }
+    } catch {
+      console.error('[computeAmounts] Invalid total (not integer):', invoice.total)
+      // Fall through to Case 3 (recalculate from line items)
     }
   }
 

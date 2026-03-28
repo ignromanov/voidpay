@@ -108,18 +108,18 @@ describe('computeAmounts', () => {
     expect(result.exactTotal).toBe('1000000000000000042')
   })
 
-  it('falls through to Case 2 when total is corrupted (NaN)', () => {
+  it('falls through to Case 3 when total is corrupted (NaN)', () => {
     const invoice = createInvoice({
       total: 'NaN',
       magicDust: '42',
     })
 
-    // Case 1 try-catch fails on BigInt("NaN"), falls to Case 2 (total truthy)
+    // Case 1 fails on BigInt("NaN"), Case 2 also fails validation, falls to Case 3 (recalculate)
     const result = computeAmounts(invoice)
 
-    expect(result.subtotal).toBe('NaN')
-    expect(result.magicDust).toBe('0')
-    expect(result.exactTotal).toBe('NaN')
+    expect(result.subtotal).toBe('1000000')
+    expect(result.magicDust).toBe('42')
+    expect(result.exactTotal).toBe('1000042')
   })
 
   it('falls through to Case 3 when total is decimal string', () => {
@@ -128,12 +128,12 @@ describe('computeAmounts', () => {
       magicDust: '42',
     })
 
-    // BigInt("12.5") throws, falls to Case 2 (total truthy but no magicDust in Case 2)
+    // BigInt("12.5") throws in both Case 1 and Case 2, falls to Case 3 (recalculate)
     const result = computeAmounts(invoice)
 
-    expect(result.subtotal).toBe('12.5')
-    expect(result.magicDust).toBe('0')
-    expect(result.exactTotal).toBe('12.5')
+    expect(result.subtotal).toBe('1000000')
+    expect(result.magicDust).toBe('42')
+    expect(result.exactTotal).toBe('1000042')
   })
 
   it('clamps subtotal to 0 when magicDust exceeds total', () => {
