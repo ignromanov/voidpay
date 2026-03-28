@@ -39,12 +39,26 @@
 
   /* Reset body flex/min-height to prevent blank second page */
   body {
+    height: auto !important;
     min-height: 0 !important;
     display: block !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   /* Prevent clipping of absolute-positioned invoice */
   html {
+    overflow: visible !important;
+  }
+
+  /* Collapse main to zero height — invoice is absolute, needs no flow space.
+     Without this, invisible elements (visibility:hidden) still occupy layout
+     height on mobile, pushing the 277mm invoice past one A4 page boundary. */
+  body > main {
+    height: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
     overflow: visible !important;
   }
 
