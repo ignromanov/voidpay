@@ -85,20 +85,20 @@ describe('SmartPayButton', () => {
     mockState = { step: 'sending', error: null, txHash: null }
     render(<SmartPayButton {...defaultProps} />)
     expect(screen.getByRole('button').textContent).toContain('Sending')
-    expect(screen.getByRole('button')).toBeDisabled()
+    expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true')
   })
 
   it('shows "Verifying on-chain..." during confirming step', () => {
     mockState = { step: 'confirming', error: null, txHash: '0xabc' as `0x${string}` }
     render(<SmartPayButton {...defaultProps} />)
     expect(screen.getByRole('button').textContent).toContain('Verifying')
-    expect(screen.getByRole('button')).toBeDisabled()
+    expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true')
   })
 
-  it('is disabled during processing states', () => {
+  it('is busy during processing states', () => {
     mockState = { step: 'sending', error: null, txHash: null }
     render(<SmartPayButton {...defaultProps} />)
-    expect(screen.getByRole('button')).toBeDisabled()
+    expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true')
   })
 
   it('renders subtitle "To proceed with payment" when disconnected', () => {
@@ -117,20 +117,20 @@ describe('SmartPayButton', () => {
     mockState = { step: 'connecting', error: null, txHash: null }
     render(<SmartPayButton {...defaultProps} />)
     expect(screen.getByRole('button').textContent).toContain('Connecting')
-    expect(screen.getByRole('button')).toBeDisabled()
+    expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true')
   })
 
   it('shows "Switching network..." during switching step', () => {
     mockState = { step: 'switching', error: null, txHash: null }
     render(<SmartPayButton {...defaultProps} />)
     expect(screen.getByRole('button').textContent).toContain('Switching')
-    expect(screen.getByRole('button')).toBeDisabled()
+    expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true')
   })
 
-  it('button disabled during connecting', () => {
+  it('button busy during connecting', () => {
     mockState = { step: 'connecting', error: null, txHash: null }
     render(<SmartPayButton {...defaultProps} />)
-    expect(screen.getByRole('button')).toBeDisabled()
+    expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true')
   })
 
   it('calls onError when state has error', () => {
@@ -207,28 +207,28 @@ describe('SmartPayButton', () => {
       mockState = { step: 'connecting', error: null, txHash: null }
       render(<SmartPayButton {...defaultProps} />)
       expect(screen.getByRole('button').textContent).toContain('Connecting')
-      expect(screen.getByRole('button')).toBeDisabled()
+      expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true')
     })
 
     it('switching — shows spinner and "Switching network..."', () => {
       mockState = { step: 'switching', error: null, txHash: null }
       render(<SmartPayButton {...defaultProps} />)
       expect(screen.getByRole('button').textContent).toContain('Switching')
-      expect(screen.getByRole('button')).toBeDisabled()
+      expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true')
     })
 
     it('sending — shows spinner and "Sending funds..."', () => {
       mockState = { step: 'sending', error: null, txHash: null }
       render(<SmartPayButton {...defaultProps} />)
       expect(screen.getByRole('button').textContent).toContain('Sending')
-      expect(screen.getByRole('button')).toBeDisabled()
+      expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true')
     })
 
     it('confirming — shows spinner and "Verifying on-chain..."', () => {
       mockState = { step: 'confirming', error: null, txHash: '0xabc' as `0x${string}` }
       render(<SmartPayButton {...defaultProps} />)
       expect(screen.getByRole('button').textContent).toContain('Verifying')
-      expect(screen.getByRole('button')).toBeDisabled()
+      expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true')
     })
 
     it('success — shows check icon and "Transaction submitted"', () => {
