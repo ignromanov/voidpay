@@ -13,6 +13,8 @@ interface PromiseMessages<T> {
  * Void-themed toast wrappers with consistent behavior
  */
 export const toast = {
+  info: (message: string, options?: ExternalToast) => sonnerToast.info(message, options),
+
   success: (message: string, options?: ExternalToast) => sonnerToast.success(message, options),
 
   error: (message: string, options?: ExternalToast) =>

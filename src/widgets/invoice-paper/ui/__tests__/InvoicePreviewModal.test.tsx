@@ -7,14 +7,18 @@ import { renderWithUser, screen } from '@/shared/ui/__tests__/test-utils'
 import { InvoicePreviewModal } from '../InvoicePreviewModal'
 import { PartialInvoice } from '@/entities/invoice'
 
-// Mock generateInvoiceUrl
+// Mock generateInvoiceUrl (async — must return Promise)
 vi.mock('@/features/invoice-codec', () => ({
-  generateInvoiceUrl: vi.fn(),
+  generateInvoiceUrl: vi.fn().mockResolvedValue('https://voidpay.xyz/pay#mock'),
+}))
+
+const mockExportInvoicePdf = vi.fn().mockResolvedValue(true)
+vi.mock('@/features/pdf-export', () => ({
+  exportInvoicePdf: (...args: unknown[]) => mockExportInvoicePdf(...args),
 }))
 
 // Mock data with atomic units ($100 = 100000000 with 6 decimals)
 const mockInvoiceData: PartialInvoice = {
-  version: 2, // Required by schema
   invoiceId: 'INV-001',
   issuedAt: 1704067200, // 2024-01-01
   dueAt: 1706745600, // 2024-02-01
@@ -30,6 +34,7 @@ const mockInvoiceData: PartialInvoice = {
     name: 'Client Inc',
   },
   items: [{ description: 'Development services', quantity: 10, rate: '100000000' }], // $100/hr × 10 = $1000
+  total: '1000000000', // $1000 in atomic units (6 decimals)
 }
 
 describe('InvoicePreviewModal', () => {
@@ -181,9 +186,7 @@ describe('InvoicePreviewModal', () => {
       // Import the mock to control its behavior
       const { generateInvoiceUrl } = await import('@/features/invoice-codec')
       const mockGenerateInvoiceUrl = vi.mocked(generateInvoiceUrl)
-      mockGenerateInvoiceUrl.mockImplementation(() => {
-        throw new Error('Encoding failed')
-      })
+      mockGenerateInvoiceUrl.mockRejectedValue(new Error('Encoding failed'))
 
       // Should not throw - component handles errors gracefully via try/catch
       expect(() => {
@@ -196,7 +199,7 @@ describe('InvoicePreviewModal', () => {
     it('generates URL when data is valid', async () => {
       const { generateInvoiceUrl } = await import('@/features/invoice-codec')
       const mockGenerateInvoiceUrl = vi.mocked(generateInvoiceUrl)
-      mockGenerateInvoiceUrl.mockReturnValue('https://voidpay.xyz/pay#abc123')
+      mockGenerateInvoiceUrl.mockResolvedValue('https://voidpay.xyz/pay#abc123')
 
       renderWithUser(
         <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => {}} />
@@ -244,7 +247,7 @@ describe('InvoicePreviewModal', () => {
       expect(window.print).toHaveBeenCalled()
     })
 
-    it('triggers print when Download PDF button is clicked', async () => {
+    it('triggers PDF export when Download PDF button is clicked', async () => {
       const { user } = renderWithUser(
         <InvoicePreviewModal data={mockInvoiceData} open={true} onOpenChange={() => {}} />
       )
@@ -252,7 +255,10 @@ describe('InvoicePreviewModal', () => {
       const downloadButton = screen.getByRole('button', { name: /download pdf|pdf/i })
       await user.click(downloadButton)
 
-      expect(window.print).toHaveBeenCalled()
+      expect(mockExportInvoicePdf).toHaveBeenCalledWith(
+        mockInvoiceData,
+        expect.objectContaining({ status: 'pending' })
+      )
     })
   })
 })

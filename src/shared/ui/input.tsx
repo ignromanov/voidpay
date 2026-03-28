@@ -8,13 +8,11 @@ import { cn } from '@/shared/lib/utils'
  * Input component variants using CVA
  */
 export const inputVariants = cva(
-  'flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50',
+  'flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50',
   {
     variants: {
       state: {
         default: 'border-zinc-800',
-        /** Soft error: subtle hint while user is still typing (focused) */
-        errorSoft: 'border-zinc-800 bg-red-900/25',
         /** Full error: prominent border after user leaves the field (blurred) */
         error: 'border-red-500/50 focus:border-red-500 focus:ring-red-500/50',
       },
@@ -92,13 +90,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     // - Focused + error → soft error (subtle hint while typing)
     // - Blurred + error → full error (prominent after leaving field)
     // - touched prop is kept for backwards compatibility but focus takes priority
-    const isTouched = touched ?? true
-    const inputState = error ? (isFocused ? 'errorSoft' : isTouched ? 'error' : 'errorSoft') : 'default'
-    // Show error message only when blurred and touched
+    const isTouched = touched ?? false
+    const inputState = error && !isFocused && isTouched ? 'error' : 'default'
     const showErrorMessage = error && !isFocused && isTouched
 
     return (
-      <div className="w-full">
+      <div className="w-full" data-field-error={inputState === 'error' || undefined}>
         {label && (
           <label
             htmlFor={id}

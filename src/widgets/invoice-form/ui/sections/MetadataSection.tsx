@@ -15,12 +15,13 @@ import { DateInput } from '../components/DateInput'
 export interface MetadataSectionProps {
   form: UseFormReturn<InvoiceFormValues>
   fieldValidation: RequiredFieldsValidation
+  submitAttempted?: boolean
 }
 
 /**
  * Invoice metadata section: Invoice ID and dates (issued/due).
  */
-export function MetadataSection({ form, fieldValidation }: MetadataSectionProps) {
+export function MetadataSection({ form, fieldValidation, submitAttempted }: MetadataSectionProps) {
   const {
     register,
     setValue,
@@ -51,17 +52,17 @@ export function MetadataSection({ form, fieldValidation }: MetadataSectionProps)
         label="Invoice No. *"
         {...register('invoiceId')}
         className="font-mono"
-        placeholder="INV-001"
+        placeholder="INV-2026-001"
         maxLength={FIELD_LIMITS.invoiceId}
         error={getFieldError(errors.invoiceId, fieldValidation, 'invoiceId', 'Invoice number is required')}
-        touched={touchedFields.invoiceId}
+        touched={touchedFields.invoiceId || submitAttempted}
       />
 
       <div className="space-y-1.5">
         <Text variant="label" className="flex items-center gap-1.5 text-zinc-400">
           <CalendarIcon size={12} /> Dates (Issue / Due) *
         </Text>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <DateInput value={issuedAt} onChange={handleIssuedAtChange} aria-label="Issue date" />
           <DateInput value={dueAt} onChange={handleDueAtChange} aria-label="Due date" />
         </div>

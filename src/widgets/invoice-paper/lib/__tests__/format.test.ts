@@ -93,10 +93,9 @@ describe('format utilities', () => {
       expect(formatShortAddress('')).toBe('')
     })
 
-    it('truncates addresses with exactly 10 chars (boundary case)', () => {
-      // 10 chars is the boundary: if length < 10, return as-is
-      // '0x12345678' is 10 chars, so it gets truncated
-      expect(formatShortAddress('0x12345678')).toBe('0x1234...5678')
+    it('returns addresses with exactly 10 chars as-is (boundary case)', () => {
+      // 10 chars = startChars(6) + endChars(4), truncation would make it longer
+      expect(formatShortAddress('0x12345678')).toBe('0x12345678')
     })
 
     it('truncates addresses longer than 10 chars', () => {

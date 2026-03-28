@@ -11,19 +11,20 @@ vi.mock('@/features/invoice-codec', () => ({
   generateInvoiceUrl: vi.fn((invoice, options) => {
     // Simulate URL generation
     const base = 'https://voidpay.xyz/pay'
-    const hash = '#H' + Buffer.from(JSON.stringify(invoice)).toString('base64').slice(0, 50)
+    const hash = '#' + Buffer.from(JSON.stringify(invoice)).toString('base64').replace(/[+/=]/g, '').slice(0, 50)
     if (options?.includeOG) {
       return `${base}?og=INV-001_100_USDC_eth${hash}`
     }
     return `${base}${hash}`
   }),
+  generateSalt: vi.fn(() => new Uint8Array(16)),
+  deriveMagicDust: vi.fn(() => 42),
 }))
 
 // Mock the creator store
 vi.mock('@/entities/creator', () => ({
   useCreatorStore: {
     getState: () => ({
-      addHistoryEntry: vi.fn(),
       preferences: {
         magicDustEnabled: true,
       },
@@ -38,7 +39,7 @@ function createValidDraftState(): DraftState {
   return {
     data: {
       invoiceId: 'INV-001',
-      iss: '2026-01-26',
+      issuedAt: 1737849600,
       from: {
         name: 'Sender Company',
         walletAddress: VALID_ADDRESS,
@@ -53,8 +54,6 @@ function createValidDraftState(): DraftState {
     meta: {
       draftId: 'draft-123',
       lastModified: new Date().toISOString(),
-      autoSaved: true,
-      source: 'new',
     },
   }
 }
@@ -82,7 +81,7 @@ describe('generateAndTrackInvoice', () => {
     const { url } = await generateAndTrackInvoice(draft, lineItems)
 
     expect(url).toContain('https://voidpay.xyz/pay')
-    expect(url).toContain('#H')
+    expect(url).toContain('#')
   })
 
   it('includes OG preview when option is set', async () => {

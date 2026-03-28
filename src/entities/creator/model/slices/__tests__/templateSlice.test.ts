@@ -21,7 +21,6 @@ describe('templateSlice', () => {
       activeDraft: null,
       lineItems: [],
       templates: [],
-      history: [],
       preferences: {
         defaultNetworkId: 1,
         defaultCurrency: 'USDC',
@@ -153,8 +152,10 @@ describe('templateSlice', () => {
 
       const state = useCreatorStore.getState()
       expect(state.activeDraft?.data.issuedAt).toBeGreaterThanOrEqual(now - 5)
-      const expectedDue = now + 30 * 24 * 60 * 60
-      expect(state.activeDraft?.data.dueAt).toBeGreaterThanOrEqual(expectedDue - 5)
+      // daysFromNowUnix returns midnight-aligned timestamps
+      const startOfToday = now - (now % 86400)
+      const expectedDue = startOfToday + 30 * 24 * 60 * 60
+      expect(state.activeDraft?.data.dueAt).toBe(expectedDue)
     })
 
     it('restores line items from template', () => {
@@ -212,7 +213,6 @@ describe('templateSlice', () => {
             name: 'String Qty',
             createdAt: new Date().toISOString(),
             invoiceData: {
-              version: 2,
               invoiceId: 'QTY-TEST',
               issuedAt: 1704067200,
               dueAt: 1706745600,

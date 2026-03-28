@@ -18,7 +18,7 @@ function renderWithUser(ui: React.ReactElement) {
 }
 
 // Mock useInvoiceScale hook
-const mockUseInvoiceScale = vi.fn(() => ({
+const mockUseInvoiceScale = vi.fn((_options?: Record<string, unknown>) => ({
   setContainerRef: vi.fn(),
   scale: 0.75,
   scaledWidth: 600,
@@ -26,7 +26,7 @@ const mockUseInvoiceScale = vi.fn(() => ({
 }))
 
 vi.mock('../../lib/use-invoice-scale', () => ({
-  useInvoiceScale: (options: any) => mockUseInvoiceScale(options),
+  useInvoiceScale: (options?: Record<string, unknown>) => mockUseInvoiceScale(options),
   PRESET_CONFIGS: {
     demo: { containerHeightClass: 'min-h-[75vh]' },
     editor: { containerHeightClass: 'h-full' },

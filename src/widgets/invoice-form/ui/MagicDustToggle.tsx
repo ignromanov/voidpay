@@ -1,9 +1,10 @@
 'use client'
 
-import { useCallback } from 'react'
-import { useShallow } from 'zustand/shallow'
+import { useCallback, useEffect } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 
 import { useCreatorStore } from '@/entities/creator'
+import { generateMagicDust } from '@/shared/lib/amount-utils'
 import { Switch } from '@/shared/ui/switch'
 import { Text } from '@/shared/ui/typography'
 import { FingerprintIcon, AlertCircleIcon } from '@/shared/ui/icons'
@@ -17,25 +18,41 @@ export interface MagicDustToggleProps {
  * MagicDustToggle Component
  *
  * Toggle for enabling/disabling Magic Dust verification.
- * When enabled, adds a tiny random amount to invoice total for payment matching.
- * When disabled, shows warning about manual verification.
+ * When enabled, generates a dust value and writes it to the active draft
+ * so the preview shows the exact dust that will appear in the final URL.
+ * When disabled, clears magicDust from the draft.
  *
  * Persisted via preferencesSlice.magicDustEnabled in localStorage.
  */
 export function MagicDustToggle({ className }: MagicDustToggleProps) {
-  // Use shallow comparison to prevent re-renders from unrelated preference changes
-  const { magicDustEnabled, updatePreferences } = useCreatorStore(
+  const { magicDustEnabled, hasActiveDraft, hasDraftDust, updatePreferences, updateDraft } = useCreatorStore(
     useShallow((s) => ({
       magicDustEnabled: s.preferences.magicDustEnabled ?? true,
+      hasActiveDraft: !!s.activeDraft,
+      hasDraftDust: !!s.activeDraft?.data?.magicDust,
       updatePreferences: s.updatePreferences,
+      updateDraft: s.updateDraft,
     }))
   )
+
+  // When enabled and draft has no dust yet, generate one.
+  // Covers mount AND new draft creation while component is already mounted.
+  useEffect(() => {
+    if (magicDustEnabled && hasActiveDraft && !hasDraftDust) {
+      updateDraft({ magicDust: String(generateMagicDust()) })
+    }
+  }, [magicDustEnabled, hasActiveDraft, hasDraftDust, updateDraft])
 
   const setMagicDustEnabled = useCallback(
     (enabled: boolean) => {
       updatePreferences({ magicDustEnabled: enabled })
+      if (enabled) {
+        updateDraft({ magicDust: String(generateMagicDust()) })
+      } else {
+        updateDraft({ magicDust: undefined })
+      }
     },
-    [updatePreferences]
+    [updatePreferences, updateDraft]
   )
 
   return (

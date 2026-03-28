@@ -14,7 +14,6 @@ describe('NetworkBackground', () => {
       activeDraft: null,
       lineItems: [],
       templates: [],
-      history: [],
       preferences: {
         defaultNetworkId: 1,
         defaultCurrency: 'USDC',

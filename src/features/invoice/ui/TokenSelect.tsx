@@ -9,11 +9,11 @@ import {
   SelectValue,
   SelectSeparator,
 } from '@/shared/ui/select'
-import { NETWORK_TOKENS, type TokenInfo } from '../model/tokens'
+import { NETWORK_TOKENS, type TokenInfo } from '@/entities/network'
 import { cn } from '@/shared/lib/utils'
 import { Badge } from '@/shared/ui/badge'
 import { TokenIcon } from '@/shared/ui/token-icon'
-import { addressesMatch } from '@/shared/lib/validation'
+import { addressesMatch, truncateAddress } from '@/shared/lib/validation'
 import { CustomTokenForm } from './CustomTokenForm'
 
 /**
@@ -175,7 +175,7 @@ export function TokenSelect({
                 </div>
                 <span className="mt-1 font-mono text-[10px] leading-none text-zinc-500">
                   {value.address
-                    ? `${value.address.slice(0, 6)}...${value.address.slice(-4)}`
+                    ? truncateAddress(value.address)
                     : 'Native Token'}
                 </span>
               </div>

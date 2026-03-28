@@ -4,9 +4,10 @@ import * as React from 'react'
 import { CheckIcon, CopyIcon } from '@/shared/ui/icons'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/shared/lib/utils'
+import { copyToClipboard } from '@/shared/lib/clipboard'
 
 const copyButtonVariants = cva(
-  'inline-flex cursor-pointer items-center justify-center rounded transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring print:hidden',
+  'relative inline-flex cursor-pointer items-center justify-center rounded transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring print:hidden',
   {
     variants: {
       size: {
@@ -32,37 +33,6 @@ export interface CopyButtonProps
 }
 
 type CopyState = 'idle' | 'copied'
-
-/**
- * Fallback copy function for older browsers
- */
-async function copyToClipboard(text: string): Promise<boolean> {
-  // Modern API
-  if (navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(text)
-      return true
-    } catch {
-      // Fall through to legacy method
-    }
-  }
-
-  // Legacy fallback for older browsers / Safari iOS
-  const textArea = document.createElement('textarea')
-  textArea.value = text
-  textArea.style.cssText = 'position:fixed;left:-9999px;top:-9999px'
-  document.body.appendChild(textArea)
-  textArea.select()
-
-  try {
-    document.execCommand('copy')
-    return true
-  } catch {
-    return false
-  } finally {
-    document.body.removeChild(textArea)
-  }
-}
 
 const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
   ({ className, size, value, 'aria-label': ariaLabel, ...props }, ref) => {
@@ -103,6 +73,7 @@ const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
         ) : (
           <CopyIcon />
         )}
+        <span className="absolute -inset-2" aria-hidden="true" />
       </button>
     )
   }

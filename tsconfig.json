@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2022",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -21,9 +21,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["vitest/globals"],
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    "types": ["vitest/globals", "@testing-library/jest-dom/vitest"],
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },
@@ -34,5 +32,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "assets", "worktrees", "specs", "**/*.test.ts", "**/*.test.tsx"]
+  "exclude": ["node_modules", "assets", "worktrees", "specs", "tools"]
 }

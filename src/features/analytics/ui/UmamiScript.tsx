@@ -1,6 +1,7 @@
 'use client'
 
 import Script from 'next/script'
+import { VOIDPAY_DOMAIN } from '@/shared/config'
 import { UMAMI_CONFIG } from '../config/umami'
 
 /**
@@ -9,13 +10,20 @@ import { UMAMI_CONFIG } from '../config/umami'
  * Loads Umami tracking script with lazyOnload strategy (non-blocking).
  * Umami automatically checks localStorage for 'umami.disabled' key.
  *
+ * Guards:
+ * - Not rendered in development (no network request)
+ * - data-domains restricts tracking to production domain only (blocks preview deploys)
+ *
  * @see https://umami.is/docs/tracker-configuration
  */
 export function UmamiScript() {
+  if (process.env.NODE_ENV !== 'production') return null
+
   return (
     <Script
       src={UMAMI_CONFIG.scriptUrl}
       data-website-id={UMAMI_CONFIG.websiteId}
+      data-domains={VOIDPAY_DOMAIN}
       strategy="lazyOnload"
     />
   )

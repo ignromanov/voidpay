@@ -4,6 +4,7 @@
  */
 
 import React from 'react'
+import { track, AnalyticsEvent } from '@/features/analytics'
 
 interface DemoPaginationProps {
   items: ReadonlyArray<{ invoiceId: string }>
@@ -20,10 +21,11 @@ export const DemoPagination = React.memo<DemoPaginationProps>(
             key={item.invoiceId}
             type="button"
             aria-label={`View invoice ${item.invoiceId}`}
-            className="group relative flex h-8 w-8 cursor-pointer items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
-            onClick={() => onSelect(index)}
-            data-umami-event="demo_select"
-            data-umami-event-invoice={item.invoiceId}
+            className="group relative flex h-11 w-11 cursor-pointer items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+            onClick={() => {
+              track(AnalyticsEvent.DEMO_SELECT, { invoice_id: item.invoiceId })
+              onSelect(index)
+            }}
           >
             <span
               className={`block h-2 rounded-full transition-all duration-200 group-hover:scale-125 ${

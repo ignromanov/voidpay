@@ -1,25 +1,25 @@
 import { useCreatorStore } from '@/entities/creator'
-import { usePayerStore } from '@/entities/user'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 
 export interface ExportDataV1 {
   version: 1
   exportedAt: string
   creator: ReturnType<typeof useCreatorStore.getState>
-  payer: ReturnType<typeof usePayerStore.getState>
+  trackedInvoices: ReturnType<typeof useTrackedInvoiceStore.getState>
 }
 
 /**
- * Exports all user data (creator and payer stores) to a JSON object.
+ * Exports all user data (creator and tracked invoice stores) to a JSON object.
  */
 export const exportUserData = (): ExportDataV1 => {
   const creatorState = useCreatorStore.getState()
-  const payerState = usePayerStore.getState()
+  const trackedInvoicesState = useTrackedInvoiceStore.getState()
 
   return {
     version: 1,
     exportedAt: new Date().toISOString(),
     creator: creatorState,
-    payer: payerState,
+    trackedInvoices: trackedInvoicesState,
   }
 }
 

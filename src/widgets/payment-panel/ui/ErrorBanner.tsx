@@ -28,7 +28,7 @@ export function ErrorBanner({ error, onDismiss }: ErrorBannerProps) {
             <button
               onClick={onDismiss}
               aria-label="Dismiss error"
-              className="shrink-0 p-0.5 rounded hover:bg-red-500/10 transition-colors"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-red-500/10 transition-colors"
             >
               <XIcon size={14} />
             </button>

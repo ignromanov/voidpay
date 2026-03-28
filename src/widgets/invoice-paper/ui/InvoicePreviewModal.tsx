@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from '@/shared/ui/motion'
 import { XIcon, PrinterIcon, DownloadIcon } from '@/shared/ui/icons'
 import { Dialog, DialogContent, DialogTitle, DialogClose, DialogDescription } from '@/shared/ui/dialog'
@@ -11,6 +11,9 @@ import { ScaledInvoicePreview } from './ScaledInvoicePreview'
 import { InvoiceStatus } from '../types'
 import { PartialInvoice, invoiceSchema } from '@/entities/invoice'
 import { generateInvoiceUrl } from '@/features/invoice-codec'
+import { track, AnalyticsEvent } from '@/features/analytics'
+import { exportInvoicePdf } from '@/features/pdf-export'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 
 // Animation variants for smooth enter/exit
 const headerVariants = {
@@ -80,33 +83,53 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
   ({ data, status = 'pending', txHash, txHashValidated = true, open, onOpenChange }) => {
     // Generate invoice URL only when data passes full schema validation
     // Uses Zod safeParse — no errors thrown, no toasts, silent fail
-    const invoiceUrl = useMemo(() => {
+    const [invoiceUrl, setInvoiceUrl] = useState<string | undefined>(undefined)
+    useEffect(() => {
       const result = invoiceSchema.safeParse(data)
-      if (!result.success) {
-        return undefined
+      if (!result.success || !result.data.total) {
+        setInvoiceUrl(undefined)
+        return
       }
-      try {
-        return generateInvoiceUrl(result.data)
-      } catch (error) {
-        // Log encoder errors for debugging (shouldn't happen after Zod validation)
-        console.error('[InvoicePreviewModal] URL generation failed:', {
-          invoiceId: result.data.invoiceId,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        })
-        return undefined
-      }
+      let cancelled = false
+      void (async () => {
+        try {
+          const url = await generateInvoiceUrl(result.data)
+          if (!cancelled) setInvoiceUrl(url)
+        } catch (error) {
+          console.error('[InvoicePreviewModal] URL generation failed:', {
+            invoiceId: result.data.invoiceId,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          })
+          if (!cancelled) setInvoiceUrl(undefined)
+        }
+      })()
+      return () => { cancelled = true }
     }, [data])
 
-    // Print handler
+    const printedViaButton = useRef(false)
+
+    // Print handler (browser print dialog)
     const handlePrint = useCallback(() => {
+      printedViaButton.current = true
       window.print()
+      setTimeout(() => { printedViaButton.current = false }, 1000)
     }, [])
 
-    // Download PDF handler (uses browser's print-to-PDF)
     const handleDownloadPdf = useCallback(() => {
-      // Trigger print dialog where user can choose "Save as PDF"
-      window.print()
-    }, [])
+      track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
+      const tracked = data.invoiceId
+        ? useTrackedInvoiceStore.getState().getInvoice(data.invoiceId)
+        : undefined
+      const paidAt = tracked?.paidAt
+        ? Math.floor(new Date(tracked.paidAt).getTime() / 1000)
+        : undefined
+      void exportInvoicePdf(data, {
+        status: status === 'empty' ? undefined : status,
+        txHash,
+        invoiceUrl,
+        paidAt,
+      })
+    }, [data, status, txHash, invoiceUrl])
 
     // Keyboard shortcuts
     useEffect(() => {
@@ -126,6 +149,18 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
       window.addEventListener('keydown', handleKeyDown)
       return () => window.removeEventListener('keydown', handleKeyDown)
     }, [open, handlePrint])
+
+    // Track Cmd+P / browser print (deduped against button click)
+    useEffect(() => {
+      if (!open) return
+      const handleAfterPrint = () => {
+        if (!printedViaButton.current) {
+          track(AnalyticsEvent.PDF_EXPORT, { source: 'browser_print' })
+        }
+      }
+      window.addEventListener('afterprint', handleAfterPrint)
+      return () => window.removeEventListener('afterprint', handleAfterPrint)
+    }, [open])
 
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -182,7 +217,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             variants={invoiceVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-1 cursor-zoom-out items-start overflow-auto"
+            className="flex flex-1 cursor-zoom-out items-start overflow-auto transform-gpu"
           >
             {/* Content wrapper — padding is part of scrollable content (not clipped at edges) */}
             <div

@@ -9,49 +9,44 @@
  * - Single line: copyright, links, social
  */
 
-import { usePathname } from 'next/navigation'
-import { GithubIcon, TwitterIcon } from '@/shared/ui/icons'
+import { GithubIcon, MailIcon, TwitterIcon } from '@/shared/ui/icons'
 
 import { AnalyticsToggle } from '@/features/analytics'
 import { SOCIAL_URLS } from '@/shared/config'
 
+const SOCIAL_LINK = 'flex h-11 w-11 items-center justify-center rounded-lg transition-colors hover:bg-zinc-800/50 hover:text-zinc-300'
+
 export function Footer() {
-  const pathname = usePathname()
   return (
-    <footer className="fixed right-0 bottom-0 left-0 z-40 border-t border-zinc-800/30 bg-zinc-950/60 backdrop-blur-xl print:hidden">
-      <div className="mx-auto flex h-10 max-w-7xl items-center justify-between px-4 text-xs text-zinc-400">
+    <footer className="fixed right-0 bottom-0 left-0 z-40 border-t border-zinc-800/30 bg-zinc-950/60 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-xl print:hidden after:absolute after:inset-x-0 after:top-full after:h-20 after:bg-zinc-950 after:content-['']">
+      <div className="mx-auto flex min-h-10 max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-1.5 text-xs text-zinc-400">
         {/* Left: Copyright */}
         <div className="flex items-center gap-3">
-          <span>© 2026 VoidPay</span>
-          <a href="/privacy" className="transition-colors hover:text-zinc-300">
-            Privacy
-          </a>
-          <a href="/terms" className="transition-colors hover:text-zinc-300">
+          <span className="hidden sm:inline">© 2026 VoidPay · MIT</span>
+          <span className="sm:hidden">© VoidPay</span>
+          <a href="/terms" className="inline-flex min-h-[44px] items-center transition-colors hover:text-zinc-300">
             Terms
           </a>
-          {/* Analytics toggle only on landing page (where analytics runs) */}
-          {pathname === '/' && (
-            <>
-              <span className="text-zinc-600">|</span>
-              <AnalyticsToggle />
-            </>
-          )}
+          <a href="/privacy" className="inline-flex min-h-[44px] items-center transition-colors hover:text-zinc-300">
+            Privacy
+          </a>
+          <AnalyticsToggle />
         </div>
 
         {/* Right: Social + Contact */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <a
             href="mailto:hello@voidpay.xyz"
-            className="rounded p-1.5 text-xs transition-colors hover:bg-zinc-800/50 hover:text-zinc-300"
-            aria-label="Contact"
+            className={SOCIAL_LINK}
+            aria-label="Contact email"
           >
-            Contact
+            <MailIcon className="h-4 w-4" />
           </a>
           <a
             href={SOCIAL_URLS.github}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded p-1.5 transition-colors hover:bg-zinc-800/50 hover:text-zinc-300"
+            className={SOCIAL_LINK}
             aria-label="GitHub"
           >
             <GithubIcon className="h-4 w-4" />
@@ -60,7 +55,7 @@ export function Footer() {
             href={SOCIAL_URLS.twitter}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded p-1.5 transition-colors hover:bg-zinc-800/50 hover:text-zinc-300"
+            className={SOCIAL_LINK}
             aria-label="Twitter"
           >
             <TwitterIcon className="h-4 w-4" />

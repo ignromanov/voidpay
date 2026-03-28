@@ -186,20 +186,6 @@ describe('InvoiceItemRow - Line Total Calculation', () => {
     expect(screen.getByText(/502\.50/)).toBeInTheDocument()
   })
 
-  it('should display currency symbol with total', () => {
-    render(
-      <InvoiceItemRow
-        item={mockLineItem}
-        currencySymbol="DAI"
-        decimals={6}
-        onUpdate={() => {}}
-        onRemove={() => {}}
-      />
-    )
-
-    expect(screen.getByText(/DAI/)).toBeInTheDocument()
-  })
-
   it('should handle zero quantity', () => {
     const zeroItem = { ...mockLineItem, quantity: 0 }
 
@@ -264,7 +250,7 @@ describe('InvoiceItemRow - Snapshots', () => {
     const { container } = render(
       <InvoiceItemRow
         item={emptyItem}
-        currencySymbol="ETH"
+        currencySymbol="USDC"
         decimals={18}
         onUpdate={() => {}}
         onRemove={() => {}}

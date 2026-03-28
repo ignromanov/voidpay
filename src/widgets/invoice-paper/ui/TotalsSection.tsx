@@ -1,6 +1,6 @@
 import React from 'react'
 import { cn } from '@/shared/lib/utils'
-import { FingerprintIcon } from '@/shared/ui/icons'
+import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
 import { Totals } from '../lib/calculate-totals'
 
 interface TotalsSectionProps {
@@ -95,12 +95,8 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
         </div>
 
         {showMagicDust && totals.magicDust && (
-          <div className="-mt-0.5 flex items-center justify-end gap-1 text-right">
-            <FingerprintIcon className="h-3 w-3 flex-shrink-0 text-violet-400" aria-hidden="true" />
-            <span className="text-[9px] text-zinc-400">Unique ID: </span>
-            <span className="font-mono text-[10px] text-zinc-500 tabular-nums">
-              {totals.magicDust}
-            </span>
+          <div className="-mt-0.5 flex justify-end">
+            <MagicDustBadge label="Unique ID" amount={totals.magicDust} currency={currencyDisplay} variant="light" />
           </div>
         )}
       </div>

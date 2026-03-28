@@ -3,6 +3,7 @@
 import { forwardRef, type ComponentPropsWithoutRef } from 'react'
 import { blo } from 'blo'
 import { cn } from '@/shared/lib/utils'
+import { truncateAddress } from '@/shared/lib/validation'
 
 const SIZE_MAP = {
   sm: 24,
@@ -33,7 +34,7 @@ export interface AddressAvatarProps extends Omit<ComponentPropsWithoutRef<'img'>
 export const AddressAvatar = forwardRef<HTMLImageElement, AddressAvatarProps>(
   ({ address, size = 'md', alt, className, ...props }, ref) => {
     const pixelSize = typeof size === 'number' ? size : SIZE_MAP[size]
-    const truncatedAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
+    const truncatedAddress = truncateAddress(address)
     const avatarAlt = alt || `Avatar for ${truncatedAddress}`
 
     // blo generates a deterministic SVG data URI from the address

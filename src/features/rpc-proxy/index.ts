@@ -13,7 +13,8 @@ export type {
 // Core proxy functionality
 export { proxyRequest } from './lib/proxy'
 export { loadRpcConfig, validateServerSideOnly } from './lib/config'
-export { checkRateLimit, extractIpAddress } from './lib/rate-limit'
+export { checkRateLimit, extractIpAddress, isRateLimitHealthy } from './lib/rate-limit'
+export type { RateLimitResponse, RateLimitUnavailable } from './lib/rate-limit'
 
 // Mock mode (for development/testing)
 export { getMockMode, handleMockRequest, shouldUseMock } from './lib/mock'

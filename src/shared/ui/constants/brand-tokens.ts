@@ -92,10 +92,6 @@ export const CSS_VARS = {
   voidLogoGlow: '--void-logo-glow',
   voidLogoPulseDuration: '--void-logo-pulse-duration',
 
-  // Button void
-  accretionDiskIdleDuration: '--accretion-disk-idle-duration',
-  accretionDiskHoverDuration: '--accretion-disk-hover-duration',
-  accretionDiskLoadingDuration: '--accretion-disk-loading-duration',
 
   // AuroraText
   auroraGradient: '--aurora-gradient',

@@ -10,8 +10,8 @@ describe('buildInvoiceFromDraft', () => {
   it('builds complete invoice from draft and line items', () => {
     const draft: PartialInvoice = {
       invoiceId: 'INV-001',
-      iss: '2026-01-26',
-      due: '2026-02-26',
+      issuedAt: 1737849600,
+      dueAt: 1740528000,
       from: {
         name: 'Sender Company',
         walletAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
@@ -46,8 +46,8 @@ describe('buildInvoiceFromDraft', () => {
 
     // Check all fields are transferred
     expect(invoice.invoiceId).toBe('INV-001')
-    expect(invoice.iss).toBe('2026-01-26')
-    expect(invoice.due).toBe('2026-02-26')
+    expect(invoice.issuedAt).toBe(1737849600)
+    expect(invoice.dueAt).toBe(1740528000)
     expect(invoice.from.name).toBe('Sender Company')
     expect(invoice.from.walletAddress).toBe('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')
     expect(invoice.client.name).toBe('Client Company')
@@ -101,8 +101,8 @@ describe('buildInvoiceFromDraft', () => {
     const invoice = buildInvoiceFromDraft(draft, lineItems)
 
     expect(invoice.invoiceId).toBe('INV-002')
-    expect(invoice.iss).toBeUndefined()
-    expect(invoice.due).toBeUndefined()
+    expect(invoice.issuedAt).toBeUndefined()
+    expect(invoice.dueAt).toBeUndefined()
     expect(invoice.notes).toBeUndefined()
     expect(invoice.items).toHaveLength(1)
   })

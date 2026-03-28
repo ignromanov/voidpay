@@ -59,7 +59,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           maxLength={maxLength}
           onChange={handleChange}
           className={cn(
-            'flex min-h-[80px] w-full resize-none rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 transition-all duration-200 placeholder:text-zinc-500 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] focus:ring-1 focus:ring-violet-500/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+            'flex min-h-[80px] w-full resize-none rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 transition-all duration-200 placeholder:text-zinc-500 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] focus:ring-1 focus:ring-violet-500/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
             shouldShowCount && 'pr-16',
             className
           )}

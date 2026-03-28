@@ -2,7 +2,7 @@
  * CreateWorkspace component tests
  * Feature: 015-create-page-preview
  */
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@/shared/lib/test-utils/render'
 import userEvent from '@testing-library/user-event'
 import type React from 'react'
@@ -11,7 +11,6 @@ import { useCreatorStore } from '@/entities/creator'
 import { TEST_INVOICES } from '@/shared/lib/test-utils'
 import { encodeInvoice } from '@/features/invoice-codec'
 import * as toastModule from '@/shared/lib/toast'
-
 // Helper to render with userEvent
 function renderWithUser(ui: React.ReactElement) {
   return {
@@ -19,6 +18,21 @@ function renderWithUser(ui: React.ReactElement) {
     ...render(ui),
   }
 }
+
+// Mock next/navigation (required by useRouter in CreateWorkspace)
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  usePathname: () => '/create',
+  useSearchParams: () => new URLSearchParams(),
+  useParams: () => ({}),
+}))
 
 // Mock hooks from shared/lib/hooks
 const mockUseHashFragment = vi.hoisted(() => vi.fn(() => ''))
@@ -44,7 +58,6 @@ describe('CreateWorkspace', () => {
       activeDraft: null,
       lineItems: [],
       templates: [],
-      history: [],
       preferences: {
         defaultNetworkId: 1,
         defaultCurrency: 'USDC',
@@ -55,9 +68,6 @@ describe('CreateWorkspace', () => {
     vi.clearAllMocks()
   })
 
-  afterEach(() => {
-    vi.clearAllMocks()
-  })
 
   describe('rendering', () => {
     it('renders preview container', () => {
@@ -79,7 +89,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -107,7 +116,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -137,7 +145,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -165,7 +172,7 @@ describe('CreateWorkspace', () => {
   describe('URL hash decoding', () => {
     it('decodes invoice from URL hash on mount', async () => {
       const testInvoice = TEST_INVOICES.full()
-      const encodedHash = encodeInvoice(testInvoice)
+      const encodedHash = await encodeInvoice(testInvoice)
 
       mockUseHashFragment.mockReturnValue(encodedHash)
 
@@ -181,12 +188,15 @@ describe('CreateWorkspace', () => {
     it('updates store when hash changes', async () => {
       const { rerender } = renderWithUser(<CreateWorkspace />)
 
-      // Initially no hash
-      expect(useCreatorStore.getState().activeDraft).toBeNull()
+      // Initially auto-created draft (no hash data)
+      await waitFor(() => {
+        expect(useCreatorStore.getState().activeDraft).not.toBeNull()
+      })
+      const initialId = useCreatorStore.getState().activeDraft?.data.invoiceId
 
       // Change hash
       const testInvoice = TEST_INVOICES.full()
-      const encodedHash = encodeInvoice(testInvoice)
+      const encodedHash = await encodeInvoice(testInvoice)
       mockUseHashFragment.mockReturnValue(encodedHash)
 
       rerender(<CreateWorkspace />)
@@ -194,6 +204,7 @@ describe('CreateWorkspace', () => {
       await waitFor(() => {
         const state = useCreatorStore.getState()
         expect(state.activeDraft?.data.invoiceId).toBe(testInvoice.invoiceId)
+        expect(state.activeDraft?.data.invoiceId).not.toBe(initialId)
       })
     })
 
@@ -213,7 +224,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -235,7 +245,7 @@ describe('CreateWorkspace', () => {
 
     it('does not show success toast on successful decode (silent)', async () => {
       const testInvoice = TEST_INVOICES.full()
-      const encodedHash = encodeInvoice(testInvoice)
+      const encodedHash = await encodeInvoice(testInvoice)
 
       mockUseHashFragment.mockReturnValue(encodedHash)
 
@@ -270,7 +280,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -300,7 +309,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -316,7 +324,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -339,7 +346,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -358,17 +364,23 @@ describe('CreateWorkspace', () => {
       })
     })
 
-    it('does not open modal when no invoice data', async () => {
+    it('opens modal when clicking preview (draft always exists)', async () => {
       const { user, container } = renderWithUser(<CreateWorkspace />)
 
-      // Preview container exists but clicking it should not open modal
+      // Wait for auto-created draft
+      await waitFor(() => {
+        expect(useCreatorStore.getState().activeDraft).not.toBeNull()
+      })
+
       const previewButton = container.querySelector('[role="button"]') as HTMLElement
       expect(previewButton).toBeInTheDocument()
 
       await user.click(previewButton)
 
-      // Modal should NOT open (no invoice data)
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      // Modal opens because draft is always created on mount
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument()
+      })
     })
 
     it('closes modal when close button clicked', async () => {
@@ -377,7 +389,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -411,7 +422,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -430,7 +440,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -455,7 +464,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -484,7 +492,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -505,7 +512,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -528,7 +534,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -548,7 +553,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: testInvoice,
@@ -568,7 +572,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: {
@@ -597,7 +600,7 @@ describe('CreateWorkspace', () => {
       invoice2.invoiceId = 'RAPID-002'
 
       // First hash
-      mockUseHashFragment.mockReturnValue(encodeInvoice(invoice1))
+      mockUseHashFragment.mockReturnValue(await encodeInvoice(invoice1))
       const { rerender } = renderWithUser(<CreateWorkspace />)
 
       await waitFor(() => {
@@ -605,7 +608,7 @@ describe('CreateWorkspace', () => {
       })
 
       // Second hash
-      mockUseHashFragment.mockReturnValue(encodeInvoice(invoice2))
+      mockUseHashFragment.mockReturnValue(await encodeInvoice(invoice2))
       rerender(<CreateWorkspace />)
 
       await waitFor(() => {
@@ -618,7 +621,6 @@ describe('CreateWorkspace', () => {
         activeDraft: {
           meta: {
             draftId: 'draft-1',
-            createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString(),
           },
           data: {

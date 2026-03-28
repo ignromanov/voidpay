@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRichInvoiceStore } from '@/entities/invoice'
+import { useShallow } from 'zustand/react/shallow'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 import type { PaymentPanelStatus } from '../types'
 
 interface DevStatusToggleProps {
@@ -10,53 +11,48 @@ interface DevStatusToggleProps {
 }
 
 /**
- * Dev state definitions — each maps to a set of store mutations.
+ * Dev state definitions — each manipulates TrackedInvoice facts.
+ * Status is always computed, never stored.
  */
 const DEV_STATES = [
   { label: 'pending' },
-  { label: 'pending+err' },
   { label: 'confirming' },
   { label: 'paid' },
-  { label: 'overdue' },
 ] as const
 
-const FAKE_TX = '0x' + '0'.repeat(64)
+const FAKE_TX = ('0x' + '0'.repeat(64)) as `0x${string}`
 
 /**
  * Inner component with hooks — only mounted in development.
  * Never imported/rendered in production → dead code eliminated by minifier.
  */
 function DevStatusToggleInner({ invoiceId }: DevStatusToggleProps) {
-  const { updateStatus, setTxHash, setConfirmations, setError } = useRichInvoiceStore()
+  const { setTxHash, setConfirmations, setError, resetPaymentState } =
+    useTrackedInvoiceStore(useShallow((s) => ({
+      setTxHash: s.setTxHash,
+      setConfirmations: s.setConfirmations,
+      setError: s.setError,
+      resetPaymentState: s.resetPaymentState,
+    })))
   const [idx, setIdx] = useState(0)
 
   const handleCycle = () => {
     const next = (idx + 1) % DEV_STATES.length
     setIdx(next)
 
-    // Reset transient fields first
+    // Reset error on every cycle
     setError(invoiceId, null)
-    setConfirmations(invoiceId, undefined)
 
     switch (next) {
-      case 0: // pending
-        updateStatus(invoiceId, 'pending')
+      case 0: // pending — clear all payment facts
+        resetPaymentState(invoiceId)
         break
-      case 1: // pending + error
-        updateStatus(invoiceId, 'pending')
-        setError(invoiceId, 'Insufficient funds for gas + value')
-        break
-      case 2: // confirming (tx detected, waiting for finalization)
-        updateStatus(invoiceId, 'paid')
+      case 1: // confirming — unvalidated tx with partial confirmations
         setTxHash(invoiceId, FAKE_TX, false)
         setConfirmations(invoiceId, { current: 8, required: 15 })
         break
-      case 3: // paid (fully validated)
-        updateStatus(invoiceId, 'paid')
+      case 2: // paid — validated tx
         setTxHash(invoiceId, FAKE_TX, true)
-        break
-      case 4: // overdue
-        updateStatus(invoiceId, 'overdue')
         break
     }
   }
@@ -76,7 +72,8 @@ function DevStatusToggleInner({ invoiceId }: DevStatusToggleProps) {
 }
 
 /**
- * Dev-only floating button that cycles through all payment panel states.
+ * Dev-only floating button that cycles through payment panel states
+ * by manipulating facts (txHash, confirmations) instead of stored status.
  * Thin wrapper — returns null in production before mounting inner component,
  * so hooks are never called and code is tree-shaken.
  */

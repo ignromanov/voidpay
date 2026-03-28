@@ -2,39 +2,56 @@
  * Rate Limiting for RPC Proxy
  * Feature: 004-rpc-proxy-failover
  *
- * Uses Vercel KV (Redis) with @upstash/ratelimit for distributed rate limiting.
- * Falls back to in-memory rate limiting when KV is unavailable.
+ * Uses Upstash Redis with @upstash/ratelimit for distributed rate limiting.
+ * FAIL-CLOSED: returns unavailable when Redis is not configured or errors.
+ * In-memory fallback is intentionally removed — useless in serverless.
  */
 
 import { Ratelimit } from '@upstash/ratelimit'
-import { kv } from '@vercel/kv'
-import type { RateLimitResult } from '../model/types'
+import { Redis } from '@upstash/redis'
 
-// Initialize rate limiter with sliding window algorithm
-// 100 requests per 60 seconds per IP
-let rateLimiter: Ratelimit | null = null
-
-// In-memory fallback when KV is unavailable
-interface MemoryRecord {
-  count: number
-  resetAt: number
+export interface RateLimitUnavailable {
+  allowed: false
+  unavailable: true
+  remaining: 0
+  limit: 0
 }
 
-const memoryStore = new Map<string, MemoryRecord>()
-const WINDOW_MS = 60 * 1000 // 1 minute
-const MAX_REQUESTS = 100
+export type RateLimitResponse =
+  | { allowed: true; unavailable?: false; remaining: number; limit: number }
+  | { allowed: false; unavailable?: false; remaining: number; limit: number }
+  | RateLimitUnavailable
 
-function getRateLimiter(): Ratelimit | null {
-  // Only initialize if KV credentials are available
+const MAX_REQUESTS = 100
+const WINDOW = '60 s'
+
+let redisInstance: Redis | null = null
+let rateLimiter: Ratelimit | null = null
+
+function getRedis(): Redis | null {
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
     return null
   }
 
+  if (!redisInstance) {
+    redisInstance = new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    })
+  }
+
+  return redisInstance
+}
+
+function getRateLimiter(): Ratelimit | null {
+  const redis = getRedis()
+  if (!redis) return null
+
   if (!rateLimiter) {
     rateLimiter = new Ratelimit({
-      redis: kv,
-      limiter: Ratelimit.slidingWindow(100, '60 s'),
-      analytics: false, // Privacy: no analytics
+      redis,
+      limiter: Ratelimit.slidingWindow(MAX_REQUESTS, WINDOW),
+      analytics: false,
       prefix: 'rpc_ratelimit',
     })
   }
@@ -43,89 +60,62 @@ function getRateLimiter(): Ratelimit | null {
 }
 
 /**
- * In-memory rate limiter fallback
- * Used when Vercel KV is unavailable
- */
-function memoryRateLimit(identifier: string): RateLimitResult {
-  const now = Date.now()
-  const record = memoryStore.get(identifier)
-
-  // No record or window expired - reset
-  if (!record || now > record.resetAt) {
-    memoryStore.set(identifier, { count: 1, resetAt: now + WINDOW_MS })
-    return {
-      allowed: true,
-      remaining: MAX_REQUESTS - 1,
-      limit: MAX_REQUESTS,
-    }
-  }
-
-  // Rate limit exceeded
-  if (record.count >= MAX_REQUESTS) {
-    return {
-      allowed: false,
-      remaining: 0,
-      limit: MAX_REQUESTS,
-    }
-  }
-
-  // Increment counter
-  record.count++
-  return {
-    allowed: true,
-    remaining: MAX_REQUESTS - record.count,
-    limit: MAX_REQUESTS,
-  }
-}
-
-// Cleanup old entries periodically (every minute) to prevent memory leaks
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now()
-    memoryStore.forEach((value, key) => {
-      if (now > value.resetAt) {
-        memoryStore.delete(key)
-      }
-    })
-  }, 60 * 1000)
-}
-
-/**
  * Extract IP address from request headers
  * Handles X-Forwarded-For and X-Real-IP headers from proxies
  */
 export function extractIpAddress(headers: Headers): string {
-  // Try X-Forwarded-For first (most common in production)
   const forwardedFor = headers.get('x-forwarded-for')
   if (forwardedFor) {
-    // X-Forwarded-For can contain multiple IPs, take the first one
-    const firstIp = forwardedFor.split(',')[0]?.trim()
-    if (firstIp) {
-      return firstIp
+    const lastIp = forwardedFor.split(',').at(-1)?.trim()
+    if (lastIp) {
+      return lastIp
     }
   }
 
-  // Try X-Real-IP
   const realIp = headers.get('x-real-ip')
   if (realIp) {
     return realIp.trim()
   }
 
-  // Fallback to a default identifier
   return 'unknown'
 }
 
 /**
- * Check if request should be rate limited
- * @param identifier IP address or other identifier
- * @returns Rate limit result with allowed status and remaining quota
+ * Check rate limit health (for /api/health endpoint)
+ * @returns true if Redis is configured and reachable
  */
-export async function checkRateLimit(identifier: string): Promise<RateLimitResult> {
+export async function isRateLimitHealthy(): Promise<boolean> {
+  const redis = getRedis()
+  if (!redis) return false
+
+  try {
+    await redis.ping()
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Check if request should be rate limited
+ *
+ * FAIL-CLOSED policy:
+ * - No Redis credentials → unavailable (503)
+ * - Redis error → unavailable (503)
+ * - Development mode → always allowed (skip rate limiting)
+ */
+export async function checkRateLimit(identifier: string): Promise<RateLimitResponse> {
+  // Dev mode: skip rate limiting entirely
+  if (process.env.NODE_ENV === 'development') {
+    return { allowed: true, remaining: MAX_REQUESTS, limit: MAX_REQUESTS }
+  }
+
   const limiter = getRateLimiter()
 
-  // Use in-memory fallback if KV is not configured
+  // FAIL-CLOSED: no Redis = no service
   if (!limiter) {
-    return memoryRateLimit(identifier)
+    console.error('[CRITICAL] Rate limiter unavailable: KV_REST_API_URL or KV_REST_API_TOKEN not configured')
+    return { allowed: false, unavailable: true, remaining: 0, limit: 0 }
   }
 
   try {
@@ -137,19 +127,13 @@ export async function checkRateLimit(identifier: string): Promise<RateLimitResul
       limit: result.limit,
     }
   } catch (error) {
-    // Structured logging for monitoring/alerting
-    console.error('[CRITICAL] KV rate limiter unavailable:', {
+    // FAIL-CLOSED: Redis error = no service
+    console.error('[CRITICAL] Rate limiter Redis error:', {
       error: error instanceof Error ? error.message : String(error),
       identifier: identifier.substring(0, 8) + '...',
       timestamp: new Date().toISOString(),
     })
 
-    // Warn about reduced effectiveness in serverless
-    console.warn(
-      '[rate-limit] Using in-memory fallback - rate limiting is per-instance only. ' +
-        'This may lead to rate limit evasion in serverless environments.'
-    )
-
-    return memoryRateLimit(identifier)
+    return { allowed: false, unavailable: true, remaining: 0, limit: 0 }
   }
 }

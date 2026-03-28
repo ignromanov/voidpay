@@ -6,8 +6,18 @@
  * without affecting blockchain connectivity.
  */
 
-import { mainnet, arbitrum, optimism, polygon } from 'viem/chains'
+import {
+  mainnet,
+  arbitrum,
+  optimism,
+  polygon,
+  sepolia,
+  arbitrumSepolia,
+  optimismSepolia,
+  polygonAmoy,
+} from 'viem/chains'
 import { HexagonIcon, TriangleIcon, ZapIcon } from '@/shared/ui/icons'
+import { NETWORK_CODES, type NetworkId } from './networks'
 
 /**
  * Network name type for UI theming
@@ -16,11 +26,24 @@ import { HexagonIcon, TriangleIcon, ZapIcon } from '@/shared/ui/icons'
 export type NetworkName = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'
 
 /**
+ * Testnet → mainnet parent mapping (single source of truth)
+ * Used to derive testnet UI configs and resolve themes
+ */
+const TESTNET_PARENT: Record<number, number> = {
+  [sepolia.id]: mainnet.id,
+  [arbitrumSepolia.id]: arbitrum.id,
+  [optimismSepolia.id]: optimism.id,
+  [polygonAmoy.id]: polygon.id,
+}
+
+/**
  * Map chain ID to network theme name
  * Used for visual theming (colors, backgrounds, etc.)
+ * Resolves testnets to their mainnet parent before matching
  */
 export function getNetworkTheme(chainId: number): NetworkName {
-  switch (chainId) {
+  const resolvedId = TESTNET_PARENT[chainId] ?? chainId
+  switch (resolvedId) {
     case arbitrum.id:
       return 'arbitrum'
     case optimism.id:
@@ -80,6 +103,48 @@ export const NETWORK_CONFIG: NetworkConfig[] = [
 ]
 
 /**
+ * Testnet display names for UI (shorter than NETWORKS canonical names)
+ */
+const TESTNET_NAMES: Record<number, string> = {
+  [sepolia.id]: 'Sepolia',
+  [arbitrumSepolia.id]: 'Arb Sepolia',
+  [optimismSepolia.id]: 'OP Sepolia',
+  [polygonAmoy.id]: 'Polygon Amoy',
+}
+
+/**
+ * Testnet UI configs derived from mainnet parents
+ * Inherits icon, iconFilled, colorClass — only chainId and name differ
+ */
+const TESTNET_NETWORK_CONFIG: NetworkConfig[] = Object.entries(TESTNET_PARENT).map(
+  ([testnetId, mainnetId]) => {
+    const parent = NETWORK_CONFIG.find((c) => c.chainId === mainnetId)!
+    return { ...parent, chainId: Number(testnetId), name: TESTNET_NAMES[Number(testnetId)] ?? parent.name }
+  }
+)
+
+/**
+ * Network short code → display name (derived from NETWORK_CONFIG + TESTNET_NETWORK_CONFIG).
+ * Used by server-side renderers (OG images, PDF) where chain objects are unavailable.
+ */
+export const NETWORK_CODE_NAMES: Record<string, string> = Object.fromEntries(
+  [...NETWORK_CONFIG, ...TESTNET_NETWORK_CONFIG].map((c) => [
+    NETWORK_CODES[c.chainId as NetworkId],
+    c.name,
+  ]),
+)
+
+/**
+ * Get network configs based on environment configuration
+ * Returns mainnet-only by default, includes testnets when NEXT_PUBLIC_ENABLE_TESTNETS=true
+ * Mirrors getSupportedChains() pattern from chains.ts
+ */
+export function getNetworkConfig(): NetworkConfig[] {
+  const enableTestnets = process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true'
+  return enableTestnets ? [...NETWORK_CONFIG, ...TESTNET_NETWORK_CONFIG] : NETWORK_CONFIG
+}
+
+/**
  * Network badge configuration with brand colors
  */
 export const NETWORK_BADGES: Record<
@@ -110,6 +175,28 @@ export const BLOCK_EXPLORERS: Record<number, { name: string; url: string }> = {
   [arbitrum.id]: { name: 'Arbiscan', url: 'https://arbiscan.io' },
   [optimism.id]: { name: 'Optimism Etherscan', url: 'https://optimistic.etherscan.io' },
   [polygon.id]: { name: 'Polygonscan', url: 'https://polygonscan.com' },
+  [sepolia.id]: { name: 'Sepolia Etherscan', url: 'https://sepolia.etherscan.io' },
+  [arbitrumSepolia.id]: { name: 'Arbiscan Sepolia', url: 'https://sepolia.arbiscan.io' },
+  [optimismSepolia.id]: { name: 'OP Sepolia Blockscout', url: 'https://optimism-sepolia.blockscout.com' },
+  [polygonAmoy.id]: { name: 'Amoy Polygonscan', url: 'https://amoy.polygonscan.com' },
+}
+
+/**
+ * Network brand colors as hex values (for server-side rendering: OG images, PDF, etc.)
+ * Mirrors colorClass Tailwind values — keep in sync with NETWORK_CONFIG above.
+ *
+ * Keyed by network short code (from NETWORK_CODES) for use in OG preview routes
+ * where chain IDs are not available.
+ */
+export const NETWORK_CODE_COLORS: Record<string, string> = {
+  eth: '#818CF8', // indigo-400
+  arb: '#60A5FA', // blue-400
+  op: '#F87171', // red-400
+  poly: '#C084FC', // purple-400
+  sep: '#818CF8', // inherits ethereum
+  'arb-sep': '#60A5FA', // inherits arbitrum
+  'op-sep': '#F87171', // inherits optimism
+  amoy: '#C084FC', // inherits polygon
 }
 
 /**

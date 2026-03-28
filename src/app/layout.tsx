@@ -1,10 +1,11 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { Navigation } from '@/widgets/navigation'
 import { Footer } from '@/widgets/footer'
 import { NetworkBackground } from '@/widgets/network-background'
 import { Toaster } from '@/shared/ui/toaster'
+import { UmamiScript } from '@/features/analytics'
 import './globals.css'
 
 /**
@@ -23,13 +24,45 @@ import './globals.css'
  */
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://voidpay.xyz'),
-  title: 'VoidPay',
-  description: 'Stateless Invoicing Platform',
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ??
+      (process.env.NEXT_PUBLIC_VERCEL_URL
+        ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+        : 'https://voidpay.xyz'),
+  ),
+  title: 'VoidPay — Stateless Crypto Invoicing. No Backend, Just Links.',
+  description: 'Create privacy-first crypto invoices in seconds. All data lives in the URL — no backend, no signup, no tracking. Works even if we shut down.',
   icons: {
     icon: '/favicon.svg',
     apple: '/favicon.svg',
   },
+  openGraph: {
+    title: 'VoidPay — Crypto Invoices Without the Backend. Just Share a Link.',
+    description: 'Create privacy-first crypto invoices in seconds. All data lives in the URL — no backend, no signup, no tracking. Pay with any wallet on Ethereum, Arbitrum, Optimism, or Polygon.',
+    url: 'https://voidpay.xyz',
+    siteName: 'VoidPay',
+    locale: 'en_US',
+    type: 'website',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'VoidPay — Stateless Crypto Invoicing', type: 'image/png' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'VoidPay — Crypto Invoices Without the Backend. Just Share a Link.',
+    description: 'Create privacy-first crypto invoices in seconds. All data lives in the URL — no backend, no signup, no tracking. Pay with any wallet on Ethereum, Arbitrum, Optimism, or Polygon.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'VoidPay — Stateless Crypto Invoicing' }],
+  },
+  appleWebApp: {
+    title: 'VoidPay',
+    statusBarStyle: 'black-translucent',
+    capable: true,
+  },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#09090B',
 }
 
 export default function RootLayout({
@@ -43,7 +76,7 @@ export default function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable} overflow-x-hidden`}
       style={{ backgroundColor: '#09090b' }}
     >
-      <body className="flex min-h-screen flex-col overflow-x-hidden bg-zinc-950 font-sans text-zinc-50 antialiased">
+      <body className="flex min-h-screen flex-col overflow-x-hidden bg-zinc-950 font-sans text-zinc-50 antialiased pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
         {/* Layer 0: Static background (Server-rendered, no JS) */}
         <div className="fixed inset-0 z-0 bg-zinc-950 print:hidden" aria-hidden="true" />
 
@@ -54,12 +87,13 @@ export default function RootLayout({
         <Navigation />
 
         {/* Main content area — pages render NetworkBackground + content here */}
-        <main className="relative z-10 flex-1 pt-16 pb-10 print:pt-0 print:pb-0">
+        <main className="relative z-10 flex-1 pt-[calc(4rem_+_env(safe-area-inset-top,0px))] pb-10 print:pt-0 print:pb-0">
           {children}
         </main>
 
         <Footer />
         <Toaster />
+        <UmamiScript />
       </body>
     </html>
   )

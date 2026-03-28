@@ -60,7 +60,6 @@ const formEmailSchema = (maxLength: number) =>
  * The TypeScript Invoice type is inferred from this schema.
  */
 export const invoiceSchema = z.object({
-  version: z.literal(2),
   invoiceId: z.string().min(1).max(FIELD_LIMITS.invoiceId),
   issuedAt: z.number().int().positive(),
   dueAt: z.number().int().positive(),
@@ -106,7 +105,7 @@ export const invoiceSchema = z.object({
       'Discount must be 0-100%'
     )
     .optional(),
-  /** Pre-calculated total in atomic units (includes Magic Dust if enabled) */
+  /** Exact amount to be sent in atomic units (includes Magic Dust when present) */
   total: z.string().regex(ATOMIC_UNITS_REGEX, 'Total must be atomic units').optional(),
   /** Magic Dust amount in atomic units (1-999 for unique payment ID) */
   magicDust: z.string().regex(ATOMIC_UNITS_REGEX, 'Magic Dust must be atomic units').optional(),
@@ -131,7 +130,6 @@ export type Invoice = z.infer<typeof invoiceSchema>
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type InvoiceSchemaCheck = Invoice extends {
-  version: 2
   invoiceId: string
   issuedAt: number
   dueAt: number

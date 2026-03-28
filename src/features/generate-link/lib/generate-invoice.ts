@@ -12,15 +12,19 @@ import {
   type DraftState,
   type LineItem,
 } from '@/entities/invoice'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
-import { generateInvoiceUrl } from '@/features/invoice-codec'
+import { nowISO } from '@/shared/lib/date-time'
+import { generateInvoiceUrl, generateSalt, deriveMagicDust } from '@/features/invoice-codec'
 import {
   calculateTotalsBigInt,
   formatAmount,
-  generateMagicDust,
   addMagicDust,
 } from '@/shared/lib/amount-utils'
 import type { GenerateOptions } from './types'
+
+// NOTE: History is tracked via TrackedInvoiceStore only (historySlice removed).
+// Invoice data is decoded from URL when needed (same as ReceivedInvoiceList pattern).
 
 /**
  * Calculate total amount from invoice data using BigInt precision.
@@ -66,11 +70,12 @@ export function calculateTotalAmount(invoice: PartialInvoice, lineItems: LineIte
  * addToHistory(invoice, url)
  */
 export function addToHistory(invoice: Invoice, invoiceUrl: string): void {
-  const { addHistoryEntry } = useCreatorStore.getState()
-
-  addHistoryEntry({
-    invoice,
+  const { addInvoice } = useTrackedInvoiceStore.getState()
+  addInvoice({
+    invoiceId: invoice.invoiceId,
     invoiceUrl,
+    source: 'created',
+    viewedAt: nowISO(),
   })
 }
 
@@ -81,7 +86,7 @@ export function addToHistory(invoice: Invoice, invoiceUrl: string): void {
  * This is the single source of truth — the total is encoded into the URL
  * and available as `invoice.total` after decoding on /pay.
  */
-export function buildInvoice(draft: DraftState, lineItems: LineItem[]): Invoice {
+export function buildInvoice(draft: DraftState, lineItems: LineItem[]): { invoice: Invoice; salt?: Uint8Array } {
   const data = draft.data
   const items = lineItemsToInvoiceItems(lineItems)
   const decimals = data.decimals ?? 6
@@ -99,19 +104,24 @@ export function buildInvoice(draft: DraftState, lineItems: LineItem[]): Invoice 
   const { magicDustEnabled } = useCreatorStore.getState().preferences
   let total = result.total
   let magicDust: string | undefined
+  let salt: Uint8Array | undefined
 
   if (magicDustEnabled) {
-    const dust = generateMagicDust()
+    salt = generateSalt()
+    const dust = deriveMagicDust(salt)
     magicDust = dust.toString()
     total = addMagicDust(total, dust)
   }
 
   return {
-    ...data,
-    items,
-    total,
-    magicDust,
-  } as Invoice
+    invoice: {
+      ...data,
+      items,
+      total,
+      magicDust,
+    } as Invoice,
+    ...(salt !== undefined ? { salt } : {}),
+  }
 }
 
 /** URL size limit in bytes */
@@ -134,7 +144,7 @@ export class UrlSizeError extends Error {
  * Generate invoice URL and add to history
  *
  * Combines URL generation and history tracking.
- * Uses Binary V3 encoding for compact, privacy-preserving URLs.
+ * Uses TLV v1 encoding for compact, privacy-preserving URLs.
  *
  * @param draft - Draft state with invoice data
  * @param lineItems - Line items for the invoice
@@ -151,14 +161,15 @@ export async function generateAndTrackInvoice(
   options: GenerateOptions = {}
 ): Promise<{ url: string; invoice: Invoice }> {
   // Build full invoice from draft and line items (calculates total + magicDust)
-  const invoice = buildInvoice(draft, lineItems)
+  const { invoice, salt } = buildInvoice(draft, lineItems)
 
-  // Generate URL with Binary V3 encoding
+  // Generate URL with TLV v1 encoding
   // generateInvoiceUrl throws if URL > 2000 bytes
   let invoiceUrl: string
   try {
-    invoiceUrl = generateInvoiceUrl(invoice, {
+    invoiceUrl = await generateInvoiceUrl(invoice, {
       includeOG: options.includeOG ?? false,
+      ...(salt !== undefined ? { salt } : {}),
     })
   } catch (error) {
     // Re-throw with user-friendly message

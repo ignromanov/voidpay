@@ -7,9 +7,6 @@
 
   /* Custom animations */
   --animate-aurora: aurora 8s ease infinite;
-  --animate-accretion-idle: accretion-idle 6s linear infinite;
-  --animate-accretion-hover: accretion-idle 2s linear infinite;
-  --animate-accretion-loading: accretion-idle 0.5s linear infinite;
   --animate-crescent-pulse: crescent-pulse 3s ease-in-out infinite;
   --animate-blackhole-pulse: blackhole-pulse 4s ease-in-out infinite;
 
@@ -30,18 +27,8 @@
 /* Respect reduced motion preference - stop all custom animations */
 @media (prefers-reduced-motion: reduce) {
   .animate-aurora,
-  .animate-accretion-idle,
   .animate-blackhole-pulse {
     animation: none !important;
-  }
-}
-
-@keyframes accretion-idle {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
   }
 }
 
@@ -155,6 +142,16 @@
   .hero-animate-scroll-bounce {
     animation: none !important;
   }
+}
+
+/* Override browser autofill background for dark theme */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #18181b inset;
+  -webkit-text-fill-color: #f4f4f5;
+  caret-color: #f4f4f5;
 }
 
 /* ============================================

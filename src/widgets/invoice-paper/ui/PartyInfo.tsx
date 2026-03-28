@@ -5,7 +5,7 @@ import { AddressAvatar } from '@/shared/ui/address-avatar'
 import { MailIcon, PhoneIcon, MapPinIcon, WalletIcon, HashIcon } from '@/shared/ui/icons'
 import { cn } from '@/shared/lib/utils'
 import { InvoicePaperVariant } from '../types'
-import { isAddress } from 'viem'
+import { isValidAddress } from '@/shared/lib/validation'
 
 interface PartyInfoProps {
   from: PartialParty
@@ -127,7 +127,7 @@ export const PartyInfo = React.memo<PartyInfoProps>(({ from, client, variant = '
           )}
           {client.walletAddress && (
             <div className="mt-3 flex flex-row-reverse items-center gap-2">
-              {isAddress(client.walletAddress) ? (
+              {isValidAddress(client.walletAddress) ? (
                 <AddressAvatar
                   address={client.walletAddress as `0x${string}`}
                   size="sm"

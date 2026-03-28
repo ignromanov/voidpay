@@ -8,22 +8,23 @@
  * 2. On user click, dynamically loads Web3Provider + WalletButton
  * 3. Wraps the WalletButton in its own Web3Provider context
  *
+ * Persistence: Detects stored wagmi connection on mount and eagerly
+ * loads modules so the connected state restores without user interaction.
+ *
+ * Auto-connect: When activated by user click (not persistence restore),
+ * passes autoConnect to WalletButton which opens the connect modal
+ * automatically — eliminating the "double click" problem.
+ *
  * Performance Impact:
  * - Initial bundle: ~0 KB Web3 code (vs ~500KB before)
  * - LCP improvement: ~2.5s on landing page
  * - TBT improvement: ~1.2s
  *
- * How it works:
- * - Until user clicks, only a static <Button> is rendered
- * - Dynamic imports are ONLY triggered on explicit user interaction
- * - After click, both Web3Provider and WalletButton load together
- * - The loaded WalletButton is wrapped in its own Web3Provider scope
- *
  * IMPORTANT: Dynamic imports are inside the component to prevent
  * webpack from including them in the initial bundle during static analysis.
  */
 
-import { useState, useCallback, useEffect, type ReactNode, type ComponentType } from 'react'
+import { useState, useCallback, useEffect, useRef, type ReactNode, type ComponentType } from 'react'
 import { WalletIcon, Loader2Icon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 
@@ -31,6 +32,28 @@ type LoadingState = 'idle' | 'loading' | 'ready' | 'error'
 type ErrorType = 'network' | 'unknown'
 
 type ProviderProps = { children: ReactNode }
+type WalletButtonProps = { autoConnect?: boolean }
+
+import { WAGMI_STORAGE_KEY } from '@/shared/config'
+
+/**
+ * Checks localStorage for a persisted wagmi connection.
+ * If the user was previously connected, we eagerly load Web3 modules
+ * so the connected state restores without requiring a click.
+ *
+ * wagmi's createStorage({ key }) stores items with suffixed keys:
+ *   - voidpay-wallet.store (serialized state with connections Map)
+ *   - voidpay-wallet.recentConnectorId (last used connector, e.g. "io.rabby")
+ * The recentConnectorId is the simplest and most reliable indicator.
+ */
+function hasPersistedWalletConnection(): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    return localStorage.getItem(`${WAGMI_STORAGE_KEY}.recentConnectorId`) !== null
+  } catch {
+    return false
+  }
+}
 
 /**
  * Placeholder button shown before Web3 is activated.
@@ -42,12 +65,12 @@ function PlaceholderButton({ onClick, isLoading }: { onClick: () => void; isLoad
       {isLoading ? (
         <>
           <Loader2Icon className="h-4 w-4 animate-spin" />
-          Loading...
+          <span className="hidden sm:inline">Loading...</span>
         </>
       ) : (
         <>
           <WalletIcon className="h-4 w-4" />
-          Connect
+          <span className="hidden sm:inline">Connect</span>
         </>
       )}
     </Button>
@@ -59,17 +82,27 @@ function PlaceholderButton({ onClick, isLoading }: { onClick: () => void; isLoad
  *
  * Shows placeholder until user clicks, then loads full Web3 stack.
  * The Web3Provider is scoped to just this component, not the entire app.
+ *
+ * If a persisted wallet connection is detected on mount, modules are
+ * loaded eagerly so the connected state restores automatically.
  */
 export function LazyWalletButton() {
   const [state, setState] = useState<LoadingState>('idle')
   const [errorType, setErrorType] = useState<ErrorType | null>(null)
   const [Web3Provider, setWeb3Provider] = useState<ComponentType<ProviderProps> | null>(null)
-  const [WalletButtonComponent, setWalletButtonComponent] = useState<ComponentType<object> | null>(
-    null
-  )
+  const [WalletButtonComponent, setWalletButtonComponent] = useState<ComponentType<WalletButtonProps> | null>(null)
+  const activatedByClick = useRef(false)
+
+  // Auto-load if persisted connection exists (restore without user click)
+  useEffect(() => {
+    if (hasPersistedWalletConnection()) {
+      setState('loading')
+    }
+  }, [])
 
   const handleActivate = useCallback(() => {
     if (state === 'idle') {
+      activatedByClick.current = true
       setState('loading')
     }
   }, [state])
@@ -146,16 +179,17 @@ export function LazyWalletButton() {
         }
       >
         <WalletIcon className="h-4 w-4" />
-        {errorType === 'network' ? 'Retry Connection' : 'Retry'}
+        <span className="hidden sm:inline">{errorType === 'network' ? 'Retry Connection' : 'Retry'}</span>
       </Button>
     )
   }
 
   // After activation: render Web3Provider with WalletButton
+  // autoConnect=true only when user clicked (not persistence restore)
   if (state === 'ready' && Web3Provider && WalletButtonComponent) {
     return (
       <Web3Provider>
-        <WalletButtonComponent />
+        <WalletButtonComponent autoConnect={activatedByClick.current} />
       </Web3Provider>
     )
   }

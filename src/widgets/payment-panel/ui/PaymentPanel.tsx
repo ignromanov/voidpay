@@ -1,24 +1,29 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
+import { motion, AnimatePresence } from '@/shared/ui/motion'
 import { computeAmounts } from '../lib/compute-amounts'
 import { STATUS_CONFIG } from './status-config'
+import { useCooldown } from '../model/use-cooldown'
 import { AmountDisplay } from './AmountDisplay'
 import { PaidConfirmation } from './PaidConfirmation'
 import { ExpiredState } from './ExpiredState'
 import { ActionSlot } from './ActionSlot'
 import { ErrorBanner } from './ErrorBanner'
-import { CheckCircleIcon, DownloadIcon, ExternalLinkIcon, FlagIcon, QrCodeIcon } from '@/shared/ui/icons'
-import { getExplorerUrl } from '@/entities/network'
+import { PollingStatus } from './PollingStatus'
+import { SecondaryActions } from './SecondaryActions'
+import { MoreOptionsPanel } from './MoreOptionsPanel'
+import { PanelFooter } from './PanelFooter'
+import { CheckCircleIcon } from '@/shared/ui/icons'
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { cn } from '@/shared/lib/utils'
 import type { PaymentPanelProps } from '../types'
+import { exportInvoicePdf } from '@/features/pdf-export'
+import { track, AnalyticsEvent } from '@/features/analytics'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 
 const QRModal = dynamic(
   () => import('@/features/payment-qr').then(mod => ({ default: mod.QRModal })),
   { ssr: false }
-)
-
-const footerDivider = (
-  <div className="h-px w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
 )
 
 export function PaymentPanel({
@@ -28,9 +33,42 @@ export function PaymentPanel({
   confirmations,
   error,
   onDismissError,
+  source,
   children,
+  onIvePaid,
+  pollingMode,
+  onStopPolling,
+  onCheckPayment,
+  cooldownUntil,
+  onStartWatching,
+  onStopWatching,
+  onVerifyTxHash,
+  finalized,
+  reorgDetected,
+  onShareOpen,
 }: PaymentPanelProps) {
   const [qrOpen, setQrOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
+
+  const handlePdfExport = useCallback(() => {
+    track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
+    const invoiceUrl = typeof window !== 'undefined' ? window.location.href : undefined
+    const tracked = invoice.invoiceId
+      ? useTrackedInvoiceStore.getState().getInvoice(invoice.invoiceId)
+      : undefined
+    const paidAt = tracked?.paidAt
+      ? Math.floor(new Date(tracked.paidAt).getTime() / 1000)
+      : undefined
+    void exportInvoicePdf(invoice, {
+      status: status === 'confirming' ? undefined : status,
+      txHash,
+      invoiceUrl,
+      paidAt,
+    })
+  }, [invoice, status, txHash])
+
+  const cooldownSeconds = useCooldown(cooldownUntil)
+
   const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending
   const amounts = useMemo(() => computeAmounts(invoice), [invoice])
   const isPaid = status === 'paid' || status === 'confirming'
@@ -38,121 +76,162 @@ export function PaymentPanel({
   const isPending = !isPaid && !isExpired
   const showPulse = status === 'confirming'
 
+  const isWatching = pollingMode === 'watching'
+  const isSearching = pollingMode === 'aggressive'
+  const isChecking = pollingMode === 'manual'
+
+  const hasMoreOptions = !!(onStartWatching || onStopWatching || onVerifyTxHash)
+
   return (
     <div
       data-testid="payment-panel"
       data-status={status}
-      className={`w-full rounded-xl bg-zinc-950/90 overflow-hidden relative shadow-[0_-10px_50px_-15px_rgba(0,0,0,0.8)] transition-all duration-500 ${
-        isPaid ? 'border border-emerald-500/30' : ''
-      }`}
+      className={cn(
+        'w-full rounded-xl bg-zinc-950/95 overflow-hidden relative shadow-[0_-10px_50px_-15px_rgba(0,0,0,0.8)] backdrop-blur-sm transition-all duration-500',
+        isPaid && 'border border-emerald-500/30'
+      )}
     >
       {/* Top gradient bar */}
       <div
         data-testid="gradient-bar"
-        className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${config.gradient} ${
-          showPulse ? 'animate-pulse' : ''
-        }`}
+        className={cn(
+          'absolute top-0 left-0 right-0 h-1 bg-gradient-to-r transition-all duration-700',
+          config.gradient,
+          showPulse && 'motion-safe:animate-pulse'
+        )}
       />
 
       {/* Content */}
-      <div className="p-3 md:p-4 space-y-3 pt-6 md:pt-4">
-        {/* Pending state: Amount + ActionSlot */}
-        {isPending && (
-          <>
-            <AmountDisplay
-              subtotal={amounts.subtotal}
-              magicDust={amounts.magicDust}
-              exactTotal={amounts.exactTotal}
-              decimals={invoice.decimals}
-              currency={invoice.currency}
-            />
-            <ActionSlot>{children}</ActionSlot>
-          </>
+      <div className="p-4 space-y-4 pt-5">
+        {/* Creator badge */}
+        {source === 'created' && isPending && (
+          <p className="text-center text-xs text-violet-400">
+            Your invoice · Awaiting payment
+          </p>
         )}
 
-        {/* Paid state: PaidConfirmation */}
-        {isPaid && txHash && (
-          <PaidConfirmation
-            amount={amounts.exactTotal}
-            decimals={invoice.decimals}
-            currency={invoice.currency}
-            confirmations={confirmations}
-          />
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          {/* Pending state */}
+          {isPending && (
+            <motion.div
+              key="pending"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              <AmountDisplay
+                subtotal={amounts.subtotal}
+                magicDust={amounts.magicDust}
+                exactTotal={amounts.exactTotal}
+                decimals={invoice.decimals}
+                currency={invoice.currency}
+              />
+              <ActionSlot>{children}</ActionSlot>
 
-        {/* Paid without txHash: fallback (corrupted store data) */}
-        {isPaid && !txHash && (
-          <div className="text-center py-6" data-testid="paid-fallback">
-            <CheckCircleIcon className="text-emerald-400 mx-auto mb-2" size={32} />
-            <p className="text-sm text-zinc-200">Payment detected</p>
-            <p className="text-xs text-zinc-400">Verifying transaction...</p>
-          </div>
-        )}
+              <SecondaryActions
+                onIvePaid={onIvePaid}
+                onCheckPayment={onCheckPayment}
+                onStopPolling={onStopPolling}
+                isSearching={isSearching}
+                isChecking={isChecking}
+                cooldownSeconds={cooldownSeconds}
+                hasMoreOptions={hasMoreOptions}
+                moreOpen={moreOpen}
+                onToggleMore={() => setMoreOpen(v => !v)}
+              />
 
-        {/* Expired state: ExpiredState */}
-        {isExpired && (
-          <ExpiredState
-            amount={amounts.exactTotal}
-            decimals={invoice.decimals}
-            currency={invoice.currency}
-          />
-        )}
+              {moreOpen && hasMoreOptions && (
+                <MoreOptionsPanel
+                  isWatching={isWatching}
+                  onStartWatching={onStartWatching}
+                  onStopWatching={onStopWatching}
+                  onVerifyTxHash={onVerifyTxHash}
+                />
+              )}
 
-        {/* Error banner (visible in any non-paid state) */}
+              {/* Watching status — only for watching mode */}
+              {isWatching && (
+                <PollingStatus mode="watching" />
+              )}
+            </motion.div>
+          )}
+
+          {/* Paid state: PaidConfirmation */}
+          {isPaid && txHash && (
+            <motion.div
+              key="paid"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <PaidConfirmation
+                subtotal={amounts.subtotal}
+                magicDust={amounts.magicDust}
+                exactTotal={amounts.exactTotal}
+                decimals={invoice.decimals}
+                currency={invoice.currency}
+                confirmations={confirmations}
+                finalized={finalized}
+                reorgDetected={reorgDetected}
+              />
+            </motion.div>
+          )}
+
+          {/* Paid without txHash: fallback */}
+          {isPaid && !txHash && (
+            <motion.div
+              key="paid-fallback"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="text-center py-6" data-testid="paid-fallback">
+                <CheckCircleIcon className="text-emerald-400 mx-auto mb-2" size={32} />
+                <p className="text-sm text-zinc-200">Payment detected</p>
+                <p className="text-xs text-zinc-400">Verifying transaction...</p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Expired state */}
+          {isExpired && (
+            <motion.div
+              key="expired"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ExpiredState
+                subtotal={amounts.subtotal}
+                magicDust={amounts.magicDust}
+                exactTotal={amounts.exactTotal}
+                decimals={invoice.decimals}
+                currency={invoice.currency}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Error banner — outside AnimatePresence */}
         {!isPaid && error && onDismissError && (
           <ErrorBanner error={error} onDismiss={onDismissError} />
         )}
       </div>
 
-      {/* Footer */}
-      <div className="px-3 md:px-4 pb-3">
-        {footerDivider}
-        <div className="flex items-center justify-between w-full pt-2">
-          <div className="flex items-center gap-1">
-            <button
-              disabled
-              className="text-[10px] text-zinc-500 inline-flex items-center gap-1 opacity-50 cursor-not-allowed"
-              aria-label="Download PDF"
-            >
-              <DownloadIcon size={12} />
-              Download PDF
-            </button>
-            {isPending && (
-              <button
-                onClick={() => setQrOpen(true)}
-                className="hidden cursor-pointer md:inline-flex items-center gap-1 text-[10px] text-zinc-500 hover:text-white transition-colors px-2 py-1 rounded hover:bg-zinc-800"
-                aria-label="Show QR code for mobile payment"
-              >
-                <QrCodeIcon size={12} />
-                Show QR
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1">
-            {isPaid && txHash && (
-              <a
-                href={getExplorerUrl(invoice.networkId, txHash)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1 px-2 py-1 text-[10px] font-bold rounded-lg bg-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors border border-zinc-700/50"
-              >
-                View Tx
-                <ExternalLinkIcon size={12} />
-              </a>
-            )}
-            <button
-              className="cursor-pointer text-[10px] text-zinc-500 hover:text-red-400 transition-colors font-medium group px-2 py-1 rounded hover:bg-red-500/5"
-              aria-label="Report abuse"
-            >
-              <span className="inline-flex items-center gap-1">
-                <FlagIcon size={12} className="group-hover:fill-current" />
-                Report
-              </span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <PanelFooter
+        isPending={isPending}
+        isPaid={isPaid}
+        txHash={txHash}
+        networkId={invoice.networkId}
+        onQrOpen={() => setQrOpen(true)}
+        onShareOpen={onShareOpen}
+        onPdfExport={handlePdfExport}
+      />
 
       {/* QR Modal — desktop users scan with mobile wallet */}
       {isPending && (
@@ -160,8 +239,13 @@ export function PaymentPanel({
           open={qrOpen}
           onOpenChange={setQrOpen}
           invoice={invoice}
-          amount={formatAmount(amounts.exactTotal, invoice.decimals)}
+          amount={formatAmount(amounts.subtotal, invoice.decimals)}
           exactTotal={amounts.exactTotal}
+          magicDustAmount={
+            amounts.magicDust !== '0'
+              ? formatAmount(amounts.exactTotal, invoice.decimals, { displayDecimals: invoice.decimals, useGrouping: true })
+              : undefined
+          }
         />
       )}
     </div>

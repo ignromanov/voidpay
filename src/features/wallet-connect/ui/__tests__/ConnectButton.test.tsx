@@ -63,7 +63,7 @@ describe('ConnectButton', () => {
 
   describe('truncateAddress', () => {
     it('should truncate Ethereum address correctly', async () => {
-      const { truncateAddress } = await import('../ConnectButton')
+      const { truncateAddress } = await import('@/shared/lib/validation')
 
       const fullAddress = '0x1234567890abcdef1234567890abcdef12345678'
       const truncated = truncateAddress(fullAddress)
@@ -73,7 +73,7 @@ describe('ConnectButton', () => {
     })
 
     it('should handle short addresses gracefully', async () => {
-      const { truncateAddress } = await import('../ConnectButton')
+      const { truncateAddress } = await import('@/shared/lib/validation')
 
       const shortAddress = '0x1234'
       const result = truncateAddress(shortAddress)
@@ -83,7 +83,7 @@ describe('ConnectButton', () => {
     })
 
     it('should handle undefined address', async () => {
-      const { truncateAddress } = await import('../ConnectButton')
+      const { truncateAddress } = await import('@/shared/lib/validation')
 
       const result = truncateAddress(undefined as unknown as string)
 

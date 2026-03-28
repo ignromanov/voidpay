@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import { useReadContracts } from 'wagmi'
 import { type Address, erc20Abi } from 'viem'
-import { isAddress } from 'viem'
+import { isValidAddress } from '@/shared/lib/validation'
 
 export interface TokenMetadata {
   name: string | null
@@ -32,7 +32,7 @@ export function useTokenMetadata(
   // Validate address format
   const validAddress = useMemo(() => {
     if (!address) return undefined
-    return isAddress(address) ? (address as Address) : undefined
+    return isValidAddress(address) ? (address as Address) : undefined
   }, [address])
 
   const { data, isLoading, isError, error } = useReadContracts({

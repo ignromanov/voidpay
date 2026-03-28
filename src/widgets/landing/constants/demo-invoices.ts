@@ -7,38 +7,58 @@
  *
  * IMPORTANT: createHash is computed at build time (SSG).
  * encodeInvoice runs during `next build`, not on client.
+ * Dates are computed relative to build time so demos stay fresh.
  */
 
-import { encodeInvoice } from '@/features/invoice-codec'
-import type { RichInvoice } from '@/entities/invoice'
+import { encodeInvoice, generateSalt, deriveMagicDust } from '@/features/invoice-codec'
+import { addMagicDust } from '@/shared/lib/amount-utils'
+import type { Invoice } from '@/shared/lib/invoice-types'
+import type { InvoiceStatus } from '@/widgets/invoice-paper/types'
 
-const BASE_TIMESTAMP = 1704067200 // 2024-01-01 00:00:00 UTC
+/** Demo-only type for landing page invoice rotation */
+interface DemoInvoice {
+  invoiceId: string
+  invoiceUrl: string
+  createdAt: string
+  status: InvoiceStatus
+  txHash?: string
+  txHashValidated?: boolean
+  data: Invoice
+  createHash: string
+}
+
+const DAY = 86400
+const NOW = Math.floor(Date.now() / 1000)
+
+/** ISO 8601 string from unix timestamp */
+function isoDate(ts: number): string {
+  return new Date(ts * 1000).toISOString()
+}
 
 /**
- * Raw demo data without computed hashes
+ * Raw demo data without computed hashes.
+ * Dates are relative to build time to stay fresh across deployments.
  */
-const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
+const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
   // --- Ethereum (1) - Smart Contract Audit [PAID + VALIDATED] ---
   {
-    invoiceId: 'eth-inv-001',
-    invoiceUrl:
-      'https://voidpay.xyz/pay?d=N4IgZglgNgpgziAXKADgQwE4GMAWBaEaRGBNAGhDQwDsVcQBrAeQCUQBfAXUJKpAGNEyACYB7FABsALgDVaYgJoCSLdgE8+AwcNESpMuUq59BQkWvlSZauPIBMzNBizsGLMxxQAVB',
-    createdAt: '2024-01-01T12:00:00.000Z',
+    invoiceId: 'INV-2026-042',
+    invoiceUrl: 'https://voidpay.xyz/pay#demo-eth',
+    createdAt: isoDate(NOW - 7 * DAY),
     status: 'paid',
-    txHash: '0x0000000000000000000000000000000000000000000000000000000000000001',
+    txHash: '0x7a3f1d8e92b4c56f0a1e3d7b8c9f2a4d6e8b0c1d3f5a7e9b2c4d6f8a0e1c3d',
     txHashValidated: true,
     data: {
-      version: 2,
-      invoiceId: 'eth-inv-001',
-      issuedAt: BASE_TIMESTAMP,
-      dueAt: BASE_TIMESTAMP + 86400 * 14,
+      invoiceId: 'INV-2026-042',
+      issuedAt: NOW - 7 * DAY,
+      dueAt: NOW + 7 * DAY,
       notes: 'Audit report pending final sign-off. Payment due upon delivery.',
       networkId: 1,
       currency: 'ETH',
       decimals: 18,
       from: {
         name: 'EtherScale Solutions',
-        walletAddress: '0xdead000000000000000000000000000000000001',
+        walletAddress: '0x5aFe000000000000000000000000000000000001',
         email: 'billing@etherscale.io',
         physicalAddress: '548 Market St, Suite 23000\nSan Francisco, CA 94104\nUSA',
         phone: '+1 415 555 0142',
@@ -57,22 +77,20 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
         { description: 'Smart Contract Security Audit (40 hours)', quantity: 40, rate: '125000000000000000' },
         { description: 'Gas Optimization Consulting (8 hours)', quantity: 8, rate: '100000000000000000' },
       ],
-      tax: '0',
-      discount: '5',
+      discount: '5%',
+      total: '5510000000000000000',
     },
   },
   // --- Arbitrum (42161) - Game Asset Design [PENDING] ---
   {
-    invoiceId: 'arb-inv-001',
-    invoiceUrl:
-      'https://voidpay.xyz/pay?d=N4IgZglgNgpgziAXKADgQwE4GMAWBaEaRGBNAGhDQwDsVcQBrAeQCUQBfAXUJKpAGNEyACYB7FABsALgDVaYgJoCSLdgE8+AwcNESpMuUq59BQkWvlSZauPIBMzNBizsGLMxxQAVC',
-    createdAt: '2024-01-03T09:30:00.000Z',
+    invoiceId: 'INV-2026-087',
+    invoiceUrl: 'https://voidpay.xyz/pay#demo-arb',
+    createdAt: isoDate(NOW - 2 * DAY),
     status: 'pending',
     data: {
-      version: 2,
-      invoiceId: 'arb-inv-001',
-      issuedAt: BASE_TIMESTAMP + 86400 * 2,
-      dueAt: BASE_TIMESTAMP + 86400 * 32,
+      invoiceId: 'INV-2026-087',
+      issuedAt: NOW - 2 * DAY,
+      dueAt: NOW + 28 * DAY,
       notes: 'Final delivery includes source files and commercial license.',
       networkId: 42161,
       currency: 'USDC',
@@ -98,24 +116,23 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
         { description: 'UI Animation Pack (menus, buttons)', quantity: 1, rate: '800000000' },
         { description: 'Sound Effects Integration', quantity: 1, rate: '400000000' },
       ],
-      tax: '8',
-      discount: '8', // 8% discount (~$192)
+      tax: '8%',
+      discount: '8%',
+      total: '2400000000',
     },
   },
   // --- Optimism (10) - Public Goods Grant [PAID + NOT VALIDATED] ---
   {
-    invoiceId: 'opt-inv-001',
-    invoiceUrl:
-      'https://voidpay.xyz/pay?d=N4IgZglgNgpgziAXKADgQwE4GMAWBaEaRGBNAGhDQwDsVcQBrAeQCUQBfAXUJKpAGNEyACYB7FABsALgDVaYgJoCSLdgE8+AwcNESpMuUq59BQkWvlSZauPIBMzNBizsGLMxxQAVD',
-    createdAt: '2024-01-06T14:15:00.000Z',
+    invoiceId: 'INV-2026-135',
+    invoiceUrl: 'https://voidpay.xyz/pay#demo-op',
+    createdAt: isoDate(NOW - 5 * DAY),
     status: 'paid',
-    txHash: '0x0000000000000000000000000000000000000000000000000000000000000002',
+    txHash: '0xb2e4f6a8d0c1e3f5a7b9d1f3e5a7c9d1f3e5a7b9d1f3e5a7c9d1f3e5a7b9d1f3',
     txHashValidated: false, // Shows warning indicator
     data: {
-      version: 2,
-      invoiceId: 'opt-inv-001',
-      issuedAt: BASE_TIMESTAMP + 86400 * 5,
-      dueAt: BASE_TIMESTAMP + 86400 * 35,
+      invoiceId: 'INV-2026-135',
+      issuedAt: NOW - 5 * DAY,
+      dueAt: NOW + 25 * DAY,
       notes: 'Thank you for supporting public goods. Milestone 1 of 3.',
       networkId: 10,
       currency: 'OP',
@@ -126,7 +143,7 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
         walletAddress: '0xBABe000000000000000000000000000000000005',
         email: 'grants@optimisticbuilders.org',
         physicalAddress: '1 Public Goods Way\nOptimism City, OP 10001\nDecentralized',
-        phone: '+1 800 OPT GOOD',
+        phone: '+1 800 555 0100',
         taxId: 'US 55-1234567',
       },
       client: {
@@ -142,23 +159,22 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
         { description: 'Community Tooling Development', quantity: 1, rate: '8000000000000000000000' },
         { description: 'Documentation & Onboarding', quantity: 1, rate: '2000000000000000000000' },
       ],
-      tax: '0',
-      discount: '0',
+      total: '25000000000000000000000',
     },
   },
   // --- Polygon (137) - Data Analytics Service [OVERDUE] ---
+  // Note: status is set explicitly for landing page display.
+  // dueAt is in the future so duplicated invoices aren't immediately overdue.
   {
-    invoiceId: 'poly-inv-001',
-    invoiceUrl:
-      'https://voidpay.xyz/pay?d=N4IgZglgNgpgziAXKADgQwE4GMAWBaEaRGBNAGhDQwDsVcQBrAeQCUQBfAXUJKpAGNEyACYB7FABsALgDVaYgJoCSLdgE8+AwcNESpMuUq59BQkWvlSZauPIBMzNBizsGLMxxQAVE',
-    createdAt: '2024-01-02T16:45:00.000Z',
+    invoiceId: 'INV-2026-198',
+    invoiceUrl: 'https://voidpay.xyz/pay#demo-poly',
+    createdAt: isoDate(NOW - 14 * DAY),
     status: 'overdue',
     data: {
-      version: 2,
-      invoiceId: 'poly-inv-001',
-      issuedAt: BASE_TIMESTAMP + 86400 * 1,
-      dueAt: BASE_TIMESTAMP + 86400 * 15,
-      notes: 'Q1 2024 subscription. Auto-renewal unless cancelled 7 days prior.',
+      invoiceId: 'INV-2026-198',
+      issuedAt: NOW - 14 * DAY,
+      dueAt: NOW + 16 * DAY,
+      notes: 'Q1 2026 subscription. Auto-renewal unless cancelled 7 days prior.',
       networkId: 137,
       currency: 'USDC',
       tokenAddress: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
@@ -185,30 +201,46 @@ const RAW_DEMO_INVOICES: Omit<RichInvoice, 'createHash'>[] = [
         { description: 'API Access - Unlimited Calls', quantity: 1, rate: '500000000' },
         { description: 'Custom Dashboard Setup', quantity: 1, rate: '750000000' },
       ],
-      tax: '18',
-      discount: '10',
+      tax: '18%',
+      discount: '10%',
+      total: '6210000000',
     },
   },
 ]
 
 /**
- * Demo invoices with pre-computed createHash for /create page navigation
- * Hash is computed at module load time (build time for SSG)
+ * Demo invoices with pre-computed createHash for /create page navigation.
+ * Each demo gets a deterministic salt → magicDust linkage so the dust badge
+ * shows correctly when decoded on /pay.
  */
-export const DEMO_INVOICES: RichInvoice[] = RAW_DEMO_INVOICES.map((invoice) => {
-  try {
-    return {
-      ...invoice,
-      createHash: encodeInvoice(invoice.data),
-    }
-  } catch (error) {
-    // Graceful degradation: button won't work but page loads
-    console.error('[DEMO_INVOICES] Failed to encode:', invoice.invoiceId, error)
-    return {
-      ...invoice,
-      createHash: '',
-    }
-  }
-})
+export async function getDemoInvoices(): Promise<DemoInvoice[]> {
+  return Promise.all(
+    RAW_DEMO_INVOICES.map(async (invoice) => {
+      try {
+        // Generate salt and derive dust deterministically
+        const salt = generateSalt()
+        const dust = deriveMagicDust(salt)
+        const totalWithDust = addMagicDust(invoice.data.total!, dust)
+        const dataWithDust: Invoice = {
+          ...invoice.data,
+          total: totalWithDust,
+          magicDust: dust.toString(),
+        }
+        return {
+          ...invoice,
+          data: dataWithDust,
+          createHash: await encodeInvoice(dataWithDust, salt),
+        }
+      } catch (error) {
+        // Graceful degradation: button won't work but page loads
+        console.error('[DEMO_INVOICES] Failed to encode:', invoice.invoiceId, error)
+        return {
+          ...invoice,
+          createHash: '',
+        }
+      }
+    }),
+  )
+}
 
 export const ROTATION_INTERVAL_MS = 60_000 // 60 seconds for viewing animations

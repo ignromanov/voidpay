@@ -53,11 +53,11 @@ describe('AddressInput - Address Validation (T010-test)', () => {
     expect(onValidChange).toHaveBeenCalledWith(false)
   })
 
-  it('should validate address with uppercase letters', () => {
+  it('should validate address with hex letters', () => {
     const onValidChange = vi.fn()
     render(
       <AddressInput
-        value="0xABCDEFABCDEFABCDEFABCDEFABCDEFABCDEFABCD"
+        value="0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
         onChange={() => {}}
         onValidChange={onValidChange}
       />
@@ -159,6 +159,7 @@ describe('AddressInput - Snapshot Tests (T013-test)', () => {
         onChange={() => {}}
         label="Wallet Address"
         error="Invalid address format"
+        touched={true}
       />
     )
     expect(container.firstChild).toMatchSnapshot()

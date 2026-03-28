@@ -6,7 +6,7 @@
  */
 
 import type { StateCreator } from 'zustand'
-import type { NetworkTheme } from '@/shared/ui/constants/brand-tokens'
+import type { NetworkTheme } from '@/shared/ui'
 import type { CreatorStore } from './types'
 
 /**
@@ -30,13 +30,14 @@ export interface UiSlice {
  * Note: This slice should be excluded from persist middleware
  * to avoid saving transient UI state.
  */
-export const createUiSlice: StateCreator<CreatorStore, [], [], UiSlice> = (set) => ({
+export const createUiSlice: StateCreator<CreatorStore, [], [], UiSlice> = (set, get) => ({
   // ========== State ==========
   networkTheme: 'ethereum',
 
   // ========== UI State Management ==========
 
   setNetworkTheme: (theme) => {
+    if (get().networkTheme === theme) return
     set({ networkTheme: theme })
   },
 })

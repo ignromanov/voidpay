@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { isAddress } from 'viem'
+import { isValidAddress } from '@/shared/lib/validation'
 import type { DraftState, LineItem } from '@/shared/lib/invoice-types'
 
 /**
@@ -27,7 +27,7 @@ export function useFormValidation(draft: DraftState | null, lineItems: LineItem[
 
     // Wallet address validation (EIP-55 checksum via viem)
     const hasValidSenderWallet = Boolean(
-      data.from?.walletAddress && isAddress(data.from.walletAddress)
+      data.from?.walletAddress && isValidAddress(data.from.walletAddress)
     )
 
     // Line items validation (min 1, each must have description and rate > 0)
@@ -89,7 +89,7 @@ export function useFormValidation(draft: DraftState | null, lineItems: LineItem[
     return {
       invoiceId: Boolean(data.invoiceId && data.invoiceId.length > 0),
       senderName: Boolean(data.from?.name && data.from.name.length > 0),
-      senderWallet: Boolean(data.from?.walletAddress && isAddress(data.from.walletAddress)),
+      senderWallet: Boolean(data.from?.walletAddress && isValidAddress(data.from.walletAddress)),
       clientName: Boolean(data.client?.name && data.client.name.length > 0),
       lineItems:
         lineItems.length >= 1 &&

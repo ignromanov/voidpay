@@ -24,7 +24,7 @@ export function AudienceCard({
   iconColor = 'text-violet-500',
 }: AudienceCardProps) {
   return (
-    <div className="group rounded-3xl border border-zinc-800/50 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-8 backdrop-blur-sm transition-all hover:border-zinc-700 hover:shadow-lg hover:shadow-zinc-900/20">
+    <div className="group rounded-3xl border border-zinc-800/50 bg-gradient-to-b from-zinc-900/60 to-zinc-950/60 p-5 backdrop-blur-sm transition-all hover:border-zinc-700 hover:shadow-lg hover:shadow-zinc-900/20 md:p-8">
       {/* Icon + Title row */}
       <div className="mb-4 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950">

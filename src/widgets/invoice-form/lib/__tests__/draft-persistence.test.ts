@@ -141,10 +141,10 @@ describe('Draft Persistence', () => {
       })
 
       // Both updates should be preserved
-      expect(result.current.activeDraft?.data.from.name).toBe('Test Sender')
-      expect(result.current.activeDraft?.data.from.email).toBe('test@example.com')
-      expect(result.current.activeDraft?.data.client.name).toBe('Test Client')
-      expect(result.current.activeDraft?.data.client.email).toBe('client@example.com')
+      expect(result.current.activeDraft?.data.from!.name).toBe('Test Sender')
+      expect(result.current.activeDraft?.data.from!.email).toBe('test@example.com')
+      expect(result.current.activeDraft?.data.client!.name).toBe('Test Client')
+      expect(result.current.activeDraft?.data.client!.email).toBe('client@example.com')
     })
 
     it('should handle special characters in text fields', () => {

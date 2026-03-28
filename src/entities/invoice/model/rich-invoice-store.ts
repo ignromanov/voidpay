@@ -1,54 +1,43 @@
 /**
- * Viewed Invoice Store
+ * Tracked Invoice Store
  *
- * Persists viewed invoices for navigation history and status tracking.
+ * Persists tracked invoices for navigation history and payment status tracking.
  * Uses zustand with localStorage persistence.
  */
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { INVOICE_VIEW_STORE_KEY } from '@/shared/config'
-import type { Invoice } from './schema'
 import type { ConfirmationProgress } from '@/shared/lib/invoice-types'
 
-/**
- * Status of a viewed invoice
- * - pending: Awaiting payment
- * - paid: Payment confirmed
- * - overdue: Past due date
- * - draft: Being edited
- * - empty: No invoice data (placeholder)
- */
-export type RichInvoiceStatus = 'pending' | 'paid' | 'overdue' | 'draft' | 'empty'
+export type InvoiceSource = 'created' | 'received'
 
 /**
- * A viewed invoice entry
+ * A tracked invoice entry
  */
-export interface RichInvoice {
+export interface TrackedInvoice {
   /** Unique invoice ID from the invoice data */
   invoiceId: string
   /** Generated URL for sharing */
   invoiceUrl: string
-  /** Full invoice data */
-  data: Invoice
-  /** Current payment status */
-  status: RichInvoiceStatus
+  /** Whether invoice was created by or received by the user */
+  source: InvoiceSource
   /** Transaction hash (if paid) */
-  txHash?: string
+  txHash?: `0x${string}`
   /** Whether txHash has been validated on-chain */
   txHashValidated?: boolean
+  /** Whether payment has been fully finalized (deep confirmation) */
+  finalized?: boolean
   /** Block confirmation progress (during polling) */
-  confirmations?: ConfirmationProgress | undefined
+  confirmations?: ConfirmationProgress
   /** Last payment error message */
-  error?: string | null | undefined
+  error?: string | null
   /** ISO 8601 timestamp when entry was created */
   createdAt: string
   /** ISO 8601 timestamp when invoice was last viewed */
   viewedAt?: string
   /** ISO 8601 timestamp when invoice was paid */
   paidAt?: string
-  /** Pre-generated hash for /create# template link (optional, for demo invoices) */
-  createHash?: string
 }
 
 /**
@@ -56,84 +45,114 @@ export interface RichInvoice {
  */
 const MAX_INVOICES = 50
 
-interface RichInvoiceState {
-  /** Schema version for future migrations */
-  version: 1
-  /** List of invoices, sorted by createdAt desc */
-  invoices: RichInvoice[]
+/**
+ * Shared upsert logic for addInvoice and trackView.
+ * Merges data into existing entry (or creates new), returns updated array.
+ */
+// Allows undefined values for optional fields (needed for exactOptionalPropertyTypes)
+type UpsertData = {
+  [K in keyof TrackedInvoice]?: TrackedInvoice[K] | undefined
+} & { invoiceId: string }
+
+function _upsertInvoice(
+  invoices: TrackedInvoice[],
+  data: UpsertData,
+): TrackedInvoice[] {
+  const existing = invoices.find((inv) => inv.invoiceId === data.invoiceId)
+  const base = {
+    ...existing,
+    ...data,
+    createdAt: existing?.createdAt ?? new Date().toISOString(),
+  }
+
+  if (!base.invoiceUrl || !base.source) {
+    console.warn('[TrackedInvoiceStore] Skipping upsert: missing required fields', data.invoiceId)
+    return invoices
+  }
+
+  // Safe: required fields verified by guard above, optional undefined fields are valid at runtime
+  const merged = {
+    ...base,
+    invoiceId: base.invoiceId,
+    invoiceUrl: base.invoiceUrl,
+    source: base.source,
+    createdAt: base.createdAt,
+  } as TrackedInvoice
+
+  const filtered = invoices.filter((inv) => inv.invoiceId !== data.invoiceId)
+  return [merged, ...filtered].slice(0, MAX_INVOICES)
 }
 
-interface RichInvoiceActions {
-  /** Add a new invoice to the store */
-  addInvoice: (invoice: Omit<RichInvoice, 'createdAt'>) => void
-  /** Update the status of an existing invoice */
-  updateStatus: (invoiceId: string, status: RichInvoiceStatus) => void
-  /** Set transaction hash for an invoice */
-  setTxHash: (invoiceId: string, txHash: string, validated?: boolean) => void
-  /** Set block confirmation progress */
+interface TrackedInvoiceState {
+  invoices: TrackedInvoice[]
+}
+
+interface TrackedInvoiceStore extends TrackedInvoiceState {
+  // actions:
+  addInvoice: (invoice: Omit<TrackedInvoice, 'createdAt'>) => void
+  trackView: (data: {
+    invoiceId: string
+    invoiceUrl: string
+    source: InvoiceSource
+    viewedAt: string
+  }) => void
+  setTxHash: (invoiceId: string, txHash: `0x${string}`, validated?: boolean) => void
+  setValidated: (invoiceId: string, validated: boolean) => void
+  setFinalized: (invoiceId: string) => void
   setConfirmations: (invoiceId: string, confirmations?: ConfirmationProgress) => void
-  /** Set or clear payment error */
   setError: (invoiceId: string, error: string | null) => void
-  /** Remove an invoice from the store */
+  getInvoice: (invoiceId: string) => TrackedInvoice | undefined
   removeInvoice: (invoiceId: string) => void
-  /** Get an invoice by ID */
-  getInvoice: (invoiceId: string) => RichInvoice | undefined
-  /** Clear all invoices */
   clearAll: () => void
+  resetPaymentState: (invoiceId: string) => void
 }
-
-type RichInvoiceStore = RichInvoiceState & RichInvoiceActions
 
 /**
- * Hook to access viewed invoices store
+ * Hook to access tracked invoices store
  */
-export const useRichInvoiceStore = create<RichInvoiceStore>()(
+export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
   persist(
     (set, get) => ({
-      version: 1,
       invoices: [],
 
       addInvoice: (invoice) => {
         set((state) => {
-          // Check if invoice already exists
-          const existingIndex = state.invoices.findIndex(
+          const existing = state.invoices.find(
             (inv) => inv.invoiceId === invoice.invoiceId
           )
-
-          const newInvoice: RichInvoice = {
-            ...invoice,
-            createdAt: new Date().toISOString(),
+          // W3-013: reset payment-critical fields on merge to prevent stale state
+          const safeDefaults = {
+            txHash: undefined,
+            txHashValidated: undefined,
+            paidAt: undefined,
+            finalized: undefined,
+            confirmations: undefined,
+            error: undefined,
           }
-
-          let updatedInvoices: RichInvoice[]
-
-          if (existingIndex >= 0) {
-            // Update existing invoice and move to top
-            updatedInvoices = [
-              newInvoice,
-              ...state.invoices.filter((inv) => inv.invoiceId !== invoice.invoiceId),
-            ]
-          } else {
-            // Add new invoice at the top
-            updatedInvoices = [newInvoice, ...state.invoices]
-          }
-
-          // Limit to MAX_INVOICES
           return {
-            invoices: updatedInvoices.slice(0, MAX_INVOICES),
+            invoices: _upsertInvoice(state.invoices, {
+              ...safeDefaults,
+              ...invoice,
+              createdAt: existing?.createdAt ?? new Date().toISOString(),
+            }),
           }
         })
       },
 
-      updateStatus: (invoiceId, status) => {
+      trackView: (data) => {
         set((state) => ({
-          invoices: state.invoices.map((inv) =>
-            inv.invoiceId === invoiceId ? { ...inv, status } : inv
-          ),
+          invoices: _upsertInvoice(state.invoices, data),
         }))
       },
 
       setTxHash: (invoiceId, txHash, validated = false) => {
+        const TX_HASH_REGEX = /^0x[a-fA-F0-9]{64}$/
+        if (!TX_HASH_REGEX.test(txHash)) return
+
+        const exists = get().invoices.some(inv => inv.invoiceId === invoiceId)
+        if (!exists) {
+          console.warn('[TrackedInvoiceStore] setTxHash called for unknown invoice:', { invoiceId, txHash })
+        }
         set((state) => ({
           invoices: state.invoices.map((inv) =>
             inv.invoiceId === invoiceId
@@ -141,7 +160,6 @@ export const useRichInvoiceStore = create<RichInvoiceStore>()(
                   ...inv,
                   txHash,
                   txHashValidated: validated,
-                  status: 'paid' as const,
                   ...(validated ? { paidAt: new Date().toISOString() } : {}),
                 }
               : inv
@@ -149,11 +167,50 @@ export const useRichInvoiceStore = create<RichInvoiceStore>()(
         }))
       },
 
-      setConfirmations: (invoiceId, confirmations) => {
+      setValidated: (invoiceId, validated) => {
+        // W3-014: guard against missing txHash
+        const invoice = get().invoices.find(inv => inv.invoiceId === invoiceId)
+        if (!invoice?.txHash) return
+
         set((state) => ({
           invoices: state.invoices.map((inv) =>
-            inv.invoiceId === invoiceId ? { ...inv, confirmations } : inv
+            inv.invoiceId === invoiceId
+              ? {
+                  ...inv,
+                  txHashValidated: validated,
+                  ...(validated ? { paidAt: new Date().toISOString() } : {}),
+                }
+              : inv
           ),
+        }))
+      },
+
+      setFinalized: (invoiceId) => {
+        const invoice = get().invoices.find(inv => inv.invoiceId === invoiceId)
+        if (!invoice?.txHashValidated) return
+        set((state) => ({
+          invoices: state.invoices.map((inv) =>
+            inv.invoiceId === invoiceId
+              ? { ...inv, finalized: true }
+              : inv
+          ),
+        }))
+      },
+
+      setConfirmations: (invoiceId, confirmations) => {
+        set((state) => ({
+          invoices: state.invoices.map((inv) => {
+            if (inv.invoiceId !== invoiceId) return inv
+            if (confirmations === undefined) {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { confirmations: _c, ...rest } = inv
+              return rest
+            }
+            // Same-value guard: skip update if nothing changed
+            if (inv.confirmations?.current === confirmations.current &&
+                inv.confirmations?.required === confirmations.required) return inv
+            return { ...inv, confirmations }
+          }),
         }))
       },
 
@@ -161,7 +218,7 @@ export const useRichInvoiceStore = create<RichInvoiceStore>()(
         set((state) => ({
           invoices: state.invoices.map((inv) =>
             inv.invoiceId === invoiceId
-              ? { ...inv, error: error ?? undefined }
+              ? { ...inv, error }
               : inv
           ),
         }))
@@ -180,11 +237,32 @@ export const useRichInvoiceStore = create<RichInvoiceStore>()(
       clearAll: () => {
         set({ invoices: [] })
       },
+
+      resetPaymentState: (invoiceId) => {
+        set((state) => ({
+          invoices: state.invoices.map((inv) => {
+            if (inv.invoiceId !== invoiceId) return inv
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { txHash, txHashValidated, paidAt, confirmations, finalized, ...rest } = inv
+            return rest
+          }),
+        }))
+      },
     }),
     {
       name: INVOICE_VIEW_STORE_KEY,
       version: 1,
-      migrate: (persisted) => persisted as RichInvoiceStore,
+      migrate: (persisted): TrackedInvoiceState => {
+        try {
+          const state = persisted as Record<string, unknown>
+          if (!state || typeof state !== 'object' || !Array.isArray(state.invoices)) {
+            return { invoices: [] }
+          }
+          return { invoices: state.invoices as TrackedInvoice[] }
+        } catch {
+          return { invoices: [] }
+        }
+      },
     }
   )
 )

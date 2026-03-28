@@ -8,7 +8,7 @@ export const privacyContent = {
     title: 'Privacy Policy | VoidPay',
     description:
       'VoidPay privacy policy. Zero-backend architecture means your invoice data lives only in the URL hash fragment, never on our servers.',
-    lastUpdated: 'January 2026',
+    lastUpdated: 'March 2026',
   },
 
   sections: [
@@ -39,7 +39,7 @@ export const privacyContent = {
         {
           label: 'Analytics or telemetry',
           description:
-            'we use privacy-focused Umami analytics on the landing page only — you can opt out via the footer toggle. No data is collected on /create or /pay pages',
+            'we use privacy-focused Umami analytics across the application — you can opt out via the footer toggle. No personal or financial data is collected',
         },
         { label: 'Cookies for tracking', description: 'we use no cookies whatsoever' },
       ],

@@ -4,7 +4,9 @@ import { ExpiredState } from '../ui/ExpiredState'
 
 describe('ExpiredState', () => {
   const defaultProps = {
-    amount: '5000000',
+    subtotal: '5000000',
+    magicDust: '0',
+    exactTotal: '5000000',
     decimals: 6,
     currency: 'USDC',
   }
@@ -35,5 +37,15 @@ describe('ExpiredState', () => {
   it('renders "Payment actions are disabled" text', () => {
     render(<ExpiredState {...defaultProps} />)
     expect(screen.getByText('Payment actions are disabled')).toBeDefined()
+  })
+
+  it('shows MagicDustBadge when magicDust is present', () => {
+    render(<ExpiredState {...defaultProps} subtotal="5000000" magicDust="42" />)
+    expect(screen.getByText(/Was due/i)).toBeDefined()
+  })
+
+  it('hides MagicDustBadge when magicDust is zero', () => {
+    render(<ExpiredState {...defaultProps} />)
+    expect(screen.queryByText(/Was due/i)).toBeNull()
   })
 })

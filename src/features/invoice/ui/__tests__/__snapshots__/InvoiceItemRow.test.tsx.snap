@@ -17,7 +17,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
           class="relative"
         >
           <input
-            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
             id="test-id"
             placeholder="Item description"
             type="text"
@@ -36,7 +36,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
           class="relative"
         >
           <input
-            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
             id="test-id"
             max="99999"
             min="0.01"
@@ -58,7 +58,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
           class="relative"
         >
           <input
-            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
             id="test-id"
             inputmode="decimal"
             maxlength="24"
@@ -91,7 +91,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
   </div>
   <button
     aria-label="Remove item"
-    class="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
+    class="inline-flex cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium active:scale-[0.97] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
   >
     <svg
       class="h-4 w-4"
@@ -148,7 +148,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
           class="relative"
         >
           <input
-            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
             id="test-id"
             placeholder="Item description"
             type="text"
@@ -167,7 +167,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
           class="relative"
         >
           <input
-            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
             id="test-id"
             max="99999"
             min="0.01"
@@ -189,7 +189,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
           class="relative"
         >
           <input
-            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
             id="test-id"
             inputmode="decimal"
             maxlength="24"
@@ -222,7 +222,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
   </div>
   <button
     aria-label="Remove item"
-    class="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
+    class="inline-flex cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium active:scale-[0.97] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
   >
     <svg
       class="h-4 w-4"
@@ -279,7 +279,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
           class="relative"
         >
           <input
-            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
             id="test-id"
             placeholder="Item description"
             type="text"
@@ -298,7 +298,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
           class="relative"
         >
           <input
-            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9"
             id="test-id"
             max="99999"
             min="0.01"
@@ -320,7 +320,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
           class="relative"
         >
           <input
-            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
+            class="flex w-full rounded-lg border bg-zinc-900/50 px-3 py-3 text-base text-zinc-100 placeholder:text-zinc-500 transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500 focus:shadow-[0_0_15px_rgba(124,58,237,0.3)] disabled:cursor-not-allowed disabled:opacity-50 border-zinc-800 h-9 font-mono"
             id="test-id"
             inputmode="decimal"
             maxlength="24"
@@ -336,7 +336,7 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
     >
       <div
         class="flex h-9 w-full items-center rounded-lg border border-zinc-800 bg-zinc-950/50 px-2 font-mono text-sm text-zinc-400 overflow-hidden"
-        title="0.00 ETH"
+        title="0.00 USDC"
       >
         <span
           class="truncate tabular-nums flex-1 min-w-0"
@@ -346,14 +346,14 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`
         <span
           class="ml-1 flex-shrink-0 text-xs"
         >
-          ETH
+          USDC
         </span>
       </div>
     </div>
   </div>
   <button
     aria-label="Remove item"
-    class="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
+    class="inline-flex cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium active:scale-[0.97] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 w-9 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100 text-zinc-500 hover:bg-red-950/20 hover:text-red-400"
   >
     <svg
       class="h-4 w-4"

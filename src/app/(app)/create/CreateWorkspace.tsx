@@ -1,6 +1,7 @@
 'use client'
 
-import { useLayoutEffect, useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Edit3Icon,
   EyeIcon,
@@ -9,6 +10,8 @@ import {
   Loader2Icon,
 } from '@/shared/ui/icons'
 
+import { track, AnalyticsEvent } from '@/features/analytics'
+import { getNetworkName } from '@/entities/network'
 import { parseInvoiceHash } from '@/features/invoice-codec'
 import {
   validateInvoiceForGeneration,
@@ -17,8 +20,8 @@ import {
 } from '@/features/generate-link'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
-import type { Invoice } from '@/shared/lib/invoice-types'
 import { useHashFragment } from '@/shared/lib/hooks'
+import { urlToRoute } from '@/shared/lib/navigation'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
@@ -27,37 +30,26 @@ import { Heading, Text } from '@/shared/ui/typography'
 import { MobileTabBar, type TabItem } from '@/shared/ui/mobile-tab-bar'
 import { InvoiceForm } from '@/widgets/invoice-form'
 import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widgets/invoice-paper'
-import { ShareModal } from '@/widgets/share-modal'
 import { SYNC_STATUS_CONFIG } from './constants'
 
-/**
- * CreateWorkspace — Split-pane invoice creation interface
- *
- * Features:
- * - Left pane: InvoiceForm with toggles and Generate button
- * - Right pane: Live preview with ScaledInvoicePreview
- * - Mobile: Tab bar to switch between editor and preview
- * - URL hash decoding (e.g., /create#H4sI...)
- * - Fullscreen preview modal on click
- * - Sets network theme in store for dynamic background
- */
 export function CreateWorkspace() {
   const hash = useHashFragment()
-  const [mobileTab, setMobileTab] = useState<string>('editor')
+  const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor')
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
-  // ShareModal state
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
-  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
-  const [generatedInvoice, setGeneratedInvoice] = useState<Invoice | null>(null)
+  const router = useRouter()
   const [isGenerating, setIsGenerating] = useState(false)
 
   const activeDraft = useCreatorStore((s) => s.activeDraft)
-  const includeOgImage = useCreatorStore((s) => s.preferences.includeOgImage)
   const updateDraft = useCreatorStore((s) => s.updateDraft)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
+  const clearDraft = useCreatorStore((s) => s.clearDraft)
   const draftSyncStatus = useCreatorStore((s) => s.draftSyncStatus)
+
+  useEffect(() => {
+    if (!activeDraft) createNewDraft()
+  }, [activeDraft, createNewDraft])
 
   const tabs = useMemo<TabItem[]>(
     () => [
@@ -75,102 +67,121 @@ export function CreateWorkspace() {
     []
   )
 
-  // Decode URL hash on mount/change (useLayoutEffect for no visual flicker)
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!hash) return
 
-    const result = parseInvoiceHash(hash)
-    if (result.success) {
-      // updateDraft auto-syncs lineItems when items provided
-      updateDraft(result.data)
-      // Silent success - no toast per spec (avoid notification fatigue)
-    } else {
-      toast.error(result.error.message)
-      // Do NOT clear store on error (per spec edge case)
-    }
+    let cancelled = false
+    void (async () => {
+      const result = await parseInvoiceHash(hash)
+      if (cancelled) return
+      if (result.success) {
+        updateDraft(result.data)
+      } else {
+        // Do NOT clear store on error (per spec edge case)
+        toast.error(result.error.message)
+      }
+    })()
+    return () => { cancelled = true }
   }, [hash, updateDraft])
 
-  const invoiceData = useMemo(() => activeDraft?.data, [activeDraft])
+  const invoiceData = activeDraft?.data
 
-  // Update network theme when invoice networkId changes
   useEffect(() => {
     const theme = getNetworkTheme(invoiceData?.networkId ?? 1)
     setNetworkTheme(theme)
   }, [invoiceData?.networkId, setNetworkTheme])
 
   const handlePreviewClick = useCallback(() => {
-    if (invoiceData) {
+    if (useCreatorStore.getState().activeDraft?.data) {
       setIsPreviewOpen(true)
     }
-  }, [invoiceData])
+  }, [])
+
+  // Touch swipe to switch between Editor/Preview on mobile
+  const touchStartRef = useRef(0)
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    if (touch) touchStartRef.current = touch.clientX
+  }, [])
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const touch = e.changedTouches[0]
+    if (!touch) return
+    const diff = touch.clientX - touchStartRef.current
+    if (Math.abs(diff) > 50) {
+      setMobileTab(diff > 0 ? 'editor' : 'preview')
+    }
+  }, [])
 
   const handleResetInvoice = useCallback(() => {
     createNewDraft()
-    toast.success('Invoice reset', {
-      description: 'Started a fresh invoice with default values',
+    toast.success('Form cleared', {
+      description: 'All fields reset to defaults',
     })
   }, [createNewDraft])
 
-  /**
-   * Handle "Generate Invoice Link" button click
-   *
-   * 1. Validate invoice data
-   * 2. Generate URL with Binary V3 encoding
-   * 3. Add to history
-   * 4. Open ShareModal
-   */
   const handleGenerateLink = useCallback(async () => {
     if (isGenerating) return
 
-    // Get fresh values from store at click time (not render time)
     const { activeDraft, lineItems } = useCreatorStore.getState()
-
     if (!activeDraft) return
 
     setIsGenerating(true)
 
     try {
-      // Validate INSIDE try block
       const validation = validateInvoiceForGeneration(activeDraft.data, lineItems)
 
       if (!validation.isValid) {
-        // Show first error as toast (most important)
+        track(AnalyticsEvent.ERROR_GENERATE, { error_type: 'VALIDATION' })
         const firstError = validation.errors[0]
         toast.error('Cannot generate link', {
           description: firstError?.message ?? 'Please fill in all required fields',
         })
-
-        // If multiple errors, show count
-        if (validation.errors.length > 1) {
-          toast.error(`${validation.errors.length - 1} more issue(s) found`, {
-            description: 'Check the form for other missing fields',
-          })
-        }
         return
       }
 
-      // Show size warning if applicable (edge case, not blocking)
       if (validation.sizeWarning) {
-        // Use error style to draw attention to potential issue
         toast.error('URL size approaching limit', {
           description: 'Consider reducing notes or line items if generation fails.',
         })
       }
 
-      // Generate URL and get baked invoice (with total + magicDust)
-      const { url, invoice } = await generateAndTrackInvoice(activeDraft, lineItems, {
-        includeOG: includeOgImage ?? false,
+      const { url } = await generateAndTrackInvoice(activeDraft, lineItems)
+
+      track(AnalyticsEvent.INVOICE_CREATE, {
+        network: getNetworkName(activeDraft.data.networkId ?? 1).toLowerCase(),
+        token_symbol: activeDraft.data.currency ?? 'ETH',
+        line_item_count: lineItems.length,
       })
 
-      setGeneratedUrl(url)
-      setGeneratedInvoice(invoice)
-      setIsShareModalOpen(true)
+      const fieldsUsed: string[] = []
+      const d = activeDraft.data
+      if (d.notes) fieldsUsed.push('notes')
+      if (d.from?.name) fieldsUsed.push('sender_name')
+      if (d.from?.email) fieldsUsed.push('sender_email')
+      if (d.client?.name) fieldsUsed.push('recipient_name')
+      if (d.client?.email) fieldsUsed.push('recipient_email')
+      if (d.dueAt) fieldsUsed.push('due_date')
+      if (d.tax) fieldsUsed.push('tax')
+      if (d.discount) fieldsUsed.push('discount')
+      if (d.magicDust) fieldsUsed.push('magic_dust')
+      if (useCreatorStore.getState().preferences?.includeOgImage) fieldsUsed.push('og_preview')
+      if (fieldsUsed.length > 0) {
+        track(AnalyticsEvent.INVOICE_FIELD_USAGE, { fields_used: fieldsUsed.join(',') })
+      }
 
-      toast.success('Invoice link generated!', {
-        description: 'Share it with your client to get paid',
-      })
+      // Navigate to /invoice?share=1#hash to auto-open ShareModal
+      const invoiceUrl = new URL(url, window.location.origin)
+      invoiceUrl.pathname = invoiceUrl.pathname.replace('/pay', '/invoice')
+      invoiceUrl.searchParams.set('share', '1')
+      router.replace(urlToRoute(invoiceUrl))
+
+      // Defer draft clearing so the form stays in loading state during navigation
+      // (prevents visible flash of cleared form before route transition)
+      setTimeout(() => clearDraft(), 300)
+      return
     } catch (error) {
       if (error instanceof UrlSizeError) {
+        track(AnalyticsEvent.ERROR_GENERATE, { error_type: 'URL_TOO_LARGE' })
         toast.error('Invoice URL is too large', {
           description: `${error.size} bytes exceeds the ${error.limit} byte limit. Try reducing notes or line items.`,
         })
@@ -179,24 +190,12 @@ export function CreateWorkspace() {
           description: error instanceof Error ? error.message : 'Unknown error',
         })
       }
-    } finally {
       setIsGenerating(false)
     }
-  }, [includeOgImage, isGenerating])
+  }, [isGenerating, clearDraft, router])
 
   return (
     <>
-      {/* ShareModal for generated invoice URL */}
-      {generatedUrl && generatedInvoice && (
-        <ShareModal
-          url={generatedUrl}
-          invoice={generatedInvoice}
-          open={isShareModalOpen}
-          onOpenChange={setIsShareModalOpen}
-        />
-      )}
-
-      {/* Fullscreen preview modal */}
       {invoiceData && (
         <InvoicePreviewModal
           data={invoiceData}
@@ -206,22 +205,22 @@ export function CreateWorkspace() {
         />
       )}
 
-      {/* Mobile Tab Bar - fixed above footer (h-10 = 40px), outside document flow */}
-      <div className="lg:hidden fixed bottom-12 left-0 right-0 z-30 px-4">
-        <MobileTabBar tabs={tabs} activeTab={mobileTab} onTabChange={setMobileTab} />
+      <div className="lg:hidden fixed bottom-[calc(3.25rem+env(safe-area-inset-bottom,0px))] left-0 right-0 z-30 px-4 print:hidden">
+        <MobileTabBar tabs={tabs} activeTab={mobileTab} onTabChange={(id) => setMobileTab(id as 'editor' | 'preview')} />
       </div>
 
-      {/* Main Workspace Container - form and invoice centered together */}
-      {/* Mobile: pb with safe area for tab bar (5rem = 80px base + env safe area) */}
+      {/* Safe area padding for mobile tab bar */}
       <div
-        className="mx-auto flex h-[calc(100vh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 lg:pb-6 lg:py-6 print:h-auto print:max-w-none print:overflow-visible print:p-0"
-        style={{ paddingBottom: 'max(5rem, calc(env(safe-area-inset-bottom, 0px) + 5rem))' }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        className="mx-auto flex h-[calc(100dvh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 lg:pb-6 lg:py-6 print:!h-auto print:!max-w-none print:!overflow-visible print:!p-0"
+        style={{ paddingBottom: 'max(8rem, calc(env(safe-area-inset-bottom, 0px) + 8rem))' }}
       >
-        {/* LEFT: Editor Pane (form sticks to invoice) */}
+        {/* Editor Pane */}
         <Card
           variant="glass"
           className={cn(
-            'w-full lg:w-[400px] xl:w-[440px] 2xl:w-[480px] lg:shrink-0 flex flex-col overflow-hidden lg:max-h-full',
+            'w-full lg:w-[400px] xl:w-[440px] 2xl:w-[480px] lg:shrink-0 flex flex-col overflow-hidden lg:max-h-full print:hidden',
             mobileTab === 'preview' ? 'hidden lg:flex' : 'flex'
           )}
         >
@@ -239,10 +238,10 @@ export function CreateWorkspace() {
                 onClick={handleResetInvoice}
                 variant="ghost"
                 size="sm"
-                className="shrink-0 text-zinc-500 hover:text-zinc-300"
-                title="Reset to new invoice"
+                className="shrink-0 min-h-[44px] min-w-[44px] text-zinc-500 hover:text-zinc-300"
+                title="Clear form and reset to defaults"
               >
-                <RotateCcwIcon className="mr-1.5 h-3.5 w-3.5" />
+                <RotateCcwIcon className="h-3.5 w-3.5" />
                 Reset
               </Button>
             </div>
@@ -251,18 +250,15 @@ export function CreateWorkspace() {
           </div>
         </Card>
 
-        {/* RIGHT: Preview Pane - stretches to fill available height */}
+        {/* Preview Pane */}
         <div
           className={cn(
             'relative flex items-start justify-center',
-            // Fill available space, let ScaledInvoicePreview handle sizing
-            'h-full min-w-[300px] sm:min-w-[400px] lg:min-w-[580px]',
-            // Same padding as form (p-4 sm:p-5 lg:p-6)
+            'h-full w-full sm:min-w-[400px] lg:min-w-[580px]',
             'p-4 sm:p-5 lg:p-6',
-            mobileTab === 'editor' ? 'hidden lg:flex' : 'flex'
+            mobileTab === 'editor' ? 'hidden lg:flex print:!block' : 'flex'
           )}
         >
-          {/* Screen-only scaled preview (hidden during print to avoid flicker) */}
           <ScaledInvoicePreview
             preset="editor"
             printable
@@ -273,25 +269,24 @@ export function CreateWorkspace() {
             <InvoicePaper data={invoiceData} status="draft" />
           </ScaledInvoicePreview>
 
-          {/* Floating Live Preview badge with sync status */}
-          <div className="absolute bottom-6 sm:bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none">
-            <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
-              {SYNC_STATUS_CONFIG[draftSyncStatus].icon === 'loader' ? (
-                <Loader2Icon className="h-3 w-3 animate-spin text-amber-500" />
-              ) : SYNC_STATUS_CONFIG[draftSyncStatus].icon === 'check' ? (
-                <CheckIcon className="h-3 w-3 text-green-500" />
-              ) : (
-                <div
-                  className={cn(
-                    'h-1.5 w-1.5 rounded-full',
-                    SYNC_STATUS_CONFIG[draftSyncStatus].dotColor,
-                    SYNC_STATUS_CONFIG[draftSyncStatus].animate && 'animate-pulse'
+          {/* Floating sync status badge */}
+          {(() => {
+            const sync = SYNC_STATUS_CONFIG[draftSyncStatus]
+            return (
+              <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none print:hidden">
+                <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
+                  {sync.icon === 'loader' ? (
+                    <Loader2Icon className="h-3 w-3 animate-spin text-amber-500" />
+                  ) : sync.icon === 'check' ? (
+                    <CheckIcon className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <div className={cn('h-1.5 w-1.5 rounded-full', sync.dotColor, sync.animate && 'animate-pulse')} />
                   )}
-                />
-              )}
-              {SYNC_STATUS_CONFIG[draftSyncStatus].label}
-            </div>
-          </div>
+                  {sync.label}
+                </div>
+              </div>
+            )
+          })()}
         </div>
 
       </div>

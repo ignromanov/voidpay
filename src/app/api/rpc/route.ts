@@ -14,6 +14,17 @@ import type { JsonRpcRequest, JsonRpcResponse } from '@/features/rpc-proxy'
 
 export const runtime = 'edge'
 
+function isAllowedOrigin(value: string | null, host: string | null): boolean {
+  if (!value) return false
+  try {
+    const hostname = new URL(value).hostname
+    if (host && hostname === host) return true
+    return hostname === 'voidpay.xyz' || hostname.endsWith('.voidpay.xyz')
+  } catch {
+    return false
+  }
+}
+
 /**
  * POST /api/rpc
  * Proxy JSON-RPC requests to blockchain providers
@@ -26,11 +37,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // In production, enforce same-origin policy
   if (process.env.NODE_ENV === 'production') {
-    const isValidOrigin = origin && (origin.includes(host || '') || origin.includes('voidpay.com'))
-    const isValidReferer =
-      referer && (referer.includes(host || '') || referer.includes('voidpay.com'))
-
-    if (!isValidOrigin && !isValidReferer) {
+    if (!isAllowedOrigin(origin, host) && !isAllowedOrigin(referer, host)) {
       return NextResponse.json(
         {
           jsonrpc: '2.0',
@@ -85,16 +92,56 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
-    // Rate limiting (skip for mock mode to avoid blocking development)
+    // Extract chainId from query params (default to Ethereum mainnet)
     const url = new URL(request.url)
+    const chainIdParam = url.searchParams.get('chainId')
+    const chainId = chainIdParam ? Number(chainIdParam) : 1
+
+    if (Number.isNaN(chainId) || !Number.isInteger(chainId) || chainId <= 0) {
+      return NextResponse.json(
+        {
+          jsonrpc: '2.0',
+          error: {
+            code: -32602,
+            message: `Invalid chainId parameter: must be a positive integer`,
+          },
+          id: body.id || null,
+        } as JsonRpcResponse,
+        { status: 400 }
+      )
+    }
+
+    // Rate limiting (skip for mock mode to avoid blocking development)
     const { shouldUseMock } = await import('@/features/rpc-proxy')
+
+    let storedRateLimitResult: Awaited<ReturnType<typeof import('@/features/rpc-proxy').checkRateLimit>> | null = null
 
     if (!shouldUseMock(url)) {
       const { extractIpAddress, checkRateLimit } = await import('@/features/rpc-proxy')
       const ipAddress = extractIpAddress(request.headers)
-      const rateLimitResult = await checkRateLimit(ipAddress)
+      storedRateLimitResult = await checkRateLimit(ipAddress)
 
-      if (!rateLimitResult.allowed) {
+      // Fail-closed: rate limiter unavailable (no Redis) → 503
+      if (storedRateLimitResult.unavailable) {
+        return NextResponse.json(
+          {
+            jsonrpc: '2.0',
+            error: {
+              code: -32603,
+              message: 'Service temporarily unavailable. Please try again later.',
+            },
+            id: body.id || null,
+          } as JsonRpcResponse,
+          {
+            status: 503,
+            headers: {
+              'Retry-After': '30',
+            },
+          }
+        )
+      }
+
+      if (!storedRateLimitResult.allowed) {
         return NextResponse.json(
           {
             jsonrpc: '2.0',
@@ -108,7 +155,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             status: 429,
             headers: {
               'Retry-After': '60',
-              'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+              'X-RateLimit-Limit': storedRateLimitResult.limit.toString(),
               'X-RateLimit-Remaining': '0',
             },
           }
@@ -121,7 +168,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (shouldUseMock(url)) {
       const mockMode = getMockMode(url)
-      const mockResponse = await handleMockRequest(body, mockMode)
+      const mockResponse = await handleMockRequest(body, mockMode, chainId)
 
       return NextResponse.json(mockResponse, {
         status: mockResponse.error ? 400 : 200,
@@ -137,18 +184,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { proxyRequest } = await import('@/features/rpc-proxy')
 
     // Proxy the request with automatic failover
-    const result = await proxyRequest(body)
+    const result = await proxyRequest(body, chainId)
 
-    // Get rate limit info for response headers (if available)
+    // Build rate limit headers from the already-fetched result (avoid second call)
     let rateLimitHeaders: Record<string, string> = {}
-    if (!shouldUseMock(url)) {
-      const { extractIpAddress, checkRateLimit } = await import('@/features/rpc-proxy')
-      const ipAddress = extractIpAddress(request.headers)
-      const rateLimitResult = await checkRateLimit(ipAddress)
-
+    if (storedRateLimitResult) {
       rateLimitHeaders = {
-        'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+        'X-RateLimit-Limit': storedRateLimitResult.limit.toString(),
+        'X-RateLimit-Remaining': storedRateLimitResult.remaining.toString(),
       }
     }
 
@@ -181,7 +224,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         jsonrpc: '2.0',
         error: {
           code: -32603,
-          message: error instanceof Error ? error.message : 'Internal error',
+          message: 'Internal server error',
         },
         id: null,
       } as JsonRpcResponse,

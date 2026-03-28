@@ -6,8 +6,8 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 
-import { UmamiScript } from '@/features/analytics'
 import { APP_URLS, SOCIAL_URLS } from '@/shared/config'
+import { defaultOgImages } from '@/features/og-image'
 import { LandingContent, FAQ_ITEMS } from '@/widgets/landing'
 
 // JSON-LD: FAQPage schema for rich snippets
@@ -119,12 +119,14 @@ export const metadata: Metadata = {
     siteName: 'VoidPay',
     type: 'website',
     locale: 'en_US',
+    images: defaultOgImages().openGraph,
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Crypto Invoices in 30 Seconds - No KYC Required',
     description:
       'Stateless invoicing for freelancers & DAOs. Generate a link, share it, get paid. Zero backend, zero tracking.',
+    images: defaultOgImages().twitter,
   },
   robots: {
     index: true,
@@ -160,9 +162,6 @@ export default function LandingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
       />
-
-      {/* Privacy-focused analytics (landing page only, opt-out via footer) */}
-      <UmamiScript />
 
       <main className="relative min-h-screen">
         <LandingContent />

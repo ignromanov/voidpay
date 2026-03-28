@@ -21,7 +21,7 @@ export const INVOICE_BASE_WIDTH = 794
 export const INVOICE_BASE_HEIGHT = 1123
 
 /** Scale calculation constants */
-const MIN_SCALE = 0.25
+const MIN_SCALE = 0.38
 const HEIGHT_FRACTION = 0.95
 const DEFAULT_INITIAL_SCALE = 0.45
 
@@ -129,6 +129,8 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
 
   // Ref to track last scale for avoiding unnecessary updates
   const lastScaleRef = useRef(startScale)
+  // Track last container width to skip recalc when only height changes (mobile chrome hide/show)
+  const lastWidthRef = useRef(0)
 
   // Memoized scale calculation
   const calculateScale = useCallback(
@@ -182,10 +184,18 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
     const MAX_RETRIES = 20 // ~320ms at 60fps, enough for animations
 
     const updateScale = (width: number, height: number) => {
+      // Skip recalc when only height changes (mobile browser chrome hide/show).
+      // On portrait phones scale is width-limited, so height-only changes
+      // produce the same scale but still trigger expensive paint cycles.
+      // Orientation changes alter width by 100+ px, so they pass through.
+      const widthChanged = Math.abs(width - lastWidthRef.current) > 1
+      if (lastWidthRef.current > 0 && !widthChanged) return
+
       // Cancel any pending RAF
       if (rafId !== null) cancelAnimationFrame(rafId)
 
       rafId = requestAnimationFrame(() => {
+        lastWidthRef.current = width
         const newScale = calculateScale(width, height)
         // Only update if scale actually changed (avoid unnecessary re-renders)
         if (Math.abs(newScale - lastScaleRef.current) > 0.001) {
@@ -223,7 +233,7 @@ export function useInvoiceScale(options: UseInvoiceScaleOptions = {}): UseInvoic
     })
     observer.observe(container)
 
-    // Window resize as additional fallback
+    // Window resize as additional fallback (width-change guard is in updateScale)
     const handleResize = () => {
       const rect = container.getBoundingClientRect()
       if (rect.width > 0 && rect.height > 0) {

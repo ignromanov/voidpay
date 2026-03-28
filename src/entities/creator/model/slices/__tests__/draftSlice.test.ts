@@ -22,7 +22,6 @@ describe('draftSlice', () => {
       lineItems: [],
       draftSyncStatus: 'idle',
       templates: [],
-      history: [],
       preferences: {
         defaultNetworkId: 1,
         defaultCurrency: 'USDC',
@@ -106,7 +105,7 @@ describe('draftSlice', () => {
       const state = useCreatorStore.getState()
       expect(state.activeDraft?.data.networkId).toBe(1)
       expect(state.activeDraft?.data.currency).toBe('USDC')
-      expect(state.activeDraft?.data.from.name).toBe('Test Sender')
+      expect(state.activeDraft?.data.from!.name).toBe('Test Sender')
     })
 
     it('uses fallback defaults when preferences are empty', () => {
@@ -115,7 +114,6 @@ describe('draftSlice', () => {
         activeDraft: null,
         lineItems: [],
         templates: [],
-        history: [],
         preferences: {},
         networkTheme: 'ethereum',
         idCounter: { currentValue: 1, prefix: 'INV' },
@@ -126,11 +124,34 @@ describe('draftSlice', () => {
       createNewDraft()
 
       const state = useCreatorStore.getState()
-      expect(state.activeDraft?.data.invoiceId).toBe('INV-001')
+      const year = new Date().getFullYear()
+      expect(state.activeDraft?.data.invoiceId).toBe(`INV-${year}-001`)
       expect(state.activeDraft?.data.networkId).toBe(42161) // Default: Arbitrum
       expect(state.activeDraft?.data.currency).toBe('USDC')
       expect(state.activeDraft?.data.decimals).toBe(6)
-      expect(state.activeDraft?.data.from.name).toBe('')
+      expect(state.activeDraft?.data.from!.name).toBe('')
+    })
+
+    it('sets tokenAddress from token lookup for default Arbitrum USDC', () => {
+      // Reset store with empty preferences (defaults to Arbitrum + USDC)
+      useCreatorStore.setState({
+        activeDraft: null,
+        lineItems: [],
+        templates: [],
+        preferences: {},
+        networkTheme: 'ethereum',
+        idCounter: { currentValue: 1, prefix: 'INV' },
+      })
+
+      const { createNewDraft } = useCreatorStore.getState()
+
+      createNewDraft()
+
+      const state = useCreatorStore.getState()
+      expect(state.activeDraft?.data.currency).toBe('USDC')
+      expect(state.activeDraft?.data.decimals).toBe(6)
+      expect(state.activeDraft?.data.tokenAddress).toBeDefined()
+      expect(state.activeDraft?.data.tokenAddress).toBe('0xaf88d065e77c8cc2239327c5edb3a432268e5831')
     })
 
     it('creates one default line item', () => {
@@ -150,14 +171,14 @@ describe('draftSlice', () => {
     it('sets default due date 30 days from now', () => {
       const { createNewDraft } = useCreatorStore.getState()
       const now = Math.floor(Date.now() / 1000)
+      const startOfToday = now - (now % 86400)
 
       createNewDraft()
 
       const state = useCreatorStore.getState()
-      const expectedDueAt = now + 30 * 24 * 60 * 60
-      // Allow 5 second tolerance for test execution time
-      expect(state.activeDraft?.data.dueAt).toBeGreaterThanOrEqual(expectedDueAt - 5)
-      expect(state.activeDraft?.data.dueAt).toBeLessThanOrEqual(expectedDueAt + 5)
+      const expectedDueAt = startOfToday + 30 * 24 * 60 * 60
+      // daysFromNowUnix returns midnight-aligned timestamps
+      expect(state.activeDraft?.data.dueAt).toBe(expectedDueAt)
     })
   })
 

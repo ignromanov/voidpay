@@ -13,7 +13,7 @@ describe('Heading', () => {
       renderWithUser(<Heading variant="hero">Hero Title</Heading>)
       const heading = screen.getByText('Hero Title')
       expect(heading).toBeInTheDocument()
-      expect(heading).toHaveClass('text-5xl')
+      expect(heading).toHaveClass('text-4xl')
       expect(heading).toHaveClass('font-black')
       expect(heading).toHaveClass('tracking-tighter')
     })

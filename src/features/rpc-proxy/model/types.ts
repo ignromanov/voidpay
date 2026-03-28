@@ -8,9 +8,15 @@ export type RpcMethod =
   | 'eth_call'
   | 'eth_getBalance'
   | 'eth_getGasPrice'
+  | 'eth_maxPriorityFeePerGas'
+  | 'eth_feeHistory'
   | 'eth_estimateGas'
+  | 'eth_getTransactionCount'
   | 'eth_sendRawTransaction'
+  | 'eth_getTransactionByHash'
   | 'eth_getTransactionReceipt'
+  | 'eth_getBlockByNumber'
+  | 'eth_getCode'
   | 'eth_chainId'
   | 'net_version'
 
@@ -69,6 +75,7 @@ export interface ProxyResult {
   requestId: string
 }
 
+/** @deprecated Use RateLimitResponse from rate-limit.ts instead */
 export interface RateLimitResult {
   allowed: boolean
   remaining: number

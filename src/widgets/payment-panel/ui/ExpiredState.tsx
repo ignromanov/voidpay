@@ -1,14 +1,21 @@
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
 import { XCircleIcon } from '@/shared/ui/icons'
 
 interface ExpiredStateProps {
-  amount: string
+  subtotal: string
+  magicDust: string
+  exactTotal: string
   decimals: number
   currency: string
 }
 
-export function ExpiredState({ amount, decimals, currency }: ExpiredStateProps) {
-  const formattedAmount = formatAmount(amount, decimals)
+export function ExpiredState({ subtotal, magicDust, exactTotal, decimals, currency }: ExpiredStateProps) {
+  const formattedSubtotal = formatAmount(subtotal, decimals)
+  const hasMagicDust = magicDust !== '0'
+  const formattedExact = hasMagicDust
+    ? formatAmount(exactTotal, decimals, { displayDecimals: decimals, useGrouping: true })
+    : null
 
   return (
     <div className="space-y-4">
@@ -31,10 +38,15 @@ export function ExpiredState({ amount, decimals, currency }: ExpiredStateProps) 
       <div className="opacity-50">
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-mono font-bold text-violet-400">
-            {formattedAmount}
+            {formattedSubtotal}
           </span>
           <span className="text-lg text-zinc-500">{currency}</span>
         </div>
+        {hasMagicDust && formattedExact && (
+          <div className="mt-1">
+            <MagicDustBadge label="Was due" amount={formattedExact} currency={currency} variant="dark" />
+          </div>
+        )}
       </div>
     </div>
   )

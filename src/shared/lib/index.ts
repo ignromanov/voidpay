@@ -9,3 +9,6 @@ export {
   createChainTransport,
   createTransportsForChains,
 } from './custom-transport'
+
+// WebView detection
+export { isInAppBrowser } from './detect-webview'

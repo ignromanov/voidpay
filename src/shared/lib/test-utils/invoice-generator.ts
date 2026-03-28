@@ -92,29 +92,40 @@ const SAMPLE_DATA = {
     'DevOps Services',
     'Security Assessment',
   ],
-  currencies: [
+  /** Network-aware tokens: each chain has its own correct addresses */
+  networks: [
     {
-      symbol: 'USDC',
-      decimals: 6,
-      address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as Address,
+      id: 1, tokens: [
+        { symbol: 'ETH', decimals: 18, address: undefined },
+        { symbol: 'USDC', decimals: 6, address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' as Address },
+        { symbol: 'USDT', decimals: 6, address: '0xdAC17F958D2ee523a2206206994597C13D831ec7' as Address },
+        { symbol: 'DAI', decimals: 18, address: '0x6B175474E89094C44Da98b954EeDeAC495271d0F' as Address },
+      ],
     },
     {
-      symbol: 'USDT',
-      decimals: 6,
-      address: '0xdac17f958d2ee523a2206206994597c13d831ec7' as Address,
+      id: 42161, tokens: [
+        { symbol: 'ETH', decimals: 18, address: undefined },
+        { symbol: 'USDC', decimals: 6, address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831' as Address },
+        { symbol: 'USDT', decimals: 6, address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9' as Address },
+        { symbol: 'DAI', decimals: 18, address: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1' as Address },
+      ],
     },
     {
-      symbol: 'DAI',
-      decimals: 18,
-      address: '0x6b175474e89094c44da98b954eedeac495271d0f' as Address,
+      id: 10, tokens: [
+        { symbol: 'ETH', decimals: 18, address: undefined },
+        { symbol: 'USDC', decimals: 6, address: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85' as Address },
+        { symbol: 'USDT', decimals: 6, address: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58' as Address },
+        { symbol: 'DAI', decimals: 18, address: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1' as Address },
+      ],
     },
-    { symbol: 'ETH', decimals: 18, address: undefined },
-  ],
-  chainIds: [
-    { id: 1, name: 'Ethereum' },
-    { id: 42161, name: 'Arbitrum' },
-    { id: 10, name: 'Optimism' },
-    { id: 137, name: 'Polygon' },
+    {
+      id: 137, tokens: [
+        { symbol: 'POL', decimals: 18, address: undefined },
+        { symbol: 'USDC', decimals: 6, address: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359' as Address },
+        { symbol: 'USDT', decimals: 6, address: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F' as Address },
+        { symbol: 'DAI', decimals: 18, address: '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063' as Address },
+      ],
+    },
   ],
 }
 
@@ -122,8 +133,8 @@ const SAMPLE_DATA = {
  * Generates a random invoice with realistic data
  */
 export function generateRandomInvoice(): Invoice {
-  const currency = randomItem(SAMPLE_DATA.currencies)
-  const chainId = randomItem(SAMPLE_DATA.chainIds)
+  const network = randomItem(SAMPLE_DATA.networks)
+  const currency = randomItem(network.tokens)
 
   // Generate timestamps
   const now = Math.floor(Date.now() / 1000)
@@ -158,7 +169,6 @@ export function generateRandomInvoice(): Invoice {
   const includeClientPhone = randomBool(0.4)
 
   const invoice: Invoice = {
-    version: 2,
     invoiceId: generateUUID(),
     issuedAt: iss,
     dueAt: due,
@@ -167,7 +177,7 @@ export function generateRandomInvoice(): Invoice {
         randomInt(7, 30) +
         ' days. Please include invoice number in transaction memo.'
       : undefined,
-    networkId: chainId.id,
+    networkId: network.id,
     currency: currency.symbol,
     tokenAddress: currency.address,
     decimals: currency.decimals,
@@ -188,6 +198,7 @@ export function generateRandomInvoice(): Invoice {
     items: it,
     tax: includeTax ? randomInt(5, 25) + '%' : undefined,
     discount: includeDiscount ? randomInt(5, 20) + '%' : undefined,
+    total: String(randomInt(100000, 999999999)),
   }
 
   return invoice

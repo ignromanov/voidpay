@@ -13,10 +13,10 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { CREATOR_STORE_KEY } from '@/shared/config'
+import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
 import {
   createDraftSlice,
   createTemplateSlice,
-  createHistorySlice,
   createPreferencesSlice,
   createIdCounterSlice,
   createUtilitySlice,
@@ -32,7 +32,6 @@ const initialState = {
   activeDraft: null,
   lineItems: [],
   templates: [],
-  history: [],
   preferences: {},
   idCounter: {
     currentValue: 1,
@@ -126,10 +125,6 @@ const migrateInternal = (persistedState: any, version: number): Partial<CreatorS
         })
       )
 
-      // Get current Unix timestamp in seconds
-      const nowUnix = () => Math.floor(Date.now() / 1000)
-      const daysFromNowUnix = (days: number) => nowUnix() + days * 24 * 60 * 60
-
       // Convert dates from ISO to Unix timestamps
       const issuedAt = oldDraft.issueDate
         ? Math.floor(new Date(oldDraft.issueDate).getTime() / 1000)
@@ -145,7 +140,6 @@ const migrateInternal = (persistedState: any, version: number): Partial<CreatorS
           lastModified: oldDraft.lastModified ?? new Date().toISOString(),
         },
         data: {
-          version: 2,
           invoiceId: oldDraft.invoiceId ?? '',
           issuedAt,
           dueAt,
@@ -241,7 +235,6 @@ export const useCreatorStore = create<CreatorStore>()(
       // ========== Slices ==========
       ...createDraftSlice(...a),
       ...createTemplateSlice(...a),
-      ...createHistorySlice(...a),
       ...createPreferencesSlice(...a),
       ...createIdCounterSlice(...a),
       ...createUtilitySlice(...a),
@@ -323,10 +316,10 @@ export const useCreatorStore = create<CreatorStore>()(
         activeDraft: state.activeDraft,
         lineItems: state.lineItems,
         templates: state.templates,
-        history: state.history,
         preferences: state.preferences,
         idCounter: state.idCounter,
         // Note: networkTheme is intentionally excluded (transient UI state)
+        // Note: history removed — now lives in TrackedInvoiceStore
       }),
     }
   )

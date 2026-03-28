@@ -14,13 +14,13 @@ const SelectGroup = SelectPrimitive.Group
 const SelectValue = SelectPrimitive.Value
 
 const selectTriggerVariants = cva(
-  'flex w-full cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all',
+  'flex w-full cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:flex [&>span]:min-w-0 [&>span]:items-center transition-all',
   {
     variants: {
       size: {
-        default: 'h-10 py-2.5',
-        sm: 'h-8 py-2 text-xs',
-        lg: 'h-11 py-3',
+        default: 'h-11 py-3 text-base',
+        sm: 'h-9 py-2 text-sm',
+        lg: 'h-12 py-3 text-base',
       },
       variant: {
         default: 'border-input bg-transparent shadow-sm focus:ring-1 focus:ring-ring',

@@ -29,6 +29,36 @@ export function getTwitterShareUrl(invoiceUrl: string, text: string = SHARE_TEXT
   return `https://twitter.com/intent/tweet?url=${encodeURIComponent(invoiceUrl)}&text=${encodeURIComponent(text)}`
 }
 
+/** Default subject for email share */
+const EMAIL_SUBJECT = 'Crypto invoice via VoidPay'
+
+/** Default body prefix for email share */
+const EMAIL_BODY =
+  'I just sent you a crypto invoice via VoidPay. Open the link to view and pay:'
+
+interface EmailShareOptions {
+  subject?: string
+  body?: string
+}
+
+/**
+ * Generate email share URL (mailto: link)
+ *
+ * @param invoiceUrl - The invoice URL to share
+ * @param options - Optional subject and body overrides
+ * @returns mailto: URL with encoded subject and body
+ */
+export function getEmailShareUrl(
+  invoiceUrl: string,
+  options?: EmailShareOptions
+): string {
+  const subject = encodeURIComponent(options?.subject ?? EMAIL_SUBJECT)
+  const body = encodeURIComponent(
+    `${options?.body ?? EMAIL_BODY}\n\n${invoiceUrl}`
+  )
+  return `mailto:?subject=${subject}&body=${body}`
+}
+
 /**
  * Check if Web Share API is supported
  *

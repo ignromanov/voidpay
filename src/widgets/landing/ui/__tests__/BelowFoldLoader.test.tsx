@@ -5,9 +5,9 @@ import { BelowFoldLoader } from '../BelowFoldLoader'
 
 describe('BelowFoldLoader', () => {
   let observerCallback: IntersectionObserverCallback
-  let mockObserve: ReturnType<typeof vi.fn>
-  let mockDisconnect: ReturnType<typeof vi.fn>
-  let mockUnobserve: ReturnType<typeof vi.fn>
+  let mockObserve: ReturnType<typeof vi.fn<(target: Element) => void>>
+  let mockDisconnect: ReturnType<typeof vi.fn<() => void>>
+  let mockUnobserve: ReturnType<typeof vi.fn<(target: Element) => void>>
   const originalIntersectionObserver = window.IntersectionObserver
 
   beforeEach(() => {
@@ -25,9 +25,9 @@ describe('BelowFoldLoader', () => {
         this.rootMargin = options?.rootMargin ?? ''
       }
 
-      observe = mockObserve
-      disconnect = mockDisconnect
-      unobserve = mockUnobserve
+      observe(_target: Element) { mockObserve(_target) }
+      disconnect() { mockDisconnect() }
+      unobserve(_target: Element) { mockUnobserve(_target) }
       takeRecords(): IntersectionObserverEntry[] {
         return []
       }

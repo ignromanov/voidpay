@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
-import { NETWORK_CONFIG } from '@/entities/network'
+import { getNetworkConfig } from '@/entities/network'
 import { NetworkIcon } from '@/shared/ui/network-icon'
 import { cn } from '@/shared/lib/utils'
 
@@ -52,9 +52,11 @@ export function NetworkSelect({
   className,
   id,
 }: NetworkSelectProps) {
+  const networks = getNetworkConfig()
+
   const selectedNetwork = React.useMemo(() => {
-    return NETWORK_CONFIG.find((network) => network.chainId === value)
-  }, [value])
+    return networks.find((network) => network.chainId === value)
+  }, [networks, value])
 
   const handleValueChange = React.useCallback(
     (chainIdStr: string) => {
@@ -77,7 +79,7 @@ export function NetworkSelect({
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {NETWORK_CONFIG.map((network) => (
+        {networks.map((network) => (
           <SelectItem key={network.chainId} value={network.chainId.toString()}>
             <div className="flex items-center gap-2">
               <NetworkIcon chainId={network.chainId} size={24} />

@@ -7,7 +7,8 @@ import { cn } from '@/shared/lib/utils'
 import { NetworkIcon } from '@/shared/ui/network-icon'
 import { TokenIcon } from '@/shared/ui/token-icon'
 import { AddressAvatar } from '@/shared/ui/address-avatar'
-import { isAddress } from 'viem'
+import { isValidAddress } from '@/shared/lib/validation'
+import { copyToClipboard } from '@/shared/lib/clipboard'
 import { InvoicePaperVariant, InvoiceStatus } from '../types'
 
 interface PaymentInfoProps {
@@ -46,6 +47,8 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
     const isInteractive = variant === 'full'
     // Hide QR when paid — txHash section takes QR's space
     const shouldShowQR = !txHash && status !== 'paid'
+    // Draft mode: show placeholder instead of real QR (invoice not finalized)
+    const isDraft = status === 'draft'
 
     const networkTextClass = 'text-[10px] font-semibold text-zinc-700 capitalize'
 
@@ -54,11 +57,11 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
     const [copied, setCopied] = useState(false)
     const handleCopyAddress = useCallback(async () => {
       if (!senderAddress || !isInteractive) return
-      try {
-        await navigator.clipboard.writeText(senderAddress)
+      const ok = await copyToClipboard(senderAddress)
+      if (ok) {
         setCopied(true)
         setTimeout(() => setCopied(false), 1500)
-      } catch { /* clipboard not available */ }
+      }
     }, [senderAddress, isInteractive])
 
     return (
@@ -80,9 +83,9 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
           {shouldShowQR && (
             <div className="flex flex-col items-center justify-center gap-1 border-r border-zinc-200 p-3">
               <PaymentQR
-                recipientAddress={senderAddress}
+                recipientAddress={isDraft ? undefined : senderAddress}
                 chainId={networkId}
-                amount={amount}
+                amount={isDraft ? undefined : amount}
                 tokenAddress={tokenAddress}
                 size={88}
                 variant="light"
@@ -130,7 +133,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                 Recipient Wallet
               </span>
               <div className="flex items-center gap-1">
-                {senderAddress && isAddress(senderAddress) && (
+                {senderAddress && isValidAddress(senderAddress) && (
                   <AddressAvatar
                     address={senderAddress as `0x${string}`}
                     size={24}

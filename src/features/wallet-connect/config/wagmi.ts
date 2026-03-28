@@ -15,8 +15,9 @@
 
 import { createStorage } from 'wagmi'
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
-import { getSupportedChains, ALL_CHAIN_IDS } from '@/shared/config'
+import { getSupportedChains, ALL_CHAIN_IDS } from '@/entities/network'
 import { createTransportsForChains } from '@/shared/lib'
+import { WAGMI_STORAGE_KEY } from '@/shared/config'
 
 /**
  * WalletConnect Project ID from environment
@@ -78,7 +79,7 @@ export const wagmiConfig = getDefaultConfig({
             setItem: () => {},
             removeItem: () => {},
           },
-    key: 'voidpay-wallet',
+    key: WAGMI_STORAGE_KEY,
   }),
 })
 

@@ -1,44 +1,57 @@
 'use client'
 
-/**
- * HistoryList Component
- *
- * Displays a chronological list of created invoices with preview information.
- * Allows users to view, duplicate, or delete history entries.
- */
-
-import { useState } from 'react'
-import { useCreatorStore } from '@/entities/creator'
-import { formatInvoiceTotal, type CreationHistoryEntry } from '@/entities/invoice'
+import { useState, useCallback, memo } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+  formatInvoiceTotal,
+  useTrackedInvoiceStore,
+  type TrackedInvoice,
+  type InvoiceStatus,
+  type Invoice,
+} from '@/entities/invoice'
+import { toast } from '@/shared/lib/toast'
+import { duplicateFromUrl } from '../lib/duplicate-invoice'
+import type { DecodedHistoryEntry } from '../lib/types'
+import { InvoiceStatusBadge } from './InvoiceStatusBadge'
+import { InvoiceCardShell } from './InvoiceCardShell'
 
 interface HistoryListProps {
-  /** Optional CSS class name */
+  entries: DecodedHistoryEntry[]
+  debug: boolean
   className?: string
 }
 
-export function HistoryList({ className = '' }: HistoryListProps) {
-  const history = useCreatorStore((s) => s.history)
-  const deleteHistoryEntry = useCreatorStore((s) => s.deleteHistoryEntry)
-  const duplicateHistoryEntry = useCreatorStore((s) => s.duplicateHistoryEntry)
+export function HistoryList({ entries, debug, className = '' }: HistoryListProps) {
+  const router = useRouter()
+  const removeInvoice = useTrackedInvoiceStore((s) => s.removeInvoice)
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
-  const handleDelete = (entryId: string) => {
-    deleteHistoryEntry(entryId)
+  const handleDelete = (invoiceId: string) => {
+    removeInvoice(invoiceId)
     setDeleteConfirmId(null)
   }
 
-  const handleDuplicate = (entryId: string) => {
-    duplicateHistoryEntry(entryId)
-    // Optionally navigate to /create page
-    // router.push('/create')
-  }
+  const handleDuplicate = useCallback(async (invoiceUrl: string) => {
+    const draftId = await duplicateFromUrl(invoiceUrl)
+    if (draftId) {
+      router.push('/create')
+      toast.success('Invoice duplicated')
+    } else {
+      toast.error('Could not decode invoice for duplication')
+    }
+  }, [router])
 
-  const handleView = (invoiceUrl: string) => {
-    window.open(invoiceUrl, '_blank', 'noopener,noreferrer')
-  }
+  const handleView = useCallback((invoiceUrl: string) => {
+    try {
+      const hash = new URL(invoiceUrl).hash as `#${string}`
+      router.push(`/invoice${hash}`)
+    } catch {
+      router.push('/invoice')
+    }
+  }, [router])
 
-  if (history.length === 0) {
+  if (entries.length === 0) {
     return (
       <div className={`py-12 text-center ${className}`}>
         <div className="mb-2 text-gray-400">
@@ -67,23 +80,19 @@ export function HistoryList({ className = '' }: HistoryListProps) {
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-100">Creation History</h2>
-        <span className="text-sm text-gray-400">
-          {history.length} invoice{history.length !== 1 ? 's' : ''}
-        </span>
-      </div>
-
       <div className="space-y-2">
-        {history.map((entry) => (
+        {entries.map(({ tracked, invoice, status }) => (
           <HistoryEntryCard
-            key={entry.entryId}
-            entry={entry}
-            onView={() => handleView(entry.invoiceUrl)}
-            onDuplicate={() => handleDuplicate(entry.entryId)}
-            onDelete={() => setDeleteConfirmId(entry.entryId)}
-            isDeleteConfirming={deleteConfirmId === entry.entryId}
-            onDeleteConfirm={() => handleDelete(entry.entryId)}
+            key={tracked.invoiceId}
+            tracked={tracked}
+            invoice={invoice}
+            status={status}
+            debug={debug}
+            onView={() => handleView(tracked.invoiceUrl)}
+            onDuplicate={() => handleDuplicate(tracked.invoiceUrl)}
+            onDelete={() => setDeleteConfirmId(tracked.invoiceId)}
+            isDeleteConfirming={deleteConfirmId === tracked.invoiceId}
+            onDeleteConfirm={() => handleDelete(tracked.invoiceId)}
             onDeleteCancel={() => setDeleteConfirmId(null)}
           />
         ))}
@@ -93,7 +102,10 @@ export function HistoryList({ className = '' }: HistoryListProps) {
 }
 
 interface HistoryEntryCardProps {
-  entry: CreationHistoryEntry
+  tracked: TrackedInvoice
+  invoice: Invoice | null
+  status: InvoiceStatus
+  debug: boolean
   onView: () => void
   onDuplicate: () => void
   onDelete: () => void
@@ -102,8 +114,11 @@ interface HistoryEntryCardProps {
   onDeleteCancel: () => void
 }
 
-function HistoryEntryCard({
-  entry,
+const HistoryEntryCard = memo(function HistoryEntryCard({
+  tracked,
+  invoice,
+  status,
+  debug,
   onView,
   onDuplicate,
   onDelete,
@@ -111,7 +126,9 @@ function HistoryEntryCard({
   onDeleteConfirm,
   onDeleteCancel,
 }: HistoryEntryCardProps) {
-  const formattedDate = new Date(entry.createdAt).toLocaleDateString('en-US', {
+  const [debugOpen, setDebugOpen] = useState(false)
+
+  const formattedDate = new Date(tracked.createdAt).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -120,65 +137,80 @@ function HistoryEntryCard({
   })
 
   return (
-    <div className="rounded-lg border border-gray-700 bg-gray-800/50 p-4 transition-colors hover:border-gray-600">
-      <div className="flex items-start justify-between gap-4">
+    <InvoiceCardShell>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         {/* Left: Invoice Info */}
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-2">
             <h3 className="truncate text-sm font-semibold text-gray-100">
-              {entry.invoice.invoiceId}
+              {invoice?.invoiceId ?? tracked.invoiceId}
             </h3>
-            {entry.txHash && (
-              <span className="inline-flex items-center rounded border border-green-800 bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-400">
-                Paid
-              </span>
-            )}
+            <InvoiceStatusBadge status={status} />
           </div>
-          <p className="mb-1 text-sm text-gray-300">{entry.invoice.client?.name ?? 'Unknown'}</p>
-          <div className="flex items-center gap-3 text-xs text-gray-400">
-            <span>{formattedDate}</span>
-            <span>•</span>
-            <span className="font-medium text-gray-300">{formatInvoiceTotal(entry.invoice)}</span>
-          </div>
+
+          {invoice ? (
+            <>
+              <p className="mb-1 text-sm text-gray-300">{invoice.client?.name ?? 'Unknown'}</p>
+              <div className="flex items-center gap-3 text-xs text-gray-400">
+                <span className="truncate min-w-0">{formattedDate}</span>
+                <span>•</span>
+                <span className="font-medium text-gray-300">{formatInvoiceTotal(invoice)}</span>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-gray-500">Unable to decode invoice data</p>
+          )}
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {!isDeleteConfirming ? (
             <>
               <button
                 onClick={onView}
-                className="rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
+                className="min-h-[44px] cursor-pointer rounded bg-gray-700 px-3 py-2.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
                 title="View Invoice"
+                aria-label={`View invoice ${tracked.invoiceId}`}
               >
                 View
               </button>
               <button
                 onClick={onDuplicate}
-                className="rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
+                className="min-h-[44px] cursor-pointer rounded bg-gray-700 px-3 py-2.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
                 title="Duplicate as Draft"
+                aria-label={`Duplicate invoice ${tracked.invoiceId}`}
               >
                 Duplicate
               </button>
               <button
                 onClick={onDelete}
-                className="rounded bg-red-900/20 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-900/30 hover:text-red-300"
+                className="min-h-[44px] cursor-pointer rounded bg-red-900/20 px-3 py-2.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-900/30 hover:text-red-300"
                 title="Delete Entry"
+                aria-label={`Delete invoice ${tracked.invoiceId}`}
               >
                 Delete
               </button>
+              {debug && (
+                <button
+                  onClick={() => setDebugOpen((v) => !v)}
+                  className="cursor-pointer rounded bg-gray-700 px-2 py-1.5 text-xs font-mono text-gray-400 transition-colors hover:bg-gray-600"
+                  title="Toggle debug info"
+                >
+                  {'</>'}
+                </button>
+              )}
             </>
           ) : (
             <>
               <button
                 onClick={onDeleteConfirm}
-                className="rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
+                className="cursor-pointer rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
               >
                 Confirm
               </button>
               <button
                 onClick={onDeleteCancel}
-                className="rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
+                className="cursor-pointer rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
               >
                 Cancel
               </button>
@@ -186,6 +218,12 @@ function HistoryEntryCard({
           )}
         </div>
       </div>
-    </div>
+
+      {debug && debugOpen && (
+        <pre className="mt-3 max-h-48 overflow-auto rounded bg-gray-900/80 p-3 text-xs text-gray-400">
+          {JSON.stringify({ tracked, decodeSuccess: invoice !== null }, null, 2)}
+        </pre>
+      )}
+    </InvoiceCardShell>
   )
-}
+})

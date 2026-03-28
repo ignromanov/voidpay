@@ -7,37 +7,46 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { track, AnalyticsEvent } from '@/features/analytics'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkTheme } from '@/entities/network'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
 import { InvoicePaper, ScaledInvoicePreview, InvoicePaperProps } from '@/widgets/invoice-paper'
-import { DEMO_INVOICES, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
+import { getDemoInvoices, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
 import { useDemoRotation } from '../hooks/use-demo-rotation'
 
 import { DemoPagination } from './ui/DemoPagination'
 
+// Resolved type of getDemoInvoices element
+type DemoInvoice = Awaited<ReturnType<typeof getDemoInvoices>>[number]
+
 export function DemoSection() {
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const [isHovered, setIsHovered] = useState(false)
+  const [demoInvoices, setDemoInvoices] = useState<DemoInvoice[]>([])
+
+  useEffect(() => {
+    void getDemoInvoices().then(setDemoInvoices)
+  }, [])
 
   const { activeIndex, pause, resume, goTo } = useDemoRotation({
-    itemCount: DEMO_INVOICES.length,
+    itemCount: demoInvoices.length,
     interval: ROTATION_INTERVAL_MS,
     autoStart: true,
   })
 
   // Sync network theme with active invoice
   useEffect(() => {
-    const currentInvoice = DEMO_INVOICES[activeIndex]
+    const currentInvoice = demoInvoices[activeIndex]
     if (currentInvoice) {
       setNetworkTheme(getNetworkTheme(currentInvoice.data.networkId))
     }
-  }, [activeIndex, setNetworkTheme])
+  }, [activeIndex, demoInvoices, setNetworkTheme])
 
-  const currentInvoice = DEMO_INVOICES[activeIndex]
+  const currentInvoice = demoInvoices[activeIndex]
 
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true)
@@ -49,6 +58,25 @@ export function DemoSection() {
     resume()
   }, [resume])
 
+  // Touch swipe to navigate between demo invoices
+  const touchStartRef = useRef(0)
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    if (touch) touchStartRef.current = touch.clientX
+    pause()
+  }, [pause])
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const touch = e.changedTouches[0]
+    if (!touch || demoInvoices.length === 0) return
+    const diff = touch.clientX - touchStartRef.current
+    if (Math.abs(diff) > 50) {
+      const next = diff > 0
+        ? (activeIndex - 1 + demoInvoices.length) % demoInvoices.length
+        : (activeIndex + 1) % demoInvoices.length
+      goTo(next)
+    }
+  }, [activeIndex, demoInvoices.length, goTo])
+
   const handleDotSelect = useCallback(
     (index: number) => {
       goTo(index)
@@ -58,12 +86,12 @@ export function DemoSection() {
   )
 
   if (!currentInvoice) {
-    return <section className="py-32 text-center text-zinc-500">Demo content unavailable</section>
+    return <section className="py-16 text-center text-zinc-500 md:py-32">Demo content unavailable</section>
   }
 
   return (
     <section
-      className="relative flex w-full flex-col items-center justify-center overflow-visible py-32"
+      className="relative flex w-full flex-col items-center justify-center overflow-visible py-16 md:py-32"
       aria-labelledby="demo-heading"
     >
       {/* Header */}
@@ -77,7 +105,11 @@ export function DemoSection() {
       </header>
 
       {/* Invoice container with pagination */}
-      <div className="relative flex w-full max-w-[1400px] flex-col items-center px-4">
+      <div
+        className="relative flex w-full max-w-[1400px] flex-col items-center px-4"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <ScaledInvoicePreview
           preset="demo"
           networkId={currentInvoice.data.networkId}
@@ -85,14 +117,13 @@ export function DemoSection() {
           onMouseLeave={handleMouseLeave}
           overlay={
             <div
-              className={`absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+              className={`absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-200 ${isHovered ? 'opacity-100 md:opacity-100 md:pointer-events-auto' : 'opacity-100 md:pointer-events-none md:opacity-0'}`}
             >
               <Button
                 variant="glow"
                 size="default"
                 className="rounded-full bg-violet-600 px-8 py-4"
-                data-umami-event="cta_demo_template"
-                data-umami-event-invoice={currentInvoice.data.invoiceId}
+                onClick={() => track(AnalyticsEvent.LANDING_CTA_CLICK, { cta_location: 'demo' })}
                 asChild
               >
                 <Link href={`/create#${currentInvoice.createHash}`}>Use This Template</Link>
@@ -113,7 +144,7 @@ export function DemoSection() {
         </ScaledInvoicePreview>
 
         {/* Pagination inside container for glow effect coverage */}
-        <DemoPagination items={DEMO_INVOICES} activeIndex={activeIndex} onSelect={handleDotSelect} />
+        <DemoPagination items={demoInvoices} activeIndex={activeIndex} onSelect={handleDotSelect} />
       </div>
     </section>
   )

@@ -95,6 +95,15 @@ export function isValidAddress(address: string): address is `0x${string}` {
  * // Returns: false
  * ```
  */
+/**
+ * Truncate an Ethereum address for display (e.g., "0x1234...5678")
+ */
+export function truncateAddress(address: string, startChars = 6, endChars = 4): string {
+  if (!address) return ''
+  if (address.length <= startChars + endChars) return address
+  return `${address.slice(0, startChars)}...${address.slice(-endChars)}`
+}
+
 export function addressesMatch(
   a: string | null | undefined,
   b: string | null | undefined

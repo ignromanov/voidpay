@@ -3,15 +3,43 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
-import { Button } from '@/shared/ui/button'
+import { AppErrorScreen } from '@/shared/ui/app-error-screen'
 import type { DecodeErrorType } from '@/shared/ui/decode-error-screen'
+import { track, AnalyticsEvent } from '@/features/analytics'
 
-const CODEC_KEYWORDS = ['decode', 'binary', 'base62', 'codec', 'decompress', 'inflate', 'parse']
+/** Keywords that indicate a codec/decode-related error */
+const CODEC_KEYWORDS = [
+  'decode',
+  'binary',
+  'base64',
+  'codec',
+  'decompress',
+  'inflate',
+  'hash fragment',
+  'invoice data',
+]
 
-function classifyError(error: Error): DecodeErrorType {
+/**
+ * Classifies an error as a decode error or an application error.
+ *
+ * Returns a DecodeErrorType for codec-related errors (shown with DecodeErrorScreen),
+ * or null for runtime/application errors (shown with AppErrorScreen).
+ */
+function classifyError(error: Error): DecodeErrorType | null {
   const msg = error.message.toLowerCase()
-  if (CODEC_KEYWORDS.some((kw) => msg.includes(kw))) {
-    return 'CORRUPTED_DATA'
+
+  const isCodecError = CODEC_KEYWORDS.some((kw) => msg.includes(kw))
+  if (!isCodecError) return null
+
+  // Sub-classify the specific decode error type
+  if (msg.includes('empty') || msg.includes('no invoice') || msg.includes('missing')) {
+    return 'EMPTY_HASH'
+  }
+  if (msg.includes('version') || msg.includes('unsupported')) {
+    return 'UNSUPPORTED_VERSION'
+  }
+  if (msg.includes('format') || msg.includes('prefix') || msg.includes('invalid')) {
+    return 'INVALID_FORMAT'
   }
   return 'CORRUPTED_DATA'
 }
@@ -19,8 +47,9 @@ function classifyError(error: Error): DecodeErrorType {
 /**
  * Error boundary for /pay route.
  *
- * Catches uncaught errors and displays a user-friendly error screen.
- * Uses the same DecodeErrorScreen component for visual consistency.
+ * Distinguishes between two error categories:
+ * - Decode errors (corrupted URL) → DecodeErrorScreen (amber)
+ * - Application errors (runtime crashes) → AppErrorScreen (rose)
  */
 export default function PayError({
   error,
@@ -33,29 +62,48 @@ export default function PayError({
 
   useEffect(() => {
     console.error('[PayPage Error]', error)
-  }, [error])
+    track(AnalyticsEvent.ERROR_BOUNDARY, {
+      page: window.location.pathname,
+      error_message: (error.message || 'Unknown error').slice(0, 200),
+    })
 
-  const errorType = classifyError(error)
+    if (process.env.NODE_ENV === 'production') {
+      console.error(
+        JSON.stringify({
+          type: 'pay_page_error',
+          message: error.message,
+          digest: error.digest,
+          timestamp: new Date().toISOString(),
+        })
+      )
+    }
+  }, [error])
 
   const handleReturnHome = () => {
     router.push('/')
   }
 
+  const decodeErrorType = classifyError(error)
+
+  if (decodeErrorType) {
+    return (
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col">
+        <DecodeErrorScreen
+          errorType={decodeErrorType}
+          onReturnHome={handleReturnHome}
+        />
+      </div>
+    )
+  }
+
   return (
-    <div className="relative z-10 flex min-h-screen flex-col">
-      <DecodeErrorScreen
-        errorType={errorType}
+    <div className="relative z-10 flex min-h-0 flex-1 flex-col">
+      <AppErrorScreen
+        error={error}
+        digest={error.digest}
+        onReset={reset}
         onReturnHome={handleReturnHome}
       />
-      <div className="flex justify-center pb-8">
-        <Button
-          variant="ghost"
-          onClick={reset}
-          className="text-zinc-400 hover:text-zinc-200"
-        >
-          Try Again
-        </Button>
-      </div>
     </div>
   )
 }

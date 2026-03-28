@@ -58,8 +58,9 @@ describe('LineItemsTable', () => {
   it('handles invalid rate gracefully', () => {
     const invalidItems = [{ description: 'Item with invalid rate', quantity: 1, rate: 'invalid' }]
     render(<LineItemsTable items={invalidItems} />)
-    // Invalid rate should result in 0.00 in both rate and amount columns
-    expect(screen.getAllByText('0.00').length).toBeGreaterThanOrEqual(2)
+    // Invalid rate shows '—' in rate column, amount falls back to '0.00'
+    expect(screen.getByText('—')).toBeDefined()
+    expect(screen.getByText('0.00')).toBeDefined()
   })
 
   it('handles string quantity correctly', () => {

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { parseUnits } from 'viem'
 import {
   parseAmount,
   formatAmount,
@@ -84,9 +85,9 @@ describe('formatAmount', () => {
     expect(formatAmount('0', 6)).toBe('0.00')
   })
 
-  it('should return "0.00" for invalid BigInt string', () => {
-    expect(formatAmount('invalid', 6)).toBe('0.00')
-    expect(formatAmount('12.34', 6)).toBe('0.00') // BigInt doesn't accept decimals
+  it('should return "—" for invalid BigInt string', () => {
+    expect(formatAmount('invalid', 6)).toBe('—')
+    expect(formatAmount('12.34', 6)).toBe('—') // BigInt doesn't accept decimals
   })
 
   // Options
@@ -393,7 +394,7 @@ describe('addMagicDust', () => {
 
   it('should throw RangeError for float magicDust', () => {
     expect(() => addMagicDust('100000000', 1.5)).toThrow(RangeError)
-    expect(() => addMagicDust('100000000', 1.5)).toThrow(/integer 1-999/)
+    expect(() => addMagicDust('100000000', 1.5)).toThrow(/integer 1-1000/)
   })
 
   it('should throw RangeError for negative magicDust', () => {
@@ -404,19 +405,17 @@ describe('addMagicDust', () => {
     expect(() => addMagicDust('100000000', 0)).toThrow(RangeError)
   })
 
-  it('should throw RangeError for magicDust > 999', () => {
-    expect(() => addMagicDust('100000000', 1000)).toThrow(RangeError)
+  it('should throw RangeError for magicDust > 1000', () => {
+    expect(() => addMagicDust('100000000', 1001)).toThrow(RangeError)
   })
 
-  it('should log error on corrupted total but return total', () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const result = addMagicDust('not-a-number', 42)
-    expect(result).toBe('not-a-number')
-    expect(consoleError).toHaveBeenCalledWith(
-      '[addMagicDust] Failed to add Magic Dust, returning total without dust:',
-      expect.objectContaining({ total: 'not-a-number', magicDust: 42 })
-    )
-    consoleError.mockRestore()
+  it('should accept magicDust = 1000', () => {
+    const result = addMagicDust('100000000', 1000)
+    expect(result).toBe('100001000')
+  })
+
+  it('should throw on corrupted total string', () => {
+    expect(() => addMagicDust('not-a-number', 42)).toThrow('[addMagicDust] Failed to convert total')
   })
 })
 
@@ -437,5 +436,40 @@ describe('calculateTotalsBigInt — logging', () => {
       expect.objectContaining({ rate: 'invalid-rate' })
     )
     consoleWarn.mockRestore()
+  })
+})
+
+describe('formatAmount precision fix', () => {
+  it('should preserve 18-decimal Magic Dust precision (trailing 042)', () => {
+    // 1 ETH + 42 atomic units: parseFloat loses the 042
+    const result = formatAmount('1000000000000000042', 18)
+    expect(result).toContain('1.000000000000000042')
+  })
+
+  it('should format 6-decimal amount with full precision', () => {
+    // 1000.000042 USDC
+    expect(formatAmount('1000000042', 6, { displayDecimals: 6 })).toBe('1,000.000042')
+  })
+
+  it('should pass round-trip fidelity for 18-decimal Magic Dust amount', () => {
+    const atomicAmount = '1000000000000000042'
+    const formatted = formatAmount(atomicAmount, 18, { useGrouping: false })
+    const reparsed = parseUnits(formatted, 18).toString()
+    expect(reparsed).toBe(atomicAmount)
+  })
+
+  it('should return "0.00" for zero amount', () => {
+    expect(formatAmount('0', 18)).toBe('0.00')
+  })
+
+  it('should include thousand separator for large 18-decimal amount', () => {
+    // 1000 ETH in atomic units
+    const result = formatAmount('1000000000000000000000', 18)
+    expect(result).toContain('1,000')
+  })
+
+  it('should show full precision for tiny Magic Dust only (42 atomic units in 18 decimals)', () => {
+    const result = formatAmount('42', 18, { displayDecimals: 18 })
+    expect(result).toContain('0.000000000000000042')
   })
 })

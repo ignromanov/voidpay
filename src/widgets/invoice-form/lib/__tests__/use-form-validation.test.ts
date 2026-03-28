@@ -219,7 +219,7 @@ describe('useFormValidation', () => {
       const draft = createMockDraft({
         from: {
           name: 'Test',
-          walletAddress: '',
+          walletAddress: '' as `0x${string}`,
         },
       })
       const lineItems = createMockLineItems(1)

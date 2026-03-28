@@ -37,10 +37,14 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 )
 CardHeader.displayName = 'CardHeader'
 
-const CardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
+interface CardTitleProps extends React.HTMLAttributes<HTMLElement> {
+  as?: 'h2' | 'h3' | 'h4' | 'div'
+}
+const CardTitle = React.forwardRef<HTMLElement, CardTitleProps>(
+  ({ className, as: Component = 'h3', ...props }, ref) => (
+    <Component
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ref={ref as any}
       className={cn('leading-none font-semibold tracking-tight', className)}
       {...props}
     />

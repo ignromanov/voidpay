@@ -111,26 +111,6 @@ export interface InvoiceTemplate {
 }
 
 /**
- * CreationHistoryEntry
- *
- * Record of a completed invoice created by the user.
- */
-export interface CreationHistoryEntry {
-  /** Unique entry identifier (UUID v4) */
-  entryId: string
-  /** Creation timestamp (ISO 8601) */
-  createdAt: string
-  /** Full invoice data */
-  invoice: Invoice
-  /** Full URL for quick access (contains compressed data) */
-  invoiceUrl: string
-  /** Transaction Hash (if discovered via polling) */
-  txHash?: string
-  /** Payment timestamp (if discovered via polling) */
-  paidAt?: string
-}
-
-/**
  * PaymentReceipt
  *
  * Record of a completed payment made by the user (payer).

@@ -14,6 +14,8 @@ import {
   type DraftState,
   type LineItem,
 } from '@/entities/invoice'
+import { findTokenForNetwork } from '@/entities/network'
+import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
 import type { UserPreferences } from '../types'
 import type { CreatorStore } from './types'
 
@@ -86,20 +88,6 @@ export interface DraftSlice {
 }
 
 /**
- * Get current Unix timestamp in seconds
- */
-function nowUnix(): number {
-  return Math.floor(Date.now() / 1000)
-}
-
-/**
- * Get Unix timestamp for a date N days from now
- */
-function daysFromNowUnix(days: number): number {
-  return nowUnix() + days * 24 * 60 * 60
-}
-
-/**
  * Create default draft with preferences
  */
 function createDefaultDraft(
@@ -107,19 +95,22 @@ function createDefaultDraft(
   invoiceId: string,
   preferences: UserPreferences
 ): DraftState {
+  const networkId = preferences.defaultNetworkId ?? 42161
+  const defaultToken = findTokenForNetwork(networkId, preferences.defaultCurrency ?? 'USDC')
+
   return {
     meta: {
       draftId,
       lastModified: new Date().toISOString(),
     },
     data: {
-      version: 2,
       invoiceId,
       issuedAt: nowUnix(),
       dueAt: daysFromNowUnix(30), // Default: 30 days from now
-      networkId: preferences.defaultNetworkId ?? 42161, // Default: Arbitrum
-      currency: preferences.defaultCurrency ?? 'USDC',
-      decimals: 6, // Default for USDC
+      networkId,
+      currency: defaultToken?.symbol ?? 'USDC',
+      decimals: defaultToken?.decimals ?? 6,
+      ...(defaultToken?.address && { tokenAddress: defaultToken.address }),
       from: {
         name: preferences.defaultSenderName ?? '',
         walletAddress: preferences.defaultSenderWallet as Address,
@@ -205,6 +196,14 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
           data: {
             ...currentDraft.data,
             ...data,
+            // Deep merge party objects to preserve fields not in the partial update
+            // (e.g., walletAddress when sync only sends name)
+            ...(data.from && {
+              from: { ...currentDraft.data.from, ...data.from } as typeof currentDraft.data.from,
+            }),
+            ...(data.client && {
+              client: { ...currentDraft.data.client, ...data.client } as typeof currentDraft.data.client,
+            }),
           },
         },
         lineItems: newLineItems,
@@ -219,7 +218,9 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
   createNewDraft: () => {
     const draftId = uuidv4()
     const state = get()
-    const invoiceId = state.generateNextInvoiceId()
+    // Reuse current invoiceId if draft exists (Reset doesn't consume the ID)
+    // Counter only advances when a link is generated (in generateAndTrackInvoice)
+    const invoiceId = state.activeDraft?.data?.invoiceId ?? state.generateNextInvoiceId()
 
     const newDraft = createDefaultDraft(draftId, invoiceId, state.preferences)
 
