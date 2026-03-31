@@ -161,6 +161,14 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
     set((state) => {
       const currentDraft = state.activeDraft
 
+      // For native tokens (ETH, POL), the decoded invoice has no tokenAddress key.
+      // Spread won't override existing tokenAddress if the key is absent,
+      // so we explicitly clear it when currency is set but tokenAddress is not.
+      const tokenOverride =
+        data.currency && !('tokenAddress' in data)
+          ? { tokenAddress: undefined }
+          : {}
+
       // If no active draft, create a new one
       if (!currentDraft) {
         const draftId = uuidv4()
@@ -175,7 +183,7 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
         return {
           activeDraft: {
             ...newDraft,
-            data: { ...newDraft.data, ...data },
+            data: { ...newDraft.data, ...data, ...tokenOverride },
           },
           lineItems,
         }
@@ -196,6 +204,7 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
           data: {
             ...currentDraft.data,
             ...data,
+            ...tokenOverride,
             // Deep merge party objects to preserve fields not in the partial update
             // (e.g., walletAddress when sync only sends name)
             ...(data.from && {

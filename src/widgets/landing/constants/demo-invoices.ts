@@ -46,7 +46,7 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
     invoiceUrl: 'https://voidpay.xyz/pay#demo-eth',
     createdAt: isoDate(NOW - 7 * DAY),
     status: 'paid',
-    txHash: '0x7a3f1d8e92b4c56f0a1e3d7b8c9f2a4d6e8b0c1d3f5a7e9b2c4d6f8a0e1c3d',
+    txHash: '0x7a3f1d8e92b4c56f0a1e3d7b8c9f2a4d6e8b0c1d3f5a7e9b2c4d6f8a0e1c3d5f',
     txHashValidated: true,
     data: {
       invoiceId: 'INV-2026-042',
@@ -74,7 +74,7 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
       },
       items: [
         // ETH has 18 decimals: 0.125 ETH = 125000000000000000 atomic units
-        { description: 'Smart Contract Security Audit (40 hours)', quantity: 40, rate: '125000000000000000' },
+        { description: 'Smart Contract Security Audit', quantity: 40, rate: '125000000000000000' },
         { description: 'Gas Optimization Consulting (8 hours)', quantity: 8, rate: '100000000000000000' },
       ],
       discount: '5%',
@@ -117,8 +117,8 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
         { description: 'Sound Effects Integration', quantity: 1, rate: '400000000' },
       ],
       tax: '8%',
-      discount: '8%',
-      total: '2400000000',
+      discount: '5%',
+      total: '2472000000',
     },
   },
   // --- Optimism (10) - Public Goods Grant [PAID + NOT VALIDATED] ---
