@@ -100,7 +100,7 @@
     "react-dom": "^19.1.4",
     "react-hook-form": "^7.70.0",
     "sonner": "^2.0.7",
-    "tailwind-merge": "^3.4.0",
+    "tailwind-merge": "^3.5.0",
     "use-debounce": "^10.0.6",
     "uuid": "^13.0.0",
     "viem": "^2.41.2",
