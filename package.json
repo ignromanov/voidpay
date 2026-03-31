@@ -62,7 +62,7 @@
     "happy-dom": "^20.0.11",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
-    "lucide-static": "^0.577.0",
+    "lucide-static": "^1.7.0",
     "postcss": "^8.0.0",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.7.2",
