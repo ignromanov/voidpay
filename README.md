@@ -1,166 +1,101 @@
 # VoidPay
 
-Stateless Invoicing Platform built with Next.js, Wagmi, and Feature-Sliced Design.
+![CI](https://github.com/ignromanov/voidpay/actions/workflows/test.yml/badge.svg?branch=develop)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Website](https://img.shields.io/website?url=https%3A%2F%2Fvoidpay.xyz)
 
-## Quickstart
+Privacy-first crypto invoicing. All data lives in the URL. [Try it →](https://voidpay.xyz)
 
-### Prerequisites
+---
 
-- Node.js v20+ (v22 recommended)
-- pnpm v9+
+## How It Works
 
-### Installation
+The URL is the invoice. No backend, no database, no account.
 
-1.  Clone the repository:
+```
+https://voidpay.xyz/pay#N4IgbghgTg9g...
+                       └─ Brotli-compressed invoice (hash fragment — never sent to server)
 
-    ```bash
-    git clone <repository-url>
-    cd voidpay
-    ```
+https://voidpay.xyz/pay?og=INV-001_1250_USDC_arb_Acme#N4Ig...
+                       │                               │
+                       └─ OG preview metadata (opt-in) └─ Full invoice (stays in browser)
+```
 
-2.  Install dependencies:
+**Three steps:**
 
-    ```bash
-    pnpm install
-    ```
+1. **Create** — fill the invoice form, generate a self-contained URL
+2. **Share** — send the link via any channel (Telegram, email, Discord)
+3. **Pay** — payer connects wallet, pays P2P directly on-chain
 
-3.  Configure environment variables:
-    Copy `.env.example` to `.env.local` and fill in your RPC keys.
+Zero server involvement. We can't lose your data if we don't have it.
 
-    ```bash
-    cp .env.example .env.local
-    ```
+---
 
-4.  Start the development server:
+## Features
 
-    ```bash
-    pnpm dev
-    ```
+- **4 networks**: Ethereum, Arbitrum, Optimism, Polygon PoS
+- **Any token**: native ETH/MATIC or any ERC-20 (Uniswap Token List verification for blue chips)
+- **Magic Dust**: micro-amount added to total for deterministic payment matching
+- **Payment verification**: waits for `finalized` status — reorg-resistant
+- **Client-side PDF export**: generated in-browser, never uploaded
+- **LocalStorage history**: created and received invoices, export/import as JSON
+- **No signup, no KYC, no tracking**: no Clarity, no Sentry, no session replay
+- **Perpetual links**: schema v1 is locked — links created today work forever
 
-    Open [http://localhost:3000](http://localhost:3000) with your browser.
+---
 
-## Architecture
+## Tech Stack
 
-- **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4, Radix UI, CVA, Framer Motion
-- **Web3**: Wagmi v2, Viem, RainbowKit
-- **State**: Zustand, TanStack Query
-- **Design Methodology**: Feature-Sliced Design (FSD)
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4, Radix UI, CVA, Framer Motion |
+| Web3 | Wagmi v2, Viem, RainbowKit |
+| State | Zustand, TanStack Query |
+| Architecture | Feature-Sliced Design (FSD) |
+| Tests | Vitest — 2,550+ tests, 80%+ coverage |
+
+---
+
+## Quick Start
+
+**Prerequisites**: Node.js v22+, pnpm v10+
+
+```bash
+git clone https://github.com/ignromanov/voidpay.git
+cd voidpay
+pnpm install
+cp .env.example .env.local   # add RPC keys
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+---
 
 ## Scripts
 
-### Development
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Dev server with Turbopack |
+| `pnpm build` | Production build |
+| `pnpm lint` | ESLint |
+| `pnpm format` | Prettier |
+| `pnpm type-check` | Full TypeScript check (~24s) |
+| `pnpm type-check:build` | Fast incremental check (~1.5s) |
+| `pnpm test` | Tests in watch mode |
+| `pnpm test:coverage` | Tests with coverage report |
+| `pnpm validate` | type-check + lint + tests |
 
-- `pnpm dev`: Start development server with **Turbopack** (5-10x faster)
-- `pnpm dev:webpack`: Start development server with webpack (fallback)
-- `pnpm dev:debug`: Start development server with Node.js inspector
+---
 
-### Build & Production
+## Contributing
 
-- `pnpm build`: Build for production
-- `pnpm start`: Start production server
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-### Code Quality
+---
 
-- `pnpm lint`: Run ESLint
-- `pnpm lint:fix`: Run ESLint with auto-fix
-- `pnpm format`: Format code with Prettier
-- `pnpm format:check`: Check code formatting
-- `pnpm type-check`: Run TypeScript compiler check
-- `pnpm validate`: Run all checks (type-check + lint + tests)
+## License
 
-### Testing
-
-- `pnpm test`: Run tests in watch mode
-- `pnpm test:coverage`: Run tests with coverage report
-- `pnpm test:ui`: Run tests with Vitest UI
-
-## Turbopack
-
-This project uses **Turbopack** by default for development, providing:
-
-- ⚡️ **5-10x faster cold starts** compared to webpack
-- 🔄 **Instant HMR** (Hot Module Replacement)
-- 🎯 **Incremental compilation** - only rebuilds what changed
-- 🧠 **Lower memory usage** - optimized for large codebases
-
-### Configuration
-
-Turbopack is configured in `next.config.mjs` with support for Git worktrees:
-
-```js
-// Auto-detect worktree and use correct project root
-const isWorktree = __dirname.includes('/worktrees/')
-const projectRoot = isWorktree ? resolve(__dirname, '../..') : __dirname
-
-turbopack: {
-  root: projectRoot, // Supports symlinked node_modules in worktrees
-}
-```
-
-**Key features**:
-
-- ✅ Automatically detects Git worktrees
-- ✅ Resolves symlinked `node_modules` correctly
-- ✅ Node.js polyfills (fs, net, tls) handled automatically
-
-### When to Use Webpack
-
-If you encounter issues with Turbopack, you can fallback to webpack:
-
-```bash
-pnpm dev:webpack
-```
-
-**Note**: Production builds still use webpack for maximum compatibility.
-
-## Development Workflow
-
-This project uses **Git Worktrees** for isolated feature development, enabling multiple developers or AI agents to work on different features concurrently without conflicts.
-
-### Creating a New Feature
-
-```bash
-# Create feature (automatically creates isolated worktree)
-/speckit.specify "Add user authentication"
-```
-
-This creates:
-
-- Feature branch: `001-user-auth`
-- Isolated worktree: `worktrees/001-user-auth/`
-- Feature specification: `worktrees/001-user-auth/specs/001-user-auth/spec.md`
-
-### Development Process
-
-```bash
-# All commands work within the worktree
-/speckit.plan      # Create technical plan
-/speckit.tasks     # Generate task list
-/speckit.implement # Execute implementation
-```
-
-### Integration & Cleanup
-
-```bash
-# After feature completion
-git checkout main
-git merge 001-user-auth
-git worktree remove worktrees/001-user-auth
-git worktree prune
-```
-
-### Parallel Development
-
-Multiple features can be developed simultaneously:
-
-```bash
-worktrees/001-user-auth/     # Agent 1: Authentication
-worktrees/002-payment-flow/  # Agent 2: Payment processing
-worktrees/003-notifications/ # Agent 3: Notification system
-```
-
-Each worktree is completely isolated - no conflicts, no blocking.
-
-**See [CLAUDE.md](./CLAUDE.md) for detailed development guidelines and constitutional principles.**
+MIT — see [LICENSE](./LICENSE).
