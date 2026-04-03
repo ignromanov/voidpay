@@ -241,7 +241,7 @@ export const NETWORK_GLOWS: Record<number, { from: string; to: string }> = {
   [arbitrum.id]: { from: 'from-cyan-600/40', to: 'to-blue-600/40' },
   [optimism.id]: { from: 'from-red-600/40', to: 'to-orange-600/40' },
   [polygon.id]: { from: 'from-purple-600/40', to: 'to-violet-600/40' },
-  [base.id]: { from: 'from-blue-600/40', to: 'to-indigo-600/40' },
+  [base.id]: { from: 'from-blue-500/60', to: 'to-indigo-500/60' },
 }
 
 /**
@@ -265,8 +265,8 @@ export const NETWORK_GLOW_SHADOWS: Record<number, string> = {
   [optimism.id]: 'before:from-red-500/60 before:to-orange-500/40',
   // Purple → Violet elliptical glow
   [polygon.id]: 'before:from-purple-500/60 before:to-violet-500/40',
-  // Blue → Indigo elliptical glow
-  [base.id]: 'before:from-blue-600/60 before:to-indigo-500/40',
+  // Blue → Indigo elliptical glow (boosted — blue is subtle on dark bg)
+  [base.id]: 'before:from-blue-500/80 before:to-indigo-400/60',
 }
 
 /**
@@ -284,6 +284,6 @@ export const NETWORK_GLOW_BORDERS: Record<number, string> = {
   [arbitrum.id]: 'ring-2 ring-cyan-500/60 shadow-[0_0_48px_rgba(6,182,212,0.4)]',
   [optimism.id]: 'ring-2 ring-red-500/60 shadow-[0_0_48px_rgba(239,68,68,0.4)]',
   [polygon.id]: 'ring-2 ring-purple-500/60 shadow-[0_0_48px_rgba(168,85,247,0.4)]',
-  // Blue-500 RGB: 59, 130, 246
-  [base.id]: 'ring-2 ring-blue-500/60 shadow-[0_0_48px_rgba(59,130,246,0.4)]',
+  // Blue-500 RGB: 59, 130, 246 (boosted opacity)
+  [base.id]: 'ring-2 ring-blue-500/70 shadow-[0_0_56px_rgba(59,130,246,0.55)]',
 }
