@@ -14,10 +14,12 @@ import {
   arbitrum,
   optimism,
   polygon,
+  base,
   sepolia,
   arbitrumSepolia,
   optimismSepolia,
   polygonAmoy,
+  baseSepolia,
 } from 'viem/chains'
 import type { Chain } from 'viem'
 
@@ -29,7 +31,7 @@ import type { Chain } from 'viem'
  * - Optimism (10)
  * - Polygon PoS (137)
  */
-export const MAINNET_CHAINS: [Chain, ...Chain[]] = [mainnet, arbitrum, optimism, polygon]
+export const MAINNET_CHAINS: [Chain, ...Chain[]] = [mainnet, arbitrum, optimism, polygon, base]
 
 /**
  * Supported testnet chains (available when NEXT_PUBLIC_ENABLE_TESTNETS=true)
@@ -39,14 +41,14 @@ export const MAINNET_CHAINS: [Chain, ...Chain[]] = [mainnet, arbitrum, optimism,
  * - Optimism Sepolia (11155420)
  * - Polygon Amoy (80002)
  */
-export const TESTNET_CHAINS: Chain[] = [sepolia, arbitrumSepolia, optimismSepolia, polygonAmoy]
+export const TESTNET_CHAINS: Chain[] = [sepolia, arbitrumSepolia, optimismSepolia, polygonAmoy, baseSepolia]
 
 /**
  * Chain IDs organized by network type
  */
 export const SUPPORTED_CHAIN_IDS = {
-  mainnet: [1, 42161, 10, 137] as const,
-  testnet: [11155111, 421614, 11155420, 80002] as const,
+  mainnet: [1, 42161, 10, 137, 8453] as const,
+  testnet: [11155111, 421614, 11155420, 80002, 84532] as const,
 } as const
 
 /**
