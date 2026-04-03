@@ -80,6 +80,3 @@ export {
   TriangleIcon,
   FlagIcon,
 } from './misc'
-
-// Network (chain brand icons)
-export { BaseIcon } from './network'

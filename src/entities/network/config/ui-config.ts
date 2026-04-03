@@ -18,7 +18,7 @@ import {
   polygonAmoy,
   baseSepolia,
 } from 'viem/chains'
-import { HexagonIcon, TriangleIcon, ZapIcon, BaseIcon } from '@/shared/ui/icons'
+import { HexagonIcon, TriangleIcon, ZapIcon } from '@/shared/ui/icons'
 import { NETWORK_CODES, type NetworkId } from './networks'
 
 /**
@@ -108,7 +108,7 @@ export const NETWORK_CONFIG: NetworkConfig[] = [
   {
     chainId: base.id,
     name: 'Base',
-    icon: BaseIcon,
+    icon: HexagonIcon,
     iconFilled: true,
     colorClass: 'text-blue-500',
   },
