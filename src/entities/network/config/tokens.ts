@@ -148,6 +148,31 @@ export const NETWORK_TOKENS: Record<number, TokenInfo[]> = {
     },
   ],
 
+  // Base (chainId: 8453)
+  8453: [
+    {
+      symbol: 'ETH',
+      name: 'Ethereum',
+      address: null,
+      decimals: 18,
+      iconColor: 'bg-zinc-100',
+    },
+    {
+      symbol: 'USDC',
+      name: 'USD Coin',
+      address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+      decimals: 6,
+      iconColor: 'bg-blue-500',
+    },
+    {
+      symbol: 'USDT',
+      name: 'Tether',
+      address: '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2',
+      decimals: 6,
+      iconColor: 'bg-emerald-500',
+    },
+  ],
+
   // --- Testnets ---
 
   // Sepolia (chainId: 11155111)
@@ -224,6 +249,23 @@ export const NETWORK_TOKENS: Record<number, TokenInfo[]> = {
       symbol: 'USDC',
       name: 'USD Coin (Test)',
       address: '0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582',
+      decimals: 6,
+      iconColor: 'bg-blue-500',
+    },
+  ],
+  // Base Sepolia (chainId: 84532)
+  84532: [
+    {
+      symbol: 'ETH',
+      name: 'Base Sepolia ETH',
+      address: null,
+      decimals: 18,
+      iconColor: 'bg-zinc-100',
+    },
+    {
+      symbol: 'USDC',
+      name: 'USD Coin (Test)',
+      address: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
       decimals: 6,
       iconColor: 'bg-blue-500',
     },
