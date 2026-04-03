@@ -6,7 +6,7 @@
 /**
  * Network theme identifier
  */
-export type NetworkTheme = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'
+export type NetworkTheme = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon' | 'base'
 
 /**
  * Shape types for network backgrounds
@@ -65,6 +65,13 @@ export const NETWORK_THEMES: Record<NetworkTheme, ThemeConfig> = {
     secondary: '#8B9EF5',
     shape: 'rhombus',
     animation: 'sway',
+    shapeCount: 8,
+  },
+  base: {
+    primary: '#0052FF',
+    secondary: '#3B82F6',
+    shape: 'circle',
+    animation: 'drift',
     shapeCount: 8,
   },
 } as const

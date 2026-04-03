@@ -63,6 +63,14 @@ export const NETWORK_THEMES: Record<number, NetworkTheme> = {
     accent: '#A56EFF',
     glow: 'rgba(130, 71, 229, 0.2)',
   },
+  // Base - Coinbase Blue
+  8453: {
+    name: 'Base',
+    primary: '#0052FF',
+    secondary: '#1A3A7A',
+    accent: '#3B82F6',
+    glow: 'rgba(0, 82, 255, 0.2)',
+  },
   // Testnets - Same colors as their mainnet counterparts
   11155111: {
     name: 'Sepolia',
@@ -91,6 +99,13 @@ export const NETWORK_THEMES: Record<number, NetworkTheme> = {
     secondary: '#4A2C91',
     accent: '#A56EFF',
     glow: 'rgba(130, 71, 229, 0.2)',
+  },
+  84532: {
+    name: 'Base Sepolia',
+    primary: '#0052FF',
+    secondary: '#1A3A7A',
+    accent: '#3B82F6',
+    glow: 'rgba(0, 82, 255, 0.2)',
   },
 }
 

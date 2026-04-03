@@ -88,6 +88,7 @@ function StaticBackground({ theme }: { theme: NetworkTheme }) {
     arbitrum: { primary: 'bg-blue-600/5', secondary: 'bg-cyan-600/5' },
     optimism: { primary: 'bg-red-600/5', secondary: 'bg-orange-600/5' },
     polygon: { primary: 'bg-purple-600/5', secondary: 'bg-violet-600/5' },
+    base: { primary: 'bg-blue-600/5', secondary: 'bg-indigo-600/5' },
   }
 
   const colors = accentColors[theme] || accentColors.ethereum

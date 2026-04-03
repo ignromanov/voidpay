@@ -3,7 +3,7 @@
 exports[`NetworkSelect - Snapshots > should match snapshot with default state 1`] = `
 <button
   aria-autocomplete="none"
-  aria-controls="radix-_r_20_"
+  aria-controls="radix-_r_2e_"
   aria-expanded="false"
   class="flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:flex [&>span]:min-w-0 [&>span]:items-center transition-all h-11 py-3 text-base border-zinc-800 bg-zinc-900/50 text-zinc-200 hover:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 w-[200px]"
   data-state="closed"
@@ -96,7 +96,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with default state 1`
 exports[`NetworkSelect - Snapshots > should match snapshot with different network 1`] = `
 <button
   aria-autocomplete="none"
-  aria-controls="radix-_r_2a_"
+  aria-controls="radix-_r_2q_"
   aria-expanded="false"
   class="flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:flex [&>span]:min-w-0 [&>span]:items-center transition-all h-11 py-3 text-base border-zinc-800 bg-zinc-900/50 text-zinc-200 hover:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 w-[200px]"
   data-state="closed"
@@ -179,7 +179,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with different networ
 exports[`NetworkSelect - Snapshots > should match snapshot with disabled state 1`] = `
 <button
   aria-autocomplete="none"
-  aria-controls="radix-_r_25_"
+  aria-controls="radix-_r_2k_"
   aria-expanded="false"
   class="flex cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border px-3 ring-offset-background placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&>span]:flex [&>span]:min-w-0 [&>span]:items-center transition-all h-11 py-3 text-base border-zinc-800 bg-zinc-900/50 text-zinc-200 hover:border-zinc-700 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 w-[200px]"
   data-disabled=""

@@ -26,7 +26,7 @@ describe('chains testnet filtering', () => {
         const { getSupportedChains } = await import('@/entities/network/config/chains')
         const chains = getSupportedChains()
 
-        expect(chains.length).toBe(4)
+        expect(chains.length).toBe(5)
         expect(chains.every((c) => !c.testnet)).toBe(true)
       },
       15000
@@ -40,7 +40,7 @@ describe('chains testnet filtering', () => {
         const { getSupportedChains } = await import('@/entities/network/config/chains')
         const chains = getSupportedChains()
 
-        expect(chains.length).toBe(8)
+        expect(chains.length).toBe(10)
       },
       15000
     )
