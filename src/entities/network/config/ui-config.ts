@@ -11,19 +11,21 @@ import {
   arbitrum,
   optimism,
   polygon,
+  base,
   sepolia,
   arbitrumSepolia,
   optimismSepolia,
   polygonAmoy,
+  baseSepolia,
 } from 'viem/chains'
-import { HexagonIcon, TriangleIcon, ZapIcon } from '@/shared/ui/icons'
+import { HexagonIcon, TriangleIcon, ZapIcon, BaseIcon } from '@/shared/ui/icons'
 import { NETWORK_CODES, type NetworkId } from './networks'
 
 /**
  * Network name type for UI theming
  * Used for network-specific visual styling across the app
  */
-export type NetworkName = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'
+export type NetworkName = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon' | 'base'
 
 /**
  * Testnet → mainnet parent mapping (single source of truth)
@@ -34,6 +36,7 @@ const TESTNET_PARENT: Record<number, number> = {
   [arbitrumSepolia.id]: arbitrum.id,
   [optimismSepolia.id]: optimism.id,
   [polygonAmoy.id]: polygon.id,
+  [baseSepolia.id]: base.id,
 }
 
 /**
@@ -50,6 +53,8 @@ export function getNetworkTheme(chainId: number): NetworkName {
       return 'optimism'
     case polygon.id:
       return 'polygon'
+    case base.id:
+      return 'base'
     default:
       return 'ethereum'
   }
@@ -100,6 +105,13 @@ export const NETWORK_CONFIG: NetworkConfig[] = [
     iconFilled: true,
     colorClass: 'text-purple-400',
   },
+  {
+    chainId: base.id,
+    name: 'Base',
+    icon: BaseIcon,
+    iconFilled: true,
+    colorClass: 'text-blue-500',
+  },
 ]
 
 /**
@@ -110,6 +122,7 @@ const TESTNET_NAMES: Record<number, string> = {
   [arbitrumSepolia.id]: 'Arb Sepolia',
   [optimismSepolia.id]: 'OP Sepolia',
   [polygonAmoy.id]: 'Polygon Amoy',
+  [baseSepolia.id]: 'Base Sepolia',
 }
 
 /**
@@ -165,6 +178,10 @@ export const NETWORK_BADGES: Record<
     variant: 'outline',
     colorClass: 'bg-purple-100 text-purple-700 border-purple-200',
   },
+  [base.id]: {
+    variant: 'default',
+    colorClass: 'bg-blue-100 text-blue-800 border-blue-300',
+  },
 }
 
 /**
@@ -175,10 +192,12 @@ export const BLOCK_EXPLORERS: Record<number, { name: string; url: string }> = {
   [arbitrum.id]: { name: 'Arbiscan', url: 'https://arbiscan.io' },
   [optimism.id]: { name: 'Optimism Etherscan', url: 'https://optimistic.etherscan.io' },
   [polygon.id]: { name: 'Polygonscan', url: 'https://polygonscan.com' },
+  [base.id]: { name: 'BaseScan', url: 'https://basescan.org' },
   [sepolia.id]: { name: 'Sepolia Etherscan', url: 'https://sepolia.etherscan.io' },
   [arbitrumSepolia.id]: { name: 'Arbiscan Sepolia', url: 'https://sepolia.arbiscan.io' },
   [optimismSepolia.id]: { name: 'OP Sepolia Blockscout', url: 'https://optimism-sepolia.blockscout.com' },
   [polygonAmoy.id]: { name: 'Amoy Polygonscan', url: 'https://amoy.polygonscan.com' },
+  [baseSepolia.id]: { name: 'BaseScan Sepolia', url: 'https://sepolia.basescan.org' },
 }
 
 /**
@@ -197,6 +216,8 @@ export const NETWORK_CODE_COLORS: Record<string, string> = {
   'arb-sep': '#60A5FA', // inherits arbitrum
   'op-sep': '#F87171', // inherits optimism
   amoy: '#C084FC', // inherits polygon
+  base: '#3B82F6', // blue-500
+  'base-sep': '#3B82F6', // inherits base
 }
 
 /**
@@ -207,6 +228,7 @@ export const NETWORK_SHADOWS: Record<number, string> = {
   [arbitrum.id]: 'shadow-blue-500/20',
   [optimism.id]: 'shadow-red-500/20',
   [polygon.id]: 'shadow-purple-500/20',
+  [base.id]: 'shadow-blue-500/20',
 }
 
 /**
@@ -219,6 +241,7 @@ export const NETWORK_GLOWS: Record<number, { from: string; to: string }> = {
   [arbitrum.id]: { from: 'from-cyan-600/40', to: 'to-blue-600/40' },
   [optimism.id]: { from: 'from-red-600/40', to: 'to-orange-600/40' },
   [polygon.id]: { from: 'from-purple-600/40', to: 'to-violet-600/40' },
+  [base.id]: { from: 'from-blue-600/40', to: 'to-indigo-600/40' },
 }
 
 /**
@@ -242,6 +265,8 @@ export const NETWORK_GLOW_SHADOWS: Record<number, string> = {
   [optimism.id]: 'before:from-red-500/60 before:to-orange-500/40',
   // Purple → Violet elliptical glow
   [polygon.id]: 'before:from-purple-500/60 before:to-violet-500/40',
+  // Blue → Indigo elliptical glow
+  [base.id]: 'before:from-blue-600/60 before:to-indigo-500/40',
 }
 
 /**
@@ -259,4 +284,6 @@ export const NETWORK_GLOW_BORDERS: Record<number, string> = {
   [arbitrum.id]: 'ring-2 ring-cyan-500/60 shadow-[0_0_48px_rgba(6,182,212,0.4)]',
   [optimism.id]: 'ring-2 ring-red-500/60 shadow-[0_0_48px_rgba(239,68,68,0.4)]',
   [polygon.id]: 'ring-2 ring-purple-500/60 shadow-[0_0_48px_rgba(168,85,247,0.4)]',
+  // Blue-500 RGB: 59, 130, 246
+  [base.id]: 'ring-2 ring-blue-500/60 shadow-[0_0_48px_rgba(59,130,246,0.4)]',
 }
