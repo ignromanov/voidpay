@@ -48,7 +48,7 @@ const REFERENCE_BLOCKS: Record<number, { block: number; timestampMs: number }> =
   42161: { block: 439_760_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   10:    { block: 148_670_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   137:   { block: 83_950_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
-  8453:  { block: 40_700_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
+  8453:  { block: 44_192_000, timestampMs: Date.parse('2026-04-03T00:00:00Z') },
   // Testnet
   11155111: { block: 10_416_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   421614:   { block: 248_490_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
