@@ -6,6 +6,7 @@ import {
   NetworkArbitrumOne,
   NetworkOptimism,
   NetworkPolygon,
+  NetworkBase,
 } from '@web3icons/react'
 import { cn } from '@/shared/lib/utils'
 
@@ -17,6 +18,7 @@ const NETWORK_ICONS: Record<number, React.ComponentType<{ className?: string; si
   42161: NetworkArbitrumOne,  // Arbitrum One
   10: NetworkOptimism,     // Optimism
   137: NetworkPolygon,     // Polygon PoS
+  8453: NetworkBase,       // Base
 }
 
 /**
@@ -27,6 +29,7 @@ const NETWORK_COLORS: Record<number, string> = {
   42161: 'bg-blue-500',    // Arbitrum
   10: 'bg-red-500',        // Optimism
   137: 'bg-purple-500',    // Polygon
+  8453: 'bg-blue-600',     // Base
 }
 
 /**
@@ -37,6 +40,7 @@ const NETWORK_LETTERS: Record<number, string> = {
   42161: 'A',  // Arbitrum
   10: 'O',     // Optimism
   137: 'P',    // Polygon
+  8453: 'B',   // Base
 }
 
 export interface NetworkIconProps extends Omit<ComponentPropsWithoutRef<'span'>, 'children'> {
