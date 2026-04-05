@@ -27,7 +27,7 @@ const { mockSetValidated, mockSetFinalized, mockResetPaymentState } = vi.hoisted
 
 vi.mock('@/entities/invoice', () => {
   const storeState = {
-    invoices: [] as Array<{ invoiceId: string; finalized?: boolean }>,
+    invoices: [] as Array<{ key: string; finalized?: boolean }>,
     setValidated: mockSetValidated,
     setFinalized: mockSetFinalized,
     resetPaymentState: mockResetPaymentState,
@@ -56,6 +56,8 @@ vi.mock('@/shared/lib/toast', () => ({
 import { useFinalizationTracker } from '../use-finalization-tracker'
 
 const MOCK_TX_HASH = '0xdeadbeef00000000000000000000000000000000000000000000000000000001' as `0x${string}`
+
+const MOCK_INVOICE_KEY = 'abc123testhash'
 
 describe('useFinalizationTracker', () => {
   beforeEach(() => {
@@ -87,14 +89,14 @@ describe('useFinalizationTracker', () => {
 
     renderHook(() =>
       useFinalizationTracker({
-        invoiceId: 'INV-001',
+        invoiceKey: MOCK_INVOICE_KEY,
         txHash: MOCK_TX_HASH,
         networkId: 1, // Ethereum — 60 min timeout
       })
     )
 
     await waitFor(() => {
-      expect(mockSetFinalized).toHaveBeenCalledWith('INV-001')
+      expect(mockSetFinalized).toHaveBeenCalledWith(MOCK_INVOICE_KEY)
     })
 
     // Silent — no toast on success
@@ -112,7 +114,7 @@ describe('useFinalizationTracker', () => {
 
     renderHook(() =>
       useFinalizationTracker({
-        invoiceId: 'INV-001',
+        invoiceKey: MOCK_INVOICE_KEY,
         txHash: MOCK_TX_HASH,
         networkId: 1, // Ethereum — 60 min timeout
       })
@@ -135,7 +137,7 @@ describe('useFinalizationTracker', () => {
 
     renderHook(() =>
       useFinalizationTracker({
-        invoiceId: 'INV-L2-001',
+        invoiceKey: 'INV-L2-001-KEY',
         txHash: MOCK_TX_HASH,
         networkId: 42161, // Arbitrum — 30 min timeout
       })
@@ -159,7 +161,7 @@ describe('useFinalizationTracker', () => {
 
     renderHook(() =>
       useFinalizationTracker({
-        invoiceId: 'INV-001',
+        invoiceKey: MOCK_INVOICE_KEY,
         txHash: MOCK_TX_HASH,
         networkId: 1,
         enabled: false,
@@ -185,7 +187,7 @@ describe('useFinalizationTracker', () => {
     const { rerender } = renderHook(
       ({ enabled }: { enabled: boolean }) =>
         useFinalizationTracker({
-          invoiceId: 'INV-001',
+          invoiceKey: MOCK_INVOICE_KEY,
           txHash: MOCK_TX_HASH,
           networkId: 1,
           enabled,
@@ -200,7 +202,7 @@ describe('useFinalizationTracker', () => {
     rerender({ enabled: true })
 
     await waitFor(() => {
-      expect(mockSetFinalized).toHaveBeenCalledWith('INV-001')
+      expect(mockSetFinalized).toHaveBeenCalledWith(MOCK_INVOICE_KEY)
     })
   })
 
@@ -213,14 +215,14 @@ describe('useFinalizationTracker', () => {
 
     renderHook(() =>
       useFinalizationTracker({
-        invoiceId: 'INV-REORG-001',
+        invoiceKey: 'INV-REORG-001-KEY',
         txHash: MOCK_TX_HASH,
         networkId: 1,
       })
     )
 
     await waitFor(() => {
-      expect(mockResetPaymentState).toHaveBeenCalledWith('INV-REORG-001')
+      expect(mockResetPaymentState).toHaveBeenCalledWith('INV-REORG-001-KEY')
     })
 
     // Must alert user about reorg via toast

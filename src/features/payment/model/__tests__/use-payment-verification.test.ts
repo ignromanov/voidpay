@@ -61,6 +61,8 @@ import { usePaymentVerification } from '../use-payment-verification'
 import type { Invoice } from '@/entities/invoice'
 
 const MOCK_TX_HASH = '0xdeadbeef00000000000000000000000000000000000000000000000000000001' as `0x${string}`
+const MOCK_INVOICE_KEY = 'native-test-hash-key'
+const MOCK_ERC20_KEY = 'erc20-test-hash-key'
 
 const mockNativeInvoice = {
   version: 2,
@@ -117,6 +119,7 @@ describe('usePaymentVerification', () => {
     const { result } = renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
+        invoiceKey: MOCK_INVOICE_KEY,
         invoiceId: 'INV-NATIVE-001',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000000000000000',
@@ -124,7 +127,7 @@ describe('usePaymentVerification', () => {
     )
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('INV-NATIVE-001', true)
+      expect(mockSetValidated).toHaveBeenCalledWith(MOCK_INVOICE_KEY, true)
     })
 
     expect(mockSetError).not.toHaveBeenCalled()
@@ -156,6 +159,7 @@ describe('usePaymentVerification', () => {
     const { result } = renderHook(() =>
       usePaymentVerification({
         invoice: mockErc20Invoice,
+        invoiceKey: MOCK_ERC20_KEY,
         invoiceId: 'INV-ERC20-001',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000',
@@ -163,7 +167,7 @@ describe('usePaymentVerification', () => {
     )
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('INV-ERC20-001', true)
+      expect(mockSetValidated).toHaveBeenCalledWith(MOCK_ERC20_KEY, true)
     })
 
     expect(mockSetError).not.toHaveBeenCalled()
@@ -188,6 +192,7 @@ describe('usePaymentVerification', () => {
     renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
+        invoiceKey: MOCK_INVOICE_KEY,
         invoiceId: 'INV-NATIVE-001',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000000000000000',
@@ -196,7 +201,7 @@ describe('usePaymentVerification', () => {
 
     await waitFor(() => {
       expect(mockSetError).toHaveBeenCalledWith(
-        'INV-NATIVE-001',
+        MOCK_INVOICE_KEY,
         expect.stringContaining("amount doesn't match"),
       )
     })
@@ -220,6 +225,7 @@ describe('usePaymentVerification', () => {
     const { result } = renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
+        invoiceKey: MOCK_INVOICE_KEY,
         invoiceId: 'INV-NATIVE-001',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000000000000000',
@@ -249,6 +255,7 @@ describe('usePaymentVerification', () => {
     const { result, rerender } = renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
+        invoiceKey: MOCK_INVOICE_KEY,
         invoiceId: 'INV-NATIVE-001',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000000000000000',
@@ -266,7 +273,7 @@ describe('usePaymentVerification', () => {
     rerender()
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('INV-NATIVE-001', true)
+      expect(mockSetValidated).toHaveBeenCalledWith(MOCK_INVOICE_KEY, true)
     })
   })
 
@@ -284,6 +291,7 @@ describe('usePaymentVerification', () => {
     const { result } = renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
+        invoiceKey: MOCK_INVOICE_KEY,
         invoiceId: 'INV-NATIVE-001',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000000000000000',
@@ -317,6 +325,7 @@ describe('usePaymentVerification', () => {
       ({ enabled }: { enabled: boolean }) =>
         usePaymentVerification({
           invoice: mockNativeInvoice,
+          invoiceKey: MOCK_INVOICE_KEY,
           invoiceId: 'INV-NATIVE-001',
           txHash: MOCK_TX_HASH,
           exactTotal: '1000000000000000000',
@@ -332,7 +341,7 @@ describe('usePaymentVerification', () => {
     rerender({ enabled: true })
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('INV-NATIVE-001', true)
+      expect(mockSetValidated).toHaveBeenCalledWith(MOCK_INVOICE_KEY, true)
     })
   })
 
@@ -354,6 +363,7 @@ describe('usePaymentVerification', () => {
     const { result, rerender } = renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
+        invoiceKey: MOCK_INVOICE_KEY,
         invoiceId: 'INV-NATIVE-001',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000000000000000',
@@ -375,7 +385,7 @@ describe('usePaymentVerification', () => {
     rerender()
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('INV-NATIVE-001', true)
+      expect(mockSetValidated).toHaveBeenCalledWith(MOCK_INVOICE_KEY, true)
     })
   })
 })

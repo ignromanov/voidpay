@@ -48,6 +48,7 @@ export interface UseInvoiceViewOptions {
 
 export interface InvoiceViewState {
   invoice: Invoice | null
+  invoiceKey: string
   errorType: DecodeErrorType | null
   isLoading: boolean
   panelStatus: InvoiceStatus
@@ -69,13 +70,16 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
   const trackView = useTrackedInvoiceStore((s) => s.trackView)
   const setError = useTrackedInvoiceStore((s) => s.setError)
   const setTxHash = useTrackedInvoiceStore((s) => s.setTxHash)
+  
+  // Compute the stable key from the hash fragment
+  const invoiceKey = useMemo(() => hash, [hash])
 
   const [isHydrated, setIsHydrated] = useState(false)
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [errorType, setErrorType] = useState<DecodeErrorType | null>(null)
 
   const tracked = useTrackedInvoiceStore((s) =>
-    invoice ? s.invoices.find((inv) => inv.invoiceId === invoice.invoiceId) : undefined
+    invoice && invoiceKey ? s.invoices.find((inv) => inv.key === invoiceKey) : undefined
   )
 
   const panelStatus = computeInvoiceStatus({
@@ -156,10 +160,11 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
         setInvoice(result.data)
         setErrorType(null)
         // Clear any stored error from previous session on fresh page load
-        setError(result.data.invoiceId, null)
+        setError(invoiceKey, null)
 
         try {
           trackView({
+            key: invoiceKey,
             invoiceId: result.data.invoiceId,
             invoiceUrl: `${window.location.origin}/pay#${hash}`,
             source,
@@ -185,19 +190,19 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
       }
     })()
     return () => { cancelled = true }
-  }, [hash, isHydrated, trackView, source, setError])
+  }, [hash, isHydrated, trackView, source, setError, invoiceKey])
 
   const dismissError = useCallback(() => {
-    if (invoice) setError(invoice.invoiceId, null)
-  }, [invoice, setError])
+    if (invoiceKey) setError(invoiceKey, null)
+  }, [invoiceKey, setError])
 
   // Manual txHash escape hatch
   const verifyTxHash = useCallback(({ txHash: hash }: { txHash: string }) => {
-    if (!invoice || !/^0x[a-fA-F0-9]{64}$/.test(hash)) return
+    if (!invoice || !invoiceKey || !/^0x[a-fA-F0-9]{64}$/.test(hash)) return
 
     const store = useTrackedInvoiceStore.getState()
 
-    const current = store.invoices.find((inv) => inv.invoiceId === invoice.invoiceId)
+    const current = store.invoices.find((inv) => inv.key === invoiceKey)
     if (current?.txHash === hash) {
       toast.info('This transaction is already linked to this invoice')
       return
@@ -205,20 +210,21 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
 
     // W3-006: reject if already linked to a different invoice
     const alreadyLinked = store.invoices.some(
-      (inv) => inv.txHash === hash && inv.invoiceId !== invoice.invoiceId,
+      (inv) => inv.txHash === hash && inv.key !== invoiceKey,
     )
     if (alreadyLinked) {
       toast.error('This transaction is already linked to another invoice')
       return
     }
 
-    setTxHash(invoice.invoiceId, hash as `0x${string}`, false)
-  }, [invoice, setTxHash])
+    setTxHash(invoiceKey, hash as `0x${string}`, false)
+  }, [invoice, invoiceKey, setTxHash])
 
   const isLoading = !invoice && !errorType
 
   return {
     invoice,
+    invoiceKey,
     errorType,
     isLoading,
     panelStatus,

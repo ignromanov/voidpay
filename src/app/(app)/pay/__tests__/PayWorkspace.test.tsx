@@ -368,7 +368,7 @@ describe('PayWorkspace', () => {
       })
       mockGetInvoice.mockReturnValue({
         invoiceId: 'INV-001',
-        invoiceUrl: '/pay#mock_encoded',
+        invoiceUrl: '/pay#H_valid_hash',
         source: 'received',
         createdAt: '2026-02-01T00:00:00Z',
       })
@@ -381,6 +381,7 @@ describe('PayWorkspace', () => {
 
       expect(mockStoreState.trackView).toHaveBeenCalledWith(
         expect.objectContaining({
+          key: 'H_valid_hash',
           invoiceId: 'INV-001',
           source: 'received',
         })

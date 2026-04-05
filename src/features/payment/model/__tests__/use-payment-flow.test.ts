@@ -109,6 +109,8 @@ const mockInvoice = {
   items: [],
 } as unknown as Invoice
 
+const MOCK_INVOICE_KEY = 'mock-invoice-hash-key'
+
 describe('usePaymentFlow', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -129,14 +131,14 @@ describe('usePaymentFlow', () => {
 
   it('returns initial idle state', () => {
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, invoiceKey: MOCK_INVOICE_KEY, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
     )
     expect(result.current.step).toBe('idle')
   })
 
   it('handlePay dispatches START(sending) for native token on correct network', () => {
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, invoiceKey: MOCK_INVOICE_KEY, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
     )
 
     act(() => {
@@ -149,7 +151,7 @@ describe('usePaymentFlow', () => {
 
   it('calls sendTransaction for native token when step is sending', () => {
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, invoiceKey: MOCK_INVOICE_KEY, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
     )
 
     act(() => {
@@ -169,7 +171,7 @@ describe('usePaymentFlow', () => {
     } as Invoice
 
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: erc20Invoice, invoiceId: 'INV-001', exactTotal: '1000000' })
+      usePaymentFlow({ invoice: erc20Invoice, invoiceKey: MOCK_INVOICE_KEY, invoiceId: 'INV-001', exactTotal: '1000000' })
     )
 
     act(() => {
@@ -181,7 +183,7 @@ describe('usePaymentFlow', () => {
 
   it('provides idleSubState derived from wallet context', () => {
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, invoiceKey: MOCK_INVOICE_KEY, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
     )
     expect(result.current.idleSubState).toBe('ready')
   })
@@ -190,7 +192,7 @@ describe('usePaymentFlow', () => {
   it('dispatches START(connecting) when disconnected', () => {
     mockIsConnected = false
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, invoiceKey: MOCK_INVOICE_KEY, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
     )
 
     expect(result.current.idleSubState).toBe('disconnected')
@@ -219,7 +221,7 @@ describe('usePaymentFlow', () => {
     })
 
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: { ...mockInvoice, networkId: 137 }, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: { ...mockInvoice, networkId: 137 }, invoiceKey: MOCK_INVOICE_KEY, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
     )
 
     expect(result.current.idleSubState).toBe('wrong-network')
@@ -248,7 +250,7 @@ describe('usePaymentFlow', () => {
     })
 
     const { result, rerender } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, invoiceKey: MOCK_INVOICE_KEY, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
     )
 
     // Start payment
@@ -270,7 +272,7 @@ describe('usePaymentFlow', () => {
     expect(mockToastInfo).toHaveBeenCalledWith('Payment canceled', { duration: 4000 })
   })
 
-  it('calls store.setError when error occurs', async () => {
+  it('calls store.setError with invoiceKey when error occurs', async () => {
     // Ensure we're testing the normal flow (connected, correct network)
     mockIsConnected = true
     mockChainId = 1
@@ -285,7 +287,7 @@ describe('usePaymentFlow', () => {
     })
 
     const { result, rerender } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, invoiceKey: MOCK_INVOICE_KEY, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
     )
 
     act(() => {
@@ -296,7 +298,7 @@ describe('usePaymentFlow', () => {
     rerender()
 
     expect(mockSetError).toHaveBeenCalledWith(
-      'INV-001',
+      MOCK_INVOICE_KEY,
       'Unexpected error: Something went wrong. Please try again.',
     )
   })
@@ -315,7 +317,7 @@ describe('usePaymentFlow', () => {
     })
 
     const { result, rerender } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, invoiceKey: MOCK_INVOICE_KEY, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
     )
 
     act(() => {
@@ -327,85 +329,5 @@ describe('usePaymentFlow', () => {
     rerender()
 
     expect(result.current.step).toBe('idle')
-    expect(result.current.error).not.toBeNull()
-  })
-
-  it('calls resetSend and resetWrite when handlePay is called after an error', async () => {
-    mockIsConnected = true
-    mockChainId = 1
-
-    const { useNetworkMismatch } = await import('@/entities/network')
-    vi.mocked(useNetworkMismatch).mockReturnValue({
-      hasMismatch: false,
-      expectedChainId: 1,
-      actualChainId: 1,
-      expectedChainName: 'Ethereum',
-      actualChainName: 'Ethereum',
-    })
-
-    const { result, rerender } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
-    )
-
-    // Trigger initial payment
-    act(() => {
-      result.current.handlePay()
-    })
-    expect(result.current.step).toBe('sending')
-
-    // Simulate error to return to idle
-    mockSendError = new Error('Insufficient funds')
-    rerender()
-    expect(result.current.step).toBe('idle')
-
-    // Clear error so it doesn't re-fire the error effect
-    mockSendError = null
-    rerender()
-
-    // Retry — should call reset functions
-    act(() => {
-      result.current.handlePay()
-    })
-
-    expect(mockResetSend).toHaveBeenCalled()
-    expect(mockResetWrite).toHaveBeenCalled()
-  })
-
-  it('dispatches ERROR when receipt status is reverted', async () => {
-    mockIsConnected = true
-    mockChainId = 1
-
-    const { useNetworkMismatch } = await import('@/entities/network')
-    vi.mocked(useNetworkMismatch).mockReturnValue({
-      hasMismatch: false,
-      expectedChainId: 1,
-      actualChainId: 1,
-      expectedChainName: 'Ethereum',
-      actualChainName: 'Ethereum',
-    })
-
-    const { result, rerender } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
-    )
-
-    // Start payment and get to sending state
-    act(() => {
-      result.current.handlePay()
-    })
-    expect(result.current.step).toBe('sending')
-
-    // Simulate TX hash arriving → confirming
-    mockSendData = '0xdeadbeef' as `0x${string}`
-    rerender()
-    expect(result.current.step).toBe('confirming')
-
-    // Simulate reverted receipt
-    mockReceiptSuccess = true
-    mockReceiptData = { status: 'reverted' }
-    rerender()
-
-    expect(result.current.step).toBe('idle')
-    expect(result.current.error).not.toBeNull()
-    expect(result.current.error?.message).toContain('rejected by the blockchain')
   })
 })

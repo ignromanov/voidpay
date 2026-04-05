@@ -6,6 +6,7 @@ import type { Invoice } from '@/shared/lib/invoice-types'
 
 interface PaymentVerifierProps {
   invoice: Invoice
+  invoiceKey: string
   invoiceId: string
   txHash: `0x${string}`
   exactTotal: string
@@ -21,7 +22,7 @@ interface PaymentVerifierProps {
 function VerificationEffect(props: PaymentVerifierProps) {
   usePaymentVerification(props)
   useFinalizationTracker({
-    invoiceId: props.invoiceId,
+    invoiceKey: props.invoiceKey,
     txHash: props.txHash,
     networkId: props.invoice.networkId,
     onReorgDetected: props.onReorgDetected,

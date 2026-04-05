@@ -79,6 +79,7 @@ export function paymentReducer(state: PaymentState, action: PaymentAction): Paym
 
 interface UsePaymentFlowParams {
   invoice: Invoice
+  invoiceKey: string
   invoiceId: string
   exactTotal: string
 }
@@ -110,7 +111,8 @@ function createPaymentError(
  */
 export function usePaymentFlow({
   invoice,
-  invoiceId,
+  invoiceKey,
+  invoiceId: _invoiceId,
   exactTotal,
 }: UsePaymentFlowParams): UsePaymentFlowReturn {
   const [state, dispatch] = useReducer(paymentReducer, INITIAL_PAYMENT_STATE)
@@ -280,9 +282,9 @@ export function usePaymentFlow({
       return
     }
 
-    setTxHash(invoiceId, txHash, false)
+    setTxHash(invoiceKey, txHash, false)
     dispatch({ type: 'CONFIRMED' })
-  }, [state.step, isReceiptSuccess, txHash, receipt, invoiceId, setTxHash])
+  }, [state.step, isReceiptSuccess, txHash, receipt, invoiceKey, setTxHash])
 
   // Effect: Handle wagmi errors (sticky — cleared by resetSend/resetWrite in handlePay)
   useEffect(() => {
@@ -305,9 +307,9 @@ export function usePaymentFlow({
     track(AnalyticsEvent.ERROR_PAYMENT, { error_type: errorType })
 
     const error = createPaymentError(errorType, state.step)
-    setError(invoiceId, error.message)
+    setError(invoiceKey, error.message)
     dispatch({ type: 'ERROR', error })
-  }, [sendError, writeError, receiptError, switchError, state.step, invoiceId, setError])
+  }, [sendError, writeError, receiptError, switchError, state.step, invoiceKey, setError])
 
   return { step: state.step, error: state.error, txHash: state.txHash, handlePay, handleCancel, idleSubState }
 }

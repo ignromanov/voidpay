@@ -87,7 +87,7 @@ interface InvoiceWorkspaceReadyProps {
 function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
   const {
     panelStatus, dismissError, txHash, confirmations, storedError,
-    finalized, exactTotal, polling, verifyTxHash, isSyncing,
+    finalized, exactTotal, polling, verifyTxHash, isSyncing, invoiceKey,
   } = view
 
   const searchParams = useSearchParams()
@@ -133,6 +133,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
       {txHash && !finalized && (
         <InvoiceVerifier
           invoice={invoice}
+          invoiceKey={invoiceKey}
           invoiceId={invoice.invoiceId}
           txHash={txHash}
           exactTotal={exactTotal}

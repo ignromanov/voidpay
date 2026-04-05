@@ -9,6 +9,7 @@ import type { ConfirmationProgress } from '@/shared/lib/invoice-types'
 
 export interface UsePaymentVerificationParams {
   invoice: Invoice
+  invoiceKey: string
   invoiceId: string
   txHash: `0x${string}`
   exactTotal: string
@@ -24,7 +25,8 @@ export interface UsePaymentVerificationResult {
 
 export function usePaymentVerification({
   invoice,
-  invoiceId,
+  invoiceKey,
+  invoiceId: _invoiceId,
   txHash,
   exactTotal,
   enabled = true,
@@ -106,15 +108,15 @@ export function usePaymentVerification({
     const progress: ConfirmationProgress = { current, required }
     setTxBlockNumber(receiptBlockNumber)
     setLocalConfirmations(progress)
-    setConfirmationsRef.current(invoiceId, progress)
+    setConfirmationsRef.current(invoiceKey, progress)
     setVerifyDone(true)
-  }, [chainId, currentBlock, invoiceId])
+  }, [chainId, currentBlock, invoiceKey])
 
   const handleVerifyError = useCallback((result: VerificationResult) => {
     const errorMsg = result.error ?? "Transaction amount doesn't match the expected total"
-    setStoreErrorRef.current(invoiceId, errorMsg)
+    setStoreErrorRef.current(invoiceKey, errorMsg)
     setVerifyError(errorMsg)
-  }, [invoiceId])
+  }, [invoiceKey])
 
   // Phase 1a: verify ERC-20 synchronously when receipt arrives
   useEffect(() => {
@@ -165,7 +167,7 @@ export function usePaymentVerification({
   useEffect(() => {
     if (!enabled) return
     if (!nativeFetchError) return
-    setStoreErrorRef.current(invoiceId, nativeFetchError)
+    setStoreErrorRef.current(invoiceKey, nativeFetchError)
     setVerifyError(nativeFetchError)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nativeFetchError])
@@ -180,10 +182,10 @@ export function usePaymentVerification({
     const progress: ConfirmationProgress = { current, required: requiredConfirmations }
 
     setLocalConfirmations(progress)
-    setConfirmationsRef.current(invoiceId, progress)
+    setConfirmationsRef.current(invoiceKey, progress)
 
     if (current >= requiredConfirmations) {
-      setValidatedRef.current(invoiceId, true)
+      setValidatedRef.current(invoiceKey, true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentBlock, verifyDone, txBlockNumber])
