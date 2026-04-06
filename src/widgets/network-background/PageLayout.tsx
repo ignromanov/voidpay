@@ -78,20 +78,24 @@ export function PageLayout({
 }
 
 /**
+ * Static background accent colors by network theme.
+ * Lower opacity than THEME_COLORS in NetworkBackground.tsx (static vs animated).
+ * @see NetworkBackground.tsx THEME_COLORS for the animated counterpart (/10 opacity)
+ */
+const STATIC_ACCENT_COLORS: Record<NetworkTheme, { primary: string; secondary: string }> = {
+  ethereum: { primary: 'bg-violet-600/5', secondary: 'bg-indigo-600/5' },
+  arbitrum: { primary: 'bg-blue-600/5', secondary: 'bg-cyan-600/5' },
+  optimism: { primary: 'bg-red-600/5', secondary: 'bg-orange-600/5' },
+  polygon: { primary: 'bg-purple-600/5', secondary: 'bg-violet-600/5' },
+  base: { primary: 'bg-blue-600/5', secondary: 'bg-indigo-600/5' },
+}
+
+/**
  * Static background with theme-aware gradients
  * Shown immediately before PixiBackground loads
  */
 function StaticBackground({ theme }: { theme: NetworkTheme }) {
-  // Theme-specific accent colors
-  const accentColors: Record<NetworkTheme, { primary: string; secondary: string }> = {
-    ethereum: { primary: 'bg-violet-600/5', secondary: 'bg-indigo-600/5' },
-    arbitrum: { primary: 'bg-blue-600/5', secondary: 'bg-cyan-600/5' },
-    optimism: { primary: 'bg-red-600/5', secondary: 'bg-orange-600/5' },
-    polygon: { primary: 'bg-purple-600/5', secondary: 'bg-violet-600/5' },
-    base: { primary: 'bg-blue-600/5', secondary: 'bg-indigo-600/5' },
-  }
-
-  const colors = accentColors[theme] || accentColors.ethereum
+  const colors = STATIC_ACCENT_COLORS[theme] || STATIC_ACCENT_COLORS.ethereum
 
   return (
     <div className="fixed inset-0 z-[0] bg-zinc-950 print:hidden">

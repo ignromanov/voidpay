@@ -19,7 +19,7 @@ import {
   UrlSizeError,
 } from '@/features/generate-link'
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkTheme } from '@/entities/network'
+import { getNetworkThemeName } from '@/entities/network'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { urlToRoute } from '@/shared/lib/navigation'
 import { toast } from '@/shared/lib/toast'
@@ -87,7 +87,7 @@ export function CreateWorkspace() {
   const invoiceData = activeDraft?.data
 
   useEffect(() => {
-    const theme = getNetworkTheme(invoiceData?.networkId ?? 1)
+    const theme = getNetworkThemeName(invoiceData?.networkId ?? 1)
     setNetworkTheme(theme)
   }, [invoiceData?.networkId, setNetworkTheme])
 

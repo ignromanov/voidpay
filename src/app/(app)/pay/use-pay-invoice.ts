@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkTheme } from '@/entities/network'
+import { getNetworkThemeName } from '@/entities/network'
 import { useInvoiceView } from '@/widgets/payment-panel'
 import type { InvoiceViewState } from '@/widgets/payment-panel'
 
@@ -26,7 +26,7 @@ export function usePayInvoice(): PayInvoiceState {
   // Sync network theme for background
   useEffect(() => {
     if (view.invoice?.networkId) {
-      setNetworkTheme(getNetworkTheme(view.invoice.networkId))
+      setNetworkTheme(getNetworkThemeName(view.invoice.networkId))
     }
   }, [view.invoice?.networkId, setNetworkTheme])
 

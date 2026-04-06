@@ -6,7 +6,7 @@ import type { UseFormReturn } from 'react-hook-form'
 import { CoinsIcon } from '@/shared/ui/icons'
 
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkTheme, findTokenForNetwork, NETWORK_TOKENS } from '@/entities/network'
+import { getNetworkThemeName, findTokenForNetwork, NETWORK_TOKENS } from '@/entities/network'
 import { Heading } from '@/shared/ui/typography'
 import { NetworkSelect } from '@/features/wallet-connect'
 import type { TokenInfo } from '@/entities/network'
@@ -88,7 +88,7 @@ export function PaymentSection({ form }: PaymentSectionProps) {
   const handleNetworkChange = useCallback(
     (chainId: number) => {
       setValue('networkId', chainId)
-      const theme = getNetworkTheme(chainId)
+      const theme = getNetworkThemeName(chainId)
       setNetworkTheme(theme)
 
       // Auto-select USDC for the new network
