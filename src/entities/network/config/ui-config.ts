@@ -20,32 +20,22 @@ import {
 } from 'viem/chains'
 import { HexagonIcon, TriangleIcon, ZapIcon } from '@/shared/ui/icons'
 import { NETWORK_CODES, type NetworkId } from './networks'
+import type { NetworkThemeName } from '@/shared/ui/constants/network-palette'
+import { TESTNET_PARENT, withTestnets, resolveMainnetId } from '../lib/testnet-utils'
 
 /**
  * Network name type for UI theming
  * Used for network-specific visual styling across the app
+ * @deprecated Use NetworkThemeName from network-palette.ts directly
  */
-export type NetworkName = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon' | 'base'
+export type NetworkName = NetworkThemeName
 
 /**
- * Testnet → mainnet parent mapping (single source of truth)
- * Used to derive testnet UI configs and resolve themes
+ * Map chain ID to network theme name.
+ * Resolves testnets to their mainnet parent before matching.
  */
-const TESTNET_PARENT: Record<number, number> = {
-  [sepolia.id]: mainnet.id,
-  [arbitrumSepolia.id]: arbitrum.id,
-  [optimismSepolia.id]: optimism.id,
-  [polygonAmoy.id]: polygon.id,
-  [baseSepolia.id]: base.id,
-}
-
-/**
- * Map chain ID to network theme name
- * Used for visual theming (colors, backgrounds, etc.)
- * Resolves testnets to their mainnet parent before matching
- */
-export function getNetworkTheme(chainId: number): NetworkName {
-  const resolvedId = TESTNET_PARENT[chainId] ?? chainId
+export function getNetworkThemeName(chainId: number): NetworkThemeName {
+  const resolvedId = resolveMainnetId(chainId)
   switch (resolvedId) {
     case arbitrum.id:
       return 'arbitrum'
@@ -172,7 +162,7 @@ export const NETWORK_BADGES: Record<
     variant: 'secondary',
     colorClass: 'bg-indigo-100 text-indigo-700 border-indigo-200',
   },
-  [arbitrum.id]: { variant: 'default', colorClass: 'bg-blue-100 text-blue-700 border-blue-200' },
+  [arbitrum.id]: { variant: 'default', colorClass: 'bg-sky-100 text-sky-700 border-sky-200' },
   [optimism.id]: { variant: 'destructive', colorClass: 'bg-red-100 text-red-700 border-red-200' },
   [polygon.id]: {
     variant: 'outline',
@@ -218,21 +208,6 @@ export const NETWORK_CODE_COLORS: Record<string, string> = {
   amoy: '#C084FC', // inherits polygon
   base: '#3B82F6', // blue-500
   'base-sep': '#3B82F6', // inherits base
-}
-
-/**
- * Derive testnet entries from a mainnet-only Record using TESTNET_PARENT.
- * Avoids duplicating visual config for every testnet.
- */
-function withTestnets<T>(mainnetMap: Record<number, T>): Record<number, T> {
-  const result = { ...mainnetMap }
-  for (const [testnetId, mainnetId] of Object.entries(TESTNET_PARENT)) {
-    const value = mainnetMap[mainnetId]
-    if (value !== undefined) {
-      result[Number(testnetId)] = value
-    }
-  }
-  return result
 }
 
 /**

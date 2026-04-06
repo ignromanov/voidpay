@@ -37,7 +37,7 @@ export {
   NETWORK_GLOW_BORDERS,
   NETWORK_SHADOWS,
   NETWORK_BADGES,
-  getNetworkTheme,
+  getNetworkThemeName,
   getNetworkConfig,
 } from './config/ui-config'
 export type { NetworkConfig, NetworkName } from './config/ui-config'
@@ -59,6 +59,9 @@ export {
   estimateFromBlockHex,
   estimateBlockFromTimestamp,
 } from './lib/block-estimates'
+
+// Testnet utilities (from lib layer)
+export { TESTNET_PARENT, resolveMainnetId, withTestnets } from './lib/testnet-utils'
 
 // Provider network slug mappings (from config layer)
 export { ALCHEMY_NETWORK_SLUG, INFURA_NETWORK_SLUG } from './config/provider-slugs'
