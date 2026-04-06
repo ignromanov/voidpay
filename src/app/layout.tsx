@@ -56,6 +56,9 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     capable: true,
   },
+  other: {
+    'talentapp:project_verification': '960990e979ce0d96842727babadcc446341ab3252bf26a8991928ac559da9b90aa8e23c078fb828eb665dbc3454114936f08893f0fad0136a11e8fb60a71b643',
+  },
 }
 
 export const viewport: Viewport = {
