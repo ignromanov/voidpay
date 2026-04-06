@@ -128,6 +128,10 @@ export { TokenIcon, type TokenIconProps } from './token-icon'
 // NetworkIcon (feature: 016-invoice-form-workspace)
 export { NetworkIcon, type NetworkIconProps } from './network-icon'
 
+// Network palette (canonical brand colors)
+export { NETWORK_PALETTE, DEFAULT_PALETTE } from './constants/network-palette'
+export type { NetworkPalette, NetworkThemeName } from './constants/network-palette'
+
 // WalletButton - Moved to features/wallet-connect (FSD: depends on Web3 feature)
 // Use: import { LazyWalletButton, WalletButton } from '@/features/wallet-connect'
 

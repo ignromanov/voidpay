@@ -1,21 +1,11 @@
 import { z } from 'zod'
 
 export const envSchema = z.object({
-  NEXT_PUBLIC_ALCHEMY_ETH_URL: z.string().url(),
-  NEXT_PUBLIC_ALCHEMY_ARB_URL: z.string().url(),
-  NEXT_PUBLIC_ALCHEMY_OPT_URL: z.string().url(),
-  NEXT_PUBLIC_ALCHEMY_POLY_URL: z.string().url(),
-  NEXT_PUBLIC_ALCHEMY_BASE_URL: z.string().url(),
-  NEXT_PUBLIC_INFURA_ETH_URL: z.string().url(),
-  NEXT_PUBLIC_INFURA_ARB_URL: z.string().url(),
-  NEXT_PUBLIC_INFURA_OPT_URL: z.string().url(),
-  NEXT_PUBLIC_INFURA_POLY_URL: z.string().url(),
-  NEXT_PUBLIC_INFURA_BASE_URL: z.string().url(),
   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: z.string(),
   NEXT_PUBLIC_ENABLE_TESTNETS: z.string().optional().default('false'),
 
   // RPC Proxy (Server-side only - NOT prefixed with NEXT_PUBLIC_)
-  // Single API key per provider — chain routing is automatic via prefix maps
+  // Single API key per provider — chain routing is automatic via slug maps
   ALCHEMY_API_KEY: z.string().optional(),
   INFURA_API_KEY: z.string().optional(),
 
@@ -30,8 +20,6 @@ export function validateEnv(): EnvConfig {
   const parsed = envSchema.safeParse(process.env)
   if (!parsed.success) {
     console.warn('Invalid environment variables:', parsed.error.format())
-    // Return empty/default or throw depending on strictness.
-    // For now, we just warn to allow build without .env in CI/CD if needed.
     return process.env as unknown as EnvConfig
   }
   return parsed.data
