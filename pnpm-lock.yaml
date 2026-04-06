@@ -69,8 +69,8 @@ importers:
         specifier: ^0.3.7
         version: 0.3.7
       pixi.js:
-        specifier: ^8.14.3
-        version: 8.14.3
+        specifier: ^8.17.1
+        version: 8.17.1
       qrcode.react:
         specifier: ^4.2.0
         version: 4.2.0(react@19.2.3)
@@ -1910,9 +1910,6 @@ packages:
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
 
-  '@types/css-font-loading-module@0.0.12':
-    resolution: {integrity: sha512-x2tZZYkSxXqWvTDgveSynfjq/T2HyiZHXb00j/+gy19yp70PHCizM48XFdjBCWH7eHBD0R5i/pw9yMBP/BH5uA==}
-
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
 
@@ -2383,8 +2380,8 @@ packages:
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
 
-  '@webgpu/types@0.1.68':
-    resolution: {integrity: sha512-3ab1B59Ojb6RwjOspYLsTpCzbNB3ZaamIAxBMmvnNkiDoLTZUOBXZ9p5nAYVEkQlDdf6qAZWi1pqj9+ypiqznA==}
+  '@webgpu/types@0.1.69':
+    resolution: {integrity: sha512-RPmm6kgRbI8e98zSD3RVACvnuktIja5+yLgDAkTmxLr90BEwdTXRQWNLF3ETTTyH/8mKhznZuN5AveXYFEsMGQ==}
 
   '@xmldom/xmldom@0.8.12':
     resolution: {integrity: sha512-9k/gHF6n/pAi/9tqr3m3aqkuiNosYTurLLUtc7xQ9sxB/wm7WPygCv8GYa6mS0fLJEHhqMC1ATYhz++U/lRHqg==}
@@ -4190,8 +4187,8 @@ packages:
     resolution: {integrity: sha512-dMACeu63HtRLmCG8VKdy4cShCPKaYDR4youZqoSWLxl5Gu99HUw8bw75thbPv9Nip+H+QYX8o3ZJbTdVZZ2TVg==}
     hasBin: true
 
-  pixi.js@8.14.3:
-    resolution: {integrity: sha512-6xGYARV8D9E/fO1c2NmYn+k2dQ5oZldVm5tNlLQJ8obTlOQXdL5QpMc217qTpRyHVDFaw5eoFCLF1gr6p5ZcjQ==}
+  pixi.js@8.17.1:
+    resolution: {integrity: sha512-OB4TpZHrP5RYy+7FqmFrAc0IHRhfOoNIfF4sVeinvK3aG1r2pYrSMneJAKi9+WvGKC70Dj7GEpZ2OZGB6o/xdg==}
 
   png-js@1.0.0:
     resolution: {integrity: sha512-k+YsbhpA9e+EFfKjTCH3VW6aoKlyNYI6NYdTfDL4CIvFnvsuO84ttonmZE7rc+v23SLTH8XX+5w/Ak9v0xGY4g==}
@@ -4784,8 +4781,8 @@ packages:
   tiny-inflate@1.0.3:
     resolution: {integrity: sha512-pkY1fj1cKHb2seWDy0B16HeWyczlJA9/WW3u3c4z/NiWDsO3DOU5D7nhTLE9CF0yXv/QZFY7sEJmj24dK+Rrqw==}
 
-  tiny-lru@11.4.5:
-    resolution: {integrity: sha512-hkcz3FjNJfKXjV4mjQ1OrXSLAehg8Hw+cEZclOVT+5c/cWQWImQ9wolzTjth+dmmDe++p3bme3fTxz6Q4Etsqw==}
+  tiny-lru@11.4.7:
+    resolution: {integrity: sha512-w/Te7uMUVeH0CR8vZIjr+XiN41V+30lkDdK+NRIDCUYKKuL9VcmaUEmaPISuwGhLlrTGh5yu18lENtR9axSxYw==}
     engines: {node: '>=12'}
 
   tinybench@2.9.0:
@@ -7462,8 +7459,6 @@ snapshots:
     dependencies:
       '@types/node': 25.5.0
 
-  '@types/css-font-loading-module@0.0.12': {}
-
   '@types/debug@4.1.12':
     dependencies:
       '@types/ms': 2.1.0
@@ -8494,7 +8489,7 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@webgpu/types@0.1.68': {}
+  '@webgpu/types@0.1.69': {}
 
   '@xmldom/xmldom@0.8.12': {}
 
@@ -10516,19 +10511,18 @@ snapshots:
       sonic-boom: 2.8.0
       thread-stream: 0.15.2
 
-  pixi.js@8.14.3:
+  pixi.js@8.17.1:
     dependencies:
       '@pixi/colord': 2.9.6
-      '@types/css-font-loading-module': 0.0.12
       '@types/earcut': 3.0.0
-      '@webgpu/types': 0.1.68
+      '@webgpu/types': 0.1.69
       '@xmldom/xmldom': 0.8.12
       earcut: 3.0.2
-      eventemitter3: 5.0.1
+      eventemitter3: 5.0.4
       gifuct-js: 2.1.2
       ismobilejs: 1.1.1
       parse-svg-path: 0.1.2
-      tiny-lru: 11.4.5
+      tiny-lru: 11.4.7
 
   png-js@1.0.0: {}
 
@@ -11137,7 +11131,7 @@ snapshots:
 
   tiny-inflate@1.0.3: {}
 
-  tiny-lru@11.4.5: {}
+  tiny-lru@11.4.7: {}
 
   tinybench@2.9.0: {}
 
