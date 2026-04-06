@@ -89,7 +89,7 @@
     "brotli-wasm": "^3.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.0.0",
-    "framer-motion": "^12.23.26",
+    "framer-motion": "^12.38.0",
     "geist": "^1.5.1",
     "next": "^15.5.14",
     "next-sitemap": "^4.2.3",
