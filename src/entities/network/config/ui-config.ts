@@ -167,7 +167,7 @@ export const NETWORK_BADGES: Record<
     /** Tailwind classes for network-specific coloring */
     colorClass: string
   }
-> = {
+> = withTestnets({
   [mainnet.id]: {
     variant: 'secondary',
     colorClass: 'bg-indigo-100 text-indigo-700 border-indigo-200',
@@ -182,7 +182,7 @@ export const NETWORK_BADGES: Record<
     variant: 'default',
     colorClass: 'bg-blue-100 text-blue-800 border-blue-300',
   },
-}
+})
 
 /**
  * Block explorers for each chain
@@ -221,28 +221,43 @@ export const NETWORK_CODE_COLORS: Record<string, string> = {
 }
 
 /**
+ * Derive testnet entries from a mainnet-only Record using TESTNET_PARENT.
+ * Avoids duplicating visual config for every testnet.
+ */
+function withTestnets<T>(mainnetMap: Record<number, T>): Record<number, T> {
+  const result = { ...mainnetMap }
+  for (const [testnetId, mainnetId] of Object.entries(TESTNET_PARENT)) {
+    const value = mainnetMap[mainnetId]
+    if (value !== undefined) {
+      result[Number(testnetId)] = value
+    }
+  }
+  return result
+}
+
+/**
  * Network-specific shadows for the invoice paper
  */
-export const NETWORK_SHADOWS: Record<number, string> = {
+export const NETWORK_SHADOWS: Record<number, string> = withTestnets({
   [mainnet.id]: 'shadow-indigo-500/20',
   [arbitrum.id]: 'shadow-blue-500/20',
   [optimism.id]: 'shadow-red-500/20',
   [polygon.id]: 'shadow-purple-500/20',
   [base.id]: 'shadow-blue-500/20',
-}
+})
 
 /**
  * Network-specific glow gradients for invoice background effect
  * Uses Tailwind gradient classes (from-X to-Y)
  * @deprecated Use NETWORK_GLOW_SHADOWS instead (box-shadow doesn't affect layout)
  */
-export const NETWORK_GLOWS: Record<number, { from: string; to: string }> = {
+export const NETWORK_GLOWS: Record<number, { from: string; to: string }> = withTestnets({
   [mainnet.id]: { from: 'from-indigo-600/40', to: 'to-blue-600/40' },
   [arbitrum.id]: { from: 'from-cyan-600/40', to: 'to-blue-600/40' },
   [optimism.id]: { from: 'from-red-600/40', to: 'to-orange-600/40' },
   [polygon.id]: { from: 'from-purple-600/40', to: 'to-violet-600/40' },
   [base.id]: { from: 'from-blue-600/40', to: 'to-indigo-600/40' },
-}
+})
 
 /**
  * Network-specific glow using CSS pseudo-element (::before)
@@ -256,7 +271,7 @@ export const NETWORK_GLOWS: Record<number, { from: string; to: string }> = {
  *
  * This config provides network-specific gradient colors
  */
-export const NETWORK_GLOW_SHADOWS: Record<number, string> = {
+export const NETWORK_GLOW_SHADOWS: Record<number, string> = withTestnets({
   // Indigo → Blue elliptical glow
   [mainnet.id]: 'before:from-indigo-500/60 before:to-blue-500/40',
   // Cyan → Blue elliptical glow
@@ -267,7 +282,7 @@ export const NETWORK_GLOW_SHADOWS: Record<number, string> = {
   [polygon.id]: 'before:from-purple-500/60 before:to-violet-500/40',
   // Blue → Indigo elliptical glow
   [base.id]: 'before:from-blue-600/60 before:to-indigo-500/40',
-}
+})
 
 /**
  * Network-specific glowing border for fullscreen modal
@@ -279,11 +294,11 @@ export const NETWORK_GLOW_SHADOWS: Record<number, string> = {
  * - Red-500: 239, 68, 68
  * - Purple-500: 168, 85, 247
  */
-export const NETWORK_GLOW_BORDERS: Record<number, string> = {
+export const NETWORK_GLOW_BORDERS: Record<number, string> = withTestnets({
   [mainnet.id]: 'ring-2 ring-indigo-500/60 shadow-[0_0_48px_rgba(99,102,241,0.4)]',
   [arbitrum.id]: 'ring-2 ring-cyan-500/60 shadow-[0_0_48px_rgba(6,182,212,0.4)]',
   [optimism.id]: 'ring-2 ring-red-500/60 shadow-[0_0_48px_rgba(239,68,68,0.4)]',
   [polygon.id]: 'ring-2 ring-purple-500/60 shadow-[0_0_48px_rgba(168,85,247,0.4)]',
   // Blue-500 RGB: 59, 130, 246
   [base.id]: 'ring-2 ring-blue-500/60 shadow-[0_0_48px_rgba(59,130,246,0.4)]',
-}
+})
