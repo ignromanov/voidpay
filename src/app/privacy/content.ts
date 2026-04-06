@@ -99,7 +99,7 @@ export const privacyContent = {
         {
           name: 'Blockchain Networks',
           description:
-            'Payments are made directly on public blockchains (Ethereum, Arbitrum, Optimism, Polygon). All blockchain transactions are publicly visible by design. VoidPay does not add any additional tracking to these transactions.',
+            'Payments are made directly on public blockchains (Ethereum, Base, Arbitrum, Optimism, Polygon). All blockchain transactions are publicly visible by design. VoidPay does not add any additional tracking to these transactions.',
         },
       ],
     },

@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'VoidPay — Crypto Invoices Without the Backend. Just Share a Link.',
-    description: 'Create privacy-first crypto invoices in seconds. All data lives in the URL — no backend, no signup, no tracking. Pay with any wallet on Ethereum, Arbitrum, Optimism, or Polygon.',
+    description: 'Create privacy-first crypto invoices in seconds. All data lives in the URL — no backend, no signup, no tracking. Pay with any wallet on Ethereum, Base, Arbitrum, Optimism, or Polygon.',
     url: 'https://voidpay.xyz',
     siteName: 'VoidPay',
     locale: 'en_US',
@@ -48,13 +48,16 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'VoidPay — Crypto Invoices Without the Backend. Just Share a Link.',
-    description: 'Create privacy-first crypto invoices in seconds. All data lives in the URL — no backend, no signup, no tracking. Pay with any wallet on Ethereum, Arbitrum, Optimism, or Polygon.',
+    description: 'Create privacy-first crypto invoices in seconds. All data lives in the URL — no backend, no signup, no tracking. Pay with any wallet on Ethereum, Base, Arbitrum, Optimism, or Polygon.',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'VoidPay — Stateless Crypto Invoicing' }],
   },
   appleWebApp: {
     title: 'VoidPay',
     statusBarStyle: 'black-translucent',
     capable: true,
+  },
+  other: {
+    'talentapp:project_verification': '960990e979ce0d96842727babadcc446341ab3252bf26a8991928ac559da9b90aa8e23c078fb828eb665dbc3454114936f08893f0fad0136a11e8fb60a71b643',
   },
 }
 

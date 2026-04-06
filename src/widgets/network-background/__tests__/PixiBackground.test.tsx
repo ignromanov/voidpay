@@ -166,7 +166,7 @@ describe('PixiBackground', () => {
     })
 
     it('should render all themes without errors', () => {
-      const themes: NetworkTheme[] = ['ethereum', 'arbitrum', 'optimism', 'polygon']
+      const themes: NetworkTheme[] = ['ethereum', 'arbitrum', 'optimism', 'polygon', 'base']
 
       themes.forEach((theme) => {
         cleanup()
