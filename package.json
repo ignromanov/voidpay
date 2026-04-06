@@ -84,7 +84,7 @@
     "@tanstack/react-query": "^5.96.2",
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.37.0",
-    "@web3icons/react": "^4.1.14",
+    "@web3icons/react": "^4.1.17",
     "blo": "^2.0.0",
     "brotli-wasm": "^3.0.1",
     "class-variance-authority": "^0.7.1",
