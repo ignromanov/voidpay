@@ -33,7 +33,7 @@ Zero server involvement. We can't lose your data if we don't have it.
 
 ## Features
 
-- **4 networks**: Ethereum, Arbitrum, Optimism, Polygon PoS
+- **5 networks**: Ethereum, Base, Arbitrum, Optimism, Polygon PoS
 - **Any token**: native ETH/MATIC or any ERC-20 (Uniswap Token List verification for blue chips)
 - **Magic Dust**: micro-amount added to total for deterministic payment matching
 - **Payment verification**: waits for `finalized` status — reorg-resistant
