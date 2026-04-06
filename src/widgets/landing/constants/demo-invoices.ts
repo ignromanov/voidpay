@@ -162,6 +162,46 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
       total: '25000000000000000000000',
     },
   },
+  // --- Base (8453) - Smart Wallet Integration [PENDING] ---
+  {
+    invoiceId: 'INV-2026-217',
+    invoiceUrl: 'https://voidpay.xyz/pay#demo-base',
+    createdAt: isoDate(NOW - 3 * DAY),
+    status: 'pending',
+    data: {
+      invoiceId: 'INV-2026-217',
+      issuedAt: NOW - 3 * DAY,
+      dueAt: NOW + 14 * DAY,
+      notes: 'Passkey wallet integration for mobile dApp. Milestone 2 of 4.',
+      networkId: 8453,
+      currency: 'USDC',
+      tokenAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+      decimals: 6,
+      from: {
+        name: 'Base Builders Co.',
+        walletAddress: '0xdEaD000000000000000000000000000000000009',
+        email: 'team@basebuilders.xyz',
+        physicalAddress: '100 Innovation Drive\nSan Francisco, CA 94105\nUSA',
+        phone: '+1 628 555 0321',
+      },
+      client: {
+        name: 'Onchain Commerce DAO',
+        walletAddress: '0xFeed000000000000000000000000000000000010',
+        email: 'finance@onchaincommerce.xyz',
+        physicalAddress: '42 Web3 Street\nBrooklyn, NY 11201\nUSA',
+        phone: '+1 718 555 0456',
+        taxId: 'US 98-7654321',
+      },
+      items: [
+        // USDC has 6 decimals: $3500 = 3500000000 atomic units
+        { description: 'Smart Wallet SDK Integration', quantity: 1, rate: '3500000000' },
+        { description: 'Passkey Authentication Module', quantity: 1, rate: '2800000000' },
+        { description: 'User Onboarding Flow Design', quantity: 1, rate: '1200000000' },
+      ],
+      tax: '5%',
+      total: '7875000000',
+    },
+  },
   // --- Polygon (137) - Data Analytics Service [OVERDUE] ---
   // Note: status is set explicitly for landing page display.
   // dueAt is in the future so duplicated invoices aren't immediately overdue.

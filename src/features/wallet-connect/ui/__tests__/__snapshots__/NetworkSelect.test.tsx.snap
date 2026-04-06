@@ -18,6 +18,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with default state 1`
       class="flex items-center gap-3"
     >
       <span
+        aria-label="Ethereum"
         class="inline-flex items-center justify-center"
       >
         <svg
@@ -111,6 +112,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with different networ
       class="flex items-center gap-3"
     >
       <span
+        aria-label="Polygon"
         class="inline-flex items-center justify-center"
       >
         <svg
@@ -196,6 +198,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with disabled state 1
       class="flex items-center gap-3"
     >
       <span
+        aria-label="Arbitrum"
         class="inline-flex items-center justify-center"
       >
         <svg

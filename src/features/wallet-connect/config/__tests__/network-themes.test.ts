@@ -5,7 +5,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { NETWORK_THEMES, getNetworkTheme, getNetworkThemeColor } from '../network-themes'
+import { NETWORK_THEMES, getNetworkTheme, getNetworkThemeColor, DEFAULT_NETWORK_THEME } from '../network-themes'
+import { NETWORK_PALETTE } from '@/shared/ui/constants/network-palette'
 
 describe('network-themes', () => {
   describe('NETWORK_THEMES', () => {
@@ -33,18 +34,32 @@ describe('network-themes', () => {
       expect(theme?.name).toBe('Polygon')
     })
 
-    it('should have distinct primary colors for each network', () => {
+    it('should have theme for Base', () => {
+      const theme = NETWORK_THEMES[8453]
+      expect(theme).toBeDefined()
+      expect(theme?.name).toBe('Base')
+      expect(theme?.primary).toBe('#0052FF')
+    })
+
+    it('should have distinct primary colors for each mainnet', () => {
       const eth = NETWORK_THEMES[1]
       const arb = NETWORK_THEMES[42161]
       const op = NETWORK_THEMES[10]
       const poly = NETWORK_THEMES[137]
-      expect(eth).toBeDefined()
-      expect(arb).toBeDefined()
-      expect(op).toBeDefined()
-      expect(poly).toBeDefined()
-      const colors = [eth!.primary, arb!.primary, op!.primary, poly!.primary]
-      const uniqueColors = new Set(colors)
-      expect(uniqueColors.size).toBe(4)
+      const base = NETWORK_THEMES[8453]
+      const colors = [eth!.primary, arb!.primary, op!.primary, poly!.primary, base!.primary]
+      expect(new Set(colors).size).toBe(5)
+    })
+
+    it('should derive testnet themes from mainnet parents via withTestnets', () => {
+      expect(NETWORK_THEMES[11155111]?.primary).toBe(NETWORK_THEMES[1]?.primary)
+      expect(NETWORK_THEMES[84532]?.primary).toBe(NETWORK_THEMES[8453]?.primary)
+      expect(NETWORK_THEMES[421614]?.primary).toBe(NETWORK_THEMES[42161]?.primary)
+    })
+
+    it('should derive colors from canonical NETWORK_PALETTE', () => {
+      expect(NETWORK_THEMES[8453]?.primary).toBe(NETWORK_PALETTE.base.primary)
+      expect(NETWORK_THEMES[42161]?.primary).toBe(NETWORK_PALETTE.arbitrum.primary)
     })
   })
 
@@ -59,6 +74,12 @@ describe('network-themes', () => {
       const unknownTheme = getNetworkTheme(999999)
       expect(unknownTheme).toBeUndefined()
     })
+
+    it('should return theme for testnet chain IDs', () => {
+      const baseSepoliaTheme = getNetworkTheme(84532)
+      expect(baseSepoliaTheme).toBeDefined()
+      expect(baseSepoliaTheme?.primary).toBe('#0052FF')
+    })
   })
 
   describe('getNetworkThemeColor', () => {
@@ -70,7 +91,7 @@ describe('network-themes', () => {
 
     it('should return fallback for unknown chain', () => {
       const color = getNetworkThemeColor(999999, 'primary')
-      expect(color).toBeDefined() // Should return default fallback
+      expect(color).toBe(DEFAULT_NETWORK_THEME.primary)
     })
   })
 })

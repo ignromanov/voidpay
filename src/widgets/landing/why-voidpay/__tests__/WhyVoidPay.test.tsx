@@ -31,7 +31,7 @@ describe('WhyVoidPay', () => {
 
       expect(screen.getByText(/nothing to steal/i)).toBeInTheDocument()
       expect(screen.getByText(/connects wallet, pays/i)).toBeInTheDocument()
-      expect(screen.getByText(/Ethereum, Arbitrum, Optimism/i)).toBeInTheDocument()
+      expect(screen.getByText(/Ethereum, Base, Arbitrum/i)).toBeInTheDocument()
     })
   })
 
