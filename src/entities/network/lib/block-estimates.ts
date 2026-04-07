@@ -54,7 +54,7 @@ const REFERENCE_BLOCKS: Record<number, { block: number; timestampMs: number }> =
   421614:   { block: 248_490_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   11155420: { block: 40_410_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   80002:    { block: 34_960_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
-  84532:    { block: 28_000_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
+  84532:    { block: 39_880_000, timestampMs: Date.parse('2026-04-06T00:00:00Z') },
 }
 
 /** Safety buffer: subtracted from estimated fromBlock to account for block time drift.

@@ -19,6 +19,11 @@ export type EnvConfig = z.infer<typeof envSchema>
 export function validateEnv(): EnvConfig {
   const parsed = envSchema.safeParse(process.env)
   if (!parsed.success) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        `Missing or invalid environment variables:\n${JSON.stringify(parsed.error.format(), null, 2)}`
+      )
+    }
     console.warn('Invalid environment variables:', parsed.error.format())
     return process.env as unknown as EnvConfig
   }

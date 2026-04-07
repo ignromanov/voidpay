@@ -164,13 +164,6 @@ export const NETWORK_TOKENS: Record<number, TokenInfo[]> = {
       decimals: 6,
       iconColor: 'bg-blue-500',
     },
-    {
-      symbol: 'USDT',
-      name: 'Tether',
-      address: '0xfde4c96c8593536e31f229ea8f37b2ada2699bb2',
-      decimals: 6,
-      iconColor: 'bg-emerald-500',
-    },
   ],
 
   // --- Testnets ---

@@ -176,6 +176,7 @@ export const NETWORK_BADGES: Record<
 
 /**
  * Block explorers for each chain
+ * NOTE: intentionally NOT using withTestnets() — testnets have different explorer URLs
  */
 export const BLOCK_EXPLORERS: Record<number, { name: string; url: string }> = {
   [mainnet.id]: { name: 'Etherscan', url: 'https://etherscan.io' },
