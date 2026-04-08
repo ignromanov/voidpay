@@ -8,9 +8,9 @@ describe('NetworkBadge', () => {
     expect(screen.getByText('Ethereum')).toBeInTheDocument()
   })
 
-  it('renders "Unknown" for unrecognized chain ID', () => {
+  it('renders chain ID for unrecognized network', () => {
     render(<NetworkBadge networkId={99999} />)
-    expect(screen.getByText('Unknown')).toBeInTheDocument()
+    expect(screen.getByText('99999')).toBeInTheDocument()
   })
 
   it('renders Arbitrum for chain ID 42161', () => {
