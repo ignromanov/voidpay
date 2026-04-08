@@ -30,7 +30,7 @@ vi.mock('@/shared/lib/toast', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }))
 
-import { HistoryList } from '../ui/HistoryList'
+import { InvoiceList } from '../ui/InvoiceList'
 import type { DecodedHistoryEntry } from '../lib/types'
 import type { Invoice, TrackedInvoice, InvoiceStatus } from '@/entities/invoice'
 
@@ -65,44 +65,44 @@ function makeEntry(overrides: {
   return { tracked, invoice, status: overrides.status ?? 'pending' }
 }
 
-describe('HistoryList', () => {
+describe('InvoiceList', () => {
   it('renders invoice ID', () => {
-    render(<HistoryList entries={[makeEntry()]} debug={false} />)
+    render(<InvoiceList variant="created" entries={[makeEntry()]} debug={false} />)
     expect(screen.getByText('INV-042')).toBeInTheDocument()
   })
 
   it('renders client name', () => {
-    render(<HistoryList entries={[makeEntry({ clientName: 'Acme Corp' })]} debug={false} />)
+    render(<InvoiceList variant="created" entries={[makeEntry({ clientName: 'Acme Corp' })]} debug={false} />)
     expect(screen.getByText('Acme Corp')).toBeInTheDocument()
   })
 
   it('renders network badge', () => {
-    render(<HistoryList entries={[makeEntry({ networkId: 1 })]} debug={false} />)
+    render(<InvoiceList variant="created" entries={[makeEntry({ networkId: 1 })]} debug={false} />)
     expect(screen.getByText('Ethereum')).toBeInTheDocument()
   })
 
   it('renders amount without magic dust (subtotal)', () => {
-    render(<HistoryList entries={[makeEntry({ total: '1250000000', decimals: 6 })]} debug={false} />)
+    render(<InvoiceList variant="created" entries={[makeEntry({ total: '1250000000', decimals: 6 })]} debug={false} />)
     expect(screen.getByText(/1,250/)).toBeInTheDocument()
   })
 
   it('renders View button', () => {
-    render(<HistoryList entries={[makeEntry()]} debug={false} />)
+    render(<InvoiceList variant="created" entries={[makeEntry()]} debug={false} />)
     expect(screen.getByRole('button', { name: /view/i })).toBeInTheDocument()
   })
 
   it('renders Template button', () => {
-    render(<HistoryList entries={[makeEntry()]} debug={false} />)
+    render(<InvoiceList variant="created" entries={[makeEntry()]} debug={false} />)
     expect(screen.getByRole('button', { name: /template/i })).toBeInTheDocument()
   })
 
   it('renders Delete button', () => {
-    render(<HistoryList entries={[makeEntry()]} debug={false} />)
+    render(<InvoiceList variant="created" entries={[makeEntry()]} debug={false} />)
     expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument()
   })
 
   it('shows empty state when no entries', () => {
-    render(<HistoryList entries={[]} debug={false} />)
-    expect(screen.getByText(/no invoices created/i)).toBeInTheDocument()
+    render(<InvoiceList variant="created" entries={[]} debug={false} />)
+    expect(screen.getByText(/created invoices will appear here/i)).toBeInTheDocument()
   })
 })

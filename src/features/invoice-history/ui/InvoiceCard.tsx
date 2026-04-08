@@ -8,6 +8,7 @@ import {
   type InvoiceStatus,
 } from '@/entities/invoice'
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { formatDateMedium, formatDateCompact, isoToUnix } from '@/shared/lib/date-time'
 import { InvoiceStatusBadge } from './InvoiceStatusBadge'
 import { InvoiceCardShell } from './InvoiceCardShell'
 import { NetworkBadge } from './NetworkBadge'
@@ -41,19 +42,8 @@ export function InvoiceCard({
 }: InvoiceCardProps) {
   const [debugOpen, setDebugOpen] = useState(false)
 
-  const formattedDate = new Date(tracked.createdAt).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-
-  const formattedDueDate = invoice?.dueAt
-    ? new Date(invoice.dueAt * 1000).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      })
-    : null
-
+  const formattedDate = formatDateMedium(isoToUnix(tracked.createdAt))
+  const formattedDueDate = invoice?.dueAt ? formatDateCompact(invoice.dueAt) : null
   const formattedAmount = invoice
     ? formatAmount(computeAmounts(invoice).subtotal, invoice.decimals)
     : null

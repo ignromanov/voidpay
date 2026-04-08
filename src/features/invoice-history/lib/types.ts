@@ -6,5 +6,3 @@ export interface DecodedHistoryEntry {
   status: InvoiceStatus
 }
 
-/** @deprecated Use DecodedHistoryEntry — identical shape */
-export type DecodedReceivedInvoice = DecodedHistoryEntry

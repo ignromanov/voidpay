@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useTrackedInvoiceStore, computeInvoiceStatus } from '@/entities/invoice'
 import { parseInvoiceHash } from '@/features/invoice-codec'
-import type { DecodedReceivedInvoice } from '@/features/invoice-history'
+import type { DecodedHistoryEntry } from '@/features/invoice-history'
 
 /**
  * Page-local hook that decodes received invoices from TrackedInvoiceStore.
@@ -12,12 +12,12 @@ import type { DecodedReceivedInvoice } from '@/features/invoice-history'
  * Lives in app layer because it composes features/invoice-codec + entities/invoice
  * (cross-feature import only allowed at app layer per FSD).
  */
-export function useReceivedInvoices(): DecodedReceivedInvoice[] {
+export function useReceivedInvoices(): DecodedHistoryEntry[] {
   const receivedTracked = useTrackedInvoiceStore(
     useShallow((s) => s.invoices.filter((t) => t.source === 'received')),
   )
 
-  const [decoded, setDecoded] = useState<DecodedReceivedInvoice[]>([])
+  const [decoded, setDecoded] = useState<DecodedHistoryEntry[]>([])
 
   useEffect(() => {
     let cancelled = false

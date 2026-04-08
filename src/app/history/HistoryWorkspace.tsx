@@ -6,7 +6,7 @@ import { parseInvoiceHash } from '@/features/invoice-codec'
 import { useBatchCheck } from '@/features/payment'
 import type { DecodedBatchInvoice } from '@/features/payment'
 import { track, AnalyticsEvent } from '@/features/analytics'
-import { HistoryList, ReceivedInvoiceList } from '@/features/invoice-history'
+import { InvoiceList } from '@/features/invoice-history'
 import { Loader2Icon } from '@/shared/ui/icons'
 import { HistorySkeleton } from './HistorySkeleton'
 import { useReceivedInvoices } from './use-received-invoices'
@@ -100,7 +100,7 @@ export function HistoryWorkspace() {
                   </span>
                 </div>
               </div>
-              <HistoryList debug={debug} entries={createdEntries} />
+              <InvoiceList variant="created" debug={debug} entries={createdEntries} />
             </section>
 
             <section aria-labelledby="received-heading">
@@ -112,7 +112,7 @@ export function HistoryWorkspace() {
                   {receivedInvoices.length} invoice{receivedInvoices.length !== 1 ? 's' : ''}
                 </span>
               </div>
-              <ReceivedInvoiceList invoices={receivedInvoices} debug={debug} />
+              <InvoiceList variant="received" entries={receivedInvoices} debug={debug} />
             </section>
           </div>
         )}

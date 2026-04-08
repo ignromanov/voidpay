@@ -37,6 +37,7 @@ export {
   NETWORK_GLOW_BORDERS,
   NETWORK_SHADOWS,
   NETWORK_BADGES,
+  NETWORK_BADGES_DARK,
   getNetworkTheme,
   getNetworkConfig,
 } from './config/ui-config'
