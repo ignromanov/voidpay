@@ -1,19 +1,21 @@
 'use client'
 
-import { useState, useCallback, memo } from 'react'
+import { useState, useCallback, useMemo, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  formatInvoiceTotal,
+  computeAmounts,
   useTrackedInvoiceStore,
   type TrackedInvoice,
-  type InvoiceStatus,
   type Invoice,
+  type InvoiceStatus,
 } from '@/entities/invoice'
+import { formatAmount } from '@/shared/lib/amount-utils'
 import { toast } from '@/shared/lib/toast'
 import { duplicateFromUrl } from '../lib/duplicate-invoice'
 import type { DecodedHistoryEntry } from '../lib/types'
 import { InvoiceStatusBadge } from './InvoiceStatusBadge'
 import { InvoiceCardShell } from './InvoiceCardShell'
+import { NetworkBadge } from './NetworkBadge'
 
 interface HistoryListProps {
   entries: DecodedHistoryEntry[]
@@ -24,7 +26,6 @@ interface HistoryListProps {
 export function HistoryList({ entries, debug, className = '' }: HistoryListProps) {
   const router = useRouter()
   const removeInvoice = useTrackedInvoiceStore((s) => s.removeInvoice)
-
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
   const handleDelete = (invoiceId: string) => {
@@ -32,11 +33,11 @@ export function HistoryList({ entries, debug, className = '' }: HistoryListProps
     setDeleteConfirmId(null)
   }
 
-  const handleDuplicate = useCallback(async (invoiceUrl: string) => {
+  const handleTemplate = useCallback(async (invoiceUrl: string) => {
     const draftId = await duplicateFromUrl(invoiceUrl)
     if (draftId) {
       router.push('/create')
-      toast.success('Invoice duplicated')
+      toast.success('Invoice duplicated as template')
     } else {
       toast.error('Could not decode invoice for duplication')
     }
@@ -54,7 +55,7 @@ export function HistoryList({ entries, debug, className = '' }: HistoryListProps
   if (entries.length === 0) {
     return (
       <div className={`py-12 text-center ${className}`}>
-        <div className="mb-2 text-gray-400">
+        <div className="mb-2 text-zinc-500">
           <svg
             className="mx-auto h-12 w-12"
             fill="none"
@@ -70,8 +71,8 @@ export function HistoryList({ entries, debug, className = '' }: HistoryListProps
             />
           </svg>
         </div>
-        <h3 className="mb-1 text-lg font-medium text-gray-200">No invoices created yet</h3>
-        <p className="text-sm text-gray-400">
+        <h3 className="mb-1 text-lg font-medium text-zinc-200">No invoices created yet</h3>
+        <p className="text-sm text-zinc-500">
           Your created invoices will appear here for easy access and duplication.
         </p>
       </div>
@@ -79,24 +80,23 @@ export function HistoryList({ entries, debug, className = '' }: HistoryListProps
   }
 
   return (
-    <div className={`space-y-3 ${className}`}>
-      <div className="space-y-2">
-        {entries.map(({ tracked, invoice, status }) => (
-          <HistoryEntryCard
-            key={tracked.invoiceId}
-            tracked={tracked}
-            invoice={invoice}
-            status={status}
-            debug={debug}
-            onView={() => handleView(tracked.invoiceUrl)}
-            onDuplicate={() => handleDuplicate(tracked.invoiceUrl)}
-            onDelete={() => setDeleteConfirmId(tracked.invoiceId)}
-            isDeleteConfirming={deleteConfirmId === tracked.invoiceId}
-            onDeleteConfirm={() => handleDelete(tracked.invoiceId)}
-            onDeleteCancel={() => setDeleteConfirmId(null)}
-          />
-        ))}
-      </div>
+    <div className={`space-y-2 ${className}`}>
+      {entries.map(({ tracked, invoice, status }) => (
+        <HistoryEntryCard
+          key={tracked.invoiceId}
+          tracked={tracked}
+          invoice={invoice}
+          status={status}
+          debug={debug}
+          source="created"
+          onView={() => handleView(tracked.invoiceUrl)}
+          onTemplate={() => handleTemplate(tracked.invoiceUrl)}
+          onDelete={() => setDeleteConfirmId(tracked.invoiceId)}
+          isDeleteConfirming={deleteConfirmId === tracked.invoiceId}
+          onDeleteConfirm={() => handleDelete(tracked.invoiceId)}
+          onDeleteCancel={() => setDeleteConfirmId(null)}
+        />
+      ))}
     </div>
   )
 }
@@ -106,8 +106,9 @@ interface HistoryEntryCardProps {
   invoice: Invoice | null
   status: InvoiceStatus
   debug: boolean
+  source: 'created' | 'received'
   onView: () => void
-  onDuplicate: () => void
+  onTemplate: () => void
   onDelete: () => void
   isDeleteConfirming: boolean
   onDeleteConfirm: () => void
@@ -120,7 +121,7 @@ const HistoryEntryCard = memo(function HistoryEntryCard({
   status,
   debug,
   onView,
-  onDuplicate,
+  onTemplate,
   onDelete,
   isDeleteConfirming,
   onDeleteConfirm,
@@ -132,60 +133,82 @@ const HistoryEntryCard = memo(function HistoryEntryCard({
     month: 'short',
     day: 'numeric',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   })
 
+  const formattedDueDate = invoice?.dueAt
+    ? new Date(invoice.dueAt * 1000).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      })
+    : null
+
+  const formattedAmount = useMemo(() => {
+    if (!invoice) return null
+    const { subtotal } = computeAmounts(invoice)
+    return formatAmount(subtotal, invoice.decimals)
+  }, [invoice])
+
   return (
-    <InvoiceCardShell>
+    <InvoiceCardShell status={status}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         {/* Left: Invoice Info */}
         <div className="min-w-0 flex-1">
-          <div className="mb-1 flex items-center gap-2">
-            <h3 className="truncate text-sm font-semibold text-gray-100">
+          {/* Row 1: ID + Status + Network */}
+          <div className="mb-1.5 flex flex-wrap items-center gap-2">
+            <h3 className="truncate text-sm font-semibold text-zinc-100">
               {invoice?.invoiceId ?? tracked.invoiceId}
             </h3>
             <InvoiceStatusBadge status={status} />
+            {invoice && <NetworkBadge networkId={invoice.networkId} />}
           </div>
 
           {invoice ? (
             <>
-              <p className="mb-1 text-sm text-gray-300">{invoice.client?.name ?? 'Unknown'}</p>
-              <div className="flex items-center gap-3 text-xs text-gray-400">
-                <span className="truncate min-w-0">{formattedDate}</span>
-                <span>•</span>
-                <span className="font-medium text-gray-300">{formatInvoiceTotal(invoice)}</span>
+              {/* Row 2: Client name */}
+              <p className="mb-1 text-sm text-zinc-300">
+                {invoice.client?.name ?? 'Unknown'}
+              </p>
+              {/* Row 3: Date · Due · Amount */}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-zinc-500">
+                <span>{formattedDate}</span>
+                {formattedDueDate && (
+                  <>
+                    <span>·</span>
+                    <span>Due {formattedDueDate}</span>
+                  </>
+                )}
+                <span>·</span>
+                <span className="font-mono font-medium text-violet-400">
+                  {formattedAmount} {invoice.currency}
+                </span>
               </div>
             </>
           ) : (
-            <p className="text-sm text-gray-500">Unable to decode invoice data</p>
+            <p className="text-sm text-zinc-500">Unable to decode invoice data</p>
           )}
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2">
           {!isDeleteConfirming ? (
             <>
               <button
                 onClick={onView}
-                className="min-h-[44px] cursor-pointer rounded bg-gray-700 px-3 py-2.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
-                title="View Invoice"
+                className="min-h-[44px] cursor-pointer rounded-lg bg-violet-600/20 px-3 py-2.5 text-xs font-medium text-violet-300 transition-colors hover:bg-violet-600/30"
                 aria-label={`View invoice ${tracked.invoiceId}`}
               >
                 View
               </button>
               <button
-                onClick={onDuplicate}
-                className="min-h-[44px] cursor-pointer rounded bg-gray-700 px-3 py-2.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
-                title="Duplicate as Draft"
-                aria-label={`Duplicate invoice ${tracked.invoiceId}`}
+                onClick={onTemplate}
+                className="min-h-[44px] cursor-pointer rounded-lg bg-zinc-800 px-3 py-2.5 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-700"
+                aria-label={`Use invoice ${tracked.invoiceId} as template`}
               >
-                Duplicate
+                Template
               </button>
               <button
                 onClick={onDelete}
-                className="min-h-[44px] cursor-pointer rounded bg-red-900/20 px-3 py-2.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-900/30 hover:text-red-300"
-                title="Delete Entry"
+                className="min-h-[44px] cursor-pointer rounded-lg bg-red-900/20 px-3 py-2.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-900/30"
                 aria-label={`Delete invoice ${tracked.invoiceId}`}
               >
                 Delete
@@ -193,7 +216,7 @@ const HistoryEntryCard = memo(function HistoryEntryCard({
               {debug && (
                 <button
                   onClick={() => setDebugOpen((v) => !v)}
-                  className="cursor-pointer rounded bg-gray-700 px-2 py-1.5 text-xs font-mono text-gray-400 transition-colors hover:bg-gray-600"
+                  className="cursor-pointer rounded-lg bg-zinc-800 px-2 py-1.5 font-mono text-xs text-zinc-500 transition-colors hover:bg-zinc-700"
                   title="Toggle debug info"
                 >
                   {'</>'}
@@ -204,13 +227,13 @@ const HistoryEntryCard = memo(function HistoryEntryCard({
             <>
               <button
                 onClick={onDeleteConfirm}
-                className="cursor-pointer rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
+                className="cursor-pointer rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
               >
                 Confirm
               </button>
               <button
                 onClick={onDeleteCancel}
-                className="cursor-pointer rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600"
+                className="cursor-pointer rounded-lg bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-zinc-700"
               >
                 Cancel
               </button>
@@ -220,7 +243,7 @@ const HistoryEntryCard = memo(function HistoryEntryCard({
       </div>
 
       {debug && debugOpen && (
-        <pre className="mt-3 max-h-48 overflow-auto rounded bg-gray-900/80 p-3 text-xs text-gray-400">
+        <pre className="mt-3 max-h-48 overflow-auto rounded-lg bg-zinc-950/80 p-3 text-xs text-zinc-500">
           {JSON.stringify({ tracked, decodeSuccess: invoice !== null }, null, 2)}
         </pre>
       )}
