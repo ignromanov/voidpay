@@ -15,14 +15,25 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Add issue to project (idempotent)
-          ITEM_ID=$(gh project item-add 3 --owner ignromanov \
-            --url "${{ github.event.issue.html_url }}" \
-            --format json | jq -r '.id')
+          # Get issue node ID
+          NODE_ID=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.issue.number }}" --jq '.node_id')
+
+          # Add issue to project via GraphQL (idempotent)
+          ITEM_ID=$(gh api graphql -f query='
+            mutation($project: ID!, $content: ID!) {
+              addProjectV2ItemById(input: {projectId: $project, contentId: $content}) {
+                item { id }
+              }
+            }' -f project="$PROJECT_ID" -f content="$NODE_ID" --jq '.data.addProjectV2ItemById.item.id')
 
           edit() {
-            gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" \
-              --field-id "$1" --single-select-option-id "$2"
+            gh api graphql -f query='
+              mutation($project: ID!, $item: ID!, $field: ID!, $value: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $project, itemId: $item, fieldId: $field,
+                  value: {singleSelectOptionId: $value}
+                }) { projectV2Item { id } }
+              }' -f project="$PROJECT_ID" -f item="$ITEM_ID" -f field="$1" -f value="$2" > /dev/null
           }
 
           # Status: Backlog
