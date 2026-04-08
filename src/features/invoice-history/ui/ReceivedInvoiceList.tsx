@@ -3,7 +3,6 @@
 import { useState, useCallback, useMemo, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { computeAmounts, useTrackedInvoiceStore } from '@/entities/invoice'
-import type { TrackedInvoice, Invoice, InvoiceStatus } from '@/entities/invoice'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
