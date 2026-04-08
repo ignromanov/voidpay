@@ -27,8 +27,8 @@ export function assignAggressiveLoop(
   loopRef: MutableRefObject<() => void>,
   refs: LoopRefs,
   doFetch: () => Promise<TransferResult | null>,
-  setTxHash: (invoiceId: string, hash: `0x${string}`, validated: boolean) => void,
-  invoiceId: string,
+  setTxHash: (contentHash: string, hash: `0x${string}`, validated: boolean) => void,
+  contentHash: string,
   flushStop: (isError?: boolean, errorMsg?: string) => void,
 ): void {
   loopRef.current = () => {
@@ -58,7 +58,7 @@ export function assignAggressiveLoop(
       if (!refs.isActiveRef.current || refs.sessionModeRef.current !== 'aggressive') return
 
       if (matched) {
-        setTxHash(invoiceId, matched.hash, false)
+        setTxHash(contentHash, matched.hash, false)
         flushStop()
         return
       }
@@ -77,8 +77,8 @@ export function assignWatchingLoop(
   watchStepRef: MutableRefObject<number>,
   refs: LoopRefs,
   doFetch: () => Promise<TransferResult | null>,
-  setTxHash: (invoiceId: string, hash: `0x${string}`, validated: boolean) => void,
-  invoiceId: string,
+  setTxHash: (contentHash: string, hash: `0x${string}`, validated: boolean) => void,
+  contentHash: string,
   flushStop: (isError?: boolean, errorMsg?: string) => void,
 ): void {
   loopRef.current = () => {
@@ -111,7 +111,7 @@ export function assignWatchingLoop(
       if (!refs.isActiveRef.current || refs.sessionModeRef.current !== 'watching') return
 
       if (matched) {
-        setTxHash(invoiceId, matched.hash, false)
+        setTxHash(contentHash, matched.hash, false)
         flushStop()
         return
       }

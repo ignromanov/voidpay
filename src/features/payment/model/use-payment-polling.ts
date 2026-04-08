@@ -27,7 +27,7 @@ export type { PollingMode, PollingState }
 
 export interface UsePaymentPollingParams {
   enabled?: boolean  // default true for backward compatibility
-  invoiceId: string
+  contentHash: string
   toAddress: string
   chainId: number
   contractAddress?: string
@@ -53,7 +53,7 @@ export interface UsePaymentPollingResult {
 // ---------------------------------------------------------------------------
 
 export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPollingResult {
-  const { enabled = true, invoiceId, toAddress, chainId, contractAddress, category, exactTotal, fromBlock } = params
+  const { enabled = true, contentHash, toAddress, chainId, contractAddress, category, exactTotal, fromBlock } = params
 
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE)
 
@@ -108,17 +108,17 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
 
   // ---- Loop assignments (updated every render via .current) ----
   const loopRefs = { isActiveRef, sessionModeRef, sessionStartedAtRef, timerRef }
-  assignAggressiveLoop(aggressiveLoopRef, loopRefs, doFetch, setTxHash, invoiceId, flushStop)
-  assignWatchingLoop(watchingLoopRef, watchStepRef, loopRefs, doFetch, setTxHash, invoiceId, flushStop)
+  assignAggressiveLoop(aggressiveLoopRef, loopRefs, doFetch, setTxHash, contentHash, flushStop)
+  assignWatchingLoop(watchingLoopRef, watchStepRef, loopRefs, doFetch, setTxHash, contentHash, flushStop)
 
   // ---- Visibility handler ----
   const handleVisibilitySetup = useCallback(() => {
-    setupVisibilityHandler(invoiceId, {
+    setupVisibilityHandler(contentHash, {
       isActiveRef, sessionModeRef, sessionStartedAtRef, timerRef, visHandlerRef,
     }, {
       doFetch, setTxHash, flushStop, aggressiveLoopRef, watchingLoopRef,
     })
-  }, [doFetch, invoiceId, setTxHash, flushStop])
+  }, [doFetch, contentHash, setTxHash, flushStop])
 
   // ---- Public actions ----
   const startAutoCheck = useCallback(() => {
@@ -179,7 +179,7 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
       void (async () => {
         const matched = await doFetch()
         if (!isActiveRef.current || sessionModeRef.current !== 'auto-check') return
-        if (matched) setTxHash(invoiceId, matched.hash, false)
+        if (matched) setTxHash(contentHash, matched.hash, false)
         isActiveRef.current = false
         sessionModeRef.current = 'idle'
         flushSync(() => dispatch({ type: 'STOP' }))
@@ -193,7 +193,7 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
         if (!isActiveRef.current || sessionModeRef.current !== 'manual') return
 
         if (matched) {
-          setTxHash(invoiceId, matched.hash, false)
+          setTxHash(contentHash, matched.hash, false)
           isActiveRef.current = false
           sessionModeRef.current = 'idle'
           flushSync(() => dispatch({ type: 'STOP' }))
@@ -234,7 +234,7 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
 
     const check = () => {
       const tracked = useTrackedInvoiceStore.getState().invoices.find(
-        (inv) => inv.invoiceId === invoiceId,
+        (inv) => inv.contentHash === contentHash,
       )
       if (tracked?.txHash || tracked?.finalized) return
       startAutoCheck()

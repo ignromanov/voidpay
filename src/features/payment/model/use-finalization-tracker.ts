@@ -5,7 +5,7 @@ import { toast } from '@/shared/lib/toast'
 import { getFinalizationTimeout } from '@/entities/network'
 
 export interface UseFinalizationTrackerParams {
-  invoiceId: string
+  contentHash: string
   txHash: `0x${string}`
   networkId: number
   onReorgDetected?: (() => void) | undefined
@@ -15,7 +15,7 @@ export interface UseFinalizationTrackerParams {
 type TrackingState = 'idle' | 'tracking' | 'finalized' | 'reorg' | 'timeout'
 
 export function useFinalizationTracker({
-  invoiceId,
+  contentHash,
   txHash,
   networkId,
   onReorgDetected,
@@ -31,10 +31,10 @@ export function useFinalizationTracker({
   useEffect(() => {
     if (!enabled) return
     const tracked = useTrackedInvoiceStore.getState().invoices.find(
-      (inv) => inv.invoiceId === invoiceId,
+      (inv) => inv.contentHash === contentHash,
     )
     if (tracked?.finalized) return
-    if (!publicClient || !txHash || !invoiceId) return
+    if (!publicClient || !txHash || !contentHash) return
 
     const timeoutMs = getFinalizationTimeout(networkId)
     let cancelled = false
@@ -54,8 +54,8 @@ export function useFinalizationTracker({
       .then(() => {
         if (cancelled) return
         clearTimeout(timeoutId)
-        setValidated(invoiceId, true)
-        setFinalized(invoiceId)
+        setValidated(contentHash, true)
+        setFinalized(contentHash)
         setTrackingState('finalized')
       })
       .catch((_err) => {
@@ -63,7 +63,7 @@ export function useFinalizationTracker({
         clearTimeout(timeoutId)
         // Reorg: transaction disappeared from chain
         toast.error('Chain reorg detected — transaction not found on chain')
-        resetPaymentState(invoiceId)
+        resetPaymentState(contentHash)
         onReorgDetected?.()
         setTrackingState('reorg')
       })
@@ -72,5 +72,5 @@ export function useFinalizationTracker({
       cancelled = true
       clearTimeout(timeoutId)
     }
-  }, [enabled, invoiceId, txHash, networkId, publicClient, setFinalized, setValidated, resetPaymentState, onReorgDetected])
+  }, [enabled, contentHash, txHash, networkId, publicClient, setFinalized, setValidated, resetPaymentState, onReorgDetected])
 }
