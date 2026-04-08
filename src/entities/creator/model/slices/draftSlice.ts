@@ -259,7 +259,7 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
   },
 
   clearDraft: () => {
-    set({ activeDraft: null, lineItems: [] })
+    set({ activeDraft: null, lineItems: [], draftSyncStatus: 'idle' })
   },
 
   createNewDraft: () => {
@@ -274,6 +274,7 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
     set({
       activeDraft: newDraft,
       lineItems: [createDefaultLineItem()],
+      draftSyncStatus: 'idle',
     })
 
     return draftId
@@ -296,6 +297,7 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
         },
       },
       lineItems,
+      draftSyncStatus: 'idle',
     })
   },
 
