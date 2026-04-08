@@ -179,13 +179,13 @@ export const NETWORK_BADGES: Record<
  * Consumed by NetworkBadge in features/invoice-history.
  * Keyed by chainId; includes forward entry for Base (8453).
  */
-export const NETWORK_BADGES_DARK: Record<number, string> = {
+export const NETWORK_BADGES_DARK: Record<number, string> = withTestnets({
   [mainnet.id]: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
   [arbitrum.id]: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
   [optimism.id]: 'bg-red-500/10 text-red-400 border-red-500/20',
   [polygon.id]: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  8453: 'bg-blue-500/10 text-blue-500 border-blue-500/20', // Base (reserved)
-}
+  [base.id]: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+})
 
 /**
  * Block explorers for each chain
