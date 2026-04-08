@@ -2,11 +2,13 @@
  * Brand design tokens for VoidPay visual components
  * @module shared/ui/constants/brand-tokens
  */
+import { NETWORK_PALETTE, type NetworkThemeName } from './network-palette'
 
 /**
  * Network theme identifier
+ * @see NetworkThemeName in network-palette.ts (canonical source)
  */
-export type NetworkTheme = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'
+export type NetworkTheme = NetworkThemeName
 
 /**
  * Shape types for network backgrounds
@@ -67,6 +69,13 @@ export const NETWORK_THEMES: Record<NetworkTheme, ThemeConfig> = {
     animation: 'sway',
     shapeCount: 8,
   },
+  base: {
+    primary: '#0052FF',
+    secondary: '#3B82F6',
+    shape: 'circle',
+    animation: 'drift',
+    shapeCount: 8,
+  },
 } as const
 
 /**
@@ -121,7 +130,7 @@ export const ELECTRIC_VIOLET = '#7C3AED' as const
  * Validation: Check if a string is a valid NetworkTheme
  */
 export function isValidNetworkTheme(theme: string): theme is NetworkTheme {
-  return theme in NETWORK_THEMES
+  return theme in NETWORK_PALETTE
 }
 
 /**

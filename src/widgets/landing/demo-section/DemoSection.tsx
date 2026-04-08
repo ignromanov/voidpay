@@ -11,7 +11,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { track, AnalyticsEvent } from '@/features/analytics'
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkTheme } from '@/entities/network'
+import { getNetworkThemeName } from '@/entities/network'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
 import { InvoicePaper, ScaledInvoicePreview, InvoicePaperProps } from '@/widgets/invoice-paper'
@@ -42,7 +42,7 @@ export function DemoSection() {
   useEffect(() => {
     const currentInvoice = demoInvoices[activeIndex]
     if (currentInvoice) {
-      setNetworkTheme(getNetworkTheme(currentInvoice.data.networkId))
+      setNetworkTheme(getNetworkThemeName(currentInvoice.data.networkId))
     }
   }, [activeIndex, demoInvoices, setNetworkTheme])
 

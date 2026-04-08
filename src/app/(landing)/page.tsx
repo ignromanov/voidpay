@@ -51,7 +51,7 @@ const softwareSchema = {
   },
   featureList: [
     'Zero-backend invoicing',
-    'Multi-chain support (Ethereum, Arbitrum, Optimism, Polygon)',
+    'Multi-chain support (Ethereum, Base, Arbitrum, Optimism, Polygon)',
     'PDF export',
     'QR code generation',
     'Privacy-first design',

@@ -157,6 +157,22 @@ vi.mock('@/shared/ui/hooks/use-reduced-motion', () => ({
 }))
 
 // ============================================================================
+// SNAPSHOT SERIALIZERS
+// ============================================================================
+
+/**
+ * Stabilize Radix UI auto-generated IDs in snapshot tests.
+ * Radix generates incremental IDs (radix-_r_XX_) that shift when component
+ * tree order changes (e.g., adding a new network to a select).
+ * This serializer replaces them with a stable placeholder.
+ */
+expect.addSnapshotSerializer({
+  test: (val) => typeof val === 'string' && /radix-_r_\w+/.test(val),
+  serialize: (val) =>
+    `"${(val as string).replace(/radix-_r_\w+/g, 'radix-test')}"`,
+})
+
+// ============================================================================
 // LIFECYCLE HOOKS
 // ============================================================================
 

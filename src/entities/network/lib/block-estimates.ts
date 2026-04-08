@@ -17,11 +17,13 @@ const MAX_BLOCK_AGE: Record<number, number> = {
   42161: 10_368_000,
   10:    1_296_000,
   137:   1_296_000,
+  8453:  1_296_000,
   // Testnet
   11155111: 216_000,
   421614:   10_368_000,
   11155420: 1_296_000,
   80002:    1_296_000,
+  84532:    1_296_000,
 }
 
 const AVG_BLOCK_TIME_MS: Record<number, number> = {
@@ -29,11 +31,13 @@ const AVG_BLOCK_TIME_MS: Record<number, number> = {
   42161: 250,
   10:    2_000,
   137:   2_000,
+  8453:  2_000,
   // Testnet
   11155111: 12_000,
   421614:   250,
   11155420: 2_000,
   80002:    2_000,
+  84532:    2_000,
 }
 
 // Reference anchors — updated 2026-03-09 from live explorer data.
@@ -44,11 +48,13 @@ const REFERENCE_BLOCKS: Record<number, { block: number; timestampMs: number }> =
   42161: { block: 439_760_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   10:    { block: 148_670_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   137:   { block: 83_950_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
+  8453:  { block: 44_192_000, timestampMs: Date.parse('2026-04-03T00:00:00Z') },
   // Testnet
   11155111: { block: 10_416_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   421614:   { block: 248_490_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   11155420: { block: 40_410_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   80002:    { block: 34_960_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
+  84532:    { block: 39_880_000, timestampMs: Date.parse('2026-04-06T00:00:00Z') },
 }
 
 /** Safety buffer: subtracted from estimated fromBlock to account for block time drift.

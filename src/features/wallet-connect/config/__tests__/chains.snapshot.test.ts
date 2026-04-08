@@ -16,6 +16,7 @@ describe('chains snapshot tests', () => {
           42161,
           10,
           137,
+          8453,
         ]
       `)
     })
@@ -27,6 +28,7 @@ describe('chains snapshot tests', () => {
           421614,
           11155420,
           80002,
+          84532,
         ]
       `)
     })
@@ -62,6 +64,11 @@ describe('chains snapshot tests', () => {
             "id": 137,
             "name": "Polygon",
           },
+          {
+            "explorerUrl": "https://basescan.org",
+            "id": 8453,
+            "name": "Base",
+          },
         ]
       `)
     })
@@ -94,6 +101,11 @@ describe('chains snapshot tests', () => {
             "explorerUrl": "https://amoy.polygonscan.com",
             "id": 80002,
             "name": "Polygon Amoy",
+          },
+          {
+            "explorerUrl": "https://sepolia.basescan.org",
+            "id": 84532,
+            "name": "Base Sepolia",
           },
         ]
       `)
@@ -129,6 +141,11 @@ describe('chains snapshot tests', () => {
             "decimals": 18,
             "id": 137,
             "symbol": "POL",
+          },
+          {
+            "decimals": 18,
+            "id": 8453,
+            "symbol": "ETH",
           },
         ]
       `)

@@ -46,8 +46,8 @@ describe('chains configuration', () => {
       expect(polygon?.nativeCurrency.symbol).toBe('POL')
     })
 
-    it('should have exactly 4 mainnet chains', () => {
-      expect(MAINNET_CHAINS).toHaveLength(4)
+    it('should have exactly 5 mainnet chains', () => {
+      expect(MAINNET_CHAINS).toHaveLength(5)
     })
 
     it('should have block explorer URLs for all mainnet chains', () => {
@@ -85,8 +85,8 @@ describe('chains configuration', () => {
       expect(polyAmoy?.name).toMatch(/Polygon|Amoy/)
     })
 
-    it('should have exactly 4 testnet chains', () => {
-      expect(TESTNET_CHAINS).toHaveLength(4)
+    it('should have exactly 5 testnet chains', () => {
+      expect(TESTNET_CHAINS).toHaveLength(5)
     })
 
     it('should mark all testnet chains with testnet property', () => {
@@ -141,20 +141,20 @@ describe('chains configuration', () => {
     it('should return only mainnet chains when testnets disabled', () => {
       process.env.NEXT_PUBLIC_ENABLE_TESTNETS = 'false'
       const chains = getSupportedChains()
-      expect(chains).toHaveLength(4)
+      expect(chains).toHaveLength(5)
       expect(chains.every((c) => !c.testnet)).toBe(true)
     })
 
     it('should return mainnet and testnet chains when testnets enabled', () => {
       process.env.NEXT_PUBLIC_ENABLE_TESTNETS = 'true'
       const chains = getSupportedChains()
-      expect(chains).toHaveLength(8)
+      expect(chains).toHaveLength(10)
     })
 
     it('should default to mainnet only when env var is undefined', () => {
       delete process.env.NEXT_PUBLIC_ENABLE_TESTNETS
       const chains = getSupportedChains()
-      expect(chains).toHaveLength(4)
+      expect(chains).toHaveLength(5)
       expect(chains.every((c) => !c.testnet)).toBe(true)
     })
   })

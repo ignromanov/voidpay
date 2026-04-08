@@ -10,7 +10,7 @@ import {
 import { PaymentPanel, StatusBadge, MinimizedPill, useInvoiceView } from '@/widgets/payment-panel'
 import { ShareModal } from '@/widgets/share-modal'
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkTheme } from '@/entities/network'
+import { getNetworkThemeName } from '@/entities/network'
 import { urlToRoute } from '@/shared/lib/navigation'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import { nowUnix } from '@/shared/lib/date-time'
@@ -46,7 +46,7 @@ export function InvoiceWorkspace() {
 
   useEffect(() => {
     if (invoice?.networkId) {
-      setNetworkTheme(getNetworkTheme(invoice.networkId))
+      setNetworkTheme(getNetworkThemeName(invoice.networkId))
     }
   }, [invoice?.networkId, setNetworkTheme])
 

@@ -17,6 +17,7 @@ const THEME_COLORS: Record<NetworkTheme, { primary: string; secondary: string }>
   arbitrum: { primary: 'bg-blue-600/10', secondary: 'bg-cyan-600/10' },
   optimism: { primary: 'bg-red-600/10', secondary: 'bg-orange-600/10' },
   polygon: { primary: 'bg-purple-600/10', secondary: 'bg-violet-600/10' },
+  base: { primary: 'bg-blue-600/10', secondary: 'bg-indigo-600/10' },
 }
 
 /**

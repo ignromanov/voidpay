@@ -58,7 +58,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     question: 'What networks are supported?',
     answer:
-      'VoidPay supports Ethereum, Arbitrum, Optimism, and Polygon. We plan to add more networks based on community feedback.',
+      'VoidPay supports Ethereum, Base, Arbitrum, Optimism, and Polygon. We plan to add more networks based on community feedback.',
   },
   {
     question: 'How do I get paid?',

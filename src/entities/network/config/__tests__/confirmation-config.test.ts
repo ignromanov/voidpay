@@ -7,7 +7,7 @@ import {
 
 describe('confirmation-config', () => {
   describe('CONFIRMATION_CONFIG', () => {
-    it('returns correct blocks for all 4 networks', () => {
+    it('returns correct blocks for all 5 networks', () => {
       expect(CONFIRMATION_CONFIG[1]?.blocks).toBe(3)       // ETH
       expect(CONFIRMATION_CONFIG[42161]?.blocks).toBe(1)    // ARB
       expect(CONFIRMATION_CONFIG[10]?.blocks).toBe(1)       // OP

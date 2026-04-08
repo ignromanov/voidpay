@@ -22,7 +22,7 @@ export type HashParseResult = { success: true; data: Invoice } | { success: fals
  * ```tsx
  * const result = parseInvoiceHash(hash)
  * if (result.success) {
- *   updateDraft(result.data)
+ *   replaceDraft(result.data)
  * } else {
  *   toast.error(result.error.message)
  * }

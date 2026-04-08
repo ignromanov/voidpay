@@ -12,11 +12,13 @@ export const ALCHEMY_NETWORK_SLUG: Record<number, string> = {
   42161: 'arb-mainnet',
   10:    'opt-mainnet',
   137:   'polygon-mainnet',
+  8453:  'base-mainnet',
   // Testnet
   11155111: 'eth-sepolia',
   421614:   'arb-sepolia',
   11155420: 'opt-sepolia',
   80002:    'polygon-amoy',
+  84532:    'base-sepolia',
 }
 
 /** Infura subdomain prefix per chain ID */
@@ -26,9 +28,11 @@ export const INFURA_NETWORK_SLUG: Record<number, string> = {
   42161: 'arbitrum-mainnet',
   10:    'optimism-mainnet',
   137:   'polygon-mainnet',
+  8453:  'base-mainnet',
   // Testnet
   11155111: 'sepolia',
   421614:   'arbitrum-sepolia',
   11155420: 'optimism-sepolia',
   80002:    'polygon-amoy',
+  84532:    'base-sepolia',
 }
