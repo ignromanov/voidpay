@@ -118,7 +118,7 @@ function getAriaLabel(
 
 export function SmartPayButton({
   invoice,
-  invoiceId,
+  contentHash,
   exactTotal,
   subtotal,
   onSuccess,
@@ -127,7 +127,7 @@ export function SmartPayButton({
 }: SmartPayButtonProps) {
   const { step: realStep, error, txHash, handlePay, handleCancel, idleSubState: realIdleSubState } = usePaymentFlow({
     invoice,
-    invoiceId,
+    contentHash,
     exactTotal,
   })
 

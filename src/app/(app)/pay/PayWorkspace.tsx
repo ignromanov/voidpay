@@ -111,7 +111,7 @@ interface PayWorkspaceReadyProps {
 function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
   const {
     panelStatus, source, dismissError, txHash, confirmations, storedError,
-    finalized, exactTotal, subtotal, polling, verifyTxHash, isSyncing,
+    finalized, exactTotal, subtotal, polling, verifyTxHash, isSyncing, contentHash,
   } = payInvoice
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
@@ -141,7 +141,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
       {txHash && !finalized && (
         <PaymentVerifier
           invoice={invoice}
-          invoiceId={invoice.invoiceId}
+          contentHash={contentHash}
           txHash={txHash}
           exactTotal={exactTotal}
           onReorgDetected={polling.startAutoCheck}
@@ -221,7 +221,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                     ) : (
                       <PayButton
                         invoice={invoice}
-                        invoiceId={invoice.invoiceId}
+                        contentHash={contentHash}
                         exactTotal={exactTotal}
                         subtotal={subtotal}
                         onSuccess={handlePaymentSuccess}
