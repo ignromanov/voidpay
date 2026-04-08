@@ -62,6 +62,8 @@ function _upsertInvoice(
   const base = {
     ...existing,
     ...data,
+    // Preserve original source: 'created' must not be overwritten by 'received'
+    source: existing?.source ?? data.source,
     createdAt: existing?.createdAt ?? new Date().toISOString(),
   }
 
@@ -266,3 +268,12 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
     }
   )
 )
+
+// Cross-tab sync: rehydrate store when another tab updates localStorage
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === INVOICE_VIEW_STORE_KEY) {
+      void useTrackedInvoiceStore.persist.rehydrate()
+    }
+  })
+}

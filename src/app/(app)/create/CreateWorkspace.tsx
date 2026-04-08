@@ -44,7 +44,6 @@ export function CreateWorkspace() {
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
   const replaceDraft = useCreatorStore((s) => s.replaceDraft)
-  const clearDraft = useCreatorStore((s) => s.clearDraft)
   const draftSyncStatus = useCreatorStore((s) => s.draftSyncStatus)
 
   useEffect(() => {
@@ -175,10 +174,6 @@ export function CreateWorkspace() {
       invoiceUrl.pathname = invoiceUrl.pathname.replace('/pay', '/invoice')
       invoiceUrl.searchParams.set('share', '1')
       router.replace(urlToRoute(invoiceUrl))
-
-      // Defer draft clearing so the form stays in loading state during navigation
-      // (prevents visible flash of cleared form before route transition)
-      setTimeout(() => clearDraft(), 300)
       return
     } catch (error) {
       if (error instanceof UrlSizeError) {
@@ -193,7 +188,7 @@ export function CreateWorkspace() {
       }
       setIsGenerating(false)
     }
-  }, [isGenerating, clearDraft, router])
+  }, [isGenerating, router])
 
   return (
     <>
