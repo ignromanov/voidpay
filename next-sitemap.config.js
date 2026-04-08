@@ -32,6 +32,12 @@ module.exports = {
       changefreq = 'weekly'
     }
 
+    // Comparison pages — high SEO value
+    if (path.startsWith('/compare')) {
+      priority = 0.8
+      changefreq = 'monthly'
+    }
+
     return {
       loc: path,
       changefreq,
