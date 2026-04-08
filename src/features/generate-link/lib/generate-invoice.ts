@@ -15,7 +15,7 @@ import {
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { useCreatorStore } from '@/entities/creator'
 import { nowISO } from '@/shared/lib/date-time'
-import { generateInvoiceUrl, generateSalt, deriveMagicDust } from '@/features/invoice-codec'
+import { generateInvoiceUrl, generateSalt, deriveMagicDust, computeContentHash } from '@/features/invoice-codec'
 import {
   calculateTotalsBigInt,
   formatAmount,
@@ -69,9 +69,14 @@ export function calculateTotalAmount(invoice: PartialInvoice, lineItems: LineIte
  * const url = await generateInvoiceUrl(invoice)
  * addToHistory(invoice, url)
  */
-export function addToHistory(invoice: Invoice, invoiceUrl: string): void {
+export async function addToHistory(invoice: Invoice, invoiceUrl: string): Promise<void> {
+  const hashIndex = invoiceUrl.indexOf('#')
+  const fragment = hashIndex === -1 ? '' : invoiceUrl.slice(hashIndex + 1)
+  const contentHash = await computeContentHash(fragment)
+
   const { addInvoice } = useTrackedInvoiceStore.getState()
   addInvoice({
+    contentHash,
     invoiceId: invoice.invoiceId,
     invoiceUrl,
     source: 'created',
@@ -182,7 +187,7 @@ export async function generateAndTrackInvoice(
   }
 
   // Add to history for later retrieval
-  addToHistory(invoice, invoiceUrl)
+  await addToHistory(invoice, invoiceUrl)
 
   return { url: invoiceUrl, invoice }
 }
