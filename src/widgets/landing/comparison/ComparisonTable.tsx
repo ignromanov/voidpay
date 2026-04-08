@@ -4,6 +4,8 @@
  * Research: Honest comparison builds trust (23% conversion lift)
  */
 
+import Link from 'next/link'
+
 import { CheckIcon, XIcon, MinusIcon } from '@/shared/ui/icons'
 
 import { Heading, Text } from '@/shared/ui/typography'
@@ -195,6 +197,14 @@ export function ComparisonTable() {
         <Text variant="small" className="mt-6 text-center text-zinc-500">
           Comparison based on public documentation as of April 2026. Features may vary.
         </Text>
+        <div className="mt-4 text-center">
+          <Link
+            href="/compare/request-finance"
+            className="text-sm text-violet-400 transition-colors hover:text-violet-300"
+          >
+            See detailed VoidPay vs Request Finance comparison →
+          </Link>
+        </div>
       </div>
     </section>
   )

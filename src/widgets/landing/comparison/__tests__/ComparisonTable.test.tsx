@@ -3,6 +3,12 @@ import { render, screen } from '@testing-library/react'
 
 import { ComparisonTable } from '../ComparisonTable'
 
+vi.mock('next/link', () => ({
+  default: ({ children, href, ...props }: { children: React.ReactNode; href: string }) => (
+    <a href={href} {...props}>{children}</a>
+  ),
+}))
+
 describe('ComparisonTable', () => {
   describe('rendering', () => {
     it('renders section heading', () => {
@@ -35,6 +41,12 @@ describe('ComparisonTable', () => {
       expect(
         screen.getByText(/Comparison based on public documentation as of April 2026/)
       ).toBeInTheDocument()
+    })
+
+    it('renders link to detailed comparison page', () => {
+      render(<ComparisonTable />)
+      const link = screen.getByRole('link', { name: /detailed.*comparison/i })
+      expect(link).toHaveAttribute('href', '/compare/request-finance')
     })
   })
 
