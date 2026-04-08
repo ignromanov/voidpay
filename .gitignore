@@ -8,6 +8,7 @@ CLAUDE.md
 
 # Claude Code plugins (auto-generated)
 .agents/
+.superpowers/
 skills/
 skills-lock.json
 
