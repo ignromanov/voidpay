@@ -6,8 +6,5 @@ export interface DecodedHistoryEntry {
   status: InvoiceStatus
 }
 
-export interface DecodedReceivedInvoice {
-  tracked: TrackedInvoice
-  invoice: Invoice | null
-  status: InvoiceStatus
-}
+/** @deprecated Use DecodedHistoryEntry — identical shape */
+export type DecodedReceivedInvoice = DecodedHistoryEntry
