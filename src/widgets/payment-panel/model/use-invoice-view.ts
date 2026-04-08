@@ -101,7 +101,7 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
   )
   const polling = usePaymentPolling({
     enabled: !!invoice,
-    invoiceId: contentHash,
+    contentHash,
     toAddress: invoice?.from?.walletAddress ?? '',
     chainId: networkId,
     ...(invoice?.tokenAddress ? { contractAddress: invoice.tokenAddress } : {}),
