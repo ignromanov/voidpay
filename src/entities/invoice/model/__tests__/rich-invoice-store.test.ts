@@ -62,19 +62,19 @@ describe('useTrackedInvoiceStore', () => {
       expect(state.invoices[1].invoiceId).toBe('FIRST')
     })
 
-    it('merge-upserts existing invoice and moves to top', () => {
+    it('merge-upserts existing invoice and moves to top (source immutable)', () => {
       const { addInvoice } = useTrackedInvoiceStore.getState()
 
       addInvoice(createMockTrackedInvoice({ invoiceId: 'EXISTING', source: 'received' }))
       addInvoice(createMockTrackedInvoice({ invoiceId: 'OTHER' }))
 
-      // Re-add with overlaid fields
+      // Re-add with different source — original source preserved (first-write-wins)
       addInvoice(createMockTrackedInvoice({ invoiceId: 'EXISTING', source: 'created' }))
 
       const state = useTrackedInvoiceStore.getState()
       expect(state.invoices).toHaveLength(2)
       expect(state.invoices[0].invoiceId).toBe('EXISTING')
-      expect(state.invoices[0].source).toBe('created')
+      expect(state.invoices[0].source).toBe('received')
     })
 
     it('preserves existing createdAt on upsert', () => {
@@ -547,7 +547,7 @@ describe('useTrackedInvoiceStore', () => {
       expect(inv.error).toBe('some error')
     })
 
-    it('updates source on re-view', () => {
+    it('preserves original source on re-view (first-write-wins)', () => {
       const { addInvoice, trackView } = useTrackedInvoiceStore.getState()
 
       addInvoice(createMockTrackedInvoice({ invoiceId: 'SRC', source: 'created' }))
@@ -559,7 +559,7 @@ describe('useTrackedInvoiceStore', () => {
         viewedAt: '2026-03-10T16:00:00Z',
       })
 
-      expect(useTrackedInvoiceStore.getState().invoices[0].source).toBe('received')
+      expect(useTrackedInvoiceStore.getState().invoices[0].source).toBe('created')
     })
 
     it('moves viewed invoice to top of list (MRU order)', () => {
@@ -711,7 +711,7 @@ describe('useTrackedInvoiceStore', () => {
 
         const state = useTrackedInvoiceStore.getState()
         const inv = state.invoices.find((i) => i.invoiceId === 'MERGE-PRESERVE')!
-        expect(inv.source).toBe('received')
+        expect(inv.source).toBe('created') // source is immutable (first-write-wins)
         expect(inv.invoiceUrl).toBe('https://voidpay.xyz/pay#newurl')
         expect(inv.createdAt).toBe(originalCreatedAt)
       })
