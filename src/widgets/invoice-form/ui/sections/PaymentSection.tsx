@@ -31,6 +31,7 @@ export function PaymentSection({ form }: PaymentSectionProps) {
   const decimals = watch('decimals')
 
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
+  const updateDraft = useCreatorStore((s) => s.updateDraft)
   const lineItems = useCreatorStore((s) => s.lineItems)
   const updateLineItems = useCreatorStore((s) => s.updateLineItems)
 
@@ -77,11 +78,23 @@ export function PaymentSection({ form }: PaymentSectionProps) {
     (token: TokenInfo) => {
       const oldDecimals = decimals || 18
       reconvertLineItemRates(oldDecimals, token.decimals)
+
+      // Sync token fields to store immediately (bypasses form 300ms debounce)
+      // so preview sees correct decimals alongside already-reconverted line items.
+      // Clear stale pre-calculated total — it was baked with the old token's decimals
+      // and must be recalculated from reconverted line items.
+      updateDraft({
+        currency: token.symbol,
+        decimals: token.decimals,
+        total: undefined,
+        ...(token.address ? { tokenAddress: token.address } : {}),
+      })
+
       setValue('currency', token.symbol)
       setValue('tokenAddress', token.address ?? '')
       setValue('decimals', token.decimals)
     },
-    [setValue, decimals, reconvertLineItemRates]
+    [setValue, decimals, reconvertLineItemRates, updateDraft]
   )
 
   // Network change handler (also updates theme)

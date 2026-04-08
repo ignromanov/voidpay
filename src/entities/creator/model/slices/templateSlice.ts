@@ -7,7 +7,7 @@
 
 import { v4 as uuidv4 } from 'uuid'
 import type { StateCreator } from 'zustand'
-import type { PartialInvoice, LineItem, DraftState } from '@/entities/invoice'
+import type { PartialInvoice } from '@/entities/invoice'
 import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
 import type { InvoiceTemplate } from '../types'
 import type { CreatorStore } from './types'
@@ -67,9 +67,12 @@ export const createTemplateSlice: StateCreator<CreatorStore, [], [], TemplateSli
 
     const templateName = name ?? `${clientName} - ${dateStr}`
 
-    // Include line items in template data
+    // Include line items; strip computed fields
+    // (total is baked at generation, magicDust is per-invoice)
     const templateData: PartialInvoice = {
       ...activeDraft.data,
+      total: undefined,
+      magicDust: undefined,
       items: lineItems.map(({ description, quantity, rate }) => ({
         description,
         quantity,
@@ -99,35 +102,11 @@ export const createTemplateSlice: StateCreator<CreatorStore, [], [], TemplateSli
       throw new Error(`Template ${templateId} not found`)
     }
 
-    const draftId = uuidv4()
-
-    // Convert template items to LineItems with ids (handle partial items)
-    const lineItems: LineItem[] = (template.invoiceData.items ?? []).map((item) => {
-      const rawQty = item.quantity ?? 0
-      return {
-        id: uuidv4(),
-        description: item.description ?? '',
-        quantity: typeof rawQty === 'string' ? parseFloat(rawQty) : rawQty,
-        rate: item.rate ?? '0',
-      }
-    })
-
-    const newDraft: DraftState = {
-      meta: {
-        draftId,
-        lastModified: new Date().toISOString(),
-      },
-      data: {
-        ...template.invoiceData,
-        // Update dates to current
-        issuedAt: nowUnix(),
-        dueAt: daysFromNowUnix(30),
-      },
-    }
-
-    set({
-      activeDraft: newDraft,
-      lineItems,
+    state.replaceDraft({
+      ...template.invoiceData,
+      magicDust: undefined,
+      issuedAt: nowUnix(),
+      dueAt: daysFromNowUnix(30),
     })
   },
 

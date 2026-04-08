@@ -41,9 +41,9 @@ export function CreateWorkspace() {
   const [isGenerating, setIsGenerating] = useState(false)
 
   const activeDraft = useCreatorStore((s) => s.activeDraft)
-  const updateDraft = useCreatorStore((s) => s.updateDraft)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
+  const replaceDraft = useCreatorStore((s) => s.replaceDraft)
   const clearDraft = useCreatorStore((s) => s.clearDraft)
   const draftSyncStatus = useCreatorStore((s) => s.draftSyncStatus)
 
@@ -75,14 +75,15 @@ export function CreateWorkspace() {
       const result = await parseInvoiceHash(hash)
       if (cancelled) return
       if (result.success) {
-        updateDraft(result.data)
+        // Atomic replace: clean draft from decoded data, no stale fields
+        replaceDraft(result.data)
       } else {
         // Do NOT clear store on error (per spec edge case)
         toast.error(result.error.message)
       }
     })()
     return () => { cancelled = true }
-  }, [hash, updateDraft])
+  }, [hash, replaceDraft])
 
   const invoiceData = activeDraft?.data
 
