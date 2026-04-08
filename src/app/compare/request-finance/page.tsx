@@ -98,14 +98,15 @@ export default function CompareRequestFinancePage() {
 
         {/* TL;DR Header */}
         <section className="mb-12">
-          <Heading variant="h1" as="h1" className="mb-3">
+          <Heading variant="h1" as="h1" className="mb-3 text-pretty">
             {tldr.heading}
           </Heading>
           <Text variant="large" className="mb-6 text-zinc-400">
             {tldr.subheading}
           </Text>
           <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-6">
-            <Text className="text-zinc-300">{tldr.summary}</Text>
+            <Text variant="label" className="mb-3 text-violet-400">TL;DR</Text>
+            <Text className="leading-relaxed text-zinc-300">{tldr.summary}</Text>
           </div>
           <Text variant="small" className="mt-3 text-zinc-600">
             Last verified: {compareContent.meta.lastVerified}
@@ -118,7 +119,7 @@ export default function CompareRequestFinancePage() {
             Quick Comparison
           </Heading>
           <div className="overflow-x-auto rounded-xl border border-zinc-800">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm tabular-nums">
               <thead>
                 <tr className="border-b border-zinc-800 bg-zinc-900/50">
                   <th className="px-4 py-3 text-left font-medium text-zinc-500">Feature</th>
@@ -132,11 +133,11 @@ export default function CompareRequestFinancePage() {
                 {quickComparison.map((row, i) => (
                   <tr
                     key={row.feature}
-                    className={i % 2 === 0 ? 'bg-zinc-950' : 'bg-zinc-900/30'}
+                    className={`transition-colors hover:bg-zinc-800/50 ${i % 2 === 0 ? 'bg-zinc-950' : 'bg-zinc-900/30'}`}
                   >
                     <td className="px-4 py-3 text-zinc-400">{row.feature}</td>
                     <td className="px-4 py-3">
-                      <span className="text-zinc-300">{row.voidpay}</span>
+                      <span className="font-medium text-zinc-200">{row.voidpay}</span>
                     </td>
                     <td className="px-4 py-3">
                       <span className="text-zinc-300">{row.requestFinance}</span>
@@ -182,7 +183,7 @@ export default function CompareRequestFinancePage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-900/50 px-5 py-3">
+                  <div className="mt-4 rounded-lg border border-zinc-800 border-l-2 border-l-violet-500/30 bg-zinc-900/50 px-5 py-3">
                     <Text variant="small" className="text-zinc-400">
                       <span className="font-semibold text-zinc-200">Bottom line: </span>
                       {section.bottomLine}
@@ -248,9 +249,12 @@ export default function CompareRequestFinancePage() {
           </Text>
 
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-6">
-            <Text variant="small" className="mb-4 font-semibold text-zinc-300">
-              {reviews.requestFinance.rating}
-            </Text>
+            <div className="mb-4 flex items-center gap-2">
+              <span className="text-amber-400" aria-hidden="true">★★★★★</span>
+              <Text variant="small" as="span" className="font-semibold text-zinc-300">
+                {reviews.requestFinance.rating}
+              </Text>
+            </div>
 
             <div className="mb-5">
               <Text variant="small" className="mb-2 font-medium text-emerald-400">
@@ -287,7 +291,7 @@ export default function CompareRequestFinancePage() {
         </section>
 
         {/* CTA */}
-        <section className="mb-12 rounded-xl border border-violet-500/20 bg-violet-500/5 p-8 text-center">
+        <section className="mb-12 rounded-xl border border-violet-500/20 bg-violet-500/5 p-8 text-center shadow-[0_0_40px_-10px_rgba(124,58,237,0.15)]">
           <Heading variant="h2" as="h2" className="mb-3 text-zinc-100">
             Try VoidPay — No Signup Required
           </Heading>
@@ -295,7 +299,7 @@ export default function CompareRequestFinancePage() {
             Create your first crypto invoice in 30 seconds. Free forever.
           </Text>
           <Link href="/create">
-            <Button size="lg">Create Invoice</Button>
+            <Button variant="glow" size="lg">Create Invoice</Button>
           </Link>
         </section>
 
@@ -306,18 +310,6 @@ export default function CompareRequestFinancePage() {
           </Text>
         </div>
 
-        {/* Footer Links */}
-        <div className="flex gap-6 border-t border-zinc-800 pt-8">
-          <Link href="/privacy" className="text-sm text-zinc-500 hover:text-zinc-300">
-            Privacy
-          </Link>
-          <Link href="/terms" className="text-sm text-zinc-500 hover:text-zinc-300">
-            Terms
-          </Link>
-          <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-300">
-            Back to Home
-          </Link>
-        </div>
       </div>
     </main>
   )
