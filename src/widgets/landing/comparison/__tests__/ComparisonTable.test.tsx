@@ -33,7 +33,7 @@ describe('ComparisonTable', () => {
       render(<ComparisonTable />)
 
       expect(
-        screen.getByText(/Comparison based on public documentation as of December 2025/)
+        screen.getByText(/Comparison based on public documentation as of April 2026/)
       ).toBeInTheDocument()
     })
   })
@@ -45,10 +45,10 @@ describe('ComparisonTable', () => {
       expect(screen.getByText('Sign-up Required')).toBeInTheDocument()
     })
 
-    it('displays KYC Required feature', () => {
+    it('displays KYC / KYB Required feature', () => {
       render(<ComparisonTable />)
 
-      expect(screen.getByText('KYC Required')).toBeInTheDocument()
+      expect(screen.getByText('KYC / KYB Required')).toBeInTheDocument()
     })
 
     it('displays Data Storage feature with custom values', () => {
@@ -56,7 +56,7 @@ describe('ComparisonTable', () => {
 
       expect(screen.getByText('Data Storage')).toBeInTheDocument()
       expect(screen.getByText('None (URL)')).toBeInTheDocument()
-      expect(screen.getByText('IPFS')).toBeInTheDocument()
+      expect(screen.getByText('Centralized')).toBeInTheDocument()
       // Server appears twice (Basenode and Traditional)
       expect(screen.getAllByText('Server')).toHaveLength(2)
     })
@@ -66,7 +66,7 @@ describe('ComparisonTable', () => {
 
       expect(screen.getByText('Platform Fee')).toBeInTheDocument()
       expect(screen.getByText('$0')).toBeInTheDocument()
-      expect(screen.getByText('1-2%')).toBeInTheDocument()
+      expect(screen.getByText('$250+/mo')).toBeInTheDocument()
       expect(screen.getByText('Freemium')).toBeInTheDocument()
       expect(screen.getByText('~6.6%')).toBeInTheDocument()
     })
