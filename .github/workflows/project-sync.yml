@@ -1,0 +1,67 @@
+name: Sync issue to VP Roadmap
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+      PROJECT_ID: PVT_kwHOADCDMs4BSDpY
+    steps:
+      - name: Add to project and set fields
+        run: |
+          set -euo pipefail
+
+          # Add issue to project (idempotent)
+          ITEM_ID=$(gh project item-add 3 --owner ignromanov \
+            --url "${{ github.event.issue.html_url }}" \
+            --format json | jq -r '.id')
+
+          edit() {
+            gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" \
+              --field-id "$1" --single-select-option-id "$2"
+          }
+
+          # Status: Backlog
+          edit "PVTSSF_lAHOADCDMs4BSDpYzg_s92Q" "db1229ae"
+
+          # Source Repo: voidpay
+          edit "PVTSSF_lAHOADCDMs4BSDpYzhAtERQ" "1cd0910f"
+
+          # Parse labels
+          LABELS='${{ join(github.event.issue.labels.*.name, ',') }}'
+
+          # Priority
+          case ",$LABELS," in
+            *,p0,*) edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPk" "cdec0857" ;;
+            *,p1,*) edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPk" "aa89c144" ;;
+            *,p2,*) edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPk" "0619c117" ;;
+          esac
+
+          # Advisor
+          case ",$LABELS," in
+            *,advisor:kai,*)    edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPg" "991535fa" ;;
+            *,advisor:nexus,*)  edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPg" "0a0f9602" ;;
+            *,advisor:spark,*)  edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPg" "146d62f8" ;;
+            *,advisor:vox,*)    edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPg" "37e39c75" ;;
+            *,advisor:shade,*)  edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPg" "c58cdf97" ;;
+            *,advisor:quorum,*) edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPg" "fb9f1e5d" ;;
+          esac
+
+          # Type
+          case ",$LABELS," in
+            *,grant,*)          edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEQ4" "b8fa36a8" ;;
+            *,content,*)        edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEQ4" "61f5b82f" ;;
+            *,strategy,*)       edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEQ4" "2858353f" ;;
+            *,research,*)       edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEQ4" "9235cd2e" ;;
+            *,ops,*)            edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEQ4" "b67a6efe" ;;
+            *,agent-infra,*)    edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEQ4" "d4bdd311" ;;
+            *,meeting-action,*) edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEQ4" "943dccc1" ;;
+            *,bug,*|*,feature,*|*,task,*|*,tech-debt,*)
+                                edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEQ4" "ef1a0c60" ;;
+          esac
+
+          echo "Synced issue #${{ github.event.issue.number }} to VP Roadmap"
