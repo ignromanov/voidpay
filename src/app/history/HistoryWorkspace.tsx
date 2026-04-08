@@ -6,7 +6,7 @@ import { parseInvoiceHash } from '@/features/invoice-codec'
 import { useBatchCheck } from '@/features/payment'
 import type { DecodedBatchInvoice } from '@/features/payment'
 import { track, AnalyticsEvent } from '@/features/analytics'
-import { HistoryList, ReceivedInvoiceList } from '@/features/invoice-history'
+import { InvoiceList } from '@/features/invoice-history'
 import { Loader2Icon } from '@/shared/ui/icons'
 import { HistorySkeleton } from './HistorySkeleton'
 import { useReceivedInvoices } from './use-received-invoices'
@@ -60,8 +60,8 @@ export function HistoryWorkspace() {
     <div className="flex min-h-screen flex-col items-center p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-4xl">
         <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold text-gray-100">Invoice History</h1>
-          <p className="text-gray-400">
+          <h1 className="mb-2 text-3xl font-bold text-zinc-100">Invoice History</h1>
+          <p className="text-zinc-400">
             View and manage your created and received invoices.
           </p>
         </div>
@@ -72,7 +72,7 @@ export function HistoryWorkspace() {
           <div className="space-y-10">
             <section aria-labelledby="created-heading">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-y-2">
-                <h2 id="created-heading" className="text-xl font-semibold text-gray-100">
+                <h2 id="created-heading" className="text-xl font-semibold text-zinc-100">
                   Created
                 </h2>
                 <div className="flex items-center gap-3">
@@ -95,24 +95,24 @@ export function HistoryWorkspace() {
                       )}
                     </button>
                   )}
-                  <span className="text-sm text-gray-400">
+                  <span className="text-sm text-zinc-400">
                     {createdCount} invoice{createdCount !== 1 ? 's' : ''}
                   </span>
                 </div>
               </div>
-              <HistoryList debug={debug} entries={createdEntries} />
+              <InvoiceList variant="created" debug={debug} entries={createdEntries} />
             </section>
 
             <section aria-labelledby="received-heading">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-y-2">
-                <h2 id="received-heading" className="text-xl font-semibold text-gray-100">
+                <h2 id="received-heading" className="text-xl font-semibold text-zinc-100">
                   Received
                 </h2>
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-zinc-400">
                   {receivedInvoices.length} invoice{receivedInvoices.length !== 1 ? 's' : ''}
                 </span>
               </div>
-              <ReceivedInvoiceList invoices={receivedInvoices} debug={debug} />
+              <InvoiceList variant="received" entries={receivedInvoices} debug={debug} />
             </section>
           </div>
         )}
@@ -124,7 +124,7 @@ export function HistoryWorkspace() {
 function CombinedEmptyState() {
   return (
     <div className="py-16 text-center">
-      <div className="mb-3 text-gray-400">
+      <div className="mb-3 text-zinc-500">
         <svg
           className="mx-auto h-12 w-12"
           fill="none"
@@ -140,8 +140,8 @@ function CombinedEmptyState() {
           />
         </svg>
       </div>
-      <h2 className="mb-1 text-lg font-medium text-gray-200">No invoices yet</h2>
-      <p className="text-sm text-gray-400">
+      <h2 className="mb-1 text-lg font-medium text-zinc-200">No invoices yet</h2>
+      <p className="text-sm text-zinc-500">
         Invoices you create or receive via payment links will appear here.
       </p>
     </div>

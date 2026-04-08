@@ -50,3 +50,25 @@ export function formatDateUTC(ts: number): string {
   const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
   return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`
 }
+
+/** Unix seconds → "Apr 3, 2026" (for card/list UI) */
+export function formatDateMedium(ts: number): string {
+  return new Date(ts * 1000).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+/** Unix seconds → "Apr 3" (compact, no year) */
+export function formatDateCompact(ts: number): string {
+  return new Date(ts * 1000).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+/** ISO 8601 string → Unix seconds */
+export function isoToUnix(iso: string): number {
+  return Math.floor(new Date(iso).getTime() / 1000)
+}

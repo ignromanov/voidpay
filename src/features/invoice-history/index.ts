@@ -1,4 +1,3 @@
 // Public API for features/invoice-history
-export { HistoryList } from './ui/HistoryList'
-export { ReceivedInvoiceList } from './ui/ReceivedInvoiceList'
-export type { DecodedHistoryEntry, DecodedReceivedInvoice } from './lib/types'
+export { InvoiceList } from './ui/InvoiceList'
+export type { DecodedHistoryEntry } from './lib/types'
