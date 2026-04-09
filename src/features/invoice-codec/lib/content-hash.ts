@@ -1,3 +1,6 @@
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex } from '@noble/hashes/utils.js'
+
 /**
  * Compute SHA-256 content hash of an encoded invoice fragment.
  * Returns 64 hex chars (32 bytes). Deterministic: same content → same hash.
@@ -11,10 +14,10 @@
  *
  * Lives in codec because it operates on encoded invoice data
  * and will ship with the codec npm package.
+ *
+ * Sync (via @noble/hashes) so it can be used inside zustand persist migrate().
  */
-export async function computeContentHash(fragment: string): Promise<string> {
+export function computeContentHash(fragment: string): string {
   const data = new TextEncoder().encode(fragment)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-  const hashArray = new Uint8Array(hashBuffer)
-  return Array.from(hashArray, (b) => b.toString(16).padStart(2, '0')).join('')
+  return bytesToHex(sha256(data))
 }

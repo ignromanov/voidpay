@@ -113,9 +113,8 @@ interface TrackedInvoiceStore extends TrackedInvoiceState {
   resetPaymentState: (contentHash: string) => void
 }
 
-// Set by migrate() when v1→v2 runs; signals post-hydration hash computation.
-// Declared before create() because migrate() executes during store creation.
-let _pendingHashComputation = false
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex } from '@noble/hashes/utils.js'
 
 /**
  * Hook to access tracked invoices store
@@ -277,11 +276,16 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
           }
 
           if (version < 2) {
-            _pendingHashComputation = true
-            const invoices = (state.invoices as Array<Record<string, unknown>>).map((inv) => ({
-              ...inv,
-              contentHash: '',
-            })) as TrackedInvoice[]
+            const invoices = (state.invoices as Array<Record<string, unknown>>)
+              .map((inv) => {
+                const url = (inv.invoiceUrl as string) ?? ''
+                const hashIndex = url.indexOf('#')
+                const fragment = hashIndex === -1 ? '' : url.slice(hashIndex + 1)
+                if (!fragment) return null
+                const contentHash = bytesToHex(sha256(new TextEncoder().encode(fragment)))
+                return { ...inv, contentHash } as TrackedInvoice
+              })
+              .filter((inv): inv is TrackedInvoice => inv !== null)
             return { invoices }
           }
 
@@ -294,67 +298,6 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
     }
   )
 )
-
-// ---------------------------------------------------------------------------
-// Post-hydration: compute contentHash for v1→v2 migrated invoices
-// Only runs when migrate() sets the flag — skipped on v2+ stores.
-// ---------------------------------------------------------------------------
-
-// Inline SHA-256 — frozen at SHA-256, future changes go in new versions.
-const _sha256 = async (input: string): Promise<string> => {
-  const data = new TextEncoder().encode(input)
-  const buf = await crypto.subtle.digest('SHA-256', data)
-  return Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, '0')).join('')
-}
-
-function _computeMissingContentHashes(): void {
-  if (!_pendingHashComputation) return
-  _pendingHashComputation = false
-
-  const { invoices } = useTrackedInvoiceStore.getState()
-  const needsHash = invoices.filter((inv) => !inv.contentHash)
-  if (needsHash.length === 0) return
-
-
-  void (async () => {
-    const results = await Promise.allSettled(
-      needsHash.map(async (inv) => {
-        const url = inv.invoiceUrl ?? ''
-        const hashIndex = url.indexOf('#')
-        const fragment = hashIndex === -1 ? '' : url.slice(hashIndex + 1)
-        if (!fragment) return null
-        const contentHash = await _sha256(fragment)
-        return { ...inv, contentHash } as TrackedInvoice
-      }),
-    )
-
-    const computed = new Map<string, TrackedInvoice>()
-    for (const r of results) {
-      if (r.status === 'fulfilled' && r.value && r.value.contentHash) {
-        computed.set(r.value.invoiceUrl, r.value)
-      }
-    }
-
-    const current = useTrackedInvoiceStore.getState()
-    const updated = current.invoices
-      .map((inv) => {
-        if (inv.contentHash) return inv
-        return computed.get(inv.invoiceUrl) ?? inv
-      })
-      .filter((inv) => inv.contentHash !== '')
-
-    useTrackedInvoiceStore.setState({ invoices: updated })
-  })()
-}
-
-if (typeof window !== 'undefined') {
-  useTrackedInvoiceStore.persist.onFinishHydration(_computeMissingContentHashes)
-  // Sync migration + sync storage = hydration completes during create().
-  // onFinishHydration registered after → listener missed the event. Run manually.
-  if (useTrackedInvoiceStore.persist.hasHydrated()) {
-    _computeMissingContentHashes()
-  }
-}
 
 // Cross-tab sync removed: rehydrate() re-triggers migration from stale tabs
 // that still write version 1. Will be re-added with BroadcastChannel after

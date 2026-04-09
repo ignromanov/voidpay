@@ -72,16 +72,14 @@ export const importUserData = async (data: unknown): Promise<ImportResult> => {
     if (validData.trackedInvoices?.invoices) {
       const { addInvoice } = useTrackedInvoiceStore.getState()
       // Always derive contentHash from URL — never trust pre-supplied values
-      const enriched = await Promise.all(
-        validData.trackedInvoices.invoices.map(async (invoice) => {
-          if (!invoice.invoiceUrl) return null
-          const hashIndex = invoice.invoiceUrl.indexOf('#')
-          const fragment = hashIndex === -1 ? '' : invoice.invoiceUrl.slice(hashIndex + 1)
-          if (!fragment) return null
-          const contentHash = await computeContentHash(fragment)
-          return { ...invoice, contentHash }
-        }),
-      )
+      const enriched = validData.trackedInvoices.invoices.map((invoice) => {
+        if (!invoice.invoiceUrl) return null
+        const hashIndex = invoice.invoiceUrl.indexOf('#')
+        const fragment = hashIndex === -1 ? '' : invoice.invoiceUrl.slice(hashIndex + 1)
+        if (!fragment) return null
+        const contentHash = computeContentHash(fragment)
+        return { ...invoice, contentHash }
+      })
       for (const invoice of enriched) {
         if (invoice) {
           addInvoice(invoice)

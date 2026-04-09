@@ -5,7 +5,7 @@ import { importUserData } from '../import'
 
 // Mock computeContentHash used by import for legacy entries without contentHash
 vi.mock('@/features/invoice-codec', () => ({
-  computeContentHash: vi.fn((fragment: string) => Promise.resolve(`${fragment}-computed-hash`)),
+  computeContentHash: vi.fn((fragment: string) => `${fragment}-computed-hash`),
 }))
 
 describe('importUserData', () => {

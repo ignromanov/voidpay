@@ -40,10 +40,8 @@ export async function parseInvoiceHash(hash: string): Promise<HashParseResult> {
   }
 
   try {
-    const [data, contentHash] = await Promise.all([
-      decodeInvoice(hash),
-      computeContentHash(hash),
-    ])
+    const contentHash = computeContentHash(hash)
+    const data = await decodeInvoice(hash)
     return { success: true, data, contentHash }
   } catch (error) {
     return {
