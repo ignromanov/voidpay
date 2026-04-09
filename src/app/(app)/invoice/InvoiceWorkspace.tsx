@@ -179,6 +179,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                 {isPaid && txHash ? (
                   <PaymentPanel
                     invoice={invoice}
+                    contentHash={contentHash}
                     status={panelStatus}
                     txHash={txHash}
                     source="created"
@@ -190,6 +191,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                 ) : (
                   <PaymentPanel
                     invoice={invoice}
+                    contentHash={contentHash}
                     status={panelStatus}
                     source="created"
                     onShareOpen={() => handleShareOpenChange(true)}

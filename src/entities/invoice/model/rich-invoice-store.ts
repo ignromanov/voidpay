@@ -164,6 +164,7 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
         const exists = get().invoices.some(inv => inv.contentHash === contentHash)
         if (!exists) {
           console.warn('[TrackedInvoiceStore] setTxHash called for unknown invoice:', { contentHash, txHash })
+          return
         }
         set((state) => ({
           invoices: state.invoices.map((inv) =>
@@ -272,13 +273,15 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
           }
 
           if (version === 1) {
-            // Inline SHA-256 to avoid FSD violation (entities can't import features)
+            // Inline SHA-256 to avoid FSD violation (entities can't import features).
+            // Must stay frozen at SHA-256 — future algorithm changes go in new versions.
             const sha256 = async (input: string): Promise<string> => {
               const data = new TextEncoder().encode(input)
               const buf = await crypto.subtle.digest('SHA-256', data)
               return Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, '0')).join('')
             }
-            const migrated = await Promise.all(
+            // Use allSettled so one corrupted entry does not destroy the entire store
+            const results = await Promise.allSettled(
               (state.invoices as Array<Record<string, unknown>>).map(async (inv) => {
                 const url = (inv.invoiceUrl as string) ?? ''
                 const hashIndex = url.indexOf('#')
@@ -287,11 +290,16 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
                 return { ...inv, contentHash } as TrackedInvoice
               })
             )
-            return { invoices: migrated.filter((inv) => inv.contentHash !== '') }
+            const migrated = results
+              .filter((r): r is PromiseFulfilledResult<TrackedInvoice> => r.status === 'fulfilled')
+              .map((r) => r.value)
+              .filter((inv) => inv.contentHash !== '')
+            return { invoices: migrated }
           }
 
           return { invoices: state.invoices as TrackedInvoice[] }
-        } catch {
+        } catch (e) {
+          console.warn('[TrackedInvoiceStore] Migration failed, resetting store:', e)
           return { invoices: [] }
         }
       },

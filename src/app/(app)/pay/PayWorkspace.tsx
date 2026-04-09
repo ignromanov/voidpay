@@ -190,6 +190,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                 {isPaid && txHash ? (
                   <PaymentPanel
                     invoice={invoice}
+                    contentHash={contentHash}
                     status={panelStatus}
                     txHash={txHash}
                     source={source}
@@ -200,6 +201,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                 ) : (
                   <PaymentPanel
                     invoice={invoice}
+                    contentHash={contentHash}
                     status={panelStatus}
                     source={source}
                     {...(paymentError ? { error: paymentError } : storedError ? { error: storedError } : {})}
@@ -240,7 +242,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                 >
                   <ChevronDownIcon size={14} />
                 </button>
-                <DevStatusToggle invoiceId={invoice.invoiceId} status={panelStatus} />
+                <DevStatusToggle contentHash={contentHash} status={panelStatus} />
                 <DevPaymentStepToggle onChange={setDevPaymentStep} />
               </motion.div>
             )}

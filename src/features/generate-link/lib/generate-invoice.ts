@@ -72,6 +72,7 @@ export function calculateTotalAmount(invoice: PartialInvoice, lineItems: LineIte
 export async function addToHistory(invoice: Invoice, invoiceUrl: string): Promise<void> {
   const hashIndex = invoiceUrl.indexOf('#')
   const fragment = hashIndex === -1 ? '' : invoiceUrl.slice(hashIndex + 1)
+  if (!fragment) return
   const contentHash = await computeContentHash(fragment)
 
   const { addInvoice } = useTrackedInvoiceStore.getState()
