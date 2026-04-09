@@ -54,6 +54,7 @@ We will keep you informed throughout the process. If you do not receive an ackno
 - Vulnerabilities requiring physical access to a user's device
 - Self-XSS (the attacker must exploit themselves)
 - Issues in browser extensions not developed by VoidPay
+- Health check endpoint (`/api/health`) information disclosure (returns only service availability status)
 - Spam or abuse of the invoice creation form without a security impact
 - Theoretical vulnerabilities without a working proof-of-concept
 - Publicly known vulnerabilities in dependencies without demonstrated exploitability against VoidPay
@@ -127,6 +128,6 @@ These are documented design decisions, not vulnerabilities:
 
 - **Hash fragments are never sent to the server** (RFC 3986). Invoice data is client-only by design.
 - **`unsafe-eval` in CSP** is required by WalletConnect's WASM runtime. This is an accepted, monitored risk.
-- **`unsafe-inline` in CSP** is required by RainbowKit's styled-components. Accepted risk with strict `frame-ancestors: 'none'`.
+- **`unsafe-inline` in CSP** is required by RainbowKit's inline style injection. Accepted risk with strict `frame-ancestors: 'none'`.
 - **No backend storage** means there is no server-side database to breach. The threat model is client-side only.
 - **Finalized confirmation status** (not just included/safe) is used for payment verification to protect against reorg attacks.
