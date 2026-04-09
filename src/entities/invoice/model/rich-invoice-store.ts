@@ -113,6 +113,10 @@ interface TrackedInvoiceStore extends TrackedInvoiceState {
   resetPaymentState: (contentHash: string) => void
 }
 
+// Set by migrate() when v1→v2 runs; signals post-hydration hash computation.
+// Declared before create() because migrate() executes during store creation.
+let _pendingHashComputation = false
+
 /**
  * Hook to access tracked invoices store
  */
@@ -273,6 +277,7 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
           }
 
           if (version < 2) {
+            _pendingHashComputation = true
             console.info('[TrackedInvoiceStore] Migrating v%d → v2: %d invoices', version, state.invoices.length)
             const invoices = (state.invoices as Array<Record<string, unknown>>).map((inv) => ({
               ...inv,
@@ -293,6 +298,7 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
 
 // ---------------------------------------------------------------------------
 // Post-hydration: compute contentHash for v1→v2 migrated invoices
+// Only runs when migrate() sets the flag — skipped on v2+ stores.
 // ---------------------------------------------------------------------------
 
 // Inline SHA-256 — frozen at SHA-256, future changes go in new versions.
@@ -303,6 +309,9 @@ const _sha256 = async (input: string): Promise<string> => {
 }
 
 function _computeMissingContentHashes(): void {
+  if (!_pendingHashComputation) return
+  _pendingHashComputation = false
+
   const { invoices } = useTrackedInvoiceStore.getState()
   const needsHash = invoices.filter((inv) => !inv.contentHash)
   if (needsHash.length === 0) return
