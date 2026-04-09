@@ -45,6 +45,7 @@ function makeEntry(overrides: {
   dueAt?: number
 } = {}): DecodedHistoryEntry {
   const tracked: TrackedInvoice = {
+    contentHash: `${overrides.invoiceId ?? 'INV-042'}-hash`,
     invoiceId: overrides.invoiceId ?? 'INV-042',
     invoiceUrl: 'https://voidpay.xyz/pay#test',
     source: 'created',

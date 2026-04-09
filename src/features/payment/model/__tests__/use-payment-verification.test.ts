@@ -117,14 +117,14 @@ describe('usePaymentVerification', () => {
     const { result } = renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
-        invoiceId: 'INV-NATIVE-001',
+        contentHash: 'native-001-hash',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000000000000000',
       })
     )
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('INV-NATIVE-001', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true)
     })
 
     expect(mockSetError).not.toHaveBeenCalled()
@@ -156,14 +156,14 @@ describe('usePaymentVerification', () => {
     const { result } = renderHook(() =>
       usePaymentVerification({
         invoice: mockErc20Invoice,
-        invoiceId: 'INV-ERC20-001',
+        contentHash: 'erc20-001-hash',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000',
       })
     )
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('INV-ERC20-001', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('erc20-001-hash', true)
     })
 
     expect(mockSetError).not.toHaveBeenCalled()
@@ -188,7 +188,7 @@ describe('usePaymentVerification', () => {
     renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
-        invoiceId: 'INV-NATIVE-001',
+        contentHash: 'native-001-hash',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000000000000000',
       })
@@ -196,7 +196,7 @@ describe('usePaymentVerification', () => {
 
     await waitFor(() => {
       expect(mockSetError).toHaveBeenCalledWith(
-        'INV-NATIVE-001',
+        'native-001-hash',
         expect.stringContaining("amount doesn't match"),
       )
     })
@@ -220,7 +220,7 @@ describe('usePaymentVerification', () => {
     const { result } = renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
-        invoiceId: 'INV-NATIVE-001',
+        contentHash: 'native-001-hash',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000000000000000',
       })
@@ -249,7 +249,7 @@ describe('usePaymentVerification', () => {
     const { result, rerender } = renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
-        invoiceId: 'INV-NATIVE-001',
+        contentHash: 'native-001-hash',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000000000000000',
       })
@@ -266,7 +266,7 @@ describe('usePaymentVerification', () => {
     rerender()
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('INV-NATIVE-001', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true)
     })
   })
 
@@ -284,7 +284,7 @@ describe('usePaymentVerification', () => {
     const { result } = renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
-        invoiceId: 'INV-NATIVE-001',
+        contentHash: 'native-001-hash',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000000000000000',
         enabled: false,
@@ -317,7 +317,7 @@ describe('usePaymentVerification', () => {
       ({ enabled }: { enabled: boolean }) =>
         usePaymentVerification({
           invoice: mockNativeInvoice,
-          invoiceId: 'INV-NATIVE-001',
+          contentHash: 'native-001-hash',
           txHash: MOCK_TX_HASH,
           exactTotal: '1000000000000000000',
           enabled,
@@ -332,7 +332,7 @@ describe('usePaymentVerification', () => {
     rerender({ enabled: true })
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('INV-NATIVE-001', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true)
     })
   })
 
@@ -354,7 +354,7 @@ describe('usePaymentVerification', () => {
     const { result, rerender } = renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
-        invoiceId: 'INV-NATIVE-001',
+        contentHash: 'native-001-hash',
         txHash: MOCK_TX_HASH,
         exactTotal: '1000000000000000000',
       })
@@ -375,7 +375,7 @@ describe('usePaymentVerification', () => {
     rerender()
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('INV-NATIVE-001', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true)
     })
   })
 })

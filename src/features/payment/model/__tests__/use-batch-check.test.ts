@@ -29,6 +29,7 @@ vi.mock('@/entities/network', () => ({
 // ---------------------------------------------------------------------------
 const mockSetTxHash = vi.fn()
 let mockInvoices: Array<{
+  contentHash: string
   invoiceId: string
   source: 'created' | 'received'
   txHash?: string
@@ -79,10 +80,12 @@ function makeInvoice(
   source: 'created' | 'received' = 'created',
   txHash?: string,
 ) {
+  const hash = `${id}-hash`
   return {
+    contentHash: hash,
     invoiceId: id,
     source,
-    invoiceUrl: `https://voidpay.xyz/pay#${id}`,
+    invoiceUrl: `https://voidpay.xyz/pay#${hash}`,
     createdAt: new Date().toISOString(),
     ...(txHash ? { txHash } : {}),
   }
@@ -272,7 +275,7 @@ describe('useBatchCheck', () => {
     await waitFor(() => {
       expect(mockSetTxHash).toHaveBeenCalledTimes(1)
       expect(mockSetTxHash).toHaveBeenCalledWith(
-        'INV-MATCH-002',
+        'INV-MATCH-002-hash',
         secondTransfer.hash,
         false,
       )

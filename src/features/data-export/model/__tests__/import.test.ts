@@ -1,7 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useCreatorStore } from '@/entities/creator'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { importUserData } from '../import'
+
+// Mock computeContentHash used by import for legacy entries without contentHash
+vi.mock('@/features/invoice-codec', () => ({
+  computeContentHash: vi.fn((fragment: string) => Promise.resolve(`${fragment}-computed-hash`)),
+}))
 
 describe('importUserData', () => {
   beforeEach(() => {
@@ -26,6 +31,7 @@ describe('importUserData', () => {
     trackedInvoices: {
       invoices: [
         {
+          contentHash: 'abc-hash',
           invoiceId: 'INV-001',
           invoiceUrl: 'https://voidpay.xyz/pay#abc',
           source: 'created' as const,
@@ -35,8 +41,8 @@ describe('importUserData', () => {
     },
   }
 
-  it('returns success with stats on valid import', () => {
-    const result = importUserData(validImport)
+  it('returns success with stats on valid import', async () => {
+    const result = await importUserData(validImport)
 
     expect(result.success).toBe(true)
     expect(result.stats).toEqual({
@@ -46,44 +52,44 @@ describe('importUserData', () => {
     })
   })
 
-  it('merges preferences from import', () => {
-    importUserData(validImport)
+  it('merges preferences from import', async () => {
+    await importUserData(validImport)
 
     const { preferences } = useCreatorStore.getState()
     expect(preferences.includeOgImage).toBe(false)
   })
 
-  it('imports tracked invoices', () => {
-    importUserData(validImport)
+  it('imports tracked invoices', async () => {
+    await importUserData(validImport)
 
     const { invoices } = useTrackedInvoiceStore.getState()
     expect(invoices.length).toBeGreaterThanOrEqual(1)
   })
 
-  it('handles import without trackedInvoices', () => {
+  it('handles import without trackedInvoices', async () => {
     const { trackedInvoices: _, ...withoutTracked } = validImport
-    const result = importUserData(withoutTracked)
+    const result = await importUserData(withoutTracked)
 
     expect(result.success).toBe(true)
     expect(result.stats?.trackedInvoices).toBe(0)
   })
 
-  it('returns error on invalid data', () => {
-    const result = importUserData({ invalid: true })
+  it('returns error on invalid data', async () => {
+    const result = await importUserData({ invalid: true })
 
     expect(result.success).toBe(false)
     expect(result.error).toBeDefined()
   })
 
-  it('returns error on null input', () => {
-    const result = importUserData(null)
+  it('returns error on null input', async () => {
+    const result = await importUserData(null)
 
     expect(result.success).toBe(false)
     expect(result.error).toBeDefined()
   })
 
-  it('returns error on wrong version', () => {
-    const result = importUserData({ ...validImport, version: 99 })
+  it('returns error on wrong version', async () => {
+    const result = await importUserData({ ...validImport, version: 99 })
 
     expect(result.success).toBe(false)
   })

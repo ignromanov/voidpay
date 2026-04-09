@@ -35,7 +35,7 @@ const mockSetTxHash = vi.fn()
 const mockSetValidated = vi.fn()
 const mockSetError = vi.fn()
 const mockGetInvoice = vi.fn()
-const mockInvoices: Array<{ invoiceId: string; txHash?: string }> = []
+const mockInvoices: Array<{ contentHash: string; invoiceId: string; txHash?: string }> = []
 
 vi.mock('@/entities/invoice', () => {
   const getStore = () => ({
@@ -71,7 +71,7 @@ const EXACT_TOTAL = 1_000_000_000_000_000_000n // 1 ETH in wei
 const NETWORK_ID = 1
 
 const BASE_PARAMS = {
-  invoiceId: 'INV-MANUAL-001',
+  contentHash: 'manual-001-hash',
   networkId: NETWORK_ID,
   recipient: RECIPIENT,
   exactTotal: EXACT_TOTAL,
@@ -154,7 +154,7 @@ describe('useManualVerify', () => {
   // -------------------------------------------------------------------------
   it('rejects txHash already linked to a different invoice in the store', async () => {
     // Another invoice already has this txHash
-    mockInvoices.push({ invoiceId: 'INV-OTHER-999', txHash: VALID_TX_HASH })
+    mockInvoices.push({ contentHash: 'other-999-hash', invoiceId: 'INV-OTHER-999', txHash: VALID_TX_HASH })
 
     const { result } = renderHook(() => useManualVerify(BASE_PARAMS))
 
@@ -225,7 +225,7 @@ describe('useManualVerify', () => {
     expect(result.current.result?.actualAmount).toBe(EXACT_TOTAL)
     expect(result.current.result?.expectedAmount).toBe(EXACT_TOTAL)
     expect(mockSetTxHash).toHaveBeenCalledWith(
-      'INV-MANUAL-001',
+      'manual-001-hash',
       VALID_TX_HASH,
       false, // soft-verified; verification hook takes over
     )
@@ -343,6 +343,6 @@ describe('useManualVerify', () => {
     expect(mockVerifyNativeReceipt).not.toHaveBeenCalled()
 
     expect(result.current.result?.verified).toBe(true)
-    expect(mockSetTxHash).toHaveBeenCalledWith('INV-MANUAL-001', VALID_TX_HASH, false)
+    expect(mockSetTxHash).toHaveBeenCalledWith('manual-001-hash', VALID_TX_HASH, false)
   })
 })
