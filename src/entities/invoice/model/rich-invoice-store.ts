@@ -278,7 +278,6 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
 
           if (version < 2) {
             _pendingHashComputation = true
-            console.info('[TrackedInvoiceStore] Migrating v%d → v2: %d invoices', version, state.invoices.length)
             const invoices = (state.invoices as Array<Record<string, unknown>>).map((inv) => ({
               ...inv,
               contentHash: '',
@@ -316,7 +315,6 @@ function _computeMissingContentHashes(): void {
   const needsHash = invoices.filter((inv) => !inv.contentHash)
   if (needsHash.length === 0) return
 
-  console.info('[TrackedInvoiceStore] Computing contentHash for %d invoices post-hydration', needsHash.length)
 
   void (async () => {
     const results = await Promise.allSettled(
@@ -346,11 +344,6 @@ function _computeMissingContentHashes(): void {
       .filter((inv) => inv.contentHash !== '')
 
     useTrackedInvoiceStore.setState({ invoices: updated })
-    console.info(
-      '[TrackedInvoiceStore] contentHash computation complete: %d computed, %d dropped',
-      computed.size,
-      needsHash.length - computed.size,
-    )
   })()
 }
 

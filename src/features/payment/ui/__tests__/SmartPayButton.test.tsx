@@ -45,6 +45,7 @@ const mockInvoice = {
 const defaultProps = {
   invoice: mockInvoice,
   invoiceId: 'INV-001',
+  contentHash: 'abc123',
   exactTotal: '1000000000000000000',
   subtotal: '1000000000000000000',
 }
