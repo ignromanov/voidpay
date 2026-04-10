@@ -137,7 +137,7 @@ export function useBatchCheck({ decodeInvoiceUrl }: UseBatchCheckParams): UseBat
             const data = (await response.json()) as { transfers: TransferResult[] }
             const match = matchTransfer(data.transfers, exactTotal, tokenAddress)
             if (match) {
-              setTxHash(invoice.invoiceId, match.hash, false)
+              setTxHash(invoice.contentHash, match.hash, false)
             }
           }
         } catch {

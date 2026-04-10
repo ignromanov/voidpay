@@ -27,6 +27,7 @@ const mockParseInvoiceHash = vi.mocked(parseInvoiceHash)
 const mockComputeInvoiceStatus = vi.mocked(computeInvoiceStatus)
 
 const makeTracked = (overrides?: Record<string, unknown>) => ({
+  contentHash: (overrides?.contentHash as string) ?? 'abc123hash',
   invoiceId: 'INV-001',
   invoiceUrl: 'https://voidpay.xyz/pay#abc123',
   source: 'received' as const,
@@ -191,8 +192,8 @@ describe('useReceivedInvoices', () => {
   it('decodes multiple received invoices', async () => {
     useTrackedInvoiceStore.setState({
       invoices: [
-        makeTracked({ invoiceId: 'INV-001', invoiceUrl: 'https://voidpay.xyz/pay#hash1' }),
-        makeTracked({ invoiceId: 'INV-002', invoiceUrl: 'https://voidpay.xyz/pay#hash2' }),
+        makeTracked({ contentHash: 'hash1', invoiceId: 'INV-001', invoiceUrl: 'https://voidpay.xyz/pay#hash1' }),
+        makeTracked({ contentHash: 'hash2', invoiceId: 'INV-002', invoiceUrl: 'https://voidpay.xyz/pay#hash2' }),
       ],
     })
 

@@ -136,8 +136,8 @@ export function InvoiceCard({
       </div>
 
       {debug && debugOpen && (
-        <pre className="mt-3 max-h-48 overflow-auto rounded-lg bg-zinc-950/80 p-3 text-xs text-zinc-500">
-          {JSON.stringify({ tracked, decodeSuccess: invoice !== null }, null, 2)}
+        <pre className="mt-3 max-h-64 overflow-auto rounded-lg bg-zinc-950/80 p-3 text-xs text-zinc-500">
+          {JSON.stringify({ tracked, invoice, status }, null, 2)}
         </pre>
       )}
     </InvoiceCardShell>

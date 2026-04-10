@@ -67,7 +67,7 @@ import type { TransferResult } from '../../lib/match-transfer'
 // Test fixtures
 // ---------------------------------------------------------------------------
 const BASE_PARAMS = {
-  invoiceId: 'INV-POLL-001',
+  contentHash: 'poll-001-hash',
   toAddress: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045' as const,
   chainId: 1,
   category: 'external' as const,
@@ -77,7 +77,7 @@ const BASE_PARAMS = {
 
 const ERC20_PARAMS = {
   ...BASE_PARAMS,
-  invoiceId: 'INV-POLL-ERC20',
+  contentHash: 'poll-erc20-hash',
   category: 'erc20' as const,
   contractAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
   exactTotal: 1_000_000n,
@@ -484,9 +484,9 @@ describe('usePaymentPolling', () => {
   // -------------------------------------------------------------------------
   it('session limit: rejects starting a new mode when 3 sessions are already active', async () => {
     // Render 3 hooks all in aggressive mode
-    const hook1 = renderHook(() => usePaymentPolling({ ...BASE_PARAMS, invoiceId: 'INV-001' }))
-    const hook2 = renderHook(() => usePaymentPolling({ ...BASE_PARAMS, invoiceId: 'INV-002' }))
-    const hook3 = renderHook(() => usePaymentPolling({ ...BASE_PARAMS, invoiceId: 'INV-003' }))
+    const hook1 = renderHook(() => usePaymentPolling({ ...BASE_PARAMS, contentHash: 'session-hash-1' }))
+    const hook2 = renderHook(() => usePaymentPolling({ ...BASE_PARAMS, contentHash: 'session-hash-2' }))
+    const hook3 = renderHook(() => usePaymentPolling({ ...BASE_PARAMS, contentHash: 'session-hash-3' }))
 
     await waitFor(() => expect(hook1.result.current.isLoading).toBe(false))
     await waitFor(() => expect(hook2.result.current.isLoading).toBe(false))
@@ -501,7 +501,7 @@ describe('usePaymentPolling', () => {
     expect(hook3.result.current.mode).toBe('aggressive')
 
     // 4th hook tries to start aggressive — should be rejected
-    const hook4 = renderHook(() => usePaymentPolling({ ...BASE_PARAMS, invoiceId: 'INV-004' }))
+    const hook4 = renderHook(() => usePaymentPolling({ ...BASE_PARAMS, contentHash: 'session-hash-4' }))
     await waitFor(() => expect(hook4.result.current.isLoading).toBe(false))
 
     act(() => { hook4.result.current.startAggressivePolling() })
@@ -532,7 +532,7 @@ describe('usePaymentPolling', () => {
 
     await waitFor(() => {
       expect(mockSetTxHash).toHaveBeenCalledWith(
-        BASE_PARAMS.invoiceId,
+        BASE_PARAMS.contentHash,
         MOCK_TRANSFER.hash,
         false, // not yet validated
       )
@@ -580,7 +580,7 @@ describe('usePaymentPolling', () => {
 
     await waitFor(() => {
       expect(mockSetTxHash).toHaveBeenCalledWith(
-        ERC20_PARAMS.invoiceId,
+        ERC20_PARAMS.contentHash,
         erc20Transfer.hash,
         false,
       )

@@ -28,6 +28,7 @@ const QRModal = dynamic(
 
 export function PaymentPanel({
   invoice,
+  contentHash,
   status,
   txHash,
   confirmations,
@@ -53,8 +54,8 @@ export function PaymentPanel({
   const handlePdfExport = useCallback(() => {
     track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
     const invoiceUrl = typeof window !== 'undefined' ? window.location.href : undefined
-    const tracked = invoice.invoiceId
-      ? useTrackedInvoiceStore.getState().getInvoice(invoice.invoiceId)
+    const tracked = contentHash
+      ? useTrackedInvoiceStore.getState().getInvoice(contentHash)
       : undefined
     const paidAt = tracked?.paidAt
       ? Math.floor(new Date(tracked.paidAt).getTime() / 1000)
@@ -65,7 +66,7 @@ export function PaymentPanel({
       invoiceUrl,
       paidAt,
     })
-  }, [invoice, status, txHash])
+  }, [contentHash, invoice, status, txHash])
 
   const cooldownSeconds = useCooldown(cooldownUntil)
 

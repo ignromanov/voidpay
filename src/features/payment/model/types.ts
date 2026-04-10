@@ -104,8 +104,8 @@ export function parseDevOverride(dev: DevPaymentVisualStep): { step: PaymentStep
 export interface SmartPayButtonProps {
   /** Decoded invoice data */
   invoice: Invoice
-  /** Invoice ID for store persistence */
-  invoiceId: string
+  /** Content hash for store persistence */
+  contentHash: string
   /** Exact total in atomic units (from computeAmounts — computed by parent) */
   exactTotal: string
   /** Clean subtotal in atomic units (without Magic Dust) for button label display */

@@ -129,14 +129,14 @@ describe('usePaymentFlow', () => {
 
   it('returns initial idle state', () => {
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'inv001hash', exactTotal: '1000000000000000000' })
     )
     expect(result.current.step).toBe('idle')
   })
 
   it('handlePay dispatches START(sending) for native token on correct network', () => {
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'inv001hash', exactTotal: '1000000000000000000' })
     )
 
     act(() => {
@@ -149,7 +149,7 @@ describe('usePaymentFlow', () => {
 
   it('calls sendTransaction for native token when step is sending', () => {
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'inv001hash', exactTotal: '1000000000000000000' })
     )
 
     act(() => {
@@ -169,7 +169,7 @@ describe('usePaymentFlow', () => {
     } as Invoice
 
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: erc20Invoice, invoiceId: 'INV-001', exactTotal: '1000000' })
+      usePaymentFlow({ invoice: erc20Invoice, contentHash: 'inv001hash', exactTotal: '1000000' })
     )
 
     act(() => {
@@ -181,7 +181,7 @@ describe('usePaymentFlow', () => {
 
   it('provides idleSubState derived from wallet context', () => {
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'inv001hash', exactTotal: '1000000000000000000' })
     )
     expect(result.current.idleSubState).toBe('ready')
   })
@@ -190,7 +190,7 @@ describe('usePaymentFlow', () => {
   it('dispatches START(connecting) when disconnected', () => {
     mockIsConnected = false
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'inv001hash', exactTotal: '1000000000000000000' })
     )
 
     expect(result.current.idleSubState).toBe('disconnected')
@@ -219,7 +219,7 @@ describe('usePaymentFlow', () => {
     })
 
     const { result } = renderHook(() =>
-      usePaymentFlow({ invoice: { ...mockInvoice, networkId: 137 }, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: { ...mockInvoice, networkId: 137 }, contentHash: 'inv001hash', exactTotal: '1000000000000000000' })
     )
 
     expect(result.current.idleSubState).toBe('wrong-network')
@@ -248,7 +248,7 @@ describe('usePaymentFlow', () => {
     })
 
     const { result, rerender } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'inv001hash', exactTotal: '1000000000000000000' })
     )
 
     // Start payment
@@ -285,7 +285,7 @@ describe('usePaymentFlow', () => {
     })
 
     const { result, rerender } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'inv001hash', exactTotal: '1000000000000000000' })
     )
 
     act(() => {
@@ -296,7 +296,7 @@ describe('usePaymentFlow', () => {
     rerender()
 
     expect(mockSetError).toHaveBeenCalledWith(
-      'INV-001',
+      'inv001hash',
       'Unexpected error: Something went wrong. Please try again.',
     )
   })
@@ -315,7 +315,7 @@ describe('usePaymentFlow', () => {
     })
 
     const { result, rerender } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'inv001hash', exactTotal: '1000000000000000000' })
     )
 
     act(() => {
@@ -344,7 +344,7 @@ describe('usePaymentFlow', () => {
     })
 
     const { result, rerender } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'inv001hash', exactTotal: '1000000000000000000' })
     )
 
     // Trigger initial payment
@@ -385,7 +385,7 @@ describe('usePaymentFlow', () => {
     })
 
     const { result, rerender } = renderHook(() =>
-      usePaymentFlow({ invoice: mockInvoice, invoiceId: 'INV-001', exactTotal: '1000000000000000000' })
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'inv001hash', exactTotal: '1000000000000000000' })
     )
 
     // Start payment and get to sending state

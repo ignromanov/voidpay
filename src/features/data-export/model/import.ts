@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { useCreatorStore } from '@/entities/creator'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
+import { computeContentHash } from '@/features/invoice-codec'
 
 // Validation schema for import data (accepts old exports with history[] for backward compat)
 const importSchema = z.object({
@@ -35,7 +36,7 @@ export interface ImportResult {
  * Imports user data from a JSON object.
  * Merges with existing data to avoid data loss.
  */
-export const importUserData = (data: unknown): ImportResult => {
+export const importUserData = async (data: unknown): Promise<ImportResult> => {
   try {
     // Validate structure
     const validData = importSchema.parse(data)
@@ -70,9 +71,20 @@ export const importUserData = (data: unknown): ImportResult => {
     // Import tracked invoices
     if (validData.trackedInvoices?.invoices) {
       const { addInvoice } = useTrackedInvoiceStore.getState()
-      for (const invoice of validData.trackedInvoices.invoices) {
-        addInvoice(invoice)
-        trackedInvoicesAdded++
+      // Always derive contentHash from URL — never trust pre-supplied values
+      const enriched = validData.trackedInvoices.invoices.map((invoice) => {
+        if (!invoice.invoiceUrl) return null
+        const hashIndex = invoice.invoiceUrl.indexOf('#')
+        const fragment = hashIndex === -1 ? '' : invoice.invoiceUrl.slice(hashIndex + 1)
+        if (!fragment) return null
+        const contentHash = computeContentHash(fragment)
+        return { ...invoice, contentHash }
+      })
+      for (const invoice of enriched) {
+        if (invoice) {
+          addInvoice(invoice)
+          trackedInvoicesAdded++
+        }
       }
     }
 

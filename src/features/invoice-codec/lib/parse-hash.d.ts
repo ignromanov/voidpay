@@ -6,6 +6,7 @@ import type { Invoice } from '@/entities/invoice';
 export type HashParseResult = {
     success: true;
     data: Invoice;
+    contentHash: string;
 } | {
     success: false;
     error: Error;

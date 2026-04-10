@@ -111,7 +111,7 @@ interface PayWorkspaceReadyProps {
 function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
   const {
     panelStatus, source, dismissError, txHash, confirmations, storedError,
-    finalized, exactTotal, subtotal, polling, verifyTxHash, isSyncing,
+    finalized, exactTotal, subtotal, polling, verifyTxHash, isSyncing, contentHash,
   } = payInvoice
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
@@ -141,7 +141,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
       {txHash && !finalized && (
         <PaymentVerifier
           invoice={invoice}
-          invoiceId={invoice.invoiceId}
+          contentHash={contentHash}
           txHash={txHash}
           exactTotal={exactTotal}
           onReorgDetected={polling.startAutoCheck}
@@ -190,6 +190,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                 {isPaid && txHash ? (
                   <PaymentPanel
                     invoice={invoice}
+                    contentHash={contentHash}
                     status={panelStatus}
                     txHash={txHash}
                     source={source}
@@ -200,6 +201,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                 ) : (
                   <PaymentPanel
                     invoice={invoice}
+                    contentHash={contentHash}
                     status={panelStatus}
                     source={source}
                     {...(paymentError ? { error: paymentError } : storedError ? { error: storedError } : {})}
@@ -221,7 +223,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                     ) : (
                       <PayButton
                         invoice={invoice}
-                        invoiceId={invoice.invoiceId}
+                        contentHash={contentHash}
                         exactTotal={exactTotal}
                         subtotal={subtotal}
                         onSuccess={handlePaymentSuccess}
@@ -240,7 +242,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                 >
                   <ChevronDownIcon size={14} />
                 </button>
-                <DevStatusToggle invoiceId={invoice.invoiceId} status={panelStatus} />
+                <DevStatusToggle contentHash={contentHash} status={panelStatus} />
                 <DevPaymentStepToggle onChange={setDevPaymentStep} />
               </motion.div>
             )}

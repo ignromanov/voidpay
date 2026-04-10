@@ -18,6 +18,8 @@ export type { ConfirmationProgress } from '@/shared/lib/invoice-types'
 export interface PaymentPanelProps {
   /** Full decoded invoice data */
   invoice: Invoice
+  /** Content hash for store lookups */
+  contentHash: string
   /** Computed status (parent determines overdue from dueAt) */
   status: PaymentPanelStatus
   /** Invoice source: created by or received by user */

@@ -6,7 +6,7 @@ import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { verifyNativeReceipt, verifyErc20Receipt } from '../lib/verify-receipt'
 
 export interface UseManualVerifyParams {
-  invoiceId: string
+  contentHash: string
   networkId: number
   recipient: string
   exactTotal: bigint
@@ -31,7 +31,7 @@ export interface UseManualVerifyResult {
 const TX_HASH_REGEX = /^0x[a-fA-F0-9]{64}$/
 
 export function useManualVerify({
-  invoiceId,
+  contentHash,
   networkId,
   recipient,
   exactTotal,
@@ -59,7 +59,7 @@ export function useManualVerify({
 
     // W3-006: uniqueness check — reject if linked to a different invoice
     const alreadyLinked = useTrackedInvoiceStore.getState().invoices.some(
-      (inv) => inv.txHash === txHash && inv.invoiceId !== invoiceId,
+      (inv) => inv.txHash === txHash && inv.contentHash !== contentHash,
     )
     if (alreadyLinked) {
       setError('Transaction hash is already linked to another invoice')
@@ -116,14 +116,14 @@ export function useManualVerify({
       setResult(finalResult)
 
       if (verifyResult.verified) {
-        setTxHash(invoiceId, hash, false)
+        setTxHash(contentHash, hash, false)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Verification failed')
     } finally {
       setIsLoading(false)
     }
-  }, [invoiceId, recipient, exactTotal, tokenAddress, publicClient, setTxHash, decimals, tokenSymbol])
+  }, [contentHash, recipient, exactTotal, tokenAddress, publicClient, setTxHash, decimals, tokenSymbol])
 
   const ret: UseManualVerifyResult = { verify, isLoading }
   if (result !== undefined) ret.result = result

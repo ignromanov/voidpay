@@ -1,12 +1,15 @@
 import type { Invoice } from '@/entities/invoice'
 
+import { computeContentHash } from './content-hash'
 import { decodeInvoice } from './decode'
 
 /**
  * Result type for hash parsing operation.
  * Uses discriminated union for type-safe error handling.
  */
-export type HashParseResult = { success: true; data: Invoice } | { success: false; error: Error }
+export type HashParseResult =
+  | { success: true; data: Invoice; contentHash: string }
+  | { success: false; error: Error }
 
 /**
  * Parses URL hash fragment into Invoice data.
@@ -37,8 +40,9 @@ export async function parseInvoiceHash(hash: string): Promise<HashParseResult> {
   }
 
   try {
+    const contentHash = computeContentHash(hash)
     const data = await decodeInvoice(hash)
-    return { success: true, data }
+    return { success: true, data, contentHash }
   } catch (error) {
     return {
       success: false,

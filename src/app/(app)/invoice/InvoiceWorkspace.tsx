@@ -87,7 +87,7 @@ interface InvoiceWorkspaceReadyProps {
 function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
   const {
     panelStatus, dismissError, txHash, confirmations, storedError,
-    finalized, exactTotal, polling, verifyTxHash, isSyncing,
+    finalized, exactTotal, polling, verifyTxHash, isSyncing, contentHash,
   } = view
 
   const searchParams = useSearchParams()
@@ -133,7 +133,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
       {txHash && !finalized && (
         <InvoiceVerifier
           invoice={invoice}
-          invoiceId={invoice.invoiceId}
+          contentHash={contentHash}
           txHash={txHash}
           exactTotal={exactTotal}
           onReorgDetected={polling.startAutoCheck}
@@ -179,6 +179,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                 {isPaid && txHash ? (
                   <PaymentPanel
                     invoice={invoice}
+                    contentHash={contentHash}
                     status={panelStatus}
                     txHash={txHash}
                     source="created"
@@ -190,6 +191,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                 ) : (
                   <PaymentPanel
                     invoice={invoice}
+                    contentHash={contentHash}
                     status={panelStatus}
                     source="created"
                     onShareOpen={() => handleShareOpenChange(true)}

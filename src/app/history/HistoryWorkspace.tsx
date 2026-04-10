@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { parseInvoiceHash } from '@/features/invoice-codec'
@@ -11,6 +12,26 @@ import { Loader2Icon } from '@/shared/ui/icons'
 import { HistorySkeleton } from './HistorySkeleton'
 import { useReceivedInvoices } from './use-received-invoices'
 import { useCreatedInvoices } from './use-created-invoices'
+
+/**
+ * Reactive hydration hook — subscribes to onFinishHydration so React
+ * knows when to re-render after async persist migration completes.
+ * Unlike persist.hasHydrated() (a non-reactive getter), this triggers re-render.
+ */
+function useStoreHydrated(): boolean {
+  const [hydrated, setHydrated] = useState(
+    useTrackedInvoiceStore.persist.hasHydrated(),
+  )
+
+  useEffect(() => {
+    const unsub = useTrackedInvoiceStore.persist.onFinishHydration(() => {
+      setHydrated(true)
+    })
+    return unsub
+  }, [])
+
+  return hydrated
+}
 
 async function decodeInvoiceUrl(url: string): Promise<DecodedBatchInvoice | null> {
   try {
@@ -33,7 +54,7 @@ async function decodeInvoiceUrl(url: string): Promise<DecodedBatchInvoice | null
 export function HistoryWorkspace() {
   const debug = process.env.NODE_ENV === 'development'
 
-  const trackedHydrated = useTrackedInvoiceStore.persist.hasHydrated()
+  const trackedHydrated = useStoreHydrated()
 
   const { createdCount, pendingCount } = useTrackedInvoiceStore(
     useShallow((s) => {

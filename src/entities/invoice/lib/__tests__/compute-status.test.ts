@@ -17,6 +17,7 @@ const mockIsDueDatePassed = vi.mocked(isDueDatePassed)
 
 function makeTracked(overrides: Partial<TrackedInvoice> = {}): TrackedInvoice {
   return {
+    contentHash: 'test-001-hash',
     invoiceId: 'inv-test-001',
     invoiceUrl: 'https://voidpay.xyz/pay#abc',
     source: 'received',

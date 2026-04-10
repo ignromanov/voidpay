@@ -168,6 +168,7 @@ describe('InvoiceWorkspace', () => {
       vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
+        contentHash: 'mock-content-hash',
       })
 
       render(<InvoiceWorkspace />)
@@ -183,6 +184,7 @@ describe('InvoiceWorkspace', () => {
       vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
+        contentHash: 'mock-content-hash',
       })
 
       render(<InvoiceWorkspace />)
@@ -190,6 +192,7 @@ describe('InvoiceWorkspace', () => {
       await waitFor(() => {
         expect(mockStoreState.trackView).toHaveBeenCalledWith(
           expect.objectContaining({
+            contentHash: expect.any(String),
             invoiceId: 'INV-001',
             source: 'created',
             viewedAt: expect.any(String),
@@ -251,6 +254,7 @@ describe('InvoiceWorkspace', () => {
       vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
+        contentHash: 'mock-content-hash',
       })
 
       render(<InvoiceWorkspace />)
@@ -265,6 +269,7 @@ describe('InvoiceWorkspace', () => {
       vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
+        contentHash: 'mock-content-hash',
       })
 
       render(<InvoiceWorkspace />)
@@ -283,6 +288,7 @@ describe('InvoiceWorkspace', () => {
       vi.mocked(parseInvoiceHash).mockResolvedValue({
         success: true,
         data: VALID_INVOICE,
+        contentHash: 'mock-content-hash',
       })
 
       render(<InvoiceWorkspace />)
