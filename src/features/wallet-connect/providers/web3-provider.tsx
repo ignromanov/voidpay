@@ -16,9 +16,9 @@
  * RainbowKit CSS is co-located here to load together with the provider.
  */
 
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { WagmiProvider } from 'wagmi'
+import { WagmiProvider, useAccount } from 'wagmi'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 
 // RainbowKit styles - loaded on-demand with Web3Provider
@@ -26,6 +26,25 @@ import '@rainbow-me/rainbowkit/styles.css'
 
 import { wagmiConfig } from '../config/wagmi'
 import { voidPayTheme } from '../config/rainbowkit-theme'
+
+/**
+ * Dispatches a custom DOM event when wallet connection state changes.
+ * Allows LazyWalletButton (which may not yet have a Web3Provider)
+ * to detect connections made through other scoped providers.
+ */
+function WalletStateSync() {
+  const { isConnected } = useAccount()
+  const wasConnected = useRef(false)
+
+  useEffect(() => {
+    if (isConnected && !wasConnected.current) {
+      window.dispatchEvent(new Event('voidpay:wallet-connected'))
+    }
+    wasConnected.current = isConnected
+  }, [isConnected])
+
+  return null
+}
 
 /**
  * QueryClient instance for React Query
@@ -62,6 +81,7 @@ export function Web3Provider({ children }: Web3ProviderProps) {
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={voidPayTheme} locale="en">
+          <WalletStateSync />
           {children}
         </RainbowKitProvider>
       </QueryClientProvider>
