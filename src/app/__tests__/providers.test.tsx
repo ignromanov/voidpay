@@ -29,6 +29,8 @@ vi.mock('wagmi', () => ({
   WagmiProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="wagmi-provider">{children}</div>
   ),
+  WagmiContext: React.createContext(undefined),
+  useAccount: () => ({ isConnected: false }),
   createConfig: vi.fn(),
   createStorage: vi.fn(() => ({
     getItem: vi.fn(),

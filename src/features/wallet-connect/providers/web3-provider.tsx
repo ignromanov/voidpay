@@ -18,7 +18,7 @@
 
 import { useEffect, useRef, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { WagmiProvider, useAccount } from 'wagmi'
+import { WagmiProvider, WagmiContext, useAccount } from 'wagmi'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 
 // RainbowKit styles - loaded on-demand with Web3Provider
@@ -69,22 +69,53 @@ type Web3ProviderProps = {
 }
 
 /**
+ * Tracks whether the primary WagmiProvider has been hydrated.
+ *
+ * wagmi's WagmiProvider triggers rehydrate() on mount, which reads
+ * serialized connector objects from localStorage and overwrites
+ * config.state.connections. Between rehydrate() and reconnect()
+ * completing, connectors are plain objects without methods like
+ * getChainId(), causing writeContract/sendTransaction to crash.
+ *
+ * After first hydration, subsequent Web3Provider instances provide
+ * only the React context (via WagmiContext.Provider) — enough for
+ * all wagmi hooks — without re-triggering the destructive rehydration.
+ */
+let hydrationDone = false
+
+/**
  * Web3Provider - Main provider component for Web3 functionality
  *
- * Wraps the application with:
- * 1. WagmiProvider - Ethereum connection state
- * 2. QueryClientProvider - Async state management
- * 3. RainbowKitProvider - Wallet connection UI
+ * Singleton-safe: only the first mounted instance triggers wagmi
+ * hydration and reconnect. Subsequent instances provide context only.
  */
 export function Web3Provider({ children }: Web3ProviderProps) {
+  const skipHydration = useRef(hydrationDone)
+
+  useEffect(() => {
+    hydrationDone = true
+  }, [])
+
+  const inner = (
+    <QueryClientProvider client={queryClient}>
+      <RainbowKitProvider theme={voidPayTheme} locale="en">
+        <WalletStateSync />
+        {children}
+      </RainbowKitProvider>
+    </QueryClientProvider>
+  )
+
+  if (skipHydration.current) {
+    return (
+      <WagmiContext.Provider value={wagmiConfig}>
+        {inner}
+      </WagmiContext.Provider>
+    )
+  }
+
   return (
     <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={voidPayTheme} locale="en">
-          <WalletStateSync />
-          {children}
-        </RainbowKitProvider>
-      </QueryClientProvider>
+      {inner}
     </WagmiProvider>
   )
 }
