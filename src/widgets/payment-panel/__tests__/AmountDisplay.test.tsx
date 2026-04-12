@@ -15,7 +15,7 @@ describe('AmountDisplay', () => {
     )
 
     // Main amount display - the subtotal (1.00 USDC)
-    expect(screen.getByText('USDC')).toBeDefined()
+    expect(screen.getByText('USDC')).toBeInTheDocument()
   })
 
   it('shows Magic Dust breakdown when magicDust is non-zero', () => {
@@ -30,7 +30,7 @@ describe('AmountDisplay', () => {
     )
 
     // MagicDustBadge with "Exact amount" label
-    expect(screen.getByText(/Exact amount/i)).toBeDefined()
+    expect(screen.getByText(/Exact amount/i)).toBeInTheDocument()
     // FingerprintIcon inside MagicDustBadge
     const svg = document.querySelector('svg')
     expect(svg).not.toBeNull()
@@ -47,7 +47,7 @@ describe('AmountDisplay', () => {
       />
     )
 
-    expect(screen.getByText('Manual verification required')).toBeDefined()
+    expect(screen.getByText('Manual verification required')).toBeInTheDocument()
   })
 
   it('formats large amounts with thousand separators', () => {
@@ -62,7 +62,7 @@ describe('AmountDisplay', () => {
     )
 
     // formatAmount with useGrouping=true produces "999,999.00"
-    expect(screen.getByText('999,999.00')).toBeDefined()
+    expect(screen.getByText('999,999.00')).toBeInTheDocument()
   })
 
   it('shows full precision for tiny magicDust on 18-decimal token', () => {
@@ -77,7 +77,7 @@ describe('AmountDisplay', () => {
     )
 
     // MagicDustBadge with "Exact amount" label
-    expect(screen.getByText(/Exact amount/i)).toBeDefined()
+    expect(screen.getByText(/Exact amount/i)).toBeInTheDocument()
   })
 
   it('renders "Total Due" label', () => {
@@ -91,6 +91,6 @@ describe('AmountDisplay', () => {
       />
     )
 
-    expect(screen.getByText('Total Due')).toBeDefined()
+    expect(screen.getByText('Total Due')).toBeInTheDocument()
   })
 })

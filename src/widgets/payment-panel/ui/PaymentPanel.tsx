@@ -14,8 +14,10 @@ import { SecondaryActions } from './SecondaryActions'
 import { MoreOptionsPanel } from './MoreOptionsPanel'
 import { PanelFooter } from './PanelFooter'
 import { CheckCircleIcon } from '@/shared/ui/icons'
+import { NetworkIcon } from '@/shared/ui/network-icon'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { cn } from '@/shared/lib/utils'
+import { getNetworkName } from '@/entities/network'
 import type { PaymentPanelProps } from '../types'
 import { exportInvoicePdf } from '@/features/pdf-export'
 import { track, AnalyticsEvent } from '@/features/analytics'
@@ -104,6 +106,17 @@ export function PaymentPanel({
 
       {/* Content */}
       <div className="p-4 space-y-4 pt-5">
+        {/* Network chip — persistent across all states, reserves right-side space for minimize button */}
+        <div className="flex justify-end pr-12">
+          <span
+            data-testid="payment-network-chip"
+            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/60 px-2 py-0.5 text-[11px] font-medium text-zinc-300"
+          >
+            <NetworkIcon chainId={invoice.networkId} size={14} />
+            <span>{getNetworkName(invoice.networkId)}</span>
+          </span>
+        </div>
+
         {/* Creator badge */}
         {source === 'created' && isPending && (
           <p className="text-center text-xs text-violet-400">

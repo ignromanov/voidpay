@@ -27,6 +27,46 @@ async function expandMoreOptions() {
 }
 
 describe('PaymentPanel', () => {
+  describe('network chip', () => {
+    it('renders network chip in pending state', () => {
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
+      const chip = screen.getByTestId('payment-network-chip')
+      expect(chip).toBeInTheDocument()
+      expect(chip).toHaveTextContent('Ethereum')
+    })
+
+    it('renders network chip in paid state', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          contentHash="test-content-hash"
+          status="paid"
+          txHash="0xabc123"
+        />
+      )
+      expect(screen.getByTestId('payment-network-chip')).toHaveTextContent('Ethereum')
+    })
+
+    it('renders network chip in overdue state', () => {
+      render(
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="overdue" />
+      )
+      expect(screen.getByTestId('payment-network-chip')).toHaveTextContent('Ethereum')
+    })
+
+    it('reflects Arbitrum network', () => {
+      const arbInvoice = { ...mockInvoice, networkId: 42161 }
+      render(<PaymentPanel invoice={arbInvoice} contentHash="test-content-hash" status="pending" />)
+      expect(screen.getByTestId('payment-network-chip')).toHaveTextContent('Arbitrum')
+    })
+
+    it('reflects Base network', () => {
+      const baseInvoice = { ...mockInvoice, networkId: 8453 }
+      render(<PaymentPanel invoice={baseInvoice} contentHash="test-content-hash" status="pending" />)
+      expect(screen.getByTestId('payment-network-chip')).toHaveTextContent('Base')
+    })
+  })
+
   describe('pending state', () => {
     it('renders payment panel with data-testid', () => {
       render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
