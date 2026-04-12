@@ -118,8 +118,8 @@ describe('useBatchCheck', () => {
     vi.useRealTimers()
   })
 
-  const renderBatchCheck = () =>
-    renderHook(() => useBatchCheck({ decodeInvoiceUrl: mockDecoder }))
+  const renderBatchCheck = (source: 'created' | 'received' = 'created') =>
+    renderHook(() => useBatchCheck({ source, decodeInvoiceUrl: mockDecoder }))
 
   // -------------------------------------------------------------------------
   // TC01: Checks all pending `source:'created'` invoices (no txHash)
@@ -389,6 +389,44 @@ describe('useBatchCheck', () => {
     })
 
     expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  // -------------------------------------------------------------------------
+  // TC07b: source:'received' — checks pending received invoices, ignores created
+  // -------------------------------------------------------------------------
+  it("TC07b: source:'received' filters by received and ignores created", async () => {
+    mockInvoices = [
+      makeInvoice('INV-RCV-001', 'received'),
+      makeInvoice('INV-RCV-002', 'received'),
+      makeInvoice('INV-CRE-001', 'created'),
+      makeInvoice('INV-RCV-PAID', 'received', '0x' + 'd'.repeat(64)),
+    ]
+
+    const { result } = renderBatchCheck('received')
+
+    act(() => {
+      result.current.checkAll()
+    })
+
+    expect(result.current.progress.total).toBe(2)
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(DELAY_MS + 100)
+    })
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+    })
+
+    await waitFor(() => {
+      expect(result.current.isChecking).toBe(false)
+    })
+
+    expect(mockFetch).toHaveBeenCalledTimes(2)
   })
 
   // -------------------------------------------------------------------------
