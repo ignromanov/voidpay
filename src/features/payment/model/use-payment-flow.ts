@@ -308,7 +308,7 @@ export function usePaymentFlow({
     if (!wagmiError) return
     if (state.step === 'idle' || state.step === 'success') return
 
-    const errorType = classifyPaymentError(wagmiError, state.step)
+    const errorType = classifyPaymentError(wagmiError)
 
     // User rejection is intent, not failure — silent reset with toast only
     if (errorType === 'USER_REJECTED') {

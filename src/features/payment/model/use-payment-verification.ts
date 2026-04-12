@@ -56,11 +56,10 @@ export function usePaymentVerification({
     chainId,
     query: { enabled: enabled !== false },
     onReplaced: (replacement) => {
-      // Verification is read-only — we just track the new hash for display continuity.
-      // The useWaitForTransactionReceipt hook automatically continues waiting on the new hash.
-      // We don't update the store's setTxHash here because use-payment-flow owns that — but
-      // usePaymentVerification is called AFTER payment completes, so here we only log and
-      // let the internal hash swap happen transparently.
+      // Both usePaymentFlow and usePaymentVerification consume useWaitForTransactionReceipt
+      // in parallel on the same txHash. usePaymentFlow owns the store write (setTxHash);
+      // writing here would race with it. viem's waitForTransactionReceipt internally swaps
+      // to the new hash and continues polling, so we just observe and log 'cancelled'.
       if (replacement.reason === 'cancelled') {
         console.warn('[usePaymentVerification] Transaction was cancelled during verification')
       }

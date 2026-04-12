@@ -7,6 +7,7 @@ import {
   TransactionReceiptNotFoundError,
   WaitForTransactionReceiptTimeoutError,
   ContractFunctionRevertedError,
+  TransactionExecutionError,
 } from 'viem'
 import {
   isUserRejected,
@@ -201,6 +202,20 @@ describe('isTxReverted', () => {
 
   it('returns true for plain Error with "reverted" (fallback)', () => {
     expect(isTxReverted(new Error('transaction reverted'))).toBe(true)
+  })
+
+  it('returns true for TransactionExecutionError with "reverted" shortMessage', () => {
+    const cause = new BaseError('x')
+    const err = new TransactionExecutionError(cause, { account: null })
+    ;(err as unknown as { shortMessage: string }).shortMessage = 'Execution reverted.'
+    expect(isTxReverted(err)).toBe(true)
+  })
+
+  it('returns false for TransactionExecutionError with non-revert shortMessage (e.g. OOG)', () => {
+    const cause = new BaseError('x')
+    const err = new TransactionExecutionError(cause, { account: null })
+    ;(err as unknown as { shortMessage: string }).shortMessage = 'Out of gas.'
+    expect(isTxReverted(err)).toBe(false)
   })
 
   it('returns false for null', () => {

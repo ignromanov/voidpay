@@ -1,4 +1,4 @@
-import type { PaymentErrorType, PaymentStep } from '../model/types'
+import type { PaymentErrorType } from '../model/types'
 import {
   isUserRejected,
   isInsufficientFunds,
@@ -12,7 +12,7 @@ interface ErrorWithShortMessage extends Error {
   shortMessage?: string
 }
 
-export function classifyPaymentError(error: Error, _step: PaymentStep): PaymentErrorType {
+export function classifyPaymentError(error: Error): PaymentErrorType {
   // Priority 1: User intent (rejection) — typed detection via viem cause chain
   // Must be first: a rejected network switch must NOT be classified as NETWORK_SWITCH_FAILED.
   if (isUserRejected(error)) return 'USER_REJECTED'
