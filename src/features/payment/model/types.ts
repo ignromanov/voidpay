@@ -39,6 +39,7 @@ export type PaymentErrorType =
   | 'INSUFFICIENT_GAS'
   | 'NETWORK_SWITCH_FAILED'
   | 'TX_REVERTED'
+  | 'TX_REPLACED'
   | 'RPC_ERROR'
   | 'INVALID_INVOICE'
   | 'UNKNOWN'
@@ -69,6 +70,7 @@ export type PaymentAction =
   | { type: 'CONNECTED' }
   | { type: 'SWITCHED' }
   | { type: 'TX_SUBMITTED'; hash: `0x${string}` }
+  | { type: 'REPLACED'; hash: `0x${string}` }
   | { type: 'CONFIRMED' }
   | { type: 'ERROR'; error: PaymentError }
   | { type: 'RESET' }

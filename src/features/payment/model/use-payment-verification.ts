@@ -3,6 +3,7 @@ import { useWaitForTransactionReceipt, useBlockNumber, usePublicClient } from 'w
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { verifyNativeReceipt, verifyErc20Receipt } from '../lib/verify-receipt'
 import type { VerificationResult } from '../lib/verify-receipt'
+import { formatErrorMessage } from '../lib/error-messages'
 import { getSoftConfirmations } from '@/entities/network'
 import type { Invoice } from '@/entities/invoice'
 import type { ConfirmationProgress } from '@/shared/lib/invoice-types'
@@ -50,7 +51,21 @@ export function usePaymentVerification({
     data: receipt,
     isLoading: isReceiptLoading,
     isSuccess: isReceiptSuccess,
-  } = useWaitForTransactionReceipt({ hash: txHash, chainId, query: { enabled: enabled !== false } })
+  } = useWaitForTransactionReceipt({
+    hash: txHash,
+    chainId,
+    query: { enabled: enabled !== false },
+    onReplaced: (replacement) => {
+      // Verification is read-only — we just track the new hash for display continuity.
+      // The useWaitForTransactionReceipt hook automatically continues waiting on the new hash.
+      // We don't update the store's setTxHash here because use-payment-flow owns that — but
+      // usePaymentVerification is called AFTER payment completes, so here we only log and
+      // let the internal hash swap happen transparently.
+      if (replacement.reason === 'cancelled') {
+        console.warn('[usePaymentVerification] Transaction was cancelled during verification')
+      }
+    },
+  })
 
   // Stop watching blocks once soft-confirmation is reached or verification failed
   const needsBlockWatch = (!verifyDone && !verifyError) || (confirmations !== undefined && confirmations.current < confirmations.required)
@@ -75,7 +90,13 @@ export function usePaymentVerification({
 
     publicClient.getTransaction({ hash: txHash }).then(
       (tx) => { setNativeTxValue(tx.value); setNativeTxTo(tx.to ?? undefined) },
-      (err) => setNativeFetchError(err instanceof Error ? err.message : 'Failed to fetch tx'),
+      (err) => {
+        // We only reach here if the receipt fetch itself failed — always infra-level.
+        // Never expose raw ABI-decoded text to users.
+        const friendly = formatErrorMessage('RPC_ERROR')
+        console.error('[usePaymentVerification] getTransaction failed:', err)
+        setNativeFetchError(friendly)
+      },
     )
   }, [enabled, isReceiptSuccess, receiptBlockStr, receipt, publicClient, tokenAddress, txHash])
 
@@ -111,6 +132,8 @@ export function usePaymentVerification({
   }, [chainId, currentBlock, contentHash])
 
   const handleVerifyError = useCallback((result: VerificationResult) => {
+    // result.error is already a user-facing message produced by verifyErc20Receipt /
+    // verifyNativeReceipt — not raw viem output. Safe to write directly to the store.
     const errorMsg = result.error ?? "Transaction amount doesn't match the expected total"
     setStoreErrorRef.current(contentHash, errorMsg)
     setVerifyError(errorMsg)

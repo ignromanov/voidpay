@@ -58,6 +58,10 @@ export function paymentReducer(state: PaymentState, action: PaymentAction): Paym
       if (state.step !== 'sending') return state
       return { ...state, step: 'confirming', txHash: action.hash }
 
+    case 'REPLACED':
+      if (state.step !== 'confirming') return state
+      return { ...state, txHash: action.hash }
+
     case 'CONFIRMED':
       if (state.step !== 'confirming') return state
       return { ...state, step: 'success', intent: false }
@@ -152,6 +156,20 @@ export function usePaymentFlow({
     hash: txHash,
     confirmations: 1,
     chainId: invoice.networkId,
+    onReplaced: (replacement) => {
+      // replacement.reason: 'replaced' | 'repriced' | 'cancelled'
+      // 'cancelled' → user sent a self-transfer with same nonce (cancel the payment)
+      if (replacement.reason === 'cancelled') {
+        toast.info('Transaction cancelled in wallet', { duration: 4000 })
+        dispatch({ type: 'RESET' })
+        return
+      }
+      // 'replaced' / 'repriced' → same payment, new hash (speedup or gas bump)
+      const newHash = replacement.transaction.hash
+      setTxHash(contentHash, newHash, false)
+      dispatch({ type: 'REPLACED', hash: newHash })
+      toast.info('Transaction sped up', { duration: 3000 })
+    },
   })
 
   const idleSubState = deriveIdleSubState(isConnected, hasMismatch)
@@ -292,16 +310,15 @@ export function usePaymentFlow({
 
     const errorType = classifyPaymentError(wagmiError, state.step)
 
-    // Always log the original error for debugging
-    console.error(`[usePaymentFlow] ${state.step} error (${errorType}):`, wagmiError)
-
-    // User rejected — reset with visible toast, not an error banner
+    // User rejection is intent, not failure — silent reset with toast only
     if (errorType === 'USER_REJECTED') {
       toast.info('Payment canceled', { duration: 4000 })
       dispatch({ type: 'RESET' })
       return
     }
 
+    // Real errors — log for debugging, track analytics, show banner
+    console.error(`[usePaymentFlow] ${state.step} error (${errorType}):`, wagmiError)
     track(AnalyticsEvent.ERROR_PAYMENT, { error_type: errorType })
 
     const error = createPaymentError(errorType, state.step)

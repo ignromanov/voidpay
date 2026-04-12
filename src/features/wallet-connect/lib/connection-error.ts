@@ -4,6 +4,8 @@
  * Utilities for parsing and displaying wallet connection errors.
  */
 
+import { isUserRejected } from '@/shared/lib/web3-errors'
+
 /**
  * Types of connection errors
  */
@@ -49,7 +51,6 @@ const ERROR_PATTERNS: Array<{
   pattern: RegExp
   type: ConnectionErrorType
 }> = [
-  { pattern: /user rejected|denied|rejected/i, type: ConnectionErrorType.USER_REJECTED },
   { pattern: /no provider|not found|not installed/i, type: ConnectionErrorType.NO_PROVIDER },
   { pattern: /already pending|pending request/i, type: ConnectionErrorType.ALREADY_PENDING },
   { pattern: /locked|unlock/i, type: ConnectionErrorType.WALLET_LOCKED },
@@ -77,8 +78,17 @@ export function getConnectionErrorMessage(errorType: ConnectionErrorType): strin
  * @returns The identified error type
  */
 export function parseConnectionError(error: unknown): ConnectionErrorType {
+  // Typed detection first: walks BaseError cause chain + checks name/shortMessage fields
+  if (isUserRejected(error)) return ConnectionErrorType.USER_REJECTED
+
   const errorMessage = error instanceof Error ? error.message : String(error)
 
+  // String-based fallback for USER_REJECTED — covers legacy "denied" phrasing and non-Error inputs
+  if (/user rejected|denied|rejected/i.test(errorMessage)) {
+    return ConnectionErrorType.USER_REJECTED
+  }
+
+  // Regex fallback for NO_PROVIDER, ALREADY_PENDING, WALLET_LOCKED, CHAIN_NOT_SUPPORTED, NETWORK_ERROR
   for (const { pattern, type } of ERROR_PATTERNS) {
     if (pattern.test(errorMessage)) {
       return type
