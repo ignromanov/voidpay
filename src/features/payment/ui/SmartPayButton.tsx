@@ -234,10 +234,14 @@ export function SmartPayButton({
             </motion.span>
           ) : (
             <>
-              {/* Spinner — gentle organic rotation */}
+              {/* Spinner — gentle organic rotation.
+                  Keyframes [0, 360] (not single value 360) — framer-motion v12 WAAPI
+                  backend stalls single-value rotate on second iteration under some
+                  wallet extensions (e.g. Rabby) which inject content scripts that
+                  force a re-render mid-animation. */}
               {isInProgress && (
                 <motion.span
-                  animate={{ rotate: 360 }}
+                  animate={{ rotate: [0, 360] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
                 >
                   <Loader2Icon size={18} className="opacity-80" />
