@@ -11,6 +11,7 @@ describe('AmountDisplay', () => {
         exactTotal="1000042"
         decimals={6}
         currency="USDC"
+        networkId={1}
       />
     )
 
@@ -26,6 +27,7 @@ describe('AmountDisplay', () => {
         exactTotal="1000042"
         decimals={6}
         currency="USDC"
+        networkId={1}
       />
     )
 
@@ -44,6 +46,7 @@ describe('AmountDisplay', () => {
         exactTotal="5000000"
         decimals={6}
         currency="USDC"
+        networkId={1}
       />
     )
 
@@ -58,6 +61,7 @@ describe('AmountDisplay', () => {
         exactTotal="999999000000"
         decimals={6}
         currency="USDC"
+        networkId={1}
       />
     )
 
@@ -73,6 +77,7 @@ describe('AmountDisplay', () => {
         exactTotal="1000000000000000001"
         decimals={18}
         currency="ETH"
+        networkId={1}
       />
     )
 
@@ -88,9 +93,27 @@ describe('AmountDisplay', () => {
         exactTotal="1000000"
         decimals={6}
         currency="USDC"
+        networkId={1}
       />
     )
 
     expect(screen.getByText('Total Due')).toBeInTheDocument()
+  })
+
+  it('renders network chip in the Total Due row', () => {
+    render(
+      <AmountDisplay
+        subtotal="1000000"
+        magicDust="0"
+        exactTotal="1000000"
+        decimals={6}
+        currency="USDC"
+        networkId={42161}
+      />
+    )
+
+    const chip = screen.getByTestId('payment-network-chip')
+    expect(chip).toBeInTheDocument()
+    expect(chip).toHaveTextContent('Arbitrum')
   })
 })

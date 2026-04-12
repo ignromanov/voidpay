@@ -1,5 +1,6 @@
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
+import { NetworkChip } from './NetworkChip'
 
 interface AmountDisplayProps {
   subtotal: string
@@ -7,6 +8,7 @@ interface AmountDisplayProps {
   exactTotal: string
   decimals: number
   currency: string
+  networkId: number
 }
 
 export function AmountDisplay({
@@ -15,6 +17,7 @@ export function AmountDisplay({
   exactTotal,
   decimals,
   currency,
+  networkId,
 }: AmountDisplayProps) {
   const hasMagicDust = magicDust !== '0'
   const formattedSubtotal = formatAmount(subtotal, decimals)
@@ -24,9 +27,12 @@ export function AmountDisplay({
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-        Total Due
-      </p>
+      <div className="flex items-center justify-between gap-2 pr-12">
+        <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+          Total Due
+        </p>
+        <NetworkChip networkId={networkId} />
+      </div>
 
       <div className="flex min-w-0 items-baseline gap-2">
         <span className="min-w-0 truncate text-2xl font-mono font-bold text-violet-400 sm:text-3xl">

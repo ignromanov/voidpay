@@ -9,6 +9,7 @@ import { motion } from '@/shared/ui/motion'
 
 import type { ConfirmationProgress } from '../types'
 import { CreateYourOwnCta } from './CreateYourOwnCta'
+import { NetworkChip } from './NetworkChip'
 
 interface PaidConfirmationProps {
   subtotal: string
@@ -16,6 +17,7 @@ interface PaidConfirmationProps {
   exactTotal: string
   decimals: number
   currency: string
+  networkId: number
   confirmations?: ConfirmationProgress | undefined
   finalized?: boolean | undefined
   reorgDetected?: boolean | undefined
@@ -27,6 +29,7 @@ export function PaidConfirmation({
   exactTotal,
   decimals,
   currency,
+  networkId,
   confirmations,
   finalized = false,
   reorgDetected = false,
@@ -52,12 +55,12 @@ export function PaidConfirmation({
   return (
     <div className="space-y-4">
       {/* Success header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 pr-12">
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] text-emerald-500"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] text-emerald-500"
         >
           {finalized ? (
             <CheckCheckIcon size={24} strokeWidth={3} />
@@ -65,7 +68,7 @@ export function PaidConfirmation({
             <CheckIcon size={24} strokeWidth={3} />
           )}
         </motion.div>
-        <div>
+        <div className="min-w-0 flex-1">
           <h3 className="text-lg font-semibold text-emerald-400">
             Payment Successful
           </h3>
@@ -73,6 +76,7 @@ export function PaidConfirmation({
             Funds have been sent on-chain
           </p>
         </div>
+        <NetworkChip networkId={networkId} />
       </div>
 
       {/* Amount accent */}

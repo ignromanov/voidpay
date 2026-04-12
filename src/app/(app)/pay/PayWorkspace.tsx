@@ -14,7 +14,6 @@ import type { Invoice } from '@/shared/lib/invoice-types'
 import { nowUnix } from '@/shared/lib/date-time'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
-import { ChevronDownIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 
 import { usePayInvoice } from './use-pay-invoice'
@@ -197,6 +196,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                     {...(confirmations ? { confirmations } : {})}
                     finalized={finalized}
                     pollingMode={polling.mode}
+                    onMinimize={() => setIsMinimized(true)}
                   />
                 ) : (
                   <PaymentPanel
@@ -210,6 +210,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                     onVerifyTxHash={verifyTxHash}
                     onIvePaid={polling.startAggressivePolling}
                     onStopPolling={polling.stop}
+                    onMinimize={() => setIsMinimized(true)}
                   >
                     {isNotYetPayable ? (
                       <div className="space-y-2 text-center">
@@ -233,15 +234,6 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                     )}
                   </PaymentPanel>
                 )}
-                <button
-                  data-testid="minimize-panel"
-                  onClick={() => setIsMinimized(true)}
-                  className="absolute top-1.5 right-1.5 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-white"
-                  title="Minimize"
-                  aria-label="Minimize payment panel"
-                >
-                  <ChevronDownIcon size={14} />
-                </button>
                 <DevStatusToggle contentHash={contentHash} status={panelStatus} />
                 <DevPaymentStepToggle onChange={setDevPaymentStep} />
               </motion.div>

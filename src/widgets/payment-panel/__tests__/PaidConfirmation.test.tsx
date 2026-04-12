@@ -24,7 +24,15 @@ describe('PaidConfirmation', () => {
     exactTotal: '1500000000',
     decimals: 6,
     currency: 'USDC',
+    networkId: 1,
   }
+
+  it('renders network chip in the success header', () => {
+    render(<PaidConfirmation {...defaultProps} networkId={42161} />)
+    const chip = screen.getByTestId('payment-network-chip')
+    expect(chip).toBeDefined()
+    expect(chip).toHaveTextContent('Arbitrum')
+  })
 
   it('renders "Payment Successful" heading', () => {
     render(<PaidConfirmation {...defaultProps} />)

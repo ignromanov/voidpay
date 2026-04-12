@@ -17,7 +17,7 @@ import { nowUnix } from '@/shared/lib/date-time'
 import type { InvoiceViewState } from '@/widgets/payment-panel'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
-import { ChevronDownIcon, ExternalLinkIcon } from '@/shared/ui/icons'
+import { ExternalLinkIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 
 const InvoiceVerifier = dynamic(
@@ -187,6 +187,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                     finalized={finalized}
                     pollingMode={polling.mode}
                     onShareOpen={() => handleShareOpenChange(true)}
+                    onMinimize={() => setIsMinimized(true)}
                   />
                 ) : (
                   <PaymentPanel
@@ -202,6 +203,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                     onCheckPayment={polling.startManualCheck}
                     {...(polling.cooldownUntil !== undefined && { cooldownUntil: polling.cooldownUntil })}
                     onStopPolling={polling.stop}
+                    onMinimize={() => setIsMinimized(true)}
                   >
                     {isNotYetPayable && (
                       <p className="text-xs text-center text-amber-400">
@@ -219,14 +221,6 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                     )}
                   </PaymentPanel>
                 )}
-                <button
-                  onClick={() => setIsMinimized(true)}
-                  className="absolute top-1.5 right-1.5 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-white"
-                  title="Minimize"
-                  aria-label="Minimize payment panel"
-                >
-                  <ChevronDownIcon size={14} />
-                </button>
               </motion.div>
             )}
           </AnimatePresence>

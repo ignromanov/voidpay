@@ -1,6 +1,7 @@
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
 import { XCircleIcon } from '@/shared/ui/icons'
+import { NetworkChip } from './NetworkChip'
 
 interface ExpiredStateProps {
   subtotal: string
@@ -8,9 +9,10 @@ interface ExpiredStateProps {
   exactTotal: string
   decimals: number
   currency: string
+  networkId: number
 }
 
-export function ExpiredState({ subtotal, magicDust, exactTotal, decimals, currency }: ExpiredStateProps) {
+export function ExpiredState({ subtotal, magicDust, exactTotal, decimals, currency, networkId }: ExpiredStateProps) {
   const formattedSubtotal = formatAmount(subtotal, decimals)
   const hasMagicDust = magicDust !== '0'
   const formattedExact = hasMagicDust
@@ -20,11 +22,11 @@ export function ExpiredState({ subtotal, magicDust, exactTotal, decimals, curren
   return (
     <div className="space-y-4">
       {/* Expired icon + message */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 border border-red-500/20 text-red-500">
+      <div className="flex items-center gap-3 pr-12">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-500/10 border border-red-500/20 text-red-500">
           <XCircleIcon size={24} />
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-red-400">
             This invoice has expired
           </p>
@@ -32,6 +34,7 @@ export function ExpiredState({ subtotal, magicDust, exactTotal, decimals, curren
             Payment actions are disabled
           </p>
         </div>
+        <NetworkChip networkId={networkId} />
       </div>
 
       {/* Muted amount */}

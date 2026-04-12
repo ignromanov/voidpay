@@ -60,4 +60,6 @@ export interface PaymentPanelProps {
   reorgDetected?: boolean
   /** Called to open the share modal (creator side — replaces QR in footer) */
   onShareOpen?: () => void
+  /** Called when user clicks the minimize button (renders the button when provided) */
+  onMinimize?: () => void
 }

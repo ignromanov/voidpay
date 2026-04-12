@@ -9,7 +9,15 @@ describe('ExpiredState', () => {
     exactTotal: '5000000',
     decimals: 6,
     currency: 'USDC',
+    networkId: 1,
   }
+
+  it('renders network chip in the expired header', () => {
+    render(<ExpiredState {...defaultProps} networkId={42161} />)
+    const chip = screen.getByTestId('payment-network-chip')
+    expect(chip).toBeDefined()
+    expect(chip).toHaveTextContent('Arbitrum')
+  })
 
   it('renders red status icon', () => {
     const { container } = render(<ExpiredState {...defaultProps} />)
