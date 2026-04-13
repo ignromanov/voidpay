@@ -53,8 +53,15 @@ export function InvoiceCard({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0 flex-1">
           <div className="mb-1.5 flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-sm font-semibold text-zinc-100">
-              {invoice?.invoiceId ?? tracked.invoiceId}
+            <h3 className="min-w-0 max-w-full truncate text-sm font-semibold text-zinc-100">
+              <button
+                type="button"
+                onClick={onView}
+                className="cursor-pointer rounded text-left transition-colors hover:text-violet-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+                aria-label={`Open invoice ${invoice?.invoiceId ?? tracked.invoiceId}`}
+              >
+                {invoice?.invoiceId ?? tracked.invoiceId}
+              </button>
             </h3>
             <InvoiceStatusBadge status={status} />
             {invoice && <NetworkBadge networkId={invoice.networkId} />}
@@ -62,7 +69,15 @@ export function InvoiceCard({
 
           {invoice ? (
             <>
-              <p className="mb-1 text-sm text-zinc-300">{nameLabel}</p>
+              <p className="mb-1 text-sm text-zinc-300">
+                <button
+                  type="button"
+                  onClick={onView}
+                  className="cursor-pointer rounded text-left transition-colors hover:text-violet-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+                >
+                  {nameLabel}
+                </button>
+              </p>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-zinc-500">
                 <span>{formattedDate}</span>
                 {formattedDueDate && (
@@ -120,13 +135,15 @@ export function InvoiceCard({
             <>
               <button
                 onClick={onDeleteConfirm}
-                className="cursor-pointer rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
+                className="min-h-[44px] cursor-pointer rounded-lg bg-red-600 px-3 py-2.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
+                aria-label={`Confirm delete invoice ${tracked.invoiceId}`}
               >
                 Confirm
               </button>
               <button
                 onClick={onDeleteCancel}
-                className="cursor-pointer rounded-lg bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-zinc-700"
+                className="min-h-[44px] cursor-pointer rounded-lg bg-zinc-800 px-3 py-2.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-zinc-700"
+                aria-label={`Cancel delete invoice ${tracked.invoiceId}`}
               >
                 Cancel
               </button>

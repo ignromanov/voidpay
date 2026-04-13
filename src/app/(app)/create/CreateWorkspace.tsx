@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Edit3Icon,
   EyeIcon,
@@ -21,6 +21,7 @@ import {
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkThemeName } from '@/entities/network'
 import { useHashFragment } from '@/shared/lib/hooks'
+import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
 import { urlToRoute } from '@/shared/lib/navigation'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
@@ -34,6 +35,8 @@ import { SYNC_STATUS_CONFIG } from './constants'
 
 export function CreateWorkspace() {
   const hash = useHashFragment()
+  const searchParams = useSearchParams()
+  const isTemplateLoad = searchParams?.get('template') === '1'
   const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor')
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
@@ -74,15 +77,29 @@ export function CreateWorkspace() {
       const result = await parseInvoiceHash(hash)
       if (cancelled) return
       if (result.success) {
+        // Template duplication: reset dates and strip baked total/dust so the
+        // user gets a fresh invoice based on the original as a template.
+        const data = isTemplateLoad
+          ? {
+              ...result.data,
+              issuedAt: nowUnix(),
+              dueAt: daysFromNowUnix(30),
+              total: undefined,
+              magicDust: undefined,
+            }
+          : result.data
         // Atomic replace: clean draft from decoded data, no stale fields
-        replaceDraft(result.data)
+        replaceDraft(data)
+        if (isTemplateLoad) {
+          toast.success('Loaded as template')
+        }
       } else {
         // Do NOT clear store on error (per spec edge case)
         toast.error(result.error.message)
       }
     })()
     return () => { cancelled = true }
-  }, [hash, replaceDraft])
+  }, [hash, replaceDraft, isTemplateLoad])
 
   const invoiceData = activeDraft?.data
 
