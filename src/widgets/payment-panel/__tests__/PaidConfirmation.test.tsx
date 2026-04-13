@@ -162,6 +162,18 @@ describe('PaidConfirmation', () => {
       expect(mockToastInfo).not.toHaveBeenCalled()
     })
 
+    it('hides "Protecting against chain reorgs" banner when finalized=true (race guard)', () => {
+      render(
+        <PaidConfirmation
+          {...defaultProps}
+          confirmations={{ current: 0, required: 3 }}
+          finalized={true}
+        />
+      )
+      expect(screen.queryByText(/Protecting against chain reorgs/)).toBeNull()
+      expect(screen.queryByText('0 / 3')).toBeNull()
+    })
+
     it('calls toast.info on reorg when reorgDetected becomes true', () => {
       const { rerender } = render(
         <PaidConfirmation
