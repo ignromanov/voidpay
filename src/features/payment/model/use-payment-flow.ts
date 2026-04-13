@@ -69,7 +69,7 @@ export function paymentReducer(state: PaymentState, action: PaymentAction): Paym
 
     case 'REPLACED':
       if (state.step !== 'confirming') return state
-      return { ...state, txHash: action.hash }
+      return { ...state, txHash: action.hash, error: null }
 
     case 'CONFIRMED':
       if (state.step !== 'confirming') return state
@@ -317,7 +317,7 @@ export function usePaymentFlow({
       return
     }
 
-    setTxHash(contentHash, txHash, false)
+    setTxHash(contentHash, receipt.transactionHash, false)
     dispatch({ type: 'CONFIRMED' })
   }, [state.step, isReceiptSuccess, txHash, receipt, contentHash, setTxHash])
 
@@ -337,7 +337,8 @@ export function usePaymentFlow({
     }
 
     // Real errors — log for debugging, track analytics, show banner
-    console.error(`[usePaymentFlow] ${state.step} error (${errorType}):`, wagmiError)
+    const errorDetail = (wagmiError as { shortMessage?: string }).shortMessage ?? wagmiError.message
+    console.error(`[usePaymentFlow] ${state.step} error (${errorType}):`, errorDetail)
     track(AnalyticsEvent.ERROR_PAYMENT, { error_type: errorType })
 
     const error = createPaymentError(errorType, state.step)

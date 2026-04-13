@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useWaitForTransactionReceipt, useBlockNumber, usePublicClient } from 'wagmi'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
+import { verifyNativeReceipt, verifyErc20Receipt } from '../lib/verify-receipt'
+import type { VerificationResult } from '../lib/verify-receipt'
+import { formatErrorMessage } from '../lib/error-messages'
+import { getSoftConfirmations } from '@/entities/network'
+import type { Invoice } from '@/entities/invoice'
+import type { ConfirmationProgress } from '@/shared/lib/invoice-types'
 
 // Stateless observer — we only log 'cancelled' here because usePaymentFlow
 // owns the store write to avoid racing on txHash updates.
@@ -8,13 +15,6 @@ function handleVerificationReplaced(replacement: { reason: 'replaced' | 'reprice
     console.warn('[usePaymentVerification] Transaction was cancelled during verification')
   }
 }
-import { useTrackedInvoiceStore } from '@/entities/invoice'
-import { verifyNativeReceipt, verifyErc20Receipt } from '../lib/verify-receipt'
-import type { VerificationResult } from '../lib/verify-receipt'
-import { formatErrorMessage } from '../lib/error-messages'
-import { getSoftConfirmations } from '@/entities/network'
-import type { Invoice } from '@/entities/invoice'
-import type { ConfirmationProgress } from '@/shared/lib/invoice-types'
 
 export interface UsePaymentVerificationParams {
   invoice: Invoice

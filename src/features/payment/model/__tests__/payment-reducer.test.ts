@@ -161,4 +161,16 @@ describe('paymentReducer', () => {
     expect(state.step).toBe('sending')
     expect(state.txHash).toBeNull()
   })
+
+  it('REPLACED keeps error null when updating txHash', () => {
+    const confirming: PaymentState = {
+      ...INITIAL_PAYMENT_STATE,
+      step: 'confirming',
+      intent: true,
+      txHash: '0xold' as `0x${string}`,
+      error: null,
+    }
+    const state = paymentReducer(confirming, { type: 'REPLACED', hash: '0xnew' as `0x${string}` })
+    expect(state.error).toBeNull()
+  })
 })
