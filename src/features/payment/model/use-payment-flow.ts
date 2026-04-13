@@ -156,13 +156,10 @@ export function usePaymentFlow({
     hash: txHash,
     confirmations: 1,
     chainId: invoice.networkId,
+    // Cap at 60s (viem default is 180s) so a stuck tx surfaces an error
+    // within one block window instead of hanging on the spinner.
+    timeout: 60_000,
     onReplaced: (replacement) => {
-      // TEMP DEBUG — remove after resolving 041 manual tests
-      console.log('[DEBUG onReplaced] FIRED', {
-        reason: replacement.reason,
-        oldHash: replacement.replacedTransaction?.hash,
-        newHash: replacement.transaction?.hash,
-      })
       // replacement.reason: 'replaced' | 'repriced' | 'cancelled'
       // 'cancelled' → user sent a self-transfer with same nonce (cancel the payment)
       if (replacement.reason === 'cancelled') {
@@ -175,6 +172,11 @@ export function usePaymentFlow({
       setTxHash(contentHash, newHash, false)
       dispatch({ type: 'REPLACED', hash: newHash })
       toast.info('Transaction sped up', { duration: 3000 })
+    },
+    query: {
+      // Disable TanStack Query retries — default (3) combined with viem's
+      // timeout would delay the first user-visible error by up to 9 minutes.
+      retry: 0,
     },
   })
 
@@ -320,14 +322,6 @@ export function usePaymentFlow({
 
     const errorType = classifyPaymentError(wagmiError)
 
-    // TEMP DEBUG — remove after resolving 041 manual tests
-    console.log('[DEBUG error-effect]', {
-      step: state.step,
-      errorType,
-      message: (wagmiError as Error).message?.slice(0, 200),
-      source: sendError ? 'send' : writeError ? 'write' : receiptError ? 'receipt' : 'switch',
-    })
-
     // User rejection is intent, not failure — silent reset with toast only
     if (errorType === 'USER_REJECTED') {
       toast.info('Payment canceled', { duration: 4000 })
@@ -343,18 +337,6 @@ export function usePaymentFlow({
     setError(contentHash, error.message)
     dispatch({ type: 'ERROR', error })
   }, [sendError, writeError, receiptError, switchError, state.step, contentHash, setError])
-
-  // TEMP DEBUG — remove after resolving 041 manual tests
-  useEffect(() => {
-    console.log('[DEBUG payment-flow]', {
-      step: state.step,
-      txHash,
-      isReceiptSuccess,
-      receiptError: receiptError?.message,
-      sendError: sendError?.message,
-      writeError: writeError?.message,
-    })
-  }, [state.step, txHash, isReceiptSuccess, receiptError, sendError, writeError])
 
   return { step: state.step, error: state.error, txHash: state.txHash, handlePay, handleCancel, idleSubState }
 }
