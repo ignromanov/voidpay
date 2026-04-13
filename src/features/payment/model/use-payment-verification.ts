@@ -1,5 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useWaitForTransactionReceipt, useBlockNumber, usePublicClient } from 'wagmi'
+
+// Stateless observer — we only log 'cancelled' here because usePaymentFlow
+// owns the store write to avoid racing on txHash updates.
+function handleVerificationReplaced(replacement: { reason: 'replaced' | 'repriced' | 'cancelled' }) {
+  if (replacement.reason === 'cancelled') {
+    console.warn('[usePaymentVerification] Transaction was cancelled during verification')
+  }
+}
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { verifyNativeReceipt, verifyErc20Receipt } from '../lib/verify-receipt'
 import type { VerificationResult } from '../lib/verify-receipt'
@@ -40,6 +48,8 @@ export function usePaymentVerification({
 
   const publicClient = usePublicClient({ chainId })
 
+  const receiptQuery = useMemo(() => ({ enabled: enabled !== false }), [enabled])
+
   const [verifyDone, setVerifyDone] = useState(false)
   const [verifyError, setVerifyError] = useState<string | undefined>(undefined)
   const [txBlockNumber, setTxBlockNumber] = useState<bigint | undefined>(undefined)
@@ -47,6 +57,10 @@ export function usePaymentVerification({
     undefined,
   )
 
+  // Both usePaymentFlow and usePaymentVerification consume useWaitForTransactionReceipt
+  // in parallel on the same txHash. usePaymentFlow owns the store write (setTxHash);
+  // writing here would race with it. viem's waitForTransactionReceipt internally swaps
+  // to the new hash and continues polling, so we just observe via handleVerificationReplaced.
   const {
     data: receipt,
     isLoading: isReceiptLoading,
@@ -54,16 +68,8 @@ export function usePaymentVerification({
   } = useWaitForTransactionReceipt({
     hash: txHash,
     chainId,
-    query: { enabled: enabled !== false },
-    onReplaced: (replacement) => {
-      // Both usePaymentFlow and usePaymentVerification consume useWaitForTransactionReceipt
-      // in parallel on the same txHash. usePaymentFlow owns the store write (setTxHash);
-      // writing here would race with it. viem's waitForTransactionReceipt internally swaps
-      // to the new hash and continues polling, so we just observe and log 'cancelled'.
-      if (replacement.reason === 'cancelled') {
-        console.warn('[usePaymentVerification] Transaction was cancelled during verification')
-      }
-    },
+    query: receiptQuery,
+    onReplaced: handleVerificationReplaced,
   })
 
   // Stop watching blocks once soft-confirmation is reached or verification failed

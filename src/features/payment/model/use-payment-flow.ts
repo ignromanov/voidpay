@@ -28,6 +28,15 @@ import type { Invoice } from '@/entities/invoice'
 // Re-export for convenient imports
 export { INITIAL_PAYMENT_STATE }
 
+// Stable references for useWaitForTransactionReceipt options. Inline objects
+// would change identity every render and force TanStack Query / viem's watcher
+// to re-subscribe during the long-lived `confirming` step.
+const RECEIPT_QUERY_OPTIONS = { retry: 0 } as const
+// Explicit viem default (180s). With retry: 0 above, this is the maximum
+// hidden wait for a stuck tx before the error surfaces; 60s was too aggressive
+// for near-zero gas on L1 where inclusion can take several blocks.
+const RECEIPT_TIMEOUT_MS = 180_000
+
 /**
  * Pure reducer for the payment state machine.
  *
@@ -148,21 +157,8 @@ export function usePaymentFlow({
 
   const txHash = sendHash ?? writeHash
 
-  const {
-    isSuccess: isReceiptSuccess,
-    error: receiptError,
-    data: receipt,
-  } = useWaitForTransactionReceipt({
-    hash: txHash,
-    confirmations: 1,
-    chainId: invoice.networkId,
-    // Explicit viem default (180s) — documents the ceiling. With
-    // `retry: 0` below, this is the maximum hidden wait for a stuck tx
-    // before the error surfaces; 60s was too aggressive for near-zero
-    // gas on L1 where inclusion can take several blocks.
-    timeout: 180_000,
-    onReplaced: (replacement) => {
-      // replacement.reason: 'replaced' | 'repriced' | 'cancelled'
+  const handleReplaced = useCallback(
+    (replacement: { reason: 'replaced' | 'repriced' | 'cancelled'; transaction: { hash: `0x${string}` } }) => {
       // 'cancelled' → user sent a self-transfer with same nonce (cancel the payment)
       if (replacement.reason === 'cancelled') {
         toast.info('Transaction cancelled in wallet', { duration: 4000 })
@@ -175,11 +171,20 @@ export function usePaymentFlow({
       dispatch({ type: 'REPLACED', hash: newHash })
       toast.info('Transaction sped up', { duration: 3000 })
     },
-    query: {
-      // Disable TanStack Query retries — default (3) combined with viem's
-      // timeout would delay the first user-visible error by up to 9 minutes.
-      retry: 0,
-    },
+    [contentHash, setTxHash],
+  )
+
+  const {
+    isSuccess: isReceiptSuccess,
+    error: receiptError,
+    data: receipt,
+  } = useWaitForTransactionReceipt({
+    hash: txHash,
+    confirmations: 1,
+    chainId: invoice.networkId,
+    timeout: RECEIPT_TIMEOUT_MS,
+    onReplaced: handleReplaced,
+    query: RECEIPT_QUERY_OPTIONS,
   })
 
   const idleSubState = deriveIdleSubState(isConnected, hasMismatch)

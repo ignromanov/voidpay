@@ -83,37 +83,35 @@ export function WalletButton({ autoConnect = false }: WalletButtonProps) {
   return (
     <>
       {autoConnect && <AutoConnectTrigger />}
-      <div>
-        {!isConnected ? (
+      {!isConnected ? (
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+          onClick={openConnectModal}
+        >
+          <WalletIcon className="h-4 w-4" />
+          Connect
+        </Button>
+      ) : (
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={openChainModal}>
+            <NetworkIcon chainId={chainId} size={16} className="rounded-full" />
+            <ChevronDownIcon className="hidden h-3 w-3 sm:block" />
+          </Button>
+
           <Button
             variant="outline"
             size="sm"
             className="gap-1.5"
-            onClick={openConnectModal}
+            onClick={openAccountModal}
           >
-            <WalletIcon className="h-4 w-4" />
-            Connect
+            <WalletIcon className="h-4 w-4 text-emerald-400 sm:hidden" />
+            <span className="hidden sm:inline">{address ? truncateAddress(address) : 'Account'}</span>
+            <ChevronDownIcon className="hidden h-3 w-3 sm:block" />
           </Button>
-        ) : (
-          <div className="flex items-center gap-1 sm:gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5" onClick={openChainModal}>
-              <NetworkIcon chainId={chainId} size={16} className="rounded-full" />
-              <ChevronDownIcon className="hidden h-3 w-3 sm:block" />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={openAccountModal}
-            >
-              <WalletIcon className="h-4 w-4 text-emerald-400 sm:hidden" />
-              <span className="hidden sm:inline">{address ? truncateAddress(address) : 'Account'}</span>
-              <ChevronDownIcon className="hidden h-3 w-3 sm:block" />
-            </Button>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </>
   )
 }

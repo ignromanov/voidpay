@@ -15,7 +15,7 @@ export interface ErrorMessage {
   severity: ErrorSeverity
 }
 
-/** Canonical canceled message — also used by wallet-connect feature for unification. */
+/** Canonical canceled message — reused by USER_REJECTED to keep title/description in sync. */
 export const CANCELED_COPY = {
   title: 'Payment canceled',
   description: 'You declined the transaction in your wallet.',
@@ -42,11 +42,6 @@ const ERROR_MESSAGES: Record<PaymentErrorType, ErrorMessage> = {
     title: 'Transaction failed',
     description: 'Transaction was rejected by the blockchain. Please try again.',
     severity: 'error',
-  },
-  TX_REPLACED: {
-    title: 'Transaction replaced',
-    description: 'You replaced this transaction in your wallet (speedup or cancel).',
-    severity: 'info',
   },
   RPC_ERROR: {
     title: 'Connection issue',

@@ -5,5 +5,4 @@ export {
   isReceiptNotFound,
   isReceiptTimeout,
   isTxReverted,
-  walkCause,
 } from './detect'

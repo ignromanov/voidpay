@@ -39,7 +39,6 @@ export type PaymentErrorType =
   | 'INSUFFICIENT_GAS'
   | 'NETWORK_SWITCH_FAILED'
   | 'TX_REVERTED'
-  | 'TX_REPLACED'
   | 'RPC_ERROR'
   | 'INVALID_INVOICE'
   | 'UNKNOWN'
