@@ -23,6 +23,7 @@ import { WalletIcon, ChevronDownIcon, Loader2Icon } from '@/shared/ui/icons'
 import { NetworkIcon } from '@/shared/ui/network-icon'
 import { Button } from '@/shared/ui/button'
 import { truncateAddress } from '@/shared/lib/validation'
+import { useWagmiHydrating } from '@/shared/lib'
 
 export interface WalletButtonProps {
   autoConnect?: boolean
@@ -48,16 +49,19 @@ function AutoConnectTrigger() {
 }
 
 export function WalletButton({ autoConnect = false }: WalletButtonProps) {
-  const { address, isConnected, isReconnecting } = useAccount()
+  const { address, isConnected } = useAccount()
   const chainId = useChainId()
   const { openConnectModal } = useConnectModal()
   const { openAccountModal } = useAccountModal()
   const { openChainModal } = useChainModal()
+  const isHydrating = useWagmiHydrating()
 
   // During wagmi hydration/reconnect we show an explicit disabled loading button
   // instead of hiding the UI. Hiding it (opacity:0) made clicks fall through and
   // the whole header felt frozen while wagmi restored the persisted connection.
-  if (isReconnecting) {
+  // useWagmiHydrating also covers the pre-hydration SSR gap where `status` is
+  // still 'disconnected' but a persisted connection exists in localStorage.
+  if (isHydrating) {
     return (
       <>
         {autoConnect && <AutoConnectTrigger />}

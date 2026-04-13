@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { useAccount } from 'wagmi'
 import { Button } from '@/shared/ui/button'
 import { Loader2Icon, CheckCircleIcon, XIcon } from '@/shared/ui/icons'
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { useWagmiHydrating } from '@/shared/lib'
 import { motion } from '@/shared/ui/motion'
 import { FluidOverlay } from './FluidOverlay'
 import { usePaymentFlow } from '../model/use-payment-flow'
@@ -131,7 +131,7 @@ export function SmartPayButton({
     exactTotal,
   })
 
-  const { isReconnecting } = useAccount()
+  const isHydrating = useWagmiHydrating()
 
   // Dev override: swap visual step while real flow continues underneath
   const { step, idleSubState } = devOverride
@@ -163,22 +163,25 @@ export function SmartPayButton({
     }
   }, [realStep, txHash, onSuccess, devOverride])
 
-  // Reconnect takes priority over idle labels — visible spinner + "Reconnecting..."
-  // so the button is obviously busy instead of looking like a disabled Pay button.
-  const isReconnectingIdle = isReconnecting && step === 'idle' && !devOverride
+  // Hydration (pre-mount with persisted connection, reconnect, or fresh
+  // connect) takes priority over idle labels — visible spinner + "Reconnecting…"
+  // so the button is obviously busy. Without this the button flashes a
+  // clickable "Connect Wallet" during wagmi's SSR hydration gap, letting the
+  // user race handlePay against the background reconnect.
+  const isHydratingIdle = isHydrating && step === 'idle' && !devOverride
   const baseLabel = getButtonLabel(step, idleSubState, invoice.currency, subtotal, invoice.decimals)
-  const label = isReconnectingIdle
+  const label = isHydratingIdle
     ? { primary: 'Reconnecting…', secondary: 'Please wait' }
     : baseLabel
-  const ariaLabel = isReconnectingIdle
+  const ariaLabel = isHydratingIdle
     ? 'Reconnecting wallet, please wait'
     : getAriaLabel(step, idleSubState, invoice.currency, subtotal, invoice.decimals)
   const progress = getProgress(step)
   const isRealInProgress = IN_PROGRESS_STEPS.has(step)
-  const isInProgress = isRealInProgress || isReconnectingIdle
+  const isInProgress = isRealInProgress || isHydratingIdle
   const isSuccess = step === 'success'
   const isSuccessState = isSuccess && !devOverride
-  // Cancel available for real payment steps only — reconnect is not cancelable.
+  // Cancel available for real payment steps only — hydration is not cancelable.
   const canCancel = isRealInProgress && step !== 'confirming' && !devOverride
 
   // Cancel overlay state (hover on desktop, tap-toggle on mobile)
@@ -201,7 +204,7 @@ export function SmartPayButton({
     }
   }, [devOverride, canCancel, showCancel, handleCancel, handlePay, isSuccessState])
 
-  const canInteract = !isReconnecting && !isSuccessState
+  const canInteract = !isHydrating && !isSuccessState
 
   return (
     <motion.div
@@ -218,7 +221,7 @@ export function SmartPayButton({
         variant="void"
         size="lg"
         className={`h-14 w-full ${isSuccessState ? 'pointer-events-none' : ''}`}
-        disabled={devOverride ? false : isReconnecting}
+        disabled={devOverride ? false : isHydrating}
         onClick={handleClick}
         aria-label={showCancel && canCancel ? 'Cancel transaction' : ariaLabel}
         aria-live="polite"

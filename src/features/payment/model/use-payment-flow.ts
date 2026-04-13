@@ -233,14 +233,18 @@ export function usePaymentFlow({
   useEffect(() => {
     if (state.step !== 'connecting' || !state.intent) return
 
-    if (connectModalOpen) {
-      modalWasOpen.current = true
+    // Wallet is connected — via modal OR background reconnect.
+    // Checked BEFORE connectModalOpen so we don't strand the flow when wagmi
+    // finishes a persisted reconnect while the Rainbow modal is still open
+    // (or still flipping `connectModalOpen` through an animation / internal
+    // state transition). Without this, the flow gets stuck in 'connecting'.
+    if (isConnected) {
+      dispatch({ type: 'CONNECTED' })
       return
     }
 
-    // User connected → progress to switching
-    if (isConnected) {
-      dispatch({ type: 'CONNECTED' })
+    if (connectModalOpen) {
+      modalWasOpen.current = true
       return
     }
 
@@ -315,6 +319,14 @@ export function usePaymentFlow({
     if (state.step === 'idle' || state.step === 'success') return
 
     const errorType = classifyPaymentError(wagmiError)
+
+    // TEMP DEBUG — remove after resolving 041 manual tests
+    console.log('[DEBUG error-effect]', {
+      step: state.step,
+      errorType,
+      message: (wagmiError as Error).message?.slice(0, 200),
+      source: sendError ? 'send' : writeError ? 'write' : receiptError ? 'receipt' : 'switch',
+    })
 
     // User rejection is intent, not failure — silent reset with toast only
     if (errorType === 'USER_REJECTED') {
