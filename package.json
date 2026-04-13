@@ -23,6 +23,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "validate": "pnpm type-check && pnpm lint && pnpm test run",
+    "check:block-drift": "pnpm dlx tsx scripts/measure-block-times.ts",
     "prepare": "husky"
   },
   "keywords": [

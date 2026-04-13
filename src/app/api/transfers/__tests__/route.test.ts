@@ -54,7 +54,23 @@ function makeAlchemyTransfer(overrides: Record<string, unknown> = {}): Record<st
   }
 }
 
-/** Build a mock Alchemy JSON-RPC success response. */
+/** Mock the eth_blockNumber response used by the drift-correction safety net.
+ *  Defaults to a huge sentinel value (10^12) that's above any realistic chain
+ *  head on any supported network — prevents tests from triggering the retry path. */
+function mockBlockNumberSuccess(blockHex: string = '0xe8d4a51000'): void {
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({
+      jsonrpc: '2.0',
+      id: 2,
+      result: blockHex,
+    }),
+  })
+}
+
+/** Build a mock Alchemy JSON-RPC success response.
+ *  Enqueues TWO responses to cover the parallel fetch in route.ts:
+ *  (1) alchemy_getAssetTransfers, (2) eth_blockNumber (drift-correction safety net). */
 function mockAlchemySuccess(transfers: Record<string, unknown>[] = [makeAlchemyTransfer()]) {
   mockFetch.mockResolvedValueOnce({
     ok: true,
@@ -64,6 +80,7 @@ function mockAlchemySuccess(transfers: Record<string, unknown>[] = [makeAlchemyT
       result: { transfers },
     }),
   })
+  mockBlockNumberSuccess()
 }
 
 /** Build a valid POST Request to /api/transfers. */
@@ -381,7 +398,9 @@ describe('POST /api/transfers', () => {
         maxCount: '0xff',
       }))
 
-      expect(mockFetch).toHaveBeenCalledOnce()
+      // fetch is called twice: (1) alchemy_getAssetTransfers, (2) eth_blockNumber.
+      // Inspect calls[0] — the transfers call — to verify maxCount.
+      expect(mockFetch).toHaveBeenCalledTimes(2)
       const [, fetchInit] = mockFetch.mock.calls[0] as [string, RequestInit]
       const sentBody = JSON.parse(fetchInit.body as string) as {
         params: [{ maxCount: string }]
@@ -524,6 +543,8 @@ describe('POST /api/transfers', () => {
     })
 
     it('does not leak upstream error detail field in 502 responses', async () => {
+      // Transfers call returns an Alchemy error — drift-correction path needs a
+      // block number mock too (route.ts always fetches it in parallel).
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -532,6 +553,7 @@ describe('POST /api/transfers', () => {
           error: { code: -32600, message: 'Invalid API key' },
         }),
       })
+      mockBlockNumberSuccess()
 
       const response = await POST(makeRequest(VALID_BODY))
 
@@ -574,6 +596,65 @@ describe('POST /api/transfers', () => {
         params: [{ contractAddresses: string[] }]
       }
       expect(sentBody.params[0].contractAddresses).toContain(contractAddress)
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  // Drift correction safety net — eth_blockNumber clamps a drifted fromBlock
+  // -------------------------------------------------------------------------
+  describe('drift correction: clamps fromBlock ahead of real chain head', () => {
+    it('retries transfers with a safe lookback when fromBlock > realCurrentBlock', async () => {
+      // Client fromBlock is well within the DoS cap but well above the real
+      // chain head — the route must detect drift and retry with a corrected value.
+      const clientFromBlock = estimatedEthCurrent - 100
+      const realCurrentBlock = clientFromBlock - 50_000 // 50k blocks behind client
+
+      // (1) First transfers call — returns empty because fromBlock is ahead of head
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ jsonrpc: '2.0', id: 1, result: { transfers: [] } }),
+      })
+      // (2) Block number call — returns realCurrentBlock (below client fromBlock)
+      mockBlockNumberSuccess(`0x${realCurrentBlock.toString(16)}`)
+      // (3) Retry transfers call — must be triggered with corrected fromBlock
+      const matchingTransfer = makeAlchemyTransfer()
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ jsonrpc: '2.0', id: 1, result: { transfers: [matchingTransfer] } }),
+      })
+
+      const response = await POST(
+        makeRequest({ ...VALID_BODY, fromBlock: `0x${clientFromBlock.toString(16)}` }),
+      )
+
+      expect(response.status).toBe(200)
+      // 3 fetch calls total: initial transfers + blockNumber + retry transfers
+      expect(mockFetch).toHaveBeenCalledTimes(3)
+
+      // The retry (3rd call) must send a fromBlock at or below realCurrentBlock,
+      // clamped via the ~3-day lookback window.
+      const [, retryInit] = mockFetch.mock.calls[2] as [string, RequestInit]
+      const retryBody = JSON.parse(retryInit.body as string) as {
+        method: string
+        params: [{ fromBlock: string }]
+      }
+      expect(retryBody.method).toBe('alchemy_getAssetTransfers')
+      const retryFromBlock = parseInt(retryBody.params[0].fromBlock, 16)
+      expect(retryFromBlock).toBeLessThanOrEqual(realCurrentBlock)
+      expect(retryFromBlock).toBeGreaterThan(0)
+
+      // Returned payload uses the retry response (matching transfer)
+      const data = (await response.json()) as { transfers: Record<string, unknown>[] }
+      expect(data.transfers).toHaveLength(1)
+    })
+
+    it('does not retry when fromBlock is already at or below real chain head', async () => {
+      mockAlchemySuccess() // transfers + blockNumber (sentinel huge block)
+
+      await POST(makeRequest(VALID_BODY))
+
+      // Only the original 2 calls — no retry, since sentinel block (1e12) > fromBlock
+      expect(mockFetch).toHaveBeenCalledTimes(2)
     })
   })
 })
