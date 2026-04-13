@@ -26,5 +26,9 @@ export { usePaymentPolling, __resetPollingCounters } from './model/use-payment-p
 export type { PollingMode, PollingState, UsePaymentPollingResult } from './model/use-payment-polling'
 export { useManualVerify } from './model/use-manual-verify'
 export { useBatchCheck } from './model/use-batch-check'
-export type { DecodedBatchInvoice } from './model/use-batch-check'
+export type {
+  DecodedBatchInvoice,
+  UseBatchCheckParams,
+  UseBatchCheckResult,
+} from './model/use-batch-check'
 export { useFinalizationToast } from './model/use-payment-toast'

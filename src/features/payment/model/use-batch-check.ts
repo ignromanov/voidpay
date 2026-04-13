@@ -2,7 +2,7 @@
  * useBatchCheck — Batch discovery hook for history page
  * Feature: 023-payment-verification, Phase 8 (US7)
  *
- * Checks all pending `source:'created'` invoices (no txHash) sequentially
+ * Checks all pending invoices of a given source (no txHash) sequentially
  * against /api/transfers. If a match is found, calls setTxHash to trigger
  * the verification flow. Processes with 2s delay between requests.
  */
@@ -10,7 +10,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { useTrackedInvoiceStore } from '@/entities/invoice'
+import { useTrackedInvoiceStore, type InvoiceSource } from '@/entities/invoice'
 import { matchTransfer } from '../lib/match-transfer'
 import type { TransferResult } from '../lib/match-transfer'
 import { estimateFromBlockHex } from '@/entities/network'
@@ -34,6 +34,7 @@ export interface DecodedBatchInvoice {
 }
 
 export interface UseBatchCheckParams {
+  source: InvoiceSource
   decodeInvoiceUrl: (url: string) => Promise<DecodedBatchInvoice | null> | DecodedBatchInvoice | null
 }
 
@@ -47,7 +48,7 @@ export interface UseBatchCheckResult {
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useBatchCheck({ decodeInvoiceUrl }: UseBatchCheckParams): UseBatchCheckResult {
+export function useBatchCheck({ source, decodeInvoiceUrl }: UseBatchCheckParams): UseBatchCheckResult {
   const invoices = useTrackedInvoiceStore((s) => s.invoices)
   const setTxHash = useTrackedInvoiceStore((s) => s.setTxHash)
   const setValidated = useTrackedInvoiceStore((s) => s.setValidated)
@@ -74,9 +75,9 @@ export function useBatchCheck({ decodeInvoiceUrl }: UseBatchCheckParams): UseBat
     const controller = new AbortController()
     abortRef.current = controller
 
-    // Filter: only pending created invoices (no txHash)
+    // Filter: only pending invoices of the requested source (no txHash)
     const pending = invoices.filter(
-      (inv) => inv.source === 'created' && !inv.txHash,
+      (inv) => inv.source === source && !inv.txHash,
     )
 
     if (pending.length === 0) {
@@ -163,7 +164,7 @@ export function useBatchCheck({ decodeInvoiceUrl }: UseBatchCheckParams): UseBat
         setIsChecking(false)
       }
     })()
-  }, [invoices, setTxHash, setValidated, decodeInvoiceUrl])
+  }, [invoices, source, setTxHash, setValidated, decodeInvoiceUrl])
 
   return { isChecking, progress, checkAll }
 }

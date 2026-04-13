@@ -5,7 +5,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { parseInvoiceHash } from '@/features/invoice-codec'
 import { useBatchCheck } from '@/features/payment'
-import type { DecodedBatchInvoice } from '@/features/payment'
+import type { DecodedBatchInvoice, UseBatchCheckResult } from '@/features/payment'
 import { track, AnalyticsEvent } from '@/features/analytics'
 import { InvoiceList } from '@/features/invoice-history'
 import { Loader2Icon } from '@/shared/ui/icons'
@@ -56,12 +56,14 @@ export function HistoryWorkspace() {
 
   const trackedHydrated = useStoreHydrated()
 
-  const { createdCount, pendingCount } = useTrackedInvoiceStore(
+  const { createdCount, pendingCreatedCount, pendingReceivedCount } = useTrackedInvoiceStore(
     useShallow((s) => {
       const created = s.invoices.filter((inv) => inv.source === 'created')
+      const received = s.invoices.filter((inv) => inv.source === 'received')
       return {
         createdCount: created.length,
-        pendingCount: created.filter((inv) => !inv.txHash).length,
+        pendingCreatedCount: created.filter((inv) => !inv.txHash).length,
+        pendingReceivedCount: received.filter((inv) => !inv.txHash).length,
       }
     }),
   )
@@ -69,7 +71,8 @@ export function HistoryWorkspace() {
   const receivedInvoices = useReceivedInvoices()
   const createdEntries = useCreatedInvoices()
 
-  const { isChecking, progress, checkAll } = useBatchCheck({ decodeInvoiceUrl })
+  const createdBatch = useBatchCheck({ source: 'created', decodeInvoiceUrl })
+  const receivedBatch = useBatchCheck({ source: 'received', decodeInvoiceUrl })
 
   if (!trackedHydrated) {
     return <HistorySkeleton />
@@ -97,24 +100,16 @@ export function HistoryWorkspace() {
                   Created
                 </h2>
                 <div className="flex items-center gap-3">
-                  {pendingCount > 0 && (
-                    <button
+                  {pendingCreatedCount > 0 && (
+                    <CheckUnpaidButton
+                      pendingCount={pendingCreatedCount}
+                      isChecking={createdBatch.isChecking}
+                      progress={createdBatch.progress}
                       onClick={() => {
                         track(AnalyticsEvent.PAY_VERIFY, { method: 'history-batch' })
-                        checkAll()
+                        createdBatch.checkAll()
                       }}
-                      disabled={isChecking}
-                      className="flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg bg-violet-600/20 px-3 py-2.5 text-xs font-medium text-violet-300 transition-colors hover:bg-violet-600/30 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {isChecking ? (
-                        <>
-                          <Loader2Icon size={12} className="animate-spin" />
-                          Checking {progress.checked}/{progress.total}...
-                        </>
-                      ) : (
-                        <>Check Unpaid ({pendingCount})</>
-                      )}
-                    </button>
+                    />
                   )}
                   <span className="text-sm text-zinc-400">
                     {createdCount} invoice{createdCount !== 1 ? 's' : ''}
@@ -129,9 +124,22 @@ export function HistoryWorkspace() {
                 <h2 id="received-heading" className="text-xl font-semibold text-zinc-100">
                   Received
                 </h2>
-                <span className="text-sm text-zinc-400">
-                  {receivedInvoices.length} invoice{receivedInvoices.length !== 1 ? 's' : ''}
-                </span>
+                <div className="flex items-center gap-3">
+                  {pendingReceivedCount > 0 && (
+                    <CheckUnpaidButton
+                      pendingCount={pendingReceivedCount}
+                      isChecking={receivedBatch.isChecking}
+                      progress={receivedBatch.progress}
+                      onClick={() => {
+                        track(AnalyticsEvent.PAY_VERIFY, { method: 'history-batch' })
+                        receivedBatch.checkAll()
+                      }}
+                    />
+                  )}
+                  <span className="text-sm text-zinc-400">
+                    {receivedInvoices.length} invoice{receivedInvoices.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
               </div>
               <InvoiceList variant="received" entries={receivedInvoices} debug={debug} />
             </section>
@@ -139,6 +147,35 @@ export function HistoryWorkspace() {
         )}
       </div>
     </div>
+  )
+}
+
+interface CheckUnpaidButtonProps extends Pick<UseBatchCheckResult, 'isChecking' | 'progress'> {
+  pendingCount: number
+  onClick: () => void
+}
+
+function CheckUnpaidButton({
+  pendingCount,
+  isChecking,
+  progress,
+  onClick,
+}: CheckUnpaidButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={isChecking}
+      className="flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg bg-violet-600/20 px-3 py-2.5 text-xs font-medium text-violet-300 transition-colors hover:bg-violet-600/30 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {isChecking ? (
+        <>
+          <Loader2Icon size={12} className="animate-spin" />
+          Checking {progress.checked}/{progress.total}...
+        </>
+      ) : (
+        <>Check Unpaid ({pendingCount})</>
+      )}
+    </button>
   )
 }
 
