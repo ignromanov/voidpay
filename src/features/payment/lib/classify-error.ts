@@ -1,67 +1,47 @@
-/**
- * Payment Error Classification
- *
- * Classifies wallet/network/transaction errors into user-friendly categories.
- * Uses pattern matching on error messages and names (wagmi/viem convention).
- */
-
-import type { PaymentErrorType, PaymentStep } from '../model/types'
+import type { PaymentErrorType } from '../model/types'
+import {
+  isUserRejected,
+  isInsufficientFunds,
+  isChainMismatch,
+  isReceiptTimeout,
+  isReceiptNotFound,
+  isTxReverted,
+} from '@/shared/lib/web3-errors'
 
 interface ErrorWithShortMessage extends Error {
   shortMessage?: string
 }
 
-/**
- * Classify a wallet/transaction error into a PaymentErrorType.
- *
- * Detection priority:
- * 1. User rejection (by name or message)
- * 2. Insufficient gas (before general insufficient funds — more specific)
- * 3. Insufficient funds
- * 4. Transaction reverted
- * 5. RPC/network errors
- * 6. Network switch failure (step-based — only if no pattern matched)
- * 7. Unknown fallback
- */
-export function classifyPaymentError(error: Error, step: PaymentStep): PaymentErrorType {
+export function classifyPaymentError(error: Error): PaymentErrorType {
+  // Priority 1: User intent (rejection) — typed detection via viem cause chain
+  // Must be first: a rejected network switch must NOT be classified as NETWORK_SWITCH_FAILED.
+  if (isUserRejected(error)) return 'USER_REJECTED'
+
+  // Priority 2: Insufficient gas — more specific than general insufficient funds.
+  // Kept as string match because viem's InsufficientFundsError doesn't distinguish gas vs balance.
   const err = error as ErrorWithShortMessage
   const msg = err.shortMessage ?? err.message ?? ''
-  const name = error.name ?? ''
   const lower = msg.toLowerCase()
+  if (lower.includes('insufficient funds for gas')) return 'INSUFFICIENT_GAS'
 
-  // User rejection patterns
-  if (
-    name.includes('UserRejected') ||
-    lower.includes('user rejected') ||
-    lower.includes('user denied')
-  ) {
-    return 'USER_REJECTED'
-  }
+  // Priority 3: Insufficient funds / balance — typed first, fallback to string
+  if (isInsufficientFunds(error)) return 'INSUFFICIENT_FUNDS'
 
-  // Insufficient gas (must check before general insufficient funds)
-  if (lower.includes('insufficient funds for gas')) {
-    return 'INSUFFICIENT_GAS'
-  }
+  // Priority 4: Transaction reverted on-chain
+  if (isTxReverted(error)) return 'TX_REVERTED'
 
-  // Insufficient funds / balance
-  if (lower.includes('insufficient funds') || lower.includes('insufficient balance')) {
-    return 'INSUFFICIENT_FUNDS'
-  }
+  // Priority 5: Receipt wait failures — timeout / not found → treated as RPC issues
+  if (isReceiptTimeout(error) || isReceiptNotFound(error)) return 'RPC_ERROR'
 
-  // Transaction reverted
-  if (lower.includes('reverted')) {
-    return 'TX_REVERTED'
-  }
+  // Priority 6: Chain mismatch during transaction (wallet switched mid-flow)
+  if (isChainMismatch(error)) return 'NETWORK_SWITCH_FAILED'
 
-  // RPC / network errors
+  // Priority 7: Generic RPC/network errors (fallback string match)
   if (lower.includes('rpc') || lower.includes('network') || lower.includes('timeout')) {
     return 'RPC_ERROR'
   }
 
-  // Network switch errors (step-based detection)
-  if (step === 'switching') {
-    return 'NETWORK_SWITCH_FAILED'
-  }
-
+  // NO step-based fallback for NETWORK_SWITCH_FAILED — USER_REJECTED catches real user rejections,
+  // ChainMismatchError catches genuine chain mismatches, anything else during 'switching' is UNKNOWN.
   return 'UNKNOWN'
 }

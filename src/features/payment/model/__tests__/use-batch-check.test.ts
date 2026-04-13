@@ -28,6 +28,7 @@ vi.mock('@/entities/network', () => ({
 // Mock invoice store
 // ---------------------------------------------------------------------------
 const mockSetTxHash = vi.fn()
+const mockSetValidated = vi.fn()
 let mockInvoices: Array<{
   contentHash: string
   invoiceId: string
@@ -42,6 +43,7 @@ vi.mock('@/entities/invoice', () => ({
     const store = {
       invoices: mockInvoices,
       setTxHash: mockSetTxHash,
+      setValidated: mockSetValidated,
     }
     return selector ? selector(store) : store
   }),
@@ -73,7 +75,7 @@ const DECODED_INVOICE: DecodedBatchInvoice = {
   issuedAt: Math.floor(Date.now() / 1000) - 3600,
 }
 
-const mockDecoder = vi.fn<(url: string) => DecodedBatchInvoice | null>()
+const mockDecoder = vi.fn<(url: string) => Promise<DecodedBatchInvoice | null> | DecodedBatchInvoice | null>()
 
 function makeInvoice(
   id: string,
@@ -278,6 +280,16 @@ describe('useBatchCheck', () => {
         'INV-MATCH-002-hash',
         secondTransfer.hash,
         false,
+      )
+    })
+
+    // Exact-amount match upgrades directly to validated with block time.
+    await waitFor(() => {
+      expect(mockSetValidated).toHaveBeenCalledTimes(1)
+      expect(mockSetValidated).toHaveBeenCalledWith(
+        'INV-MATCH-002-hash',
+        true,
+        Date.parse(secondTransfer.blockTimestamp),
       )
     })
 

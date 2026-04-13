@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
+import { UserRejectedRequestError } from 'viem'
 
 describe('connection-error', () => {
   describe('getConnectionErrorMessage', () => {
@@ -57,6 +58,28 @@ describe('connection-error', () => {
       const error = new Error('No provider was found')
       const result = parseConnectionError(error)
       expect(result).toBe(ConnectionErrorType.NO_PROVIDER)
+    })
+
+    it('should identify wrapped UserRejectedRequestError inside BaseError cause chain', async () => {
+      const { parseConnectionError, ConnectionErrorType } = await import('../connection-error')
+      const inner = new UserRejectedRequestError(new Error('User rejected'))
+      const result = parseConnectionError(inner)
+      expect(result).toBe(ConnectionErrorType.USER_REJECTED)
+    })
+
+    it('should identify plain Error with "user rejected" message', async () => {
+      const { parseConnectionError, ConnectionErrorType } = await import('../connection-error')
+      const error = new Error('user rejected')
+      const result = parseConnectionError(error)
+      expect(result).toBe(ConnectionErrorType.USER_REJECTED)
+    })
+
+    it('should identify error with name UserRejectedRequestError and empty message', async () => {
+      const { parseConnectionError, ConnectionErrorType } = await import('../connection-error')
+      const error = new Error('')
+      error.name = 'UserRejectedRequestError'
+      const result = parseConnectionError(error)
+      expect(result).toBe(ConnectionErrorType.USER_REJECTED)
     })
   })
 

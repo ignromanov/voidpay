@@ -135,13 +135,15 @@ export function InvoiceCard({
             <>
               <button
                 onClick={onDeleteConfirm}
-                className="cursor-pointer rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
+                className="min-h-[44px] cursor-pointer rounded-lg bg-red-600 px-3 py-2.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
+                aria-label={`Confirm delete invoice ${tracked.invoiceId}`}
               >
                 Confirm
               </button>
               <button
                 onClick={onDeleteCancel}
-                className="cursor-pointer rounded-lg bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-zinc-700"
+                className="min-h-[44px] cursor-pointer rounded-lg bg-zinc-800 px-3 py-2.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-zinc-700"
+                aria-label={`Cancel delete invoice ${tracked.invoiceId}`}
               >
                 Cancel
               </button>

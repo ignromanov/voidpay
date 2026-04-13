@@ -23,9 +23,11 @@ export function useCreatedInvoices(): DecodedCreatedEntry[] {
   )
 
   const [entries, setEntries] = useState<DecodedCreatedEntry[]>([])
-  const cacheRef = useRef<Map<string, { invoice: Invoice | null; status: InvoiceStatus }>>(
-    new Map(),
-  )
+  // Cache ONLY the immutable parsed invoice (URL hash is deterministic).
+  // Status is derived from mutable `tracked` and must be recomputed each run,
+  // otherwise Check Unpaid updates the store but the list keeps showing stale
+  // 'pending' because the cached status was computed before txHash was set.
+  const invoiceCacheRef = useRef<Map<string, Invoice | null>>(new Map())
 
   useEffect(() => {
     let cancelled = false
@@ -33,31 +35,25 @@ export function useCreatedInvoices(): DecodedCreatedEntry[] {
     void (async () => {
       const results = await Promise.all(
         createdTracked.map(async (tracked): Promise<DecodedCreatedEntry> => {
-          const cached = cacheRef.current.get(tracked.invoiceUrl)
-          if (cached) return { tracked, ...cached }
-
-          try {
-            const hash = tracked.invoiceUrl.split('#')[1] ?? ''
-            if (!hash) {
-              const entry = { invoice: null, status: computeInvoiceStatus({ tracked }) }
-              cacheRef.current.set(tracked.invoiceUrl, entry)
-              return { tracked, ...entry }
+          let invoice: Invoice | null
+          if (invoiceCacheRef.current.has(tracked.invoiceUrl)) {
+            invoice = invoiceCacheRef.current.get(tracked.invoiceUrl) ?? null
+          } else {
+            try {
+              const hash = tracked.invoiceUrl.split('#')[1] ?? ''
+              const result = hash ? await parseInvoiceHash(hash) : null
+              invoice = result?.success ? result.data : null
+            } catch {
+              invoice = null
             }
-            const result = await parseInvoiceHash(hash)
-            if (result.success) {
-              const status = computeInvoiceStatus({ tracked, dueAt: result.data.dueAt })
-              const entry = { invoice: result.data, status }
-              cacheRef.current.set(tracked.invoiceUrl, entry)
-              return { tracked, ...entry }
-            }
-            const entry = { invoice: null, status: computeInvoiceStatus({ tracked }) }
-            cacheRef.current.set(tracked.invoiceUrl, entry)
-            return { tracked, ...entry }
-          } catch {
-            const entry = { invoice: null, status: computeInvoiceStatus({ tracked }) }
-            cacheRef.current.set(tracked.invoiceUrl, entry)
-            return { tracked, ...entry }
+            invoiceCacheRef.current.set(tracked.invoiceUrl, invoice)
           }
+
+          const status = computeInvoiceStatus({
+            tracked,
+            dueAt: invoice?.dueAt,
+          })
+          return { tracked, invoice, status }
         }),
       )
 

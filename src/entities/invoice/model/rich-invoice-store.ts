@@ -103,7 +103,19 @@ interface TrackedInvoiceStore extends TrackedInvoiceState {
     viewedAt: string
   }) => void
   setTxHash: (contentHash: string, txHash: `0x${string}`, validated?: boolean) => void
-  setValidated: (contentHash: string, validated: boolean) => void
+  /**
+   * Mark invoice as validated (soft-confirmed / finalized).
+   *
+   * `paidAtMs` — wall-clock timestamp of the transaction's block in milliseconds
+   * since epoch. Fetched by the caller via `publicClient.getBlock({ blockNumber })`.
+   *
+   * Semantic: an explicit `paidAtMs` always wins over any existing value (so a
+   * later caller that successfully fetched the block can upgrade an earlier
+   * fallback write). Undefined falls back to `Date.now()` only when no `paidAt`
+   * is set yet, so a subsequent undefined call never downgrades a real block
+   * timestamp back to wall-clock.
+   */
+  setValidated: (contentHash: string, validated: boolean, paidAtMs?: number) => void
   setFinalized: (contentHash: string) => void
   setConfirmations: (contentHash: string, confirmations?: ConfirmationProgress) => void
   setError: (contentHash: string, error: string | null) => void
@@ -164,11 +176,18 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
         const TX_HASH_REGEX = /^0x[a-fA-F0-9]{64}$/
         if (!TX_HASH_REGEX.test(txHash)) return
 
-        const exists = get().invoices.some(inv => inv.contentHash === contentHash)
-        if (!exists) {
+        const existing = get().invoices.find(inv => inv.contentHash === contentHash)
+        if (!existing) {
           console.warn('[TrackedInvoiceStore] setTxHash called for unknown invoice:', { contentHash, txHash })
           return
         }
+
+        // No-op: same hash re-linked with equal-or-weaker status.
+        // Prevents downgrading `txHashValidated: true → false` (or wiping
+        // `paidAt`) when a later discovery/polling path re-reports the same
+        // already-validated transaction on a fresh mount (e.g. after reload).
+        if (existing.txHash === txHash && existing.txHashValidated && !validated) return
+
         set((state) => ({
           invoices: state.invoices.map((inv) =>
             inv.contentHash === contentHash
@@ -183,21 +202,26 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
         }))
       },
 
-      setValidated: (contentHash, validated) => {
+      setValidated: (contentHash, validated, paidAtMs) => {
         // W3-014: guard against missing txHash
         const invoice = get().invoices.find(inv => inv.contentHash === contentHash)
         if (!invoice?.txHash) return
 
         set((state) => ({
-          invoices: state.invoices.map((inv) =>
-            inv.contentHash === contentHash
-              ? {
-                  ...inv,
-                  txHashValidated: validated,
-                  ...(validated ? { paidAt: new Date().toISOString() } : {}),
-                }
-              : inv
-          ),
+          invoices: state.invoices.map((inv) => {
+            if (inv.contentHash !== contentHash) return inv
+            const next: TrackedInvoice = { ...inv, txHashValidated: validated }
+            if (validated) {
+              if (paidAtMs !== undefined) {
+                // Explicit block timestamp: always wins (upgrades any fallback).
+                next.paidAt = new Date(paidAtMs).toISOString()
+              } else if (!inv.paidAt) {
+                // No explicit value and nothing stored yet: wall-clock fallback.
+                next.paidAt = new Date().toISOString()
+              }
+            }
+            return next
+          }),
         }))
       },
 

@@ -13,7 +13,8 @@ import { PollingStatus } from './PollingStatus'
 import { SecondaryActions } from './SecondaryActions'
 import { MoreOptionsPanel } from './MoreOptionsPanel'
 import { PanelFooter } from './PanelFooter'
-import { CheckCircleIcon } from '@/shared/ui/icons'
+import { CheckCircleIcon, ChevronDownIcon } from '@/shared/ui/icons'
+import { NetworkChip } from './NetworkChip'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { cn } from '@/shared/lib/utils'
 import type { PaymentPanelProps } from '../types'
@@ -47,9 +48,14 @@ export function PaymentPanel({
   finalized,
   reorgDetected,
   onShareOpen,
+  onMinimize,
 }: PaymentPanelProps) {
   const [qrOpen, setQrOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
+
+  const paidAtISO = useTrackedInvoiceStore((s) =>
+    contentHash ? s.getInvoice(contentHash)?.paidAt : undefined
+  )
 
   const handlePdfExport = useCallback(() => {
     track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
@@ -102,11 +108,25 @@ export function PaymentPanel({
         )}
       />
 
+      {/* Minimize button — owned by the panel, sits in the top-right corner */}
+      {onMinimize && (
+        <button
+          type="button"
+          data-testid="minimize-panel"
+          onClick={onMinimize}
+          className="absolute top-1.5 right-1.5 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-white"
+          title="Minimize"
+          aria-label="Minimize payment panel"
+        >
+          <ChevronDownIcon size={14} />
+        </button>
+      )}
+
       {/* Content */}
       <div className="p-4 space-y-4 pt-5">
-        {/* Creator badge */}
+        {/* Creator badge — leaves room on the right for minimize button */}
         {source === 'created' && isPending && (
-          <p className="text-center text-xs text-violet-400">
+          <p className="text-center text-xs text-violet-400 pr-12">
             Your invoice · Awaiting payment
           </p>
         )}
@@ -128,6 +148,8 @@ export function PaymentPanel({
                 exactTotal={amounts.exactTotal}
                 decimals={invoice.decimals}
                 currency={invoice.currency}
+                networkId={invoice.networkId}
+                dueAt={invoice.dueAt}
               />
               <ActionSlot>{children}</ActionSlot>
 
@@ -174,6 +196,8 @@ export function PaymentPanel({
                 exactTotal={amounts.exactTotal}
                 decimals={invoice.decimals}
                 currency={invoice.currency}
+                networkId={invoice.networkId}
+                paidAt={paidAtISO}
                 confirmations={confirmations}
                 finalized={finalized}
                 reorgDetected={reorgDetected}
@@ -194,6 +218,9 @@ export function PaymentPanel({
                 <CheckCircleIcon className="text-emerald-400 mx-auto mb-2" size={32} />
                 <p className="text-sm text-zinc-200">Payment detected</p>
                 <p className="text-xs text-zinc-400">Verifying transaction...</p>
+                <div className="mt-3 flex justify-center">
+                  <NetworkChip networkId={invoice.networkId} />
+                </div>
               </div>
             </motion.div>
           )}
@@ -213,6 +240,8 @@ export function PaymentPanel({
                 exactTotal={amounts.exactTotal}
                 decimals={invoice.decimals}
                 currency={invoice.currency}
+                networkId={invoice.networkId}
+                dueAt={invoice.dueAt}
               />
             </motion.div>
           )}

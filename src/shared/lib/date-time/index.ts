@@ -72,3 +72,21 @@ export function formatDateCompact(ts: number): string {
 export function isoToUnix(iso: string): number {
   return Math.floor(new Date(iso).getTime() / 1000)
 }
+
+/**
+ * ISO 8601 string → "Just now", "5 min ago", "2 h ago", "3 d ago".
+ * For timestamps older than a week, falls back to formatDateCompact ("Apr 3").
+ */
+export function formatRelativeTime(iso: string): string {
+  const then = Math.floor(new Date(iso).getTime() / 1000)
+  const diff = Math.max(0, nowUnix() - then)
+  if (diff < 30) return 'Just now'
+  if (diff < 60) return `${diff}s ago`
+  const minutes = Math.floor(diff / 60)
+  if (minutes < 60) return `${minutes} min ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days} d ago`
+  return formatDateCompact(then)
+}

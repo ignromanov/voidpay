@@ -9,7 +9,13 @@
  */
 
 import { isAddress, getAddress } from 'viem'
-import { getMaxBlockAge, estimateCurrentBlock, ALL_CHAIN_IDS_SET, ALCHEMY_NETWORK_SLUG } from '@/entities/network'
+import {
+  getMaxBlockAge,
+  estimateCurrentBlock,
+  getAvgBlockTimeMs,
+  ALL_CHAIN_IDS_SET,
+  ALCHEMY_NETWORK_SLUG,
+} from '@/entities/network'
 import { checkRateLimit } from './rate-limit'
 import { stripTransfer } from './strip-transfer'
 import { extractIp, isValidHexBlock, json } from './validate'
@@ -19,6 +25,10 @@ export const runtime = 'edge'
 
 /** W3-015: hardcoded server-side, never from client */
 const MAX_COUNT = '0x14'
+
+/** Drift-correction lookback window (~3 days). Used only when client's fromBlock
+ *  is ahead of the real chain head — caps the recovery to recent blocks. */
+const DRIFT_CORRECTION_LOOKBACK_MS = 3 * 86_400 * 1000
 
 export async function POST(request: Request): Promise<Response> {
   // Rate limiting
@@ -105,38 +115,75 @@ export async function POST(request: Request): Promise<Response> {
   const networkSlug = ALCHEMY_NETWORK_SLUG[chainId]
   const alchemyUrl = `https://${networkSlug}.g.alchemy.com/v2/${apiKey}`
 
-  const alchemyParams: Record<string, unknown> = {
-    fromBlock,
-    toAddress: normalizedToAddress, // W3-016: normalized via getAddress()
-    maxCount: MAX_COUNT,             // W3-015: hardcoded server-side
-    withMetadata: true,
-    excludeZeroValue: true,
-    order: 'desc',
-    category: [category],
+  const buildAlchemyBody = (fromBlockHex: string): Record<string, unknown> => {
+    const params: Record<string, unknown> = {
+      fromBlock: fromBlockHex,
+      toAddress: normalizedToAddress, // W3-016: normalized via getAddress()
+      maxCount: MAX_COUNT,             // W3-015: hardcoded server-side
+      withMetadata: true,
+      excludeZeroValue: true,
+      order: 'desc',
+      category: [category],
+    }
+    // contractAddresses only for erc20 (TC-10)
+    if (category === 'erc20' && contractAddress) {
+      params.contractAddresses = [contractAddress]
+    }
+    return {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'alchemy_getAssetTransfers',
+      params: [params],
+    }
   }
 
-  // contractAddresses only for erc20 (TC-10)
-  if (category === 'erc20' && contractAddress) {
-    alchemyParams.contractAddresses = [contractAddress]
-  }
-
-  const alchemyBody = {
-    jsonrpc: '2.0',
-    id: 1,
-    method: 'alchemy_getAssetTransfers',
-    params: [alchemyParams],
-  }
-
-  // Proxy to Alchemy
-  let alchemyResponse: Response
-  try {
-    alchemyResponse = await fetch(alchemyUrl, {
+  const postAlchemy = (body: unknown): Promise<Response> =>
+    fetch(alchemyUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(alchemyBody),
+      body: JSON.stringify(body),
     })
+
+  // Parallel fetch: transfers query + current block number.
+  // The block number is used as ground truth to detect drifted client fromBlock
+  // (stale anchor / wrong avgBlockTime → estimated block above real chain head).
+  let alchemyResponse: Response
+  let blockNumberResponse: Response
+  try {
+    ;[alchemyResponse, blockNumberResponse] = await Promise.all([
+      postAlchemy(buildAlchemyBody(fromBlock)),
+      postAlchemy({ jsonrpc: '2.0', id: 2, method: 'eth_blockNumber', params: [] }),
+    ])
   } catch {
     return json({ error: 'Upstream provider unreachable' }, 503)
+  }
+
+  // Drift correction: if client's fromBlock is ahead of the real chain head,
+  // the initial transfers call returned empty because no such block exists yet.
+  // Retry with a safe lookback anchored to the real current block.
+  if (blockNumberResponse?.ok) {
+    try {
+      const blockJson = (await blockNumberResponse.json()) as { result?: string }
+      if (blockJson.result && /^0x[0-9a-fA-F]+$/.test(blockJson.result)) {
+        const realCurrentBlock = parseInt(blockJson.result, 16)
+        if (Number.isFinite(realCurrentBlock) && fromBlockNum > realCurrentBlock) {
+          const avgBlockTime = getAvgBlockTimeMs(chainId)
+          const lookbackBlocks = Math.floor(DRIFT_CORRECTION_LOOKBACK_MS / avgBlockTime)
+          const correctedFromBlock = Math.max(1, realCurrentBlock - lookbackBlocks)
+          const correctedFromBlockHex = `0x${correctedFromBlock.toString(16)}`
+          console.warn('[transfers] stale anchor drift corrected', {
+            chainId,
+            clientFromBlock: fromBlockNum,
+            realCurrentBlock,
+            drift: fromBlockNum - realCurrentBlock,
+            correctedFromBlock,
+          })
+          alchemyResponse = await postAlchemy(buildAlchemyBody(correctedFromBlockHex))
+        }
+      }
+    } catch {
+      // eth_blockNumber parse/network failure is non-fatal — fall through to original response.
+    }
   }
 
   if (!alchemyResponse.ok) {

@@ -51,6 +51,7 @@ export interface UseBatchCheckResult {
 export function useBatchCheck({ source, decodeInvoiceUrl }: UseBatchCheckParams): UseBatchCheckResult {
   const invoices = useTrackedInvoiceStore((s) => s.invoices)
   const setTxHash = useTrackedInvoiceStore((s) => s.setTxHash)
+  const setValidated = useTrackedInvoiceStore((s) => s.setValidated)
 
   const [isChecking, setIsChecking] = useState(false)
   const [progress, setProgress] = useState<{ checked: number; total: number }>({
@@ -138,7 +139,16 @@ export function useBatchCheck({ source, decodeInvoiceUrl }: UseBatchCheckParams)
             const data = (await response.json()) as { transfers: TransferResult[] }
             const match = matchTransfer(data.transfers, exactTotal, tokenAddress)
             if (match) {
+              // Exact-amount match against an on-chain transfer is sufficient
+              // proof-of-payment — upgrade directly to validated with the
+              // block timestamp as paidAt (instead of leaving 'confirming').
               setTxHash(invoice.contentHash, match.hash, false)
+              const blockTimeMs = Date.parse(match.blockTimestamp)
+              setValidated(
+                invoice.contentHash,
+                true,
+                Number.isFinite(blockTimeMs) ? blockTimeMs : undefined,
+              )
             }
           }
         } catch {
@@ -154,7 +164,7 @@ export function useBatchCheck({ source, decodeInvoiceUrl }: UseBatchCheckParams)
         setIsChecking(false)
       }
     })()
-  }, [invoices, setTxHash, decodeInvoiceUrl, source])
+  }, [invoices, source, setTxHash, setValidated, decodeInvoiceUrl])
 
   return { isChecking, progress, checkAll }
 }

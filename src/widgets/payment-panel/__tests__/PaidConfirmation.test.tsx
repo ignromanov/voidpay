@@ -24,16 +24,36 @@ describe('PaidConfirmation', () => {
     exactTotal: '1500000000',
     decimals: 6,
     currency: 'USDC',
+    networkId: 1,
   }
+
+  it('renders network chip in the subtitle row', () => {
+    render(<PaidConfirmation {...defaultProps} networkId={42161} />)
+    const chip = screen.getByTestId('payment-network-chip')
+    expect(chip).toBeDefined()
+    expect(chip).toHaveTextContent('Arbitrum')
+  })
 
   it('renders "Payment Successful" heading', () => {
     render(<PaidConfirmation {...defaultProps} />)
     expect(screen.getByText('Payment Successful')).toBeDefined()
   })
 
-  it('renders subtitle text', () => {
+  it('renders fallback subtitle when paidAt is not provided', () => {
     render(<PaidConfirmation {...defaultProps} />)
     expect(screen.getByText('Funds have been sent on-chain')).toBeDefined()
+  })
+
+  it('renders relative time subtitle when paidAt is provided', () => {
+    const paidAt = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+    render(<PaidConfirmation {...defaultProps} paidAt={paidAt} />)
+    expect(screen.getByText('Funds sent · 5 min ago')).toBeDefined()
+  })
+
+  it('renders "Just now" subtitle when paidAt is seconds old', () => {
+    const paidAt = new Date().toISOString()
+    render(<PaidConfirmation {...defaultProps} paidAt={paidAt} />)
+    expect(screen.getByText('Funds sent · Just now')).toBeDefined()
   })
 
   it('renders formatted paid amount', () => {
@@ -140,6 +160,18 @@ describe('PaidConfirmation', () => {
       )
       // No toast should have been called during finalization
       expect(mockToastInfo).not.toHaveBeenCalled()
+    })
+
+    it('hides "Protecting against chain reorgs" banner when finalized=true (race guard)', () => {
+      render(
+        <PaidConfirmation
+          {...defaultProps}
+          confirmations={{ current: 0, required: 3 }}
+          finalized={true}
+        />
+      )
+      expect(screen.queryByText(/Protecting against chain reorgs/)).toBeNull()
+      expect(screen.queryByText('0 / 3')).toBeNull()
     })
 
     it('calls toast.info on reorg when reorgDetected becomes true', () => {

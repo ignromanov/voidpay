@@ -1,4 +1,5 @@
 import { getNetworkName, NETWORK_BADGES_DARK } from '@/entities/network'
+import { NetworkIcon } from '@/shared/ui/network-icon'
 import { cn } from '@/shared/lib/utils'
 
 const FALLBACK_BG = 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
@@ -15,11 +16,12 @@ export function NetworkBadge({ networkId, className }: NetworkBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[10px] font-medium',
+        'inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium',
         badgeBg,
         className,
       )}
     >
+      <NetworkIcon chainId={networkId} size={12} className="-ml-0.5" />
       {name}
     </span>
   )

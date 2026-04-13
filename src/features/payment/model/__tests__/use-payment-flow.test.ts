@@ -203,6 +203,38 @@ describe('usePaymentFlow', () => {
 
   })
 
+  // Regression: stuck-at-connecting race. User clicks during wagmi's
+  // pre-hydration gap with a persisted connection. handlePay sees
+  // isConnected=false, enters 'connecting', opens the Rainbow modal.
+  // Then wagmi finishes the background reconnect while the modal is
+  // still open. The flow must progress to 'switching' based on the
+  // isConnected signal, not wait for connectModalOpen to flip.
+  it('progresses from connecting to switching when wallet reconnects in background', () => {
+    mockIsConnected = false
+    const { result, rerender } = renderHook(() =>
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'inv001hash', exactTotal: '1000000000000000000' })
+    )
+
+    // User click — starts connecting
+    act(() => {
+      result.current.handlePay()
+    })
+    expect(result.current.step).toBe('connecting')
+
+    // Rainbow modal opens
+    mockConnectModalOpen = true
+    rerender()
+    expect(result.current.step).toBe('connecting')
+
+    // Background reconnect finishes while modal is still technically open.
+    // Without the isConnected-first reordering, this stays stuck at 'connecting'.
+    mockIsConnected = true
+    rerender()
+
+    // CONNECTED → switching → (no mismatch) → sending
+    expect(result.current.step).not.toBe('connecting')
+  })
+
   // US3: Auto-switch from wrong network
   it('dispatches START(switching) when connected on wrong network', async () => {
     mockIsConnected = true

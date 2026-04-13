@@ -8,10 +8,15 @@ vi.mock('viem', () => ({
   waitForTransactionReceipt: (...args: unknown[]) => mockWaitForTransactionReceipt(...args),
 }))
 
+// Fixed block timestamp returned by getBlock mock.
+const MOCK_BLOCK_TIMESTAMP_S = 1_700_000_000n
+const MOCK_BLOCK_TIMESTAMP_MS = 1_700_000_000_000
+
 // Mock wagmi usePublicClient
 const mockPublicClient = {
   waitForTransactionReceipt: vi.fn(),
   getTransactionReceipt: vi.fn(),
+  getBlock: vi.fn(),
 }
 
 vi.mock('wagmi', () => ({
@@ -71,6 +76,7 @@ describe('useFinalizationTracker', () => {
       blockNumber: 100n,
       transactionHash: MOCK_TX_HASH,
     })
+    mockPublicClient.getBlock.mockResolvedValue({ timestamp: MOCK_BLOCK_TIMESTAMP_S })
   })
 
   afterEach(() => {
@@ -101,6 +107,54 @@ describe('useFinalizationTracker', () => {
     expect(mockToastError).not.toHaveBeenCalled()
     expect(mockToastWarning).not.toHaveBeenCalled()
     expect(mockResetPaymentState).not.toHaveBeenCalled()
+  })
+
+  // Regression: paidAt must come from the block's wall-clock timestamp, not Date.now().
+  it('passes block timestamp to setValidated as paidAtMs', async () => {
+    mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
+      status: 'success',
+      blockNumber: 100n,
+      transactionHash: MOCK_TX_HASH,
+    })
+    mockPublicClient.getBlock.mockResolvedValue({ timestamp: MOCK_BLOCK_TIMESTAMP_S })
+
+    renderHook(() =>
+      useFinalizationTracker({
+        contentHash: 'inv-paidat-hash',
+        txHash: MOCK_TX_HASH,
+        networkId: 1,
+      })
+    )
+
+    await waitFor(() => {
+      expect(mockSetValidated).toHaveBeenCalledWith('inv-paidat-hash', true, MOCK_BLOCK_TIMESTAMP_MS)
+    })
+
+    expect(mockPublicClient.getBlock).toHaveBeenCalledWith({ blockNumber: 100n })
+  })
+
+  // Regression: when getBlock throws, paidAtMs is undefined but finalization still completes.
+  it('falls back to undefined paidAtMs when getBlock fails', async () => {
+    mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
+      status: 'success',
+      blockNumber: 100n,
+      transactionHash: MOCK_TX_HASH,
+    })
+    mockPublicClient.getBlock.mockRejectedValue(new Error('rpc error'))
+
+    renderHook(() =>
+      useFinalizationTracker({
+        contentHash: 'inv-fallback-hash',
+        txHash: MOCK_TX_HASH,
+        networkId: 1,
+      })
+    )
+
+    await waitFor(() => {
+      expect(mockSetValidated).toHaveBeenCalledWith('inv-fallback-hash', true, undefined)
+    })
+
+    expect(mockSetFinalized).toHaveBeenCalledWith('inv-fallback-hash')
   })
 
   // Test case 2: Timeout (60 min ETH / 30 min L2) → invoice remains paid, no revert (W3-012)

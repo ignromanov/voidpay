@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
-import { duplicateFromUrl } from '../lib/duplicate-invoice'
 import type { DecodedHistoryEntry } from '../lib/types'
 import { InvoiceCard } from './InvoiceCard'
 
@@ -41,18 +41,21 @@ export function InvoiceList({ entries, variant, debug = false, className }: Invo
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const config = VARIANT_CONFIG[variant]
 
-  const handleDelete = (invoiceId: string) => {
-    removeInvoice(invoiceId)
+  const handleDelete = (contentHash: string) => {
+    removeInvoice(contentHash)
     setDeleteConfirmId(null)
   }
 
-  const handleTemplate = useCallback(async (invoiceUrl: string) => {
-    const draftId = await duplicateFromUrl(invoiceUrl)
-    if (draftId) {
-      router.push('/create')
-      toast.success('Invoice duplicated as template')
-    } else {
-      toast.error('Could not decode invoice for duplication')
+  const handleTemplate = useCallback((invoiceUrl: string) => {
+    try {
+      const hash = new URL(invoiceUrl).hash
+      if (!hash || hash === '#') {
+        toast.error('Could not extract invoice data')
+        return
+      }
+      router.push(`/create?template=1${hash}` as Route)
+    } catch {
+      toast.error('Invalid invoice URL')
     }
   }, [router])
 
@@ -78,7 +81,7 @@ export function InvoiceList({ entries, variant, debug = false, className }: Invo
     <div className={cn('space-y-2', className)}>
       {entries.map((entry) => (
         <InvoiceCard
-          key={entry.tracked.invoiceId}
+          key={entry.tracked.contentHash}
           tracked={entry.tracked}
           invoice={entry.invoice}
           status={entry.status}
@@ -86,9 +89,9 @@ export function InvoiceList({ entries, variant, debug = false, className }: Invo
           nameLabel={config.nameExtractor(entry)}
           onView={() => handleView(entry.tracked.invoiceUrl)}
           onTemplate={() => handleTemplate(entry.tracked.invoiceUrl)}
-          onDelete={() => setDeleteConfirmId(entry.tracked.invoiceId)}
-          isDeleteConfirming={deleteConfirmId === entry.tracked.invoiceId}
-          onDeleteConfirm={() => handleDelete(entry.tracked.invoiceId)}
+          onDelete={() => setDeleteConfirmId(entry.tracked.contentHash)}
+          isDeleteConfirming={deleteConfirmId === entry.tracked.contentHash}
+          onDeleteConfirm={() => handleDelete(entry.tracked.contentHash)}
           onDeleteCancel={() => setDeleteConfirmId(null)}
         />
       ))}

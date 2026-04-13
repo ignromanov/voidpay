@@ -69,6 +69,7 @@ export type PaymentAction =
   | { type: 'CONNECTED' }
   | { type: 'SWITCHED' }
   | { type: 'TX_SUBMITTED'; hash: `0x${string}` }
+  | { type: 'REPLACED'; hash: `0x${string}` }
   | { type: 'CONFIRMED' }
   | { type: 'ERROR'; error: PaymentError }
   | { type: 'RESET' }

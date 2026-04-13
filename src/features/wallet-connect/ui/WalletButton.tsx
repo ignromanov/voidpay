@@ -19,10 +19,11 @@
 import { useEffect, useRef } from 'react'
 import { useConnectModal, useAccountModal, useChainModal } from '@rainbow-me/rainbowkit'
 import { useAccount, useChainId } from 'wagmi'
-import { WalletIcon, ChevronDownIcon } from '@/shared/ui/icons'
+import { WalletIcon, ChevronDownIcon, Loader2Icon } from '@/shared/ui/icons'
 import { NetworkIcon } from '@/shared/ui/network-icon'
 import { Button } from '@/shared/ui/button'
 import { truncateAddress } from '@/shared/lib/validation'
+import { useWagmiHydrating } from '@/shared/lib'
 
 export interface WalletButtonProps {
   autoConnect?: boolean
@@ -48,55 +49,69 @@ function AutoConnectTrigger() {
 }
 
 export function WalletButton({ autoConnect = false }: WalletButtonProps) {
-  const { address, isConnected, isReconnecting } = useAccount()
+  const { address, isConnected } = useAccount()
   const chainId = useChainId()
   const { openConnectModal } = useConnectModal()
   const { openAccountModal } = useAccountModal()
   const { openChainModal } = useChainModal()
+  const isHydrating = useWagmiHydrating()
+
+  // During wagmi hydration/reconnect we show an explicit disabled loading button
+  // instead of hiding the UI. Hiding it (opacity:0) made clicks fall through and
+  // the whole header felt frozen while wagmi restored the persisted connection.
+  // useWagmiHydrating also covers the pre-hydration SSR gap where `status` is
+  // still 'disconnected' but a persisted connection exists in localStorage.
+  if (isHydrating) {
+    return (
+      <>
+        {autoConnect && <AutoConnectTrigger />}
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+          disabled
+          aria-busy="true"
+          aria-label="Reconnecting wallet"
+        >
+          <Loader2Icon className="h-4 w-4 animate-spin" />
+          <span className="hidden sm:inline">Reconnecting…</span>
+        </Button>
+      </>
+    )
+  }
 
   return (
     <>
       {autoConnect && <AutoConnectTrigger />}
-      <div
-        {...(isReconnecting && {
-          'aria-hidden': true,
-          style: {
-            opacity: 0,
-            pointerEvents: 'none' as const,
-            userSelect: 'none' as const,
-          },
-        })}
-      >
-        {!isConnected ? (
+      {!isConnected ? (
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+          onClick={openConnectModal}
+        >
+          <WalletIcon className="h-4 w-4" />
+          Connect
+        </Button>
+      ) : (
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={openChainModal}>
+            <NetworkIcon chainId={chainId} size={16} className="rounded-full" />
+            <ChevronDownIcon className="hidden h-3 w-3 sm:block" />
+          </Button>
+
           <Button
             variant="outline"
             size="sm"
             className="gap-1.5"
-            onClick={openConnectModal}
+            onClick={openAccountModal}
           >
-            <WalletIcon className="h-4 w-4" />
-            Connect
+            <WalletIcon className="h-4 w-4 text-emerald-400 sm:hidden" />
+            <span className="hidden sm:inline">{address ? truncateAddress(address) : 'Account'}</span>
+            <ChevronDownIcon className="hidden h-3 w-3 sm:block" />
           </Button>
-        ) : (
-          <div className="flex items-center gap-1 sm:gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5" onClick={openChainModal}>
-              <NetworkIcon chainId={chainId} size={16} className="rounded-full" />
-              <ChevronDownIcon className="hidden h-3 w-3 sm:block" />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={openAccountModal}
-            >
-              <WalletIcon className="h-4 w-4 text-emerald-400 sm:hidden" />
-              <span className="hidden sm:inline">{address ? truncateAddress(address) : 'Account'}</span>
-              <ChevronDownIcon className="hidden h-3 w-3 sm:block" />
-            </Button>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </>
   )
 }

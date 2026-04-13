@@ -13,6 +13,11 @@ let mockReceiptSuccess = false
 let mockReceiptError: Error | null = null
 let mockCurrentBlockNumber: bigint = 100n
 
+// Fixed block timestamp returned by getBlock mock.
+// 1_700_000_000 seconds (2023-11-14 UTC) → 1_700_000_000_000 ms.
+const MOCK_BLOCK_TIMESTAMP_S = 1_700_000_000n
+const MOCK_BLOCK_TIMESTAMP_MS = 1_700_000_000_000
+
 vi.mock('wagmi', () => ({
   useWaitForTransactionReceipt: vi.fn(() => ({
     data: mockReceiptData,
@@ -29,6 +34,7 @@ vi.mock('wagmi', () => ({
       value: 1000000000000000000n,
     }),
     getTransactionReceipt: vi.fn().mockResolvedValue(mockReceiptData),
+    getBlock: vi.fn().mockResolvedValue({ timestamp: MOCK_BLOCK_TIMESTAMP_S }),
   })),
 }))
 
@@ -114,7 +120,7 @@ describe('usePaymentVerification', () => {
     // Current block = 100, receipt block = 97, delta = 3 — threshold met
     mockCurrentBlockNumber = 100n
 
-    const { result } = renderHook(() =>
+    renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
         contentHash: 'native-001-hash',
@@ -124,7 +130,7 @@ describe('usePaymentVerification', () => {
     )
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true, MOCK_BLOCK_TIMESTAMP_MS)
     })
 
     expect(mockSetError).not.toHaveBeenCalled()
@@ -153,7 +159,7 @@ describe('usePaymentVerification', () => {
     mockReceiptSuccess = true
     mockCurrentBlockNumber = 100n // delta = 3, ETH threshold met
 
-    const { result } = renderHook(() =>
+    renderHook(() =>
       usePaymentVerification({
         invoice: mockErc20Invoice,
         contentHash: 'erc20-001-hash',
@@ -163,7 +169,7 @@ describe('usePaymentVerification', () => {
     )
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('erc20-001-hash', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('erc20-001-hash', true, MOCK_BLOCK_TIMESTAMP_MS)
     })
 
     expect(mockSetError).not.toHaveBeenCalled()
@@ -246,7 +252,7 @@ describe('usePaymentVerification', () => {
     // current block = 99, delta = 1 — ETH needs 3, threshold NOT met
     mockCurrentBlockNumber = 99n
 
-    const { result, rerender } = renderHook(() =>
+    const { rerender } = renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
         contentHash: 'native-001-hash',
@@ -266,7 +272,7 @@ describe('usePaymentVerification', () => {
     rerender()
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true, MOCK_BLOCK_TIMESTAMP_MS)
     })
   })
 
@@ -332,7 +338,7 @@ describe('usePaymentVerification', () => {
     rerender({ enabled: true })
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true, MOCK_BLOCK_TIMESTAMP_MS)
     })
   })
 
@@ -375,7 +381,7 @@ describe('usePaymentVerification', () => {
     rerender()
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true, MOCK_BLOCK_TIMESTAMP_MS)
     })
   })
 })

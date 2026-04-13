@@ -20,11 +20,6 @@ vi.mock('@/entities/invoice', async (importOriginal) => {
   }
 })
 
-// Mock duplicate-invoice
-vi.mock('../lib/duplicate-invoice', () => ({
-  duplicateFromUrl: vi.fn().mockResolvedValue('draft-123'),
-}))
-
 // Mock toast
 vi.mock('@/shared/lib/toast', () => ({
   toast: { success: vi.fn(), error: vi.fn() },

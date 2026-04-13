@@ -1,11 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useWaitForTransactionReceipt, useBlockNumber, usePublicClient } from 'wagmi'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { verifyNativeReceipt, verifyErc20Receipt } from '../lib/verify-receipt'
 import type { VerificationResult } from '../lib/verify-receipt'
+import { formatErrorMessage } from '../lib/error-messages'
 import { getSoftConfirmations } from '@/entities/network'
 import type { Invoice } from '@/entities/invoice'
 import type { ConfirmationProgress } from '@/shared/lib/invoice-types'
+
+// Stateless observer — we only log 'cancelled' here because usePaymentFlow
+// owns the store write to avoid racing on txHash updates.
+function handleVerificationReplaced(replacement: { reason: 'replaced' | 'repriced' | 'cancelled' }) {
+  if (replacement.reason === 'cancelled') {
+    console.warn('[usePaymentVerification] Transaction was cancelled during verification')
+  }
+}
 
 export interface UsePaymentVerificationParams {
   invoice: Invoice
@@ -39,18 +48,30 @@ export function usePaymentVerification({
 
   const publicClient = usePublicClient({ chainId })
 
+  const receiptQuery = useMemo(() => ({ enabled: enabled !== false }), [enabled])
+
   const [verifyDone, setVerifyDone] = useState(false)
   const [verifyError, setVerifyError] = useState<string | undefined>(undefined)
   const [txBlockNumber, setTxBlockNumber] = useState<bigint | undefined>(undefined)
+  const [blockTimestampMs, setBlockTimestampMs] = useState<number | undefined>(undefined)
   const [confirmations, setLocalConfirmations] = useState<ConfirmationProgress | undefined>(
     undefined,
   )
 
+  // Both usePaymentFlow and usePaymentVerification consume useWaitForTransactionReceipt
+  // in parallel on the same txHash. usePaymentFlow owns the store write (setTxHash);
+  // writing here would race with it. viem's waitForTransactionReceipt internally swaps
+  // to the new hash and continues polling, so we just observe via handleVerificationReplaced.
   const {
     data: receipt,
     isLoading: isReceiptLoading,
     isSuccess: isReceiptSuccess,
-  } = useWaitForTransactionReceipt({ hash: txHash, chainId, query: { enabled: enabled !== false } })
+  } = useWaitForTransactionReceipt({
+    hash: txHash,
+    chainId,
+    query: receiptQuery,
+    onReplaced: handleVerificationReplaced,
+  })
 
   // Stop watching blocks once soft-confirmation is reached or verification failed
   const needsBlockWatch = (!verifyDone && !verifyError) || (confirmations !== undefined && confirmations.current < confirmations.required)
@@ -75,9 +96,39 @@ export function usePaymentVerification({
 
     publicClient.getTransaction({ hash: txHash }).then(
       (tx) => { setNativeTxValue(tx.value); setNativeTxTo(tx.to ?? undefined) },
-      (err) => setNativeFetchError(err instanceof Error ? err.message : 'Failed to fetch tx'),
+      (err) => {
+        // We only reach here if the receipt fetch itself failed — always infra-level.
+        // Never expose raw ABI-decoded text to users.
+        const friendly = formatErrorMessage('RPC_ERROR')
+        console.error('[usePaymentVerification] getTransaction failed:', err)
+        setNativeFetchError(friendly)
+      },
     )
   }, [enabled, isReceiptSuccess, receiptBlockStr, receipt, publicClient, tokenAddress, txHash])
+
+  // Fetch the block's wall-clock timestamp once the receipt is known, so we can
+  // record the transaction's actual on-chain time as paidAt instead of the
+  // verifier's wall clock at confirmation time (which drifts by minutes for soft
+  // confirmations and by days if the invoice was paid earlier and opened later).
+  useEffect(() => {
+    if (!enabled) return
+    if (!isReceiptSuccess || !receipt || !publicClient) return
+    if (blockTimestampMs !== undefined) return
+
+    let cancelled = false
+    publicClient.getBlock({ blockNumber: receipt.blockNumber }).then(
+      (block) => {
+        if (cancelled) return
+        setBlockTimestampMs(Number(block.timestamp) * 1000)
+      },
+      (err) => {
+        // Best-effort: store falls back to Date.now() if this never resolves.
+        console.warn('[usePaymentVerification] getBlock for paidAt failed:', err)
+      },
+    )
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, isReceiptSuccess, receiptBlockStr, publicClient])
 
   // Keep store action refs stable so async callbacks always use the latest
   const setStoreErrorRef = useRef(setStoreError)
@@ -111,6 +162,8 @@ export function usePaymentVerification({
   }, [chainId, currentBlock, contentHash])
 
   const handleVerifyError = useCallback((result: VerificationResult) => {
+    // result.error is already a user-facing message produced by verifyErc20Receipt /
+    // verifyNativeReceipt — not raw viem output. Safe to write directly to the store.
     const errorMsg = result.error ?? "Transaction amount doesn't match the expected total"
     setStoreErrorRef.current(contentHash, errorMsg)
     setVerifyError(errorMsg)
@@ -183,10 +236,10 @@ export function usePaymentVerification({
     setConfirmationsRef.current(contentHash, progress)
 
     if (current >= requiredConfirmations) {
-      setValidatedRef.current(contentHash, true)
+      setValidatedRef.current(contentHash, true, blockTimestampMs)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentBlock, verifyDone, txBlockNumber])
+  }, [currentBlock, verifyDone, txBlockNumber, blockTimestampMs])
 
   const isVerifying = isReceiptLoading && !isReceiptSuccess
   const isConfirming =

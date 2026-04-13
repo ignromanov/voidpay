@@ -111,4 +111,26 @@ describe('computeInvoiceStatus', () => {
 
     expect(result).toBe('pending')
   })
+
+  // Regression: finalized implies paid even if txHashValidated is missing.
+  // setFinalized strictly requires txHashValidated=true at write time, so
+  // finalized=true is stronger than txHashValidated=true and must not decay
+  // into "confirming" on re-read (e.g. after persist rehydrate).
+  it('returns "paid" when finalized=true even if txHashValidated is missing', () => {
+    const result = computeInvoiceStatus({
+      tracked: makeTracked({ txHash: '0xabc123', finalized: true }),
+      dueAt: 9999999999,
+    })
+
+    expect(result).toBe('paid')
+  })
+
+  it('returns "paid" when finalized=true and txHashValidated=false', () => {
+    const result = computeInvoiceStatus({
+      tracked: makeTracked({ txHash: '0xabc123', txHashValidated: false, finalized: true }),
+      dueAt: 9999999999,
+    })
+
+    expect(result).toBe('paid')
+  })
 })
