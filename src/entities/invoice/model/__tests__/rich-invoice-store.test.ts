@@ -780,6 +780,89 @@ describe('useTrackedInvoiceStore', () => {
       })
     })
 
+    // paidAt must reflect the transaction's block wall-clock time, not the
+    // verifier's Date.now(). An explicit paidAtMs from getBlock wins; undefined
+    // falls back to wall-clock only when no paidAt is set yet.
+    describe('setValidated paidAt semantics', () => {
+      it('uses explicit paidAtMs as the stored paidAt', () => {
+        const { addInvoice, setTxHash, setValidated } = useTrackedInvoiceStore.getState()
+
+        addInvoice(createMockTrackedInvoice({ invoiceId: 'PAIDAT-EXPLICIT' }, 'paidat-explicit-hash'))
+        setTxHash('paidat-explicit-hash', `0x${'a'.repeat(64)}` as `0x${string}`)
+
+        const blockMs = 1_700_000_000_000
+        setValidated('paidat-explicit-hash', true, blockMs)
+
+        const inv = useTrackedInvoiceStore.getState().invoices.find(
+          (i) => i.contentHash === 'paidat-explicit-hash',
+        )!
+        expect(inv.paidAt).toBe(new Date(blockMs).toISOString())
+      })
+
+      it('explicit paidAtMs upgrades a previously-stored fallback value', () => {
+        const { addInvoice, setTxHash, setValidated } = useTrackedInvoiceStore.getState()
+
+        addInvoice(createMockTrackedInvoice({ invoiceId: 'PAIDAT-UPGRADE' }, 'paidat-upgrade-hash'))
+        setTxHash('paidat-upgrade-hash', `0x${'b'.repeat(64)}` as `0x${string}`)
+
+        // First call with no paidAtMs — fallback Date.now()
+        setValidated('paidat-upgrade-hash', true)
+        const fallback = useTrackedInvoiceStore.getState().invoices.find(
+          (i) => i.contentHash === 'paidat-upgrade-hash',
+        )!.paidAt
+        expect(fallback).toBeDefined()
+
+        // Second call with explicit block timestamp — upgrades the value
+        const blockMs = 1_600_000_000_000
+        setValidated('paidat-upgrade-hash', true, blockMs)
+
+        const inv = useTrackedInvoiceStore.getState().invoices.find(
+          (i) => i.contentHash === 'paidat-upgrade-hash',
+        )!
+        expect(inv.paidAt).toBe(new Date(blockMs).toISOString())
+        expect(inv.paidAt).not.toBe(fallback)
+      })
+
+      it('undefined paidAtMs does not downgrade an existing paidAt', () => {
+        const { addInvoice, setTxHash, setValidated } = useTrackedInvoiceStore.getState()
+
+        addInvoice(createMockTrackedInvoice({ invoiceId: 'PAIDAT-NODOWN' }, 'paidat-nodown-hash'))
+        setTxHash('paidat-nodown-hash', `0x${'c'.repeat(64)}` as `0x${string}`)
+
+        // First call with real block timestamp
+        const blockMs = 1_650_000_000_000
+        setValidated('paidat-nodown-hash', true, blockMs)
+        const real = new Date(blockMs).toISOString()
+
+        // Second call with undefined (e.g., later caller where getBlock failed) — must not clobber
+        setValidated('paidat-nodown-hash', true, undefined)
+
+        const inv = useTrackedInvoiceStore.getState().invoices.find(
+          (i) => i.contentHash === 'paidat-nodown-hash',
+        )!
+        expect(inv.paidAt).toBe(real)
+      })
+
+      it('falls back to wall-clock when paidAtMs is undefined and no paidAt set', () => {
+        const { addInvoice, setTxHash, setValidated } = useTrackedInvoiceStore.getState()
+
+        addInvoice(createMockTrackedInvoice({ invoiceId: 'PAIDAT-FALLBACK' }, 'paidat-fallback-hash'))
+        setTxHash('paidat-fallback-hash', `0x${'d'.repeat(64)}` as `0x${string}`)
+
+        const before = Date.now()
+        setValidated('paidat-fallback-hash', true)
+        const after = Date.now()
+
+        const inv = useTrackedInvoiceStore.getState().invoices.find(
+          (i) => i.contentHash === 'paidat-fallback-hash',
+        )!
+        expect(inv.paidAt).toBeDefined()
+        const paidAtMs = new Date(inv.paidAt!).getTime()
+        expect(paidAtMs).toBeGreaterThanOrEqual(before)
+        expect(paidAtMs).toBeLessThanOrEqual(after)
+      })
+    })
+
     describe('setTxHash validates hash format', () => {
       it('rejects non-hex string (not 0x-prefixed)', () => {
         const { addInvoice, setTxHash } = useTrackedInvoiceStore.getState()

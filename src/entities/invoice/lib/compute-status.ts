@@ -23,8 +23,10 @@ export interface InvoiceStatusInput {
 export function computeInvoiceStatus(input: InvoiceStatusInput): InvoiceStatus {
   const { tracked, dueAt } = input
 
-  // 1. txHash + validated → paid (terminal, highest priority)
-  if (tracked?.txHash && tracked?.txHashValidated) return 'paid'
+  // 1. txHash + (validated OR finalized) → paid (terminal, highest priority).
+  // finalized implies paid: setFinalized requires txHashValidated=true at write
+  // time, so finalized=true is strictly stronger than txHashValidated=true.
+  if (tracked?.txHash && (tracked.txHashValidated || tracked.finalized)) return 'paid'
 
   // 2. txHash + not validated → confirming
   if (tracked?.txHash) return 'confirming'

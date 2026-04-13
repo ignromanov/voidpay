@@ -13,6 +13,11 @@ let mockReceiptSuccess = false
 let mockReceiptError: Error | null = null
 let mockCurrentBlockNumber: bigint = 100n
 
+// Fixed block timestamp returned by getBlock mock.
+// 1_700_000_000 seconds (2023-11-14 UTC) → 1_700_000_000_000 ms.
+const MOCK_BLOCK_TIMESTAMP_S = 1_700_000_000n
+const MOCK_BLOCK_TIMESTAMP_MS = 1_700_000_000_000
+
 vi.mock('wagmi', () => ({
   useWaitForTransactionReceipt: vi.fn(() => ({
     data: mockReceiptData,
@@ -29,6 +34,7 @@ vi.mock('wagmi', () => ({
       value: 1000000000000000000n,
     }),
     getTransactionReceipt: vi.fn().mockResolvedValue(mockReceiptData),
+    getBlock: vi.fn().mockResolvedValue({ timestamp: MOCK_BLOCK_TIMESTAMP_S }),
   })),
 }))
 
@@ -124,7 +130,7 @@ describe('usePaymentVerification', () => {
     )
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true, MOCK_BLOCK_TIMESTAMP_MS)
     })
 
     expect(mockSetError).not.toHaveBeenCalled()
@@ -163,7 +169,7 @@ describe('usePaymentVerification', () => {
     )
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('erc20-001-hash', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('erc20-001-hash', true, MOCK_BLOCK_TIMESTAMP_MS)
     })
 
     expect(mockSetError).not.toHaveBeenCalled()
@@ -266,7 +272,7 @@ describe('usePaymentVerification', () => {
     rerender()
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true, MOCK_BLOCK_TIMESTAMP_MS)
     })
   })
 
@@ -332,7 +338,7 @@ describe('usePaymentVerification', () => {
     rerender({ enabled: true })
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true, MOCK_BLOCK_TIMESTAMP_MS)
     })
   })
 
@@ -375,7 +381,7 @@ describe('usePaymentVerification', () => {
     rerender()
 
     await waitFor(() => {
-      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true)
+      expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true, MOCK_BLOCK_TIMESTAMP_MS)
     })
   })
 })

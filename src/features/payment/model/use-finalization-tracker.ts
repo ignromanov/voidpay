@@ -51,10 +51,21 @@ export function useFinalizationTracker({
 
     publicClient
       .waitForTransactionReceipt({ hash: txHash })
-      .then(() => {
+      .then(async (receipt) => {
+        if (cancelled) return
+        // Best-effort fetch of the block's wall-clock timestamp so paidAt
+        // records the on-chain time, not the verifier's wall clock. Store
+        // falls back to Date.now() if this throws or returns undefined.
+        let paidAtMs: number | undefined
+        try {
+          const block = await publicClient.getBlock({ blockNumber: receipt.blockNumber })
+          paidAtMs = Number(block.timestamp) * 1000
+        } catch (err) {
+          console.warn('[useFinalizationTracker] getBlock for paidAt failed:', err)
+        }
         if (cancelled) return
         clearTimeout(timeoutId)
-        setValidated(contentHash, true)
+        setValidated(contentHash, true, paidAtMs)
         setFinalized(contentHash)
         setTrackingState('finalized')
       })

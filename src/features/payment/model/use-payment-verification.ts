@@ -53,6 +53,7 @@ export function usePaymentVerification({
   const [verifyDone, setVerifyDone] = useState(false)
   const [verifyError, setVerifyError] = useState<string | undefined>(undefined)
   const [txBlockNumber, setTxBlockNumber] = useState<bigint | undefined>(undefined)
+  const [blockTimestampMs, setBlockTimestampMs] = useState<number | undefined>(undefined)
   const [confirmations, setLocalConfirmations] = useState<ConfirmationProgress | undefined>(
     undefined,
   )
@@ -104,6 +105,30 @@ export function usePaymentVerification({
       },
     )
   }, [enabled, isReceiptSuccess, receiptBlockStr, receipt, publicClient, tokenAddress, txHash])
+
+  // Fetch the block's wall-clock timestamp once the receipt is known, so we can
+  // record the transaction's actual on-chain time as paidAt instead of the
+  // verifier's wall clock at confirmation time (which drifts by minutes for soft
+  // confirmations and by days if the invoice was paid earlier and opened later).
+  useEffect(() => {
+    if (!enabled) return
+    if (!isReceiptSuccess || !receipt || !publicClient) return
+    if (blockTimestampMs !== undefined) return
+
+    let cancelled = false
+    publicClient.getBlock({ blockNumber: receipt.blockNumber }).then(
+      (block) => {
+        if (cancelled) return
+        setBlockTimestampMs(Number(block.timestamp) * 1000)
+      },
+      (err) => {
+        // Best-effort: store falls back to Date.now() if this never resolves.
+        console.warn('[usePaymentVerification] getBlock for paidAt failed:', err)
+      },
+    )
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, isReceiptSuccess, receiptBlockStr, publicClient])
 
   // Keep store action refs stable so async callbacks always use the latest
   const setStoreErrorRef = useRef(setStoreError)
@@ -211,10 +236,10 @@ export function usePaymentVerification({
     setConfirmationsRef.current(contentHash, progress)
 
     if (current >= requiredConfirmations) {
-      setValidatedRef.current(contentHash, true)
+      setValidatedRef.current(contentHash, true, blockTimestampMs)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentBlock, verifyDone, txBlockNumber])
+  }, [currentBlock, verifyDone, txBlockNumber, blockTimestampMs])
 
   const isVerifying = isReceiptLoading && !isReceiptSuccess
   const isConfirming =
