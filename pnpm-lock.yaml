@@ -90,8 +90,8 @@ importers:
         specifier: ^3.5.0
         version: 3.5.0
       use-debounce:
-        specifier: ^10.0.6
-        version: 10.0.6(react@19.2.3)
+        specifier: ^10.1.1
+        version: 10.1.1(react@19.2.3)
       uuid:
         specifier: ^13.0.0
         version: 13.0.0
@@ -4986,8 +4986,8 @@ packages:
       '@types/react':
         optional: true
 
-  use-debounce@10.0.6:
-    resolution: {integrity: sha512-C5OtPyhAZgVoteO9heXMTdW7v/IbFI+8bSVKYCJrSmiWWCLsbUxiBSp4t9v0hNBTGY97bT72ydDIDyGSFWfwXg==}
+  use-debounce@10.1.1:
+    resolution: {integrity: sha512-kvds8BHR2k28cFsxW8k3nc/tRga2rs1RHYCqmmGqb90MEeE++oALwzh2COiuBLO1/QXiOuShXoSN2ZpWnMmvuQ==}
     engines: {node: '>= 16.0.0'}
     peerDependencies:
       react: '*'
@@ -6076,7 +6076,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
       '@types/debug': 4.1.13
-      debug: 4.4.3
+      debug: 4.3.4
       pony-cause: 2.1.11
       semver: 7.7.4
       uuid: 9.0.1
@@ -11307,7 +11307,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.7
 
-  use-debounce@10.0.6(react@19.2.3):
+  use-debounce@10.1.1(react@19.2.3):
     dependencies:
       react: 19.2.3
 
