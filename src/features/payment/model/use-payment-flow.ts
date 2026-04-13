@@ -156,9 +156,11 @@ export function usePaymentFlow({
     hash: txHash,
     confirmations: 1,
     chainId: invoice.networkId,
-    // Cap at 60s (viem default is 180s) so a stuck tx surfaces an error
-    // within one block window instead of hanging on the spinner.
-    timeout: 60_000,
+    // Explicit viem default (180s) — documents the ceiling. With
+    // `retry: 0` below, this is the maximum hidden wait for a stuck tx
+    // before the error surfaces; 60s was too aggressive for near-zero
+    // gas on L1 where inclusion can take several blocks.
+    timeout: 180_000,
     onReplaced: (replacement) => {
       // replacement.reason: 'replaced' | 'repriced' | 'cancelled'
       // 'cancelled' → user sent a self-transfer with same nonce (cancel the payment)
