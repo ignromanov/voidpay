@@ -19,7 +19,7 @@
 import { useEffect, useRef } from 'react'
 import { useConnectModal, useAccountModal, useChainModal } from '@rainbow-me/rainbowkit'
 import { useAccount, useChainId } from 'wagmi'
-import { WalletIcon, ChevronDownIcon } from '@/shared/ui/icons'
+import { WalletIcon, ChevronDownIcon, Loader2Icon } from '@/shared/ui/icons'
 import { NetworkIcon } from '@/shared/ui/network-icon'
 import { Button } from '@/shared/ui/button'
 import { truncateAddress } from '@/shared/lib/validation'
@@ -54,19 +54,32 @@ export function WalletButton({ autoConnect = false }: WalletButtonProps) {
   const { openAccountModal } = useAccountModal()
   const { openChainModal } = useChainModal()
 
+  // During wagmi hydration/reconnect we show an explicit disabled loading button
+  // instead of hiding the UI. Hiding it (opacity:0) made clicks fall through and
+  // the whole header felt frozen while wagmi restored the persisted connection.
+  if (isReconnecting) {
+    return (
+      <>
+        {autoConnect && <AutoConnectTrigger />}
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+          disabled
+          aria-busy="true"
+          aria-label="Reconnecting wallet"
+        >
+          <Loader2Icon className="h-4 w-4 animate-spin" />
+          <span className="hidden sm:inline">Reconnecting…</span>
+        </Button>
+      </>
+    )
+  }
+
   return (
     <>
       {autoConnect && <AutoConnectTrigger />}
-      <div
-        {...(isReconnecting && {
-          'aria-hidden': true,
-          style: {
-            opacity: 0,
-            pointerEvents: 'none' as const,
-            userSelect: 'none' as const,
-          },
-        })}
-      >
+      <div>
         {!isConnected ? (
           <Button
             variant="outline"

@@ -163,17 +163,23 @@ export function SmartPayButton({
     }
   }, [realStep, txHash, onSuccess, devOverride])
 
+  // Reconnect takes priority over idle labels — visible spinner + "Reconnecting..."
+  // so the button is obviously busy instead of looking like a disabled Pay button.
+  const isReconnectingIdle = isReconnecting && step === 'idle' && !devOverride
   const baseLabel = getButtonLabel(step, idleSubState, invoice.currency, subtotal, invoice.decimals)
-  const label = (isReconnecting && step === 'idle' && idleSubState === 'disconnected')
-    ? { primary: 'Reconnecting...', secondary: 'Please wait' }
+  const label = isReconnectingIdle
+    ? { primary: 'Reconnecting…', secondary: 'Please wait' }
     : baseLabel
-  const ariaLabel = getAriaLabel(step, idleSubState, invoice.currency, subtotal, invoice.decimals)
+  const ariaLabel = isReconnectingIdle
+    ? 'Reconnecting wallet, please wait'
+    : getAriaLabel(step, idleSubState, invoice.currency, subtotal, invoice.decimals)
   const progress = getProgress(step)
-  const isInProgress = IN_PROGRESS_STEPS.has(step)
+  const isRealInProgress = IN_PROGRESS_STEPS.has(step)
+  const isInProgress = isRealInProgress || isReconnectingIdle
   const isSuccess = step === 'success'
   const isSuccessState = isSuccess && !devOverride
-  // Cancel available for steps where wallet may not respond (not confirming — tx already sent)
-  const canCancel = isInProgress && step !== 'confirming' && !devOverride
+  // Cancel available for real payment steps only — reconnect is not cancelable.
+  const canCancel = isRealInProgress && step !== 'confirming' && !devOverride
 
   // Cancel overlay state (hover on desktop, tap-toggle on mobile)
   const [showCancel, setShowCancel] = useState(false)
