@@ -120,6 +120,10 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
 
   const handlePaymentSuccess = useCallback(() => { setPaymentError(null) }, [])
   const handlePaymentError = useCallback((error: PaymentError) => { setPaymentError(error.message) }, [])
+  const handleDismissError = useCallback(() => {
+    setPaymentError(null)
+    dismissError()
+  }, [dismissError])
 
   useFinalizationToast({
     finalized,
@@ -205,7 +209,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                     status={panelStatus}
                     source={source}
                     {...(paymentError ? { error: paymentError } : storedError ? { error: storedError } : {})}
-                    onDismissError={dismissError}
+                    onDismissError={handleDismissError}
                     pollingMode={polling.mode}
                     onVerifyTxHash={verifyTxHash}
                     onIvePaid={polling.startAggressivePolling}
