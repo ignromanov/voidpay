@@ -1,4 +1,5 @@
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { formatDateCompact } from '@/shared/lib/date-time'
 import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
 import { XCircleIcon } from '@/shared/ui/icons'
 import { NetworkChip } from './NetworkChip'
@@ -10,9 +11,10 @@ interface ExpiredStateProps {
   decimals: number
   currency: string
   networkId: number
+  dueAt: number
 }
 
-export function ExpiredState({ subtotal, magicDust, exactTotal, decimals, currency, networkId }: ExpiredStateProps) {
+export function ExpiredState({ subtotal, magicDust, exactTotal, decimals, currency, networkId, dueAt }: ExpiredStateProps) {
   const formattedSubtotal = formatAmount(subtotal, decimals)
   const hasMagicDust = magicDust !== '0'
   const formattedExact = hasMagicDust
@@ -30,11 +32,13 @@ export function ExpiredState({ subtotal, magicDust, exactTotal, decimals, curren
           <p className="text-sm font-medium text-red-400">
             This invoice has expired
           </p>
-          <p className="text-xs text-zinc-500">
-            Payment actions are disabled
-          </p>
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+            <NetworkChip networkId={networkId} />
+            <p className="text-xs text-zinc-500">
+              Was due {formatDateCompact(dueAt)} · Payment disabled
+            </p>
+          </div>
         </div>
-        <NetworkChip networkId={networkId} />
       </div>
 
       {/* Muted amount */}

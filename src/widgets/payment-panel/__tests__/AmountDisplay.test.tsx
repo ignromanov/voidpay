@@ -1,6 +1,9 @@
 import { render, screen } from '@/shared/lib/test-utils'
 import { describe, it, expect } from 'vitest'
+import { formatDateCompact } from '@/shared/lib/date-time'
 import { AmountDisplay } from '../ui/AmountDisplay'
+
+const DUE_AT = 1776297600 // pinned for deterministic date rendering
 
 describe('AmountDisplay', () => {
   it('renders formatted total amount with currency', () => {
@@ -12,10 +15,10 @@ describe('AmountDisplay', () => {
         decimals={6}
         currency="USDC"
         networkId={1}
+        dueAt={DUE_AT}
       />
     )
 
-    // Main amount display - the subtotal (1.00 USDC)
     expect(screen.getByText('USDC')).toBeInTheDocument()
   })
 
@@ -28,12 +31,11 @@ describe('AmountDisplay', () => {
         decimals={6}
         currency="USDC"
         networkId={1}
+        dueAt={DUE_AT}
       />
     )
 
-    // MagicDustBadge with "Exact amount" label
     expect(screen.getByText(/Exact amount/i)).toBeInTheDocument()
-    // FingerprintIcon inside MagicDustBadge
     const svg = document.querySelector('svg')
     expect(svg).not.toBeNull()
   })
@@ -47,6 +49,7 @@ describe('AmountDisplay', () => {
         decimals={6}
         currency="USDC"
         networkId={1}
+        dueAt={DUE_AT}
       />
     )
 
@@ -62,10 +65,10 @@ describe('AmountDisplay', () => {
         decimals={6}
         currency="USDC"
         networkId={1}
+        dueAt={DUE_AT}
       />
     )
 
-    // formatAmount with useGrouping=true produces "999,999.00"
     expect(screen.getByText('999,999.00')).toBeInTheDocument()
   })
 
@@ -78,29 +81,14 @@ describe('AmountDisplay', () => {
         decimals={18}
         currency="ETH"
         networkId={1}
+        dueAt={DUE_AT}
       />
     )
 
-    // MagicDustBadge with "Exact amount" label
     expect(screen.getByText(/Exact amount/i)).toBeInTheDocument()
   })
 
-  it('renders "Total Due" label', () => {
-    render(
-      <AmountDisplay
-        subtotal="1000000"
-        magicDust="0"
-        exactTotal="1000000"
-        decimals={6}
-        currency="USDC"
-        networkId={1}
-      />
-    )
-
-    expect(screen.getByText('Total Due')).toBeInTheDocument()
-  })
-
-  it('renders network chip in the Total Due row', () => {
+  it('renders network chip in the metadata row', () => {
     render(
       <AmountDisplay
         subtotal="1000000"
@@ -109,11 +97,30 @@ describe('AmountDisplay', () => {
         decimals={6}
         currency="USDC"
         networkId={42161}
+        dueAt={DUE_AT}
       />
     )
 
     const chip = screen.getByTestId('payment-network-chip')
     expect(chip).toBeInTheDocument()
     expect(chip).toHaveTextContent('Arbitrum')
+  })
+
+  it('renders due date in the metadata row', () => {
+    render(
+      <AmountDisplay
+        subtotal="1000000"
+        magicDust="0"
+        exactTotal="1000000"
+        decimals={6}
+        currency="USDC"
+        networkId={1}
+        dueAt={DUE_AT}
+      />
+    )
+
+    expect(
+      screen.getByText(`Due ${formatDateCompact(DUE_AT)}`)
+    ).toBeInTheDocument()
   })
 })

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { formatRelativeTime } from '@/shared/lib/date-time'
 import { cn } from '@/shared/lib/utils'
 import { toast } from '@/shared/lib/toast'
 import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
@@ -18,6 +19,7 @@ interface PaidConfirmationProps {
   decimals: number
   currency: string
   networkId: number
+  paidAt?: string | undefined
   confirmations?: ConfirmationProgress | undefined
   finalized?: boolean | undefined
   reorgDetected?: boolean | undefined
@@ -30,6 +32,7 @@ export function PaidConfirmation({
   decimals,
   currency,
   networkId,
+  paidAt,
   confirmations,
   finalized = false,
   reorgDetected = false,
@@ -72,11 +75,13 @@ export function PaidConfirmation({
           <h3 className="text-lg font-semibold text-emerald-400">
             Payment Successful
           </h3>
-          <p className="text-xs text-zinc-500">
-            Funds have been sent on-chain
-          </p>
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+            <NetworkChip networkId={networkId} />
+            <p className="text-xs text-zinc-500">
+              {paidAt ? `Funds sent · ${formatRelativeTime(paidAt)}` : 'Funds have been sent on-chain'}
+            </p>
+          </div>
         </div>
-        <NetworkChip networkId={networkId} />
       </div>
 
       {/* Amount accent */}

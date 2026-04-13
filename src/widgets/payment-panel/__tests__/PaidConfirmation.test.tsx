@@ -27,7 +27,7 @@ describe('PaidConfirmation', () => {
     networkId: 1,
   }
 
-  it('renders network chip in the success header', () => {
+  it('renders network chip in the subtitle row', () => {
     render(<PaidConfirmation {...defaultProps} networkId={42161} />)
     const chip = screen.getByTestId('payment-network-chip')
     expect(chip).toBeDefined()
@@ -39,9 +39,21 @@ describe('PaidConfirmation', () => {
     expect(screen.getByText('Payment Successful')).toBeDefined()
   })
 
-  it('renders subtitle text', () => {
+  it('renders fallback subtitle when paidAt is not provided', () => {
     render(<PaidConfirmation {...defaultProps} />)
     expect(screen.getByText('Funds have been sent on-chain')).toBeDefined()
+  })
+
+  it('renders relative time subtitle when paidAt is provided', () => {
+    const paidAt = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+    render(<PaidConfirmation {...defaultProps} paidAt={paidAt} />)
+    expect(screen.getByText('Funds sent · 5 min ago')).toBeDefined()
+  })
+
+  it('renders "Just now" subtitle when paidAt is seconds old', () => {
+    const paidAt = new Date().toISOString()
+    render(<PaidConfirmation {...defaultProps} paidAt={paidAt} />)
+    expect(screen.getByText('Funds sent · Just now')).toBeDefined()
   })
 
   it('renders formatted paid amount', () => {

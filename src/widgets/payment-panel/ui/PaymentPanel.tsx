@@ -53,6 +53,10 @@ export function PaymentPanel({
   const [qrOpen, setQrOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
 
+  const paidAtISO = useTrackedInvoiceStore((s) =>
+    contentHash ? s.getInvoice(contentHash)?.paidAt : undefined
+  )
+
   const handlePdfExport = useCallback(() => {
     track(AnalyticsEvent.PDF_EXPORT, { source: 'button' })
     const invoiceUrl = typeof window !== 'undefined' ? window.location.href : undefined
@@ -145,6 +149,7 @@ export function PaymentPanel({
                 decimals={invoice.decimals}
                 currency={invoice.currency}
                 networkId={invoice.networkId}
+                dueAt={invoice.dueAt}
               />
               <ActionSlot>{children}</ActionSlot>
 
@@ -192,6 +197,7 @@ export function PaymentPanel({
                 decimals={invoice.decimals}
                 currency={invoice.currency}
                 networkId={invoice.networkId}
+                paidAt={paidAtISO}
                 confirmations={confirmations}
                 finalized={finalized}
                 reorgDetected={reorgDetected}
@@ -235,6 +241,7 @@ export function PaymentPanel({
                 decimals={invoice.decimals}
                 currency={invoice.currency}
                 networkId={invoice.networkId}
+                dueAt={invoice.dueAt}
               />
             </motion.div>
           )}

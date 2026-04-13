@@ -157,6 +157,12 @@ export function usePaymentFlow({
     confirmations: 1,
     chainId: invoice.networkId,
     onReplaced: (replacement) => {
+      // TEMP DEBUG — remove after resolving 041 manual tests
+      console.log('[DEBUG onReplaced] FIRED', {
+        reason: replacement.reason,
+        oldHash: replacement.replacedTransaction?.hash,
+        newHash: replacement.transaction?.hash,
+      })
       // replacement.reason: 'replaced' | 'repriced' | 'cancelled'
       // 'cancelled' → user sent a self-transfer with same nonce (cancel the payment)
       if (replacement.reason === 'cancelled') {
@@ -325,6 +331,18 @@ export function usePaymentFlow({
     setError(contentHash, error.message)
     dispatch({ type: 'ERROR', error })
   }, [sendError, writeError, receiptError, switchError, state.step, contentHash, setError])
+
+  // TEMP DEBUG — remove after resolving 041 manual tests
+  useEffect(() => {
+    console.log('[DEBUG payment-flow]', {
+      step: state.step,
+      txHash,
+      isReceiptSuccess,
+      receiptError: receiptError?.message,
+      sendError: sendError?.message,
+      writeError: writeError?.message,
+    })
+  }, [state.step, txHash, isReceiptSuccess, receiptError, sendError, writeError])
 
   return { step: state.step, error: state.error, txHash: state.txHash, handlePay, handleCancel, idleSubState }
 }

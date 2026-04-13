@@ -1,4 +1,5 @@
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { formatDateCompact } from '@/shared/lib/date-time'
 import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
 import { NetworkChip } from './NetworkChip'
 
@@ -9,6 +10,7 @@ interface AmountDisplayProps {
   decimals: number
   currency: string
   networkId: number
+  dueAt: number
 }
 
 export function AmountDisplay({
@@ -18,6 +20,7 @@ export function AmountDisplay({
   decimals,
   currency,
   networkId,
+  dueAt,
 }: AmountDisplayProps) {
   const hasMagicDust = magicDust !== '0'
   const formattedSubtotal = formatAmount(subtotal, decimals)
@@ -27,11 +30,11 @@ export function AmountDisplay({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between gap-2 pr-12">
-        <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-          Total Due
-        </p>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pr-12">
         <NetworkChip networkId={networkId} />
+        <span className="text-xs text-zinc-500">
+          Due {formatDateCompact(dueAt)}
+        </span>
       </div>
 
       <div className="flex min-w-0 items-baseline gap-2">
