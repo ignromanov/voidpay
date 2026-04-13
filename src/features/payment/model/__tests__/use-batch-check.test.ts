@@ -75,7 +75,7 @@ const DECODED_INVOICE: DecodedBatchInvoice = {
   issuedAt: Math.floor(Date.now() / 1000) - 3600,
 }
 
-const mockDecoder = vi.fn<(url: string) => DecodedBatchInvoice | null>()
+const mockDecoder = vi.fn<(url: string) => Promise<DecodedBatchInvoice | null> | DecodedBatchInvoice | null>()
 
 function makeInvoice(
   id: string,

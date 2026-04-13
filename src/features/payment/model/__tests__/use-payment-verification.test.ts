@@ -120,7 +120,7 @@ describe('usePaymentVerification', () => {
     // Current block = 100, receipt block = 97, delta = 3 — threshold met
     mockCurrentBlockNumber = 100n
 
-    const { result } = renderHook(() =>
+    renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
         contentHash: 'native-001-hash',
@@ -159,7 +159,7 @@ describe('usePaymentVerification', () => {
     mockReceiptSuccess = true
     mockCurrentBlockNumber = 100n // delta = 3, ETH threshold met
 
-    const { result } = renderHook(() =>
+    renderHook(() =>
       usePaymentVerification({
         invoice: mockErc20Invoice,
         contentHash: 'erc20-001-hash',
@@ -252,7 +252,7 @@ describe('usePaymentVerification', () => {
     // current block = 99, delta = 1 — ETH needs 3, threshold NOT met
     mockCurrentBlockNumber = 99n
 
-    const { result, rerender } = renderHook(() =>
+    const { rerender } = renderHook(() =>
       usePaymentVerification({
         invoice: mockNativeInvoice,
         contentHash: 'native-001-hash',

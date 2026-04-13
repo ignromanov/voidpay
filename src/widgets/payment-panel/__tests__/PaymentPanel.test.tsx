@@ -75,7 +75,6 @@ describe('PaymentPanel', () => {
 
     it('shows AmountDisplay with correct values', () => {
       render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
-      expect(screen.getByText('Total Due')).toBeInTheDocument()
       expect(screen.getByText('USDC')).toBeInTheDocument()
     })
 
@@ -395,7 +394,7 @@ describe('PaymentPanel', () => {
         magicDust: undefined,
       }
       render(<PaymentPanel invoice={invoiceNoTotal} contentHash="test-content-hash" status="pending" />)
-      expect(screen.getByText('Total Due')).toBeInTheDocument()
+      expect(screen.getByText('Manual verification required')).toBeInTheDocument()
     })
 
     it('handles decimals=0', () => {
@@ -406,7 +405,7 @@ describe('PaymentPanel', () => {
         magicDust: '5',
       }
       render(<PaymentPanel invoice={integerInvoice} contentHash="test-content-hash" status="pending" />)
-      expect(screen.getByText('Total Due')).toBeInTheDocument()
+      expect(screen.getByText('Exact amount:')).toBeInTheDocument()
     })
 
     it('handles magicDust in total but magicDust field absent', () => {
@@ -427,7 +426,7 @@ describe('PaymentPanel', () => {
           status={'unknown' as any}
         />
       )
-      expect(screen.getByText('Total Due')).toBeInTheDocument()
+      expect(screen.getByText('Exact amount:')).toBeInTheDocument()
     })
 
     it('renders paid state without txHash with fallback', () => {
