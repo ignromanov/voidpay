@@ -10,10 +10,12 @@ import {
   arbitrum,
   optimism,
   polygon,
+  base,
   sepolia,
   arbitrumSepolia,
   optimismSepolia,
   polygonAmoy,
+  baseSepolia,
 } from 'wagmi/chains'
 
 export const NETWORKS = {
@@ -37,6 +39,11 @@ export const NETWORKS = {
     chain: polygon,
     currency: 'MATIC',
   },
+  [base.id]: {
+    name: 'Base',
+    chain: base,
+    currency: 'ETH',
+  },
   // Testnets
   [sepolia.id]: {
     name: 'Sepolia',
@@ -58,6 +65,11 @@ export const NETWORKS = {
     chain: polygonAmoy,
     currency: 'POL',
   },
+  [baseSepolia.id]: {
+    name: 'Base Sepolia',
+    chain: baseSepolia,
+    currency: 'ETH',
+  },
 } as const
 
 export type NetworkId = keyof typeof NETWORKS
@@ -70,10 +82,12 @@ export const NETWORK_CODES: Record<NetworkId, string> = {
   [arbitrum.id]: 'arb',
   [optimism.id]: 'op',
   [polygon.id]: 'poly',
+  [base.id]: 'base',
   [sepolia.id]: 'sep',
   [arbitrumSepolia.id]: 'arb-sep',
   [optimismSepolia.id]: 'op-sep',
   [polygonAmoy.id]: 'amoy',
+  [baseSepolia.id]: 'base-sep',
 }
 
 export const NETWORK_CODES_REVERSE: Record<string, NetworkId> = {
@@ -81,8 +95,10 @@ export const NETWORK_CODES_REVERSE: Record<string, NetworkId> = {
   arb: arbitrum.id,
   op: optimism.id,
   poly: polygon.id,
+  base: base.id,
   sep: sepolia.id,
   'arb-sep': arbitrumSepolia.id,
   'op-sep': optimismSepolia.id,
   amoy: polygonAmoy.id,
+  'base-sep': baseSepolia.id,
 }

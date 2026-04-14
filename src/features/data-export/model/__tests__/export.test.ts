@@ -37,6 +37,7 @@ describe('exportUserData', () => {
   it('includes tracked invoices', () => {
     useTrackedInvoiceStore.setState({
       invoices: [{
+        contentHash: 'test-hash',
         invoiceId: 'INV-001',
         invoiceUrl: 'https://voidpay.xyz/pay#test',
         source: 'created',

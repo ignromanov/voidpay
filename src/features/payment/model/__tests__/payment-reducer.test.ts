@@ -141,4 +141,36 @@ describe('paymentReducer', () => {
     expect(state.step).toBe('sending')
     expect(state.intent).toBe(true)
   })
+
+  it('REPLACED updates txHash when in confirming step', () => {
+    const confirming: PaymentState = {
+      ...INITIAL_PAYMENT_STATE,
+      step: 'confirming',
+      intent: true,
+      txHash: '0xold' as `0x${string}`,
+    }
+    const newHash = '0xnew' as `0x${string}`
+    const state = paymentReducer(confirming, { type: 'REPLACED', hash: newHash })
+    expect(state.step).toBe('confirming')
+    expect(state.txHash).toBe(newHash)
+  })
+
+  it('REPLACED is ignored when not in confirming step', () => {
+    const sending: PaymentState = { ...INITIAL_PAYMENT_STATE, step: 'sending', intent: true }
+    const state = paymentReducer(sending, { type: 'REPLACED', hash: '0xnew' as `0x${string}` })
+    expect(state.step).toBe('sending')
+    expect(state.txHash).toBeNull()
+  })
+
+  it('REPLACED keeps error null when updating txHash', () => {
+    const confirming: PaymentState = {
+      ...INITIAL_PAYMENT_STATE,
+      step: 'confirming',
+      intent: true,
+      txHash: '0xold' as `0x${string}`,
+      error: null,
+    }
+    const state = paymentReducer(confirming, { type: 'REPLACED', hash: '0xnew' as `0x${string}` })
+    expect(state.error).toBeNull()
+  })
 })

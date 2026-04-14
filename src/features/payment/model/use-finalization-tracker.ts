@@ -5,7 +5,7 @@ import { toast } from '@/shared/lib/toast'
 import { getFinalizationTimeout } from '@/entities/network'
 
 export interface UseFinalizationTrackerParams {
-  invoiceId: string
+  contentHash: string
   txHash: `0x${string}`
   networkId: number
   onReorgDetected?: (() => void) | undefined
@@ -15,7 +15,7 @@ export interface UseFinalizationTrackerParams {
 type TrackingState = 'idle' | 'tracking' | 'finalized' | 'reorg' | 'timeout'
 
 export function useFinalizationTracker({
-  invoiceId,
+  contentHash,
   txHash,
   networkId,
   onReorgDetected,
@@ -31,10 +31,10 @@ export function useFinalizationTracker({
   useEffect(() => {
     if (!enabled) return
     const tracked = useTrackedInvoiceStore.getState().invoices.find(
-      (inv) => inv.invoiceId === invoiceId,
+      (inv) => inv.contentHash === contentHash,
     )
     if (tracked?.finalized) return
-    if (!publicClient || !txHash || !invoiceId) return
+    if (!publicClient || !txHash || !contentHash) return
 
     const timeoutMs = getFinalizationTimeout(networkId)
     let cancelled = false
@@ -51,11 +51,22 @@ export function useFinalizationTracker({
 
     publicClient
       .waitForTransactionReceipt({ hash: txHash })
-      .then(() => {
+      .then(async (receipt) => {
+        if (cancelled) return
+        // Best-effort fetch of the block's wall-clock timestamp so paidAt
+        // records the on-chain time, not the verifier's wall clock. Store
+        // falls back to Date.now() if this throws or returns undefined.
+        let paidAtMs: number | undefined
+        try {
+          const block = await publicClient.getBlock({ blockNumber: receipt.blockNumber })
+          paidAtMs = Number(block.timestamp) * 1000
+        } catch (err) {
+          console.warn('[useFinalizationTracker] getBlock for paidAt failed:', err)
+        }
         if (cancelled) return
         clearTimeout(timeoutId)
-        setValidated(invoiceId, true)
-        setFinalized(invoiceId)
+        setValidated(contentHash, true, paidAtMs)
+        setFinalized(contentHash)
         setTrackingState('finalized')
       })
       .catch((_err) => {
@@ -63,7 +74,7 @@ export function useFinalizationTracker({
         clearTimeout(timeoutId)
         // Reorg: transaction disappeared from chain
         toast.error('Chain reorg detected — transaction not found on chain')
-        resetPaymentState(invoiceId)
+        resetPaymentState(contentHash)
         onReorgDetected?.()
         setTrackingState('reorg')
       })
@@ -72,5 +83,5 @@ export function useFinalizationTracker({
       cancelled = true
       clearTimeout(timeoutId)
     }
-  }, [enabled, invoiceId, txHash, networkId, publicClient, setFinalized, setValidated, resetPaymentState, onReorgDetected])
+  }, [enabled, contentHash, txHash, networkId, publicClient, setFinalized, setValidated, resetPaymentState, onReorgDetected])
 }

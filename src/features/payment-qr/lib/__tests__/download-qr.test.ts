@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { toast as sonnerToast } from 'sonner'
 import { downloadQRCode } from '../download-qr'
 
-// sonner is aliased to __mocks__/sonner.tsx — toast.error is already a vi.fn().
+// sonner is aliased to src/shared/lib/test-utils/mocks/sonner.tsx — toast.error is already a vi.fn().
 // download-qr → @/shared/lib/toast → sonner, so we assert on sonnerToast.error.
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

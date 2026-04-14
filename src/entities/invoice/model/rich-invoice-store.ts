@@ -16,6 +16,8 @@ export type InvoiceSource = 'created' | 'received'
  * A tracked invoice entry
  */
 export interface TrackedInvoice {
+  /** SHA-256 content hash — unique storage key derived from URL fragment (bytes32-compatible) */
+  contentHash: string
   /** Unique invoice ID from the invoice data */
   invoiceId: string
   /** Generated URL for sharing */
@@ -52,34 +54,37 @@ const MAX_INVOICES = 50
 // Allows undefined values for optional fields (needed for exactOptionalPropertyTypes)
 type UpsertData = {
   [K in keyof TrackedInvoice]?: TrackedInvoice[K] | undefined
-} & { invoiceId: string }
+} & { contentHash: string; invoiceId: string }
 
 function _upsertInvoice(
   invoices: TrackedInvoice[],
   data: UpsertData,
 ): TrackedInvoice[] {
-  const existing = invoices.find((inv) => inv.invoiceId === data.invoiceId)
+  const existing = invoices.find((inv) => inv.contentHash === data.contentHash)
   const base = {
     ...existing,
     ...data,
+    // Preserve original source: 'created' must not be overwritten by 'received'
+    source: existing?.source ?? data.source,
     createdAt: existing?.createdAt ?? new Date().toISOString(),
   }
 
   if (!base.invoiceUrl || !base.source) {
-    console.warn('[TrackedInvoiceStore] Skipping upsert: missing required fields', data.invoiceId)
+    console.warn('[TrackedInvoiceStore] Skipping upsert: missing required fields', data.contentHash)
     return invoices
   }
 
   // Safe: required fields verified by guard above, optional undefined fields are valid at runtime
   const merged = {
     ...base,
+    contentHash: base.contentHash,
     invoiceId: base.invoiceId,
     invoiceUrl: base.invoiceUrl,
     source: base.source,
     createdAt: base.createdAt,
   } as TrackedInvoice
 
-  const filtered = invoices.filter((inv) => inv.invoiceId !== data.invoiceId)
+  const filtered = invoices.filter((inv) => inv.contentHash !== data.contentHash)
   return [merged, ...filtered].slice(0, MAX_INVOICES)
 }
 
@@ -91,21 +96,37 @@ interface TrackedInvoiceStore extends TrackedInvoiceState {
   // actions:
   addInvoice: (invoice: Omit<TrackedInvoice, 'createdAt'>) => void
   trackView: (data: {
+    contentHash: string
     invoiceId: string
     invoiceUrl: string
     source: InvoiceSource
     viewedAt: string
   }) => void
-  setTxHash: (invoiceId: string, txHash: `0x${string}`, validated?: boolean) => void
-  setValidated: (invoiceId: string, validated: boolean) => void
-  setFinalized: (invoiceId: string) => void
-  setConfirmations: (invoiceId: string, confirmations?: ConfirmationProgress) => void
-  setError: (invoiceId: string, error: string | null) => void
-  getInvoice: (invoiceId: string) => TrackedInvoice | undefined
-  removeInvoice: (invoiceId: string) => void
+  setTxHash: (contentHash: string, txHash: `0x${string}`, validated?: boolean) => void
+  /**
+   * Mark invoice as validated (soft-confirmed / finalized).
+   *
+   * `paidAtMs` — wall-clock timestamp of the transaction's block in milliseconds
+   * since epoch. Fetched by the caller via `publicClient.getBlock({ blockNumber })`.
+   *
+   * Semantic: an explicit `paidAtMs` always wins over any existing value (so a
+   * later caller that successfully fetched the block can upgrade an earlier
+   * fallback write). Undefined falls back to `Date.now()` only when no `paidAt`
+   * is set yet, so a subsequent undefined call never downgrades a real block
+   * timestamp back to wall-clock.
+   */
+  setValidated: (contentHash: string, validated: boolean, paidAtMs?: number) => void
+  setFinalized: (contentHash: string) => void
+  setConfirmations: (contentHash: string, confirmations?: ConfirmationProgress) => void
+  setError: (contentHash: string, error: string | null) => void
+  getInvoice: (contentHash: string) => TrackedInvoice | undefined
+  removeInvoice: (contentHash: string) => void
   clearAll: () => void
-  resetPaymentState: (invoiceId: string) => void
+  resetPaymentState: (contentHash: string) => void
 }
+
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex } from '@noble/hashes/utils.js'
 
 /**
  * Hook to access tracked invoices store
@@ -118,7 +139,7 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
       addInvoice: (invoice) => {
         set((state) => {
           const existing = state.invoices.find(
-            (inv) => inv.invoiceId === invoice.invoiceId
+            (inv) => inv.contentHash === invoice.contentHash
           )
           // W3-013: reset payment-critical fields on merge to prevent stale state
           const safeDefaults = {
@@ -141,21 +162,35 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
 
       trackView: (data) => {
         set((state) => ({
-          invoices: _upsertInvoice(state.invoices, data),
+          invoices: _upsertInvoice(state.invoices, {
+            contentHash: data.contentHash,
+            invoiceId: data.invoiceId,
+            invoiceUrl: data.invoiceUrl,
+            source: data.source,
+            viewedAt: data.viewedAt,
+          }),
         }))
       },
 
-      setTxHash: (invoiceId, txHash, validated = false) => {
+      setTxHash: (contentHash, txHash, validated = false) => {
         const TX_HASH_REGEX = /^0x[a-fA-F0-9]{64}$/
         if (!TX_HASH_REGEX.test(txHash)) return
 
-        const exists = get().invoices.some(inv => inv.invoiceId === invoiceId)
-        if (!exists) {
-          console.warn('[TrackedInvoiceStore] setTxHash called for unknown invoice:', { invoiceId, txHash })
+        const existing = get().invoices.find(inv => inv.contentHash === contentHash)
+        if (!existing) {
+          console.warn('[TrackedInvoiceStore] setTxHash called for unknown invoice:', { contentHash, txHash })
+          return
         }
+
+        // No-op: same hash re-linked with equal-or-weaker status.
+        // Prevents downgrading `txHashValidated: true → false` (or wiping
+        // `paidAt`) when a later discovery/polling path re-reports the same
+        // already-validated transaction on a fresh mount (e.g. after reload).
+        if (existing.txHash === txHash && existing.txHashValidated && !validated) return
+
         set((state) => ({
           invoices: state.invoices.map((inv) =>
-            inv.invoiceId === invoiceId
+            inv.contentHash === contentHash
               ? {
                   ...inv,
                   txHash,
@@ -167,40 +202,45 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
         }))
       },
 
-      setValidated: (invoiceId, validated) => {
+      setValidated: (contentHash, validated, paidAtMs) => {
         // W3-014: guard against missing txHash
-        const invoice = get().invoices.find(inv => inv.invoiceId === invoiceId)
+        const invoice = get().invoices.find(inv => inv.contentHash === contentHash)
         if (!invoice?.txHash) return
 
         set((state) => ({
-          invoices: state.invoices.map((inv) =>
-            inv.invoiceId === invoiceId
-              ? {
-                  ...inv,
-                  txHashValidated: validated,
-                  ...(validated ? { paidAt: new Date().toISOString() } : {}),
-                }
-              : inv
-          ),
+          invoices: state.invoices.map((inv) => {
+            if (inv.contentHash !== contentHash) return inv
+            const next: TrackedInvoice = { ...inv, txHashValidated: validated }
+            if (validated) {
+              if (paidAtMs !== undefined) {
+                // Explicit block timestamp: always wins (upgrades any fallback).
+                next.paidAt = new Date(paidAtMs).toISOString()
+              } else if (!inv.paidAt) {
+                // No explicit value and nothing stored yet: wall-clock fallback.
+                next.paidAt = new Date().toISOString()
+              }
+            }
+            return next
+          }),
         }))
       },
 
-      setFinalized: (invoiceId) => {
-        const invoice = get().invoices.find(inv => inv.invoiceId === invoiceId)
+      setFinalized: (contentHash) => {
+        const invoice = get().invoices.find(inv => inv.contentHash === contentHash)
         if (!invoice?.txHashValidated) return
         set((state) => ({
           invoices: state.invoices.map((inv) =>
-            inv.invoiceId === invoiceId
+            inv.contentHash === contentHash
               ? { ...inv, finalized: true }
               : inv
           ),
         }))
       },
 
-      setConfirmations: (invoiceId, confirmations) => {
+      setConfirmations: (contentHash, confirmations) => {
         set((state) => ({
           invoices: state.invoices.map((inv) => {
-            if (inv.invoiceId !== invoiceId) return inv
+            if (inv.contentHash !== contentHash) return inv
             if (confirmations === undefined) {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { confirmations: _c, ...rest } = inv
@@ -214,34 +254,34 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
         }))
       },
 
-      setError: (invoiceId, error) => {
+      setError: (contentHash, error) => {
         set((state) => ({
           invoices: state.invoices.map((inv) =>
-            inv.invoiceId === invoiceId
+            inv.contentHash === contentHash
               ? { ...inv, error }
               : inv
           ),
         }))
       },
 
-      removeInvoice: (invoiceId) => {
+      removeInvoice: (contentHash) => {
         set((state) => ({
-          invoices: state.invoices.filter((inv) => inv.invoiceId !== invoiceId),
+          invoices: state.invoices.filter((inv) => inv.contentHash !== contentHash),
         }))
       },
 
-      getInvoice: (invoiceId) => {
-        return get().invoices.find((inv) => inv.invoiceId === invoiceId)
+      getInvoice: (contentHash) => {
+        return get().invoices.find((inv) => inv.contentHash === contentHash)
       },
 
       clearAll: () => {
         set({ invoices: [] })
       },
 
-      resetPaymentState: (invoiceId) => {
+      resetPaymentState: (contentHash) => {
         set((state) => ({
           invoices: state.invoices.map((inv) => {
-            if (inv.invoiceId !== invoiceId) return inv
+            if (inv.contentHash !== contentHash) return inv
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { txHash, txHashValidated, paidAt, confirmations, finalized, ...rest } = inv
             return rest
@@ -251,18 +291,39 @@ export const useTrackedInvoiceStore = create<TrackedInvoiceStore>()(
     }),
     {
       name: INVOICE_VIEW_STORE_KEY,
-      version: 1,
-      migrate: (persisted): TrackedInvoiceState => {
+      version: 2,
+      migrate: (persisted, version): TrackedInvoiceState => {
         try {
           const state = persisted as Record<string, unknown>
           if (!state || typeof state !== 'object' || !Array.isArray(state.invoices)) {
             return { invoices: [] }
           }
+
+          if (version < 2) {
+            const invoices = (state.invoices as Array<Record<string, unknown>>)
+              .map((inv) => {
+                const url = (inv.invoiceUrl as string) ?? ''
+                const hashIndex = url.indexOf('#')
+                const fragment = hashIndex === -1 ? '' : url.slice(hashIndex + 1)
+                if (!fragment) return null
+                const contentHash = bytesToHex(sha256(new TextEncoder().encode(fragment)))
+                return { ...inv, contentHash } as TrackedInvoice
+              })
+              .filter((inv): inv is TrackedInvoice => inv !== null)
+            return { invoices }
+          }
+
           return { invoices: state.invoices as TrackedInvoice[] }
-        } catch {
+        } catch (e) {
+          console.warn('[TrackedInvoiceStore] Migration failed, resetting store:', e)
           return { invoices: [] }
         }
       },
     }
   )
 )
+
+// Cross-tab sync removed: rehydrate() re-triggers migration from stale tabs
+// that still write version 1. Will be re-added with BroadcastChannel after
+// migration period is over (all users on v2).
+// See: https://github.com/pmndrs/zustand/pull/3336

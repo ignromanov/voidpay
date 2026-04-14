@@ -94,7 +94,7 @@ export default function ComingSoonPage() {
           />
           <FeatureCard
             title="Multi-Chain"
-            description="Ethereum, Arbitrum, Optimism, Polygon supported"
+            description="Ethereum, Base, Arbitrum, Optimism, Polygon supported"
           />
         </div>
       </div>

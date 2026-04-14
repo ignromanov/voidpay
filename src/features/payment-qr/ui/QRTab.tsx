@@ -2,7 +2,6 @@
 
 import { QRCodeSVG } from 'qrcode.react'
 import { DownloadIcon } from '@/shared/ui/icons'
-import { motion } from '@/shared/ui/motion'
 import { Button } from '@/shared/ui/button'
 import { Text } from '@/shared/ui/typography'
 import { track, AnalyticsEvent } from '@/features/analytics'
@@ -19,11 +18,9 @@ interface QRTabProps {
  */
 export function QRTab({ url }: QRTabProps) {
   return (
-    <motion.div
+    <div
       key="qr-tab"
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="flex flex-col items-center justify-center space-y-4 py-4"
+      className="flex flex-col items-center justify-center space-y-4 py-4 motion-safe:animate-slide-in-left"
     >
       <div data-qr-code className="w-full max-w-[300px] rounded-xl bg-white p-4 shadow-2xl">
         <QRCodeSVG
@@ -39,6 +36,6 @@ export function QRTab({ url }: QRTabProps) {
       <Button variant="secondary" size="sm" onClick={() => { track(AnalyticsEvent.SHARE_QR_DOWNLOAD); downloadQRCode() }}>
         <DownloadIcon size={16} className="mr-1.5" /> Download QR
       </Button>
-    </motion.div>
+    </div>
   )
 }

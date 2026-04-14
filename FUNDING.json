@@ -1,0 +1,13 @@
+{
+  "drips": {
+    "ethereum": {
+      "ownedBy": "0xA8A1F79C4dAa2eC25Af2C91349A6F60c5b41160E"
+    },
+    "optimism": {
+      "ownedBy": "0xA8A1F79C4dAa2eC25Af2C91349A6F60c5b41160E"
+    }
+  },
+  "opRetro": {
+    "projectId": "0x296f07b171ef318bd0a0c1c760c39766c8d5efb3d407533f01dd133b9b6f2bd5"
+  }
+}

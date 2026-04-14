@@ -72,7 +72,7 @@ export const termsContent = {
         {
           label: 'Selecting the correct network',
           description:
-            "ensure you're paying on the blockchain network specified in the invoice (Ethereum, Arbitrum, Optimism, or Polygon).",
+            "ensure you're paying on the blockchain network specified in the invoice (Ethereum, Base, Arbitrum, Optimism, or Polygon).",
         },
         {
           label: 'Verifying token contracts',

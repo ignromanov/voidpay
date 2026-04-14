@@ -4,6 +4,8 @@
  * Research: Honest comparison builds trust (23% conversion lift)
  */
 
+import Link from 'next/link'
+
 import { CheckIcon, XIcon, MinusIcon } from '@/shared/ui/icons'
 
 import { Heading, Text } from '@/shared/ui/typography'
@@ -19,8 +21,9 @@ type ComparisonRow = {
 }
 
 /**
- * Comparison data based on market research (December 2025)
+ * Comparison data based on market research (April 2026)
  * Sources: Request Finance docs, Basenode.io pricing, industry reports
+ * Research: RF uses hybrid centralized API + on-chain (not pure IPFS); KYB/KYC required for regulated services; pricing moved to subscription model
  * Order: VoidPay → Request → Basenode → Traditional (last)
  */
 const COMPARISON_DATA: ComparisonRow[] = [
@@ -32,23 +35,23 @@ const COMPARISON_DATA: ComparisonRow[] = [
     traditional: 'yes',
   },
   {
-    feature: 'KYC Required',
+    feature: 'KYC / KYB Required',
     voidpay: 'no',
-    requestNetwork: 'partial',
+    requestNetwork: 'yes',
     basenode: 'no',
     traditional: 'yes',
   },
   {
     feature: 'Data Storage',
     voidpay: 'None (URL)',
-    requestNetwork: 'IPFS',
+    requestNetwork: 'Centralized',
     basenode: 'Server',
     traditional: 'Server',
   },
   {
     feature: 'Platform Fee',
     voidpay: '$0',
-    requestNetwork: '1-2%',
+    requestNetwork: '$250+/mo',
     basenode: 'Freemium',
     traditional: '~6.6%',
   },
@@ -192,8 +195,16 @@ export function ComparisonTable() {
 
         {/* Disclaimer */}
         <Text variant="small" className="mt-6 text-center text-zinc-500">
-          Comparison based on public documentation as of December 2025. Features may vary.
+          Comparison based on public documentation as of April 2026. Features may vary.
         </Text>
+        <div className="mt-4 text-center">
+          <Link
+            href="/compare/request-finance"
+            className="text-sm text-violet-400 transition-colors hover:text-violet-300"
+          >
+            See detailed VoidPay vs Request Finance comparison →
+          </Link>
+        </div>
       </div>
     </section>
   )

@@ -25,8 +25,8 @@ export default defineConfig({
     exclude: ['**/node_modules/**', '**/dist/**', '**/worktrees/**', '**/assets/**'],
 
     alias: {
-      'framer-motion': path.resolve(__dirname, '__mocks__/framer-motion.tsx'),
-      sonner: path.resolve(__dirname, '__mocks__/sonner.tsx'),
+      'framer-motion': path.resolve(__dirname, 'src/shared/lib/test-utils/mocks/framer-motion.tsx'),
+      sonner: path.resolve(__dirname, 'src/shared/lib/test-utils/mocks/sonner.tsx'),
       // Force Node.js entry for brotli-wasm (web entry uses fetch for WASM loading)
       'brotli-wasm': path.resolve(__dirname, 'node_modules/brotli-wasm/index.node.js'),
     },

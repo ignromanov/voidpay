@@ -28,6 +28,15 @@ import type { Invoice } from '@/entities/invoice'
 // Re-export for convenient imports
 export { INITIAL_PAYMENT_STATE }
 
+// Stable references for useWaitForTransactionReceipt options. Inline objects
+// would change identity every render and force TanStack Query / viem's watcher
+// to re-subscribe during the long-lived `confirming` step.
+const RECEIPT_QUERY_OPTIONS = { retry: 0 } as const
+// Explicit viem default (180s). With retry: 0 above, this is the maximum
+// hidden wait for a stuck tx before the error surfaces; 60s was too aggressive
+// for near-zero gas on L1 where inclusion can take several blocks.
+const RECEIPT_TIMEOUT_MS = 180_000
+
 /**
  * Pure reducer for the payment state machine.
  *
@@ -58,6 +67,10 @@ export function paymentReducer(state: PaymentState, action: PaymentAction): Paym
       if (state.step !== 'sending') return state
       return { ...state, step: 'confirming', txHash: action.hash }
 
+    case 'REPLACED':
+      if (state.step !== 'confirming') return state
+      return { ...state, txHash: action.hash, error: null }
+
     case 'CONFIRMED':
       if (state.step !== 'confirming') return state
       return { ...state, step: 'success', intent: false }
@@ -79,7 +92,7 @@ export function paymentReducer(state: PaymentState, action: PaymentAction): Paym
 
 interface UsePaymentFlowParams {
   invoice: Invoice
-  invoiceId: string
+  contentHash: string
   exactTotal: string
 }
 
@@ -110,7 +123,7 @@ function createPaymentError(
  */
 export function usePaymentFlow({
   invoice,
-  invoiceId,
+  contentHash,
   exactTotal,
 }: UsePaymentFlowParams): UsePaymentFlowReturn {
   const [state, dispatch] = useReducer(paymentReducer, INITIAL_PAYMENT_STATE)
@@ -144,6 +157,23 @@ export function usePaymentFlow({
 
   const txHash = sendHash ?? writeHash
 
+  const handleReplaced = useCallback(
+    (replacement: { reason: 'replaced' | 'repriced' | 'cancelled'; transaction: { hash: `0x${string}` } }) => {
+      // 'cancelled' → user sent a self-transfer with same nonce (cancel the payment)
+      if (replacement.reason === 'cancelled') {
+        toast.info('Transaction cancelled in wallet', { duration: 4000 })
+        dispatch({ type: 'RESET' })
+        return
+      }
+      // 'replaced' / 'repriced' → same payment, new hash (speedup or gas bump)
+      const newHash = replacement.transaction.hash
+      setTxHash(contentHash, newHash, false)
+      dispatch({ type: 'REPLACED', hash: newHash })
+      toast.info('Transaction sped up', { duration: 3000 })
+    },
+    [contentHash, setTxHash],
+  )
+
   const {
     isSuccess: isReceiptSuccess,
     error: receiptError,
@@ -152,6 +182,9 @@ export function usePaymentFlow({
     hash: txHash,
     confirmations: 1,
     chainId: invoice.networkId,
+    timeout: RECEIPT_TIMEOUT_MS,
+    onReplaced: handleReplaced,
+    query: RECEIPT_QUERY_OPTIONS,
   })
 
   const idleSubState = deriveIdleSubState(isConnected, hasMismatch)
@@ -209,14 +242,18 @@ export function usePaymentFlow({
   useEffect(() => {
     if (state.step !== 'connecting' || !state.intent) return
 
-    if (connectModalOpen) {
-      modalWasOpen.current = true
+    // Wallet is connected — via modal OR background reconnect.
+    // Checked BEFORE connectModalOpen so we don't strand the flow when wagmi
+    // finishes a persisted reconnect while the Rainbow modal is still open
+    // (or still flipping `connectModalOpen` through an animation / internal
+    // state transition). Without this, the flow gets stuck in 'connecting'.
+    if (isConnected) {
+      dispatch({ type: 'CONNECTED' })
       return
     }
 
-    // User connected → progress to switching
-    if (isConnected) {
-      dispatch({ type: 'CONNECTED' })
+    if (connectModalOpen) {
+      modalWasOpen.current = true
       return
     }
 
@@ -280,9 +317,9 @@ export function usePaymentFlow({
       return
     }
 
-    setTxHash(invoiceId, txHash, false)
+    setTxHash(contentHash, receipt.transactionHash, false)
     dispatch({ type: 'CONFIRMED' })
-  }, [state.step, isReceiptSuccess, txHash, receipt, invoiceId, setTxHash])
+  }, [state.step, isReceiptSuccess, txHash, receipt, contentHash, setTxHash])
 
   // Effect: Handle wagmi errors (sticky — cleared by resetSend/resetWrite in handlePay)
   useEffect(() => {
@@ -290,24 +327,24 @@ export function usePaymentFlow({
     if (!wagmiError) return
     if (state.step === 'idle' || state.step === 'success') return
 
-    const errorType = classifyPaymentError(wagmiError, state.step)
+    const errorType = classifyPaymentError(wagmiError)
 
-    // Always log the original error for debugging
-    console.error(`[usePaymentFlow] ${state.step} error (${errorType}):`, wagmiError)
-
-    // User rejected — reset with visible toast, not an error banner
+    // User rejection is intent, not failure — silent reset with toast only
     if (errorType === 'USER_REJECTED') {
       toast.info('Payment canceled', { duration: 4000 })
       dispatch({ type: 'RESET' })
       return
     }
 
+    // Real errors — log for debugging, track analytics, show banner
+    const errorDetail = (wagmiError as { shortMessage?: string }).shortMessage ?? wagmiError.message
+    console.error(`[usePaymentFlow] ${state.step} error (${errorType}):`, errorDetail)
     track(AnalyticsEvent.ERROR_PAYMENT, { error_type: errorType })
 
     const error = createPaymentError(errorType, state.step)
-    setError(invoiceId, error.message)
+    setError(contentHash, error.message)
     dispatch({ type: 'ERROR', error })
-  }, [sendError, writeError, receiptError, switchError, state.step, invoiceId, setError])
+  }, [sendError, writeError, receiptError, switchError, state.step, contentHash, setError])
 
   return { step: state.step, error: state.error, txHash: state.txHash, handlePay, handleCancel, idleSubState }
 }

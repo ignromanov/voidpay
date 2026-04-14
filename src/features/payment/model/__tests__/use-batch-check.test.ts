@@ -28,7 +28,9 @@ vi.mock('@/entities/network', () => ({
 // Mock invoice store
 // ---------------------------------------------------------------------------
 const mockSetTxHash = vi.fn()
+const mockSetValidated = vi.fn()
 let mockInvoices: Array<{
+  contentHash: string
   invoiceId: string
   source: 'created' | 'received'
   txHash?: string
@@ -41,6 +43,7 @@ vi.mock('@/entities/invoice', () => ({
     const store = {
       invoices: mockInvoices,
       setTxHash: mockSetTxHash,
+      setValidated: mockSetValidated,
     }
     return selector ? selector(store) : store
   }),
@@ -72,17 +75,19 @@ const DECODED_INVOICE: DecodedBatchInvoice = {
   issuedAt: Math.floor(Date.now() / 1000) - 3600,
 }
 
-const mockDecoder = vi.fn<(url: string) => DecodedBatchInvoice | null>()
+const mockDecoder = vi.fn<(url: string) => Promise<DecodedBatchInvoice | null> | DecodedBatchInvoice | null>()
 
 function makeInvoice(
   id: string,
   source: 'created' | 'received' = 'created',
   txHash?: string,
 ) {
+  const hash = `${id}-hash`
   return {
+    contentHash: hash,
     invoiceId: id,
     source,
-    invoiceUrl: `https://voidpay.xyz/pay#${id}`,
+    invoiceUrl: `https://voidpay.xyz/pay#${hash}`,
     createdAt: new Date().toISOString(),
     ...(txHash ? { txHash } : {}),
   }
@@ -115,8 +120,8 @@ describe('useBatchCheck', () => {
     vi.useRealTimers()
   })
 
-  const renderBatchCheck = () =>
-    renderHook(() => useBatchCheck({ decodeInvoiceUrl: mockDecoder }))
+  const renderBatchCheck = (source: 'created' | 'received' = 'created') =>
+    renderHook(() => useBatchCheck({ source, decodeInvoiceUrl: mockDecoder }))
 
   // -------------------------------------------------------------------------
   // TC01: Checks all pending `source:'created'` invoices (no txHash)
@@ -272,9 +277,19 @@ describe('useBatchCheck', () => {
     await waitFor(() => {
       expect(mockSetTxHash).toHaveBeenCalledTimes(1)
       expect(mockSetTxHash).toHaveBeenCalledWith(
-        'INV-MATCH-002',
+        'INV-MATCH-002-hash',
         secondTransfer.hash,
         false,
+      )
+    })
+
+    // Exact-amount match upgrades directly to validated with block time.
+    await waitFor(() => {
+      expect(mockSetValidated).toHaveBeenCalledTimes(1)
+      expect(mockSetValidated).toHaveBeenCalledWith(
+        'INV-MATCH-002-hash',
+        true,
+        Date.parse(secondTransfer.blockTimestamp),
       )
     })
 
@@ -386,6 +401,44 @@ describe('useBatchCheck', () => {
     })
 
     expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  // -------------------------------------------------------------------------
+  // TC07b: source:'received' — checks pending received invoices, ignores created
+  // -------------------------------------------------------------------------
+  it("TC07b: source:'received' filters by received and ignores created", async () => {
+    mockInvoices = [
+      makeInvoice('INV-RCV-001', 'received'),
+      makeInvoice('INV-RCV-002', 'received'),
+      makeInvoice('INV-CRE-001', 'created'),
+      makeInvoice('INV-RCV-PAID', 'received', '0x' + 'd'.repeat(64)),
+    ]
+
+    const { result } = renderBatchCheck('received')
+
+    act(() => {
+      result.current.checkAll()
+    })
+
+    expect(result.current.progress.total).toBe(2)
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(DELAY_MS + 100)
+    })
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+    })
+
+    await waitFor(() => {
+      expect(result.current.isChecking).toBe(false)
+    })
+
+    expect(mockFetch).toHaveBeenCalledTimes(2)
   })
 
   // -------------------------------------------------------------------------

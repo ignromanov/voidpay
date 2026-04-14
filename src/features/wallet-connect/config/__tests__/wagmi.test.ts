@@ -112,8 +112,8 @@ describe('wagmi config with testnets', () => {
     const { wagmiConfig: config } = await import('../wagmi')
 
     const chains = config.chains
-    // Should have 8 chains: 4 mainnet + 4 testnet
-    expect(chains.length).toBe(8)
+    // Should have 10 chains: 5 mainnet + 5 testnet
+    expect(chains.length).toBe(10)
 
     // Check for testnet chains (Sepolia)
     const hasTestnet = chains.some((c) => c.testnet === true)
@@ -126,8 +126,8 @@ describe('wagmi config with testnets', () => {
     const { wagmiConfig: config } = await import('../wagmi')
 
     const chains = config.chains
-    // Should have only 4 mainnet chains
-    expect(chains.length).toBe(4)
+    // Should have only 5 mainnet chains
+    expect(chains.length).toBe(5)
 
     // No testnets should be present
     const hasTestnet = chains.some((c) => c.testnet === true)

@@ -154,6 +154,17 @@ describe('draftSlice', () => {
       expect(state.activeDraft?.data.tokenAddress).toBe('0xaf88d065e77c8cc2239327c5edb3a432268e5831')
     })
 
+    it('resets draftSyncStatus to idle', () => {
+      const { createNewDraft, setDraftSyncStatus } = useCreatorStore.getState()
+
+      setDraftSyncStatus('synced')
+      expect(useCreatorStore.getState().draftSyncStatus).toBe('synced')
+
+      createNewDraft()
+
+      expect(useCreatorStore.getState().draftSyncStatus).toBe('idle')
+    })
+
     it('creates one default line item', () => {
       const { createNewDraft } = useCreatorStore.getState()
 
@@ -254,6 +265,18 @@ describe('draftSlice', () => {
       const state = useCreatorStore.getState()
       expect(state.activeDraft).toBeNull()
       expect(state.lineItems).toEqual([])
+    })
+
+    it('resets draftSyncStatus to idle', () => {
+      const { createNewDraft, clearDraft, setDraftSyncStatus } = useCreatorStore.getState()
+
+      createNewDraft()
+      setDraftSyncStatus('syncing')
+      expect(useCreatorStore.getState().draftSyncStatus).toBe('syncing')
+
+      clearDraft()
+
+      expect(useCreatorStore.getState().draftSyncStatus).toBe('idle')
     })
   })
 
@@ -412,6 +435,30 @@ describe('draftSlice', () => {
       const state = useCreatorStore.getState()
       expect(state.lineItems).toHaveLength(1)
       expect(state.activeDraft).toBeNull()
+    })
+  })
+
+  describe('replaceDraft', () => {
+    it('resets draftSyncStatus to idle', () => {
+      const { createNewDraft, replaceDraft, setDraftSyncStatus } = useCreatorStore.getState()
+
+      createNewDraft()
+      setDraftSyncStatus('synced')
+      expect(useCreatorStore.getState().draftSyncStatus).toBe('synced')
+
+      replaceDraft({
+        invoiceId: 'REPLACED-001',
+        issuedAt: 1700000000,
+        dueAt: 1700100000,
+        networkId: 42161,
+        currency: 'USDC',
+        decimals: 6,
+        from: { name: 'Sender', walletAddress: '0x1234567890123456789012345678901234567890' },
+        client: { name: 'Client' },
+        items: [{ description: 'Service', quantity: 1, rate: '100' }],
+      })
+
+      expect(useCreatorStore.getState().draftSyncStatus).toBe('idle')
     })
   })
 

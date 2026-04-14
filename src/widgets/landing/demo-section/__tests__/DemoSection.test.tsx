@@ -25,6 +25,16 @@ function renderWithProviders(ui: ReactElement) {
 // Note: framer-motion is globally mocked via vitest.config.ts alias
 // Global mock: useReducedMotion returns true (accessibility mode)
 
+// Mock only encodeInvoice (WASM/brotli) — real getDemoInvoices runs with real fixtures,
+// but skips the WASM roundtrip that times out waitFor under parallel test load.
+vi.mock('@/features/invoice-codec', async () => {
+  const actual = await vi.importActual<typeof import('@/features/invoice-codec')>('@/features/invoice-codec')
+  return {
+    ...actual,
+    encodeInvoice: vi.fn(async () => 'test-hash'),
+  }
+})
+
 // Mock next/link to render as a proper anchor
 vi.mock('next/link', () => ({
   default: vi.fn(({ children, href, ...props }) => (
@@ -227,13 +237,13 @@ describe('DemoSection', () => {
   })
 
   describe('Navigation dots', () => {
-    it('should render 4 navigation dots', async () => {
+    it('should render 5 navigation dots', async () => {
       renderWithProviders(<DemoSection />)
 
       // Dots have aria-label="View invoice {id}" format
       await waitFor(() => {
         const dots = screen.getAllByRole('button', { name: /view invoice/i })
-        expect(dots).toHaveLength(4)
+        expect(dots).toHaveLength(5)
       })
     })
 
@@ -242,7 +252,7 @@ describe('DemoSection', () => {
 
       // Wait for async demo invoices to load
       await waitFor(() => {
-        expect(screen.getAllByRole('button', { name: /view invoice/i }).length).toBe(4)
+        expect(screen.getAllByRole('button', { name: /view invoice/i }).length).toBe(5)
       })
 
       // Click on third dot (Optimism - index 2)
@@ -255,21 +265,21 @@ describe('DemoSection', () => {
       expect(screen.getByText(/Optimistic Builders/i)).toBeInTheDocument()
     })
 
-    it('should navigate to fourth invoice (Polygon)', async () => {
+    it('should navigate to fifth invoice (Polygon)', async () => {
       renderWithProviders(<DemoSection />)
 
       // Wait for async demo invoices to load
       await waitFor(() => {
-        expect(screen.getAllByRole('button', { name: /view invoice/i }).length).toBe(4)
+        expect(screen.getAllByRole('button', { name: /view invoice/i }).length).toBe(5)
       })
 
-      // Click on fourth dot (Polygon - index 3)
+      // Click on fifth dot (Polygon - index 4, after Base)
       const dots = screen.getAllByRole('button', { name: /view invoice/i })
       await act(async () => {
-        fireEvent.click(dots[3]!)
+        fireEvent.click(dots[4]!)
       })
 
-      // Fourth invoice is Polygon - "PolyMarket Analytics Ltd."
+      // Fifth invoice is Polygon - "PolyMarket Analytics Ltd."
       expect(screen.getByText(/PolyMarket Analytics/i)).toBeInTheDocument()
     })
   })

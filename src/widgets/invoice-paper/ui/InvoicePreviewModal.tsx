@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { motion } from '@/shared/ui/motion'
 import { XIcon, PrinterIcon, DownloadIcon } from '@/shared/ui/icons'
 import { Dialog, DialogContent, DialogTitle, DialogClose, DialogDescription } from '@/shared/ui/dialog'
 import { Badge } from '@/shared/ui/badge'
@@ -14,34 +13,6 @@ import { generateInvoiceUrl } from '@/features/invoice-codec'
 import { track, AnalyticsEvent } from '@/features/analytics'
 import { exportInvoicePdf } from '@/features/pdf-export'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
-
-// Animation variants for smooth enter/exit
-const headerVariants = {
-  hidden: { y: -20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { delay: 0.05, duration: 0.2 },
-  },
-}
-
-const invoiceVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { delay: 0.1, duration: 0.25 },
-  },
-}
-
-const actionBarVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { delay: 0.15, duration: 0.2 },
-  },
-}
 
 // Network glow now handled by ScaledInvoicePreview via NETWORK_GLOW_SHADOWS
 
@@ -172,11 +143,8 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
           </DialogDescription>
 
           {/* Animated header */}
-          <motion.div
-            variants={headerVariants}
-            initial="hidden"
-            animate="visible"
-            className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b border-white/10 bg-zinc-800/80 px-3 py-2 backdrop-blur-md sm:px-4 sm:py-3"
+          <div
+            className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b border-white/10 bg-zinc-800/80 px-3 py-2 backdrop-blur-md sm:px-4 sm:py-3 motion-safe:animate-modal-section-down [animation-delay:50ms]"
           >
             <div className="flex items-center gap-2">
               <DialogTitle className="text-sm font-bold text-white sm:text-base">
@@ -210,14 +178,11 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             >
               <XIcon className="h-5 w-5" />
             </DialogClose>
-          </motion.div>
+          </div>
 
           {/* Invoice scroll container — no padding here (moved to content wrapper) */}
-          <motion.div
-            variants={invoiceVariants}
-            initial="hidden"
-            animate="visible"
-            className="flex flex-1 cursor-zoom-out items-start overflow-auto transform-gpu"
+          <div
+            className="flex flex-1 cursor-zoom-out items-start overflow-auto transform-gpu motion-safe:animate-modal-section-up [animation-delay:100ms]"
           >
             {/* Content wrapper — padding is part of scrollable content (not clipped at edges) */}
             <div
@@ -254,14 +219,11 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               )}
             </ScaledInvoicePreview>
             </div>
-          </motion.div>
+          </div>
 
           {/* Action bar — sticky bottom */}
-          <motion.div
-            variants={actionBarVariants}
-            initial="hidden"
-            animate="visible"
-            className="sticky bottom-0 z-50 flex shrink-0 items-center gap-2 border-t border-white/10 bg-zinc-800/80 px-3 py-2 backdrop-blur-md sm:gap-3 sm:px-4 sm:py-3"
+          <div
+            className="sticky bottom-0 z-50 flex shrink-0 items-center gap-2 border-t border-white/10 bg-zinc-800/80 px-3 py-2 backdrop-blur-md sm:gap-3 sm:px-4 sm:py-3 motion-safe:animate-modal-section-up [animation-delay:150ms]"
           >
             <Button
               variant="ghost"
@@ -301,7 +263,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
                 </Badge>
               )}
             </div>
-          </motion.div>
+          </div>
         </DialogContent>
       </Dialog>
     )

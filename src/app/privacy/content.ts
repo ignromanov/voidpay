@@ -37,9 +37,9 @@ export const privacyContent = {
         { label: 'Payment information', description: 'transaction hashes, payment status' },
         { label: 'User accounts', description: 'we have no registration or authentication' },
         {
-          label: 'Analytics or telemetry',
+          label: 'Sensitive financial analytics',
           description:
-            'we use privacy-focused Umami analytics across the application — you can opt out via the footer toggle. No personal or financial data is collected',
+            'we never track invoice amounts, wallet addresses, recipient names, or payment details. See "Product Analytics" section below for what we do collect',
         },
         { label: 'Cookies for tracking', description: 'we use no cookies whatsoever' },
       ],
@@ -92,9 +92,51 @@ export const privacyContent = {
           },
         },
         {
+          name: 'Umami Analytics (self-hosted)',
+          description:
+            'We use a self-hosted Umami instance for privacy-preserving product analytics. Umami is cookie-free, GDPR-compliant, and collects no personal or financial data. You can opt out anytime via the footer toggle. See the "Product Analytics" section for details.',
+        },
+        {
           name: 'Blockchain Networks',
           description:
-            'Payments are made directly on public blockchains (Ethereum, Arbitrum, Optimism, Polygon). All blockchain transactions are publicly visible by design. VoidPay does not add any additional tracking to these transactions.',
+            'Payments are made directly on public blockchains (Ethereum, Base, Arbitrum, Optimism, Polygon). All blockchain transactions are publicly visible by design. VoidPay does not add any additional tracking to these transactions.',
+        },
+      ],
+    },
+    {
+      id: 'analytics',
+      title: 'Product Analytics',
+      content:
+        'VoidPay uses a self-hosted Umami instance (hosted on our own infrastructure at m.voidpay.xyz) for privacy-preserving product analytics. Here is how it works:',
+      items: [
+        {
+          label: 'Cookie-free',
+          description: 'no cookies, no session identifiers, no fingerprinting',
+        },
+        {
+          label: 'No financial data',
+          description:
+            'we never track invoice amounts, wallet addresses, recipient names, notes, or transaction hashes',
+        },
+        {
+          label: 'Hash fragments excluded',
+          description:
+            'URL hash fragments (which contain full invoice data) are explicitly excluded from tracking',
+        },
+        {
+          label: 'Aggregate metrics only',
+          description:
+            'we collect network name, token symbol, wallet type, referrer domain, and UI interaction types — all aggregate, never linked to identity',
+        },
+        {
+          label: 'Opt-out available',
+          description:
+            'click the eye icon in the footer to disable all analytics tracking. Your preference is saved in localStorage',
+        },
+        {
+          label: 'Self-hosted',
+          description:
+            'analytics data is stored on our own infrastructure, never shared with third parties or sold',
         },
       ],
     },

@@ -100,6 +100,16 @@ export function LazyWalletButton() {
     }
   }, [])
 
+  // Sync with wallet connections from other scoped Web3Provider instances
+  // (e.g. PayButton connects wallet → header should reflect it)
+  useEffect(() => {
+    if (state !== 'idle') return
+
+    const activate = () => setState('loading')
+    window.addEventListener('voidpay:wallet-connected', activate)
+    return () => window.removeEventListener('voidpay:wallet-connected', activate)
+  }, [state])
+
   const handleActivate = useCallback(() => {
     if (state === 'idle') {
       activatedByClick.current = true

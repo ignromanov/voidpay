@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Edit3Icon,
   EyeIcon,
@@ -19,8 +19,9 @@ import {
   UrlSizeError,
 } from '@/features/generate-link'
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkTheme } from '@/entities/network'
+import { getNetworkThemeName } from '@/entities/network'
 import { useHashFragment } from '@/shared/lib/hooks'
+import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
 import { urlToRoute } from '@/shared/lib/navigation'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
@@ -34,6 +35,8 @@ import { SYNC_STATUS_CONFIG } from './constants'
 
 export function CreateWorkspace() {
   const hash = useHashFragment()
+  const searchParams = useSearchParams()
+  const isTemplateLoad = searchParams?.get('template') === '1'
   const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor')
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
@@ -41,10 +44,9 @@ export function CreateWorkspace() {
   const [isGenerating, setIsGenerating] = useState(false)
 
   const activeDraft = useCreatorStore((s) => s.activeDraft)
-  const updateDraft = useCreatorStore((s) => s.updateDraft)
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const createNewDraft = useCreatorStore((s) => s.createNewDraft)
-  const clearDraft = useCreatorStore((s) => s.clearDraft)
+  const replaceDraft = useCreatorStore((s) => s.replaceDraft)
   const draftSyncStatus = useCreatorStore((s) => s.draftSyncStatus)
 
   useEffect(() => {
@@ -75,19 +77,34 @@ export function CreateWorkspace() {
       const result = await parseInvoiceHash(hash)
       if (cancelled) return
       if (result.success) {
-        updateDraft(result.data)
+        // Template duplication: reset dates and strip baked total/dust so the
+        // user gets a fresh invoice based on the original as a template.
+        const data = isTemplateLoad
+          ? {
+              ...result.data,
+              issuedAt: nowUnix(),
+              dueAt: daysFromNowUnix(30),
+              total: undefined,
+              magicDust: undefined,
+            }
+          : result.data
+        // Atomic replace: clean draft from decoded data, no stale fields
+        replaceDraft(data)
+        if (isTemplateLoad) {
+          toast.success('Loaded as template')
+        }
       } else {
         // Do NOT clear store on error (per spec edge case)
         toast.error(result.error.message)
       }
     })()
     return () => { cancelled = true }
-  }, [hash, updateDraft])
+  }, [hash, replaceDraft, isTemplateLoad])
 
   const invoiceData = activeDraft?.data
 
   useEffect(() => {
-    const theme = getNetworkTheme(invoiceData?.networkId ?? 1)
+    const theme = getNetworkThemeName(invoiceData?.networkId ?? 1)
     setNetworkTheme(theme)
   }, [invoiceData?.networkId, setNetworkTheme])
 
@@ -174,10 +191,6 @@ export function CreateWorkspace() {
       invoiceUrl.pathname = invoiceUrl.pathname.replace('/pay', '/invoice')
       invoiceUrl.searchParams.set('share', '1')
       router.replace(urlToRoute(invoiceUrl))
-
-      // Defer draft clearing so the form stays in loading state during navigation
-      // (prevents visible flash of cleared form before route transition)
-      setTimeout(() => clearDraft(), 300)
       return
     } catch (error) {
       if (error instanceof UrlSizeError) {
@@ -192,7 +205,7 @@ export function CreateWorkspace() {
       }
       setIsGenerating(false)
     }
-  }, [isGenerating, clearDraft, router])
+  }, [isGenerating, router])
 
   return (
     <>

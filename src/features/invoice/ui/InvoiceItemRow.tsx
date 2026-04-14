@@ -2,7 +2,6 @@
 
 import * as React from 'react'
 import { Trash2Icon } from '@/shared/ui/icons'
-import { motion } from '@/shared/ui/motion'
 import { Input } from '@/shared/ui/input'
 import { Button } from '@/shared/ui/button'
 import type { LineItem } from '@/entities/invoice'
@@ -153,15 +152,9 @@ export function InvoiceItemRow({
   }, [item.rate, decimals])
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{
-        duration: 0.2,
-        delay: index * 0.05,
-      }}
-      className="group flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700"
+    <div
+      className="group flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700 motion-safe:animate-row-enter"
+      style={{ animationDelay: `${index * 50}ms` }}
     >
       <div className="flex flex-1 gap-2 min-w-0 overflow-hidden">
         {/* Description — takes remaining space */}
@@ -227,6 +220,6 @@ export function InvoiceItemRow({
       >
         <Trash2Icon className="h-4 w-4" />
       </Button>
-    </motion.div>
+    </div>
   )
 }

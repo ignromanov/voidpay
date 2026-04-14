@@ -15,12 +15,14 @@ export interface ErrorMessage {
   severity: ErrorSeverity
 }
 
+/** Canonical canceled message — reused by USER_REJECTED to keep title/description in sync. */
+export const CANCELED_COPY = {
+  title: 'Payment canceled',
+  description: 'You declined the transaction in your wallet.',
+} as const
+
 const ERROR_MESSAGES: Record<PaymentErrorType, ErrorMessage> = {
-  USER_REJECTED: {
-    title: 'Payment canceled',
-    description: 'You declined the transaction in your wallet.',
-    severity: 'info',
-  },
+  USER_REJECTED: { ...CANCELED_COPY, severity: 'info' },
   INSUFFICIENT_FUNDS: {
     title: 'Insufficient balance',
     description: 'Not enough tokens in your wallet to complete this payment.',

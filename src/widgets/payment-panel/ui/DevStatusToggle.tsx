@@ -6,7 +6,7 @@ import { useTrackedInvoiceStore } from '@/entities/invoice'
 import type { PaymentPanelStatus } from '../types'
 
 interface DevStatusToggleProps {
-  invoiceId: string
+  contentHash: string
   status: PaymentPanelStatus
 }
 
@@ -26,7 +26,7 @@ const FAKE_TX = ('0x' + '0'.repeat(64)) as `0x${string}`
  * Inner component with hooks — only mounted in development.
  * Never imported/rendered in production → dead code eliminated by minifier.
  */
-function DevStatusToggleInner({ invoiceId }: DevStatusToggleProps) {
+function DevStatusToggleInner({ contentHash }: DevStatusToggleProps) {
   const { setTxHash, setConfirmations, setError, resetPaymentState } =
     useTrackedInvoiceStore(useShallow((s) => ({
       setTxHash: s.setTxHash,
@@ -41,18 +41,18 @@ function DevStatusToggleInner({ invoiceId }: DevStatusToggleProps) {
     setIdx(next)
 
     // Reset error on every cycle
-    setError(invoiceId, null)
+    setError(contentHash, null)
 
     switch (next) {
       case 0: // pending — clear all payment facts
-        resetPaymentState(invoiceId)
+        resetPaymentState(contentHash)
         break
       case 1: // confirming — unvalidated tx with partial confirmations
-        setTxHash(invoiceId, FAKE_TX, false)
-        setConfirmations(invoiceId, { current: 8, required: 15 })
+        setTxHash(contentHash, FAKE_TX, false)
+        setConfirmations(contentHash, { current: 8, required: 15 })
         break
       case 2: // paid — validated tx
-        setTxHash(invoiceId, FAKE_TX, true)
+        setTxHash(contentHash, FAKE_TX, true)
         break
     }
   }

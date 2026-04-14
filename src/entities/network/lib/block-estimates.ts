@@ -17,11 +17,13 @@ const MAX_BLOCK_AGE: Record<number, number> = {
   42161: 10_368_000,
   10:    1_296_000,
   137:   1_296_000,
+  8453:  1_296_000,
   // Testnet
   11155111: 216_000,
   421614:   10_368_000,
   11155420: 1_296_000,
   80002:    1_296_000,
+  84532:    1_296_000,
 }
 
 const AVG_BLOCK_TIME_MS: Record<number, number> = {
@@ -29,26 +31,33 @@ const AVG_BLOCK_TIME_MS: Record<number, number> = {
   42161: 250,
   10:    2_000,
   137:   2_000,
+  8453:  2_000,
   // Testnet
-  11155111: 12_000,
-  421614:   250,
+  11155111: 13_000, // measured: Sepolia runs ~13.05s/block, not theoretical 12s
+  421614:   286,    // measured: Arbitrum Sepolia runs ~286ms/block, not theoretical 250ms
   11155420: 2_000,
   80002:    2_000,
+  84532:    2_000,
 }
 
-// Reference anchors — updated 2026-03-09 from live explorer data.
-// Used for fromBlock estimation without RPC. Closer to "now" = less drift.
+// Reference anchors — frozen pre-v1.0 release (Mar 28, 2026). Must not be bumped to
+// post-release dates: old invoices in the wild rely on the same calibration used at
+// creation time. Drift between assumed and real avgBlockTime is the only variable and
+// is mitigated by (a) measured avgBlockTime values above and (b) a server-side safety
+// net in /api/transfers that fetches eth_blockNumber and clamps drifted fromBlock.
 const REFERENCE_BLOCKS: Record<number, { block: number; timestampMs: number }> = {
   // Mainnet
   1:     { block: 24_580_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   42161: { block: 439_760_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   10:    { block: 148_670_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   137:   { block: 83_950_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
+  8453:  { block: 44_192_000, timestampMs: Date.parse('2026-04-03T00:00:00Z') },
   // Testnet
   11155111: { block: 10_416_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   421614:   { block: 248_490_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   11155420: { block: 40_410_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
   80002:    { block: 34_960_000, timestampMs: Date.parse('2026-03-09T00:00:00Z') },
+  84532:    { block: 39_880_000, timestampMs: Date.parse('2026-04-06T00:00:00Z') },
 }
 
 /** Safety buffer: subtracted from estimated fromBlock to account for block time drift.

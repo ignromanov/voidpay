@@ -1,0 +1,6 @@
+Contact: mailto:security@voidpay.xyz
+Contact: https://github.com/ignromanov/voidpay/security/advisories/new
+Expires: 2027-03-31T00:00:00.000Z
+Preferred-Languages: en, ru
+Canonical: https://voidpay.xyz/.well-known/security.txt
+Policy: https://github.com/ignromanov/voidpay/blob/develop/SECURITY.md

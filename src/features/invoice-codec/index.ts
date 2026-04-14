@@ -9,6 +9,7 @@ export * from './lib/chain-dict'
 export * from './lib/app-dict'
 export * from './lib/eip712'
 export * from './lib/security'
+export { computeContentHash } from './lib/content-hash'
 
 // Re-export schema type for convenience (via public API)
 export type { Invoice } from '@/entities/invoice'

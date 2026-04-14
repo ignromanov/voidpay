@@ -3,6 +3,12 @@ import { render, screen } from '@testing-library/react'
 
 import { ComparisonTable } from '../ComparisonTable'
 
+vi.mock('next/link', () => ({
+  default: ({ children, href, ...props }: { children: React.ReactNode; href: string }) => (
+    <a href={href} {...props}>{children}</a>
+  ),
+}))
+
 describe('ComparisonTable', () => {
   describe('rendering', () => {
     it('renders section heading', () => {
@@ -33,8 +39,14 @@ describe('ComparisonTable', () => {
       render(<ComparisonTable />)
 
       expect(
-        screen.getByText(/Comparison based on public documentation as of December 2025/)
+        screen.getByText(/Comparison based on public documentation as of April 2026/)
       ).toBeInTheDocument()
+    })
+
+    it('renders link to detailed comparison page', () => {
+      render(<ComparisonTable />)
+      const link = screen.getByRole('link', { name: /detailed.*comparison/i })
+      expect(link).toHaveAttribute('href', '/compare/request-finance')
     })
   })
 
@@ -45,10 +57,10 @@ describe('ComparisonTable', () => {
       expect(screen.getByText('Sign-up Required')).toBeInTheDocument()
     })
 
-    it('displays KYC Required feature', () => {
+    it('displays KYC / KYB Required feature', () => {
       render(<ComparisonTable />)
 
-      expect(screen.getByText('KYC Required')).toBeInTheDocument()
+      expect(screen.getByText('KYC / KYB Required')).toBeInTheDocument()
     })
 
     it('displays Data Storage feature with custom values', () => {
@@ -56,7 +68,7 @@ describe('ComparisonTable', () => {
 
       expect(screen.getByText('Data Storage')).toBeInTheDocument()
       expect(screen.getByText('None (URL)')).toBeInTheDocument()
-      expect(screen.getByText('IPFS')).toBeInTheDocument()
+      expect(screen.getByText('Centralized')).toBeInTheDocument()
       // Server appears twice (Basenode and Traditional)
       expect(screen.getAllByText('Server')).toHaveLength(2)
     })
@@ -66,7 +78,7 @@ describe('ComparisonTable', () => {
 
       expect(screen.getByText('Platform Fee')).toBeInTheDocument()
       expect(screen.getByText('$0')).toBeInTheDocument()
-      expect(screen.getByText('1-2%')).toBeInTheDocument()
+      expect(screen.getByText('$250+/mo')).toBeInTheDocument()
       expect(screen.getByText('Freemium')).toBeInTheDocument()
       expect(screen.getByText('~6.6%')).toBeInTheDocument()
     })

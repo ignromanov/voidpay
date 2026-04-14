@@ -1,7 +1,9 @@
 ---
 name: Task
-about: Development task
+about: Internal task or work item
+title: "[Task] "
 labels: task
+assignees: ''
 ---
 
 ## What & Why

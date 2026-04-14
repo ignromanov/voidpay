@@ -13,6 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useCreatorStore } from '@/entities/creator'
 import { invoiceFormSchema, type InvoiceFormValues } from '@/shared/lib/invoice-types'
 import { ETH_ADDRESS_REGEX } from '@/shared/lib/validation'
+import { draftDataToFormValues } from './draft-to-form-values'
 
 /** Debounce delay for syncing form → store */
 const SYNC_DEBOUNCE_MS = 300
@@ -66,36 +67,7 @@ export function useInvoiceForm({ enabled = true }: { enabled?: boolean } = {}): 
   const form = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceFormSchema),
     mode: 'onChange',
-    defaultValues: activeDraft?.data
-      ? {
-          invoiceId: activeDraft.data.invoiceId,
-          issuedAt: activeDraft.data.issuedAt,
-          dueAt: activeDraft.data.dueAt,
-          notes: activeDraft.data.notes,
-          networkId: activeDraft.data.networkId,
-          currency: activeDraft.data.currency,
-          tokenAddress: activeDraft.data.tokenAddress,
-          decimals: activeDraft.data.decimals,
-          tax: activeDraft.data.tax,
-          discount: activeDraft.data.discount,
-          from: {
-            name: activeDraft.data.from?.name ?? '',
-            walletAddress: activeDraft.data.from?.walletAddress ?? '',
-            email: activeDraft.data.from?.email ?? '',
-            physicalAddress: activeDraft.data.from?.physicalAddress ?? '',
-            phone: activeDraft.data.from?.phone ?? '',
-            taxId: activeDraft.data.from?.taxId ?? '',
-          },
-          client: {
-            name: activeDraft.data.client?.name ?? '',
-            walletAddress: activeDraft.data.client?.walletAddress ?? '',
-            email: activeDraft.data.client?.email ?? '',
-            physicalAddress: activeDraft.data.client?.physicalAddress ?? '',
-            phone: activeDraft.data.client?.phone ?? '',
-            taxId: activeDraft.data.client?.taxId ?? '',
-          },
-        }
-      : {},
+    defaultValues: activeDraft?.data ? draftDataToFormValues(activeDraft.data) : {},
   })
 
   const values = form.watch()
@@ -194,36 +166,8 @@ export function useInvoiceForm({ enabled = true }: { enabled?: boolean } = {}): 
     if (!enabled) return
     if (!activeDraft?.data) return
 
-    const storeData = activeDraft.data
     isExternalUpdate.current = true
-    form.reset({
-      invoiceId: storeData.invoiceId,
-      issuedAt: storeData.issuedAt,
-      dueAt: storeData.dueAt,
-      notes: storeData.notes,
-      networkId: storeData.networkId,
-      currency: storeData.currency,
-      tokenAddress: storeData.tokenAddress,
-      decimals: storeData.decimals,
-      tax: storeData.tax,
-      discount: storeData.discount,
-      from: {
-        name: storeData.from?.name ?? '',
-        walletAddress: storeData.from?.walletAddress ?? '',
-        email: storeData.from?.email ?? '',
-        physicalAddress: storeData.from?.physicalAddress ?? '',
-        phone: storeData.from?.phone ?? '',
-        taxId: storeData.from?.taxId ?? '',
-      },
-      client: {
-        name: storeData.client?.name ?? '',
-        walletAddress: storeData.client?.walletAddress ?? '',
-        email: storeData.client?.email ?? '',
-        physicalAddress: storeData.client?.physicalAddress ?? '',
-        phone: storeData.client?.phone ?? '',
-        taxId: storeData.client?.taxId ?? '',
-      },
-    })
+    form.reset(draftDataToFormValues(activeDraft.data))
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: only sync on draft identity change, not every data change
   }, [enabled, activeDraft?.meta?.draftId, activeDraft?.data?.invoiceId])
 

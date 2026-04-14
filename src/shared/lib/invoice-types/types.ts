@@ -165,12 +165,16 @@ export function lineItemsToInvoiceItems(lineItems: LineItem[]): Invoice['items']
  * Accepts partial items from PartialInvoice for UI editing
  */
 export function invoiceItemsToLineItems(items: PartialItem[]): LineItem[] {
-  return items.map((item) => ({
-    id: crypto.randomUUID(),
-    description: item.description ?? '',
-    quantity: item.quantity ?? 0,
-    rate: item.rate ?? '0',
-  }))
+  return items.map((item) => {
+    const rawQty = item.quantity ?? 0
+    return {
+      id: crypto.randomUUID(),
+      description: item.description ?? '',
+      // Handle string quantities from old templates in localStorage
+      quantity: typeof rawQty === 'string' ? parseFloat(rawQty) || 0 : rawQty,
+      rate: item.rate ?? '0',
+    }
+  })
 }
 
 /**

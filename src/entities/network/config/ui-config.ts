@@ -11,38 +11,31 @@ import {
   arbitrum,
   optimism,
   polygon,
+  base,
   sepolia,
   arbitrumSepolia,
   optimismSepolia,
   polygonAmoy,
+  baseSepolia,
 } from 'viem/chains'
 import { HexagonIcon, TriangleIcon, ZapIcon } from '@/shared/ui/icons'
 import { NETWORK_CODES, type NetworkId } from './networks'
+import type { NetworkThemeName } from '@/shared/ui/constants/network-palette'
+import { TESTNET_PARENT, withTestnets, resolveMainnetId } from '../lib/testnet-utils'
 
 /**
  * Network name type for UI theming
  * Used for network-specific visual styling across the app
+ * @deprecated Use NetworkThemeName from network-palette.ts directly
  */
-export type NetworkName = 'ethereum' | 'arbitrum' | 'optimism' | 'polygon'
+export type NetworkName = NetworkThemeName
 
 /**
- * Testnet → mainnet parent mapping (single source of truth)
- * Used to derive testnet UI configs and resolve themes
+ * Map chain ID to network theme name.
+ * Resolves testnets to their mainnet parent before matching.
  */
-const TESTNET_PARENT: Record<number, number> = {
-  [sepolia.id]: mainnet.id,
-  [arbitrumSepolia.id]: arbitrum.id,
-  [optimismSepolia.id]: optimism.id,
-  [polygonAmoy.id]: polygon.id,
-}
-
-/**
- * Map chain ID to network theme name
- * Used for visual theming (colors, backgrounds, etc.)
- * Resolves testnets to their mainnet parent before matching
- */
-export function getNetworkTheme(chainId: number): NetworkName {
-  const resolvedId = TESTNET_PARENT[chainId] ?? chainId
+export function getNetworkThemeName(chainId: number): NetworkThemeName {
+  const resolvedId = resolveMainnetId(chainId)
   switch (resolvedId) {
     case arbitrum.id:
       return 'arbitrum'
@@ -50,6 +43,8 @@ export function getNetworkTheme(chainId: number): NetworkName {
       return 'optimism'
     case polygon.id:
       return 'polygon'
+    case base.id:
+      return 'base'
     default:
       return 'ethereum'
   }
@@ -100,6 +95,13 @@ export const NETWORK_CONFIG: NetworkConfig[] = [
     iconFilled: true,
     colorClass: 'text-purple-400',
   },
+  {
+    chainId: base.id,
+    name: 'Base',
+    icon: HexagonIcon,
+    iconFilled: true,
+    colorClass: 'text-blue-500',
+  },
 ]
 
 /**
@@ -110,6 +112,7 @@ const TESTNET_NAMES: Record<number, string> = {
   [arbitrumSepolia.id]: 'Arb Sepolia',
   [optimismSepolia.id]: 'OP Sepolia',
   [polygonAmoy.id]: 'Polygon Amoy',
+  [baseSepolia.id]: 'Base Sepolia',
 }
 
 /**
@@ -154,31 +157,51 @@ export const NETWORK_BADGES: Record<
     /** Tailwind classes for network-specific coloring */
     colorClass: string
   }
-> = {
+> = withTestnets({
   [mainnet.id]: {
     variant: 'secondary',
     colorClass: 'bg-indigo-100 text-indigo-700 border-indigo-200',
   },
-  [arbitrum.id]: { variant: 'default', colorClass: 'bg-blue-100 text-blue-700 border-blue-200' },
+  [arbitrum.id]: { variant: 'default', colorClass: 'bg-sky-100 text-sky-700 border-sky-200' },
   [optimism.id]: { variant: 'destructive', colorClass: 'bg-red-100 text-red-700 border-red-200' },
   [polygon.id]: {
     variant: 'outline',
     colorClass: 'bg-purple-100 text-purple-700 border-purple-200',
   },
-}
+  [base.id]: {
+    variant: 'default',
+    colorClass: 'bg-blue-100 text-blue-800 border-blue-300',
+  },
+})
+
+/**
+ * Network badge colors for dark UI (zinc-950 backgrounds).
+ * Consumed by NetworkBadge in features/invoice-history.
+ * Keyed by chainId; includes forward entry for Base (8453).
+ */
+export const NETWORK_BADGES_DARK: Record<number, string> = withTestnets({
+  [mainnet.id]: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  [arbitrum.id]: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  [optimism.id]: 'bg-red-500/10 text-red-400 border-red-500/20',
+  [polygon.id]: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  [base.id]: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+})
 
 /**
  * Block explorers for each chain
+ * NOTE: intentionally NOT using withTestnets() — testnets have different explorer URLs
  */
 export const BLOCK_EXPLORERS: Record<number, { name: string; url: string }> = {
   [mainnet.id]: { name: 'Etherscan', url: 'https://etherscan.io' },
   [arbitrum.id]: { name: 'Arbiscan', url: 'https://arbiscan.io' },
   [optimism.id]: { name: 'Optimism Etherscan', url: 'https://optimistic.etherscan.io' },
   [polygon.id]: { name: 'Polygonscan', url: 'https://polygonscan.com' },
+  [base.id]: { name: 'BaseScan', url: 'https://basescan.org' },
   [sepolia.id]: { name: 'Sepolia Etherscan', url: 'https://sepolia.etherscan.io' },
   [arbitrumSepolia.id]: { name: 'Arbiscan Sepolia', url: 'https://sepolia.arbiscan.io' },
   [optimismSepolia.id]: { name: 'OP Sepolia Blockscout', url: 'https://optimism-sepolia.blockscout.com' },
   [polygonAmoy.id]: { name: 'Amoy Polygonscan', url: 'https://amoy.polygonscan.com' },
+  [baseSepolia.id]: { name: 'BaseScan Sepolia', url: 'https://sepolia.basescan.org' },
 }
 
 /**
@@ -197,29 +220,33 @@ export const NETWORK_CODE_COLORS: Record<string, string> = {
   'arb-sep': '#60A5FA', // inherits arbitrum
   'op-sep': '#F87171', // inherits optimism
   amoy: '#C084FC', // inherits polygon
+  base: '#3B82F6', // blue-500
+  'base-sep': '#3B82F6', // inherits base
 }
 
 /**
  * Network-specific shadows for the invoice paper
  */
-export const NETWORK_SHADOWS: Record<number, string> = {
+export const NETWORK_SHADOWS: Record<number, string> = withTestnets({
   [mainnet.id]: 'shadow-indigo-500/20',
   [arbitrum.id]: 'shadow-blue-500/20',
   [optimism.id]: 'shadow-red-500/20',
   [polygon.id]: 'shadow-purple-500/20',
-}
+  [base.id]: 'shadow-blue-500/20',
+})
 
 /**
  * Network-specific glow gradients for invoice background effect
  * Uses Tailwind gradient classes (from-X to-Y)
  * @deprecated Use NETWORK_GLOW_SHADOWS instead (box-shadow doesn't affect layout)
  */
-export const NETWORK_GLOWS: Record<number, { from: string; to: string }> = {
+export const NETWORK_GLOWS: Record<number, { from: string; to: string }> = withTestnets({
   [mainnet.id]: { from: 'from-indigo-600/40', to: 'to-blue-600/40' },
   [arbitrum.id]: { from: 'from-cyan-600/40', to: 'to-blue-600/40' },
   [optimism.id]: { from: 'from-red-600/40', to: 'to-orange-600/40' },
   [polygon.id]: { from: 'from-purple-600/40', to: 'to-violet-600/40' },
-}
+  [base.id]: { from: 'from-blue-600/40', to: 'to-indigo-600/40' },
+})
 
 /**
  * Network-specific glow using CSS pseudo-element (::before)
@@ -233,7 +260,7 @@ export const NETWORK_GLOWS: Record<number, { from: string; to: string }> = {
  *
  * This config provides network-specific gradient colors
  */
-export const NETWORK_GLOW_SHADOWS: Record<number, string> = {
+export const NETWORK_GLOW_SHADOWS: Record<number, string> = withTestnets({
   // Indigo → Blue elliptical glow
   [mainnet.id]: 'before:from-indigo-500/60 before:to-blue-500/40',
   // Cyan → Blue elliptical glow
@@ -242,7 +269,9 @@ export const NETWORK_GLOW_SHADOWS: Record<number, string> = {
   [optimism.id]: 'before:from-red-500/60 before:to-orange-500/40',
   // Purple → Violet elliptical glow
   [polygon.id]: 'before:from-purple-500/60 before:to-violet-500/40',
-}
+  // Blue → Indigo elliptical glow
+  [base.id]: 'before:from-blue-600/60 before:to-indigo-500/40',
+})
 
 /**
  * Network-specific glowing border for fullscreen modal
@@ -254,9 +283,11 @@ export const NETWORK_GLOW_SHADOWS: Record<number, string> = {
  * - Red-500: 239, 68, 68
  * - Purple-500: 168, 85, 247
  */
-export const NETWORK_GLOW_BORDERS: Record<number, string> = {
+export const NETWORK_GLOW_BORDERS: Record<number, string> = withTestnets({
   [mainnet.id]: 'ring-2 ring-indigo-500/60 shadow-[0_0_48px_rgba(99,102,241,0.4)]',
   [arbitrum.id]: 'ring-2 ring-cyan-500/60 shadow-[0_0_48px_rgba(6,182,212,0.4)]',
   [optimism.id]: 'ring-2 ring-red-500/60 shadow-[0_0_48px_rgba(239,68,68,0.4)]',
   [polygon.id]: 'ring-2 ring-purple-500/60 shadow-[0_0_48px_rgba(168,85,247,0.4)]',
-}
+  // Blue-500 RGB: 59, 130, 246
+  [base.id]: 'ring-2 ring-blue-500/60 shadow-[0_0_48px_rgba(59,130,246,0.4)]',
+})

@@ -6,6 +6,37 @@
 specs
 CLAUDE.md
 
+# Claude Code plugins (auto-generated)
+.agents/
+.superpowers/
+skills/
+skills-lock.json
+
+# AI tool runtime directories (auto-generated)
+.agent/
+.codebuddy/
+.commandcode/
+.continue/
+.crush/
+.factory/
+.goose/
+.junie/
+.kilocode/
+.kiro/
+.kode/
+.mcpjam/
+.mux/
+.neovate/
+.openhands/
+.pi/
+.pochi/
+.qoder/
+.qwen/
+.roo/
+.trae/
+.windsurf/
+.zencoder/
+
 # Local settings (legacy, now in .ai/)
 .claude/settings.local.json
 
@@ -64,6 +95,9 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 *.local
+
+# Supabase (local dev setup)
+supabase/
 
 # Vercel
 .vercel

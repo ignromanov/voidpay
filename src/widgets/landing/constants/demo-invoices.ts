@@ -46,7 +46,7 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
     invoiceUrl: 'https://voidpay.xyz/pay#demo-eth',
     createdAt: isoDate(NOW - 7 * DAY),
     status: 'paid',
-    txHash: '0x7a3f1d8e92b4c56f0a1e3d7b8c9f2a4d6e8b0c1d3f5a7e9b2c4d6f8a0e1c3d',
+    txHash: '0x7a3f1d8e92b4c56f0a1e3d7b8c9f2a4d6e8b0c1d3f5a7e9b2c4d6f8a0e1c3d5f',
     txHashValidated: true,
     data: {
       invoiceId: 'INV-2026-042',
@@ -74,7 +74,7 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
       },
       items: [
         // ETH has 18 decimals: 0.125 ETH = 125000000000000000 atomic units
-        { description: 'Smart Contract Security Audit (40 hours)', quantity: 40, rate: '125000000000000000' },
+        { description: 'Smart Contract Security Audit', quantity: 40, rate: '125000000000000000' },
         { description: 'Gas Optimization Consulting (8 hours)', quantity: 8, rate: '100000000000000000' },
       ],
       discount: '5%',
@@ -117,8 +117,8 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
         { description: 'Sound Effects Integration', quantity: 1, rate: '400000000' },
       ],
       tax: '8%',
-      discount: '8%',
-      total: '2400000000',
+      discount: '5%',
+      total: '2472000000',
     },
   },
   // --- Optimism (10) - Public Goods Grant [PAID + NOT VALIDATED] ---
@@ -160,6 +160,46 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
         { description: 'Documentation & Onboarding', quantity: 1, rate: '2000000000000000000000' },
       ],
       total: '25000000000000000000000',
+    },
+  },
+  // --- Base (8453) - Smart Wallet Integration [PENDING] ---
+  {
+    invoiceId: 'INV-2026-217',
+    invoiceUrl: 'https://voidpay.xyz/pay#demo-base',
+    createdAt: isoDate(NOW - 3 * DAY),
+    status: 'pending',
+    data: {
+      invoiceId: 'INV-2026-217',
+      issuedAt: NOW - 3 * DAY,
+      dueAt: NOW + 14 * DAY,
+      notes: 'Passkey wallet integration for mobile dApp. Milestone 2 of 4.',
+      networkId: 8453,
+      currency: 'USDC',
+      tokenAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+      decimals: 6,
+      from: {
+        name: 'Base Builders Co.',
+        walletAddress: '0xdEaD000000000000000000000000000000000009',
+        email: 'team@basebuilders.xyz',
+        physicalAddress: '100 Innovation Drive\nSan Francisco, CA 94105\nUSA',
+        phone: '+1 628 555 0321',
+      },
+      client: {
+        name: 'Onchain Commerce DAO',
+        walletAddress: '0xFeed000000000000000000000000000000000010',
+        email: 'finance@onchaincommerce.xyz',
+        physicalAddress: '42 Web3 Street\nBrooklyn, NY 11201\nUSA',
+        phone: '+1 718 555 0456',
+        taxId: 'US 98-7654321',
+      },
+      items: [
+        // USDC has 6 decimals: $3500 = 3500000000 atomic units
+        { description: 'Smart Wallet SDK Integration', quantity: 1, rate: '3500000000' },
+        { description: 'Passkey Authentication Module', quantity: 1, rate: '2800000000' },
+        { description: 'User Onboarding Flow Design', quantity: 1, rate: '1200000000' },
+      ],
+      tax: '5%',
+      total: '7875000000',
     },
   },
   // --- Polygon (137) - Data Analytics Service [OVERDUE] ---

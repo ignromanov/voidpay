@@ -64,6 +64,12 @@ export interface DraftSlice {
    */
   createNewDraft: () => string
 
+  /**
+   * Replace the entire draft with external data (hash decode, template load).
+   * Atomic: creates clean draft, converts items, strips computed `total`.
+   */
+  replaceDraft: (data: PartialInvoice) => void
+
   // ========== Line Items Management ==========
 
   /**
@@ -141,6 +147,38 @@ function createDefaultLineItem(): LineItem {
 }
 
 /**
+ * Strip `id` from LineItems → plain invoice items for draft.data.items
+ */
+function toInvoiceItems(items: LineItem[]) {
+  return items.map(({ description, quantity, rate }) => ({
+    description,
+    quantity,
+    rate,
+  }))
+}
+
+/**
+ * Build updated draft state when items change.
+ *
+ * Clears stale pre-calculated `total` — it was baked with specific items/decimals
+ * and becomes invalid whenever items are added, removed, or modified.
+ */
+function draftWithItems(draft: DraftState, invoiceItems: ReturnType<typeof toInvoiceItems>): DraftState {
+  return {
+    ...draft,
+    meta: {
+      ...draft.meta,
+      lastModified: new Date().toISOString(),
+    },
+    data: {
+      ...draft.data,
+      items: invoiceItems,
+      total: undefined,
+    },
+  }
+}
+
+/**
  * Create Draft Slice
  */
 export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = (set, get) => ({
@@ -161,6 +199,14 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
     set((state) => {
       const currentDraft = state.activeDraft
 
+      // For native tokens (ETH, POL), the decoded invoice has no tokenAddress key.
+      // Spread won't override existing tokenAddress if the key is absent,
+      // so we explicitly clear it when currency is set but tokenAddress is not.
+      const tokenOverride =
+        data.currency && !('tokenAddress' in data)
+          ? { tokenAddress: undefined }
+          : {}
+
       // If no active draft, create a new one
       if (!currentDraft) {
         const draftId = uuidv4()
@@ -175,7 +221,7 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
         return {
           activeDraft: {
             ...newDraft,
-            data: { ...newDraft.data, ...data },
+            data: { ...newDraft.data, ...data, ...tokenOverride },
           },
           lineItems,
         }
@@ -196,6 +242,7 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
           data: {
             ...currentDraft.data,
             ...data,
+            ...tokenOverride,
             // Deep merge party objects to preserve fields not in the partial update
             // (e.g., walletAddress when sync only sends name)
             ...(data.from && {
@@ -212,7 +259,7 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
   },
 
   clearDraft: () => {
-    set({ activeDraft: null, lineItems: [] })
+    set({ activeDraft: null, lineItems: [], draftSyncStatus: 'idle' })
   },
 
   createNewDraft: () => {
@@ -227,71 +274,52 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
     set({
       activeDraft: newDraft,
       lineItems: [createDefaultLineItem()],
+      draftSyncStatus: 'idle',
     })
 
     return draftId
+  },
+
+  replaceDraft: (data) => {
+    const lineItems = data.items
+      ? invoiceItemsToLineItems(data.items)
+      : [createDefaultLineItem()]
+
+    set({
+      activeDraft: {
+        meta: {
+          draftId: uuidv4(),
+          lastModified: new Date().toISOString(),
+        },
+        data: {
+          ...data,
+          total: undefined,
+        },
+      },
+      lineItems,
+      draftSyncStatus: 'idle',
+    })
   },
 
   // ========== Line Items Management ==========
 
   updateLineItems: (items) => {
     set((state) => {
-      // Also sync to draft.data.items (without ids)
-      const invoiceItems = items.map(({ description, quantity, rate }) => ({
-        description,
-        quantity,
-        rate,
-      }))
-
-      if (!state.activeDraft) {
-        return { lineItems: items }
-      }
-
+      if (!state.activeDraft) return { lineItems: items }
       return {
         lineItems: items,
-        activeDraft: {
-          ...state.activeDraft,
-          meta: {
-            ...state.activeDraft.meta,
-            lastModified: new Date().toISOString(),
-          },
-          data: {
-            ...state.activeDraft.data,
-            items: invoiceItems,
-          },
-        },
+        activeDraft: draftWithItems(state.activeDraft, toInvoiceItems(items)),
       }
     })
   },
 
   addLineItem: () => {
     set((state) => {
-      const newItem = createDefaultLineItem()
-      const newItems = [...state.lineItems, newItem]
-
-      const invoiceItems = newItems.map(({ description, quantity, rate }) => ({
-        description,
-        quantity,
-        rate,
-      }))
-
-      if (!state.activeDraft) {
-        return { lineItems: newItems }
-      }
-
+      const newItems = [...state.lineItems, createDefaultLineItem()]
+      if (!state.activeDraft) return { lineItems: newItems }
       return {
         lineItems: newItems,
-        activeDraft: {
-          ...state.activeDraft,
-          meta: {
-            ...state.activeDraft.meta,
-            lastModified: new Date().toISOString(),
-          },
-          data: {
-            ...state.activeDraft.data,
-            items: invoiceItems,
-          },
-        },
+        activeDraft: draftWithItems(state.activeDraft, toInvoiceItems(newItems)),
       }
     })
   },
@@ -299,30 +327,10 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
   removeLineItem: (id) => {
     set((state) => {
       const newItems = state.lineItems.filter((item) => item.id !== id)
-
-      const invoiceItems = newItems.map(({ description, quantity, rate }) => ({
-        description,
-        quantity,
-        rate,
-      }))
-
-      if (!state.activeDraft) {
-        return { lineItems: newItems }
-      }
-
+      if (!state.activeDraft) return { lineItems: newItems }
       return {
         lineItems: newItems,
-        activeDraft: {
-          ...state.activeDraft,
-          meta: {
-            ...state.activeDraft.meta,
-            lastModified: new Date().toISOString(),
-          },
-          data: {
-            ...state.activeDraft.data,
-            items: invoiceItems,
-          },
-        },
+        activeDraft: draftWithItems(state.activeDraft, toInvoiceItems(newItems)),
       }
     })
   },
@@ -332,30 +340,10 @@ export const createDraftSlice: StateCreator<CreatorStore, [], [], DraftSlice> = 
       const newItems = state.lineItems.map((item) =>
         item.id === id ? { ...item, ...updates } : item
       )
-
-      const invoiceItems = newItems.map(({ description, quantity, rate }) => ({
-        description,
-        quantity,
-        rate,
-      }))
-
-      if (!state.activeDraft) {
-        return { lineItems: newItems }
-      }
-
+      if (!state.activeDraft) return { lineItems: newItems }
       return {
         lineItems: newItems,
-        activeDraft: {
-          ...state.activeDraft,
-          meta: {
-            ...state.activeDraft.meta,
-            lastModified: new Date().toISOString(),
-          },
-          data: {
-            ...state.activeDraft.data,
-            items: invoiceItems,
-          },
-        },
+        activeDraft: draftWithItems(state.activeDraft, toInvoiceItems(newItems)),
       }
     })
   },

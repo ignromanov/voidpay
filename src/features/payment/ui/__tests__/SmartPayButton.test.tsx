@@ -5,6 +5,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 const mockHandlePay = vi.fn()
 let mockState: { step: PaymentStep; error: PaymentError | null; txHash: `0x${string}` | null; intent?: boolean } = { step: 'idle', error: null, txHash: null }
 let mockIdleSubState: 'disconnected' | 'wrong-network' | 'ready' = 'ready'
+let mockIsHydrating = false
 
 vi.mock('../../model/use-payment-flow', () => ({
   usePaymentFlow: vi.fn(() => ({
@@ -16,10 +17,17 @@ vi.mock('../../model/use-payment-flow', () => ({
   })),
 }))
 
-// Mock wagmi
-vi.mock('wagmi', () => ({
-  useAccount: vi.fn(() => ({ isReconnecting: false })),
-}))
+// Mock the wagmi hydration hook (toggled per test via mockIsHydrating).
+// useWagmiHydrating is re-exported through @/shared/lib so we mock both
+// the barrel (where SmartPayButton imports from) and the source file to
+// cover however Vitest resolves the module graph.
+vi.mock('@/shared/lib', async () => {
+  const actual = await vi.importActual<typeof import('@/shared/lib')>('@/shared/lib')
+  return {
+    ...actual,
+    useWagmiHydrating: vi.fn(() => mockIsHydrating),
+  }
+})
 
 // Mock formatAmount from shared
 vi.mock('@/shared/lib/amount-utils', () => ({
@@ -45,6 +53,7 @@ const mockInvoice = {
 const defaultProps = {
   invoice: mockInvoice,
   invoiceId: 'INV-001',
+  contentHash: 'abc123',
   exactTotal: '1000000000000000000',
   subtotal: '1000000000000000000',
 }
@@ -54,6 +63,7 @@ describe('SmartPayButton', () => {
     vi.clearAllMocks()
     mockState = { step: 'idle', error: null, txHash: null }
     mockIdleSubState = 'ready'
+    mockIsHydrating = false
   })
 
   it('renders "Pay X ETH" label in ready state', () => {
@@ -252,6 +262,36 @@ describe('SmartPayButton', () => {
       // After error, button returns to idle label
       expect(screen.getByRole('button').textContent).toContain('Pay')
       expect(screen.getByRole('button')).not.toBeDisabled()
+    })
+  })
+
+  describe('wagmi reconnect state', () => {
+    it('shows "Reconnecting…" label with busy state when connected sub-state + reconnecting', () => {
+      mockIsHydrating = true
+      mockIdleSubState = 'ready'
+      render(<SmartPayButton {...defaultProps} />)
+      const button = screen.getByRole('button')
+      expect(button.textContent).toContain('Reconnecting')
+      expect(button).toBeDisabled()
+      expect(button).toHaveAttribute('aria-busy', 'true')
+      expect(button).toHaveAttribute('aria-label', 'Reconnecting wallet, please wait')
+    })
+
+    it('shows "Reconnecting…" label with busy state when disconnected sub-state + reconnecting', () => {
+      mockIsHydrating = true
+      mockIdleSubState = 'disconnected'
+      render(<SmartPayButton {...defaultProps} />)
+      const button = screen.getByRole('button')
+      expect(button.textContent).toContain('Reconnecting')
+      expect(button).toBeDisabled()
+      expect(button).toHaveAttribute('aria-busy', 'true')
+    })
+
+    it('does not call handlePay while reconnecting', () => {
+      mockIsHydrating = true
+      render(<SmartPayButton {...defaultProps} />)
+      fireEvent.click(screen.getByRole('button'))
+      expect(mockHandlePay).not.toHaveBeenCalled()
     })
   })
 })

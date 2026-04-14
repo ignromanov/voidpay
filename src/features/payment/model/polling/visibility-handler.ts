@@ -17,14 +17,14 @@ export interface VisibilityHandlerRefs {
 
 export interface VisibilityHandlerCallbacks {
   doFetch: () => Promise<TransferResult | null>
-  setTxHash: (invoiceId: string, hash: `0x${string}`, validated: boolean) => void
+  setTxHash: (contentHash: string, hash: `0x${string}`, validated: boolean) => void
   flushStop: (isError?: boolean, errorMsg?: string) => void
   aggressiveLoopRef: MutableRefObject<() => void>
   watchingLoopRef: MutableRefObject<() => void>
 }
 
 export function setupVisibilityHandler(
-  invoiceId: string,
+  contentHash: string,
   refs: VisibilityHandlerRefs,
   callbacks: VisibilityHandlerCallbacks,
 ): void {
@@ -58,7 +58,7 @@ export function setupVisibilityHandler(
       const matched = await callbacks.doFetch()
       if (!refs.isActiveRef.current) return
       if (matched) {
-        callbacks.setTxHash(invoiceId, matched.hash, false)
+        callbacks.setTxHash(contentHash, matched.hash, false)
         callbacks.flushStop()
         return
       }

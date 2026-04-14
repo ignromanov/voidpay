@@ -10,14 +10,14 @@ import {
 import { PaymentPanel, StatusBadge, MinimizedPill, useInvoiceView } from '@/widgets/payment-panel'
 import { ShareModal } from '@/widgets/share-modal'
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkTheme } from '@/entities/network'
+import { getNetworkThemeName } from '@/entities/network'
 import { urlToRoute } from '@/shared/lib/navigation'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import { nowUnix } from '@/shared/lib/date-time'
 import type { InvoiceViewState } from '@/widgets/payment-panel'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { motion, AnimatePresence } from '@/shared/ui/motion'
-import { ChevronDownIcon, ExternalLinkIcon } from '@/shared/ui/icons'
+import { ExternalLinkIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 
 const InvoiceVerifier = dynamic(
@@ -46,7 +46,7 @@ export function InvoiceWorkspace() {
 
   useEffect(() => {
     if (invoice?.networkId) {
-      setNetworkTheme(getNetworkTheme(invoice.networkId))
+      setNetworkTheme(getNetworkThemeName(invoice.networkId))
     }
   }, [invoice?.networkId, setNetworkTheme])
 
@@ -87,7 +87,7 @@ interface InvoiceWorkspaceReadyProps {
 function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
   const {
     panelStatus, dismissError, txHash, confirmations, storedError,
-    finalized, exactTotal, polling, verifyTxHash, isSyncing,
+    finalized, exactTotal, polling, verifyTxHash, isSyncing, contentHash,
   } = view
 
   const searchParams = useSearchParams()
@@ -133,7 +133,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
       {txHash && !finalized && (
         <InvoiceVerifier
           invoice={invoice}
-          invoiceId={invoice.invoiceId}
+          contentHash={contentHash}
           txHash={txHash}
           exactTotal={exactTotal}
           onReorgDetected={polling.startAutoCheck}
@@ -179,6 +179,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                 {isPaid && txHash ? (
                   <PaymentPanel
                     invoice={invoice}
+                    contentHash={contentHash}
                     status={panelStatus}
                     txHash={txHash}
                     source="created"
@@ -186,10 +187,12 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                     finalized={finalized}
                     pollingMode={polling.mode}
                     onShareOpen={() => handleShareOpenChange(true)}
+                    onMinimize={() => setIsMinimized(true)}
                   />
                 ) : (
                   <PaymentPanel
                     invoice={invoice}
+                    contentHash={contentHash}
                     status={panelStatus}
                     source="created"
                     onShareOpen={() => handleShareOpenChange(true)}
@@ -200,6 +203,7 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                     onCheckPayment={polling.startManualCheck}
                     {...(polling.cooldownUntil !== undefined && { cooldownUntil: polling.cooldownUntil })}
                     onStopPolling={polling.stop}
+                    onMinimize={() => setIsMinimized(true)}
                   >
                     {isNotYetPayable && (
                       <p className="text-xs text-center text-amber-400">
@@ -217,14 +221,6 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
                     )}
                   </PaymentPanel>
                 )}
-                <button
-                  onClick={() => setIsMinimized(true)}
-                  className="absolute top-1.5 right-1.5 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-white"
-                  title="Minimize"
-                  aria-label="Minimize payment panel"
-                >
-                  <ChevronDownIcon size={14} />
-                </button>
               </motion.div>
             )}
           </AnimatePresence>

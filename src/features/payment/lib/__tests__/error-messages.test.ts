@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getErrorMessage, formatErrorMessage } from '../error-messages'
+import { getErrorMessage, formatErrorMessage, CANCELED_COPY } from '../error-messages'
 import type { PaymentErrorType } from '../../model/types'
 
 const ALL_TYPES: PaymentErrorType[] = [
@@ -31,6 +31,19 @@ describe('getErrorMessage', () => {
 
   it('TX_REVERTED has error severity', () => {
     expect(getErrorMessage('TX_REVERTED').severity).toBe('error')
+  })
+
+  it('USER_REJECTED references CANCELED_COPY', () => {
+    const msg = getErrorMessage('USER_REJECTED')
+    expect(msg.title).toBe(CANCELED_COPY.title)
+    expect(msg.description).toBe(CANCELED_COPY.description)
+  })
+})
+
+describe('CANCELED_COPY', () => {
+  it('has the canonical canceled copy', () => {
+    expect(CANCELED_COPY.title).toBe('Payment canceled')
+    expect(CANCELED_COPY.description).toBe('You declined the transaction in your wallet.')
   })
 })
 

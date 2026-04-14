@@ -8,10 +8,15 @@ vi.mock('viem', () => ({
   waitForTransactionReceipt: (...args: unknown[]) => mockWaitForTransactionReceipt(...args),
 }))
 
+// Fixed block timestamp returned by getBlock mock.
+const MOCK_BLOCK_TIMESTAMP_S = 1_700_000_000n
+const MOCK_BLOCK_TIMESTAMP_MS = 1_700_000_000_000
+
 // Mock wagmi usePublicClient
 const mockPublicClient = {
   waitForTransactionReceipt: vi.fn(),
   getTransactionReceipt: vi.fn(),
+  getBlock: vi.fn(),
 }
 
 vi.mock('wagmi', () => ({
@@ -27,7 +32,7 @@ const { mockSetValidated, mockSetFinalized, mockResetPaymentState } = vi.hoisted
 
 vi.mock('@/entities/invoice', () => {
   const storeState = {
-    invoices: [] as Array<{ invoiceId: string; finalized?: boolean }>,
+    invoices: [] as Array<{ contentHash: string; invoiceId: string; finalized?: boolean }>,
     setValidated: mockSetValidated,
     setFinalized: mockSetFinalized,
     resetPaymentState: mockResetPaymentState,
@@ -71,6 +76,7 @@ describe('useFinalizationTracker', () => {
       blockNumber: 100n,
       transactionHash: MOCK_TX_HASH,
     })
+    mockPublicClient.getBlock.mockResolvedValue({ timestamp: MOCK_BLOCK_TIMESTAMP_S })
   })
 
   afterEach(() => {
@@ -87,20 +93,68 @@ describe('useFinalizationTracker', () => {
 
     renderHook(() =>
       useFinalizationTracker({
-        invoiceId: 'INV-001',
+        contentHash: 'inv001-hash',
         txHash: MOCK_TX_HASH,
         networkId: 1, // Ethereum — 60 min timeout
       })
     )
 
     await waitFor(() => {
-      expect(mockSetFinalized).toHaveBeenCalledWith('INV-001')
+      expect(mockSetFinalized).toHaveBeenCalledWith('inv001-hash')
     })
 
     // Silent — no toast on success
     expect(mockToastError).not.toHaveBeenCalled()
     expect(mockToastWarning).not.toHaveBeenCalled()
     expect(mockResetPaymentState).not.toHaveBeenCalled()
+  })
+
+  // Regression: paidAt must come from the block's wall-clock timestamp, not Date.now().
+  it('passes block timestamp to setValidated as paidAtMs', async () => {
+    mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
+      status: 'success',
+      blockNumber: 100n,
+      transactionHash: MOCK_TX_HASH,
+    })
+    mockPublicClient.getBlock.mockResolvedValue({ timestamp: MOCK_BLOCK_TIMESTAMP_S })
+
+    renderHook(() =>
+      useFinalizationTracker({
+        contentHash: 'inv-paidat-hash',
+        txHash: MOCK_TX_HASH,
+        networkId: 1,
+      })
+    )
+
+    await waitFor(() => {
+      expect(mockSetValidated).toHaveBeenCalledWith('inv-paidat-hash', true, MOCK_BLOCK_TIMESTAMP_MS)
+    })
+
+    expect(mockPublicClient.getBlock).toHaveBeenCalledWith({ blockNumber: 100n })
+  })
+
+  // Regression: when getBlock throws, paidAtMs is undefined but finalization still completes.
+  it('falls back to undefined paidAtMs when getBlock fails', async () => {
+    mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
+      status: 'success',
+      blockNumber: 100n,
+      transactionHash: MOCK_TX_HASH,
+    })
+    mockPublicClient.getBlock.mockRejectedValue(new Error('rpc error'))
+
+    renderHook(() =>
+      useFinalizationTracker({
+        contentHash: 'inv-fallback-hash',
+        txHash: MOCK_TX_HASH,
+        networkId: 1,
+      })
+    )
+
+    await waitFor(() => {
+      expect(mockSetValidated).toHaveBeenCalledWith('inv-fallback-hash', true, undefined)
+    })
+
+    expect(mockSetFinalized).toHaveBeenCalledWith('inv-fallback-hash')
   })
 
   // Test case 2: Timeout (60 min ETH / 30 min L2) → invoice remains paid, no revert (W3-012)
@@ -112,7 +166,7 @@ describe('useFinalizationTracker', () => {
 
     renderHook(() =>
       useFinalizationTracker({
-        invoiceId: 'INV-001',
+        contentHash: 'inv001-hash',
         txHash: MOCK_TX_HASH,
         networkId: 1, // Ethereum — 60 min timeout
       })
@@ -135,7 +189,7 @@ describe('useFinalizationTracker', () => {
 
     renderHook(() =>
       useFinalizationTracker({
-        invoiceId: 'INV-L2-001',
+        contentHash: 'inv-l2-001-hash',
         txHash: MOCK_TX_HASH,
         networkId: 42161, // Arbitrum — 30 min timeout
       })
@@ -159,7 +213,7 @@ describe('useFinalizationTracker', () => {
 
     renderHook(() =>
       useFinalizationTracker({
-        invoiceId: 'INV-001',
+        contentHash: 'inv001-hash',
         txHash: MOCK_TX_HASH,
         networkId: 1,
         enabled: false,
@@ -185,7 +239,7 @@ describe('useFinalizationTracker', () => {
     const { rerender } = renderHook(
       ({ enabled }: { enabled: boolean }) =>
         useFinalizationTracker({
-          invoiceId: 'INV-001',
+          contentHash: 'inv001-hash',
           txHash: MOCK_TX_HASH,
           networkId: 1,
           enabled,
@@ -200,7 +254,7 @@ describe('useFinalizationTracker', () => {
     rerender({ enabled: true })
 
     await waitFor(() => {
-      expect(mockSetFinalized).toHaveBeenCalledWith('INV-001')
+      expect(mockSetFinalized).toHaveBeenCalledWith('inv001-hash')
     })
   })
 
@@ -213,14 +267,14 @@ describe('useFinalizationTracker', () => {
 
     renderHook(() =>
       useFinalizationTracker({
-        invoiceId: 'INV-REORG-001',
+        contentHash: 'inv-reorg-001-hash',
         txHash: MOCK_TX_HASH,
         networkId: 1,
       })
     )
 
     await waitFor(() => {
-      expect(mockResetPaymentState).toHaveBeenCalledWith('INV-REORG-001')
+      expect(mockResetPaymentState).toHaveBeenCalledWith('inv-reorg-001-hash')
     })
 
     // Must alert user about reorg via toast

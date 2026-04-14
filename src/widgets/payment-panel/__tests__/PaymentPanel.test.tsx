@@ -27,20 +27,59 @@ async function expandMoreOptions() {
 }
 
 describe('PaymentPanel', () => {
+  describe('network chip', () => {
+    it('renders network chip in pending state', () => {
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
+      const chip = screen.getByTestId('payment-network-chip')
+      expect(chip).toBeInTheDocument()
+      expect(chip).toHaveTextContent('Ethereum')
+    })
+
+    it('renders network chip in paid state', () => {
+      render(
+        <PaymentPanel
+          invoice={mockInvoice}
+          contentHash="test-content-hash"
+          status="paid"
+          txHash="0xabc123"
+        />
+      )
+      expect(screen.getByTestId('payment-network-chip')).toHaveTextContent('Ethereum')
+    })
+
+    it('renders network chip in overdue state', () => {
+      render(
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="overdue" />
+      )
+      expect(screen.getByTestId('payment-network-chip')).toHaveTextContent('Ethereum')
+    })
+
+    it('reflects Arbitrum network', () => {
+      const arbInvoice = { ...mockInvoice, networkId: 42161 }
+      render(<PaymentPanel invoice={arbInvoice} contentHash="test-content-hash" status="pending" />)
+      expect(screen.getByTestId('payment-network-chip')).toHaveTextContent('Arbitrum')
+    })
+
+    it('reflects Base network', () => {
+      const baseInvoice = { ...mockInvoice, networkId: 8453 }
+      render(<PaymentPanel invoice={baseInvoice} contentHash="test-content-hash" status="pending" />)
+      expect(screen.getByTestId('payment-network-chip')).toHaveTextContent('Base')
+    })
+  })
+
   describe('pending state', () => {
     it('renders payment panel with data-testid', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.getByTestId('payment-panel')).toBeInTheDocument()
     })
 
     it('shows AmountDisplay with correct values', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
-      expect(screen.getByText('Total Due')).toBeInTheDocument()
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.getByText('USDC')).toBeInTheDocument()
     })
 
     it('renders violet gradient bar for pending', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       const panel = screen.getByTestId('payment-panel')
       const gradientBar = panel.querySelector('[data-testid="gradient-bar"]')
       expect(gradientBar).toBeInTheDocument()
@@ -48,12 +87,12 @@ describe('PaymentPanel', () => {
     })
 
     it('shows Magic Dust exact amount when present', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.getByText(/Exact amount/i)).toBeInTheDocument()
     })
 
     it('renders data-status attribute', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       const panel = screen.getByTestId('payment-panel')
       expect(panel.getAttribute('data-status')).toBe('pending')
     })
@@ -64,6 +103,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
           txHash="0xabc123"
         />
@@ -76,6 +116,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
           txHash="0xabc123"
         />
@@ -87,6 +128,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
           txHash="0xabc123"
         >
@@ -101,6 +143,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
           txHash="0xabc123"
         />
@@ -113,6 +156,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
           txHash="0xabc123"
         />
@@ -125,7 +169,7 @@ describe('PaymentPanel', () => {
   describe('confirming state', () => {
     it('shows blue gradient bar', () => {
       render(
-        <PaymentPanel invoice={mockInvoice} status="confirming" txHash="0xabc123" />
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="confirming" txHash="0xabc123" />
       )
       const gradientBar = screen.getByTestId('gradient-bar')
       expect(gradientBar.className).toContain('from-blue-500')
@@ -133,7 +177,7 @@ describe('PaymentPanel', () => {
 
     it('shows pulse animation', () => {
       render(
-        <PaymentPanel invoice={mockInvoice} status="confirming" txHash="0xabc123" />
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="confirming" txHash="0xabc123" />
       )
       const gradientBar = screen.getByTestId('gradient-bar')
       expect(gradientBar.className).toContain('animate-pulse')
@@ -141,14 +185,14 @@ describe('PaymentPanel', () => {
 
     it('shows PaidConfirmation', () => {
       render(
-        <PaymentPanel invoice={mockInvoice} status="confirming" txHash="0xabc123" />
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="confirming" txHash="0xabc123" />
       )
       expect(screen.getByText('Payment Successful')).toBeInTheDocument()
     })
 
     it('does not show ActionSlot when confirming', () => {
       render(
-        <PaymentPanel invoice={mockInvoice} status="confirming" txHash="0xabc123">
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="confirming" txHash="0xabc123">
           <button>Pay Now</button>
         </PaymentPanel>
       )
@@ -159,6 +203,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="confirming"
           txHash="0xabc123"
           error="Some error"
@@ -171,19 +216,19 @@ describe('PaymentPanel', () => {
 
   describe('overdue state', () => {
     it('shows red gradient bar', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="overdue" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="overdue" />)
       const gradientBar = screen.getByTestId('gradient-bar')
       expect(gradientBar.className).toContain('from-red-500')
     })
 
     it('shows ExpiredState with expired message', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="overdue" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="overdue" />)
       expect(screen.getByText('This invoice has expired')).toBeInTheDocument()
     })
 
     it('does not show ActionSlot when overdue', () => {
       render(
-        <PaymentPanel invoice={mockInvoice} status="overdue">
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="overdue">
           <button>Pay Now</button>
         </PaymentPanel>
       )
@@ -195,7 +240,7 @@ describe('PaymentPanel', () => {
   describe('action slot (US4)', () => {
     it('renders children in ActionSlot when pending', () => {
       render(
-        <PaymentPanel invoice={mockInvoice} status="pending">
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending">
           <button>Pay Now</button>
         </PaymentPanel>
       )
@@ -203,7 +248,7 @@ describe('PaymentPanel', () => {
     })
 
     it('shows default prompt when no children on pending', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.getByText('Connect Wallet to Pay')).toBeInTheDocument()
     })
   })
@@ -213,6 +258,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           error="Transaction failed"
           onDismissError={() => {}}
@@ -227,6 +273,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           error="Test error"
           onDismissError={onDismiss}
@@ -238,7 +285,7 @@ describe('PaymentPanel', () => {
     })
 
     it('does not show error banner when no error', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.queryByRole('alert')).toBeNull()
     })
 
@@ -246,6 +293,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
           txHash="0xabc123"
           error="Some error"
@@ -258,7 +306,7 @@ describe('PaymentPanel', () => {
 
   describe('QR code button', () => {
     it('renders Show QR button when pending', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.getByRole('button', { name: /show qr/i })).toBeInTheDocument()
     })
 
@@ -266,6 +314,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
           txHash="0xabc123"
         />
@@ -274,12 +323,12 @@ describe('PaymentPanel', () => {
     })
 
     it('hides Show QR button when status is overdue', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="overdue" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="overdue" />)
       expect(screen.queryByRole('button', { name: /show qr/i })).toBeNull()
     })
 
     it('Show QR button is always visible on all screen sizes', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       const btn = screen.getByRole('button', { name: /show qr/i })
       expect(btn.className).not.toContain('hidden')
     })
@@ -287,20 +336,20 @@ describe('PaymentPanel', () => {
 
   describe('footer', () => {
     it('renders Download PDF button (enabled)', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       const downloadBtn = screen.getByRole('button', { name: /download pdf/i })
       expect(downloadBtn).toBeInTheDocument()
       expect(downloadBtn).not.toBeDisabled()
     })
 
     it('renders Report abuse button', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       const reportBtn = screen.getByRole('button', { name: /report abuse/i })
       expect(reportBtn).toBeInTheDocument()
     })
 
     it('Report button opens mailto link', async () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       const reportBtn = screen.getByRole('button', { name: /report abuse/i })
       const hrefSpy = vi.spyOn(window.location, 'href', 'set')
       await userEvent.click(reportBtn)
@@ -314,6 +363,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
           txHash="0xabc123"
         />
@@ -323,13 +373,13 @@ describe('PaymentPanel', () => {
     })
 
     it('does not render View Tx link in footer when pending', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.queryByRole('link', { name: /view tx/i })).toBeNull()
     })
 
     it('renders gradient separator', () => {
       const { container } = render(
-        <PaymentPanel invoice={mockInvoice} status="pending" />
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />
       )
       const separator = container.querySelector('.via-zinc-800')
       expect(separator).toBeInTheDocument()
@@ -343,8 +393,8 @@ describe('PaymentPanel', () => {
         total: undefined,
         magicDust: undefined,
       }
-      render(<PaymentPanel invoice={invoiceNoTotal} status="pending" />)
-      expect(screen.getByText('Total Due')).toBeInTheDocument()
+      render(<PaymentPanel invoice={invoiceNoTotal} contentHash="test-content-hash" status="pending" />)
+      expect(screen.getByText('Manual verification required')).toBeInTheDocument()
     })
 
     it('handles decimals=0', () => {
@@ -354,8 +404,8 @@ describe('PaymentPanel', () => {
         total: '100',
         magicDust: '5',
       }
-      render(<PaymentPanel invoice={integerInvoice} status="pending" />)
-      expect(screen.getByText('Total Due')).toBeInTheDocument()
+      render(<PaymentPanel invoice={integerInvoice} contentHash="test-content-hash" status="pending" />)
+      expect(screen.getByText('Exact amount:')).toBeInTheDocument()
     })
 
     it('handles magicDust in total but magicDust field absent', () => {
@@ -364,7 +414,7 @@ describe('PaymentPanel', () => {
         total: '1500000000',
         magicDust: undefined,
       }
-      render(<PaymentPanel invoice={noMagicDust} status="pending" />)
+      render(<PaymentPanel invoice={noMagicDust} contentHash="test-content-hash" status="pending" />)
       expect(screen.getByText('Manual verification required')).toBeInTheDocument()
     })
 
@@ -372,16 +422,18 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status={'unknown' as any}
         />
       )
-      expect(screen.getByText('Total Due')).toBeInTheDocument()
+      expect(screen.getByText('Exact amount:')).toBeInTheDocument()
     })
 
     it('renders paid state without txHash with fallback', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
         />
       )
@@ -399,6 +451,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onIvePaid={vi.fn()}
           onCheckPayment={vi.fn()}
@@ -414,14 +467,14 @@ describe('PaymentPanel', () => {
 
     it("renders only I've paid when onCheckPayment is not provided", () => {
       render(
-        <PaymentPanel invoice={mockInvoice} status="pending" onIvePaid={vi.fn()} />
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" onIvePaid={vi.fn()} />
       )
       expect(screen.getByTestId('ive-paid-button')).toBeInTheDocument()
       expect(screen.queryByTestId('check-payment-button')).toBeNull()
     })
 
     it("does not render I've paid button when onIvePaid is not provided", () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.queryByTestId('ive-paid-button')).toBeNull()
     })
 
@@ -429,6 +482,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
           txHash="0xabc123"
           onIvePaid={vi.fn()}
@@ -440,7 +494,7 @@ describe('PaymentPanel', () => {
     it("calls onIvePaid when button is clicked", async () => {
       const onIvePaid = vi.fn()
       render(
-        <PaymentPanel invoice={mockInvoice} status="pending" onIvePaid={onIvePaid} />
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" onIvePaid={onIvePaid} />
       )
       await userEvent.click(screen.getByTestId('ive-paid-button'))
       expect(onIvePaid).toHaveBeenCalledOnce()
@@ -451,6 +505,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onCheckPayment={onCheckPayment}
         />
@@ -464,6 +519,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onCheckPayment={vi.fn()}
           cooldownUntil={cooldownUntil}
@@ -479,6 +535,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onCheckPayment={vi.fn()}
           cooldownUntil={cooldownUntil}
@@ -493,6 +550,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
           txHash="0xabc123"
           onCheckPayment={vi.fn()}
@@ -507,6 +565,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onStartWatching={vi.fn()}
         />
@@ -516,7 +575,7 @@ describe('PaymentPanel', () => {
     })
 
     it('does not render "More options" when neither watch nor verify is provided', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.queryByTestId('more-options-toggle')).toBeNull()
     })
 
@@ -524,6 +583,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onVerifyTxHash={vi.fn()}
         />
@@ -536,6 +596,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onStartWatching={vi.fn()}
         />
@@ -550,6 +611,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onStartWatching={vi.fn()}
         />
@@ -567,6 +629,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onStartWatching={vi.fn()}
         />
@@ -581,6 +644,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onStartWatching={onStartWatching}
         />
@@ -594,6 +658,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onStartWatching={vi.fn()}
           onStopWatching={vi.fn()}
@@ -611,6 +676,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onStartWatching={vi.fn()}
           onStopWatching={onStopWatching}
@@ -626,6 +692,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
           txHash="0xabc123"
           onStartWatching={vi.fn()}
@@ -638,7 +705,7 @@ describe('PaymentPanel', () => {
 
   describe('PollingStatus filtering', () => {
     it('does not show PollingStatus when pollingMode is auto-check', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" pollingMode="auto-check" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" pollingMode="auto-check" />)
       expect(screen.queryByText('Checking...')).toBeNull()
     })
 
@@ -646,6 +713,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           pollingMode="aggressive"
           onIvePaid={vi.fn()}
@@ -657,12 +725,12 @@ describe('PaymentPanel', () => {
     })
 
     it('shows PollingStatus for watching mode', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" pollingMode="watching" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" pollingMode="watching" />)
       expect(screen.getByText('Watching for payment...')).toBeInTheDocument()
     })
 
     it('does not show PollingStatus for idle mode', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" pollingMode="idle" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" pollingMode="idle" />)
       expect(screen.queryByText('Checking...')).toBeNull()
       expect(screen.queryByText('Watching for payment...')).toBeNull()
     })
@@ -673,6 +741,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onIvePaid={vi.fn()}
           onStartWatching={vi.fn()}
@@ -690,6 +759,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onVerifyTxHash={vi.fn()}
         />
@@ -700,7 +770,7 @@ describe('PaymentPanel', () => {
     })
 
     it('does not render when onVerifyTxHash is not provided', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.queryByTestId('more-options-toggle')).toBeNull()
     })
 
@@ -708,6 +778,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onVerifyTxHash={vi.fn()}
         />
@@ -721,6 +792,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onVerifyTxHash={vi.fn()}
         />
@@ -734,6 +806,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onVerifyTxHash={vi.fn()}
         />
@@ -747,6 +820,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onVerifyTxHash={vi.fn()}
         />
@@ -762,6 +836,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onVerifyTxHash={onVerifyTxHash}
         />
@@ -776,6 +851,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
           txHash="0xabc123"
           onVerifyTxHash={vi.fn()}
@@ -788,6 +864,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onVerifyTxHash={vi.fn()}
         />
@@ -803,6 +880,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           onVerifyTxHash={vi.fn()}
         />
@@ -818,6 +896,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           error="Network error"
           onDismissError={() => {}}
@@ -830,6 +909,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="pending"
           error="Test"
           onDismissError={() => {}}
@@ -839,17 +919,17 @@ describe('PaymentPanel', () => {
     })
 
     it('MagicDustBadge renders for pending state with dust', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.getByText(/Exact amount/i)).toBeInTheDocument()
     })
 
     it('Download PDF button has aria-label', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.getByRole('button', { name: /download pdf/i })).toBeInTheDocument()
     })
 
     it('Report abuse button has aria-label', () => {
-      render(<PaymentPanel invoice={mockInvoice} status="pending" />)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.getByRole('button', { name: /report abuse/i })).toBeInTheDocument()
     })
 
@@ -857,6 +937,7 @@ describe('PaymentPanel', () => {
       render(
         <PaymentPanel
           invoice={mockInvoice}
+          contentHash="test-content-hash"
           status="paid"
           txHash="0xabc123"
         />
@@ -868,7 +949,7 @@ describe('PaymentPanel', () => {
 
     it("I've paid button has descriptive aria-label", () => {
       render(
-        <PaymentPanel invoice={mockInvoice} status="pending" onIvePaid={vi.fn()} />
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" onIvePaid={vi.fn()} />
       )
       const btn = screen.getByTestId('ive-paid-button')
       expect(btn.getAttribute('aria-label')).toContain('already paid')
@@ -876,7 +957,7 @@ describe('PaymentPanel', () => {
 
     it('gradient bar respects reduced motion', () => {
       render(
-        <PaymentPanel invoice={mockInvoice} status="confirming" txHash="0xabc123" />
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="confirming" txHash="0xabc123" />
       )
       const gradientBar = screen.getByTestId('gradient-bar')
       expect(gradientBar.className).toContain('motion-safe:animate-pulse')

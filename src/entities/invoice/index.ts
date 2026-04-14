@@ -49,3 +49,6 @@ export type { TrackedInvoice, InvoiceSource } from './model/rich-invoice-store'
 // Amount computation
 export { computeAmounts } from './lib/compute-amounts'
 export type { ComputedAmounts } from './lib/compute-amounts'
+
+// Status UI tokens (shared across features/widgets)
+export { INVOICE_STATUS_CHIPS } from './lib/status-ui'

@@ -69,6 +69,7 @@ export type PaymentAction =
   | { type: 'CONNECTED' }
   | { type: 'SWITCHED' }
   | { type: 'TX_SUBMITTED'; hash: `0x${string}` }
+  | { type: 'REPLACED'; hash: `0x${string}` }
   | { type: 'CONFIRMED' }
   | { type: 'ERROR'; error: PaymentError }
   | { type: 'RESET' }
@@ -104,8 +105,8 @@ export function parseDevOverride(dev: DevPaymentVisualStep): { step: PaymentStep
 export interface SmartPayButtonProps {
   /** Decoded invoice data */
   invoice: Invoice
-  /** Invoice ID for store persistence */
-  invoiceId: string
+  /** Content hash for store persistence */
+  contentHash: string
   /** Exact total in atomic units (from computeAmounts — computed by parent) */
   exactTotal: string
   /** Clean subtotal in atomic units (without Magic Dust) for button label display */

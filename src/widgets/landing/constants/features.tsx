@@ -33,7 +33,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     id: 'multichain',
     title: 'Multi-Chain Native',
     description:
-      'Ethereum, Arbitrum, Optimism, Polygon. The UI vibes with your network.',
+      'Ethereum, Base, Arbitrum, Optimism, Polygon. The UI vibes with your network.',
     icon: GlobeIcon,
     iconColor: 'text-cyan-500',
   },
