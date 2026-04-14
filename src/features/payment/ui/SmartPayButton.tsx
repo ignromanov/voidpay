@@ -6,6 +6,7 @@ import { Loader2Icon, CheckCircleIcon, XIcon } from '@/shared/ui/icons'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { useWagmiHydrating } from '@/shared/lib'
 import { motion } from '@/shared/ui/motion'
+import type { TargetAndTransition, Transition } from 'framer-motion'
 import { FluidOverlay } from './FluidOverlay'
 import { usePaymentFlow } from '../model/use-payment-flow'
 import { usePaymentToast } from '../model/use-payment-toast'
@@ -17,6 +18,15 @@ import type { SmartPayButtonProps, PaymentStep, IdleSubState } from '../model/ty
 // ---------------------------------------------------------------------------
 
 const IN_PROGRESS_STEPS = new Set<PaymentStep>(['connecting', 'switching', 'sending', 'confirming'])
+
+// Stable references for motion props — framer-motion v12 WAAPI backend restarts
+// the animation when `animate`/`transition` identity changes between renders.
+// Inline objects get a fresh identity on every parent render (frequent during
+// sending: usePaymentFlow ticks, hover toggles, step-change effects), which in
+// production builds freezes the spinner on its first frame. Same pattern as
+// FluidOverlay's module-level LAYER*_ANIMATE constants.
+const SPINNER_ANIMATE: TargetAndTransition = { rotate: [0, 360] }
+const SPINNER_TRANSITION: Transition = { duration: 1.5, repeat: Infinity, ease: 'linear' }
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -244,14 +254,15 @@ export function SmartPayButton({
           ) : (
             <>
               {/* Spinner — gentle organic rotation.
-                  Keyframes [0, 360] (not single value 360) — framer-motion v12 WAAPI
-                  backend stalls single-value rotate on second iteration under some
-                  wallet extensions (e.g. Rabby) which inject content scripts that
-                  force a re-render mid-animation. */}
+                  `animate`/`transition` MUST be stable module-level refs
+                  (SPINNER_ANIMATE / SPINNER_TRANSITION), not inline objects —
+                  see comment on the constants. Inline versions freeze in
+                  production builds because the WAAPI backend restarts on every
+                  parent render. */}
               {isInProgress && (
                 <motion.span
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                  animate={SPINNER_ANIMATE}
+                  transition={SPINNER_TRANSITION}
                 >
                   <Loader2Icon size={18} className="opacity-80" />
                 </motion.span>
