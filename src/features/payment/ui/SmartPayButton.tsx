@@ -6,7 +6,6 @@ import { Loader2Icon, CheckCircleIcon, XIcon } from '@/shared/ui/icons'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { useWagmiHydrating } from '@/shared/lib'
 import { motion } from '@/shared/ui/motion'
-import type { TargetAndTransition, Transition } from 'framer-motion'
 import { FluidOverlay } from './FluidOverlay'
 import { usePaymentFlow } from '../model/use-payment-flow'
 import { usePaymentToast } from '../model/use-payment-toast'
@@ -18,15 +17,6 @@ import type { SmartPayButtonProps, PaymentStep, IdleSubState } from '../model/ty
 // ---------------------------------------------------------------------------
 
 const IN_PROGRESS_STEPS = new Set<PaymentStep>(['connecting', 'switching', 'sending', 'confirming'])
-
-// Stable references for motion props — framer-motion v12 WAAPI backend restarts
-// the animation when `animate`/`transition` identity changes between renders.
-// Inline objects get a fresh identity on every parent render (frequent during
-// sending: usePaymentFlow ticks, hover toggles, step-change effects), which in
-// production builds freezes the spinner on its first frame. Same pattern as
-// FluidOverlay's module-level LAYER*_ANIMATE constants.
-const SPINNER_ANIMATE: TargetAndTransition = { rotate: [0, 360] }
-const SPINNER_TRANSITION: Transition = { duration: 1.5, repeat: Infinity, ease: 'linear' }
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -254,18 +244,15 @@ export function SmartPayButton({
           ) : (
             <>
               {/* Spinner — gentle organic rotation.
-                  `animate`/`transition` MUST be stable module-level refs
-                  (SPINNER_ANIMATE / SPINNER_TRANSITION), not inline objects —
-                  see comment on the constants. Inline versions freeze in
-                  production builds because the WAAPI backend restarts on every
-                  parent render. */}
+                  Uses a CSS keyframe animation, not framer-motion. v12 up to
+                  at least 12.23 silently drops rotate animations in production
+                  bundles (WAAPI backend regression, fixed upstream in 12.36.0
+                  — "Ensure we skip WAAPI for SVG transforms"). CSS spin has
+                  zero runtime dependency and is compositor-accelerated. */}
               {isInProgress && (
-                <motion.span
-                  animate={SPINNER_ANIMATE}
-                  transition={SPINNER_TRANSITION}
-                >
+                <span className="motion-safe:animate-[spin_1.5s_linear_infinite] inline-flex">
                   <Loader2Icon size={18} className="opacity-80" />
-                </motion.span>
+                </span>
               )}
 
               {/* Success checkmark — spring entrance */}
