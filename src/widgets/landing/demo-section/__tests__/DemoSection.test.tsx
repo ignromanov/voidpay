@@ -25,6 +25,16 @@ function renderWithProviders(ui: ReactElement) {
 // Note: framer-motion is globally mocked via vitest.config.ts alias
 // Global mock: useReducedMotion returns true (accessibility mode)
 
+// Mock only encodeInvoice (WASM/brotli) — real getDemoInvoices runs with real fixtures,
+// but skips the WASM roundtrip that times out waitFor under parallel test load.
+vi.mock('@/features/invoice-codec', async () => {
+  const actual = await vi.importActual<typeof import('@/features/invoice-codec')>('@/features/invoice-codec')
+  return {
+    ...actual,
+    encodeInvoice: vi.fn(async () => 'test-hash'),
+  }
+})
+
 // Mock next/link to render as a proper anchor
 vi.mock('next/link', () => ({
   default: vi.fn(({ children, href, ...props }) => (

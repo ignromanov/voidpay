@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { track, AnalyticsEvent } from '@/features/analytics'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkThemeName } from '@/entities/network'
+import { useReducedMotion } from '@/shared/ui'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
 import { InvoicePaper, ScaledInvoicePreview, InvoicePaperProps } from '@/widgets/invoice-paper'
@@ -27,6 +28,7 @@ export function DemoSection() {
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const [isHovered, setIsHovered] = useState(false)
   const [demoInvoices, setDemoInvoices] = useState<DemoInvoice[]>([])
+  const prefersReducedMotion = useReducedMotion()
 
   useEffect(() => {
     void getDemoInvoices().then(setDemoInvoices)
@@ -35,7 +37,7 @@ export function DemoSection() {
   const { activeIndex, pause, resume, goTo } = useDemoRotation({
     itemCount: demoInvoices.length,
     interval: ROTATION_INTERVAL_MS,
-    autoStart: true,
+    autoStart: !prefersReducedMotion,
   })
 
   // Sync network theme with active invoice

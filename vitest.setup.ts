@@ -4,7 +4,7 @@
  * This file runs BEFORE all tests.
  *
  * Mock strategy:
- * - framer-motion: via alias in vitest.config.ts → __mocks__/framer-motion.tsx
+ * - framer-motion: via alias in vitest.config.ts → src/shared/lib/test-utils/mocks/framer-motion.tsx
  * - React.useId: via vi.mock in this file
  * - matchMedia: via vi.hoisted in this file
  *
