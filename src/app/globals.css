@@ -10,6 +10,16 @@
   --animate-crescent-pulse: crescent-pulse 3s ease-in-out infinite;
   --animate-blackhole-pulse: blackhole-pulse 4s ease-in-out infinite;
 
+  /* Component animations — CSS replacements for framer-motion one-shot entrances.
+     `backwards` fill-mode keeps the element in its `from` state during the
+     animation-delay window, matching framer-motion's initial→animate contract. */
+  --animate-slide-in-left: slide-in-left 0.2s ease-out backwards;
+  --animate-slide-in-right: slide-in-right 0.2s ease-out backwards;
+  --animate-row-enter: row-enter 0.2s ease-out backwards;
+  --animate-modal-section-down: modal-section-down 0.2s ease-out backwards;
+  --animate-modal-section-up: modal-section-up 0.25s ease-out backwards;
+  --animate-breathing: breathing 2s ease-in-out infinite;
+
   /* Custom color - electric violet */
   --color-electric-violet: #7c3aed;
 }
@@ -49,6 +59,75 @@
   }
   50% {
     filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.5));
+  }
+}
+
+/* ============================================
+   Component animation keyframes (framer-motion replacements)
+   ============================================ */
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes row-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-section-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-section-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes breathing {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
   }
 }
 

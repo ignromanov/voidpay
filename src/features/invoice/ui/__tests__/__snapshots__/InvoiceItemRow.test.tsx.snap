@@ -2,7 +2,8 @@
 
 exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 1`] = `
 <div
-  class="group flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700"
+  class="group flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700 motion-safe:animate-row-enter"
+  style="animation-delay: 0ms;"
 >
   <div
     class="flex flex-1 gap-2 min-w-0 overflow-hidden"
@@ -133,7 +134,8 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with decimal values 
 
 exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1`] = `
 <div
-  class="group flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700"
+  class="group flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700 motion-safe:animate-row-enter"
+  style="animation-delay: 0ms;"
 >
   <div
     class="flex flex-1 gap-2 min-w-0 overflow-hidden"
@@ -264,7 +266,8 @@ exports[`InvoiceItemRow - Snapshots > should match snapshot with default state 1
 
 exports[`InvoiceItemRow - Snapshots > should match snapshot with empty values 1`] = `
 <div
-  class="group flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700"
+  class="group flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-900/30 p-3 transition-colors hover:border-zinc-700 motion-safe:animate-row-enter"
+  style="animation-delay: 0ms;"
 >
   <div
     class="flex flex-1 gap-2 min-w-0 overflow-hidden"

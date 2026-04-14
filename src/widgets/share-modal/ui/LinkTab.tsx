@@ -1,7 +1,6 @@
 'use client'
 
 import { CheckIcon, CopyIcon, LockIcon, MailIcon, SendIcon, TwitterIcon } from '@/shared/ui/icons'
-import { motion } from '@/shared/ui/motion'
 import { Button } from '@/shared/ui/button'
 import { Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
@@ -72,11 +71,9 @@ export function LinkTab({
   const { protocol, domain, path, ogParams, hash } = parseUrlParts(url)
 
   return (
-    <motion.div
+    <div
       key="link-tab"
-      initial={{ opacity: 0, x: 10 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="space-y-4"
+      className="space-y-4 motion-safe:animate-slide-in-right"
     >
       {/* Link display */}
       <div className="space-y-2">
@@ -191,6 +188,6 @@ export function LinkTab({
           <strong className="text-zinc-400">Privacy by design.</strong> Invoice data is encoded in the link. No servers. No tracking.
         </p>
       </div>
-    </motion.div>
+    </div>
   )
 }

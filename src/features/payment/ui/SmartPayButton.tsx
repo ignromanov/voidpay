@@ -266,21 +266,20 @@ export function SmartPayButton({
                 </motion.span>
               )}
 
-              {/* Labels — subtle breathing scale during loading */}
-              <motion.span
-                className="flex flex-col items-center gap-0.5"
-                animate={isInProgress ? { scale: [1, 1.05, 1] } : { scale: 1 }}
-                transition={
-                  isInProgress
-                    ? { duration: 2, repeat: Infinity, ease: 'easeInOut' }
-                    : { duration: 0.3 }
-                }
+              {/* Labels — subtle breathing scale during loading.
+                  CSS keyframe, not framer-motion (same rationale as the
+                  spinner above: WAAPI backend restarts on parent re-renders
+                  during sending). */}
+              <span
+                className={`flex flex-col items-center gap-0.5 ${
+                  isInProgress ? 'motion-safe:animate-breathing' : ''
+                }`}
               >
                 <span className="text-base font-medium">{label.primary}</span>
                 {label.secondary && (
                   <span className="text-xs font-normal opacity-60">{label.secondary}</span>
                 )}
-              </motion.span>
+              </span>
             </>
           )}
         </span>
