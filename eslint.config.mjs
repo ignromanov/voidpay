@@ -26,6 +26,7 @@ const config = [
       'assets/**',
       'specs/**',
       '.ai/**',
+      'src/video/**',
     ],
   },
 

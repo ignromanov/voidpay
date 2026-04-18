@@ -1,0 +1,40 @@
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": "VoidPay Demo — Crypto invoicing in one link",
+  "description": "Privacy-first crypto invoicing where all data lives in the URL. No backend. No signup. No tracking. Create, share, and pay invoices as self-contained links.",
+  "thumbnailUrl": "/video/poster-scene5.png",
+  "uploadDate": "2026-04-18",
+  "duration": "PT80S",
+  "contentUrl": "https://voidpay.xyz/video/voidpay-full.mp4",
+  "embedUrl": "https://voidpay.xyz/video/voidpay-landing.mp4",
+  "publisher": {
+    "@type": "Organization",
+    "name": "VoidPay",
+    "url": "https://voidpay.xyz",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://voidpay.xyz/logo.svg"
+    }
+  },
+  "inLanguage": "en",
+  "isFamilyFriendly": true,
+  "keywords": ["crypto invoicing", "web3 payments", "privacy", "no-backend", "USDC", "Arbitrum"],
+  "cuts": {
+    "twitter": {
+      "duration": "PT12S",
+      "contentUrl": "https://voidpay.xyz/video/voidpay-twitter.mp4",
+      "description": "Twitter cut — Scenes 1-2, 12 seconds"
+    },
+    "landing": {
+      "duration": "PT40S",
+      "contentUrl": "https://voidpay.xyz/video/voidpay-landing.mp4",
+      "description": "Landing hero cut — Scenes 1-4, 40 seconds"
+    },
+    "grants": {
+      "duration": "PT80S",
+      "contentUrl": "https://voidpay.xyz/video/voidpay-full.mp4",
+      "description": "Full grants cut — all 8 scenes, 80 seconds"
+    }
+  }
+}

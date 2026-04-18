@@ -110,3 +110,7 @@ next-env.d.ts
 worktrees/
 coverage/
 CLAUDE.md
+
+# Remotion video workspace
+src/video/node_modules/
+src/video/out/
