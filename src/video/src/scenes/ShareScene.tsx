@@ -164,23 +164,28 @@ export const ShareScene: React.FC = () => {
           </div>
         </div>
 
-        {/* QR code */}
-        <div style={{
-          display: "flex",
-          justifyContent: "center",
-        }}>
-          <div style={{ transform: `scale(${qrScale})` }}>
-            <PaymentQR
-              recipientAddress={DEMO_FROM_ADDRESS}
-              chainId={DEMO_NETWORK_ID}
-              amount={DEMO_TOTAL_ATOMIC}
-              tokenAddress={DEMO_TOKEN_ADDRESS}
-              size={160}
-              variant="light"
-              showLogo
-            />
+        {/* QR code — gated behind a Sequence so the PaymentQR SVG isn't built
+            for the 180 frames the modal is visible without it (P1.4). qrScale
+            is computed at parent scope using the outer frame, so it still
+            ramps from 0 when the Sequence activates. */}
+        <Sequence from={180} premountFor={30}>
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+          }}>
+            <div style={{ transform: `scale(${qrScale})` }}>
+              <PaymentQR
+                recipientAddress={DEMO_FROM_ADDRESS}
+                chainId={DEMO_NETWORK_ID}
+                amount={DEMO_TOTAL_ATOMIC}
+                tokenAddress={DEMO_TOKEN_ADDRESS}
+                size={160}
+                variant="light"
+                showLogo
+              />
+            </div>
           </div>
-        </div>
+        </Sequence>
       </Card>
 
       {/* URL anatomy annotations (appear after modal settles) */}

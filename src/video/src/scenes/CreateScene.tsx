@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   AbsoluteFill,
   Sequence,
@@ -119,6 +120,25 @@ export const CreateScene: React.FC = () => {
     [0.3, 0.8],
   );
 
+  // Paper preview layout — depends only on composition width/height, so
+  // memoize instead of recomputing every frame (P1.3). Frame-driven fade /
+  // lift stay inline in the JSX below.
+  const paperLayout = useMemo(() => {
+    const containerW = width * 0.38
+    const containerH = height * 0.8
+    const scale = Math.min(
+      containerW / INVOICE_BASE_WIDTH,
+      containerH / INVOICE_BASE_HEIGHT,
+    )
+    return {
+      containerW,
+      containerH,
+      scale,
+      scaledW: INVOICE_BASE_WIDTH * scale,
+      scaledH: INVOICE_BASE_HEIGHT * scale,
+    }
+  }, [width, height]);
+
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackground />
@@ -178,61 +198,44 @@ export const CreateScene: React.FC = () => {
       </div>
 
       {/* Preview paper (right side) — real @/widgets/invoice-paper.
-          Scale computed from composition dims (deterministic — no ResizeObserver).
-          Container: width*0.38 × height*0.8. Base paper: 794×1123 (A4 @ 96dpi). */}
-      {(() => {
-        const containerW = width * 0.38
-        const containerH = height * 0.8
-        const scale = Math.min(
-          containerW / INVOICE_BASE_WIDTH,
-          containerH / INVOICE_BASE_HEIGHT,
-        )
-        const scaledW = INVOICE_BASE_WIDTH * scale
-        const scaledH = INVOICE_BASE_HEIGHT * scale
-
-        // Paper fades in with a gentle lift as the form fills (frame 30 → 90).
-        const paperOpacity = interpolate(
-          frame,
-          [30, 90],
-          [0, 1],
-          { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-        )
-        const paperLift = interpolate(
-          frame,
-          [30, 90],
-          [20, 0],
-          { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-        )
-
-        return (
-          <div
-            style={{
-              position: "absolute",
-              right: width * 0.08 + (containerW - scaledW) / 2,
-              top: height * 0.1 + (containerH - scaledH) / 2,
-              width: scaledW,
-              height: scaledH,
-              opacity: paperOpacity,
-              transform: `translateY(${paperLift}px)`,
-            }}
-          >
-            <div
-              style={{
-                width: INVOICE_BASE_WIDTH,
-                height: INVOICE_BASE_HEIGHT,
-                transform: `scale(${scale})`,
-                transformOrigin: "top left",
-              }}
-            >
-              <InvoicePaper
-                data={DEMO_INVOICE}
-                status="pending"
-                variant="default"
-              />
-            </div>
-          </div>
-        )
-      })()}
+          Scale from paperLayout (memoized on width/height). Base paper:
+          794×1123 (A4 @ 96dpi). Fade / lift stay frame-driven. */}
+      <div
+        style={{
+          position: "absolute",
+          right: width * 0.08 + (paperLayout.containerW - paperLayout.scaledW) / 2,
+          top: height * 0.1 + (paperLayout.containerH - paperLayout.scaledH) / 2,
+          width: paperLayout.scaledW,
+          height: paperLayout.scaledH,
+          opacity: interpolate(
+            frame,
+            [30, 90],
+            [0, 1],
+            { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+          ),
+          transform: `translateY(${interpolate(
+            frame,
+            [30, 90],
+            [20, 0],
+            { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+          )}px)`,
+        }}
+      >
+        <div
+          style={{
+            width: INVOICE_BASE_WIDTH,
+            height: INVOICE_BASE_HEIGHT,
+            transform: `scale(${paperLayout.scale})`,
+            transformOrigin: "top left",
+          }}
+        >
+          <InvoicePaper
+            data={DEMO_INVOICE}
+            status="pending"
+            variant="default"
+          />
+        </div>
+      </div>
 
       {/* LOCKED caption from creative-brief.md §1, Scene 3 */}
       <Caption text="Three fields. One link. Invoice ready." startAt={440} />

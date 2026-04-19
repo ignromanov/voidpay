@@ -27,10 +27,13 @@ export const CUTS = {
 
 /**
  * Total duration accounting for transition overlaps.
- * Sum of scenes = 2400, sum of transitions = 120, effective = 2400 - 120 = 2280
- * We use 2400 as the composition duration (TransitionSeries handles overlap).
+ * Sum of scenes = 2400, sum of transition overlaps = 120.
+ * TransitionSeries overlaps scenes by each transitionDuration, so the effective
+ * composition length is scene sum - transition sum = 2280. Using 2400 leaves
+ * 120 trailing frames that render past the CTA and produce a white flash.
+ * Fixed to 2280 per audit-v1 §2.2 Option A.
  */
-export const TOTAL_DURATION = 2400;
+export const TOTAL_DURATION = 2280;
 
 /** Scene order with transition types (for TransitionSeries wiring) */
 export const SCENE_TRANSITIONS = [

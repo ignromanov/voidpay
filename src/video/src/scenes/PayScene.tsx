@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   AbsoluteFill,
   Sequence,
@@ -23,6 +24,21 @@ import { CheckIcon, Loader2Icon } from "@/shared/ui/icons";
 // Deterministic demo tx hash for the paid-state watermark
 const DEMO_TX_HASH =
   "0xabc123def456789012345678901234567890abcdef1234567890abcdef123456";
+
+// Hoisted to module scope so prop identities are stable across every frame —
+// prevents InvoicePaper re-renders from fresh object references (P1.2).
+const PAPER_PROPS_PENDING = {
+  data: DEMO_INVOICE,
+  status: "pending",
+  variant: "default",
+} as const;
+
+const PAPER_PROPS_PAID = {
+  data: DEMO_INVOICE,
+  status: "paid",
+  txHash: DEMO_TX_HASH,
+  variant: "default",
+} as const;
 
 export const PayScene: React.FC = () => {
   const frame = useCurrentFrame();
@@ -65,27 +81,23 @@ export const PayScene: React.FC = () => {
   // highlight in creative-brief is driven by overlay pulse on top of paper
   // at MAGIC_DUST_HIGHLIGHT, not by reimplementing digit colors.
   const isPaid = frame >= SUCCESS
-  const paperPropsPending = {
-    data: DEMO_INVOICE,
-    status: "pending" as const,
-    variant: "default" as const,
-  }
-  const paperPropsPaid = {
-    data: DEMO_INVOICE,
-    status: "paid" as const,
-    txHash: DEMO_TX_HASH,
-    variant: "default" as const,
-  }
 
-  // Scale real A4 paper (794×1123) to fit 560×700 band above the pay button
-  const paperContainerW = 560
-  const paperContainerH = height * 0.7
-  const paperScale = Math.min(
-    paperContainerW / INVOICE_BASE_WIDTH,
-    paperContainerH / INVOICE_BASE_HEIGHT,
-  )
-  const paperScaledW = INVOICE_BASE_WIDTH * paperScale
-  const paperScaledH = INVOICE_BASE_HEIGHT * paperScale
+  // Scale real A4 paper (794×1123) to fit 560×700 band above the pay button.
+  // Memoized on `height` — these derive from composition size, not frame, so
+  // recomputing every frame is wasted work (P1.3).
+  const { paperScale, paperScaledW, paperScaledH } = useMemo(() => {
+    const containerW = 560
+    const containerH = height * 0.7
+    const scale = Math.min(
+      containerW / INVOICE_BASE_WIDTH,
+      containerH / INVOICE_BASE_HEIGHT,
+    )
+    return {
+      paperScale: scale,
+      paperScaledW: INVOICE_BASE_WIDTH * scale,
+      paperScaledH: INVOICE_BASE_HEIGHT * scale,
+    }
+  }, [height])
 
   // Violet pulse overlay on the total row when Magic Dust highlight hits
   const magicDustPulseOpacity = interpolate(
@@ -120,7 +132,7 @@ export const PayScene: React.FC = () => {
             transformOrigin: "top left",
           }}
         >
-          <InvoicePaper {...(isPaid ? paperPropsPaid : paperPropsPending)} />
+          <InvoicePaper {...(isPaid ? PAPER_PROPS_PAID : PAPER_PROPS_PENDING)} />
         </div>
 
         {/* Magic Dust violet pulse — halo over the totals band */}
