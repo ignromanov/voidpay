@@ -1,17 +1,24 @@
 import {
   AbsoluteFill,
   interpolate,
+  spring,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import { VoidLogo, AuroraText } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
-import { VoidLogo } from "../components/VoidLogo";
-import { AuroraText } from "../components/AuroraText";
+import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_MONO, FONT_SANS } from "../fonts";
 
 export const CTAScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const { width, height } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+
+  const logoScale = spring({ frame, fps, config: SPRING_CONFIGS.bouncy });
+  const auroraOpacity = interpolate(frame, [15, 35], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
 
   const ctaTextOpacity = interpolate(frame, [40, 60], [0, 1], {
     extrapolateLeft: "clamp",
@@ -49,24 +56,29 @@ export const CTAScene: React.FC = () => {
         opacity: glowOpacity,
       }} />
 
-      {/* Logo */}
+      {/* Logo — real @/shared/ui/VoidLogo, Remotion spring entrance */}
       <div style={{
         position: "absolute",
         left: width / 2 - 100,
         top: height * 0.2,
+        transform: `scale(${logoScale})`,
+        transformOrigin: "center",
       }}>
-        <VoidLogo size={200} delay={0} glowPulse />
+        <VoidLogo size={200} />
       </div>
 
-      {/* VoidPay aurora text */}
+      {/* VoidPay aurora text — real @/shared/ui/AuroraText (gradient + drop-shadow) */}
       <div style={{
         position: "absolute",
         top: height * 0.48,
         width: "100%",
         display: "flex",
         justifyContent: "center",
+        opacity: auroraOpacity,
       }}>
-        <AuroraText text="VoidPay" fontSize={56} delay={15} fadeDuration={20} />
+        <AuroraText as="h1" className="text-[56px] font-black tracking-tight">
+          VoidPay
+        </AuroraText>
       </div>
 
       {/* LOCKED caption from creative-brief.md §1, Scene 8a */}

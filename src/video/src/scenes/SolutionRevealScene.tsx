@@ -5,10 +5,9 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import { VoidLogo, AuroraText } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
-import { VoidLogo } from "../components/VoidLogo";
-import { AuroraText } from "../components/AuroraText";
 import { Caption } from "../components/Caption";
 
 export const SolutionRevealScene: React.FC = () => {
@@ -50,29 +49,58 @@ export const SolutionRevealScene: React.FC = () => {
         }}
       />
 
-      {/* Logo */}
-      <div
-        style={{
-          position: "absolute",
-          left: width / 2 - 80,
-          top: height / 2 - 140,
-        }}
-      >
-        <VoidLogo size={160} delay={10} glowPulse />
-      </div>
+      {/* Logo — real @/shared/ui/VoidLogo (black hole SVG + violet glow).
+          Frame-driven bouncy spring entrance; Tailwind CSS pulse handles ambient. */}
+      {(() => {
+        const logoDelay = 10
+        const logoScale = spring({
+          frame: frame - logoDelay,
+          fps,
+          config: SPRING_CONFIGS.bouncy,
+        })
+        return (
+          <div
+            style={{
+              position: "absolute",
+              left: width / 2 - 80,
+              top: height / 2 - 140,
+              transform: `scale(${logoScale})`,
+              transformOrigin: "center",
+            }}
+          >
+            <VoidLogo size={160} />
+          </div>
+        )
+      })()}
 
-      {/* Aurora text */}
-      <div
-        style={{
-          position: "absolute",
-          top: height / 2 + 50,
-          width: "100%",
-          display: "flex",
-          justifyContent: "center",
-        }}
-      >
-        <AuroraText text="VoidPay" fontSize={64} delay={30} fadeDuration={20} />
-      </div>
+      {/* Aurora text — real @/shared/ui/AuroraText.
+          Frame-driven opacity for entrance; animate-aurora CSS handles gradient scroll. */}
+      {(() => {
+        const textDelay = 30
+        const fadeDuration = 20
+        const auroraOpacity = interpolate(
+          frame,
+          [textDelay, textDelay + fadeDuration],
+          [0, 1],
+          { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+        )
+        return (
+          <div
+            style={{
+              position: "absolute",
+              top: height / 2 + 50,
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              opacity: auroraOpacity,
+            }}
+          >
+            <AuroraText as="h1" className="text-[64px] font-black tracking-tight">
+              VoidPay
+            </AuroraText>
+          </div>
+        )
+      })()}
 
       {/* LOCKED caption from creative-brief.md §1, Scene 2 */}
       <Caption text="Invoice in a URL." startAt={40} />

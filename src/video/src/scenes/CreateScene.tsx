@@ -14,7 +14,7 @@ import {
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS, TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { FONT_MONO, FONT_SANS } from "../fonts";
-import { NetworkShapes } from "../components/NetworkShapes";
+import { NetworkBackground } from "@/widgets/network-background";
 import { Caption } from "../components/Caption";
 import { DEMO_INVOICE } from "../constants/demo-invoice";
 
@@ -120,7 +120,7 @@ export const CreateScene: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
-      <NetworkShapes />
+      <NetworkBackground />
 
       {/* Form panel (left side) */}
       <div style={{

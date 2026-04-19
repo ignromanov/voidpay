@@ -1,5 +1,6 @@
 import { Composition, Folder, registerRoot } from "remotion";
 import { z } from "zod";
+import { useCreatorStore } from "@/entities/creator";
 import { ensureFonts } from "./fonts";
 import { VoidPayDemo } from "./VoidPayDemo";
 import { PayScene } from "./scenes/PayScene";
@@ -10,6 +11,12 @@ import "@/app/globals.css";
 import "./remotion-globals.css";
 
 ensureFonts();
+
+// Seed the real @/entities/creator store so @/widgets/network-background
+// and any other theme-aware widgets render Arbitrum colors for the demo.
+// Module-level call runs before any composition renders — persist middleware
+// in Remotion's headless Chromium has no prior localStorage to rehydrate from.
+useCreatorStore.setState({ networkTheme: "arbitrum" });
 
 export const DemoPropsSchema = z.object({
   ctaText: z.string().default("Create your first invoice in 30 seconds."),

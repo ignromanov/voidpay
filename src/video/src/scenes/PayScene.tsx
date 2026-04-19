@@ -14,7 +14,7 @@ import {
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
-import { NetworkShapes } from "../components/NetworkShapes";
+import { NetworkBackground } from "@/widgets/network-background";
 import { Caption } from "../components/Caption";
 import { DEMO_INVOICE } from "../constants/demo-invoice";
 
@@ -95,7 +95,7 @@ export const PayScene: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
-      <NetworkShapes />
+      <NetworkBackground />
 
       {/* Real InvoicePaper (center) — Arbitrum USDC invoice with Magic Dust.
           Spring-in on mount, status flips pending → paid at SUCCESS frame. */}
