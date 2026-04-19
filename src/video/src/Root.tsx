@@ -1,4 +1,4 @@
-import { Composition, Folder, registerRoot } from "remotion";
+import { Composition, Folder, continueRender, delayRender, registerRoot } from "remotion";
 import { z } from "zod";
 import { useCreatorStore } from "@/entities/creator";
 import { ensureFonts } from "./fonts";
@@ -11,7 +11,12 @@ import { TOTAL_DURATION } from "./constants/scenes";
 import "@/app/globals.css";
 import "./remotion-globals.css";
 
-ensureFonts();
+// Bracket font loading so Remotion holds the first frame until Geist is ready.
+// Without delayRender, stills/renders may capture the system-font fallback on
+// cold cache. Unhandled rejection is intentional — a fonts error should surface
+// as a visible render timeout rather than silently ship with fallback fonts.
+const fontsHandle = delayRender("Load video fonts");
+ensureFonts().then(() => continueRender(fontsHandle));
 
 // Seed the real @/entities/creator store so @/widgets/network-background
 // and any other theme-aware widgets render Arbitrum colors for the demo.
@@ -31,7 +36,11 @@ export const RemotionRoot: React.FC = () => {
   return (
     <>
       <Folder name="VoidPayDemo">
-        {/* Primary: 16:9 landscape — first-render scope per creative-brief §3 */}
+        {/* Primary: 16:9 landscape — first-render scope per creative-brief §3.
+            1:1 and 9:16 variants require adaptive scene layouts (Heading/Text
+            scales, InvoicePaper sizing, PillarIcons positioning) — deferred to
+            AI#58.6 per audit-v1 §2.3 Option D. Re-introduce with adaptive
+            scenes, not just a differently-sized Composition wrapper. */}
         <Composition
           id="VoidPayDemo-16x9"
           component={VoidPayDemo}
@@ -39,30 +48,6 @@ export const RemotionRoot: React.FC = () => {
           fps={30}
           width={1920}
           height={1080}
-          schema={DemoPropsSchema}
-          defaultProps={DEFAULT_PROPS}
-        />
-
-        {/* Square: 1:1 for Instagram/LinkedIn — batch 2 */}
-        <Composition
-          id="VoidPayDemo-1x1"
-          component={VoidPayDemo}
-          durationInFrames={TOTAL_DURATION}
-          fps={30}
-          width={1080}
-          height={1080}
-          schema={DemoPropsSchema}
-          defaultProps={DEFAULT_PROPS}
-        />
-
-        {/* Vertical: 9:16 for TikTok/Reels — batch 2 */}
-        <Composition
-          id="VoidPayDemo-9x16"
-          component={VoidPayDemo}
-          durationInFrames={TOTAL_DURATION}
-          fps={30}
-          width={1080}
-          height={1920}
           schema={DemoPropsSchema}
           defaultProps={DEFAULT_PROPS}
         />
