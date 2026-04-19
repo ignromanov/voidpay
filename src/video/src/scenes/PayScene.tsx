@@ -6,19 +6,21 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import {
+  InvoicePaper,
+  INVOICE_BASE_WIDTH,
+  INVOICE_BASE_HEIGHT,
+} from "@/widgets/invoice-paper";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
-import { FONT_MONO, FONT_SANS } from "../fonts";
+import { FONT_SANS } from "../fonts";
 import { NetworkShapes } from "../components/NetworkShapes";
 import { Caption } from "../components/Caption";
+import { DEMO_INVOICE } from "../constants/demo-invoice";
 
-// Creative brief §2: Alex · UI Design · $250.000042 USDC · Arbitrum
-// Address callback: same 0x7a250d56... from Scene 1 chaos
-const INVOICE_FROM = "Alex";
-const INVOICE_ITEM = "UI Design";
-const RECIPIENT_ADDRESS = "0x7a250d56…"; // truncated — narrative callback to Scene 1
-const INVOICE_NETWORK = "Arbitrum";
-const INVOICE_TOKEN = "USDC";
+// Deterministic demo tx hash for the paid-state watermark
+const DEMO_TX_HASH =
+  "0xabc123def456789012345678901234567890abcdef1234567890abcdef123456";
 
 export const PayScene: React.FC = () => {
   const frame = useCurrentFrame();
@@ -46,11 +48,6 @@ export const PayScene: React.FC = () => {
     ? interpolate(frame, [NETWORK_BADGE, NETWORK_BADGE + 10], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
     : 1;
 
-  // Magic Dust color interpolation — violet highlight per creative-brief §2
-  const dustColorProgress = frame >= MAGIC_DUST_HIGHLIGHT
-    ? interpolate(frame, [MAGIC_DUST_HIGHLIGHT, MAGIC_DUST_HIGHLIGHT + 20], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
-    : 0;
-
   // Processing pulse
   const processingOpacity = frame >= PROCESSING && frame < SUCCESS
     ? interpolate(Math.sin((frame - PROCESSING) * 0.15), [-1, 1], [0.3, 1])
@@ -61,84 +58,85 @@ export const PayScene: React.FC = () => {
     ? spring({ frame: frame - SUCCESS, fps, config: SPRING_CONFIGS.bouncy })
     : 0;
 
+  // Real InvoicePaper status transition — pending → paid at success frame.
+  // Magic Dust styling comes from TotalsSection (real component) — violet
+  // highlight in creative-brief is driven by overlay pulse on top of paper
+  // at MAGIC_DUST_HIGHLIGHT, not by reimplementing digit colors.
+  const isPaid = frame >= SUCCESS
+  const paperPropsPending = {
+    data: DEMO_INVOICE,
+    status: "pending" as const,
+    variant: "default" as const,
+  }
+  const paperPropsPaid = {
+    data: DEMO_INVOICE,
+    status: "paid" as const,
+    txHash: DEMO_TX_HASH,
+    variant: "default" as const,
+  }
+
+  // Scale real A4 paper (794×1123) to fit 560×700 band above the pay button
+  const paperContainerW = 560
+  const paperContainerH = height * 0.7
+  const paperScale = Math.min(
+    paperContainerW / INVOICE_BASE_WIDTH,
+    paperContainerH / INVOICE_BASE_HEIGHT,
+  )
+  const paperScaledW = INVOICE_BASE_WIDTH * paperScale
+  const paperScaledH = INVOICE_BASE_HEIGHT * paperScale
+
+  // Violet pulse overlay on the total row when Magic Dust highlight hits
+  const magicDustPulseOpacity = interpolate(
+    frame,
+    [MAGIC_DUST_HIGHLIGHT - 5, MAGIC_DUST_HIGHLIGHT + 15, MAGIC_DUST_HIGHLIGHT + 60],
+    [0, 0.55, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  )
+
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkShapes />
 
-      {/* Invoice card (center) */}
-      <div style={{
-        position: "absolute",
-        left: width / 2 - 280,
-        top: height * 0.08,
-        width: 560,
-        background: COLORS.paper,
-        borderRadius: 12,
-        padding: 40,
-        transform: `scale(${cardScale})`,
-        boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
-      }}>
-        <div style={{ fontFamily: `${FONT_SANS}, sans-serif`, color: "#09090b" }}>
-          {/* Invoice header */}
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-            <div>
-              <div style={{ fontSize: 11, color: "#71717a", textTransform: "uppercase" }}>Invoice from</div>
-              <div style={{ fontSize: 22, fontWeight: 900 }}>{INVOICE_FROM}</div>
-              <div style={{ fontSize: 13, color: "#71717a", marginTop: 4 }}>{INVOICE_ITEM}</div>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 11, color: "#71717a", textTransform: "uppercase" }}>Network</div>
-              {frame >= NETWORK_BADGE && (
-                <div style={{
-                  display: "inline-block",
-                  background: `${COLORS.arbitrum}15`,
-                  color: COLORS.arbitrum,
-                  padding: "4px 10px",
-                  borderRadius: 6,
-                  fontSize: 14,
-                  fontWeight: 600,
-                }}>
-                  {INVOICE_NETWORK}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Recipient address — narrative callback to Scene 1 */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 11, color: "#71717a", textTransform: "uppercase", marginBottom: 4 }}>Recipient</div>
-            <div style={{
-              fontFamily: `${FONT_MONO}, monospace`,
-              fontSize: 14,
-              color: "#27272a",
-              background: "#f4f4f5",
-              padding: "6px 10px",
-              borderRadius: 6,
-            }}>
-              {RECIPIENT_ADDRESS}
-            </div>
-          </div>
-
-          {/* Amount with Magic Dust */}
-          <div style={{
-            borderTop: "2px solid #e4e4e7",
-            paddingTop: 20,
-            textAlign: "center",
-          }}>
-            <div style={{ fontSize: 14, color: "#71717a", marginBottom: 8 }}>Amount Due</div>
-            <div style={{ fontFamily: `${FONT_MONO}, monospace`, fontSize: 36, fontWeight: 900 }}>
-              <span>250.</span>
-              {/* Creative brief §5b: Magic Dust digit highlighted in violet */}
-              <span style={{
-                color: dustColorProgress > 0
-                  ? `rgb(${Math.round(124 * dustColorProgress + 9 * (1 - dustColorProgress))}, ${Math.round(58 * dustColorProgress + 9 * (1 - dustColorProgress))}, ${Math.round(237 * dustColorProgress + 11 * (1 - dustColorProgress))})`
-                  : "#09090b",
-              }}>
-                000042
-              </span>
-              <span style={{ fontSize: 20, fontWeight: 400, marginLeft: 8 }}>{INVOICE_TOKEN}</span>
-            </div>
-          </div>
+      {/* Real InvoicePaper (center) — Arbitrum USDC invoice with Magic Dust.
+          Spring-in on mount, status flips pending → paid at SUCCESS frame. */}
+      <div
+        style={{
+          position: "absolute",
+          left: width / 2 - paperScaledW / 2,
+          top: height * 0.05,
+          width: paperScaledW,
+          height: paperScaledH,
+          transform: `scale(${cardScale})`,
+          transformOrigin: "top center",
+        }}
+      >
+        <div
+          style={{
+            width: INVOICE_BASE_WIDTH,
+            height: INVOICE_BASE_HEIGHT,
+            transform: `scale(${paperScale})`,
+            transformOrigin: "top left",
+          }}
+        >
+          <InvoicePaper {...(isPaid ? paperPropsPaid : paperPropsPending)} />
         </div>
+
+        {/* Magic Dust violet pulse — halo over the totals band */}
+        {magicDustPulseOpacity > 0.01 && (
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: paperScaledH * 0.22,
+              height: 120,
+              background: `radial-gradient(ellipse at center, ${COLORS.violetGlow} 0%, transparent 70%)`,
+              opacity: magicDustPulseOpacity,
+              pointerEvents: "none",
+              mixBlendMode: "screen",
+            }}
+          />
+        )}
       </div>
 
       {/* Wallet connect button */}

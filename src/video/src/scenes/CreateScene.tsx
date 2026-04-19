@@ -6,11 +6,17 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import {
+  InvoicePaper,
+  INVOICE_BASE_WIDTH,
+  INVOICE_BASE_HEIGHT,
+} from "@/widgets/invoice-paper";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS, TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { FONT_MONO, FONT_SANS } from "../fonts";
 import { NetworkShapes } from "../components/NetworkShapes";
 import { Caption } from "../components/Caption";
+import { DEMO_INVOICE } from "../constants/demo-invoice";
 
 // Creative brief §2: Alex · UI Design · $250 USDC · Arbitrum
 const INVOICE_FROM = "Alex";
@@ -174,59 +180,62 @@ export const CreateScene: React.FC = () => {
         </Sequence>
       </div>
 
-      {/* Preview paper (right side) */}
-      <div style={{
-        position: "absolute",
-        right: width * 0.08,
-        top: height * 0.1,
-        width: width * 0.38,
-        height: height * 0.8,
-        background: COLORS.paper,
-        borderRadius: 8,
-        padding: 40,
-        boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
-      }}>
-        <Sequence from={30} premountFor={30}>
-          <div style={{ fontFamily: `${FONT_SANS}, sans-serif`, color: "#09090b" }}>
-            <div style={{ fontSize: 12, color: "#71717a", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Invoice</div>
-            <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 24 }}>
-              {typewrite(INVOICE_FROM, frame, 30)}
-            </div>
+      {/* Preview paper (right side) — real @/widgets/invoice-paper.
+          Scale computed from composition dims (deterministic — no ResizeObserver).
+          Container: width*0.38 × height*0.8. Base paper: 794×1123 (A4 @ 96dpi). */}
+      {(() => {
+        const containerW = width * 0.38
+        const containerH = height * 0.8
+        const scale = Math.min(
+          containerW / INVOICE_BASE_WIDTH,
+          containerH / INVOICE_BASE_HEIGHT,
+        )
+        const scaledW = INVOICE_BASE_WIDTH * scale
+        const scaledH = INVOICE_BASE_HEIGHT * scale
 
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
-              <div>
-                <div style={{ fontSize: 11, color: "#71717a", textTransform: "uppercase" }}>Network</div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: COLORS.arbitrum }}>
-                  {frame >= 90 ? INVOICE_NETWORK : "—"}
-                </div>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 11, color: "#71717a", textTransform: "uppercase" }}>Token</div>
-                <div style={{ fontSize: 16, fontWeight: 600 }}>
-                  {frame >= 60 ? INVOICE_TOKEN : "—"}
-                </div>
-              </div>
-            </div>
+        // Paper fades in with a gentle lift as the form fills (frame 30 → 90).
+        const paperOpacity = interpolate(
+          frame,
+          [30, 90],
+          [0, 1],
+          { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+        )
+        const paperLift = interpolate(
+          frame,
+          [30, 90],
+          [20, 0],
+          { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+        )
 
-            {/* Paper total */}
-            <Sequence from={200} premountFor={30} layout="none">
-              <div style={{
-                borderTop: "2px solid #e4e4e7",
-                paddingTop: 16,
-                marginTop: 20,
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: 32,
-                fontWeight: 900,
-                fontFamily: `${FONT_MONO}, monospace`,
-              }}>
-                <span style={{ color: "#71717a", fontSize: 16, fontWeight: 400 }}>Total Due</span>
-                <span>{INVOICE_AMOUNT} {INVOICE_TOKEN}</span>
-              </div>
-            </Sequence>
+        return (
+          <div
+            style={{
+              position: "absolute",
+              right: width * 0.08 + (containerW - scaledW) / 2,
+              top: height * 0.1 + (containerH - scaledH) / 2,
+              width: scaledW,
+              height: scaledH,
+              opacity: paperOpacity,
+              transform: `translateY(${paperLift}px)`,
+            }}
+          >
+            <div
+              style={{
+                width: INVOICE_BASE_WIDTH,
+                height: INVOICE_BASE_HEIGHT,
+                transform: `scale(${scale})`,
+                transformOrigin: "top left",
+              }}
+            >
+              <InvoicePaper
+                data={DEMO_INVOICE}
+                status="pending"
+                variant="default"
+              />
+            </div>
           </div>
-        </Sequence>
-      </div>
+        )
+      })()}
 
       {/* LOCKED caption from creative-brief.md §1, Scene 3 */}
       <Caption text="Three fields. One link. Invoice ready." startAt={440} />
