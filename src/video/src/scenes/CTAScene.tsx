@@ -75,7 +75,8 @@ export const CTAScene: React.FC = () => {
 
       {/* VoidPay aurora text — real @/shared/ui/AuroraText with animate-none
           override to disable the gradient scroll (same whiteout reason as
-          above). Drop-shadow + static gradient preserved. */}
+          above). Drop-shadow + static gradient preserved.
+          Per audit-v1 §2.1 Option X — frame-prop upgrade deferred to AI#58.1. */}
       <div style={{
         position: "absolute",
         top: height * 0.48,

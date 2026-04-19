@@ -94,11 +94,15 @@ export const VoidPayDemo: React.FC<DemoProps> = () => {
           <PrivacyScene />
         </TransitionSeries.Sequence>
 
-        {/* Transition: slide from bottom 15fr (fade breaks CTA rendering
-            in Remotion 4.0.448 + Tailwind v4 — full-frame whiteout past
-            local frame ~25. slide() has no such issue.) */}
+        {/* Transition: fade 15fr. Historically this slot used
+            slide({direction:"from-bottom"}) as a workaround for a CTA
+            whitescreen bug (Remotion 4.0.448 + Tailwind v4). Phase 1d
+            rewrote CTAScene on real @/shared/ui components, which appears
+            to have resolved the underlying issue — 6-frame verify of
+            fade() stills (2130-2279) all render 239-344KB full content.
+            Reverted to fade() per audit-v1 §2.1 decision. */}
         <TransitionSeries.Transition
-          presentation={slide({ direction: "from-bottom" })}
+          presentation={fade()}
           timing={linearTiming({ durationInFrames: 15 })}
         />
 

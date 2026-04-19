@@ -79,7 +79,9 @@ export const SolutionRevealScene: React.FC = () => {
       {/* Aurora text — real @/shared/ui/AuroraText with animate-none.
           CSS animations (animate-aurora / blackhole-pulse) cause intermittent
           full-frame whiteout in Remotion's headless Chromium when combined
-          with filter/drop-shadow at certain frames. Static gradient only. */}
+          with filter/drop-shadow at certain frames. Static gradient only.
+          Per audit-v1 §2.1 Option X — frame-prop upgrade is deferred to
+          AI#58.1; static is the intentional ship-for-now decision. */}
       {(() => {
         const textDelay = 30
         const fadeDuration = 20
