@@ -7,6 +7,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import { NetworkBackground } from "@/widgets/network-background";
+import { ServerOffIcon } from "@/shared/ui/icons";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_MONO, FONT_SANS } from "../fonts";
@@ -108,33 +109,22 @@ export const PrivacyScene: React.FC = () => {
         </div>
       ))}
 
-      {/* Server icon with X */}
+      {/* Server-off icon — ServerOffIcon embeds the diagonal slash, so we drop
+          the separate red X badge (was an emoji overlay). Audit-v1 cross-ref §3.1. */}
       {serverXScale > 0.01 && (
         <div style={{
           position: "absolute",
           left: width / 2 - 40,
           top: height * 0.52,
           transform: `scale(${serverXScale})`,
-          textAlign: "center",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 80,
+          height: 80,
+          color: COLORS.error,
         }}>
-          <div style={{ fontSize: 40, opacity: 0.5 }}>🖥️</div>
-          <div style={{
-            position: "absolute",
-            top: -5,
-            right: -5,
-            width: 30,
-            height: 30,
-            borderRadius: "50%",
-            background: COLORS.error,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 18,
-            color: "white",
-            fontWeight: 900,
-          }}>
-            ✕
-          </div>
+          <ServerOffIcon size={64} strokeWidth={2} />
         </div>
       )}
 

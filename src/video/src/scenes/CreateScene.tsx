@@ -170,7 +170,7 @@ export const CreateScene: React.FC = () => {
               width: "100%",
             }}>
               <Button variant="default" size="lg" className="w-full">
-                Generate Link ✨
+                Generate Link
               </Button>
             </div>
           </div>

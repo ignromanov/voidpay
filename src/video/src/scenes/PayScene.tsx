@@ -18,6 +18,7 @@ import { NetworkBackground } from "@/widgets/network-background";
 import { Caption } from "../components/Caption";
 import { DEMO_INVOICE } from "../constants/demo-invoice";
 import { Button } from "@/shared/ui";
+import { CheckIcon, Loader2Icon } from "@/shared/ui/icons";
 
 // Deterministic demo tx hash for the paid-state watermark
 const DEMO_TX_HASH =
@@ -148,7 +149,16 @@ export const PayScene: React.FC = () => {
           top: height * 0.72,
         }}>
           <Button variant="void" size="lg" className="min-w-[240px]">
-            {frame < PROCESSING ? "Smart Pay" : frame < SUCCESS ? "Sending..." : "Payment Complete ✓"}
+            {frame < PROCESSING ? (
+              "Smart Pay"
+            ) : frame < SUCCESS ? (
+              "Sending..."
+            ) : (
+              <>
+                <CheckIcon size={16} className="mr-2" />
+                Payment Complete
+              </>
+            )}
           </Button>
         </div>
       </Sequence>
@@ -189,7 +199,8 @@ export const PayScene: React.FC = () => {
         </div>
       )}
 
-      {/* Processing indicator */}
+      {/* Processing indicator — frame-driven rotation on Loader2Icon
+          (CSS `animate-spin` is forbidden in Remotion per hard invariants). */}
       {processingOpacity > 0.01 && (
         <div style={{
           position: "absolute",
@@ -201,12 +212,17 @@ export const PayScene: React.FC = () => {
           opacity: processingOpacity,
           textAlign: "center",
           width: 200,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
         }}>
+          <Loader2Icon size={16} style={{ transform: `rotate(${frame * 6}deg)` }} />
           Confirming on-chain...
         </div>
       )}
 
-      {/* Success checkmark */}
+      {/* Success checkmark — CheckIcon on emerald circle */}
       {successScale > 0.01 && (
         <div style={{
           position: "absolute",
@@ -220,10 +236,9 @@ export const PayScene: React.FC = () => {
           alignItems: "center",
           justifyContent: "center",
           transform: `scale(${successScale})`,
-          fontSize: 40,
           color: "white",
         }}>
-          ✓
+          <CheckIcon size={48} strokeWidth={3} />
         </div>
       )}
 
