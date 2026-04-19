@@ -24,7 +24,15 @@
     "test:ui": "vitest --ui",
     "validate": "pnpm type-check && pnpm lint && pnpm test run",
     "check:block-drift": "pnpm dlx tsx scripts/measure-block-times.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "video:studio": "remotion studio",
+    "video:render:full": "remotion render VoidPayDemo-16x9 public/video/voidpay-full.mp4",
+    "video:render:twitter": "remotion render VoidPayDemo-16x9 public/video/voidpay-twitter.mp4 --frames=0-360",
+    "video:render:landing": "remotion render VoidPayDemo-16x9 public/video/voidpay-landing.mp4 --frames=0-1200",
+    "video:render:1x1": "remotion render VoidPayDemo-1x1 public/video/voidpay-1x1.mp4",
+    "video:render:9x16": "remotion render VoidPayDemo-9x16 public/video/voidpay-9x16.mp4",
+    "video:poster": "remotion still Thumbnail-Scene5 public/video/poster-scene5.png --frame=260",
+    "video:render:all": "pnpm video:render:full && pnpm video:render:twitter && pnpm video:render:landing && pnpm video:render:1x1 && pnpm video:render:9x16 && pnpm video:poster"
   },
   "keywords": [
     "crypto",
@@ -39,6 +47,11 @@
   "license": "MIT",
   "packageManager": "pnpm@10.24.0",
   "devDependencies": {
+    "@remotion/cli": "^4.0.0",
+    "@remotion/fonts": "^4.0.0",
+    "@remotion/tailwind-v4": "^4.0.0",
+    "@remotion/transitions": "^4.0.0",
+    "remotion": "^4.0.0",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^9.39.4",
     "@next/eslint-plugin-next": "^16.2.3",
