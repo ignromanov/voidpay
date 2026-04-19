@@ -17,6 +17,7 @@ import { FONT_MONO, FONT_SANS } from "../fonts";
 import { NetworkBackground } from "@/widgets/network-background";
 import { Caption } from "../components/Caption";
 import { DEMO_INVOICE } from "../constants/demo-invoice";
+import { Button } from "@/shared/ui";
 
 // Creative brief §2: Alex · UI Design · $250 USDC · Arbitrum
 const INVOICE_FROM = "Alex";
@@ -152,7 +153,7 @@ export const CreateScene: React.FC = () => {
         </div>
 
         {/* Total */}
-        <Sequence from={180} premountFor={30}>
+        <Sequence from={180} layout="none">
           <div style={{ display: "flex", justifyContent: "space-between", fontFamily: `${FONT_MONO}, monospace`, fontSize: 20, fontWeight: 700, color: COLORS.textPrimary, padding: "12px 0", borderTop: `1px solid ${COLORS.zinc800}` }}>
             <span>Total</span>
             <span>{INVOICE_AMOUNT} {INVOICE_TOKEN}</span>
@@ -160,21 +161,17 @@ export const CreateScene: React.FC = () => {
         </Sequence>
 
         {/* Generate Link button */}
-        <Sequence from={300} premountFor={30}>
+        <Sequence from={300} layout="none">
           <div style={{ marginTop: 20 }}>
             <div style={{
-              background: COLORS.violet,
-              borderRadius: 12,
-              padding: "14px 24px",
-              textAlign: "center",
-              fontFamily: `${FONT_SANS}, sans-serif`,
-              fontSize: 18,
-              fontWeight: 700,
-              color: "white",
               boxShadow: `0 0 ${20 + buttonGlowOpacity * 15}px ${COLORS.violetGlow}`,
               transform: frame >= buttonClickFrame ? `scale(${0.95 + buttonScale * 0.05})` : "scale(1)",
+              display: "inline-flex",
+              width: "100%",
             }}>
-              Generate Link ✨
+              <Button variant="default" size="lg" className="w-full">
+                Generate Link ✨
+              </Button>
             </div>
           </div>
         </Sequence>

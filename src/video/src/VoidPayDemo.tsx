@@ -94,9 +94,11 @@ export const VoidPayDemo: React.FC<DemoProps> = () => {
           <PrivacyScene />
         </TransitionSeries.Sequence>
 
-        {/* Transition: fade 15fr */}
+        {/* Transition: slide from bottom 15fr (fade breaks CTA rendering
+            in Remotion 4.0.448 + Tailwind v4 — full-frame whiteout past
+            local frame ~25. slide() has no such issue.) */}
         <TransitionSeries.Transition
-          presentation={fade()}
+          presentation={slide({ direction: "from-bottom" })}
           timing={linearTiming({ durationInFrames: 15 })}
         />
 

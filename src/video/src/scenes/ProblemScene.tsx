@@ -6,6 +6,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import { Card, AddressAvatar } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_MONO, FONT_SANS } from "../fonts";
@@ -81,24 +82,28 @@ const ChatBubble: React.FC<{
     : text;
 
   return (
-    <div
-      style={{
-        opacity,
-        background: COLORS.zinc900,
-        borderRadius: 12,
-        padding: "12px 16px",
-        maxWidth: 500,
+    <div style={{ opacity, maxWidth: 500, marginBottom: 8 }}>
+      <Card variant="default" style={{
         fontFamily: isAddress ? `${FONT_MONO}, monospace` : `${FONT_SANS}, sans-serif`,
         fontSize: isAddress ? 16 : 18,
         color: isAddress ? COLORS.textSecondary : COLORS.textPrimary,
         wordBreak: "break-all",
-        marginBottom: 8,
-      }}
-    >
-      {displayText}
-      {isAddress && frame - delay < text.length * TYPEWRITER_SPEED && (
-        <span style={{ opacity: Math.round(frame * 0.1) % 2 }}>▌</span>
-      )}
+        padding: "12px 16px",
+      }}>
+        {isAddress ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <AddressAvatar address={text as `0x${string}`} size={28} />
+            <span>
+              {displayText}
+              {frame - delay < text.length * TYPEWRITER_SPEED && (
+                <span style={{ opacity: Math.round(frame * 0.1) % 2 }}>▌</span>
+              )}
+            </span>
+          </div>
+        ) : (
+          displayText
+        )}
+      </Card>
     </div>
   );
 };

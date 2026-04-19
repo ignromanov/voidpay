@@ -7,6 +7,14 @@ import {
   useVideoConfig,
 } from "remotion";
 import { NetworkBackground } from "@/widgets/network-background";
+import { Card } from "@/shared/ui";
+import { PaymentQR } from "@/features/payment-qr";
+import {
+  DEMO_FROM_ADDRESS,
+  DEMO_NETWORK_ID,
+  DEMO_TOTAL_ATOMIC,
+  DEMO_TOKEN_ADDRESS,
+} from "../constants/demo-invoice";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_MONO, FONT_SANS } from "../fonts";
@@ -98,18 +106,18 @@ export const ShareScene: React.FC = () => {
       }} />
 
       {/* Share modal */}
-      <div style={{
-        position: "absolute",
-        left: width / 2 - 320,
-        top: height / 2 - 220,
-        width: 640,
-        background: COLORS.zinc900,
-        border: `1px solid ${COLORS.zinc800}`,
-        borderRadius: 16,
-        padding: 32,
-        transform: `translateY(${modalTranslateY}px)`,
-        opacity: modalOpacity,
-      }}>
+      <Card
+        variant="glass"
+        style={{
+          position: "absolute",
+          left: width / 2 - 320,
+          top: height / 2 - 220,
+          width: 640,
+          padding: 32,
+          transform: `translateY(${modalTranslateY}px)`,
+          opacity: modalOpacity,
+        }}
+      >
         <div style={{
           fontFamily: `${FONT_SANS}, sans-serif`,
           fontSize: 22,
@@ -156,43 +164,24 @@ export const ShareScene: React.FC = () => {
           </div>
         </div>
 
-        {/* QR code placeholder */}
+        {/* QR code */}
         <div style={{
           display: "flex",
           justifyContent: "center",
         }}>
-          <div style={{
-            width: 160,
-            height: 160,
-            background: "white",
-            borderRadius: 8,
-            transform: `scale(${qrScale})`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            {/* Simplified QR grid pattern */}
-            <svg width="120" height="120" viewBox="0 0 120 120">
-              {/* QR corner markers */}
-              <rect x="5" y="5" width="30" height="30" rx="4" fill="#09090b" />
-              <rect x="10" y="10" width="20" height="20" rx="2" fill="white" />
-              <rect x="14" y="14" width="12" height="12" rx="1" fill="#09090b" />
-              <rect x="85" y="5" width="30" height="30" rx="4" fill="#09090b" />
-              <rect x="90" y="10" width="20" height="20" rx="2" fill="white" />
-              <rect x="94" y="14" width="12" height="12" rx="1" fill="#09090b" />
-              <rect x="5" y="85" width="30" height="30" rx="4" fill="#09090b" />
-              <rect x="10" y="90" width="20" height="20" rx="2" fill="white" />
-              <rect x="14" y="94" width="12" height="12" rx="1" fill="#09090b" />
-              {/* Random data dots */}
-              {[45, 55, 65, 75, 50, 60, 70, 80].map((cx, i) =>
-                [45, 55, 65, 75, 50, 60, 70].map((cy, j) => (
-                  <rect key={`${i}-${j}`} x={cx} y={cy} width="6" height="6" fill={(i + j) % 3 === 0 ? "#09090b" : "transparent"} />
-                ))
-              )}
-            </svg>
+          <div style={{ transform: `scale(${qrScale})` }}>
+            <PaymentQR
+              recipientAddress={DEMO_FROM_ADDRESS}
+              chainId={DEMO_NETWORK_ID}
+              amount={DEMO_TOTAL_ATOMIC}
+              tokenAddress={DEMO_TOKEN_ADDRESS}
+              size={160}
+              variant="light"
+              showLogo
+            />
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* URL anatomy annotations (appear after modal settles) */}
       <Sequence from={130} premountFor={30}>

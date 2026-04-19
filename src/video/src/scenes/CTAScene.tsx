@@ -59,7 +59,10 @@ export const CTAScene: React.FC = () => {
         opacity: glowOpacity,
       }} />
 
-      {/* Logo — real @/shared/ui/VoidLogo, Remotion spring entrance */}
+      {/* Logo — real @/shared/ui/VoidLogo, Remotion spring entrance.
+          `static` disables Tailwind animate-blackhole-pulse; Chromium's
+          CSS filter animation causes full-frame whiteout at late frames
+          when combined with AuroraText's animate-aurora in this scene. */}
       <div style={{
         position: "absolute",
         left: width / 2 - 100,
@@ -67,10 +70,12 @@ export const CTAScene: React.FC = () => {
         transform: `scale(${logoScale})`,
         transformOrigin: "center",
       }}>
-        <VoidLogo size={200} />
+        <VoidLogo size={200} static />
       </div>
 
-      {/* VoidPay aurora text — real @/shared/ui/AuroraText (gradient + drop-shadow) */}
+      {/* VoidPay aurora text — real @/shared/ui/AuroraText with animate-none
+          override to disable the gradient scroll (same whiteout reason as
+          above). Drop-shadow + static gradient preserved. */}
       <div style={{
         position: "absolute",
         top: height * 0.48,
@@ -79,7 +84,7 @@ export const CTAScene: React.FC = () => {
         justifyContent: "center",
         opacity: auroraOpacity,
       }}>
-        <AuroraText as="h1" className="text-[56px] font-black tracking-tight">
+        <AuroraText as="h1" className="text-[56px] font-black tracking-tight [animation:none]">
           VoidPay
         </AuroraText>
       </div>

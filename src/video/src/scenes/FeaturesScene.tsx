@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import {
   AbsoluteFill,
   Sequence,
@@ -7,35 +8,45 @@ import {
   useVideoConfig,
 } from "remotion";
 import { NetworkBackground } from "@/widgets/network-background";
+import {
+  ShieldCheckIcon,
+  ClockIcon,
+  FileTextIcon,
+  type IconProps,
+} from "@/shared/ui/icons";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
 
 // Creative brief §3 (LOCKED): Cryptographic Receipts / Perpetual Links / PDF Export
 // NOT spec's "PDF Export / Payment Verification / Local History"
-const FEATURES = [
+const FEATURES: Array<{
+  Icon: ComponentType<IconProps>;
+  title: string;
+  desc: string;
+}> = [
   {
-    icon: "🔐",
+    Icon: ShieldCheckIcon,
     title: "Cryptographic Receipts",
     desc: "On-chain finalization — tamper-proof payment proof",
   },
   {
-    icon: "∞",
+    Icon: ClockIcon,
     title: "Perpetual Links",
     desc: "Old invoice links work forever — schema versioning, immutable v1",
   },
   {
-    icon: "📄",
+    Icon: FileTextIcon,
     title: "PDF Export",
     desc: "Client-side generation with QR watermark — no server involved",
   },
-] as const;
+];
 
 const FeatureCard: React.FC<{
-  icon: string;
+  Icon: ComponentType<IconProps>;
   title: string;
   desc: string;
-}> = ({ icon, title, desc }) => {
+}> = ({ Icon, title, desc }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -56,11 +67,8 @@ const FeatureCard: React.FC<{
         gap: 20,
       }}
     >
-      <div style={{
-        fontSize: 80,
-        transform: `scale(${scale})`,
-      }}>
-        {icon}
+      <div style={{ transform: `scale(${scale})` }}>
+        <Icon size={80} style={{ color: COLORS.violet }} />
       </div>
       <div style={{
         fontFamily: `${FONT_SANS}, sans-serif`,

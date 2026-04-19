@@ -71,13 +71,15 @@ export const SolutionRevealScene: React.FC = () => {
               transformOrigin: "center",
             }}
           >
-            <VoidLogo size={160} />
+            <VoidLogo size={160} static />
           </div>
         )
       })()}
 
-      {/* Aurora text — real @/shared/ui/AuroraText.
-          Frame-driven opacity for entrance; animate-aurora CSS handles gradient scroll. */}
+      {/* Aurora text — real @/shared/ui/AuroraText with animate-none.
+          CSS animations (animate-aurora / blackhole-pulse) cause intermittent
+          full-frame whiteout in Remotion's headless Chromium when combined
+          with filter/drop-shadow at certain frames. Static gradient only. */}
       {(() => {
         const textDelay = 30
         const fadeDuration = 20
@@ -98,7 +100,7 @@ export const SolutionRevealScene: React.FC = () => {
               opacity: auroraOpacity,
             }}
           >
-            <AuroraText as="h1" className="text-[64px] font-black tracking-tight">
+            <AuroraText as="h1" className="text-[64px] font-black tracking-tight [animation:none]">
               VoidPay
             </AuroraText>
           </div>

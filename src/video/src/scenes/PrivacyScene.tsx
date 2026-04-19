@@ -6,6 +6,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import { NetworkBackground } from "@/widgets/network-background";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_MONO, FONT_SANS } from "../fonts";
@@ -50,6 +51,7 @@ export const PrivacyScene: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
+      <NetworkBackground />
       {/* Central URL */}
       <div style={{
         position: "absolute",

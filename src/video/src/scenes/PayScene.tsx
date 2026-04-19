@@ -17,6 +17,7 @@ import { FONT_SANS } from "../fonts";
 import { NetworkBackground } from "@/widgets/network-background";
 import { Caption } from "../components/Caption";
 import { DEMO_INVOICE } from "../constants/demo-invoice";
+import { Button } from "@/shared/ui";
 
 // Deterministic demo tx hash for the paid-state watermark
 const DEMO_TX_HASH =
@@ -146,20 +147,9 @@ export const PayScene: React.FC = () => {
           left: width / 2 - 120,
           top: height * 0.72,
         }}>
-          <div style={{
-            background: "#09090b",
-            border: `2px solid ${COLORS.violet}`,
-            borderRadius: 16,
-            padding: "16px 32px",
-            fontFamily: `${FONT_SANS}, sans-serif`,
-            fontSize: 18,
-            fontWeight: 700,
-            color: "white",
-            textAlign: "center",
-            boxShadow: `0 0 20px ${COLORS.violetGlow}`,
-          }}>
+          <Button variant="void" size="lg" className="min-w-[240px]">
             {frame < PROCESSING ? "Smart Pay" : frame < SUCCESS ? "Sending..." : "Payment Complete ✓"}
-          </div>
+          </Button>
         </div>
       </Sequence>
 

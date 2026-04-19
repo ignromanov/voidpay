@@ -1,14 +1,34 @@
 import { spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { LockIcon, ServerOffIcon, GlobeIcon } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
 
+const ICON_STYLE = { color: COLORS.violet };
+
 const PILLARS = [
-  { label: "Zero-Backend", icon: "⊘" },
-  { label: "Privacy-First", icon: "🔒" },
-  { label: "Permissionless", icon: "🌐" },
-  { label: "Perpetual", icon: "∞" },
+  { label: "Zero-Backend" },
+  { label: "Privacy-First" },
+  { label: "Permissionless" },
+  { label: "Perpetual" },
 ] as const;
+
+const renderPillarIcon = (label: string) => {
+  switch (label) {
+    case "Zero-Backend":
+      return <ServerOffIcon size={40} style={ICON_STYLE} />;
+    case "Privacy-First":
+      return <LockIcon size={40} style={ICON_STYLE} />;
+    case "Permissionless":
+      return <GlobeIcon size={40} style={ICON_STYLE} />;
+    default:
+      return (
+        <span style={{ fontSize: 40, lineHeight: 1, color: COLORS.violet }}>
+          ∞
+        </span>
+      );
+  }
+};
 
 type PillarIconsProps = {
   /** Stagger delay between each pillar (frames) */
@@ -44,7 +64,7 @@ export const PillarIcons: React.FC<PillarIconsProps> = ({ stagger = 10 }) => {
                 opacity: scale,
               }}
             >
-              <div style={{ fontSize: 40 }}>{pillar.icon}</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 40 }}>{renderPillarIcon(pillar.label)}</div>
               <div
                 style={{
                   fontFamily: `${FONT_SANS}, sans-serif`,

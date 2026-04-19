@@ -4,6 +4,7 @@ import { useCreatorStore } from "@/entities/creator";
 import { ensureFonts } from "./fonts";
 import { VoidPayDemo } from "./VoidPayDemo";
 import { PayScene } from "./scenes/PayScene";
+import { CTAScene } from "./scenes/CTAScene";
 import { TOTAL_DURATION } from "./constants/scenes";
 
 // Wire root Tailwind + design tokens (CSS vars, @theme, animations)
@@ -76,6 +77,14 @@ export const RemotionRoot: React.FC = () => {
           id="Thumbnail-Scene5"
           component={PayScene}
           durationInFrames={450}
+          fps={30}
+          width={1920}
+          height={1080}
+        />
+        <Composition
+          id="Debug-CTA"
+          component={CTAScene}
+          durationInFrames={150}
           fps={30}
           width={1920}
           height={1080}
