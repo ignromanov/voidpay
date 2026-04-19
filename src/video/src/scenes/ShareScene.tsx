@@ -6,6 +6,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import { NetworkBackground } from "@/widgets/network-background";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_MONO, FONT_SANS } from "../fonts";
@@ -86,6 +87,8 @@ export const ShareScene: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
+      <NetworkBackground />
+
       {/* Dimmed backdrop */}
       <div style={{
         position: "absolute",

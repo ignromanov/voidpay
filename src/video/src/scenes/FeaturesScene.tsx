@@ -6,6 +6,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import { NetworkBackground } from "@/widgets/network-background";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
@@ -87,6 +88,7 @@ const FeatureCard: React.FC<{
 export const FeaturesScene: React.FC = () => {
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
+      <NetworkBackground />
       <Sequence from={0} durationInFrames={100} premountFor={30}>
         <FeatureCard {...FEATURES[0]} />
       </Sequence>

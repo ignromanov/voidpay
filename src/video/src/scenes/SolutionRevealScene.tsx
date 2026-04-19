@@ -6,6 +6,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import { VoidLogo, AuroraText } from "@/shared/ui";
+import { NetworkBackground } from "@/widgets/network-background";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { Caption } from "../components/Caption";
@@ -34,6 +35,8 @@ export const SolutionRevealScene: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
+      <NetworkBackground />
+
       {/* Ambient glow */}
       <div
         style={{
