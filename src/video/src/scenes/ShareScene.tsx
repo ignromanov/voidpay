@@ -7,6 +7,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import { NetworkBackground } from "@/widgets/network-background";
+import { LinkTab } from "@/widgets/share-modal";
 import { Card } from "@/shared/ui";
 import { PaymentQR } from "@/features/payment-qr";
 import {
@@ -17,12 +18,26 @@ import {
 } from "../constants/demo-invoice";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
-import { FONT_MONO, FONT_SANS } from "../fonts";
+import { FONT_SANS } from "../fonts";
 import { Caption } from "../components/Caption";
 
-const SHARE_URL = "voidpay.xyz/pay#N4IgbghgTg9g...";
+// Full URL so LinkTab's `new URL(...)` parser produces proper color-coded
+// protocol / domain / path / hash segments instead of falling back to raw.
+const SHARE_URL = "https://voidpay.xyz/pay#N4IgbghgTg9gRgFwAYEsA2UBOB7AjgKYCOAxgC4DmAhgBYAuADgE4Cu";
+const TELEGRAM_URL = `https://t.me/share/url?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent("Pay me in crypto — VoidPay invoice")}`;
+const TWITTER_URL = `https://twitter.com/intent/tweet?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent("Pay me in crypto — VoidPay invoice")}`;
+const EMAIL_URL = `mailto:?subject=${encodeURIComponent("VoidPay invoice")}&body=${encodeURIComponent(SHARE_URL)}`;
 
-/** URL anatomy annotation arrow + label */
+// Frame at which the narrative "Copy" click fires
+const COPY_CLICK_FRAME = 100;
+// Frame at which QR preview enters
+const QR_ENTER_FRAME = 180;
+
+const noop = () => {
+  /* Remotion renders static frames — click handlers never fire */
+};
+
+/** URL anatomy annotation arrow + label (narrative-only, kept inline) */
 const Annotation: React.FC<{
   label: string;
   x: number;
@@ -82,15 +97,13 @@ export const ShareScene: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
-  // Copy button ripple at frame 100
-  const copyClickFrame = 100;
-  const copyScale = frame >= copyClickFrame
-    ? spring({ frame: frame - copyClickFrame, fps, config: SPRING_CONFIGS.snappy })
-    : 1;
+  // Narrative "copied" state: flips at COPY_CLICK_FRAME so the real LinkTab
+  // shows its own "Copied!" affordance (CopyOverlay flash + icon swap).
+  const copied = frame >= COPY_CLICK_FRAME + 10;
 
-  // QR code at frame 180
-  const qrScale = frame >= 180
-    ? spring({ frame: frame - 180, fps, config: SPRING_CONFIGS.smooth })
+  // QR code entrance
+  const qrScale = frame >= QR_ENTER_FRAME
+    ? spring({ frame: frame - QR_ENTER_FRAME, fps, config: SPRING_CONFIGS.smooth })
     : 0;
 
   return (
@@ -105,13 +118,16 @@ export const ShareScene: React.FC = () => {
         opacity: modalOpacity,
       }} />
 
-      {/* Share modal */}
+      {/* Share modal — real LinkTab inside a glass Card that mimics the
+          Dialog shell (Dialog itself uses Radix Portal, which breaks static
+          SSR rendering; we bypass by using LinkTab directly per decision
+          in the Phase 3 plan). */}
       <Card
         variant="glass"
         style={{
           position: "absolute",
           left: width / 2 - 320,
-          top: height / 2 - 220,
+          top: height / 2 - 280,
           width: 640,
           padding: 32,
           transform: `translateY(${modalTranslateY}px)`,
@@ -128,67 +144,47 @@ export const ShareScene: React.FC = () => {
           Share Invoice
         </div>
 
-        {/* URL display */}
-        <div style={{
-          background: COLORS.bg,
-          border: `1px solid ${COLORS.zinc800}`,
-          borderRadius: 8,
-          padding: "12px 16px",
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          marginBottom: 24,
-        }}>
-          <div style={{
-            flex: 1,
-            fontFamily: `${FONT_MONO}, monospace`,
-            fontSize: 15,
-            color: COLORS.textSecondary,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}>
-            {SHARE_URL}
-          </div>
-          <div style={{
-            background: COLORS.violet,
-            borderRadius: 6,
-            padding: "6px 14px",
-            fontFamily: `${FONT_SANS}, sans-serif`,
-            fontSize: 14,
-            fontWeight: 600,
-            color: "white",
-            transform: `scale(${frame >= copyClickFrame && frame < copyClickFrame + 20 ? 0.9 + copyScale * 0.1 : 1})`,
-          }}>
-            {frame >= copyClickFrame + 10 ? "Copied ✓" : "Copy"}
-          </div>
-        </div>
-
-        {/* QR code — gated behind a Sequence so the PaymentQR SVG isn't built
-            for the 180 frames the modal is visible without it (P1.4). qrScale
-            is computed at parent scope using the outer frame, so it still
-            ramps from 0 when the Sequence activates. */}
-        <Sequence from={180} premountFor={30}>
-          <div style={{
-            display: "flex",
-            justifyContent: "center",
-          }}>
-            <div style={{ transform: `scale(${qrScale})` }}>
-              <PaymentQR
-                recipientAddress={DEMO_FROM_ADDRESS}
-                chainId={DEMO_NETWORK_ID}
-                amount={DEMO_TOTAL_ATOMIC}
-                tokenAddress={DEMO_TOKEN_ADDRESS}
-                size={160}
-                variant="light"
-                showLogo
-              />
-            </div>
-          </div>
-        </Sequence>
+        <LinkTab
+          url={SHARE_URL}
+          copied={copied}
+          onCopy={noop}
+          telegramUrl={TELEGRAM_URL}
+          twitterUrl={TWITTER_URL}
+          emailUrl={EMAIL_URL}
+          includeOg={false}
+          onOgToggle={noop}
+        />
       </Card>
 
-      {/* URL anatomy annotations (appear after modal settles) */}
+      {/* QR preview — gated behind a Sequence so PaymentQR SVG isn't built
+          for the 180 frames before it's visible (P1.4). qrScale is computed
+          at parent scope using the outer frame, so it still ramps from 0
+          when the Sequence activates. */}
+      <Sequence from={QR_ENTER_FRAME} premountFor={30}>
+        <div style={{
+          position: "absolute",
+          right: width * 0.08,
+          top: height / 2 - 80,
+          transform: `scale(${qrScale})`,
+          transformOrigin: "top right",
+          background: "white",
+          padding: 16,
+          borderRadius: 16,
+        }}>
+          <PaymentQR
+            recipientAddress={DEMO_FROM_ADDRESS}
+            chainId={DEMO_NETWORK_ID}
+            amount={DEMO_TOTAL_ATOMIC}
+            tokenAddress={DEMO_TOKEN_ADDRESS}
+            size={160}
+            variant="light"
+            showLogo
+          />
+        </div>
+      </Sequence>
+
+      {/* URL anatomy annotation — narrative teaching graphic, kept inline
+          because it's specific to the video (not part of the real modal) */}
       <Sequence from={130} premountFor={30}>
         {/* LOCKED caption from creative-brief.md §1, Scene 4 arrow */}
         <Annotation label="# fragment — browser only. Server can't see it." x={width / 2 + 50} y={height / 2 - 245} delay={0} />
