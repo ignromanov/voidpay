@@ -3,6 +3,9 @@ import { Button } from '@/shared/ui/button'
 import { Text, Heading } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
 
+import { SectionHeading } from './components/SectionHeading'
+import { ReadonlyInput } from './shared/ReadonlyInput'
+
 export interface InvoiceFormViewProps {
   className?: string
   value: {
@@ -36,58 +39,6 @@ export interface InvoiceFormViewProps {
 
 function focusRing(active: boolean): string {
   return active ? 'ring-2 ring-violet-500/60 ring-offset-1 ring-offset-zinc-950' : ''
-}
-
-function ReadonlyInput({
-  label,
-  value,
-  placeholder,
-  focused,
-  mono,
-}: {
-  label: string
-  value?: string | undefined
-  placeholder: string
-  focused?: boolean | undefined
-  mono?: boolean | undefined
-}): React.JSX.Element {
-  return (
-    <div className="space-y-1.5">
-      <label className="block text-xs font-medium uppercase tracking-wide text-zinc-400">{label}</label>
-      <div
-        className={cn(
-          'rounded-md border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-sm transition-all',
-          mono && 'font-mono',
-          focused && focusRing(true),
-          !value && 'text-zinc-600',
-          value && 'text-zinc-200'
-        )}
-      >
-        {value ?? placeholder}
-      </div>
-    </div>
-  )
-}
-
-function SectionHeadingView({
-  icon: Icon,
-  iconColorClass,
-  title,
-}: {
-  icon: React.FC<React.SVGProps<SVGSVGElement> & { size?: number }>
-  iconColorClass: string
-  title: string
-}): React.JSX.Element {
-  return (
-    <div className="mb-2 flex items-center gap-2">
-      <div className={cn('rounded border p-1.5', iconColorClass)}>
-        <Icon size={16} className="h-4 w-4" />
-      </div>
-      <Heading variant="h4" className="text-zinc-300">
-        {title}
-      </Heading>
-    </div>
-  )
 }
 
 function MetadataSectionView({
@@ -151,16 +102,17 @@ function PartySectionView({
   const namePlaceholder = isFrom ? 'Your Company Inc.' : 'Acme Corp'
   const nameLabel = isFrom ? 'Your Name / Company *' : 'Client Name *'
   const containerClass = isFrom ? 'space-y-4 pt-2' : 'space-y-4 border-t border-zinc-800/50 pt-4'
+  const ringClass = focused ? focusRing(true) : undefined
 
   return (
     <div className={containerClass}>
-      <SectionHeadingView icon={icon} iconColorClass={iconColorClass} title={title} />
-      <ReadonlyInput label={nameLabel} value={name} placeholder={namePlaceholder} focused={focused} />
+      <SectionHeading icon={icon} iconColorClass={iconColorClass} title={title} />
+      <ReadonlyInput label={nameLabel} value={name} placeholder={namePlaceholder} focused={focused} focusRingClass={ringClass} />
       {isFrom && (
-        <ReadonlyInput label="Your Wallet Address *" value={walletAddress} placeholder="0x..." focused={focused} mono />
+        <ReadonlyInput label="Your Wallet Address *" value={walletAddress} placeholder="0x..." focused={focused} focusRingClass={ringClass} mono />
       )}
       {email && (
-        <ReadonlyInput label="Email" value={email} placeholder="you@example.com" focused={focused} />
+        <ReadonlyInput label="Email" value={email} placeholder="you@example.com" focused={focused} focusRingClass={ringClass} />
       )}
     </div>
   )
