@@ -1,11 +1,18 @@
 import { Composition, Folder, continueRender, delayRender, registerRoot } from "remotion";
 import { z } from "zod";
 import { useCreatorStore } from "@/entities/creator";
+import { useTrackedInvoiceStore } from "@/entities/invoice";
 import { ensureFonts } from "./fonts";
 import { VoidPayDemo } from "./VoidPayDemo";
 import { PayScene } from "./scenes/PayScene";
 import { CTAScene } from "./scenes/CTAScene";
 import { TOTAL_DURATION } from "./constants/scenes";
+import {
+  DEMO_CONTENT_HASH,
+  DEMO_PAID_AT_ISO,
+  DEMO_CREATED_AT_ISO,
+  DEMO_INVOICE_URL,
+} from "./constants/demo-invoice";
 
 // Wire root Tailwind + design tokens (CSS vars, @theme, animations)
 import "@/app/globals.css";
@@ -23,6 +30,23 @@ ensureFonts().then(() => continueRender(fontsHandle));
 // Module-level call runs before any composition renders — persist middleware
 // in Remotion's headless Chromium has no prior localStorage to rehydrate from.
 useCreatorStore.setState({ networkTheme: "arbitrum" });
+
+// Seed the real @/entities/invoice store so the real `PaymentPanel` widget
+// resolves a `paidAt` value for its paid-state `PaidConfirmation` subcomponent
+// (PaymentPanel.tsx:56-58 reads `getInvoice(contentHash)?.paidAt`). Without
+// this seed the paid state renders without a "paid at <time>" label.
+useTrackedInvoiceStore.setState({
+  invoices: [
+    {
+      contentHash: DEMO_CONTENT_HASH,
+      invoiceId: "VP-0001",
+      invoiceUrl: DEMO_INVOICE_URL,
+      source: "received",
+      createdAt: DEMO_CREATED_AT_ISO,
+      paidAt: DEMO_PAID_AT_ISO,
+    },
+  ],
+});
 
 export const DemoPropsSchema = z.object({
   ctaText: z.string().default("Create your first invoice in 30 seconds."),

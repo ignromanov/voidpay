@@ -19,7 +19,7 @@
  */
 
 import type { Address } from 'viem'
-import type { PartialInvoice } from '@/shared/lib/invoice-types'
+import type { Invoice } from '@/shared/lib/invoice-types'
 
 export const DEMO_FROM_ADDRESS =
   '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D' as Address
@@ -46,7 +46,18 @@ export const DEMO_TOTAL_DISPLAY = '250.000042'
 const ISSUED_AT = 1776470400 // 2026-04-18 00:00:00 UTC
 const DUE_AT = 1777075200 // 2026-04-25 00:00:00 UTC
 
-export const DEMO_INVOICE: PartialInvoice = {
+/**
+ * Stable identifiers used to seed the real `useTrackedInvoiceStore` so that
+ * the real `PaymentPanel` widget resolves a `paidAt` value for its paid-state
+ * `PaidConfirmation` subcomponent. No crypto here — just a deterministic
+ * placeholder so every render of Scene 5 produces the same frame.
+ */
+export const DEMO_CONTENT_HASH = 'demo-content-hash-scene5'
+export const DEMO_CREATED_AT_ISO = new Date(ISSUED_AT * 1000).toISOString()
+export const DEMO_PAID_AT_ISO = new Date((ISSUED_AT + 60) * 1000).toISOString()
+export const DEMO_INVOICE_URL = 'https://voidpay.xyz/pay#demo'
+
+export const DEMO_INVOICE: Invoice = {
   invoiceId: 'VP-0001',
   issuedAt: ISSUED_AT,
   dueAt: DUE_AT,
