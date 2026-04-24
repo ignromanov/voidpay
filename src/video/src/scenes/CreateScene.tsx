@@ -26,21 +26,22 @@ const INVOICE_TOTAL = "250.000042";
 const INVOICE_TOKEN = "USDC";
 const INVOICE_NETWORK = "Arbitrum";
 
-// Phase frames
+// Phase frames — v2 compressed to 330-frame (11s) envelope per plan-v4 Task 6.
+// Narrative beats finish by frame 270, leaving 60 frames to settle before cross-fade.
 const FROM_START = 15;
-const TOKEN_APPEAR = 60;
-const NETWORK_APPEAR = 90;
-const LINE_ITEM_APPEAR = 120;
-const TOTAL_APPEAR = 180;
-const BUTTON_APPEAR = 300;
-const BUTTON_CLICK_FRAME = 420;
+const TOKEN_APPEAR = 45;
+const NETWORK_APPEAR = 75;
+const LINE_ITEM_APPEAR = 105;
+const TOTAL_APPEAR = 150;
+const BUTTON_APPEAR = 210;
+const BUTTON_CLICK_FRAME = 270;
 
 // Form scroll keyframes — the real InvoiceFormView renders 7 sections
 // (Metadata, From, Client, LineItems, Payment, LinkOptions, Generate), which
 // overflows the scene's form pane. We animate a translateY on the inner form
 // so the viewer's eye follows the narrative beat: top → middle → bottom.
 // Values tuned by eye from `remotion still` captures at each keyframe.
-const SCROLL_FRAMES = [0, 120, 250, 380];
+const SCROLL_FRAMES = [0, 90, 180, 270];
 const SCROLL_OFFSETS = [0, -320, -640, -880];
 
 /** Typewriter: reveal `text` char by char starting at `startFrame` */
@@ -207,8 +208,8 @@ export const CreateScene: React.FC = () => {
         </div>
       </div>
 
-      {/* LOCKED caption from creative-brief.md §1, Scene 3 */}
-      <Caption text="Three fields. One link. Invoice ready." startAt={440} />
+      {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear two-pane. */}
+      <Caption text="No backend" position="top" startAt={60} endAt={150} />
     </AbsoluteFill>
   );
 };
