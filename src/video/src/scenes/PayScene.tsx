@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import {
   AbsoluteFill,
-  Sequence,
   interpolate,
   spring,
   useCurrentFrame,
@@ -41,13 +40,14 @@ const PAPER_PROPS_PAID = {
 } as const;
 
 // Phase timing (local frames since each scene starts at 0).
-// Moved to module scope per remotion-best-practices/animations — keeps the
-// render path branch-free and makes constants auditable at a glance.
+// v2 envelope = 510 frames (17s). Magic Dust peak holds for 120 frames
+// (frames 240–360) per creative-brief-v2 §3 & plan-v4 Task 8.
 const METAMASK_POPUP = 60;
 const NETWORK_BADGE = 120;
-const MAGIC_DUST_HIGHLIGHT = 220;
-const CONFIRMING = 310;
-const SUCCESS = 380;
+const MAGIC_DUST_HIGHLIGHT = 240;
+const MAGIC_DUST_PEAK_END = 360;
+const CONFIRMING = 360;
+const SUCCESS = 480;
 const CONFIRMATIONS_REQUIRED = 12;
 
 export const PayScene: React.FC = () => {
@@ -107,12 +107,13 @@ export const PayScene: React.FC = () => {
     };
   }, [width, height]);
 
-  // Violet pulse overlay over the totals band — keeps the creative-brief
-  // Magic Dust moment intact on top of the real InvoicePaper.
+  // Violet pulse overlay over the totals band — v2 holds max-emphasis for
+  // 120 frames (4s) per creative-brief-v2 §8 non-negotiable, then fades out
+  // before the confirming phase starts.
   const magicDustPulseOpacity = interpolate(
     frame,
-    [MAGIC_DUST_HIGHLIGHT - 5, MAGIC_DUST_HIGHLIGHT + 15, MAGIC_DUST_HIGHLIGHT + 60],
-    [0, 0.55, 0],
+    [MAGIC_DUST_HIGHLIGHT - 10, MAGIC_DUST_HIGHLIGHT + 10, MAGIC_DUST_PEAK_END - 10, MAGIC_DUST_PEAK_END + 10],
+    [0, 0.55, 0.55, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
@@ -241,12 +242,9 @@ export const PayScene: React.FC = () => {
         </div>
       )}
 
-      {/* LOCKED captions from creative-brief.md §1, Scene 5a and 5b.
-          Caption 5a fades out before 5b fades in (MAGIC_DUST_HIGHLIGHT=220). */}
-      <Caption text="Connect. Confirm. Paid." startAt={30} endAt={200} />
-      <Sequence from={MAGIC_DUST_HIGHLIGHT} premountFor={30}>
-        <Caption text="Random micro-amount. Unique fingerprint. No database." startAt={0} fontSize={26} />
-      </Sequence>
+      {/* v2 caption per creative-brief-v2 §4 — top-mounted, aligned with
+          the 120-frame Magic Dust peak (local frames 240–360). */}
+      <Caption text="Cryptographic receipt" position="top" startAt={240} endAt={360} />
     </AbsoluteFill>
   );
 };
