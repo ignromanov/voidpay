@@ -5,8 +5,8 @@ import { useTrackedInvoiceStore } from "@/entities/invoice";
 import { ensureFonts } from "./fonts";
 import { VoidPayDemo } from "./VoidPayDemo";
 import { PayScene } from "./scenes/PayScene";
-import { CTAScene } from "./scenes/CTAScene";
-import { TOTAL_DURATION } from "./constants/scenes";
+import { TeaserComposition } from "./compositions/TeaserComposition";
+import { SCENE_DURATIONS, TEASER_DURATION, TOTAL_DURATION } from "./constants/scenes";
 import {
   DEMO_CONTENT_HASH,
   DEMO_PAID_AT_ISO,
@@ -48,23 +48,18 @@ useTrackedInvoiceStore.setState({
   ],
 });
 
-export const DemoPropsSchema = z.object({
-  ctaText: z.string().default("Create your first invoice in 30 seconds."),
-});
+// v2 rescript collapsed the CTA text prop — outro copy is locked in
+// ThesisOutroScene. Schema retained as an empty object so the Composition
+// defaultProps contract still resolves.
+export const DemoPropsSchema = z.object({});
 
-const DEFAULT_PROPS: z.infer<typeof DemoPropsSchema> = {
-  ctaText: "Create your first invoice in 30 seconds.",
-};
+const DEFAULT_PROPS: z.infer<typeof DemoPropsSchema> = {};
 
 export const RemotionRoot: React.FC = () => {
   return (
     <>
       <Folder name="VoidPayDemo">
-        {/* Primary: 16:9 landscape — first-render scope per creative-brief §3.
-            1:1 and 9:16 variants require adaptive scene layouts (Heading/Text
-            scales, InvoicePaper sizing, PillarIcons positioning) — deferred to
-            AI#58.6 per audit-v1 §2.3 Option D. Re-introduce with adaptive
-            scenes, not just a differently-sized Composition wrapper. */}
+        {/* Primary: 16:9 landscape, 45s @ 30fps per creative-brief-v2 §3. */}
         <Composition
           id="VoidPayDemo-16x9"
           component={VoidPayDemo}
@@ -77,23 +72,27 @@ export const RemotionRoot: React.FC = () => {
         />
       </Folder>
 
-      {/* Thumbnail: Scene 5 still — Magic Dust moment per creative-brief §3.
-          Composition (not Still) so `useCurrentFrame()` inside PayScene can advance
-          to the Magic Dust highlight frame (≥220). Render with:
-          npx remotion still Thumbnail-Scene5 out/poster-scene5.png --frame=260 */}
-      <Folder name="Thumbnails">
+      <Folder name="VoidPayTeaser">
+        {/* Self-contained 15s teaser per creative-brief-v2 §5 + §7. */}
         <Composition
-          id="Thumbnail-Scene5"
-          component={PayScene}
-          durationInFrames={450}
+          id="VoidPay-Teaser-15s"
+          component={TeaserComposition}
+          durationInFrames={TEASER_DURATION}
           fps={30}
           width={1920}
           height={1080}
         />
+      </Folder>
+
+      <Folder name="Thumbnails">
+        {/* Scene 5 still — Magic Dust moment per creative-brief-v2 §3.
+            Composition (not Still) so `useCurrentFrame()` inside PayScene can
+            advance to the Magic Dust peak. Render poster with:
+            pnpm exec remotion still Thumbnail-Scene5 public/video/poster-scene5.png --frame=240 */}
         <Composition
-          id="Debug-CTA"
-          component={CTAScene}
-          durationInFrames={150}
+          id="Thumbnail-Scene5"
+          component={PayScene}
+          durationInFrames={SCENE_DURATIONS.pay}
           fps={30}
           width={1920}
           height={1080}
