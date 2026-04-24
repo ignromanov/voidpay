@@ -208,8 +208,10 @@ export const CreateScene: React.FC = () => {
         </div>
       </div>
 
-      {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear two-pane. */}
-      <Caption text="No backend" position="top" startAt={60} endAt={150} />
+      {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear two-pane.
+          5s visible hold (60→210 + 15fr fade) to weight the thesis beat and
+          stay readable through mid-scene form population. */}
+      <Caption text="No backend" position="top" startAt={60} endAt={210} />
     </AbsoluteFill>
   );
 };
