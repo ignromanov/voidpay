@@ -2,6 +2,8 @@ import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { COLORS } from "../constants/colors";
 import { FONT_SANS } from "../fonts";
 
+type CaptionPosition = "top" | "bottom";
+
 type CaptionProps = {
   text: string;
   /** Frame (local to parent Sequence) when caption starts fading in */
@@ -13,6 +15,11 @@ type CaptionProps = {
   /** Fade-out duration in frames */
   fadeOutDuration?: number;
   fontSize?: number;
+  /**
+   * "bottom" (default, legacy): bottom: 13%, maxWidth: 80%.
+   * "top" (v2, two-pane safe): top: 8%, maxWidth: 50%.
+   */
+  position?: CaptionPosition;
 };
 
 export const Caption: React.FC<CaptionProps> = ({
@@ -22,6 +29,7 @@ export const Caption: React.FC<CaptionProps> = ({
   endAt,
   fadeOutDuration = 15,
   fontSize = 30,
+  position = "bottom",
 }) => {
   const frame = useCurrentFrame();
   const { width } = useVideoConfig();
@@ -44,27 +52,22 @@ export const Caption: React.FC<CaptionProps> = ({
 
   const opacity = fadeInOpacity * fadeOutOpacity;
 
+  const slideFrom = position === "top" ? -10 : 10;
   const translateY = interpolate(
     frame,
     [startAt, startAt + fadeDuration],
-    [10, 0],
+    [slideFrom, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
+  const containerStyle: React.CSSProperties = position === "top"
+    ? { position: "absolute", top: "8%", left: 0, width, display: "flex", justifyContent: "center" }
+    : { position: "absolute", bottom: "13%", left: 0, width, display: "flex", justifyContent: "center" };
+
+  const textMaxWidth = position === "top" ? "50%" : "80%";
+
   return (
-    <div
-      style={{
-        position: "absolute",
-        // Middle 80% vertically: bottom at 85% of frame height (avoids bottom 10% safe-zone)
-        bottom: "13%",
-        left: 0,
-        width,
-        display: "flex",
-        justifyContent: "center",
-        opacity,
-        transform: `translateY(${translateY}px)`,
-      }}
-    >
+    <div style={{ ...containerStyle, opacity, transform: `translateY(${translateY}px)` }}>
       <span
         style={{
           fontFamily: `${FONT_SANS}, sans-serif`,
@@ -72,7 +75,7 @@ export const Caption: React.FC<CaptionProps> = ({
           fontWeight: 700,
           color: COLORS.textCaption,
           textAlign: "center",
-          maxWidth: "80%",
+          maxWidth: textMaxWidth,
         }}
       >
         {text}
