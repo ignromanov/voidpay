@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import {
   AbsoluteFill,
-  Sequence,
   interpolate,
   spring,
   useCurrentFrame,
@@ -12,107 +11,84 @@ import {
   INVOICE_BASE_WIDTH,
   INVOICE_BASE_HEIGHT,
 } from "@/widgets/invoice-paper";
+import { InvoiceFormView } from "@/widgets/invoice-form";
+import { NetworkBackground } from "@/widgets/network-background";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS, TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
-import { FONT_MONO, FONT_SANS } from "../fonts";
-import { NetworkBackground } from "@/widgets/network-background";
 import { Caption } from "../components/Caption";
 import { DEMO_INVOICE } from "../constants/demo-invoice";
-import { Button } from "@/shared/ui";
 
 // Creative brief §2: Alex · UI Design · $250 USDC · Arbitrum
 const INVOICE_FROM = "Alex";
 const INVOICE_ITEM = "UI Design";
-const INVOICE_AMOUNT = "250.000042";
+const INVOICE_SUBTOTAL = "250.00";
+const INVOICE_TOTAL = "250.000042";
 const INVOICE_TOKEN = "USDC";
 const INVOICE_NETWORK = "Arbitrum";
 
-/** Typewriter helper: returns slice of text based on frame */
+// Phase frames
+const FROM_START = 15;
+const TOKEN_APPEAR = 60;
+const NETWORK_APPEAR = 90;
+const LINE_ITEM_APPEAR = 120;
+const TOTAL_APPEAR = 180;
+const BUTTON_APPEAR = 300;
+const BUTTON_CLICK_FRAME = 420;
+
+/** Typewriter: reveal `text` char by char starting at `startFrame` */
 const typewrite = (text: string, frame: number, startFrame: number): string => {
   const elapsed = Math.max(0, frame - startFrame);
   const chars = Math.floor(elapsed / TYPEWRITER_CHAR_FRAMES);
   return text.slice(0, Math.min(chars, text.length));
 };
 
-/** Mock form field */
-const FormField: React.FC<{
-  label: string;
-  value: string;
-  typewriterStart: number;
-  isDropdown?: boolean;
-  mono?: boolean;
-}> = ({ label, value, typewriterStart, isDropdown = false, mono = false }) => {
-  const frame = useCurrentFrame();
-  const displayValue = isDropdown
-    ? (frame >= typewriterStart ? value : "")
-    : typewrite(value, frame, typewriterStart);
-
-  const fieldOpacity = interpolate(
-    frame,
-    [typewriterStart - 10, typewriterStart],
-    [0.5, 1],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
-
-  return (
-    <div style={{ marginBottom: 16, opacity: fieldOpacity }}>
-      <div style={{ fontFamily: `${FONT_SANS}, sans-serif`, fontSize: 13, color: COLORS.textMuted, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-        {label}
-      </div>
-      <div style={{
-        background: COLORS.zinc900,
-        border: `1px solid ${COLORS.zinc800}`,
-        borderRadius: 8,
-        padding: "10px 14px",
-        fontFamily: mono ? `${FONT_MONO}, monospace` : `${FONT_SANS}, sans-serif`,
-        fontSize: 18,
-        color: displayValue ? COLORS.textPrimary : COLORS.textMuted,
-        minHeight: 24,
-      }}>
-        {displayValue || label}
-        {!isDropdown && frame >= typewriterStart && frame < typewriterStart + value.length * TYPEWRITER_CHAR_FRAMES && (
-          <span style={{ opacity: Math.round(frame * 0.1) % 2 }}>▌</span>
-        )}
-      </div>
-    </div>
-  );
-};
-
-/** Mock line item row */
-const LineItem: React.FC<{ desc: string; qty: string; price: string; delay: number }> = ({
-  desc, qty, price, delay,
-}) => {
-  const frame = useCurrentFrame();
-  const translateY = interpolate(
-    frame,
-    [delay, delay + 15],
-    [30, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
-  const opacity = interpolate(
-    frame,
-    [delay, delay + 15],
-    [0, 1],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
-
-  return (
-    <div style={{ display: "flex", gap: 12, opacity, transform: `translateY(${translateY}px)`, fontFamily: `${FONT_SANS}, sans-serif`, fontSize: 14, color: COLORS.textPrimary, padding: "6px 0", borderBottom: `1px solid ${COLORS.zinc800}` }}>
-      <span style={{ flex: 2 }}>{desc}</span>
-      <span style={{ flex: 0.5, textAlign: "center" }}>{qty}</span>
-      <span style={{ flex: 1, textAlign: "right", fontFamily: `${FONT_MONO}, monospace` }}>{price}</span>
-    </div>
-  );
-};
-
 export const CreateScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  // "Generate Link" button animation
-  const buttonClickFrame = 420;
-  const buttonScale = frame >= buttonClickFrame
-    ? spring({ frame: frame - buttonClickFrame, fps, config: SPRING_CONFIGS.snappy })
+  // Frame-driven snapshot for the real InvoiceFormView. Re-compute only when
+  // frame crosses a phase boundary; within a phase the typewriter string is
+  // the only thing moving so useMemo keyed on `frame` is correct here.
+  const viewValue = useMemo(() => {
+    const fromName = typewrite(INVOICE_FROM, frame, FROM_START);
+    const tokenSymbol = frame >= TOKEN_APPEAR ? INVOICE_TOKEN : undefined;
+    const networkLabel = frame >= NETWORK_APPEAR ? INVOICE_NETWORK : undefined;
+    const lineItems = frame >= LINE_ITEM_APPEAR
+      ? [{ description: INVOICE_ITEM, quantity: 1, rate: INVOICE_SUBTOTAL }]
+      : undefined;
+    const subtotal = frame >= TOTAL_APPEAR ? `${INVOICE_SUBTOTAL} ${INVOICE_TOKEN}` : undefined;
+    const total = frame >= TOTAL_APPEAR ? `${INVOICE_TOTAL} ${INVOICE_TOKEN}` : undefined;
+    return {
+      invoiceId: "VP-0001",
+      from: fromName ? { name: fromName } : undefined,
+      ...(lineItems && { lineItems }),
+      ...(tokenSymbol && { tokenSymbol }),
+      ...(networkLabel && { networkLabel }),
+      ...(subtotal && { subtotal }),
+      ...(total && { total }),
+      magicDustEnabled: true,
+    };
+  }, [frame]);
+
+  // Focused field drives the violet ring — simulates the "user typing here"
+  // beat during the typewriter flow. Undefined once everything is filled in.
+  const focusedField: "from" | "token" | "network" | "lineItem" | undefined =
+    frame < TOKEN_APPEAR
+      ? "from"
+      : frame < NETWORK_APPEAR
+        ? "token"
+        : frame < LINE_ITEM_APPEAR
+          ? "network"
+          : frame < TOTAL_APPEAR
+            ? "lineItem"
+            : undefined;
+
+  // "Generate Link" button — the real InvoiceFormView renders it when
+  // showGenerateButton is true. The pulse / click-scale glow is an overlay
+  // behind the form so we can still drive a narrative beat without wrapping
+  // the real Button.
+  const buttonScale = frame >= BUTTON_CLICK_FRAME
+    ? spring({ frame: frame - BUTTON_CLICK_FRAME, fps, config: SPRING_CONFIGS.snappy })
     : 0;
   const buttonGlowOpacity = interpolate(
     Math.sin(frame * 0.08),
@@ -120,90 +96,62 @@ export const CreateScene: React.FC = () => {
     [0.3, 0.8],
   );
 
-  // Paper preview layout — depends only on composition width/height, so
-  // memoize instead of recomputing every frame (P1.3). Frame-driven fade /
-  // lift stay inline in the JSX below.
+  // Paper preview layout — depends only on composition size (P1.3 memoized).
   const paperLayout = useMemo(() => {
-    const containerW = width * 0.38
-    const containerH = height * 0.8
+    const containerW = width * 0.38;
+    const containerH = height * 0.8;
     const scale = Math.min(
       containerW / INVOICE_BASE_WIDTH,
       containerH / INVOICE_BASE_HEIGHT,
-    )
+    );
     return {
       containerW,
       containerH,
       scale,
       scaledW: INVOICE_BASE_WIDTH * scale,
       scaledH: INVOICE_BASE_HEIGHT * scale,
-    }
+    };
   }, [width, height]);
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackground />
 
-      {/* Form panel (left side) */}
-      <div style={{
-        position: "absolute",
-        left: width * 0.08,
-        top: height * 0.08,
-        width: width * 0.38,
-        background: "rgba(24, 24, 27, 0.8)",
-        border: `1px solid ${COLORS.zinc800}`,
-        borderRadius: 16,
-        padding: 32,
-      }}>
-        <div style={{ fontFamily: `${FONT_SANS}, sans-serif`, fontSize: 24, fontWeight: 700, color: COLORS.textPrimary, marginBottom: 24 }}>
-          Create Invoice
-        </div>
-
-        {/* Creative brief §2: From = Alex */}
-        <FormField label="From" value={INVOICE_FROM} typewriterStart={15} />
-        <FormField label="Token" value={INVOICE_TOKEN} typewriterStart={60} isDropdown />
-        <FormField label="Network" value={INVOICE_NETWORK} typewriterStart={90} isDropdown />
-
-        {/* Line items */}
-        <div style={{ marginTop: 16, marginBottom: 16 }}>
-          <div style={{ fontFamily: `${FONT_SANS}, sans-serif`, fontSize: 13, color: COLORS.textMuted, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Line Items
-          </div>
-          {/* Creative brief §2: UI Design · $250 */}
-          <LineItem desc={INVOICE_ITEM} qty="1" price={`$${INVOICE_AMOUNT} ${INVOICE_TOKEN}`} delay={120} />
-        </div>
-
-        {/* Total */}
-        <Sequence from={180} layout="none">
-          <div style={{ display: "flex", justifyContent: "space-between", fontFamily: `${FONT_MONO}, monospace`, fontSize: 20, fontWeight: 700, color: COLORS.textPrimary, padding: "12px 0", borderTop: `1px solid ${COLORS.zinc800}` }}>
-            <span>Total</span>
-            <span>{INVOICE_AMOUNT} {INVOICE_TOKEN}</span>
-          </div>
-        </Sequence>
-
-        {/* Generate Link button */}
-        <Sequence from={300} layout="none">
-          <div style={{ marginTop: 20 }}>
-            <div style={{
-              boxShadow: `0 0 ${20 + buttonGlowOpacity * 15}px ${COLORS.violetGlow}`,
-              transform: frame >= buttonClickFrame ? `scale(${0.95 + buttonScale * 0.05})` : "scale(1)",
-              display: "inline-flex",
-              width: "100%",
-            }}>
-              <Button variant="default" size="lg" className="w-full">
-                Generate Link
-              </Button>
-            </div>
-          </div>
-        </Sequence>
-      </div>
-
-      {/* Preview paper (right side) — real @/widgets/invoice-paper.
-          Scale from paperLayout (memoized on width/height). Base paper:
-          794×1123 (A4 @ 96dpi). Fade / lift stay frame-driven. */}
+      {/* Form panel (left) — real InvoiceFormView driven by frame snapshot.
+          Outer wrapper holds the button-click glow so we don't reach into
+          the widget's internal Button. */}
       <div
         style={{
           position: "absolute",
-          right: width * 0.08 + (paperLayout.containerW - paperLayout.scaledW) / 2,
+          left: width * 0.06,
+          top: height * 0.06,
+          width: width * 0.42,
+          maxHeight: height * 0.88,
+          background: "rgba(24, 24, 27, 0.85)",
+          border: `1px solid ${COLORS.zinc800}`,
+          borderRadius: 16,
+          padding: 32,
+          overflow: "hidden",
+          boxShadow: frame >= BUTTON_APPEAR
+            ? `0 0 ${20 + buttonGlowOpacity * 15}px ${COLORS.violetGlow}`
+            : undefined,
+          transform: frame >= BUTTON_CLICK_FRAME
+            ? `scale(${0.99 + buttonScale * 0.01})`
+            : undefined,
+        }}
+      >
+        <InvoiceFormView
+          value={viewValue}
+          {...(focusedField && { focusedField })}
+          showGenerateButton={frame >= BUTTON_APPEAR}
+        />
+      </div>
+
+      {/* Preview paper (right) — real InvoicePaper, scaled to fit. */}
+      <div
+        style={{
+          position: "absolute",
+          right: width * 0.06 + (paperLayout.containerW - paperLayout.scaledW) / 2,
           top: height * 0.1 + (paperLayout.containerH - paperLayout.scaledH) / 2,
           width: paperLayout.scaledW,
           height: paperLayout.scaledH,

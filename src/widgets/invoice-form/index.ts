@@ -1,5 +1,6 @@
 // UI Components
 export { InvoiceForm, type InvoiceFormProps } from './ui'
+export { InvoiceFormView, type InvoiceFormViewProps } from './ui/InvoiceFormView'
 export { InvoiceItemRow, type InvoiceItemRowProps } from './ui'
 export { MagicDustToggle, type MagicDustToggleProps } from './ui'
 export { OgImageCheckbox, type OgImageCheckboxProps } from './ui'
