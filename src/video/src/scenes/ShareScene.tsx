@@ -23,7 +23,9 @@ import { Caption } from "../components/Caption";
 
 // Full URL so LinkTab's `new URL(...)` parser produces proper color-coded
 // protocol / domain / path / hash segments instead of falling back to raw.
-const SHARE_URL = "https://voidpay.xyz/pay#N4IgbghgTg9gRgFwAYEsA2UBOB7AjgKYCOAxgC4DmAhgBYAuADgE4Cu";
+// v2: og prefix carries recipient address so the callback is visible in the
+// LinkTab URL rendering (creative-brief-v2 §4 non-negotiable "address callback").
+const SHARE_URL = `https://voidpay.xyz/pay?og=VP-0001_250_USDC_arb_${DEMO_FROM_ADDRESS}#N4IgbghgTg9gRgFwAYEsA2UBOB7AjgKYCOAxgC4DmAhgBYAuADgE4Cu`;
 const TELEGRAM_URL = `https://t.me/share/url?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent("Pay me in crypto — VoidPay invoice")}`;
 const TWITTER_URL = `https://twitter.com/intent/tweet?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent("Pay me in crypto — VoidPay invoice")}`;
 const EMAIL_URL = `mailto:?subject=${encodeURIComponent("VoidPay invoice")}&body=${encodeURIComponent(SHARE_URL)}`;
@@ -190,8 +192,8 @@ export const ShareScene: React.FC = () => {
         <Annotation label="# fragment — browser only. Server can't see it." x={width / 2 + 50} y={height / 2 - 245} delay={0} />
       </Sequence>
 
-      {/* LOCKED caption from creative-brief.md §1, Scene 4 */}
-      <Caption text="Share anywhere. Your data never touches our servers." startAt={200} />
+      {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear modal. */}
+      <Caption text="No signup" position="top" startAt={0} endAt={90} />
     </AbsoluteFill>
   );
 };
