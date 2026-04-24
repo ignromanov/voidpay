@@ -35,6 +35,14 @@ const TOTAL_APPEAR = 180;
 const BUTTON_APPEAR = 300;
 const BUTTON_CLICK_FRAME = 420;
 
+// Form scroll keyframes — the real InvoiceFormView renders 7 sections
+// (Metadata, From, Client, LineItems, Payment, LinkOptions, Generate), which
+// overflows the scene's form pane. We animate a translateY on the inner form
+// so the viewer's eye follows the narrative beat: top → middle → bottom.
+// Values tuned by eye from `remotion still` captures at each keyframe.
+const SCROLL_FRAMES = [0, 120, 250, 380];
+const SCROLL_OFFSETS = [0, -320, -640, -880];
+
 /** Typewriter: reveal `text` char by char starting at `startFrame` */
 const typewrite = (text: string, frame: number, startFrame: number): string => {
   const elapsed = Math.max(0, frame - startFrame);
@@ -140,11 +148,25 @@ export const CreateScene: React.FC = () => {
             : undefined,
         }}
       >
-        <InvoiceFormView
-          value={viewValue}
-          {...(focusedField && { focusedField })}
-          showGenerateButton={frame >= BUTTON_APPEAR}
-        />
+        {/* Inner scroll shell — the real InvoiceFormView is taller than the
+            scene pane, so we animate translateY by frame to walk the viewer
+            through top → middle → bottom as sections fill in. */}
+        <div
+          style={{
+            transform: `translateY(${interpolate(
+              frame,
+              SCROLL_FRAMES,
+              SCROLL_OFFSETS,
+              { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+            )}px)`,
+          }}
+        >
+          <InvoiceFormView
+            value={viewValue}
+            {...(focusedField && { focusedField })}
+            showGenerateButton={frame >= BUTTON_APPEAR}
+          />
+        </div>
       </div>
 
       {/* Preview paper (right) — real InvoicePaper, scaled to fit. */}
