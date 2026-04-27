@@ -82,7 +82,7 @@
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.4",
     "@rainbow-me/rainbowkit": "^2.2.10",
-    "@tanstack/react-query": "^5.99.2",
+    "@tanstack/react-query": "^5.100.5",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
     "@web3icons/react": "^4.1.17",
