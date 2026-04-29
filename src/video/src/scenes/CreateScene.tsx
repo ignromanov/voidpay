@@ -72,6 +72,7 @@ export const CreateScene: React.FC = () => {
       ...(lineItems && { lineItems }),
       ...(tokenSymbol && { tokenSymbol }),
       ...(networkLabel && { networkLabel }),
+      ...(frame >= NETWORK_APPEAR && { chainId: 42161 }),
       magicDustEnabled: true,
     };
   }, [frame]);

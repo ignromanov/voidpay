@@ -2,6 +2,8 @@ import { WalletIcon, UsersIcon, CoinsIcon, CalendarIcon, FingerprintIcon, Share2
 import { Button } from '@/shared/ui/button'
 import { Text, Heading } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
+import { NetworkIcon } from '@/shared/ui/network-icon'
+import { TokenIcon } from '@/shared/ui/token-icon'
 
 import { SectionHeading } from './components/SectionHeading'
 import { ReadonlyInput } from './shared/ReadonlyInput'
@@ -28,6 +30,8 @@ export interface InvoiceFormViewProps {
     }>
     networkLabel?: string
     tokenSymbol?: string
+    /** Chain ID for rendering the network icon (e.g. 42161 for Arbitrum) */
+    chainId?: number
     subtotal?: string
     total?: string
     magicDustEnabled?: boolean
@@ -208,10 +212,12 @@ function LineItemsSectionView({
 function PaymentSectionView({
   networkLabel,
   tokenSymbol,
+  chainId,
   focusedField,
 }: {
   networkLabel?: string
   tokenSymbol?: string
+  chainId?: number
   focusedField?: InvoiceFormViewProps['focusedField']
 }): React.JSX.Element {
   return (
@@ -226,11 +232,12 @@ function PaymentSectionView({
         <label className="block text-xs font-medium uppercase tracking-wide text-zinc-400">Network</label>
         <div
           className={cn(
-            'rounded-md border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-sm',
+            'flex items-center gap-2 rounded-md border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-sm',
             networkLabel ? 'text-zinc-200' : 'text-zinc-600',
             focusedField === 'network' && focusRing(true)
           )}
         >
+          {chainId !== undefined && <NetworkIcon chainId={chainId} size={16} />}
           {networkLabel ?? 'Select network'}
         </div>
       </div>
@@ -238,11 +245,12 @@ function PaymentSectionView({
         <label className="block text-xs font-medium uppercase tracking-wide text-zinc-400">Token</label>
         <div
           className={cn(
-            'rounded-md border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-sm',
+            'flex items-center gap-2 rounded-md border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-sm',
             tokenSymbol ? 'text-zinc-200' : 'text-zinc-600',
             focusedField === 'token' && focusRing(true)
           )}
         >
+          {tokenSymbol && <TokenIcon symbol={tokenSymbol} size={16} />}
           {tokenSymbol ?? 'Select token'}
         </div>
       </div>
@@ -306,6 +314,7 @@ export function InvoiceFormView({
     lineItems,
     networkLabel,
     tokenSymbol,
+    chainId,
     total,
     magicDustEnabled = true,
   } = value
@@ -338,6 +347,7 @@ export function InvoiceFormView({
       <PaymentSectionView
         {...(networkLabel !== undefined && { networkLabel })}
         {...(tokenSymbol !== undefined && { tokenSymbol })}
+        {...(chainId !== undefined && { chainId })}
         {...(focusedField !== undefined && { focusedField })}
       />
 
