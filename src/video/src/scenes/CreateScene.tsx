@@ -13,6 +13,7 @@ import {
 } from "@/widgets/invoice-paper";
 import { InvoiceFormView } from "@/widgets/invoice-form";
 import { NetworkBackground } from "@/widgets/network-background";
+import { Card } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS, TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { Caption } from "../components/Caption";
@@ -21,8 +22,7 @@ import { DEMO_INVOICE } from "../constants/demo-invoice";
 // Creative brief §2: Alex · UI Design · $250 USDC · Arbitrum
 const INVOICE_FROM = "Alex";
 const INVOICE_ITEM = "UI Design";
-const INVOICE_SUBTOTAL = "250.00";
-const INVOICE_TOTAL = "250.000042";
+const INVOICE_AMOUNT = "250.00";
 const INVOICE_TOKEN = "USDC";
 const INVOICE_NETWORK = "Arbitrum";
 
@@ -32,7 +32,6 @@ const FROM_START = 15;
 const TOKEN_APPEAR = 45;
 const NETWORK_APPEAR = 75;
 const LINE_ITEM_APPEAR = 105;
-const TOTAL_APPEAR = 150;
 const BUTTON_APPEAR = 210;
 const BUTTON_CLICK_FRAME = 270;
 
@@ -63,18 +62,14 @@ export const CreateScene: React.FC = () => {
     const tokenSymbol = frame >= TOKEN_APPEAR ? INVOICE_TOKEN : undefined;
     const networkLabel = frame >= NETWORK_APPEAR ? INVOICE_NETWORK : undefined;
     const lineItems = frame >= LINE_ITEM_APPEAR
-      ? [{ description: INVOICE_ITEM, quantity: 1, rate: INVOICE_SUBTOTAL }]
+      ? [{ description: INVOICE_ITEM, quantity: 1, rate: INVOICE_AMOUNT }]
       : undefined;
-    const subtotal = frame >= TOTAL_APPEAR ? `${INVOICE_SUBTOTAL} ${INVOICE_TOKEN}` : undefined;
-    const total = frame >= TOTAL_APPEAR ? `${INVOICE_TOTAL} ${INVOICE_TOKEN}` : undefined;
     return {
       invoiceId: "VP-0001",
       from: fromName ? { name: fromName } : undefined,
       ...(lineItems && { lineItems }),
       ...(tokenSymbol && { tokenSymbol }),
       ...(networkLabel && { networkLabel }),
-      ...(subtotal && { subtotal }),
-      ...(total && { total }),
       magicDustEnabled: true,
     };
   }, [frame]);
@@ -129,17 +124,15 @@ export const CreateScene: React.FC = () => {
       {/* Form panel (left) — real InvoiceFormView driven by frame snapshot.
           Outer wrapper holds the button-click glow so we don't reach into
           the widget's internal Button. */}
-      <div
+      <Card
+        variant="glass"
         style={{
           position: "absolute",
           left: width * 0.06,
           top: height * 0.06,
           width: width * 0.42,
           maxHeight: height * 0.88,
-          background: "rgba(24, 24, 27, 0.85)",
-          border: `1px solid ${COLORS.zinc800}`,
-          borderRadius: 16,
-          padding: 32,
+          padding: 24,
           overflow: "hidden",
           boxShadow: frame >= BUTTON_APPEAR
             ? `0 0 ${20 + buttonGlowOpacity * 15}px ${COLORS.violetGlow}`
@@ -168,7 +161,7 @@ export const CreateScene: React.FC = () => {
             showGenerateButton={frame >= BUTTON_APPEAR}
           />
         </div>
-      </div>
+      </Card>
 
       {/* Preview paper (right) — real InvoicePaper, scaled to fit. */}
       <div
