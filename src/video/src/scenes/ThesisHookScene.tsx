@@ -24,10 +24,10 @@ export const ThesisHookScene: React.FC = () => {
     interpolate(frame, [12, 21], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) *
     interpolate(frame, [27, 30], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
-  // Beat 2: "is the URL."  fades in 27-36, holds 36-42, fades out 42-45
+  // Beat 2: "is the URL."  fades in 27-36, holds 36→scene end (no fade-out —
+  // cross-fade transition closes the visual).
   const beat2 =
-    interpolate(frame, [27, 36], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) *
-    interpolate(frame, [42, 45], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+    interpolate(frame, [27, 36], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
   const sharedTextStyle: React.CSSProperties = {
     position: "absolute",
