@@ -2,6 +2,7 @@ import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } fr
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
 import { COLORS } from "../constants/colors";
+import { MicroLabel } from "../components/MicroLabel";
 
 /**
  * Scene 4 — Thesis Outro (5s, 150 frames @ 30fps).
@@ -88,6 +89,8 @@ export const ThesisOutroScene: React.FC = () => {
         {" "}
         <span style={{ opacity: 0.6 }}>→</span>
       </div>
+
+      <MicroLabel text="No login. No data stored. Works forever." startAt={30} endAt={100} x="50%" y="72%" anchor="center" maxWidth={720} fontSize={22} />
     </AbsoluteFill>
   );
 };
