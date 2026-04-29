@@ -7,6 +7,7 @@
 
 import type { StateCreator } from 'zustand'
 import type { CreatorStore } from './types'
+import { CREATOR_INITIAL_STATE } from '../initial-state'
 
 /**
  * Utility Slice State
@@ -21,27 +22,12 @@ export interface UtilitySlice {
 }
 
 /**
- * Initial state for reset
- */
-const initialState = {
-  version: 1 as const,
-  activeDraft: null,
-  lineItems: [],
-  templates: [],
-  preferences: {},
-  idCounter: {
-    currentValue: 1,
-    prefix: 'INV',
-  },
-}
-
-/**
  * Create Utility Slice
  */
 export const createUtilitySlice: StateCreator<CreatorStore, [], [], UtilitySlice> = (set) => ({
   // ========== Utility ==========
 
   clearAllData: () => {
-    set(initialState)
+    set(CREATOR_INITIAL_STATE)
   },
 })
