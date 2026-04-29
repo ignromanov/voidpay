@@ -14,6 +14,7 @@ import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
 import { Caption } from "../components/Caption";
+import { MicroLabel } from "../components/MicroLabel";
 
 // Full URL so LinkTab's `new URL(...)` parser produces proper color-coded
 // protocol / domain / path / hash segments instead of falling back to raw.
@@ -90,10 +91,20 @@ export const ShareScene: React.FC = () => {
           Share Invoice
         </div>
 
-        <Tabs value={tabValue} onValueChange={() => {}}>
-          <TabsList className="w-full mb-4">
-            <TabsTrigger value="link" className="flex-1">Link</TabsTrigger>
-            <TabsTrigger value="qr" className="flex-1">QR Code</TabsTrigger>
+        <Tabs value={tabValue} onValueChange={() => {}} className="w-full">
+          <TabsList className="bg-zinc-800 p-1 rounded-lg w-fit mb-4">
+            <TabsTrigger
+              value="link"
+              className="px-4 py-1.5 rounded-md text-zinc-400 data-[state=active]:bg-zinc-100 data-[state=active]:text-zinc-950 transition-colors"
+            >
+              Link
+            </TabsTrigger>
+            <TabsTrigger
+              value="qr"
+              className="px-4 py-1.5 rounded-md text-zinc-400 data-[state=active]:bg-zinc-100 data-[state=active]:text-zinc-950 transition-colors"
+            >
+              QR Code
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="link">
             <LinkTab
@@ -115,6 +126,9 @@ export const ShareScene: React.FC = () => {
 
       {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear modal. */}
       <Caption text="No signup" position="top" startAt={0} endAt={90} />
+
+      <MicroLabel text="The # fragment never leaves your browser" startAt={0} endAt={60} x="50%" y="84%" anchor="center" maxWidth={720} />
+      <MicroLabel text="Same invoice — scannable format" startAt={150} endAt={210} x="50%" y="84%" anchor="center" />
     </AbsoluteFill>
   );
 };
