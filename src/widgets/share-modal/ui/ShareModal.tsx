@@ -13,9 +13,9 @@ import { cn } from '@/shared/lib/utils'
 import { copyToClipboard } from '@/shared/lib/clipboard'
 import { toAbsoluteUrl } from '@/shared/config/urls'
 import { encodeOGPreview } from '@/features/invoice-codec'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui'
 import type { ShareModalProps, ShareTab } from '../lib/types'
 import { getTelegramShareUrl, getTwitterShareUrl, getEmailShareUrl } from '../lib/social-links'
-import { TabSwitcher } from './TabSwitcher'
 import { LinkTab } from './LinkTab'
 import { InvoiceSummary } from './InvoiceSummary'
 
@@ -100,24 +100,29 @@ export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgTo
 
         <div className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6">
           {invoice && <InvoiceSummary invoice={invoice} />}
-          <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
-
-          <div className="min-h-[200px]">
-            {activeTab === 'link' ? (
-              <LinkTab
-                url={shareUrl}
-                copied={copied}
-                onCopy={handleCopy}
-                telegramUrl={telegramUrl}
-                twitterUrl={twitterUrl}
-                emailUrl={emailUrl}
-                includeOg={includeOg}
-                onOgToggle={onOgToggle}
-              />
-            ) : (
-              <QRTab url={shareUrl} />
-            )}
-          </div>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ShareTab)}>
+            <TabsList className="w-full">
+              <TabsTrigger value="link" className="flex-1">Link</TabsTrigger>
+              <TabsTrigger value="qr" className="flex-1">QR Code</TabsTrigger>
+            </TabsList>
+            <div className="min-h-[200px]">
+              <TabsContent value="link">
+                <LinkTab
+                  url={shareUrl}
+                  copied={copied}
+                  onCopy={handleCopy}
+                  telegramUrl={telegramUrl}
+                  twitterUrl={twitterUrl}
+                  emailUrl={emailUrl}
+                  includeOg={includeOg}
+                  onOgToggle={onOgToggle}
+                />
+              </TabsContent>
+              <TabsContent value="qr">
+                <QRTab url={shareUrl} />
+              </TabsContent>
+            </div>
+          </Tabs>
         </div>
       </DialogContent>
     </Dialog>

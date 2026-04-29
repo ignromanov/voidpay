@@ -19,21 +19,6 @@ vi.mock('next/dynamic', () => ({
 }))
 
 // Mock subcomponents that have their own tests
-vi.mock('../TabSwitcher', () => ({
-  TabSwitcher: ({
-    activeTab,
-    onTabChange,
-  }: {
-    activeTab: string
-    onTabChange: (tab: string) => void
-  }) => (
-    <div data-testid="tab-switcher">
-      <button onClick={() => onTabChange('link')}>Link</button>
-      <button onClick={() => onTabChange('qr')}>QR</button>
-      <span data-testid="active-tab">{activeTab}</span>
-    </div>
-  ),
-}))
 
 vi.mock('../InvoiceSummary', () => ({
   InvoiceSummary: ({ invoice }: { invoice: { invoiceId: string } }) => (
@@ -134,21 +119,22 @@ describe('ShareModal', () => {
       expect(screen.getByTestId('invoice-summary')).toHaveTextContent(TEST_INVOICE.invoiceId)
     })
 
-    it('renders TabSwitcher', () => {
+    it('renders tab list with Link and QR Code tabs', () => {
       renderModal()
-      expect(screen.getByTestId('tab-switcher')).toBeInTheDocument()
+      expect(screen.getByRole('tab', { name: 'Link' })).toBeInTheDocument()
+      expect(screen.getByRole('tab', { name: 'QR Code' })).toBeInTheDocument()
     })
 
     it('shows LinkTab by default (link tab active)', () => {
       renderModal()
       expect(screen.getByTestId('link-tab')).toBeInTheDocument()
-      expect(screen.getByTestId('active-tab')).toHaveTextContent('link')
+      expect(screen.getByRole('tab', { name: 'Link' })).toHaveAttribute('aria-selected', 'true')
     })
 
     it('shows QRTab when qr tab is selected', async () => {
       const user = userEvent.setup()
       renderModal()
-      await user.click(screen.getByRole('button', { name: 'QR' }))
+      await user.click(screen.getByRole('tab', { name: 'QR Code' }))
       expect(screen.getByTestId('qr-tab-stub')).toBeInTheDocument()
       expect(screen.queryByTestId('link-tab')).not.toBeInTheDocument()
     })
