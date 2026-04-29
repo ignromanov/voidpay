@@ -1,6 +1,5 @@
 import {
   AbsoluteFill,
-  Sequence,
   interpolate,
   spring,
   useCurrentFrame,
@@ -8,14 +7,9 @@ import {
 } from "remotion";
 import { NetworkBackground } from "@/widgets/network-background";
 import { LinkTab } from "@/widgets/share-modal";
-import { Card } from "@/shared/ui";
-import { PaymentQR } from "@/features/payment-qr";
-import {
-  DEMO_FROM_ADDRESS,
-  DEMO_NETWORK_ID,
-  DEMO_TOTAL_ATOMIC,
-  DEMO_TOKEN_ADDRESS,
-} from "../constants/demo-invoice";
+import { QRTab } from "@/features/payment-qr";
+import { Card, Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui";
+import { DEMO_FROM_ADDRESS } from "../constants/demo-invoice";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
@@ -30,10 +24,10 @@ const TELEGRAM_URL = `https://t.me/share/url?url=${encodeURIComponent(SHARE_URL)
 const TWITTER_URL = `https://twitter.com/intent/tweet?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent("Pay me in crypto — VoidPay invoice")}`;
 const EMAIL_URL = `mailto:?subject=${encodeURIComponent("VoidPay invoice")}&body=${encodeURIComponent(SHARE_URL)}`;
 
-// Frame at which the narrative "Copy" click fires
-const COPY_CLICK_FRAME = 100;
-// Frame at which QR preview enters
-const QR_ENTER_FRAME = 180;
+// Frame at which the narrative "Copy" click fires (moved earlier — user sees copy before tab switch)
+const COPY_CLICK_FRAME = 60;
+// Frame at which narrative switches to QR tab
+const QR_TAB_FROM_FRAME = 100;
 
 const noop = () => {
   /* Remotion renders static frames — click handlers never fire */
@@ -58,10 +52,8 @@ export const ShareScene: React.FC = () => {
   // shows its own "Copied!" affordance (CopyOverlay flash + icon swap).
   const copied = frame >= COPY_CLICK_FRAME + 10;
 
-  // QR code entrance
-  const qrScale = frame >= QR_ENTER_FRAME
-    ? spring({ frame: frame - QR_ENTER_FRAME, fps, config: SPRING_CONFIGS.smooth })
-    : 0;
+  // Frame drives the tab value — no user interaction in Remotion
+  const tabValue = frame >= QR_TAB_FROM_FRAME ? "qr" : "link";
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
@@ -75,10 +67,7 @@ export const ShareScene: React.FC = () => {
         opacity: modalOpacity,
       }} />
 
-      {/* Share modal — real LinkTab inside a glass Card that mimics the
-          Dialog shell (Dialog itself uses Radix Portal, which breaks static
-          SSR rendering; we bypass by using LinkTab directly per decision
-          in the Phase 3 plan). */}
+      {/* Share modal shell — Card + shared Tabs (Link → QR driven by frame) */}
       <Card
         variant="glass"
         style={{
@@ -101,44 +90,28 @@ export const ShareScene: React.FC = () => {
           Share Invoice
         </div>
 
-        <LinkTab
-          url={SHARE_URL}
-          copied={copied}
-          onCopy={noop}
-          telegramUrl={TELEGRAM_URL}
-          twitterUrl={TWITTER_URL}
-          emailUrl={EMAIL_URL}
-          includeOg={false}
-          onOgToggle={noop}
-        />
+        <Tabs value={tabValue} onValueChange={() => {}}>
+          <TabsList className="w-full mb-4">
+            <TabsTrigger value="link" className="flex-1">Link</TabsTrigger>
+            <TabsTrigger value="qr" className="flex-1">QR Code</TabsTrigger>
+          </TabsList>
+          <TabsContent value="link">
+            <LinkTab
+              url={SHARE_URL}
+              copied={copied}
+              onCopy={noop}
+              telegramUrl={TELEGRAM_URL}
+              twitterUrl={TWITTER_URL}
+              emailUrl={EMAIL_URL}
+              includeOg={false}
+              onOgToggle={noop}
+            />
+          </TabsContent>
+          <TabsContent value="qr">
+            <QRTab url={SHARE_URL} />
+          </TabsContent>
+        </Tabs>
       </Card>
-
-      {/* QR preview — gated behind a Sequence so PaymentQR SVG isn't built
-          for the 180 frames before it's visible (P1.4). qrScale is computed
-          at parent scope using the outer frame, so it still ramps from 0
-          when the Sequence activates. */}
-      <Sequence from={QR_ENTER_FRAME} premountFor={30}>
-        <div style={{
-          position: "absolute",
-          right: width * 0.08,
-          top: height / 2 - 80,
-          transform: `scale(${qrScale})`,
-          transformOrigin: "top right",
-          background: "white",
-          padding: 16,
-          borderRadius: 16,
-        }}>
-          <PaymentQR
-            recipientAddress={DEMO_FROM_ADDRESS}
-            chainId={DEMO_NETWORK_ID}
-            amount={DEMO_TOTAL_ATOMIC}
-            tokenAddress={DEMO_TOKEN_ADDRESS}
-            size={160}
-            variant="light"
-            showLogo
-          />
-        </div>
-      </Sequence>
 
       {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear modal. */}
       <Caption text="No signup" position="top" startAt={0} endAt={90} />
