@@ -17,6 +17,7 @@ import { NetworkBackground } from "@/widgets/network-background";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { Caption } from "../components/Caption";
+import { RemotionFakeToast } from "../components/RemotionFakeToast";
 import { DEMO_INVOICE, DEMO_CONTENT_HASH } from "../constants/demo-invoice";
 
 // Deterministic demo tx hash for the paid-state watermark
@@ -189,6 +190,11 @@ export const PayScene: React.FC = () => {
       {/* v2 caption per creative-brief-v2 §4 — top-mounted, aligned with
           the 120-frame Magic Dust peak (local frames 240–360). */}
       <Caption text="Cryptographic receipt" position="top" startAt={240} endAt={360} />
+
+      {/* Narrative toasts — replace the dropped MetaMask popup beat */}
+      <RemotionFakeToast variant="success" title="Wallet connected" startAt={60} hold={60} stackOffset={0} />
+      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={360} hold={90} stackOffset={0} />
+      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={480} hold={120} stackOffset={0} />
     </AbsoluteFill>
   );
 };
