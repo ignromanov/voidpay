@@ -16,7 +16,6 @@ import { Button } from "@/shared/ui";
 import { NetworkBackground } from "@/widgets/network-background";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
-import { FONT_SANS } from "../fonts";
 import { Caption } from "../components/Caption";
 import { DEMO_INVOICE, DEMO_CONTENT_HASH } from "../constants/demo-invoice";
 
@@ -42,9 +41,9 @@ const PAPER_PROPS_PAID = {
 // Phase timing (local frames since each scene starts at 0).
 // v2 envelope = 510 frames (17s). Magic Dust peak holds for 120 frames
 // (frames 240–360) per creative-brief-v2 §3 & plan-v4 Task 8.
-const METAMASK_POPUP = 60;
-const NETWORK_BADGE = 120;
 const MAGIC_DUST_HIGHLIGHT = 240;
+// Estimated rendered height of PaymentPanel — used to vertically center it.
+const PANEL_HEIGHT = 580;
 const MAGIC_DUST_PEAK_END = 360;
 const CONFIRMING = 360;
 const SUCCESS = 480;
@@ -56,19 +55,6 @@ export const PayScene: React.FC = () => {
 
   // Card entrance (shared by paper + panel so they rise together)
   const cardScale = spring({ frame, fps, config: SPRING_CONFIGS.smooth });
-
-  // MetaMask popup — narrative beat (kept as overlay since real
-  // PaymentPanel never shows the wallet approval dialog; that lives in the
-  // wallet extension, not on the /pay page).
-  const metaMaskScale = frame >= METAMASK_POPUP
-    ? spring({ frame: frame - METAMASK_POPUP, fps, config: SPRING_CONFIGS.snappy })
-    : 0;
-  const metaMaskOpacity = frame >= METAMASK_POPUP
-    ? interpolate(frame, [METAMASK_POPUP, METAMASK_POPUP + 10], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
-    : 0;
-  const metaMaskDismiss = frame >= NETWORK_BADGE
-    ? interpolate(frame, [NETWORK_BADGE, NETWORK_BADGE + 10], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
-    : 1;
 
   // Drive PaymentPanel's status by frame. The panel's internal StatusBadge,
   // gradient bar, and AnimatePresence swap between pending → confirming →
@@ -130,7 +116,7 @@ export const PayScene: React.FC = () => {
       <div
         style={{
           position: "absolute",
-          left: width * 0.06,
+          left: width * 0.08,
           top: height * 0.09,
           width: paperScaledW,
           height: paperScaledH,
@@ -175,8 +161,8 @@ export const PayScene: React.FC = () => {
       <div
         style={{
           position: "absolute",
-          right: width * 0.08,
-          top: height * 0.18,
+          right: width * 0.10,
+          top: (height - PANEL_HEIGHT) / 2,
           width: 480,
           transform: `scale(${cardScale})`,
           transformOrigin: "top right",
@@ -191,56 +177,14 @@ export const PayScene: React.FC = () => {
           source="received"
           finalized={panelStatus === "paid"}
         >
-          {/* ActionSlot: the Pay CTA lives inside the panel per real /pay UX.
-              Button label follows the narrative: Smart Pay → Sending → (done). */}
+          {/* ActionSlot: the Pay CTA lives inside the panel per real /pay UX. */}
           {panelStatus === "pending" && (
             <Button variant="void" size="lg" className="w-full">
-              {frame < METAMASK_POPUP
-                ? "Smart Pay"
-                : frame < NETWORK_BADGE
-                  ? "Confirm in wallet…"
-                  : "Smart Pay"}
+              Smart Pay
             </Button>
           )}
         </PaymentPanel>
       </div>
-
-      {/* MetaMask popup — narrative overlay, kept per creative-brief §5 */}
-      {metaMaskOpacity * metaMaskDismiss > 0.01 && (
-        <div style={{
-          position: "absolute",
-          right: width * 0.1,
-          top: height * 0.08,
-          width: 260,
-          background: "#1a1a2e",
-          borderRadius: 12,
-          padding: 20,
-          transform: `scale(${metaMaskScale})`,
-          opacity: metaMaskOpacity * metaMaskDismiss,
-          border: "1px solid #333",
-          zIndex: 10,
-        }}>
-          <div style={{ fontFamily: `${FONT_SANS}, sans-serif`, fontSize: 14, color: "#ffa500", fontWeight: 700, marginBottom: 8 }}>
-            MetaMask
-          </div>
-          <div style={{ fontFamily: `${FONT_SANS}, sans-serif`, fontSize: 13, color: "#ccc" }}>
-            Connect to voidpay.xyz?
-          </div>
-          <div style={{
-            marginTop: 12,
-            background: "#3b82f6",
-            borderRadius: 8,
-            padding: "8px 16px",
-            textAlign: "center",
-            fontFamily: `${FONT_SANS}, sans-serif`,
-            fontSize: 14,
-            fontWeight: 600,
-            color: "white",
-          }}>
-            Connect
-          </div>
-        </div>
-      )}
 
       {/* v2 caption per creative-brief-v2 §4 — top-mounted, aligned with
           the 120-frame Magic Dust peak (local frames 240–360). */}
