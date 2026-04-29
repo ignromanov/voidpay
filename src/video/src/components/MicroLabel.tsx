@@ -14,6 +14,11 @@ type MicroLabelProps = {
   maxWidth?: number | string;
   /** Controls text alignment and transform-origin */
   anchor?: "left" | "center" | "right";
+  /**
+   * Pill background behind text — improves readability on any background.
+   * Defaults to true. Set false for legacy plain-text rendering.
+   */
+  pill?: boolean;
 };
 
 export const MicroLabel: React.FC<MicroLabelProps> = ({
@@ -22,9 +27,10 @@ export const MicroLabel: React.FC<MicroLabelProps> = ({
   endAt,
   x,
   y,
-  fontSize = 20,
+  fontSize = 24,
   maxWidth,
   anchor = "left",
+  pill = true,
 }) => {
   const frame = useCurrentFrame();
 
@@ -59,17 +65,38 @@ export const MicroLabel: React.FC<MicroLabelProps> = ({
         maxWidth,
       }}
     >
-      <span
-        style={{
-          fontFamily: `${FONT_SANS}, sans-serif`,
-          fontSize,
-          fontWeight: 500,
-          color: "rgba(161, 161, 170, 1)",
-          letterSpacing: 0,
-        }}
-      >
-        {text}
-      </span>
+      {pill ? (
+        <span
+          style={{
+            fontFamily: `${FONT_SANS}, sans-serif`,
+            fontSize,
+            fontWeight: 500,
+            color: "rgba(228, 228, 231, 1)",
+            letterSpacing: 0,
+            padding: "10px 16px",
+            borderRadius: 999,
+            background: "rgba(15, 15, 18, 0.85)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid rgba(124, 58, 237, 0.3)",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+            display: "inline-block",
+          }}
+        >
+          {text}
+        </span>
+      ) : (
+        <span
+          style={{
+            fontFamily: `${FONT_SANS}, sans-serif`,
+            fontSize,
+            fontWeight: 500,
+            color: "rgba(161, 161, 170, 1)",
+            letterSpacing: 0,
+          }}
+        >
+          {text}
+        </span>
+      )}
     </div>
   );
 };
