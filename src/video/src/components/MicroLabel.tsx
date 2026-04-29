@@ -73,12 +73,12 @@ export const MicroLabel: React.FC<MicroLabelProps> = ({
             fontWeight: 500,
             color: "rgba(228, 228, 231, 1)",
             letterSpacing: 0,
-            padding: "10px 16px",
+            padding: "16px 28px",
             borderRadius: 999,
             background: "rgba(15, 15, 18, 0.85)",
             backdropFilter: "blur(8px)",
-            border: "1px solid rgba(124, 58, 237, 0.3)",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+            border: "1px solid rgba(124, 58, 237, 0.6)",
+            boxShadow: "0 0 24px rgba(124, 58, 237, 0.5), 0 0 48px rgba(124, 58, 237, 0.3), 0 4px 16px rgba(0,0,0,0.5)",
             display: "inline-block",
           }}
         >

@@ -74,10 +74,10 @@ export const Caption: React.FC<CaptionProps> = ({
           maxWidth,
           background: "rgba(13, 13, 17, 0.85)",
           backdropFilter: "blur(12px)",
-          border: `1px solid rgba(124, 58, 237, 0.4)`,
+          border: `1px solid rgba(124, 58, 237, 0.7)`,
           borderRadius: 999,
-          padding: "14px 28px",
-          boxShadow: "0 4px 20px rgba(124, 58, 237, 0.15)",
+          padding: "18px 36px",
+          boxShadow: "0 0 32px rgba(124, 58, 237, 0.4), 0 0 64px rgba(124, 58, 237, 0.2), 0 4px 20px rgba(0,0,0,0.5)",
         }}
       >
         <span
