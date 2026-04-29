@@ -17,6 +17,7 @@ import { NetworkBackground } from "@/widgets/network-background";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { Caption } from "../components/Caption";
+import { MicroLabel } from "../components/MicroLabel";
 import { RemotionFakeToast } from "../components/RemotionFakeToast";
 import { DEMO_INVOICE, DEMO_CONTENT_HASH } from "../constants/demo-invoice";
 
@@ -190,6 +191,11 @@ export const PayScene: React.FC = () => {
       {/* v2 caption per creative-brief-v2 §4 — top-mounted, aligned with
           the 120-frame Magic Dust peak (local frames 240–360). */}
       <Caption text="Cryptographic receipt" position="top" startAt={240} endAt={360} />
+
+      <MicroLabel text="No account — wallet is the identity" startAt={30} endAt={90} x="62%" y="20%" anchor="left" maxWidth={420} />
+      <MicroLabel text="Network matches the invoice" startAt={120} endAt={180} x="62%" y="20%" anchor="left" maxWidth={420} />
+      <MicroLabel text="Micro-amount added for exact matching" startAt={240} endAt={330} x="8%" y="84%" anchor="left" maxWidth={520} />
+      <MicroLabel text="Verified on-chain. Payment complete." startAt={990} endAt={1050} x="62%" y="84%" anchor="left" maxWidth={520} />
 
       {/* Narrative toasts — replace the dropped MetaMask popup beat */}
       <RemotionFakeToast variant="success" title="Wallet connected" startAt={60} hold={60} stackOffset={0} />
