@@ -39,51 +39,6 @@ const noop = () => {
   /* Remotion renders static frames — click handlers never fire */
 };
 
-/** URL anatomy annotation arrow + label (narrative-only, kept inline) */
-const Annotation: React.FC<{
-  label: string;
-  x: number;
-  y: number;
-  delay: number;
-}> = ({ label, x, y, delay }) => {
-  const frame = useCurrentFrame();
-  const opacity = interpolate(frame, [delay, delay + 15], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  return (
-    <div style={{
-      position: "absolute",
-      left: x,
-      top: y,
-      opacity,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-    }}>
-      <div style={{
-        width: 2,
-        height: 30,
-        background: COLORS.violet,
-        marginBottom: 6,
-      }} />
-      <div style={{
-        fontFamily: `${FONT_SANS}, sans-serif`,
-        fontSize: 14,
-        color: COLORS.violet,
-        fontWeight: 600,
-        whiteSpace: "nowrap",
-        background: "rgba(124, 58, 237, 0.1)",
-        padding: "4px 10px",
-        borderRadius: 6,
-      }}>
-        {label}
-      </div>
-    </div>
-  );
-};
-
 export const ShareScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
@@ -183,13 +138,6 @@ export const ShareScene: React.FC = () => {
             showLogo
           />
         </div>
-      </Sequence>
-
-      {/* URL anatomy annotation — narrative teaching graphic, kept inline
-          because it's specific to the video (not part of the real modal) */}
-      <Sequence from={130} premountFor={30}>
-        {/* LOCKED caption from creative-brief.md §1, Scene 4 arrow */}
-        <Annotation label="# fragment — browser only. Server can't see it." x={width / 2 + 50} y={height / 2 - 245} delay={0} />
       </Sequence>
 
       {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear modal. */}
