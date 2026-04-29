@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import {
   AbsoluteFill,
   interpolate,
-  spring,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
@@ -13,13 +12,12 @@ import {
 } from "@/widgets/invoice-paper";
 import { InvoiceFormView } from "@/widgets/invoice-form";
 import { NetworkBackground } from "@/widgets/network-background";
-import { Card, Button } from "@/shared/ui";
-import { Share2Icon, ArrowRightIcon } from "@/shared/ui/icons";
+import { Card } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
-import { SPRING_CONFIGS, TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
+import { TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { Caption } from "../components/Caption";
 import { MicroLabel } from "../components/MicroLabel";
-import { DEMO_INVOICE } from "../constants/demo-invoice";
+import { DEMO_INVOICE, DEMO_FROM_ADDRESS } from "../constants/demo-invoice";
 
 // Creative brief §2: Alex · UI Design · $250 USDC · Arbitrum
 const INVOICE_FROM = "Alex";
@@ -28,22 +26,23 @@ const INVOICE_AMOUNT = "250.00";
 const INVOICE_TOKEN = "USDC";
 const INVOICE_NETWORK = "Arbitrum";
 
-// Phase frames — v2 compressed to 330-frame (11s) envelope per plan-v4 Task 6.
-// Narrative beats finish by frame 270, leaving 60 frames to settle before cross-fade.
+// Phase frames — round 3 compressed timeline: each field appears sequentially
+// so the viewer follows the form being filled out naturally.
 const FROM_START = 15;
-const TOKEN_APPEAR = 45;
-const NETWORK_APPEAR = 75;
-const LINE_ITEM_APPEAR = 105;
-const BUTTON_APPEAR = 210;
-const BUTTON_CLICK_FRAME = 270;
+const WALLET_APPEAR = 30;
+const CLIENT_APPEAR = 45;
+const LINE_DESC_APPEAR = 60;
+const LINE_PRICE_APPEAR = 75;
+const NETWORK_APPEAR = 90;
+const TOKEN_APPEAR = 105;
+const BUTTON_VISIBLE = 120;
 
-// Form scroll keyframes — the real InvoiceFormView renders 7 sections
-// (Metadata, From, Client, LineItems, Payment, LinkOptions, Generate), which
-// overflows the scene's form pane. We animate a translateY on the inner form
-// so the viewer's eye follows the narrative beat: top → middle → bottom.
-// Values tuned by eye from `remotion still` captures at each keyframe.
-const SCROLL_FRAMES = [0, 90, 180, 270];
-const SCROLL_OFFSETS = [0, -320, -640, -880];
+// Form scroll keyframes — animate translateY so the viewer's eye follows
+// the form being filled: top (from/wallet) → client → line items →
+// network/token/generate button at the bottom.
+// Offsets tuned to show Generate button at frame 120+.
+const SCROLL_FRAMES = [0, 40, 80, 120];
+const SCROLL_OFFSETS = [0, -200, -400, -560];
 
 /** Typewriter: reveal `text` char by char starting at `startFrame` */
 const typewrite = (text: string, frame: number, startFrame: number): string => {
@@ -54,56 +53,63 @@ const typewrite = (text: string, frame: number, startFrame: number): string => {
 
 export const CreateScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { width, height } = useVideoConfig();
 
-  // Frame-driven snapshot for the real InvoiceFormView. Re-compute only when
-  // frame crosses a phase boundary; within a phase the typewriter string is
-  // the only thing moving so useMemo keyed on `frame` is correct here.
+  // Frame-driven snapshot for the real InvoiceFormView.
   const viewValue = useMemo(() => {
     const fromName = typewrite(INVOICE_FROM, frame, FROM_START);
-    const tokenSymbol = frame >= TOKEN_APPEAR ? INVOICE_TOKEN : undefined;
-    const networkLabel = frame >= NETWORK_APPEAR ? INVOICE_NETWORK : undefined;
-    const lineItems = frame >= LINE_ITEM_APPEAR
-      ? [{ description: INVOICE_ITEM, quantity: 1, rate: INVOICE_AMOUNT }]
+    const walletAddress = frame >= WALLET_APPEAR ? DEMO_FROM_ADDRESS : undefined;
+    const client = frame >= CLIENT_APPEAR ? { name: "Acme Corp" } : undefined;
+
+    // Line item appears progressively: description first, then rate (price)
+    const lineItems = frame >= LINE_DESC_APPEAR
+      ? [{
+          description: INVOICE_ITEM,
+          quantity: 1,
+          rate: frame >= LINE_PRICE_APPEAR ? INVOICE_AMOUNT : undefined,
+        }]
       : undefined;
+
+    const networkLabel = frame >= NETWORK_APPEAR ? INVOICE_NETWORK : undefined;
+    const tokenSymbol = frame >= TOKEN_APPEAR ? INVOICE_TOKEN : undefined;
+
     return {
       invoiceId: "VP-0001",
-      from: fromName ? { name: fromName } : undefined,
+      from: fromName
+        ? { name: fromName, ...(walletAddress && { walletAddress }) }
+        : undefined,
+      ...(client && { client }),
       ...(lineItems && { lineItems }),
-      ...(tokenSymbol && { tokenSymbol }),
       ...(networkLabel && { networkLabel }),
+      ...(tokenSymbol && { tokenSymbol }),
       ...(frame >= NETWORK_APPEAR && { chainId: 42161 }),
       magicDustEnabled: true,
     };
   }, [frame]);
 
-  // Focused field drives the violet ring — simulates the "user typing here"
-  // beat during the typewriter flow. Undefined once everything is filled in.
-  const focusedField: "from" | "token" | "network" | "lineItem" | undefined =
-    frame < TOKEN_APPEAR
+  // Focused field drives the violet ring — simulates the "user typing here" beat.
+  const focusedField: "from" | "client" | "lineItem" | "token" | "network" | undefined =
+    frame < WALLET_APPEAR
       ? "from"
-      : frame < NETWORK_APPEAR
-        ? "token"
-        : frame < LINE_ITEM_APPEAR
-          ? "network"
-          : frame < LINE_ITEM_APPEAR + 45
+      : frame < CLIENT_APPEAR
+        ? "from"
+        : frame < LINE_DESC_APPEAR
+          ? "client"
+          : frame < NETWORK_APPEAR
             ? "lineItem"
-            : undefined;
+            : frame < TOKEN_APPEAR
+              ? "network"
+              : frame < BUTTON_VISIBLE
+                ? "token"
+                : undefined;
 
-  // "Generate Link" button — the real InvoiceFormView renders it when
-  // showGenerateButton is true. The pulse / click-scale glow is an overlay
-  // behind the form so we can still drive a narrative beat without wrapping
-  // the real Button.
-  const buttonScale = frame >= BUTTON_CLICK_FRAME
-    ? spring({ frame: frame - BUTTON_CLICK_FRAME, fps, config: SPRING_CONFIGS.snappy })
-    : 0;
-  const buttonGlowOpacity = interpolate(
-    Math.sin(frame * 0.08),
-    [-1, 1],
-    [0.3, 0.8],
-  );
+  // Violet glow overlay behind the card — pulses once Generate button appears.
+  const buttonGlowOpacity =
+    frame >= BUTTON_VISIBLE
+      ? interpolate(Math.sin(frame * 0.08), [-1, 1], [0.3, 0.7])
+      : 0;
 
-  // Paper preview layout — depends only on composition size (P1.3 memoized).
+  // Paper preview layout — depends only on composition size.
   const paperLayout = useMemo(() => {
     const containerW = width * 0.38;
     const containerH = height * 0.8;
@@ -124,9 +130,25 @@ export const CreateScene: React.FC = () => {
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackground />
 
+      {/* Void glow overlay behind the form card — pulses when Generate button is visible */}
+      {buttonGlowOpacity > 0 && (
+        <div
+          style={{
+            position: "absolute",
+            left: width * 0.06 - 24,
+            top: height * 0.06 - 24,
+            width: width * 0.36 + 48,
+            height: height * 0.88 + 48,
+            borderRadius: 32,
+            boxShadow: `0 0 60px rgba(124,58,237,${buttonGlowOpacity * 0.6}), 0 0 120px rgba(124,58,237,${buttonGlowOpacity * 0.3})`,
+            pointerEvents: "none",
+          }}
+        />
+      )}
+
       {/* Form panel (left) — real InvoiceFormView driven by frame snapshot.
-          Flex-column layout: scrollable form body + sticky GenerateButton footer.
-          Narrowed to 0.36 width per plan-v5 C5. */}
+          Uses inline GenerateButton (showGenerateButton=true) so the button
+          scrolls into view naturally as the form fills out. */}
       <Card
         variant="glass"
         style={{
@@ -134,55 +156,25 @@ export const CreateScene: React.FC = () => {
           left: width * 0.06,
           top: height * 0.06,
           width: width * 0.36,
-          maxHeight: height * 0.88,
-          padding: 0,
+          padding: 24,
           overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
         }}
       >
-        {/* Scrollable form body */}
-        <div style={{ flex: 1, overflow: "hidden", padding: 24, paddingBottom: 0 }}>
-          <div
-            style={{
-              transform: `translateY(${interpolate(
-                frame,
-                SCROLL_FRAMES,
-                SCROLL_OFFSETS,
-                { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-              )}px)`,
-            }}
-          >
-            <InvoiceFormView
-              value={viewValue}
-              {...(focusedField && { focusedField })}
-              showGenerateButton={false}
-            />
-          </div>
-        </div>
-
-        {/* Sticky Generate button footer — always visible, glow + click-scale after BUTTON_APPEAR */}
         <div
           style={{
-            padding: 16,
-            borderTop: "1px solid rgba(255,255,255,0.06)",
-            boxShadow: frame >= BUTTON_APPEAR
-              ? `0 0 ${20 + buttonGlowOpacity * 15}px ${COLORS.violetGlow}`
-              : undefined,
-            transform: frame >= BUTTON_CLICK_FRAME
-              ? `scale(${0.99 + buttonScale * 0.01})`
-              : undefined,
+            transform: `translateY(${interpolate(
+              frame,
+              SCROLL_FRAMES,
+              SCROLL_OFFSETS,
+              { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+            )}px)`,
           }}
         >
-          <Button
-            variant="glow"
-            className="h-14 w-full text-base"
-            disabled={frame < BUTTON_APPEAR}
-          >
-            <Share2Icon size={20} style={{ marginRight: 8 }} />
-            Generate Invoice Link
-            <ArrowRightIcon size={16} style={{ marginLeft: 8 }} />
-          </Button>
+          <InvoiceFormView
+            value={viewValue}
+            {...(focusedField && { focusedField })}
+            showGenerateButton={true}
+          />
         </div>
       </Card>
 
@@ -224,13 +216,11 @@ export const CreateScene: React.FC = () => {
         </div>
       </div>
 
-      {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear two-pane.
-          15fr gap (60→75) prevents bleed across cross-transition. */}
+      {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear two-pane. */}
       <Caption text="No backend" position="top" startAt={75} endAt={210} />
 
       <MicroLabel text="Filling out an invoice" startAt={0} endAt={45} x="8%" y="14%" anchor="left" />
-      <MicroLabel text="Link contains everything — recipient, amount, network" startAt={210} endAt={270} x="8%" y="84%" anchor="left" maxWidth={620} />
-      <MicroLabel text="Entire invoice encoded in the URL" startAt={240} endAt={300} x="56%" y="84%" anchor="left" />
+      <MicroLabel text="Entire invoice encoded in the URL" startAt={130} endAt={180} x="56%" y="84%" anchor="left" />
     </AbsoluteFill>
   );
 };
