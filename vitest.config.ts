@@ -84,15 +84,11 @@ export default defineConfig({
         // === SVG generators (visual output, no logic) ===
         'src/widgets/network-background/lib/svg-generators.ts',
 
-        // PixiJS/WebGL code - requires canvas environment, tested via E2E
-        '**/network-background/lib/pixi/**',
+        // WebGL/canvas code - requires canvas environment, tested via E2E
         '**/network-background/lib/generate-shapes.ts',
         '**/network-background/lib/calculate-shapes.ts',
         '**/network-background/NetworkBackground.tsx',
-        '**/network-background/PageLayout.tsx',
-        '**/network-background/PixiBackground.tsx',
         // Complex landing components with dynamic imports
-        '**/landing/ui/AnimatedBackground.tsx',
         '**/landing/ui/LandingContent.tsx',
         '**/landing/ui/BelowFoldSections.tsx',
         // Shape generators (canvas-dependent)
