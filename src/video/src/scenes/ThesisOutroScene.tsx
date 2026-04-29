@@ -80,13 +80,15 @@ export const ThesisOutroScene: React.FC = () => {
           color: COLORS.textCaption,
           display: "inline-flex",
           alignItems: "center",
-          gap: 12,
+          gap: 16,
           boxShadow: "0 8px 32px rgba(124, 58, 237, 0.25)",
         }}
       >
-        <span style={{ color: COLORS.violet }}>voidpay</span>
-        <span style={{ color: "rgba(255,255,255,0.6)" }}>.xyz</span>
-        {" "}
+        {/* voidpay + .xyz joined — no whitespace/gap between them */}
+        <span>
+          <span style={{ color: COLORS.violet }}>voidpay</span>
+          <span style={{ color: "rgba(255,255,255,0.6)" }}>.xyz</span>
+        </span>
         <span style={{ opacity: 0.6 }}>→</span>
       </div>
 
