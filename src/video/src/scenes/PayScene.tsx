@@ -41,14 +41,11 @@ const PAPER_PROPS_PAID = {
 } as const;
 
 // Phase timing (local frames since each scene starts at 0).
-// v2 envelope = 510 frames (17s). Magic Dust peak holds for 120 frames
-// (frames 240–360) per creative-brief-v2 §3 & plan-v4 Task 8.
-const MAGIC_DUST_HIGHLIGHT = 240;
-// Estimated rendered height of PaymentPanel — used to vertically center it.
-const PANEL_HEIGHT = 580;
-const MAGIC_DUST_PEAK_END = 360;
-const CONFIRMING = 360;
-const SUCCESS = 480;
+// Round 3 compressed: Magic Dust peak 180–300, confirming 300, paid 390.
+const MAGIC_DUST_HIGHLIGHT = 180;
+const MAGIC_DUST_PEAK_END = 300;
+const CONFIRMING = 300;
+const SUCCESS = 390;
 const CONFIRMATIONS_REQUIRED = 12;
 
 export const PayScene: React.FC = () => {
@@ -164,9 +161,9 @@ export const PayScene: React.FC = () => {
         style={{
           position: "absolute",
           right: width * 0.18,
-          top: (height - PANEL_HEIGHT) / 2,
+          top: "50%",
           width: 480,
-          transform: `scale(${cardScale})`,
+          transform: `translate(0, -50%) scale(${cardScale})`,
           transformOrigin: "top right",
         }}
       >
@@ -190,17 +187,17 @@ export const PayScene: React.FC = () => {
 
       {/* v2 caption per creative-brief-v2 §4 — top-mounted, aligned with
           the 120-frame Magic Dust peak (local frames 240–360). */}
-      <Caption text="Cryptographic receipt" position="top" startAt={240} endAt={360} />
+      <Caption text="Cryptographic receipt" position="top" startAt={180} endAt={300} />
 
       <MicroLabel text="No account — wallet is the identity" startAt={30} endAt={90} x="62%" y="20%" anchor="left" maxWidth={420} />
       <MicroLabel text="Network matches the invoice" startAt={120} endAt={180} x="62%" y="20%" anchor="left" maxWidth={420} />
-      <MicroLabel text="Micro-amount added for exact matching" startAt={240} endAt={330} x="8%" y="84%" anchor="left" maxWidth={520} />
-      <MicroLabel text="Verified on-chain. Payment complete." startAt={990} endAt={1050} x="62%" y="84%" anchor="left" maxWidth={520} />
+      <MicroLabel text="Micro-amount added for exact matching" startAt={180} endAt={270} x="8%" y="84%" anchor="left" maxWidth={520} />
+      <MicroLabel text="Verified on-chain. Payment complete." startAt={420} endAt={500} x="62%" y="84%" anchor="left" maxWidth={520} />
 
       {/* Narrative toasts — anchored below panel right edge (plan-v5 C3) */}
       <RemotionFakeToast variant="success" title="Wallet connected" startAt={60} hold={60} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={360} hold={90} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={480} hold={120} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={300} hold={90} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={390} hold={120} stackOffset={0} anchor="below-panel" />
     </AbsoluteFill>
   );
 };
