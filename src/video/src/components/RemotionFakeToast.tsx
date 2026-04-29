@@ -10,6 +10,9 @@ const VARIANT_STYLE: Record<Variant, { borderColor: string; iconColor: string; i
   loading: { borderColor: "rgba(168, 85, 247, 0.4)",  iconColor: "rgb(167, 139, 250)", icon: "◉" },
 };
 
+// Estimated panel height (matches PayScene PANEL_HEIGHT constant)
+const PANEL_HEIGHT = 580;
+
 type Props = {
   variant: Variant;
   title: string;
@@ -19,6 +22,12 @@ type Props = {
   fadeOut?: number;
   /** Vertical stack offset — use 0/72/144 for stacked toasts */
   stackOffset?: number;
+  /**
+   * Positioning anchor:
+   * - 'bottom-right' (default) — fixed bottom-right corner
+   * - 'below-panel' — just below the PaymentPanel's lower edge, right-aligned to panel
+   */
+  anchor?: "bottom-right" | "below-panel";
 };
 
 export const RemotionFakeToast: React.FC<Props> = ({
@@ -29,9 +38,10 @@ export const RemotionFakeToast: React.FC<Props> = ({
   hold,
   fadeOut = 12,
   stackOffset = 0,
+  anchor = "bottom-right",
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, height } = useVideoConfig();
   const local = frame - startAt;
   if (local < 0 || local > hold + fadeOut) return null;
 
@@ -46,12 +56,24 @@ export const RemotionFakeToast: React.FC<Props> = ({
 
   const style = VARIANT_STYLE[variant];
 
+  // Position based on anchor
+  const panelTop = (height - PANEL_HEIGHT) / 2;
+  const panelBottom = panelTop + PANEL_HEIGHT;
+  const positionStyle: React.CSSProperties = anchor === "below-panel"
+    ? {
+        right: "18%",
+        bottom: height - panelBottom - 80 - stackOffset,
+      }
+    : {
+        right: 24,
+        bottom: 24 + stackOffset,
+      };
+
   return (
     <div
       style={{
         position: "absolute",
-        right: 24,
-        bottom: 24 + stackOffset,
+        ...positionStyle,
         transform: `translateX(${slideX + exitX}px)`,
         opacity,
         background: "rgba(39, 39, 42, 0.85)",

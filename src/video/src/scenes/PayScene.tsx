@@ -163,7 +163,7 @@ export const PayScene: React.FC = () => {
       <div
         style={{
           position: "absolute",
-          right: width * 0.10,
+          right: width * 0.18,
           top: (height - PANEL_HEIGHT) / 2,
           width: 480,
           transform: `scale(${cardScale})`,
@@ -197,10 +197,10 @@ export const PayScene: React.FC = () => {
       <MicroLabel text="Micro-amount added for exact matching" startAt={240} endAt={330} x="8%" y="84%" anchor="left" maxWidth={520} />
       <MicroLabel text="Verified on-chain. Payment complete." startAt={990} endAt={1050} x="62%" y="84%" anchor="left" maxWidth={520} />
 
-      {/* Narrative toasts — replace the dropped MetaMask popup beat */}
-      <RemotionFakeToast variant="success" title="Wallet connected" startAt={60} hold={60} stackOffset={0} />
-      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={360} hold={90} stackOffset={0} />
-      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={480} hold={120} stackOffset={0} />
+      {/* Narrative toasts — anchored below panel right edge (plan-v5 C3) */}
+      <RemotionFakeToast variant="success" title="Wallet connected" startAt={60} hold={60} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={360} hold={90} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={480} hold={120} stackOffset={0} anchor="below-panel" />
     </AbsoluteFill>
   );
 };
