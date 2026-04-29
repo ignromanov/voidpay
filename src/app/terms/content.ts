@@ -8,7 +8,7 @@ export const termsContent = {
     title: 'Terms of Service | VoidPay',
     description:
       'VoidPay terms of service. Free, open-source, non-custodial crypto invoicing tool. No account required, no funds custody, peer-to-peer payments.',
-    lastUpdated: 'January 2026',
+    lastUpdated: 'April 2026',
   },
 
   sections: [
@@ -16,7 +16,7 @@ export const termsContent = {
       id: 'agreement',
       title: 'Agreement to Terms',
       content:
-        'By accessing or using VoidPay ("the Service"), you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not use the Service.',
+        'By accessing or using VoidPay ("the Service"), you agree to be bound by these Terms of Service. Analytics collection is subject to our Privacy Policy, which includes an opt-out mechanism available at any time via the footer toggle. If you disagree with any part of these terms, you may not use the Service.',
     },
     {
       id: 'service-description',
@@ -210,7 +210,7 @@ export const termsContent = {
       id: 'third-party',
       title: 'Third-Party Services',
       content:
-        'VoidPay integrates with third-party services including wallet providers (WalletConnect, RainbowKit), RPC providers (Alchemy, Infura), and blockchain networks. These services have their own terms of service and privacy policies that apply to your use. We are not responsible for the availability, accuracy, or conduct of these third-party services.',
+        'VoidPay integrates with third-party services including wallet providers (WalletConnect, RainbowKit), RPC providers (Alchemy, Infura), and blockchain networks. These services have their own terms of service and privacy policies that apply to your use. We are not responsible for the availability, accuracy, or conduct of these third-party services.\n\nVoidPay also operates a self-hosted analytics instance (Umami, hosted at m.voidpay.xyz on our own infrastructure) for privacy-preserving product analytics. Umami is cookie-free, collects no personal or financial data, and analytics data is never shared with third parties. You may opt out at any time via the eye icon in the footer. For a complete description of data practices, see our Privacy Policy at /privacy.',
     },
     {
       id: 'indemnification',
@@ -240,7 +240,7 @@ export const termsContent = {
       id: 'termination',
       title: 'Termination',
       content:
-        'Since there are no accounts, there is nothing to "terminate" in the traditional sense. However, we reserve the right to block access to the Service from specific IP addresses or add malicious URLs to our blocklist. Invoice URLs you\'ve already created will continue to work as they are self-contained and don\'t depend on our servers.',
+        'Since there are no accounts, there is nothing to "terminate" in the traditional sense. However, we reserve the right to block access to the Service from specific IP addresses or add malicious URLs to our blocklist. Invoice URLs you\'ve already created will continue to work as they are self-contained and don\'t depend on our servers. These abuse-prevention mechanisms are separate from and independent of any analytics data.',
     },
     {
       id: 'contact',
