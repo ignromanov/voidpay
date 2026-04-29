@@ -42,11 +42,10 @@ describe('clearAllData', () => {
     useCreatorStore.setState({
       templates: [
         {
-          id: 'tpl-1',
+          templateId: 'tpl-1',
           name: 'Test Template',
-          data: { invoiceId: 'T-001', networkId: 1, currency: 'USDC', decimals: 6 },
+          invoiceData: { invoiceId: 'T-001', networkId: 1, currency: 'USDC', decimals: 6 },
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
         },
       ],
       preferences: { defaultNetworkId: 137 },
