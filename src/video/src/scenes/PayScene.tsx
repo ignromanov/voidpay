@@ -105,10 +105,10 @@ export const PayScene: React.FC = () => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
-  // Right-pane PaymentPanel props. Hoisting the paid-state props would
-  // require conditional objects per-frame anyway, so keep them inline but
-  // only pass `txHash` when paid (undefined in pending phases).
-  const panelTxHash = panelStatus === "paid" ? DEMO_TX_HASH : undefined;
+  // Right-pane PaymentPanel props. Pass txHash also during confirming so
+  // PaidConfirmation renders with confirmation progress (0→12) instead of
+  // the "Payment detected / Verifying..." fallback (plan-v5 C2).
+  const panelTxHash = panelStatus !== "pending" ? DEMO_TX_HASH : undefined;
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
