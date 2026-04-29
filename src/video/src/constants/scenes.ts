@@ -1,6 +1,6 @@
 /** Scene durations in frames (at 30fps) — creative-brief-v2 §3 */
 export const SCENE_DURATIONS = {
-  thesisHook: 45,     // 1.5s — S0 two-beat hook (was 21)
+  thesisHook: 90,     // 3s — S0 two-beat hook doubled (round 3)
   create: 306,        // 10.2s — S1 InvoiceFormView + InvoicePaper (was 330; compensates S0 +24)
   share: 240,         // 8s   — S2 LinkTab
   pay: 510,           // 17s  — S3 PaymentPanel + InvoicePaper (includes 4s Magic Dust peak)
@@ -31,11 +31,11 @@ export const TEASER_DURATION = 450;
 
 /**
  * Magic Dust peak — global frame where S3 Pay scene shows the highlighted
- * micro-amount. S0 (45) + S1 (306) + S2 (240) = 591 start of S3. Peak
- * begins 240 frames into S3 = global frame 831. Holds 120 frames.
+ * micro-amount. S0 (90) + S1 (306) + S2 (240) = 636 start of S3. Peak
+ * begins 240 frames into S3 = global frame 876. Holds 120 frames.
  * Verify visually in Task 14 before locking.
  */
-export const MAGIC_DUST_PEAK_FRAME = 831;
+export const MAGIC_DUST_PEAK_FRAME = 876;
 export const MAGIC_DUST_PEAK_HOLD = 120; // 4s
 
 /** FPS — canonical source (also re-exported from timing.ts) */

@@ -224,10 +224,6 @@ export const CreateScene: React.FC = () => {
         </div>
       </div>
 
-      {/* Echo caption: "…is the URL." bridges S0 thesis into S1 form intro.
-          Visible frames 0–60, then gives way to "No backend" caption. */}
-      <Caption text="…is the URL." position="top" startAt={0} endAt={60} />
-
       {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear two-pane.
           15fr gap (60→75) prevents bleed across cross-transition. */}
       <Caption text="No backend" position="top" startAt={75} endAt={210} />
