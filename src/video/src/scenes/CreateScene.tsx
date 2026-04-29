@@ -13,7 +13,8 @@ import {
 } from "@/widgets/invoice-paper";
 import { InvoiceFormView } from "@/widgets/invoice-form";
 import { NetworkBackground } from "@/widgets/network-background";
-import { Card } from "@/shared/ui";
+import { Card, Button } from "@/shared/ui";
+import { Share2Icon, ArrowRightIcon } from "@/shared/ui/icons";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS, TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { Caption } from "../components/Caption";
@@ -123,44 +124,64 @@ export const CreateScene: React.FC = () => {
       <NetworkBackground />
 
       {/* Form panel (left) — real InvoiceFormView driven by frame snapshot.
-          Outer wrapper holds the button-click glow so we don't reach into
-          the widget's internal Button. */}
+          Flex-column layout: scrollable form body + sticky GenerateButton footer.
+          Narrowed to 0.36 width per plan-v5 C5. */}
       <Card
         variant="glass"
         style={{
           position: "absolute",
           left: width * 0.06,
           top: height * 0.06,
-          width: width * 0.42,
+          width: width * 0.36,
           maxHeight: height * 0.88,
-          padding: 24,
+          padding: 0,
           overflow: "hidden",
-          boxShadow: frame >= BUTTON_APPEAR
-            ? `0 0 ${20 + buttonGlowOpacity * 15}px ${COLORS.violetGlow}`
-            : undefined,
-          transform: frame >= BUTTON_CLICK_FRAME
-            ? `scale(${0.99 + buttonScale * 0.01})`
-            : undefined,
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        {/* Inner scroll shell — the real InvoiceFormView is taller than the
-            scene pane, so we animate translateY by frame to walk the viewer
-            through top → middle → bottom as sections fill in. */}
+        {/* Scrollable form body */}
+        <div style={{ flex: 1, overflow: "hidden", padding: 24, paddingBottom: 0 }}>
+          <div
+            style={{
+              transform: `translateY(${interpolate(
+                frame,
+                SCROLL_FRAMES,
+                SCROLL_OFFSETS,
+                { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+              )}px)`,
+            }}
+          >
+            <InvoiceFormView
+              value={viewValue}
+              {...(focusedField && { focusedField })}
+              showGenerateButton={false}
+            />
+          </div>
+        </div>
+
+        {/* Sticky Generate button footer — always visible, glow + click-scale after BUTTON_APPEAR */}
         <div
           style={{
-            transform: `translateY(${interpolate(
-              frame,
-              SCROLL_FRAMES,
-              SCROLL_OFFSETS,
-              { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-            )}px)`,
+            padding: 16,
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            boxShadow: frame >= BUTTON_APPEAR
+              ? `0 0 ${20 + buttonGlowOpacity * 15}px ${COLORS.violetGlow}`
+              : undefined,
+            transform: frame >= BUTTON_CLICK_FRAME
+              ? `scale(${0.99 + buttonScale * 0.01})`
+              : undefined,
           }}
         >
-          <InvoiceFormView
-            value={viewValue}
-            {...(focusedField && { focusedField })}
-            showGenerateButton={frame >= BUTTON_APPEAR}
-          />
+          <Button
+            variant="glow"
+            className="h-14 w-full text-base"
+            disabled={frame < BUTTON_APPEAR}
+          >
+            <Share2Icon size={20} style={{ marginRight: 8 }} />
+            Generate Invoice Link
+            <ArrowRightIcon size={16} style={{ marginLeft: 8 }} />
+          </Button>
         </div>
       </Card>
 
