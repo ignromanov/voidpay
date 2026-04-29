@@ -9,6 +9,7 @@ import { NetworkBackground } from "@/widgets/network-background";
 import { LinkTab } from "@/widgets/share-modal";
 import { QRTab } from "@/features/payment-qr";
 import { Card, Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui";
+import { CheckCircleIcon } from "@/shared/ui/icons";
 import { DEMO_FROM_ADDRESS } from "../constants/demo-invoice";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
@@ -68,60 +69,79 @@ export const ShareScene: React.FC = () => {
         opacity: modalOpacity,
       }} />
 
-      {/* Share modal shell — Card + shared Tabs (Link → QR driven by frame) */}
+      {/* Share modal shell — mirrors real ShareModal design (plan-v5 C4).
+          760px wide, ShareModal-style header with CheckCircleIcon + segmented tabs. */}
       <Card
         variant="glass"
         style={{
           position: "absolute",
-          left: width / 2 - 320,
+          left: width / 2 - 380,
           top: height / 2 - 280,
-          width: 640,
-          padding: 32,
+          width: 760,
+          padding: 0,
           transform: `translateY(${modalTranslateY}px)`,
           opacity: modalOpacity,
+          overflow: "hidden",
         }}
       >
+        {/* Violet top gradient bar — matches real ShareModal */}
         <div style={{
-          fontFamily: `${FONT_SANS}, sans-serif`,
-          fontSize: 22,
-          fontWeight: 700,
-          color: COLORS.textPrimary,
-          marginBottom: 20,
-        }}>
-          Share Invoice
+          height: 4,
+          background: "linear-gradient(90deg, #8b5cf6, #d946ef, #8b5cf6)",
+        }} />
+
+        {/* Header — "Invoice Ready" pattern from ShareModal.tsx */}
+        <div style={{ padding: "24px 32px 0 32px" }}>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontFamily: `${FONT_SANS}, sans-serif`,
+            fontSize: 20,
+            fontWeight: 700,
+            color: COLORS.textPrimary,
+            letterSpacing: "-0.02em",
+            marginBottom: 4,
+          }}>
+            <CheckCircleIcon size={20} style={{ color: COLORS.violet }} />
+            Invoice Ready
+          </div>
+          <div style={{
+            fontFamily: `${FONT_SANS}, sans-serif`,
+            fontSize: 14,
+            color: "rgba(113, 113, 122, 1)",
+            marginBottom: 20,
+          }}>
+            Share this link to get paid
+          </div>
         </div>
 
-        <Tabs value={tabValue} onValueChange={() => {}} className="w-full">
-          <TabsList className="bg-zinc-800 p-1 rounded-lg w-fit mb-4">
-            <TabsTrigger
-              value="link"
-              className="px-4 py-1.5 rounded-md text-zinc-400 data-[state=active]:bg-zinc-100 data-[state=active]:text-zinc-950 transition-colors"
-            >
-              Link
-            </TabsTrigger>
-            <TabsTrigger
-              value="qr"
-              className="px-4 py-1.5 rounded-md text-zinc-400 data-[state=active]:bg-zinc-100 data-[state=active]:text-zinc-950 transition-colors"
-            >
-              QR Code
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="link">
-            <LinkTab
-              url={SHARE_URL}
-              copied={copied}
-              onCopy={noop}
-              telegramUrl={TELEGRAM_URL}
-              twitterUrl={TWITTER_URL}
-              emailUrl={EMAIL_URL}
-              includeOg={false}
-              onOgToggle={noop}
-            />
-          </TabsContent>
-          <TabsContent value="qr">
-            <QRTab url={SHARE_URL} />
-          </TabsContent>
-        </Tabs>
+        {/* Tabs — real ShareModal w-full / flex-1 pattern */}
+        <div style={{ padding: "0 32px 32px 32px" }}>
+          <Tabs value={tabValue} onValueChange={() => {}} className="w-full">
+            <TabsList className="w-full mb-4">
+              <TabsTrigger value="link" className="flex-1">Link</TabsTrigger>
+              <TabsTrigger value="qr" className="flex-1">QR Code</TabsTrigger>
+            </TabsList>
+            <div style={{ minHeight: 200 }}>
+              <TabsContent value="link">
+                <LinkTab
+                  url={SHARE_URL}
+                  copied={copied}
+                  onCopy={noop}
+                  telegramUrl={TELEGRAM_URL}
+                  twitterUrl={TWITTER_URL}
+                  emailUrl={EMAIL_URL}
+                  includeOg={false}
+                  onOgToggle={noop}
+                />
+              </TabsContent>
+              <TabsContent value="qr">
+                <QRTab url={SHARE_URL} />
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
       </Card>
 
       {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear modal. */}
