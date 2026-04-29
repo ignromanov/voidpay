@@ -17,6 +17,7 @@ import { Card } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS, TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { Caption } from "../components/Caption";
+import { MicroLabel } from "../components/MicroLabel";
 import { DEMO_INVOICE } from "../constants/demo-invoice";
 
 // Creative brief §2: Alex · UI Design · $250 USDC · Arbitrum
@@ -205,6 +206,10 @@ export const CreateScene: React.FC = () => {
           5s visible hold (60→210 + 15fr fade) to weight the thesis beat and
           stay readable through mid-scene form population. */}
       <Caption text="No backend" position="top" startAt={60} endAt={210} />
+
+      <MicroLabel text="Filling out an invoice" startAt={0} endAt={45} x="8%" y="14%" anchor="left" />
+      <MicroLabel text="Link contains everything — recipient, amount, network" startAt={210} endAt={270} x="8%" y="84%" anchor="left" maxWidth={620} />
+      <MicroLabel text="Entire invoice encoded in the URL" startAt={240} endAt={300} x="56%" y="84%" anchor="left" />
     </AbsoluteFill>
   );
 };
