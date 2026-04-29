@@ -1,7 +1,7 @@
 /** Scene durations in frames (at 30fps) — creative-brief-v2 §3 */
 export const SCENE_DURATIONS = {
-  thesisHook: 21,     // 0.7s — S0 black frame Complication hook
-  create: 330,        // 11s  — S1 InvoiceFormView + InvoicePaper
+  thesisHook: 45,     // 1.5s — S0 two-beat hook (was 21)
+  create: 306,        // 10.2s — S1 InvoiceFormView + InvoicePaper (was 330; compensates S0 +24)
   share: 240,         // 8s   — S2 LinkTab
   pay: 510,           // 17s  — S3 PaymentPanel + InvoicePaper (includes 4s Magic Dust peak)
   thesisOutro: 150,   // 5s   — S4 outro card
@@ -14,7 +14,7 @@ export const TRANSITION_DURATIONS = {
 
 /**
  * Primary composition duration = 1350 frames (45s @ 30fps).
- * Sum of scenes = 21 + 330 + 240 + 510 + 150 = 1251.
+ * Sum of scenes = 45 + 306 + 240 + 510 + 150 = 1251.
  * Transition overlaps = 20 * 4 = 80.
  * TransitionSeries overlaps scenes by transition duration, so effective
  * composition length = scene sum - transition sum = 1251 - 80 = 1171.
@@ -31,7 +31,7 @@ export const TEASER_DURATION = 450;
 
 /**
  * Magic Dust peak — global frame where S3 Pay scene shows the highlighted
- * micro-amount. S0 (21) + S1 (330) + S2 (240) = 591 start of S3. Peak
+ * micro-amount. S0 (45) + S1 (306) + S2 (240) = 591 start of S3. Peak
  * begins 240 frames into S3 = global frame 831. Holds 120 frames.
  * Verify visually in Task 14 before locking.
  */
