@@ -70,7 +70,7 @@ export const ThesisOutroScene: React.FC = () => {
         style={{
           transform: `translateY(${(1 - urlEnter) * 20}px)`,
           opacity: urlEnter,
-          border: "1px solid rgba(255,255,255,0.2)",
+          border: `1px solid rgba(124, 58, 237, 0.5)`,
           borderRadius: 999,
           padding: "14px 28px",
           fontFamily: `${FONT_SANS}, sans-serif`,
@@ -80,9 +80,13 @@ export const ThesisOutroScene: React.FC = () => {
           display: "inline-flex",
           alignItems: "center",
           gap: 12,
+          boxShadow: "0 8px 32px rgba(124, 58, 237, 0.25)",
         }}
       >
-        voidpay.xyz <span style={{ opacity: 0.6 }}>→</span>
+        <span style={{ color: COLORS.violet }}>voidpay</span>
+        <span style={{ color: "rgba(255,255,255,0.6)" }}>.xyz</span>
+        {" "}
+        <span style={{ opacity: 0.6 }}>→</span>
       </div>
     </AbsoluteFill>
   );
