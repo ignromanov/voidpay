@@ -135,5 +135,3 @@ export type { NetworkPalette, NetworkThemeName } from './constants/network-palet
 // WalletButton - Moved to features/wallet-connect (FSD: depends on Web3 feature)
 // Use: import { LazyWalletButton, WalletButton } from '@/features/wallet-connect'
 
-// PageLayout moved to widgets/network-background (FSD: can't import widgets from shared)
-// Use: import { PageLayout } from '@/widgets/network-background'
