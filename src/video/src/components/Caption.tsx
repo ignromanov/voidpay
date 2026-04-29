@@ -1,5 +1,4 @@
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { COLORS } from "../constants/colors";
 import { FONT_SANS } from "../fonts";
 import { SPRING_CONFIGS } from "../constants/timing";
 

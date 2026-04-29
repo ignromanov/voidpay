@@ -83,7 +83,7 @@ export const CreateScene: React.FC = () => {
         ? "token"
         : frame < LINE_ITEM_APPEAR
           ? "network"
-          : frame < TOTAL_APPEAR
+          : frame < LINE_ITEM_APPEAR + 45
             ? "lineItem"
             : undefined;
 
