@@ -46,11 +46,13 @@ describe('Footer', () => {
   })
 
   describe('styling', () => {
-    it('has correct base classes for glass effect', () => {
+    it('has correct base classes for sticky-bottom flow layout', () => {
       const { container } = render(<Footer />)
 
       const footer = container.querySelector('footer')
-      expect(footer).toHaveClass('fixed', 'backdrop-blur-xl')
+      expect(footer).toHaveClass('bg-zinc-950', 'border-t')
+      expect(footer).not.toHaveClass('fixed')
+      expect(footer).not.toHaveClass('backdrop-blur-xl')
     })
 
     it('is hidden for print', () => {
