@@ -92,7 +92,7 @@ export const ThesisOutroScene: React.FC = () => {
         <span style={{ opacity: 0.6 }}>→</span>
       </div>
 
-      <MicroLabel text="No login. No data stored. Works forever." startAt={30} endAt={100} x="50%" y="72%" anchor="center" maxWidth={720} fontSize={22} />
+      <MicroLabel text="No login. No data stored. Works forever." startAt={10} endAt={75} x="50%" y="72%" anchor="center" maxWidth={720} fontSize={22} />
     </AbsoluteFill>
   );
 };

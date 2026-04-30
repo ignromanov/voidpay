@@ -154,11 +154,11 @@ export const ShareScene: React.FC = () => {
       </Card>
 
       {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear modal. */}
-      <Caption text="No signup" position="top" startAt={0} endAt={90} />
+      <Caption text="No signup" position="top" startAt={25} endAt={115} />
 
-      <MicroLabel text="The # fragment never leaves your browser" startAt={0} endAt={60} x="50%" y="84%" anchor="center" maxWidth={720} />
-      <MicroLabel text="Same invoice — scannable format" startAt={150} endAt={210} x="50%" y="84%" anchor="center" />
-      <MicroLabel text="Link contains everything — recipient, amount, network" startAt={70} endAt={150} x="50%" y="14%" anchor="center" maxWidth={620} />
+      <MicroLabel text="Link contains everything — recipient, amount, network" startAt={5} endAt={65} x="50%" y="84%" anchor="center" maxWidth={620} />
+      <MicroLabel text="The # fragment never leaves your browser" startAt={70} endAt={130} x="50%" y="14%" anchor="center" maxWidth={720} />
+      <MicroLabel text="Same invoice — scannable format" startAt={95} endAt={170} x="50%" y="84%" anchor="center" />
     </AbsoluteFill>
   );
 };
