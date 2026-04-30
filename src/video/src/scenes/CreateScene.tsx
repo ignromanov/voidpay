@@ -26,22 +26,22 @@ const INVOICE_AMOUNT = "250.00";
 const INVOICE_TOKEN = "USDC";
 const INVOICE_NETWORK = "Arbitrum";
 
-// Phase frames — round 3 compressed timeline: each field appears sequentially
-// so the viewer follows the form being filled out naturally.
-const FROM_START = 15;
-const WALLET_APPEAR = 30;
-const CLIENT_APPEAR = 45;
-const LINE_DESC_APPEAR = 60;
-const LINE_PRICE_APPEAR = 75;
-const NETWORK_APPEAR = 90;
-const TOKEN_APPEAR = 105;
-const BUTTON_VISIBLE = 120;
+// Phase frames — round 4: Invoice No + Dates appear first so the viewer
+// understands what document this is before the form fills out.
+const INVOICE_NO_APPEAR = 10;
+const DATES_APPEAR = 25;
+const FROM_START = 35;
+const WALLET_APPEAR = 50;
+const CLIENT_APPEAR = 65;
+const LINE_DESC_APPEAR = 80;
+const LINE_PRICE_APPEAR = 95;
+const NETWORK_APPEAR = 110;
+const TOKEN_APPEAR = 120;
+const BUTTON_VISIBLE = 130;
 
-// Form scroll keyframes — animate translateY so the viewer's eye follows
-// the form being filled: top (from/wallet) → client → line items →
-// network/token/generate button at the bottom.
-// Offsets tuned to show Generate button at frame 120+.
-const SCROLL_FRAMES = [0, 40, 80, 120];
+// Form scroll keyframes — delayed by 10fr so the form holds while
+// the "is the URL" cross-fade from S0 completes before scrolling begins.
+const SCROLL_FRAMES = [10, 50, 90, 130];
 const SCROLL_OFFSETS = [0, -200, -400, -560];
 
 /** Typewriter: reveal `text` char by char starting at `startFrame` */
@@ -74,7 +74,11 @@ export const CreateScene: React.FC = () => {
     const tokenSymbol = frame >= TOKEN_APPEAR ? INVOICE_TOKEN : undefined;
 
     return {
-      invoiceId: "VP-0001",
+      ...(frame >= INVOICE_NO_APPEAR && { invoiceId: DEMO_INVOICE.invoiceId }),
+      ...(frame >= DATES_APPEAR && {
+        issuedAt: "2026-04-18",
+        dueAt: "2026-04-25",
+      }),
       from: fromName
         ? { name: fromName, ...(walletAddress && { walletAddress }) }
         : undefined,
@@ -88,20 +92,15 @@ export const CreateScene: React.FC = () => {
   }, [frame]);
 
   // Focused field drives the violet ring — simulates the "user typing here" beat.
+  // Invoice No / Dates aren't part of focusedField enum, so no ring until FROM_START.
   const focusedField: "from" | "client" | "lineItem" | "token" | "network" | undefined =
-    frame < WALLET_APPEAR
-      ? "from"
-      : frame < CLIENT_APPEAR
-        ? "from"
-        : frame < LINE_DESC_APPEAR
-          ? "client"
-          : frame < NETWORK_APPEAR
-            ? "lineItem"
-            : frame < TOKEN_APPEAR
-              ? "network"
-              : frame < BUTTON_VISIBLE
-                ? "token"
-                : undefined;
+    frame < FROM_START ? undefined :
+    frame < CLIENT_APPEAR ? "from" :
+    frame < LINE_DESC_APPEAR ? "client" :
+    frame < NETWORK_APPEAR ? "lineItem" :
+    frame < TOKEN_APPEAR ? "network" :
+    frame < BUTTON_VISIBLE ? "token" :
+    undefined;
 
   // Violet glow overlay behind the card — pulses once Generate button appears.
   const buttonGlowOpacity =
@@ -219,8 +218,8 @@ export const CreateScene: React.FC = () => {
       {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear two-pane. */}
       <Caption text="No backend" position="top" startAt={75} endAt={210} />
 
-      <MicroLabel text="Filling out an invoice" startAt={0} endAt={45} x="8%" y="14%" anchor="left" />
-      <MicroLabel text="Entire invoice encoded in the URL" startAt={130} endAt={180} x="56%" y="84%" anchor="left" />
+      <MicroLabel text="Filling out an invoice" startAt={5} endAt={55} x="8%" y="14%" anchor="left" />
+      <MicroLabel text="Entire invoice encoded in the URL" startAt={140} endAt={190} x="56%" y="84%" anchor="left" />
     </AbsoluteFill>
   );
 };
