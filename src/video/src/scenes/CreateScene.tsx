@@ -102,11 +102,13 @@ export const CreateScene: React.FC = () => {
     frame < BUTTON_VISIBLE ? "token" :
     undefined;
 
-  // Violet glow overlay behind the card — pulses once Generate button appears.
-  const buttonGlowOpacity =
-    frame >= BUTTON_VISIBLE
-      ? interpolate(Math.sin(frame * 0.08), [-1, 1], [0.3, 0.7])
-      : 0;
+  // Violet glow overlay behind the card — base glow always visible; pulse
+  // intensifies after Generate button appears.
+  const baseGlow = 0.25;
+  const pulseDelta = frame >= BUTTON_VISIBLE
+    ? interpolate(Math.sin(frame * 0.08), [-1, 1], [0.05, 0.4])
+    : 0;
+  const buttonGlowOpacity = baseGlow + pulseDelta;
 
   // Paper preview layout — depends only on composition size.
   const paperLayout = useMemo(() => {
@@ -129,21 +131,19 @@ export const CreateScene: React.FC = () => {
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackground />
 
-      {/* Void glow overlay behind the form card — pulses when Generate button is visible */}
-      {buttonGlowOpacity > 0 && (
-        <div
-          style={{
-            position: "absolute",
-            left: width * 0.06 - 24,
-            top: height * 0.06 - 24,
-            width: width * 0.36 + 48,
-            height: height * 0.88 + 48,
-            borderRadius: 32,
-            boxShadow: `0 0 60px rgba(124,58,237,${buttonGlowOpacity * 0.6}), 0 0 120px rgba(124,58,237,${buttonGlowOpacity * 0.3})`,
-            pointerEvents: "none",
-          }}
-        />
-      )}
+      {/* Void glow overlay behind the form card — always visible, pulses when Generate button appears */}
+      <div
+        style={{
+          position: "absolute",
+          left: width * 0.06 - 24,
+          top: height * 0.06 - 24,
+          width: width * 0.36 + 48,
+          height: height * 0.88 + 48,
+          borderRadius: 32,
+          boxShadow: `0 0 60px rgba(124,58,237,${buttonGlowOpacity * 0.6}), 0 0 120px rgba(124,58,237,${buttonGlowOpacity * 0.3})`,
+          pointerEvents: "none",
+        }}
+      />
 
       {/* Form panel (left) — real InvoiceFormView driven by frame snapshot.
           Uses inline GenerateButton (showGenerateButton=true) so the button
@@ -155,6 +155,7 @@ export const CreateScene: React.FC = () => {
           left: width * 0.06,
           top: height * 0.06,
           width: width * 0.36,
+          height: height * 0.88,
           padding: 24,
           overflow: "hidden",
         }}
