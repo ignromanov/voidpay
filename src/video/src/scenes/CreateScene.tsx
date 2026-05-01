@@ -26,22 +26,20 @@ const INVOICE_AMOUNT = "250.00";
 const INVOICE_TOKEN = "USDC";
 const INVOICE_NETWORK = "Arbitrum";
 
-// Phase frames — round 4: Invoice No + Dates appear first so the viewer
-// understands what document this is before the form fills out.
-const INVOICE_NO_APPEAR = 10;
-const DATES_APPEAR = 25;
-const FROM_START = 35;
-const WALLET_APPEAR = 50;
-const CLIENT_APPEAR = 65;
-const LINE_DESC_APPEAR = 80;
-const LINE_PRICE_APPEAR = 95;
-const NETWORK_APPEAR = 110;
-const TOKEN_APPEAR = 120;
-const BUTTON_VISIBLE = 130;
+// Phase frames — round 5: pulled earlier so all fields populated by frame 125.
+const INVOICE_NO_APPEAR = 5;
+const DATES_APPEAR = 20;
+const FROM_START = 30;
+const WALLET_APPEAR = 45;
+const CLIENT_APPEAR = 60;
+const LINE_DESC_APPEAR = 75;
+const LINE_PRICE_APPEAR = 90;
+const NETWORK_APPEAR = 105;
+const TOKEN_APPEAR = 115;
+const BUTTON_VISIBLE = 125;
 
-// Form scroll keyframes — delayed by 10fr so the form holds while
-// the "is the URL" cross-fade from S0 completes before scrolling begins.
-const SCROLL_FRAMES = [10, 50, 90, 130];
+// Form scroll keyframes — finish all scroll motion at frame 80 (= mp4 5.000s).
+const SCROLL_FRAMES = [10, 35, 60, 80];
 const SCROLL_OFFSETS = [0, -200, -400, -560];
 
 /** Typewriter: reveal `text` char by char starting at `startFrame` */
@@ -148,6 +146,7 @@ export const CreateScene: React.FC = () => {
       {/* Form panel (left) — real InvoiceFormView driven by frame snapshot.
           Uses inline GenerateButton (showGenerateButton=true) so the button
           scrolls into view naturally as the form fills out. */}
+      {/* Round 5 — button press feedback at frame 140 (mp4 7.000s); S1 ends at frame 170 (mp4 8.000s). */}
       <Card
         variant="glass"
         style={{
@@ -158,6 +157,7 @@ export const CreateScene: React.FC = () => {
           height: height * 0.88,
           padding: 24,
           overflow: "hidden",
+          transform: `scale(${interpolate(frame, [138, 140, 155, 157], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
         }}
       >
         <div
@@ -219,8 +219,8 @@ export const CreateScene: React.FC = () => {
       {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear two-pane. */}
       <Caption text="No backend" position="top" startAt={75} endAt={210} />
 
-      <MicroLabel text="Filling out an invoice" startAt={5} endAt={55} x="8%" y="14%" anchor="left" />
-      <MicroLabel text="Entire invoice encoded in the URL" startAt={140} endAt={190} x="56%" y="84%" anchor="left" />
+      <MicroLabel text="Filling out an invoice" startAt={5} endAt={25} x="8%" y="14%" anchor="left" />
+      <MicroLabel text="No signup" startAt={26} endAt={65} x="50%" y="14%" anchor="center" />
     </AbsoluteFill>
   );
 };

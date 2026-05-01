@@ -1,10 +1,10 @@
 /** Scene durations in frames (at 30fps) — creative-brief-v2 §3 */
 export const SCENE_DURATIONS = {
-  thesisHook: 90,     // 3s — S0 two-beat hook doubled (round 3)
-  create: 306,        // 10.2s — S1 InvoiceFormView + InvoicePaper (was 330; compensates S0 +24)
-  share: 240,         // 8s   — S2 LinkTab
-  pay: 510,           // 17s  — S3 PaymentPanel + InvoicePaper (includes 4s Magic Dust peak)
-  thesisOutro: 150,   // 5s   — S4 outro card
+  thesisHook: 90,       // 3s    — S0 two-beat hook doubled (round 3)
+  create: 170,          // 5.67s — S1 round 5: was 306; freed 136fr to thesisOutro buffer
+  share: 240,           // 8s    — S2 LinkTab
+  pay: 510,             // 17s   — S3 PaymentPanel + InvoicePaper (includes 4s Magic Dust peak)
+  thesisOutro: 286,     // 9.53s — S4 round 5: was 150; +136 buffer pending S2/S3/S4 redistribution after p8
 } as const;
 
 /** Transition durations in frames (cross-fade only for v2) */
@@ -14,15 +14,10 @@ export const TRANSITION_DURATIONS = {
 
 /**
  * Primary composition duration = 1350 frames (45s @ 30fps).
- * Sum of scenes = 45 + 306 + 240 + 510 + 150 = 1251.
+ * Sum of scenes = 90 + 170 + 240 + 510 + 286 = 1296 (round 5).
  * Transition overlaps = 20 * 4 = 80.
- * TransitionSeries overlaps scenes by transition duration, so effective
- * composition length = scene sum - transition sum = 1251 - 80 = 1171.
- * Trailing breathing buffer = 179 frames carried on the last scene.
- *
- * creative-brief-v2 §3 locks 1350; we add trailing buffer inside S4
- * (thesis outro holds black + card for full 150 frames, then fade
- * to absolute black for remaining 179 frames).
+ * Effective composition length = 1296 - 80 = 1216.
+ * Trailing breathing buffer carried in S4 = 1350 - 1216 = 134 frames black hold.
  */
 export const TOTAL_DURATION = 1350;
 
@@ -31,11 +26,12 @@ export const TEASER_DURATION = 450;
 
 /**
  * Magic Dust peak — global frame where S3 Pay scene shows the highlighted
- * micro-amount. S0 (90) + S1 (306) + S2 (240) = 636 start of S3. Peak
- * begins 240 frames into S3 = global frame 876. Holds 120 frames.
+ * micro-amount. S0 ends at 90, S1 starts at 70 (overlap), S1 ends at 240 (70+170).
+ * S2 starts at 220, ends at 460 (220+240). S3 starts at 440.
+ * Peak begins 240 frames into S3 = global frame 440 + 240 = 680. Holds 120 frames.
  * Verify visually in Task 14 before locking.
  */
-export const MAGIC_DUST_PEAK_FRAME = 876;
+export const MAGIC_DUST_PEAK_FRAME = 680;  // round 5 — was 876; recomputed for new S1=170
 export const MAGIC_DUST_PEAK_HOLD = 120; // 4s
 
 /** FPS — canonical source (also re-exported from timing.ts) */

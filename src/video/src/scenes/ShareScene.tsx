@@ -14,7 +14,6 @@ import { DEMO_FROM_ADDRESS, DEMO_INVOICE } from "../constants/demo-invoice";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
-import { Caption } from "../components/Caption";
 import { MicroLabel } from "../components/MicroLabel";
 
 // Full URL — 4x longer hash payload (~560 chars) so the LinkTab URL visibly
@@ -153,10 +152,7 @@ export const ShareScene: React.FC = () => {
         </div>
       </Card>
 
-      {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear modal. */}
-      <Caption text="No signup" position="top" startAt={25} endAt={115} />
-
-      <MicroLabel text="Link contains everything — recipient, amount, network" startAt={5} endAt={65} x="50%" y="84%" anchor="center" maxWidth={620} />
+      <MicroLabel text="Entire invoice encoded in the URL — recipient, amount, network" startAt={5} endAt={65} x="50%" y="84%" anchor="center" maxWidth={720} />
       <MicroLabel text="The # fragment never leaves your browser" startAt={70} endAt={130} x="50%" y="14%" anchor="center" maxWidth={720} />
       <MicroLabel text="Same invoice — scannable format" startAt={95} endAt={170} x="50%" y="84%" anchor="center" />
     </AbsoluteFill>
