@@ -248,8 +248,9 @@ export const CreateScene: React.FC = () => {
 
       {/* Filling MicroLabel — round 6: covers full scroll+fill window 5-70. */}
       <MicroLabel text="Filling out an invoice" startAt={5} endAt={70} x="8%" y="14%" anchor="left" />
-      {/* No login persistent label — round 6 D4: starts S1-local 126 (= mp4 06.533s), persists into S2 (see ShareScene). y=14% top-center; Captions sit higher at position="top" so vertical stack is non-conflicting. */}
-      <MicroLabel text="No login. No data stored." startAt={126} endAt={170} x="50%" y="14%" anchor="center" maxWidth={520} />
+      {/* No login persistent label — round 7: bottom-left so it doesn't conflict
+          with Caption "No signup" 145-210 occupying top. Continues into S2 (ShareScene). */}
+      <MicroLabel text="No login. No data stored." startAt={126} endAt={170} x="8%" y="84%" anchor="left" maxWidth={520} />
     </AbsoluteFill>
   );
 };
