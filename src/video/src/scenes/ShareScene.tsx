@@ -152,6 +152,8 @@ export const ShareScene: React.FC = () => {
         </div>
       </Card>
 
+      {/* No login persistent label — round 6 D4: continues from S1 across cross-fade. Same x/y/anchor as S1 (CreateScene.tsx) for visual continuity. */}
+      <MicroLabel text="No login. No data stored." startAt={0} endAt={80} x="50%" y="14%" anchor="center" maxWidth={520} />
       <MicroLabel text="Entire invoice encoded in the URL — recipient, amount, network" startAt={5} endAt={65} x="50%" y="84%" anchor="center" maxWidth={720} />
       <MicroLabel text="The # fragment never leaves your browser" startAt={70} endAt={130} x="50%" y="14%" anchor="center" maxWidth={720} />
       <MicroLabel text="Same invoice — scannable format" startAt={95} endAt={170} x="50%" y="84%" anchor="center" />
