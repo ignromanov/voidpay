@@ -71,6 +71,11 @@ const config = [
 
       // React Hooks rules
       ...pluginReactHooks.configs.recommended.rules,
+      // React Compiler rules from hooks v7 — adoption deferred to GH#212
+      // (separate follow-up spec, line 112 of spec 054)
+      'react-hooks/refs': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/incompatible-library': 'off',
 
       // Next.js rules (recommended + core-web-vitals)
       ...pluginNext.configs.recommended.rules,
