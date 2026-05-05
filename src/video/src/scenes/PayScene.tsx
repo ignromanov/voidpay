@@ -12,7 +12,8 @@ import {
   INVOICE_BASE_HEIGHT,
 } from "@/widgets/invoice-paper";
 import { PaymentPanel } from "@/widgets/payment-panel";
-import { Button } from "@/shared/ui";
+import { SmartPayButtonView } from "@/features/payment";
+import type { PaymentStep, IdleSubState } from "@/features/payment";
 import { NetworkBackground } from "@/widgets/network-background";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
@@ -40,13 +41,39 @@ const PAPER_PROPS_PAID = {
   variant: "default",
 } as const;
 
-// Phase timing (local frames since each scene starts at 0).
-// Round 3 compressed: Magic Dust peak 180–300, confirming 300, paid 390.
+// Phase timing — round 6 (S3-local frames):
+//   0-90    idle:disconnected → Connect Wallet
+//  90-150   idle:wrong-network → Switch Network (press-scale at 90)
+// 150-210   idle:ready → Pay 250 USDC (press-scale at 150, Magic Dust 180-300 overlaps)
+// 210-300   sending → loading state (press-scale at 210)
+// 300-390   confirming
+// 390-510   success (paid)
+const PHASE_SWITCH_NETWORK = 90;
+const PHASE_READY = 150;
+const PHASE_SENDING = 210;
 const MAGIC_DUST_HIGHLIGHT = 180;
 const MAGIC_DUST_PEAK_END = 300;
 const CONFIRMING = 300;
 const SUCCESS = 390;
 const CONFIRMATIONS_REQUIRED = 12;
+
+const stepAt = (frame: number): { step: PaymentStep; idleSubState: IdleSubState } => {
+  if (frame >= SUCCESS) return { step: 'success', idleSubState: 'ready' };
+  if (frame >= CONFIRMING) return { step: 'confirming', idleSubState: 'ready' };
+  if (frame >= PHASE_SENDING) return { step: 'sending', idleSubState: 'ready' };
+  if (frame >= PHASE_READY) return { step: 'idle', idleSubState: 'ready' };
+  if (frame >= PHASE_SWITCH_NETWORK) return { step: 'idle', idleSubState: 'wrong-network' };
+  return { step: 'idle', idleSubState: 'disconnected' };
+};
+
+/** press-scale on transition frames; 5fr ramp 0.96→1 right after the trigger frame. */
+const pressScale = (frame: number, triggerFrame: number): number =>
+  interpolate(
+    frame,
+    [triggerFrame - 2, triggerFrame, triggerFrame + 5, triggerFrame + 7],
+    [1, 0.96, 0.96, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
 
 export const PayScene: React.FC = () => {
   const frame = useCurrentFrame();
@@ -55,11 +82,20 @@ export const PayScene: React.FC = () => {
   // Card entrance (shared by paper + panel so they rise together)
   const cardScale = spring({ frame, fps, config: SPRING_CONFIGS.smooth });
 
-  // Drive PaymentPanel's status by frame. The panel's internal StatusBadge,
-  // gradient bar, and AnimatePresence swap between pending → confirming →
-  // paid states based on this prop alone — no other wiring needed.
+  const { step, idleSubState } = stepAt(frame);
+
+  // Map PaymentStep → PaymentPanel's narrower {pending, confirming, paid} contract.
   const panelStatus: "pending" | "confirming" | "paid" =
-    frame >= SUCCESS ? "paid" : frame >= CONFIRMING ? "confirming" : "pending";
+    step === 'success' ? 'paid' :
+    step === 'confirming' ? 'confirming' :
+    'pending';
+
+  // Pick the most recent press-scale trigger frame for the active phase.
+  const ctaPressTriggerFrame =
+    step === 'sending' ? PHASE_SENDING :
+    (step === 'idle' && idleSubState === 'ready') ? PHASE_READY :
+    (step === 'idle' && idleSubState === 'wrong-network') ? PHASE_SWITCH_NETWORK :
+    -1; // 'connect' phase has no press trigger (initial state)
 
   // Confirmation progress during the confirming phase. Clamped 0→12 (standard
   // Arbitrum finality requirement, matches real PaymentPanel's default).
@@ -102,10 +138,8 @@ export const PayScene: React.FC = () => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
-  // Right-pane PaymentPanel props. Pass txHash also during confirming so
-  // PaidConfirmation renders with confirmation progress (0→12) instead of
-  // the "Payment detected / Verifying..." fallback (plan-v5 C2).
-  const panelTxHash = panelStatus !== "pending" ? DEMO_TX_HASH : undefined;
+  // Real flow: hash exists once tx is submitted (after sending → confirming).
+  const panelTxHash = step === 'confirming' || step === 'success' ? DEMO_TX_HASH : undefined;
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
@@ -176,11 +210,27 @@ export const PayScene: React.FC = () => {
           source="received"
           finalized={panelStatus === "paid"}
         >
-          {/* ActionSlot: the Pay CTA lives inside the panel per real /pay UX. */}
-          {panelStatus === "pending" && (
-            <Button variant="void" size="lg" className="w-full">
-              Smart Pay
-            </Button>
+          {/* CTA — round 6: drives real SmartPayButtonView per-frame across 4 visible
+              payment steps. press-scale wrapper pulses on entry to switch/ready/sending
+              transitions (frames 90/150/210). View renders Connect/Switch/Pay/Sending
+              labels + spinner + progress bar from `step` + `idleSubState` alone. */}
+          {(step === 'idle' || step === 'sending') && (
+            <div
+              style={{
+                transform: ctaPressTriggerFrame >= 0
+                  ? `scale(${pressScale(frame, ctaPressTriggerFrame)})`
+                  : undefined,
+                transformOrigin: "center",
+              }}
+            >
+              <SmartPayButtonView
+                step={step}
+                idleSubState={idleSubState}
+                currency={DEMO_INVOICE.currency}
+                subtotal="250000000"
+                decimals={6}
+              />
+            </div>
           )}
         </PaymentPanel>
       </div>
@@ -189,13 +239,15 @@ export const PayScene: React.FC = () => {
           the 120-frame Magic Dust peak (local frames 240–360). */}
       <Caption text="Cryptographic receipt" position="top" startAt={180} endAt={300} />
 
-      <MicroLabel text="No account — wallet is the identity" startAt={30} endAt={90} x="62%" y="20%" anchor="left" maxWidth={420} />
-      <MicroLabel text="Network matches the invoice" startAt={120} endAt={180} x="62%" y="20%" anchor="left" maxWidth={420} />
-      <MicroLabel text="Micro-amount added for exact matching" startAt={180} endAt={270} x="8%" y="84%" anchor="left" maxWidth={520} />
-      <MicroLabel text="Verified on-chain. Payment complete." startAt={420} endAt={500} x="62%" y="84%" anchor="left" maxWidth={520} />
+      <MicroLabel text="No account — wallet is the identity" startAt={5} endAt={85} x="62%" y="20%" anchor="left" maxWidth={420} />
+      <MicroLabel text="Network matches the invoice" startAt={95} endAt={145} x="62%" y="20%" anchor="left" maxWidth={420} />
+      <MicroLabel text="Micro-amount added for exact matching" startAt={155} endAt={290} x="8%" y="84%" anchor="left" maxWidth={520} />
+      <MicroLabel text="Verified on-chain. Payment complete." startAt={395} endAt={500} x="50%" y="14%" anchor="center" maxWidth={520} />
 
-      {/* Narrative toasts — anchored below panel right edge (plan-v5 C3) */}
-      <RemotionFakeToast variant="success" title="Wallet connected" startAt={60} hold={60} stackOffset={0} anchor="below-panel" />
+      {/* Narrative toasts — anchored below panel right edge */}
+      <RemotionFakeToast variant="success" title="Wallet connected" startAt={88} hold={45} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={148} hold={45} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="loading" title="Sending transaction" startAt={208} hold={85} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={300} hold={90} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={390} hold={120} stackOffset={0} anchor="below-panel" />
     </AbsoluteFill>
