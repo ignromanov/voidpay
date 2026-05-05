@@ -39,6 +39,7 @@ export function useFinalizationTracker({
     const timeoutMs = getFinalizationTimeout(networkId)
     let cancelled = false
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: fires once at effect entry to mark tracking start, guard above ensures single call
     setTrackingState('tracking')
 
     const timeoutId = setTimeout(() => {
