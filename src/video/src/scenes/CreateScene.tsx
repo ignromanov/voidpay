@@ -12,7 +12,7 @@ import {
 } from "@/widgets/invoice-paper";
 import { InvoiceFormView } from "@/widgets/invoice-form";
 import { NetworkBackground } from "@/widgets/network-background";
-import { Card } from "@/shared/ui";
+import { Card, Button } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
 import { TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { Caption } from "../components/Caption";
@@ -144,10 +144,7 @@ export const CreateScene: React.FC = () => {
         }}
       />
 
-      {/* Form panel (left) — real InvoiceFormView driven by frame snapshot.
-          Uses inline GenerateButton (showGenerateButton=true) so the button
-          scrolls into view naturally as the form fills out. */}
-      {/* Round 5 — button press feedback at frame 140 (mp4 7.000s); S1 ends at frame 170 (mp4 8.000s). */}
+      {/* Form panel (left) — real InvoiceFormView driven by frame snapshot. */}
       <Card
         variant="glass"
         style={{
@@ -158,7 +155,6 @@ export const CreateScene: React.FC = () => {
           height: height * 0.88,
           padding: 24,
           overflow: "hidden",
-          transform: `scale(${interpolate(frame, [138, 140, 155, 157], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
         }}
       >
         <div
@@ -174,10 +170,31 @@ export const CreateScene: React.FC = () => {
           <InvoiceFormView
             value={viewValue}
             {...(focusedField && { focusedField })}
-            showGenerateButton={true}
+            showGenerateButton={false}
           />
         </div>
       </Card>
+
+      {/* Generate Invoice Link — overlay button (round 6 D3, #4 fix).
+          Placed where InvoiceFormView's internal GenerateButton would render so the
+          form looks complete. Always enabled (variant="void") so it reads as active.
+          Press-scale wrapper localized to the button so the rest of the form stays still. */}
+      {frame >= BUTTON_VISIBLE && (
+        <div
+          style={{
+            position: "absolute",
+            left: width * 0.06 + 24,
+            bottom: height * 0.06 + 24,
+            width: width * 0.36 - 48,
+            transform: `scale(${interpolate(frame, [138, 140, 155, 157], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
+            transformOrigin: "center",
+          }}
+        >
+          <Button variant="void" size="lg" className="w-full">
+            Generate Invoice Link
+          </Button>
+        </div>
+      )}
 
       {/* Preview paper (right) — real InvoicePaper, scaled to fit. */}
       <div
