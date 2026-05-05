@@ -39,9 +39,11 @@ const NETWORK_APPEAR = 56;
 const TOKEN_APPEAR = 62;
 const BUTTON_VISIBLE = 70;
 
-// Form scroll keyframes — finish all scroll motion at frame 54 (= mp4 04.133s).
-const SCROLL_FRAMES = [10, 25, 40, 54];
-const SCROLL_OFFSETS = [0, -200, -400, -560];
+// Form scroll keyframes — round 7: 1s pause (frame 30) before scroll starts so
+// fields populate visibly without immediate translation. Final offset -420
+// (was -560) so form doesn't over-scroll past the visible window.
+const SCROLL_FRAMES = [30, 38, 46, 54];
+const SCROLL_OFFSETS = [0, -130, -280, -420];
 
 /** Typewriter: reveal `text` char by char starting at `startFrame` */
 const typewrite = (text: string, frame: number, startFrame: number): string => {
