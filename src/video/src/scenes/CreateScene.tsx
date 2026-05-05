@@ -26,23 +26,26 @@ const INVOICE_AMOUNT = "250.00";
 const INVOICE_TOKEN = "USDC";
 const INVOICE_NETWORK = "Arbitrum";
 
-// Phase frames — round 6: compressed so all fields populate by frame 70
-// (= scroll-end). Filling MicroLabel covers full window 5-70.
-const INVOICE_NO_APPEAR = 5;
-const DATES_APPEAR = 15;
-const FROM_START = 22;
-const WALLET_APPEAR = 30;
-const CLIENT_APPEAR = 37;
-const LINE_DESC_APPEAR = 44;
-const LINE_PRICE_APPEAR = 50;
-const NETWORK_APPEAR = 56;
-const TOKEN_APPEAR = 62;
-const BUTTON_VISIBLE = 70;
+// Phase frames — round 8: every constant shifted +60fr from round 7.
+// First 60fr = S1 hold (form Card visible, no fields filling) so it doesn't
+// "blink" into existence. Fields begin populating at frame 65, all populated
+// by frame 130 = BUTTON_VISIBLE.
+const INVOICE_NO_APPEAR = 65;
+const DATES_APPEAR = 75;
+const FROM_START = 82;
+const WALLET_APPEAR = 90;
+const CLIENT_APPEAR = 97;
+const LINE_DESC_APPEAR = 104;
+const LINE_PRICE_APPEAR = 110;
+const NETWORK_APPEAR = 116;
+const TOKEN_APPEAR = 122;
+const BUTTON_VISIBLE = 130;
 
-// Form scroll keyframes — round 7: 1s pause (frame 30) before scroll starts so
-// fields populate visibly without immediate translation. Final offset -420
-// (was -560) so form doesn't over-scroll past the visible window.
-const SCROLL_FRAMES = [30, 38, 46, 54];
+// Form scroll keyframes — round 8: scroll motion expanded 24fr → 54fr (slower).
+// Start at frame 90 (1s after fields begin filling, sympathetic to round-7 logic).
+// End at frame 144 (= mp4 7.133s). Final offset -420 unchanged from round 7
+// (Ignat approved that depth).
+const SCROLL_FRAMES = [90, 110, 130, 144];
 const SCROLL_OFFSETS = [0, -130, -280, -420];
 
 const noop = () => {
@@ -189,7 +192,7 @@ export const CreateScene: React.FC = () => {
             <div
               style={{
                 marginTop: 16,
-                transform: `scale(${interpolate(frame, [138, 140, 155, 157], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
+                transform: `scale(${interpolate(frame, [198, 200, 215, 217], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
                 transformOrigin: "center",
               }}
             >
@@ -214,13 +217,13 @@ export const CreateScene: React.FC = () => {
           height: paperLayout.scaledH,
           opacity: interpolate(
             frame,
-            [30, 90],
+            [90, 150],
             [0, 1],
             { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
           ),
           transform: `translateY(${interpolate(
             frame,
-            [30, 90],
+            [90, 150],
             [20, 0],
             { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
           )}px)`,
@@ -242,15 +245,15 @@ export const CreateScene: React.FC = () => {
         </div>
       </div>
 
-      {/* Captions sequential per round-6 D2: No backend (75-125) → No signup (145-210). 20fr gap around No login anchor frame 126. */}
-      <Caption text="No backend" position="top" startAt={75} endAt={125} />
-      <Caption text="No signup" position="top" startAt={145} endAt={210} />
+      {/* Round 8: all label timings shifted +60fr from round 7 to align with the
+          extended S1 (260fr total). Sequential Captions remain non-overlapping;
+          "No login" still anchored ~50fr after BUTTON_VISIBLE so it appears after
+          the press feedback fires. */}
+      <Caption text="No backend" position="top" startAt={135} endAt={185} />
+      <Caption text="No signup" position="top" startAt={205} endAt={255} />
 
-      {/* Filling MicroLabel — round 6: covers full scroll+fill window 5-70. */}
-      <MicroLabel text="Filling out an invoice" startAt={5} endAt={70} x="8%" y="14%" anchor="left" />
-      {/* No login persistent label — round 7: bottom-left so it doesn't conflict
-          with Caption "No signup" 145-210 occupying top. Continues into S2 (ShareScene). */}
-      <MicroLabel text="No login. No data stored." startAt={126} endAt={170} x="8%" y="84%" anchor="left" maxWidth={520} />
+      <MicroLabel text="Filling out an invoice" startAt={65} endAt={150} x="8%" y="14%" anchor="left" />
+      <MicroLabel text="No login. No data stored." startAt={186} endAt={260} x="8%" y="84%" anchor="left" maxWidth={520} />
     </AbsoluteFill>
   );
 };
