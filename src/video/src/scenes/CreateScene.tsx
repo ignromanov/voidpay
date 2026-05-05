@@ -217,11 +217,14 @@ export const CreateScene: React.FC = () => {
         </div>
       </div>
 
-      {/* v2 caption per creative-brief-v2 §4 — top-mounted to clear two-pane. */}
-      <Caption text="No backend" position="top" startAt={75} endAt={210} />
+      {/* Captions sequential per round-6 D2: No backend (75-125) → No signup (145-210). 20fr gap around No login anchor frame 126. */}
+      <Caption text="No backend" position="top" startAt={75} endAt={125} />
+      <Caption text="No signup" position="top" startAt={145} endAt={210} />
 
-      <MicroLabel text="Filling out an invoice" startAt={5} endAt={25} x="8%" y="14%" anchor="left" />
-      <MicroLabel text="No signup" startAt={26} endAt={65} x="50%" y="14%" anchor="center" />
+      {/* Filling MicroLabel — round 6: covers full scroll+fill window 5-70. */}
+      <MicroLabel text="Filling out an invoice" startAt={5} endAt={70} x="8%" y="14%" anchor="left" />
+      {/* No login persistent label — round 6 D4: starts S1-local 126 (= mp4 06.533s), persists into S2 (see ShareScene). y=14% top-center; Captions sit higher at position="top" so vertical stack is non-conflicting. */}
+      <MicroLabel text="No login. No data stored." startAt={126} endAt={170} x="50%" y="14%" anchor="center" maxWidth={520} />
     </AbsoluteFill>
   );
 };
