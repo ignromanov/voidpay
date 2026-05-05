@@ -64,7 +64,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "lucide-static": "^1.14.0",
-    "postcss": "^8.5.10",
+    "postcss": "^8.5.14",
     "prettier": "^3.8.2",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "tailwindcss": "^4.2.2",
