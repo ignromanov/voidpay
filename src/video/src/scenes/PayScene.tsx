@@ -243,7 +243,10 @@ export const PayScene: React.FC = () => {
       <MicroLabel text="No account — wallet is the identity" startAt={5} endAt={85} x="62%" y="20%" anchor="left" maxWidth={420} />
       <MicroLabel text="Network matches the invoice" startAt={95} endAt={145} x="62%" y="20%" anchor="left" maxWidth={420} />
       <MicroLabel text="Micro-amount added for exact matching" startAt={155} endAt={290} x="8%" y="84%" anchor="left" maxWidth={520} />
-      <MicroLabel text="Verified on-chain. Payment complete." startAt={395} endAt={500} x="50%" y="14%" anchor="center" maxWidth={520} />
+      {/* Round 8: bottom-left so it doesn't collide with Caption "Cryptographic
+          receipt" (top) during the paid window. Toasters anchor below-panel right
+          edge — no collision on the bottom-left. */}
+      <MicroLabel text="Verified on-chain. Payment complete." startAt={395} endAt={500} x="8%" y="84%" anchor="left" maxWidth={520} />
 
       {/* Narrative toasts — anchored below panel right edge */}
       <RemotionFakeToast variant="success" title="Wallet connected" startAt={88} hold={45} stackOffset={0} anchor="below-panel" />
