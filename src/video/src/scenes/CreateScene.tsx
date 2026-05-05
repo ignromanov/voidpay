@@ -10,9 +10,9 @@ import {
   INVOICE_BASE_WIDTH,
   INVOICE_BASE_HEIGHT,
 } from "@/widgets/invoice-paper";
-import { InvoiceFormView } from "@/widgets/invoice-form";
+import { InvoiceFormView, GenerateButton } from "@/widgets/invoice-form";
 import { NetworkBackground } from "@/widgets/network-background";
-import { Card, Button } from "@/shared/ui";
+import { Card } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
 import { TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { Caption } from "../components/Caption";
@@ -44,6 +44,10 @@ const BUTTON_VISIBLE = 70;
 // (was -560) so form doesn't over-scroll past the visible window.
 const SCROLL_FRAMES = [30, 38, 46, 54];
 const SCROLL_OFFSETS = [0, -130, -280, -420];
+
+const noop = () => {
+  /* Remotion renders static frames — click handlers never fire */
+};
 
 /** Typewriter: reveal `text` char by char starting at `startFrame` */
 const typewrite = (text: string, frame: number, startFrame: number): string => {
@@ -146,7 +150,10 @@ export const CreateScene: React.FC = () => {
         }}
       />
 
-      {/* Form panel (left) — real InvoiceFormView driven by frame snapshot. */}
+      {/* Round 7 — Card holds form panel + button INSIDE the scroll-translated div.
+          Button uses real GenerateButton from @/widgets/invoice-form (same component
+          as production form). canGenerate forced to true once frame >= BUTTON_VISIBLE.
+          Press-scale wrapper localized to the button only. */}
       <Card
         variant="glass"
         style={{
@@ -174,29 +181,28 @@ export const CreateScene: React.FC = () => {
             {...(focusedField && { focusedField })}
             showGenerateButton={false}
           />
+
+          {/* Real GenerateButton — appears after fields populated. Inside scroll
+              container so it scrolls with the form. canGenerate=true so button is
+              visually active (not the disabled state real validation would force). */}
+          {frame >= BUTTON_VISIBLE && (
+            <div
+              style={{
+                marginTop: 16,
+                transform: `scale(${interpolate(frame, [138, 140, 155, 157], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
+                transformOrigin: "center",
+              }}
+            >
+              <GenerateButton
+                onGenerate={noop}
+                canGenerate={true}
+                isGenerating={false}
+                onSubmitAttempt={noop}
+              />
+            </div>
+          )}
         </div>
       </Card>
-
-      {/* Generate Invoice Link — overlay button (round 6 D3, #4 fix).
-          Placed where InvoiceFormView's internal GenerateButton would render so the
-          form looks complete. Always enabled (variant="void") so it reads as active.
-          Press-scale wrapper localized to the button so the rest of the form stays still. */}
-      {frame >= BUTTON_VISIBLE && (
-        <div
-          style={{
-            position: "absolute",
-            left: width * 0.06 + 24,
-            bottom: height * 0.06 + 24,
-            width: width * 0.36 - 48,
-            transform: `scale(${interpolate(frame, [138, 140, 155, 157], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
-            transformOrigin: "center",
-          }}
-        >
-          <Button variant="void" size="lg" className="w-full">
-            Generate Invoice Link
-          </Button>
-        </div>
-      )}
 
       {/* Preview paper (right) — real InvoicePaper, scaled to fit. */}
       <div
