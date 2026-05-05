@@ -157,7 +157,9 @@ export const ShareScene: React.FC = () => {
       <MicroLabel text="No login. No data stored." startAt={0} endAt={80} x="8%" y="84%" anchor="left" maxWidth={520} />
       <MicroLabel text="Entire invoice encoded in the URL — recipient, amount, network" startAt={5} endAt={65} x="50%" y="84%" anchor="center" maxWidth={720} />
       <MicroLabel text="The # fragment never leaves your browser" startAt={70} endAt={130} x="50%" y="14%" anchor="center" maxWidth={720} />
-      <MicroLabel text="Same invoice — scannable format" startAt={95} endAt={170} x="50%" y="84%" anchor="center" />
+      {/* Round 8: synced to QR window. QR_TAB_FROM_FRAME=210 (round 7) shows
+          QR for last 30fr of S2; the label tells the viewer what the QR is. */}
+      <MicroLabel text="Same invoice — scannable format" startAt={210} endAt={240} x="50%" y="84%" anchor="center" />
     </AbsoluteFill>
   );
 };
