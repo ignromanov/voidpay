@@ -1,10 +1,10 @@
+// NO external fetch to user-controlled URLs — Node runtime, no edge sandbox
+
 /**
- * Next.js Middleware for Coming Soon Mode
+ * Next.js Proxy for Coming Soon Mode (Node runtime)
  *
  * When NEXT_PUBLIC_COMING_SOON_MODE=true, redirects protected routes
  * (like /create, /pay, /history) to /coming-soon page.
- *
- * Runs on Edge runtime before page rendering for minimal latency.
  */
 
 import { NextResponse } from 'next/server'
@@ -24,7 +24,7 @@ const PROTECTED_ROUTE_PREFIXES = ['/create', '/pay', '/history']
  */
 const PUBLIC_ROUTES = ['/', '/coming-soon', '/privacy', '/terms']
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Skip if Coming Soon mode is disabled
   if (!COMING_SOON_MODE) {
     return NextResponse.next()
@@ -55,7 +55,7 @@ export function middleware(request: NextRequest) {
  * - Excludes static files (favicon, images, etc.)
  * - Excludes API routes (/api/*)
  *
- * This ensures middleware only runs on page routes for performance.
+ * This ensures proxy only runs on page routes for performance.
  */
 export const config = {
   matcher: [
