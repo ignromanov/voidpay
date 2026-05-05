@@ -26,20 +26,21 @@ const INVOICE_AMOUNT = "250.00";
 const INVOICE_TOKEN = "USDC";
 const INVOICE_NETWORK = "Arbitrum";
 
-// Phase frames — round 5: pulled earlier so all fields populated by frame 125.
+// Phase frames — round 6: compressed so all fields populate by frame 70
+// (= scroll-end). Filling MicroLabel covers full window 5-70.
 const INVOICE_NO_APPEAR = 5;
-const DATES_APPEAR = 20;
-const FROM_START = 30;
-const WALLET_APPEAR = 45;
-const CLIENT_APPEAR = 60;
-const LINE_DESC_APPEAR = 75;
-const LINE_PRICE_APPEAR = 90;
-const NETWORK_APPEAR = 105;
-const TOKEN_APPEAR = 115;
-const BUTTON_VISIBLE = 125;
+const DATES_APPEAR = 15;
+const FROM_START = 22;
+const WALLET_APPEAR = 30;
+const CLIENT_APPEAR = 37;
+const LINE_DESC_APPEAR = 44;
+const LINE_PRICE_APPEAR = 50;
+const NETWORK_APPEAR = 56;
+const TOKEN_APPEAR = 62;
+const BUTTON_VISIBLE = 70;
 
-// Form scroll keyframes — finish all scroll motion at frame 80 (= mp4 5.000s).
-const SCROLL_FRAMES = [10, 35, 60, 80];
+// Form scroll keyframes — finish all scroll motion at frame 54 (= mp4 04.133s).
+const SCROLL_FRAMES = [10, 25, 40, 54];
 const SCROLL_OFFSETS = [0, -200, -400, -560];
 
 /** Typewriter: reveal `text` char by char starting at `startFrame` */
