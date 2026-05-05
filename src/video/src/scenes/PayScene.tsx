@@ -97,20 +97,18 @@ export const PayScene: React.FC = () => {
     (step === 'idle' && idleSubState === 'wrong-network') ? PHASE_SWITCH_NETWORK :
     -1; // 'connect' phase has no press trigger (initial state)
 
-  // Confirmation progress during the confirming phase. Clamped 0→12 (standard
-  // Arbitrum finality requirement, matches real PaymentPanel's default).
-  const confirmationsCurrent = Math.round(
-    interpolate(frame, [CONFIRMING, SUCCESS], [0, CONFIRMATIONS_REQUIRED], {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-    }),
-  );
+  // Round 7: reorg-protection block in PaidConfirmation.tsx uses framer-motion
+  // `animate={{ width: '...%' }}` which restarts every Remotion frame, producing
+  // a forward-back blink. Maxing out current=required hides the entire block
+  // (PaidConfirmation.tsx:105 condition `current < required` evaluates false).
+  // Trade-off: reorg progress visual is sacrificed during confirming. If we want
+  // it back, round 8 needs a frame-driven progress bar that bypasses framer-motion.
   const confirmations = useMemo(
     () => ({
-      current: confirmationsCurrent,
+      current: CONFIRMATIONS_REQUIRED,
       required: CONFIRMATIONS_REQUIRED,
     }),
-    [confirmationsCurrent],
+    [],
   );
 
   // Scale real A4 paper (794×1123) to fit the left pane.
@@ -237,7 +235,10 @@ export const PayScene: React.FC = () => {
 
       {/* v2 caption per creative-brief-v2 §4 — top-mounted, aligned with
           the 120-frame Magic Dust peak (local frames 240–360). */}
-      <Caption text="Cryptographic receipt" position="top" startAt={180} endAt={300} />
+      {/* Round 7: anchored to confirming → paid window per Ignat #5.
+          25.000s mp4 = global frame 750 = S3-local 310 (S3 starts at global 440).
+          Caption persists into paid phase to celebrate completion. */}
+      <Caption text="Cryptographic receipt" position="top" startAt={310} endAt={500} />
 
       <MicroLabel text="No account — wallet is the identity" startAt={5} endAt={85} x="62%" y="20%" anchor="left" maxWidth={420} />
       <MicroLabel text="Network matches the invoice" startAt={95} endAt={145} x="62%" y="20%" anchor="left" maxWidth={420} />
