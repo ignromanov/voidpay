@@ -15,8 +15,6 @@ import { NetworkBackground } from "@/widgets/network-background";
 import { Card } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
 import { TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
-import { Caption } from "../components/Caption";
-import { MicroLabel } from "../components/MicroLabel";
 import { DEMO_INVOICE, DEMO_FROM_ADDRESS } from "../constants/demo-invoice";
 
 // Creative brief §2: Alex · UI Design · $250 USDC · Arbitrum
@@ -26,26 +24,30 @@ const INVOICE_AMOUNT = "250.00";
 const INVOICE_TOKEN = "USDC";
 const INVOICE_NETWORK = "Arbitrum";
 
-// Phase frames — round 8: every constant shifted +60fr from round 7.
-// First 60fr = S1 hold (form Card visible, no fields filling) so it doesn't
-// "blink" into existence. Fields begin populating at frame 65, all populated
-// by frame 130 = BUTTON_VISIBLE.
+// Phase frames — round 9a: 2× field cascade + InvoicePaper post-fill + button-after-paper.
+// Empty hold 0-60 unchanged. Field cascade widened from 65fr → 130fr (Ignat: "растянуть в 2 раза").
+// All later anchors shift to accommodate post-fill InvoicePaper hold.
 const INVOICE_NO_APPEAR = 65;
-const DATES_APPEAR = 75;
-const FROM_START = 82;
-const WALLET_APPEAR = 90;
-const CLIENT_APPEAR = 97;
-const LINE_DESC_APPEAR = 104;
-const LINE_PRICE_APPEAR = 110;
-const NETWORK_APPEAR = 116;
-const TOKEN_APPEAR = 122;
-const BUTTON_VISIBLE = 130;
+const DATES_APPEAR      = 85;
+const FROM_START        = 99;
+const WALLET_APPEAR     = 115;
+const CLIENT_APPEAR     = 129;
+const LINE_DESC_APPEAR  = 143;
+const LINE_PRICE_APPEAR = 155;
+const NETWORK_APPEAR    = 167;
+const TOKEN_APPEAR      = 179;
+const FILL_COMPLETE     = 195;  // last field landed (was BUTTON_VISIBLE in round 8)
+const PAPER_APPEAR      = 200;  // round 9a: post-fill — InvoicePaper fade-in starts here
+const PAPER_VISIBLE_AT  = 230;  // fade-in done (30fr ramp)
+const PAPER_PULSE_PEAK  = 255;  // midpoint of 50fr accent pulse
+const PAPER_HOLD_END    = 280;  // paper acknowledged
+const BUTTON_VISIBLE    = 280;  // round 9a: button reveals AFTER paper hold
+const PRESS_START       = 290;
+const PRESS_END         = 307;
+// 307–320 post-press tail (last 20fr crossfade to S2)
 
-// Form scroll keyframes — round 8: scroll motion expanded 24fr → 54fr (slower).
-// Start at frame 90 (1s after fields begin filling, sympathetic to round-7 logic).
-// End at frame 144 (= mp4 7.133s). Final offset -420 unchanged from round 7
-// (Ignat approved that depth).
-const SCROLL_FRAMES = [90, 110, 130, 144];
+// Form scroll keyframes — round 9a: stretched proportionally with cascade.
+const SCROLL_FRAMES  = [115, 150, 175, 200];
 const SCROLL_OFFSETS = [0, -130, -280, -420];
 
 const noop = () => {
@@ -107,16 +109,21 @@ export const CreateScene: React.FC = () => {
     frame < LINE_DESC_APPEAR ? "client" :
     frame < NETWORK_APPEAR ? "lineItem" :
     frame < TOKEN_APPEAR ? "network" :
-    frame < BUTTON_VISIBLE ? "token" :
+    frame < FILL_COMPLETE ? "token" :
     undefined;
 
-  // Violet glow overlay behind the card — base glow always visible; pulse
-  // intensifies after Generate button appears.
+  // Round 9a: violet pulse glow active throughout fill (Ignat: "пульсирование всё время с начала
+  // заполнения до конца"). Pulse intensity peaks during cascade, then settles to a calm halo
+  // after BUTTON_VISIBLE so the button hand-off doesn't compete with the glow rhythm.
   const baseGlow = 0.25;
-  const pulseDelta = frame >= BUTTON_VISIBLE
-    ? interpolate(Math.sin(frame * 0.08), [-1, 1], [0.05, 0.4])
+  const fillPulseDelta =
+    frame >= INVOICE_NO_APPEAR && frame < BUTTON_VISIBLE
+      ? interpolate(Math.sin(frame * 0.08), [-1, 1], [0.05, 0.4])
+      : 0;
+  const settledHalo = frame >= BUTTON_VISIBLE
+    ? interpolate(Math.sin(frame * 0.08), [-1, 1], [0.0, 0.15])  // calmer post-fill
     : 0;
-  const buttonGlowOpacity = baseGlow + pulseDelta;
+  const buttonGlowOpacity = baseGlow + fillPulseDelta + settledHalo;
 
   // Paper preview layout — depends only on composition size.
   const paperLayout = useMemo(() => {
@@ -185,14 +192,13 @@ export const CreateScene: React.FC = () => {
             showGenerateButton={false}
           />
 
-          {/* Real GenerateButton — appears after fields populated. Inside scroll
-              container so it scrolls with the form. canGenerate=true so button is
-              visually active (not the disabled state real validation would force). */}
+          {/* Round 9a: GenerateButton appears AFTER paper hold (BUTTON_VISIBLE=280).
+              Press-scale fires at PRESS_START. Will be swapped to GenerateButtonView in C6. */}
           {frame >= BUTTON_VISIBLE && (
             <div
               style={{
                 marginTop: 16,
-                transform: `scale(${interpolate(frame, [198, 200, 215, 217], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
+                transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
                 transformOrigin: "center",
               }}
             >
@@ -207,53 +213,63 @@ export const CreateScene: React.FC = () => {
         </div>
       </Card>
 
-      {/* Preview paper (right) — real InvoicePaper, scaled to fit. */}
-      <div
-        style={{
-          position: "absolute",
-          right: width * 0.06 + (paperLayout.containerW - paperLayout.scaledW) / 2,
-          top: height * 0.1 + (paperLayout.containerH - paperLayout.scaledH) / 2,
-          width: paperLayout.scaledW,
-          height: paperLayout.scaledH,
-          opacity: interpolate(
-            frame,
-            [90, 150],
-            [0, 1],
-            { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-          ),
-          transform: `translateY(${interpolate(
-            frame,
-            [90, 150],
-            [20, 0],
-            { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-          )}px)`,
-        }}
-      >
+      {/* Round 9a: InvoicePaper appears AFTER form fill complete (Ignat #1.3).
+          Fade-in PAPER_APPEAR→PAPER_VISIBLE_AT. Violet accent pulse during 50fr hold
+          (Ignat #1.15 follow-up: "можно тоже добавить пульсирование, чтобы акцентировать"). */}
+      {frame >= PAPER_APPEAR && (
         <div
           style={{
-            width: INVOICE_BASE_WIDTH,
-            height: INVOICE_BASE_HEIGHT,
-            transform: `scale(${paperLayout.scale})`,
-            transformOrigin: "top left",
+            position: "absolute",
+            right: width * 0.06 + (paperLayout.containerW - paperLayout.scaledW) / 2,
+            top: height * 0.1 + (paperLayout.containerH - paperLayout.scaledH) / 2,
+            width: paperLayout.scaledW,
+            height: paperLayout.scaledH,
+            opacity: interpolate(
+              frame,
+              [PAPER_APPEAR, PAPER_VISIBLE_AT],
+              [0, 1],
+              { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+            ),
+            transform: `translateY(${interpolate(
+              frame,
+              [PAPER_APPEAR, PAPER_VISIBLE_AT],
+              [20, 0],
+              { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+            )}px)`,
           }}
         >
-          <InvoicePaper
-            data={DEMO_INVOICE}
-            status="pending"
-            variant="default"
+          {/* Violet accent pulse around paper — peaks at PAPER_PULSE_PEAK, fades by PAPER_HOLD_END */}
+          <div
+            style={{
+              position: "absolute",
+              inset: -24,
+              borderRadius: 16,
+              boxShadow: `0 0 80px rgba(124,58,237,${interpolate(
+                frame,
+                [PAPER_VISIBLE_AT, PAPER_PULSE_PEAK, PAPER_HOLD_END],
+                [0, 0.55, 0],
+                { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+              )}), 0 0 160px rgba(124,58,237,${interpolate(
+                frame,
+                [PAPER_VISIBLE_AT, PAPER_PULSE_PEAK, PAPER_HOLD_END],
+                [0, 0.3, 0],
+                { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+              )})`,
+              pointerEvents: "none",
+            }}
           />
+          <div
+            style={{
+              width: INVOICE_BASE_WIDTH,
+              height: INVOICE_BASE_HEIGHT,
+              transform: `scale(${paperLayout.scale})`,
+              transformOrigin: "top left",
+            }}
+          >
+            <InvoicePaper data={DEMO_INVOICE} status="pending" variant="default" />
+          </div>
         </div>
-      </div>
-
-      {/* Round 8: all label timings shifted +60fr from round 7 to align with the
-          extended S1 (260fr total). Sequential Captions remain non-overlapping;
-          "No login" still anchored ~50fr after BUTTON_VISIBLE so it appears after
-          the press feedback fires. */}
-      <Caption text="No backend" position="top" startAt={135} endAt={185} />
-      <Caption text="No signup" position="top" startAt={205} endAt={255} />
-
-      <MicroLabel text="Filling out an invoice" startAt={65} endAt={150} x="8%" y="14%" anchor="left" />
-      <MicroLabel text="No login. No data stored." startAt={186} endAt={260} x="8%" y="84%" anchor="left" maxWidth={520} />
+      )}
     </AbsoluteFill>
   );
 };
