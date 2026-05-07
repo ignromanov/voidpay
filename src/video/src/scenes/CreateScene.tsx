@@ -10,7 +10,7 @@ import {
   INVOICE_BASE_WIDTH,
   INVOICE_BASE_HEIGHT,
 } from "@/widgets/invoice-paper";
-import { InvoiceFormView, GenerateButton } from "@/widgets/invoice-form";
+import { InvoiceFormView, GenerateButtonView } from "@/widgets/invoice-form";
 import { NetworkBackground } from "@/widgets/network-background";
 import { Card } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
@@ -192,23 +192,18 @@ export const CreateScene: React.FC = () => {
             showGenerateButton={false}
           />
 
-          {/* Round 9a: GenerateButton appears AFTER paper hold (BUTTON_VISIBLE=280).
-              Press-scale fires at PRESS_START. Will be swapped to GenerateButtonView in C6. */}
+          {/* Round 9a: GenerateButtonView appears AFTER paper hold (BUTTON_VISIBLE=280).
+              hoverState/pressState drive scale transforms without framer-motion.
+              Outer div press-scale removed — GenerateButtonView handles it via pressState prop. */}
           {frame >= BUTTON_VISIBLE && (
-            <div
-              style={{
-                marginTop: 16,
-                transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
-                transformOrigin: "center",
-              }}
-            >
-              <GenerateButton
-                onGenerate={noop}
-                canGenerate={true}
-                isGenerating={false}
-                onSubmitAttempt={noop}
-              />
-            </div>
+            <GenerateButtonView
+              onGenerate={noop}
+              canGenerate={true}
+              isGenerating={false}
+              onSubmitAttempt={noop}
+              hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
+              pressState={frame >= PRESS_START && frame < PRESS_END}
+            />
           )}
         </div>
       </Card>
