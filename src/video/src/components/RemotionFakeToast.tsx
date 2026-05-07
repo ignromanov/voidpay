@@ -41,7 +41,7 @@ export const RemotionFakeToast: React.FC<Props> = ({
   anchor = "bottom-right",
 }) => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps, height } = useVideoConfig();
   const local = frame - startAt;
   if (local < 0 || local > hold + fadeOut) return null;
 
@@ -58,16 +58,13 @@ export const RemotionFakeToast: React.FC<Props> = ({
 
   const panelTop = (height - PANEL_HEIGHT) / 2;
   const panelBottom = panelTop + PANEL_HEIGHT;
-  // Round 9a-patch3 (D2): below-panel anchor aligns toast LEFT edge to PaymentPanel
-  // LEFT edge (вровень с формой оплаты per Ignat 2026-05-07). Was: right: "18%" (right-aligned).
-  // PaymentPanel: right=18%, width=480 → left edge = width*0.82 - 480.
-  const PANEL_RIGHT_PCT = 0.18;
-  const PANEL_WIDTH = 480;
+  // Round 9a-patch3-revert: toast RIGHT edge aligns with PaymentPanel RIGHT edge
+  // (panel right = 18% from screen right). Ignat 2026-05-07 verdict on p12.3:
+  // "Их нужно равнять по правому краю тоаста и правому краю панели оплаты."
   const positionStyle: React.CSSProperties = anchor === "below-panel"
     ? {
-        left: width * (1 - PANEL_RIGHT_PCT) - PANEL_WIDTH,
+        right: "18%",
         bottom: height - panelBottom - 80 - stackOffset,
-        maxWidth: PANEL_WIDTH,
       }
     : {
         right: 24,
