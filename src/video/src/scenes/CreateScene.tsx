@@ -44,13 +44,16 @@ const PAPER_HOLD_END    = 280;  // paper acknowledged
 const BUTTON_VISIBLE    = 280;  // round 9a: button reveals AFTER paper hold
 const PRESS_START       = 290;
 const PRESS_END         = 307;
-// 307–320 post-press tail (last 20fr crossfade to S2)
+// round 9a-patch2 (C4): isGenerating={frame >= PRESS_END} holds 307–350 (43fr), crossfade 340–350.
+const MAGIC_DUST_TOGGLE_FRAME = 200;  // round 9a-patch2 (C3): toggle off→on after TOKEN_APPEAR=179
 
 // Form scroll keyframes — round 9a: stretched proportionally with cascade.
 // Round 9a-patch1 (B1): end 200 → 188 (mp4 8.600s) — scroll stops earlier so empty form
 // space below the last field doesn't drift into view at the bottom of the Card.
+// Round 9a-patch2 (C2): final offset reduced -420 → -360 to remove empty space below form.
+// Dev: verify via still at frame 258; adjust this single constant if needed.
 const SCROLL_FRAMES  = [115, 150, 175, 188];
-const SCROLL_OFFSETS = [0, -130, -280, -420];
+const SCROLL_OFFSETS = [0, -120, -240, -360];
 
 const noop = () => {
   /* Remotion renders static frames — click handlers never fire */
@@ -99,7 +102,8 @@ export const CreateScene: React.FC = () => {
       ...(networkLabel && { networkLabel }),
       ...(tokenSymbol && { tokenSymbol }),
       ...(frame >= NETWORK_APPEAR && { chainId: 42161 }),
-      magicDustEnabled: true,
+      // C3: toggle off → on at MAGIC_DUST_TOGGLE_FRAME (good anchor for Spark hint copy)
+      magicDustEnabled: frame >= MAGIC_DUST_TOGGLE_FRAME,
     };
   }, [frame]);
 
@@ -194,9 +198,11 @@ export const CreateScene: React.FC = () => {
             showGenerateButton={false}
           />
 
-          {/* Round 9a-patch1 (B2): mount button at FILL_COMPLETE so user sees what the scroll
-              leads to. Press-scale still fires at PRESS_START (frame 290+) — see transform below. */}
-          {frame >= FILL_COMPLETE && (
+          {/* Round 9a-patch2 (C1): button always mounted at bottom of scroll content (production
+              form has it visible always). Scroll naturally brings it into view. Press-scale + hover
+              visuals are gated by frame inside the View props.
+              (C4): isGenerating fires at PRESS_END — spinner + "Generating…" label visible until S1 end. */}
+          {
             <div
               style={{
                 marginTop: 16,
@@ -206,14 +212,14 @@ export const CreateScene: React.FC = () => {
             >
               <GenerateButtonView
                 onGenerate={noop}
-                canGenerate={true}
-                isGenerating={false}
+                canGenerate={frame >= FILL_COMPLETE}
+                isGenerating={frame >= PRESS_END}
                 onSubmitAttempt={noop}
                 hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
                 pressState={frame >= PRESS_START && frame < PRESS_END}
               />
             </div>
-          )}
+          }
         </div>
       </Card>
 
@@ -270,7 +276,8 @@ export const CreateScene: React.FC = () => {
               transformOrigin: "top left",
             }}
           >
-            <InvoicePaper data={DEMO_INVOICE} status="pending" variant="default" />
+            {/* Round 9a-patch2 (C6): Path A — 'draft' is a valid InvoicePaperStatus value. */}
+            <InvoicePaper data={DEMO_INVOICE} status="draft" variant="default" />
           </div>
         </div>
       )}
