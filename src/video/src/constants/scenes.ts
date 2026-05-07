@@ -1,11 +1,13 @@
-/** Scene durations in frames (at 30fps) — creative-brief-v2 §3 */
+/** Scene durations in frames (at 30fps) — round-9a §Composition */
 export const SCENE_DURATIONS = {
-  thesisHook: 90,       // 3s    — S0 two-beat hook doubled (round 3)
-  create: 260,          // 8.67s — S1 round 8: was 170; +90 from thesisOutro buffer
-                        //         to fund 2s pause-before-fill + slower scroll motion
-  share: 240,           // 8s    — S2 LinkTab + QR
-  pay: 510,             // 17s   — S3 PaymentPanel + InvoicePaper (4s Magic Dust peak)
-  thesisOutro: 196,     // 6.53s — S4 round 8: was 286; -90 to S1
+  thesisHook:  90,    // 3.000s — unchanged
+  create:      320,   // 10.667s — round 9a: +60 from round 8 (260)
+                       //                   2× field cascade + InvoicePaper post-fill + button-after-paper
+  share:       260,   // 8.667s — round 9a: +20 from round 8 (240)
+                       //                  longer Link-tab read + 110fr QR window
+  pay:         575,   // 19.167s — round 9a: +65 from round 8 (510)
+                       //                   connecting/switching sub-states + 80fr ready phase
+  thesisOutro: 175,   // 5.833s — round 9a: -21 from round 8 (196) to fund S3 within TOTAL_DURATION=1350
 } as const;
 
 /** Transition durations in frames (cross-fade only for v2) */
@@ -15,10 +17,10 @@ export const TRANSITION_DURATIONS = {
 
 /**
  * Primary composition duration = 1350 frames (45s @ 30fps).
- * Sum of scenes = 90 + 260 + 240 + 510 + 196 = 1296 (round 8).
+ * Sum of scenes = 90 + 320 + 260 + 575 + 175 = 1420 (round 9a).
  * Transition overlaps = 20 * 4 = 80.
- * Effective composition length = 1296 - 80 = 1216.
- * Trailing breathing buffer carried in S4 = 1350 - 1216 = 134 frames black hold.
+ * Effective composition length = 1420 - 80 = 1340.
+ * Black tail = 1350 - 1340 = 10 frames.
  */
 export const TOTAL_DURATION = 1350;
 
@@ -27,14 +29,15 @@ export const TEASER_DURATION = 450;
 
 /**
  * Magic Dust peak — global frame where S3 Pay scene shows the highlighted
- * micro-amount. Round-8 timeline:
- *   S0 ends at 90, S1 starts at 70 (overlap), S1 ends at 330 (70+260).
- *   S2 starts at 310, ends at 550 (310+240).
- *   S3 starts at 530, ends at 1040 (530+510).
- *   Peak begins 240 frames into S3 = global frame 530 + 240 = 770. Holds 120 frames.
+ * micro-amount. Round-9a timeline:
+ *   S0 ends at 90, S1 starts at 70 (overlap), S1 ends at 390 (70+320).
+ *   S2 starts at 370, ends at 630 (370+260).
+ *   S3 starts at 610, ends at 1185 (610+575).
+ *   S4 starts at 1165, ends at 1340 (1165+175).
+ *   Peak begins 190fr into S3 = global 800; midpoint ~250 = global 860; ends 310 = global 920.
  */
-export const MAGIC_DUST_PEAK_FRAME = 770;  // round 8 — was 680; recomputed for new S1=260
-export const MAGIC_DUST_PEAK_HOLD = 120; // 4s
+export const MAGIC_DUST_PEAK_FRAME = 860;  // round 9a — was 770
+export const MAGIC_DUST_PEAK_HOLD = 120;   // 4s peak hold per creative-brief §8 strict
 
 /** FPS — canonical source (also re-exported from timing.ts) */
 export const FPS = 30;
