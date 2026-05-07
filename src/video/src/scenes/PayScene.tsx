@@ -40,39 +40,34 @@ const PAPER_PROPS_PAID = {
   variant: "default",
 } as const;
 
-// Phase timing — round 9a (S3-local frames):
-//   0–60     idle:disconnected   ("Connect Wallet")  — no press trigger (initial state)
-//  58–67     press-scale on Connect transition
-//  65–95     idle:connecting     (NEW: spinner on CTA, "Connecting…")
-//  95–155    idle:wrong-network  ("Switch Network")
-// 153–162    press-scale on Switch transition
-// 160–190    idle:switching      (NEW: spinner on CTA, "Switching…")
-// 190–270    idle:ready          ("Pay 250 USDC")  ← +20fr from round 8
-// 268–277    press-scale on Pay transition
-// 275–365    sending             (loading button)
-// 365–455    confirming          (CTA hidden, reorg progress visible)
-// 455–575    success (paid)      (InvoicePaper paid watermark)
-const PRESS_CONNECT        = 58;
-const PHASE_CONNECTING     = 65;
-const PHASE_WRONG_NETWORK  = 95;
-const PRESS_SWITCH         = 153;
-const PHASE_SWITCHING      = 160;
-const PHASE_READY          = 190;
-const PRESS_PAY            = 268;
-const PHASE_SENDING        = 275;
-const PHASE_CONFIRMING     = 365;
-const SUCCESS              = 455;
-const MAGIC_DUST_HIGHLIGHT = 170;  // ramp-in start; peak 190
-const MAGIC_DUST_PEAK_END  = 310;  // 120fr peak hold
+// Phase timing — round 9a-patch2 (S3-local frames):
+//   0–50    idle:disconnected   ("Connect Wallet" — only press needed)
+//  48–57    press-scale on Connect (THE only press in this scene)
+//  50–130   connecting  (spinner "Connecting…", progress 25%)
+// 130–200   switching   (spinner "Switching…", progress 45%)
+// 200–310   sending     (spinner "Sending…", progress 70%)
+// 310–440   confirming  (CTA hidden, reorg progress visible, progress 90%)
+// 440–575   success     (paid watermark, progress 100%)
+//
+// Single-press model per Ignat (round 9a-patch2 C7): user clicks Connect ONCE; then
+// continuous progress. No return to idle:wrong-network or idle:ready between transitions.
+// idle:disconnected = 0 (initial state, no explicit constant needed)
+const PRESS_CONNECT        = 48;
+const PHASE_CONNECTING     = 50;
+const PHASE_SWITCHING      = 130;
+const PHASE_SENDING        = 200;
+const PHASE_CONFIRMING     = 310;
+const SUCCESS              = 440;
+// Magic Dust window — peak hold straddles sending→confirming for narrative continuity.
+const MAGIC_DUST_HIGHLIGHT = 180;  // ramp-in start (20fr ramp to peak)
+const MAGIC_DUST_PEAK_END  = 320;  // 120fr peak hold ends (per creative-brief §8 strict)
 const CONFIRMATIONS_REQUIRED = 12;
 
 const stepAt = (frame: number): { step: PaymentStep; idleSubState: IdleSubState } => {
   if (frame >= SUCCESS) return { step: 'success', idleSubState: 'ready' };
   if (frame >= PHASE_CONFIRMING) return { step: 'confirming', idleSubState: 'ready' };
   if (frame >= PHASE_SENDING) return { step: 'sending', idleSubState: 'ready' };
-  if (frame >= PHASE_READY) return { step: 'idle', idleSubState: 'ready' };
   if (frame >= PHASE_SWITCHING) return { step: 'switching', idleSubState: 'wrong-network' };
-  if (frame >= PHASE_WRONG_NETWORK) return { step: 'idle', idleSubState: 'wrong-network' };
   if (frame >= PHASE_CONNECTING) return { step: 'connecting', idleSubState: 'disconnected' };
   return { step: 'idle', idleSubState: 'disconnected' };
 };
@@ -101,13 +96,9 @@ export const PayScene: React.FC = () => {
     step === 'confirming' ? 'confirming' :
     'pending';
 
-  // Round 9a-patch1: frame-based latest-press lookup. pressScale auto-clamps to 1
-  // after triggerFrame+7, so reporting the most-recent press is sufficient.
-  const ctaPressTriggerFrame =
-    frame >= PRESS_PAY ? PRESS_PAY :
-    frame >= PRESS_SWITCH ? PRESS_SWITCH :
-    frame >= PRESS_CONNECT ? PRESS_CONNECT :
-    -1;
+  // Round 9a-patch2 (C7): only one press in single-press model. pressScale auto-clamps to 1
+  // after triggerFrame+7, so reporting PRESS_CONNECT for all later frames is harmless.
+  const ctaPressTriggerFrame = frame >= PRESS_CONNECT ? PRESS_CONNECT : -1;
 
   // Round 9a: restore reorg-progress visual (Ignat: "под кнопкой не хватает прогресса оплаты").
   // Drive confirmations.current frame-by-frame so RemotionPaidConfirmationProgress fills smoothly.
@@ -142,12 +133,11 @@ export const PayScene: React.FC = () => {
     };
   }, [width, height]);
 
-  // Violet pulse overlay over the totals band — round 9a: 120fr peak hold.
-  // Ramp-in starts at MAGIC_DUST_HIGHLIGHT=170, peak 190 (=PHASE_READY start),
-  // peak ends at MAGIC_DUST_PEAK_END=310 (overlaps sending start at 275 — visual continuity).
+  // Violet pulse overlay over the totals band — round 9a-patch2: peak window 180-320 (140fr
+  // ramp/hold/fade with 120fr peak hold inside). Straddles sending→confirming for continuity.
   const magicDustPulseOpacity = interpolate(
     frame,
-    [MAGIC_DUST_HIGHLIGHT - 20, MAGIC_DUST_HIGHLIGHT, MAGIC_DUST_PEAK_END, MAGIC_DUST_PEAK_END + 20],
+    [MAGIC_DUST_HIGHLIGHT - 10, MAGIC_DUST_HIGHLIGHT + 10, MAGIC_DUST_PEAK_END - 10, MAGIC_DUST_PEAK_END + 10],
     [0, 0.55, 0.55, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
@@ -263,13 +253,15 @@ export const PayScene: React.FC = () => {
       </div>
 
       {/* Narrative toasts — anchored below panel right edge */}
-      {/* Round 9a-patch1 (B5): toasts fire AFTER the connecting/switching transition completes,
-          not at the press moment. T1 95 = wrong-network state activates; T2 190 = ready state activates. */}
-      <RemotionFakeToast variant="success" title="Wallet connected" startAt={95} hold={45} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={190} hold={45} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="loading" title="Sending transaction" startAt={273} hold={85} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={365} hold={90} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={455} hold={120} stackOffset={0} anchor="below-panel" />
+      {/* Round 9a-patch2 (C7): toasts fire when each transition completes (state shifts to next
+          progress step). T2 ("Network switched") + T3 ("Sending transaction") both startAt=200
+          (switching just ended, sending just began); T3 staggered to 205 + stackOffset=1 to
+          avoid visual collision. */}
+      <RemotionFakeToast variant="success" title="Wallet connected" startAt={130} hold={45} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={200} hold={45} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="loading" title="Sending transaction" startAt={205} hold={85} stackOffset={1} anchor="below-panel" />
+      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={310} hold={90} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={440} hold={120} stackOffset={0} anchor="below-panel" />
     </AbsoluteFill>
   );
 };
