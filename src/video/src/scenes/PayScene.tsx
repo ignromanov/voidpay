@@ -71,9 +71,9 @@ const stepAt = (frame: number): { step: PaymentStep; idleSubState: IdleSubState 
   if (frame >= PHASE_CONFIRMING) return { step: 'confirming', idleSubState: 'ready' };
   if (frame >= PHASE_SENDING) return { step: 'sending', idleSubState: 'ready' };
   if (frame >= PHASE_READY) return { step: 'idle', idleSubState: 'ready' };
-  if (frame >= PHASE_SWITCHING) return { step: 'idle', idleSubState: 'switching' };
+  if (frame >= PHASE_SWITCHING) return { step: 'switching', idleSubState: 'wrong-network' };
   if (frame >= PHASE_WRONG_NETWORK) return { step: 'idle', idleSubState: 'wrong-network' };
-  if (frame >= PHASE_CONNECTING) return { step: 'idle', idleSubState: 'connecting' };
+  if (frame >= PHASE_CONNECTING) return { step: 'connecting', idleSubState: 'disconnected' };
   return { step: 'idle', idleSubState: 'disconnected' };
 };
 
@@ -101,14 +101,13 @@ export const PayScene: React.FC = () => {
     step === 'confirming' ? 'confirming' :
     'pending';
 
-  // Pick the most recent press-scale trigger frame for the active phase.
+  // Round 9a-patch1: frame-based latest-press lookup. pressScale auto-clamps to 1
+  // after triggerFrame+7, so reporting the most-recent press is sufficient.
   const ctaPressTriggerFrame =
-    step === 'sending' ? PRESS_PAY :
-    (step === 'idle' && idleSubState === 'ready') ? PRESS_PAY :
-    (step === 'idle' && idleSubState === 'switching') ? PRESS_SWITCH :
-    (step === 'idle' && idleSubState === 'wrong-network') ? PRESS_SWITCH :
-    (step === 'idle' && idleSubState === 'connecting') ? PRESS_CONNECT :
-    -1; // disconnected: no press trigger (initial state)
+    frame >= PRESS_PAY ? PRESS_PAY :
+    frame >= PRESS_SWITCH ? PRESS_SWITCH :
+    frame >= PRESS_CONNECT ? PRESS_CONNECT :
+    -1;
 
   // Round 9a: restore reorg-progress visual (Ignat: "под кнопкой не хватает прогресса оплаты").
   // Drive confirmations.current frame-by-frame so RemotionPaidConfirmationProgress fills smoothly.
@@ -228,7 +227,9 @@ export const PayScene: React.FC = () => {
           {/* CTA — round 9a: drives SmartPayButtonView per-frame across 6 idle sub-states
               + sending. connecting/switching sub-states show spinner (C5 extension).
               Press-scale fires at PRESS_CONNECT/PRESS_SWITCH/PRESS_PAY. */}
-          {(step === 'idle' || step === 'sending') && (
+          {/* Round 9a-patch1 (B6): render CTA for connecting/switching/sending too, hide only in
+              confirming (reorg-progress overlay takes the visual spot) and success (paid watermark). */}
+          {(step !== 'confirming' && step !== 'success') && (
             <div
               style={{
                 transform: ctaPressTriggerFrame >= 0
@@ -262,8 +263,10 @@ export const PayScene: React.FC = () => {
       </div>
 
       {/* Narrative toasts — anchored below panel right edge */}
-      <RemotionFakeToast variant="success" title="Wallet connected" startAt={58} hold={45} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={153} hold={45} stackOffset={0} anchor="below-panel" />
+      {/* Round 9a-patch1 (B5): toasts fire AFTER the connecting/switching transition completes,
+          not at the press moment. T1 95 = wrong-network state activates; T2 190 = ready state activates. */}
+      <RemotionFakeToast variant="success" title="Wallet connected" startAt={95} hold={45} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={190} hold={45} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="loading" title="Sending transaction" startAt={273} hold={85} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={365} hold={90} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={455} hold={120} stackOffset={0} anchor="below-panel" />
