@@ -14,7 +14,6 @@ import { DEMO_FROM_ADDRESS, DEMO_INVOICE } from "../constants/demo-invoice";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
-import { MicroLabel } from "../components/MicroLabel";
 
 // Full URL — 4x longer hash payload (~560 chars) so the LinkTab URL visibly
 // truncates with ellipsis and reads as "very long / data-dense".
@@ -31,11 +30,14 @@ const TELEGRAM_URL = `https://t.me/share/url?url=${encodeURIComponent(SHARE_URL)
 const TWITTER_URL = `https://twitter.com/intent/tweet?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent("Pay me in crypto — VoidPay invoice")}`;
 const EMAIL_URL = `mailto:?subject=${encodeURIComponent("VoidPay invoice")}&body=${encodeURIComponent(SHARE_URL)}`;
 
-// Frame at which the narrative "Copy" click fires
-const COPY_CLICK_FRAME = 60;
-// Frame at which narrative switches to QR tab — round 7: shortened to last 1s
-// of S2 (frames 210-240) per Ignat #4. QR was previously visible 100-240 (~4.67s).
-const QR_TAB_FROM_FRAME = 210;
+// Frame at which the narrative "Copy" click fires — round 9a: pushed from 60→110
+// to give Link-tab idle 80fr / 2.667s read window before copy fires (Ignat #2.3).
+// round-9a: Copy fires once via boolean flip; CopyOverlay motion.div animate restarts
+// each Remotion frame (Fix B: acceptable for p12 preview; production snapshot unaffected).
+const COPY_CLICK_FRAME = 110;
+// QR_TAB_FROM_FRAME — round 9a: pushed from 210→150 (earlier) to expand QR window
+// from 30fr → 110fr / 3.667s (Ignat #2.7).
+const QR_TAB_FROM_FRAME = 150;
 
 const noop = () => {
   /* Remotion renders static frames — click handlers never fire */
@@ -153,13 +155,6 @@ export const ShareScene: React.FC = () => {
         </div>
       </Card>
 
-      {/* No login persistent label — round 7: matches S1 position (bottom-left). */}
-      <MicroLabel text="No login. No data stored." startAt={0} endAt={80} x="8%" y="84%" anchor="left" maxWidth={520} />
-      <MicroLabel text="Entire invoice encoded in the URL — recipient, amount, network" startAt={5} endAt={65} x="50%" y="84%" anchor="center" maxWidth={720} />
-      <MicroLabel text="The # fragment never leaves your browser" startAt={70} endAt={130} x="50%" y="14%" anchor="center" maxWidth={720} />
-      {/* Round 8: synced to QR window. QR_TAB_FROM_FRAME=210 (round 7) shows
-          QR for last 30fr of S2; the label tells the viewer what the QR is. */}
-      <MicroLabel text="Same invoice — scannable format" startAt={210} endAt={240} x="50%" y="84%" anchor="center" />
     </AbsoluteFill>
   );
 };
