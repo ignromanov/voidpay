@@ -47,7 +47,9 @@ const PRESS_END         = 307;
 // 307–320 post-press tail (last 20fr crossfade to S2)
 
 // Form scroll keyframes — round 9a: stretched proportionally with cascade.
-const SCROLL_FRAMES  = [115, 150, 175, 200];
+// Round 9a-patch1 (B1): end 200 → 188 (mp4 8.600s) — scroll stops earlier so empty form
+// space below the last field doesn't drift into view at the bottom of the Card.
+const SCROLL_FRAMES  = [115, 150, 175, 188];
 const SCROLL_OFFSETS = [0, -130, -280, -420];
 
 const noop = () => {
@@ -192,18 +194,25 @@ export const CreateScene: React.FC = () => {
             showGenerateButton={false}
           />
 
-          {/* Round 9a: GenerateButtonView appears AFTER paper hold (BUTTON_VISIBLE=280).
-              hoverState/pressState drive scale transforms without framer-motion.
-              Outer div press-scale removed — GenerateButtonView handles it via pressState prop. */}
-          {frame >= BUTTON_VISIBLE && (
-            <GenerateButtonView
-              onGenerate={noop}
-              canGenerate={true}
-              isGenerating={false}
-              onSubmitAttempt={noop}
-              hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
-              pressState={frame >= PRESS_START && frame < PRESS_END}
-            />
+          {/* Round 9a-patch1 (B2): mount button at FILL_COMPLETE so user sees what the scroll
+              leads to. Press-scale still fires at PRESS_START (frame 290+) — see transform below. */}
+          {frame >= FILL_COMPLETE && (
+            <div
+              style={{
+                marginTop: 16,
+                transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
+                transformOrigin: "center",
+              }}
+            >
+              <GenerateButtonView
+                onGenerate={noop}
+                canGenerate={true}
+                isGenerating={false}
+                onSubmitAttempt={noop}
+                hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
+                pressState={frame >= PRESS_START && frame < PRESS_END}
+              />
+            </div>
           )}
         </div>
       </Card>
