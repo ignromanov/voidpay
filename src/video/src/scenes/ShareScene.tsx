@@ -35,9 +35,10 @@ const EMAIL_URL = `mailto:?subject=${encodeURIComponent("VoidPay invoice")}&body
 // round-9a: Copy fires once via boolean flip; CopyOverlay motion.div animate restarts
 // each Remotion frame (Fix B: acceptable for p12 preview; production snapshot unaffected).
 const COPY_CLICK_FRAME = 110;
-// QR_TAB_FROM_FRAME — round 9a: pushed from 210→150 (earlier) to expand QR window
-// from 30fr → 110fr / 3.667s (Ignat #2.7).
-const QR_TAB_FROM_FRAME = 150;
+// QR_TAB_FROM_FRAME — round 9a-patch2 (C5): extended from 150→190 (copied state held longer).
+// Old (patch1): copy 110 → QR 150 (40fr feedback). New: copy 110 → QR 190 (80fr feedback).
+// S2 extended +40fr (260→300) to fund this without compressing QR window.
+const QR_TAB_FROM_FRAME = 190;
 
 const noop = () => {
   /* Remotion renders static frames — click handlers never fire */
