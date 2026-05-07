@@ -1,14 +1,19 @@
 /** Scene durations in frames (at 30fps) — round-9a §Composition */
 export const SCENE_DURATIONS = {
   thesisHook:  90,    // 3.000s — unchanged
-  create:      320,   // 10.667s — round 9a: +60 from round 8 (260)
-                       //                   2× field cascade + InvoicePaper post-fill + button-after-paper
-  share:       260,   // 8.667s — round 9a: +20 from round 8 (240)
-                       //                  longer Link-tab read + 110fr QR window
-  pay:         575,   // 19.167s — round 9a: +65 from round 8 (510)
-                       //                   connecting/switching sub-states + 80fr ready phase
-  thesisOutro: 175,   // 5.833s — round 9a: -21 from round 8 (196) to fund S3 within TOTAL_DURATION=1350
+  create:      350,   // 11.667s — round 9a-patch2: +30 from patch1 (320) for C4 generating hold
+  share:       300,   // 10.000s — round 9a-patch2: +40 from patch1 (260) for C5 extended copy hold
+  pay:         575,   // 19.167s — unchanged (round 9a-patch2 single-press model is internal reshuffle)
+  thesisOutro: 105,   // 3.500s  — round 9a-patch2: -70 from patch1 (175) per Ignat directive (vychit from final state)
 } as const;
+
+// Round 9a-patch2 math:
+//   S0 ends 90, S1 starts 70 (overlap), ends 420 (70+350).
+//   S2 starts 400, ends 700 (400+300).
+//   S3 starts 680, ends 1255 (680+575).
+//   S4 starts 1235, ends 1340 (1235+105).
+//   Black tail 1340-1350 (10fr).
+// Magic Dust peak window in S3 single-press model: S-local 200-320 (120fr); midpoint 260 → global 940.
 
 /** Transition durations in frames (cross-fade only for v2) */
 export const TRANSITION_DURATIONS = {
@@ -17,7 +22,7 @@ export const TRANSITION_DURATIONS = {
 
 /**
  * Primary composition duration = 1350 frames (45s @ 30fps).
- * Sum of scenes = 90 + 320 + 260 + 575 + 175 = 1420 (round 9a).
+ * Sum of scenes = 90 + 350 + 300 + 575 + 105 = 1420 (round 9a-patch2).
  * Transition overlaps = 20 * 4 = 80.
  * Effective composition length = 1420 - 80 = 1340.
  * Black tail = 1350 - 1340 = 10 frames.
@@ -29,14 +34,14 @@ export const TEASER_DURATION = 450;
 
 /**
  * Magic Dust peak — global frame where S3 Pay scene shows the highlighted
- * micro-amount. Round-9a timeline:
- *   S0 ends at 90, S1 starts at 70 (overlap), S1 ends at 390 (70+320).
- *   S2 starts at 370, ends at 630 (370+260).
- *   S3 starts at 610, ends at 1185 (610+575).
- *   S4 starts at 1165, ends at 1340 (1165+175).
- *   Peak begins 190fr into S3 = global 800; midpoint ~250 = global 860; ends 310 = global 920.
+ * micro-amount. Round-9a-patch2 timeline:
+ *   S0 ends at 90, S1 starts at 70 (overlap), S1 ends at 420 (70+350).
+ *   S2 starts at 400, ends at 700 (400+300).
+ *   S3 starts at 680, ends at 1255 (680+575).
+ *   S4 starts at 1235, ends at 1340 (1235+105).
+ *   Peak window in S3 single-press model: S-local 200-320 (120fr); midpoint 260 → global 940.
  */
-export const MAGIC_DUST_PEAK_FRAME = 860;  // round 9a — was 770
+export const MAGIC_DUST_PEAK_FRAME = 940;  // round 9a-patch2 — was 860 in patch1, was 770 in r8
 export const MAGIC_DUST_PEAK_HOLD = 120;   // 4s peak hold per creative-brief §8 strict
 
 /** FPS — canonical source (also re-exported from timing.ts) */
