@@ -16,8 +16,11 @@ export type PaymentStep =
   | 'confirming'
   | 'success'
 
-/** Idle sub-states derived from wallet context (not stored in reducer) */
-export type IdleSubState = 'disconnected' | 'wrong-network' | 'ready'
+/** Idle sub-states derived from wallet context (not stored in reducer).
+ *  Round 9a: 'connecting' and 'switching' added for video v2 animation sub-states.
+ *  Production Container (SmartPayButton.tsx) only emits disconnected/wrong-network/ready;
+ *  connecting/switching are Remotion-only transitions rendered via SmartPayButtonView. */
+export type IdleSubState = 'disconnected' | 'connecting' | 'wrong-network' | 'switching' | 'ready'
 
 /**
  * Derive the idle sub-state from wallet connection context.
