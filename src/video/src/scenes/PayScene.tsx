@@ -17,9 +17,8 @@ import type { PaymentStep, IdleSubState } from "@/features/payment";
 import { NetworkBackground } from "@/widgets/network-background";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
-import { Caption } from "../components/Caption";
-import { MicroLabel } from "../components/MicroLabel";
 import { RemotionFakeToast } from "../components/RemotionFakeToast";
+import { RemotionPaidConfirmationProgress } from "../components/RemotionPaidConfirmationProgress";
 import { DEMO_INVOICE, DEMO_CONTENT_HASH } from "../constants/demo-invoice";
 
 // Deterministic demo tx hash for the paid-state watermark
@@ -41,28 +40,40 @@ const PAPER_PROPS_PAID = {
   variant: "default",
 } as const;
 
-// Phase timing — round 6 (S3-local frames):
-//   0-90    idle:disconnected → Connect Wallet
-//  90-150   idle:wrong-network → Switch Network (press-scale at 90)
-// 150-210   idle:ready → Pay 250 USDC (press-scale at 150, Magic Dust 180-300 overlaps)
-// 210-300   sending → loading state (press-scale at 210)
-// 300-390   confirming
-// 390-510   success (paid)
-const PHASE_SWITCH_NETWORK = 90;
-const PHASE_READY = 150;
-const PHASE_SENDING = 210;
-const MAGIC_DUST_HIGHLIGHT = 180;
-const MAGIC_DUST_PEAK_END = 300;
-const CONFIRMING = 300;
-const SUCCESS = 390;
+// Phase timing — round 9a (S3-local frames):
+//   0–60     idle:disconnected   ("Connect Wallet")  — no press trigger (initial state)
+//  58–67     press-scale on Connect transition
+//  65–95     idle:connecting     (NEW: spinner on CTA, "Connecting…")
+//  95–155    idle:wrong-network  ("Switch Network")
+// 153–162    press-scale on Switch transition
+// 160–190    idle:switching      (NEW: spinner on CTA, "Switching…")
+// 190–270    idle:ready          ("Pay 250 USDC")  ← +20fr from round 8
+// 268–277    press-scale on Pay transition
+// 275–365    sending             (loading button)
+// 365–455    confirming          (CTA hidden, reorg progress visible)
+// 455–575    success (paid)      (InvoicePaper paid watermark)
+const PRESS_CONNECT        = 58;
+const PHASE_CONNECTING     = 65;
+const PHASE_WRONG_NETWORK  = 95;
+const PRESS_SWITCH         = 153;
+const PHASE_SWITCHING      = 160;
+const PHASE_READY          = 190;
+const PRESS_PAY            = 268;
+const PHASE_SENDING        = 275;
+const PHASE_CONFIRMING     = 365;
+const SUCCESS              = 455;
+const MAGIC_DUST_HIGHLIGHT = 170;  // ramp-in start; peak 190
+const MAGIC_DUST_PEAK_END  = 310;  // 120fr peak hold
 const CONFIRMATIONS_REQUIRED = 12;
 
 const stepAt = (frame: number): { step: PaymentStep; idleSubState: IdleSubState } => {
   if (frame >= SUCCESS) return { step: 'success', idleSubState: 'ready' };
-  if (frame >= CONFIRMING) return { step: 'confirming', idleSubState: 'ready' };
+  if (frame >= PHASE_CONFIRMING) return { step: 'confirming', idleSubState: 'ready' };
   if (frame >= PHASE_SENDING) return { step: 'sending', idleSubState: 'ready' };
   if (frame >= PHASE_READY) return { step: 'idle', idleSubState: 'ready' };
-  if (frame >= PHASE_SWITCH_NETWORK) return { step: 'idle', idleSubState: 'wrong-network' };
+  if (frame >= PHASE_SWITCHING) return { step: 'idle', idleSubState: 'switching' };
+  if (frame >= PHASE_WRONG_NETWORK) return { step: 'idle', idleSubState: 'wrong-network' };
+  if (frame >= PHASE_CONNECTING) return { step: 'idle', idleSubState: 'connecting' };
   return { step: 'idle', idleSubState: 'disconnected' };
 };
 
@@ -92,17 +103,23 @@ export const PayScene: React.FC = () => {
 
   // Pick the most recent press-scale trigger frame for the active phase.
   const ctaPressTriggerFrame =
-    step === 'sending' ? PHASE_SENDING :
-    (step === 'idle' && idleSubState === 'ready') ? PHASE_READY :
-    (step === 'idle' && idleSubState === 'wrong-network') ? PHASE_SWITCH_NETWORK :
-    -1; // 'connect' phase has no press trigger (initial state)
+    step === 'sending' ? PRESS_PAY :
+    (step === 'idle' && idleSubState === 'ready') ? PRESS_PAY :
+    (step === 'idle' && idleSubState === 'switching') ? PRESS_SWITCH :
+    (step === 'idle' && idleSubState === 'wrong-network') ? PRESS_SWITCH :
+    (step === 'idle' && idleSubState === 'connecting') ? PRESS_CONNECT :
+    -1; // disconnected: no press trigger (initial state)
 
-  // Round 7: reorg-protection block in PaidConfirmation.tsx uses framer-motion
-  // `animate={{ width: '...%' }}` which restarts every Remotion frame, producing
-  // a forward-back blink. Maxing out current=required hides the entire block
-  // (PaidConfirmation.tsx:105 condition `current < required` evaluates false).
-  // Trade-off: reorg progress visual is sacrificed during confirming. If we want
-  // it back, round 8 needs a frame-driven progress bar that bypasses framer-motion.
+  // Round 9a: restore reorg-progress visual (Ignat: "под кнопкой не хватает прогресса оплаты").
+  // Drive confirmations.current frame-by-frame so RemotionPaidConfirmationProgress fills smoothly.
+  // Production widget still receives current=required (hides its own framer-motion block per
+  // round-7 hack) — the new overlay is rendered separately and is Remotion-safe.
+  const confirmingProgress = interpolate(
+    frame,
+    [PHASE_CONFIRMING, SUCCESS],
+    [0, CONFIRMATIONS_REQUIRED],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
   const confirmations = useMemo(
     () => ({
       current: CONFIRMATIONS_REQUIRED,
@@ -126,12 +143,12 @@ export const PayScene: React.FC = () => {
     };
   }, [width, height]);
 
-  // Violet pulse overlay over the totals band — v2 holds max-emphasis for
-  // 120 frames (4s) per creative-brief-v2 §8 non-negotiable, then fades out
-  // before the confirming phase starts.
+  // Violet pulse overlay over the totals band — round 9a: 120fr peak hold.
+  // Ramp-in starts at MAGIC_DUST_HIGHLIGHT=170, peak 190 (=PHASE_READY start),
+  // peak ends at MAGIC_DUST_PEAK_END=310 (overlaps sending start at 275 — visual continuity).
   const magicDustPulseOpacity = interpolate(
     frame,
-    [MAGIC_DUST_HIGHLIGHT - 10, MAGIC_DUST_HIGHLIGHT + 10, MAGIC_DUST_PEAK_END - 10, MAGIC_DUST_PEAK_END + 10],
+    [MAGIC_DUST_HIGHLIGHT - 20, MAGIC_DUST_HIGHLIGHT, MAGIC_DUST_PEAK_END, MAGIC_DUST_PEAK_END + 20],
     [0, 0.55, 0.55, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
@@ -208,10 +225,9 @@ export const PayScene: React.FC = () => {
           source="received"
           finalized={panelStatus === "paid"}
         >
-          {/* CTA — round 6: drives real SmartPayButtonView per-frame across 4 visible
-              payment steps. press-scale wrapper pulses on entry to switch/ready/sending
-              transitions (frames 90/150/210). View renders Connect/Switch/Pay/Sending
-              labels + spinner + progress bar from `step` + `idleSubState` alone. */}
+          {/* CTA — round 9a: drives SmartPayButtonView per-frame across 6 idle sub-states
+              + sending. connecting/switching sub-states show spinner (C5 extension).
+              Press-scale fires at PRESS_CONNECT/PRESS_SWITCH/PRESS_PAY. */}
           {(step === 'idle' || step === 'sending') && (
             <div
               style={{
@@ -230,30 +246,27 @@ export const PayScene: React.FC = () => {
               />
             </div>
           )}
+
+          {/* Round 9a: reorg progress overlay — Remotion-safe frame-driven bar.
+              Rendered during PHASE_CONFIRMING window only. Production widget's own
+              framer-motion block stays hidden (current=required) per round-7 hack. */}
+          {step === 'confirming' && (
+            <div style={{ marginTop: 12 }}>
+              <RemotionPaidConfirmationProgress
+                current={confirmingProgress}
+                required={CONFIRMATIONS_REQUIRED}
+              />
+            </div>
+          )}
         </PaymentPanel>
       </div>
 
-      {/* v2 caption per creative-brief-v2 §4 — top-mounted, aligned with
-          the 120-frame Magic Dust peak (local frames 240–360). */}
-      {/* Round 7: anchored to confirming → paid window per Ignat #5.
-          25.000s mp4 = global frame 750 = S3-local 310 (S3 starts at global 440).
-          Caption persists into paid phase to celebrate completion. */}
-      <Caption text="Cryptographic receipt" position="top" startAt={310} endAt={500} />
-
-      <MicroLabel text="No account — wallet is the identity" startAt={5} endAt={85} x="62%" y="20%" anchor="left" maxWidth={420} />
-      <MicroLabel text="Network matches the invoice" startAt={95} endAt={145} x="62%" y="20%" anchor="left" maxWidth={420} />
-      <MicroLabel text="Micro-amount added for exact matching" startAt={155} endAt={290} x="8%" y="84%" anchor="left" maxWidth={520} />
-      {/* Round 8: bottom-left so it doesn't collide with Caption "Cryptographic
-          receipt" (top) during the paid window. Toasters anchor below-panel right
-          edge — no collision on the bottom-left. */}
-      <MicroLabel text="Verified on-chain. Payment complete." startAt={395} endAt={500} x="8%" y="84%" anchor="left" maxWidth={520} />
-
       {/* Narrative toasts — anchored below panel right edge */}
-      <RemotionFakeToast variant="success" title="Wallet connected" startAt={88} hold={45} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={148} hold={45} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="loading" title="Sending transaction" startAt={208} hold={85} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={300} hold={90} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={390} hold={120} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Wallet connected" startAt={58} hold={45} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={153} hold={45} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="loading" title="Sending transaction" startAt={273} hold={85} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={365} hold={90} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={455} hold={120} stackOffset={0} anchor="below-panel" />
     </AbsoluteFill>
   );
 };
