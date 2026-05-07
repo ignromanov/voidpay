@@ -169,8 +169,11 @@ export const PayScene: React.FC = () => {
             transformOrigin: "top left",
           }}
         >
+          {/* Round 9a-patch3 (D3): paper flips to PAID at confirming (tx submitted, hash exists)
+              per Ignat — "до подтверждения в on-chain". Old behavior: only at success (after final
+              confirmation). New: confirming + success → paid; everything else → pending. */}
           <InvoicePaper
-            {...(panelStatus === "paid" ? PAPER_PROPS_PAID : PAPER_PROPS_PENDING)}
+            {...(step === 'confirming' || step === 'success' ? PAPER_PROPS_PAID : PAPER_PROPS_PENDING)}
           />
         </div>
 
