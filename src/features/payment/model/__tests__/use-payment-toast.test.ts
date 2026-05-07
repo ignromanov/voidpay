@@ -3,6 +3,8 @@ import { renderHook } from '@testing-library/react'
 import { toast as sonnerToast } from 'sonner'
 import { usePaymentToast } from '../use-payment-toast'
 
+type UsePaymentToastParams = Parameters<typeof usePaymentToast>[0]
+
 // sonner is aliased to mocks/sonner.tsx in vitest.config.ts
 // toast.loading / toast.success / toast.error / toast.dismiss are vi.fn()
 
@@ -23,8 +25,8 @@ function setMatchMedia(matchesMobile: boolean): void {
   })
 }
 
-const BASE_PARAMS = {
-  idleSubState: 'ready' as const,
+const BASE_PARAMS: Omit<UsePaymentToastParams, 'step'> = {
+  idleSubState: 'ready',
   currency: 'USDC',
   subtotal: '1000000',
   decimals: 6,
@@ -43,10 +45,10 @@ describe('usePaymentToast', () => {
     it('calls sonnerToast.loading when an active step is present', () => {
       const { rerender } = renderHook(
         (props) => usePaymentToast(props),
-        { initialProps: { ...BASE_PARAMS, step: 'idle' as const } },
+        { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
-      rerender({ ...BASE_PARAMS, step: 'sending' as const })
+      rerender({ ...BASE_PARAMS, step: 'sending' })
 
       expect(sonnerToast.loading).toHaveBeenCalled()
     })
@@ -54,11 +56,11 @@ describe('usePaymentToast', () => {
     it('calls sonnerToast.success on success step', () => {
       const { rerender } = renderHook(
         (props) => usePaymentToast(props),
-        { initialProps: { ...BASE_PARAMS, step: 'idle' as const } },
+        { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
-      rerender({ ...BASE_PARAMS, step: 'sending' as const })
-      rerender({ ...BASE_PARAMS, step: 'success' as const })
+      rerender({ ...BASE_PARAMS, step: 'sending' })
+      rerender({ ...BASE_PARAMS, step: 'success' })
 
       expect(sonnerToast.success).toHaveBeenCalled()
     })
@@ -66,13 +68,13 @@ describe('usePaymentToast', () => {
     it('calls sonnerToast.error on payment failure', () => {
       const { rerender } = renderHook(
         (props) => usePaymentToast(props),
-        { initialProps: { ...BASE_PARAMS, step: 'idle' as const } },
+        { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
-      rerender({ ...BASE_PARAMS, step: 'sending' as const })
+      rerender({ ...BASE_PARAMS, step: 'sending' })
       rerender({
         ...BASE_PARAMS,
-        step: 'idle' as const,
+        step: 'idle',
         error: { message: 'User rejected' },
       })
 
@@ -86,11 +88,11 @@ describe('usePaymentToast', () => {
     it('does NOT call sonnerToast.loading during step transitions', () => {
       const { rerender } = renderHook(
         (props) => usePaymentToast(props),
-        { initialProps: { ...BASE_PARAMS, step: 'idle' as const } },
+        { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
-      rerender({ ...BASE_PARAMS, step: 'sending' as const })
-      rerender({ ...BASE_PARAMS, step: 'confirming' as const })
+      rerender({ ...BASE_PARAMS, step: 'sending' })
+      rerender({ ...BASE_PARAMS, step: 'confirming' })
 
       expect(sonnerToast.loading).not.toHaveBeenCalled()
     })
@@ -98,11 +100,11 @@ describe('usePaymentToast', () => {
     it('still calls sonnerToast.success on success step', () => {
       const { rerender } = renderHook(
         (props) => usePaymentToast(props),
-        { initialProps: { ...BASE_PARAMS, step: 'idle' as const } },
+        { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
-      rerender({ ...BASE_PARAMS, step: 'sending' as const })
-      rerender({ ...BASE_PARAMS, step: 'success' as const })
+      rerender({ ...BASE_PARAMS, step: 'sending' })
+      rerender({ ...BASE_PARAMS, step: 'success' })
 
       expect(sonnerToast.success).toHaveBeenCalled()
       expect(sonnerToast.loading).not.toHaveBeenCalled()
@@ -111,13 +113,13 @@ describe('usePaymentToast', () => {
     it('still calls sonnerToast.error on payment failure', () => {
       const { rerender } = renderHook(
         (props) => usePaymentToast(props),
-        { initialProps: { ...BASE_PARAMS, step: 'idle' as const } },
+        { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
-      rerender({ ...BASE_PARAMS, step: 'sending' as const })
+      rerender({ ...BASE_PARAMS, step: 'sending' })
       rerender({
         ...BASE_PARAMS,
-        step: 'idle' as const,
+        step: 'idle',
         error: { message: 'User rejected' },
       })
 
@@ -128,11 +130,11 @@ describe('usePaymentToast', () => {
     it('calls sonnerToast.dismiss on user cancel', () => {
       const { rerender } = renderHook(
         (props) => usePaymentToast(props),
-        { initialProps: { ...BASE_PARAMS, step: 'idle' as const } },
+        { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
-      rerender({ ...BASE_PARAMS, step: 'sending' as const })
-      rerender({ ...BASE_PARAMS, step: 'idle' as const, error: null })
+      rerender({ ...BASE_PARAMS, step: 'sending' })
+      rerender({ ...BASE_PARAMS, step: 'idle', error: null })
 
       expect(sonnerToast.dismiss).toHaveBeenCalled()
     })
@@ -147,16 +149,16 @@ describe('usePaymentToast', () => {
         {
           initialProps: {
             ...BASE_PARAMS,
-            idleSubState: 'disconnected' as const,
-            step: 'idle' as const,
+            idleSubState: 'disconnected',
+            step: 'idle',
           },
         },
       )
 
       rerender({
         ...BASE_PARAMS,
-        idleSubState: 'disconnected' as const,
-        step: 'connecting' as const,
+        idleSubState: 'disconnected',
+        step: 'connecting',
       })
 
       expect(sonnerToast.loading).not.toHaveBeenCalled()
