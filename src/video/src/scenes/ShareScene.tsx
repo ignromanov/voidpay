@@ -20,6 +20,7 @@ import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
 import { RemotionLinkTab } from "../components/RemotionLinkTab";
 import { Caption } from "../components/Caption";
+import { HintBadge } from "../components/HintBadge";
 
 // Full URL — 4x longer hash payload (~560 chars) so the LinkTab URL visibly
 // truncates with ellipsis and reads as "very long / data-dense".
@@ -161,8 +162,19 @@ export const ShareScene: React.FC = () => {
         </div>
 
         {/* ε2: RemotionLinkTab — video-only fork, no social share, no QR tab */}
-        <div style={{ padding: "0 24px 24px 24px" }}>
+        {/* η5: "invoice data →" ghost hint overlaid on URL hash field — local 80–160 (R2: startAt=80,
+             20fr after ζ4 caption enters at 60, avoids 3-layer density at frame 60; exits at 160,
+             50fr after COPY_CLICK_FRAME=110). Positioned bottom-right of the permalink box. */}
+        <div style={{ padding: "0 24px 24px 24px", position: "relative" }}>
           <RemotionLinkTab url={SHARE_URL} copied={copied} />
+          <HintBadge
+            text="invoice data →"
+            startAt={80}
+            endAt={160}
+            variant="ghost"
+            fontSize={13}
+            style={{ right: 12, top: 28, zIndex: 10 }}
+          />
         </div>
       </Card>
 
