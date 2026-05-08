@@ -211,7 +211,7 @@ export const CreateScene: React.FC = () => {
           top: formTop,
           width: formWidth,
           height: formHeight,
-          padding: 24,
+          padding: "24px 32px 24px 24px",  // ε1: right-pad 32px so right-column TOTAL values don't clip
           overflow: "hidden",
           opacity: formOpacity,
           zIndex: 2,
@@ -234,15 +234,16 @@ export const CreateScene: React.FC = () => {
             )}px)`,
           }}
         >
-          {/* γ2: scale wrapper for portrait readability */}
+          {/* ε1: font-size CSS replaces transform-scale (γ2 conceptual error: pre-divide + scale = layout-neutral).
+               overflow: visible prevents right-column TOTAL clipping at Card edge. */}
           {isPortrait ? (
             <div style={{
               position: "relative",
-              width: formWidth / 1.25,           // pre-divide so post-scale fits Card width
-              height: formHeight / 1.25,
-              transform: "scale(1.25)",
-              transformOrigin: "top left",
-              overflow: "hidden",
+              width: "100%",
+              height: "100%",
+              fontSize: "20px",                  // ε1: bump base font-size; cascades to em/rem children (1.25× of 16px)
+              overflow: "visible",               // ε1: prevents right-column clipping at Card edge
+              paddingRight: 8,                   // ε1: small extra right pad so values don't touch border
             }}>
               <InvoiceFormView
                 value={viewValue}
