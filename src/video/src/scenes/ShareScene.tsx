@@ -158,26 +158,29 @@ export const ShareScene: React.FC = () => {
         <PaperBackdrop />
       </AbsoluteFill>
 
-      {/* Dimmed backdrop — reduced to 0.45 so paper reads through */}
+      {/* Dimmed backdrop — β3: reduced to 0.30 so paper reads clearly through */}
       <div style={{
         position: "absolute",
         inset: 0,
-        background: "rgba(0,0,0,0.45)",
+        background: "rgba(0,0,0,0.30)",
         opacity: modalOpacity,
       }} />
 
-      {/* Share modal shell — 512px wide, bottom-biased for portrait so paper reads above */}
+      {/* Share modal shell — β1: floating center at 42% viewport, β3: solid background */}
       <Card
-        variant="glass"
+        // β3: solid background for readability over invoice paper backdrop
+        className="border border-zinc-800/80"
         style={{
           position: "absolute",
           left: width / 2 - 256,
-          top: height - 720,
+          top: height * 0.42,
           width: 512,
           padding: 0,
           transform: `translateY(${modalTranslateY}px)`,
           opacity: modalOpacity,
           overflow: "hidden",
+          backgroundColor: "rgba(24, 24, 27, 0.96)",
+          boxShadow: "0 25px 80px -20px rgba(0,0,0,0.8), 0 8px 32px -8px rgba(0,0,0,0.5)",
         }}
       >
         {/* Violet top gradient bar — matches real ShareModal */}
