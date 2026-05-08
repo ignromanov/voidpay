@@ -73,6 +73,9 @@ const PaperBackdrop: React.FC<{ frame: number }> = ({ frame: f }) => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
   const paperScale = scale * (0.92 + enter * 0.08);  // 92% → 100% scale ramp
+  // ε6: dim paper backdrop in S1 to push it visually behind the form
+  // (S2 + S3 use full-opacity PaperBackdrop — this dimming is S1-only)
+  const paperOpacity = enter * 0.65;
 
   if (enter <= 0) return null;
 
@@ -86,7 +89,7 @@ const PaperBackdrop: React.FC<{ frame: number }> = ({ frame: f }) => {
         height: INVOICE_BASE_HEIGHT,
         transform: `scale(${paperScale})`,
         transformOrigin: "top left",
-        opacity: enter,
+        opacity: paperOpacity,
         zIndex: 1,
       }}
     >
