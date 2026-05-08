@@ -39,8 +39,6 @@ const TOKEN_APPEAR      = 179;
 const FILL_COMPLETE     = 195;  // last field landed (was BUTTON_VISIBLE in round 8)
 const PAPER_APPEAR      = 200;  // round 9a: post-fill — InvoicePaper fade-in starts here
 const PAPER_VISIBLE_AT  = 230;  // fade-in done (30fr ramp)
-const PAPER_PULSE_PEAK  = 255;  // midpoint of 50fr accent pulse
-const PAPER_HOLD_END    = 280;  // paper acknowledged
 const BUTTON_VISIBLE    = 280;  // round 9a: button reveals AFTER paper hold
 const PRESS_START       = 290;
 const PRESS_END         = 307;
@@ -57,6 +55,44 @@ const SCROLL_OFFSETS = [0, -120, -240, -360];
 
 const noop = () => {
   /* Remotion renders static frames — click handlers never fire */
+};
+
+// β2: PaperBackdrop — full-bleed InvoicePaper centered in viewport, frame-driven entrance.
+// Renders BEHIND the form Card (z=1 vs form z=default). Grows from PAPER_APPEAR.
+const PaperBackdrop: React.FC<{ frame: number }> = ({ frame: f }) => {
+  const { width, height } = useVideoConfig();
+  const targetWidth = width * 0.92;
+  const scale = targetWidth / INVOICE_BASE_WIDTH;
+  const scaledH = INVOICE_BASE_HEIGHT * scale;
+  const top = Math.max(40, (height - scaledH) / 2 - 80);
+
+  const enter = interpolate(
+    f,
+    [PAPER_APPEAR, PAPER_VISIBLE_AT],
+    [0, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const paperScale = scale * (0.92 + enter * 0.08);  // 92% → 100% scale ramp
+
+  if (enter <= 0) return null;
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: (width - INVOICE_BASE_WIDTH * paperScale) / 2,
+        top,
+        width: INVOICE_BASE_WIDTH,
+        height: INVOICE_BASE_HEIGHT,
+        transform: `scale(${paperScale})`,
+        transformOrigin: "top left",
+        opacity: enter,
+        zIndex: 1,
+      }}
+    >
+      <InvoicePaper data={DEMO_INVOICE} status="draft" variant="default" />
+    </div>
+  );
 };
 
 /** Typewriter: reveal `text` char by char starting at `startFrame` */
@@ -132,55 +168,14 @@ export const CreateScene: React.FC = () => {
     : 0;
   const buttonGlowOpacity = baseGlow + fillPulseDelta + settledHalo;
 
-  // Round 9c L7: form layout — portrait centered, landscape left-side.
-  const formWidth = isPortrait ? Math.min(960, width * 0.9) : width * 0.36;
-  const formLeft = isPortrait ? (width - formWidth) / 2 : width * 0.06;
-  const formTop = isPortrait ? 80 : height * 0.06;
-  const formHeight = isPortrait ? height * 0.44 : height * 0.88;
+  // β4: form layout — portrait vertically dominant (~80% viewport), landscape left-side.
+  const formWidth = isPortrait ? Math.min(800, width * 0.78) : width * 0.36;
+  const formLeft = (width - formWidth) / 2;
+  const formTop = isPortrait ? Math.round(height * 0.08) : height * 0.06;
+  const formHeight = isPortrait ? Math.round(height * 0.84) : height * 0.88;
 
-  // Round 9c L7: paper layout — portrait lower half, landscape right-side.
-  const paperLayout = useMemo(() => {
-    if (isPortrait) {
-      // Paper takes lower portion of portrait viewport
-      const targetW = width * 0.85;
-      const scale = targetW / INVOICE_BASE_WIDTH;
-      const scaledW = INVOICE_BASE_WIDTH * scale;
-      const scaledH = INVOICE_BASE_HEIGHT * scale;
-      return {
-        left: (width - scaledW) / 2,
-        top: height * 0.55,
-        scaledW,
-        scaledH,
-        scale,
-      };
-    }
-    // Landscape: paper in right half
-    const containerW = width * 0.38;
-    const containerH = height * 0.8;
-    const scale = Math.min(
-      containerW / INVOICE_BASE_WIDTH,
-      containerH / INVOICE_BASE_HEIGHT,
-    );
-    const scaledW = INVOICE_BASE_WIDTH * scale;
-    const scaledH = INVOICE_BASE_HEIGHT * scale;
-    return {
-      left: width - width * 0.06 - scaledW - (containerW - scaledW) / 2,
-      top: height * 0.1 + (containerH - scaledH) / 2,
-      scaledW,
-      scaledH,
-      scale,
-    };
-  }, [width, height, isPortrait]);
-
-  // Form fade-out when paper appears — form dims to 0.3 to establish paper as new focus.
-  const formOpacity = frame >= PAPER_APPEAR
-    ? interpolate(
-        frame,
-        [PAPER_APPEAR, PAPER_VISIBLE_AT],
-        [1, 0.3],
-        { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-      )
-    : 1;
+  // β3.3: form stays at opacity 1 throughout S1 — paper is backdrop, not replacement.
+  const formOpacity = 1;
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
@@ -200,9 +195,11 @@ export const CreateScene: React.FC = () => {
         }}
       />
 
-      {/* Round 7 — Card holds form panel + button INSIDE the scroll-translated div. */}
+      {/* β2: InvoicePaper as persistent backdrop, grows from PAPER_APPEAR BEHIND form (z=1) */}
+      <PaperBackdrop frame={frame} />
+
+      {/* β1+β3+β4: Form Card — vertically dominant, solid background, stays at opacity 1. */}
       <Card
-        variant="glass"
         style={{
           position: "absolute",
           left: formLeft,
@@ -212,6 +209,10 @@ export const CreateScene: React.FC = () => {
           padding: 24,
           overflow: "hidden",
           opacity: formOpacity,
+          backgroundColor: "rgba(24, 24, 27, 0.96)",
+          border: "1px solid rgba(63, 63, 70, 0.8)",
+          boxShadow: "0 25px 80px -20px rgba(0,0,0,0.8), 0 8px 32px -8px rgba(0,0,0,0.5)",
+          borderRadius: 16,
         }}
       >
         <div
@@ -252,63 +253,6 @@ export const CreateScene: React.FC = () => {
         </div>
       </Card>
 
-      {/* Round 9a: InvoicePaper appears AFTER form fill complete.
-          Round 9c L7: in portrait, paper appears in lower half (top = height * 0.55). */}
-      {frame >= PAPER_APPEAR && (
-        <div
-          style={{
-            position: "absolute",
-            left: paperLayout.left,
-            top: paperLayout.top,
-            width: paperLayout.scaledW,
-            height: paperLayout.scaledH,
-            opacity: interpolate(
-              frame,
-              [PAPER_APPEAR, PAPER_VISIBLE_AT],
-              [0, 1],
-              { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-            ),
-            transform: `translateY(${interpolate(
-              frame,
-              [PAPER_APPEAR, PAPER_VISIBLE_AT],
-              [20, 0],
-              { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-            )}px)`,
-          }}
-        >
-          {/* Violet accent pulse around paper */}
-          <div
-            style={{
-              position: "absolute",
-              inset: -24,
-              borderRadius: 16,
-              boxShadow: `0 0 80px rgba(124,58,237,${interpolate(
-                frame,
-                [PAPER_VISIBLE_AT, PAPER_PULSE_PEAK, PAPER_HOLD_END],
-                [0, 0.55, 0],
-                { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-              )}), 0 0 160px rgba(124,58,237,${interpolate(
-                frame,
-                [PAPER_VISIBLE_AT, PAPER_PULSE_PEAK, PAPER_HOLD_END],
-                [0, 0.3, 0],
-                { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-              )})`,
-              pointerEvents: "none",
-            }}
-          />
-          <div
-            style={{
-              width: INVOICE_BASE_WIDTH,
-              height: INVOICE_BASE_HEIGHT,
-              transform: `scale(${paperLayout.scale})`,
-              transformOrigin: "top left",
-            }}
-          >
-            {/* Round 9a-patch2 (C6): 'draft' is a valid InvoicePaperStatus value. */}
-            <InvoicePaper data={DEMO_INVOICE} status="draft" variant="default" />
-          </div>
-        </div>
-      )}
     </AbsoluteFill>
   );
 };
