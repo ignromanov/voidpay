@@ -18,14 +18,16 @@ export const ThesisOutroScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width } = useVideoConfig();
 
-  const enter = spring({ frame, fps, config: SPRING_CONFIGS.smooth, durationInFrames: 30 });
+  // ε3: delay thesis entrance by 12fr to let S3→S4 crossfade complete first
+  const TEXT_DELAY = 12;
+  const enter = spring({ frame: frame - TEXT_DELAY, fps, config: SPRING_CONFIGS.smooth, durationInFrames: 30 });
   const urlEnter = spring({
-    frame: frame - 20,
+    frame: frame - TEXT_DELAY - 20,
     fps,
     config: SPRING_CONFIGS.smooth,
     durationInFrames: 30,
   });
-  const opacity = interpolate(frame, [0, 15], [0, 1], {
+  const opacity = interpolate(frame, [TEXT_DELAY, TEXT_DELAY + 18], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
