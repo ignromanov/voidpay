@@ -70,8 +70,8 @@ const CONFIRMATIONS_REQUIRED = 12;
 const PANEL_EXIT_START = 495;
 const PANEL_EXIT_END   = 515;
 
-// β1: floating center panel width — ~60% of 1080 viewport
-const PANEL_WIDTH = 640;
+// ε5: panel width ~48% of 1080 viewport (was 60%) — more paper context visible
+const PANEL_WIDTH = 520;
 
 const stepAt = (frame: number): { step: PaymentStep; idleSubState: IdleSubState } => {
   if (frame >= SUCCESS) return { step: 'success', idleSubState: 'ready' };
@@ -214,7 +214,7 @@ export const PayScene: React.FC = () => {
           top: "50%",
           width: PANEL_WIDTH,
           // γ4: true-center positioning + scale + exit
-          transform: `translate(-50%, -50%) scale(${cardScale}) translateY(${panelExit}px)`,
+          transform: `translate(-50%, -50%) scale(${cardScale * 0.92}) translateY(${panelExit}px)`,
           transformOrigin: "center center",
           opacity: cardScale * (1 - panelExitOpacity),
           borderRadius: 16,
