@@ -44,7 +44,7 @@ describe('usePaymentToast', () => {
 
     it('calls sonnerToast.loading when an active step is present', () => {
       const { rerender } = renderHook(
-        (props) => usePaymentToast(props),
+        (props: UsePaymentToastParams) => usePaymentToast(props),
         { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
@@ -55,7 +55,7 @@ describe('usePaymentToast', () => {
 
     it('calls sonnerToast.success on success step', () => {
       const { rerender } = renderHook(
-        (props) => usePaymentToast(props),
+        (props: UsePaymentToastParams) => usePaymentToast(props),
         { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
@@ -67,7 +67,7 @@ describe('usePaymentToast', () => {
 
     it('calls sonnerToast.error on payment failure', () => {
       const { rerender } = renderHook(
-        (props) => usePaymentToast(props),
+        (props: UsePaymentToastParams) => usePaymentToast(props),
         { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
@@ -87,7 +87,7 @@ describe('usePaymentToast', () => {
 
     it('does NOT call sonnerToast.loading during step transitions', () => {
       const { rerender } = renderHook(
-        (props) => usePaymentToast(props),
+        (props: UsePaymentToastParams) => usePaymentToast(props),
         { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
@@ -99,7 +99,7 @@ describe('usePaymentToast', () => {
 
     it('still calls sonnerToast.success on success step', () => {
       const { rerender } = renderHook(
-        (props) => usePaymentToast(props),
+        (props: UsePaymentToastParams) => usePaymentToast(props),
         { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
@@ -112,7 +112,7 @@ describe('usePaymentToast', () => {
 
     it('still calls sonnerToast.error on payment failure', () => {
       const { rerender } = renderHook(
-        (props) => usePaymentToast(props),
+        (props: UsePaymentToastParams) => usePaymentToast(props),
         { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
@@ -129,7 +129,7 @@ describe('usePaymentToast', () => {
 
     it('calls sonnerToast.dismiss on user cancel', () => {
       const { rerender } = renderHook(
-        (props) => usePaymentToast(props),
+        (props: UsePaymentToastParams) => usePaymentToast(props),
         { initialProps: { ...BASE_PARAMS, step: 'idle' } },
       )
 
@@ -145,7 +145,7 @@ describe('usePaymentToast', () => {
 
     it('does NOT call sonnerToast.loading for connecting step', () => {
       const { rerender } = renderHook(
-        (props) => usePaymentToast(props),
+        (props: UsePaymentToastParams) => usePaymentToast(props),
         {
           initialProps: {
             ...BASE_PARAMS,
