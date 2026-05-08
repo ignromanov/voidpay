@@ -19,6 +19,7 @@ import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
 import { RemotionLinkTab } from "../components/RemotionLinkTab";
+import { Caption } from "../components/Caption";
 
 // Full URL — 4x longer hash payload (~560 chars) so the LinkTab URL visibly
 // truncates with ellipsis and reads as "very long / data-dense".
@@ -106,13 +107,15 @@ export const ShareScene: React.FC = () => {
       }} />
 
       {/* Share modal shell — γ4: true-center positioning, β3: solid background */}
+      {/* ζ3: top shifted 50%→48% — paper mass occupies upper frame, modal visual center is slightly
+           below mathematical center; 48% places it in the visual center of the dark space below paper */}
       <Card
         // β3: solid background for readability over invoice paper backdrop
         className="border border-zinc-800/80"
         style={{
           position: "absolute",
           left: "50%",
-          top: "50%",
+          top: "48%",
           width: 512,
           padding: 0,
           transform: `translate(-50%, -50%) translateY(${modalTranslateY}px)`,
@@ -162,6 +165,17 @@ export const ShareScene: React.FC = () => {
           <RemotionLinkTab url={SHARE_URL} copied={copied} />
         </div>
       </Card>
+
+      {/* ζ4: Spark caption — Content Anchor #3 "Payments can be reduced to pure data"
+           startAt=60 local: modal fully entered by ~f20, 60fr stagger lets viewer read header first.
+           endAt=250: persists through Copy click at ~f120, fades before quiet hold at f250. */}
+      <Caption
+        text="URL = invoice."
+        position="top"
+        startAt={60}
+        endAt={250}
+        fontSize={38}
+      />
 
     </AbsoluteFill>
   );
