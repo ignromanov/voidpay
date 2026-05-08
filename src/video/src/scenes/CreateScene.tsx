@@ -168,11 +168,16 @@ export const CreateScene: React.FC = () => {
     : 0;
   const buttonGlowOpacity = baseGlow + fillPulseDelta + settledHalo;
 
-  // β4: form layout — portrait vertically dominant (~80% viewport), landscape left-side.
-  const formWidth = isPortrait ? Math.min(800, width * 0.78) : width * 0.36;
-  const formLeft = (width - formWidth) / 2;
-  const formTop = isPortrait ? Math.round(height * 0.08) : height * 0.06;
-  const formHeight = isPortrait ? Math.round(height * 0.84) : height * 0.88;
+  // γ1: Form true-centered with generous margins so paper backdrop reads through.
+  const formWidth  = isPortrait ? Math.min(800, width * 0.74)  : 768;     // 800 on 1080 (140px each side)
+  const formHeight = isPortrait ? Math.round(height * 0.58)    : 720;     // 1114 on 1920 (~400px top+bot)
+  const formLeft   = (width - formWidth) / 2;
+  const formTop    = isPortrait ? (height - formHeight) / 2     : (height - formHeight) / 2;
+
+  // γ3: single mercating neon glow — sin-driven pulse, no border (avoids double-rim)
+  const neonPulse = 0.5 + 0.5 * Math.sin((frame / 60) * Math.PI * 2);   // 1 cycle / 2s
+  const glowIntensity = 0.35 + neonPulse * 0.3;                         // 0.35 → 0.65
+  const glowSpread = 30 + neonPulse * 30;                               // 30 → 60
 
   // β3.3: form stays at opacity 1 throughout S1 — paper is backdrop, not replacement.
   const formOpacity = 1;
@@ -210,8 +215,11 @@ export const CreateScene: React.FC = () => {
           overflow: "hidden",
           opacity: formOpacity,
           backgroundColor: "rgba(24, 24, 27, 0.96)",
-          border: "1px solid rgba(63, 63, 70, 0.8)",
-          boxShadow: "0 25px 80px -20px rgba(0,0,0,0.8), 0 8px 32px -8px rgba(0,0,0,0.5)",
+          boxShadow: `
+            0 0 ${glowSpread}px rgba(124, 58, 237, ${glowIntensity}),
+            0 0 ${glowSpread / 2}px rgba(124, 58, 237, ${glowIntensity * 0.7}),
+            0 25px 80px -20px rgba(0,0,0,0.8)
+          `,
           borderRadius: 16,
         }}
       >
@@ -225,31 +233,67 @@ export const CreateScene: React.FC = () => {
             )}px)`,
           }}
         >
-          <InvoiceFormView
-            value={viewValue}
-            {...(focusedField && { focusedField })}
-            showGenerateButton={false}
-          />
-
-          {/* Round 9a-patch2 (C1): button always mounted at bottom of scroll content. */}
-          {
-            <div
-              style={{
-                marginTop: 16,
-                transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
-                transformOrigin: "center",
-              }}
-            >
-              <GenerateButtonView
-                onGenerate={noop}
-                canGenerate={frame >= FILL_COMPLETE}
-                isGenerating={frame >= PRESS_END}
-                onSubmitAttempt={noop}
-                hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
-                pressState={frame >= PRESS_START && frame < PRESS_END}
+          {/* γ2: scale wrapper for portrait readability */}
+          {isPortrait ? (
+            <div style={{
+              position: "relative",
+              width: formWidth / 1.25,           // pre-divide so post-scale fits Card width
+              height: formHeight / 1.25,
+              transform: "scale(1.25)",
+              transformOrigin: "top left",
+              overflow: "hidden",
+            }}>
+              <InvoiceFormView
+                value={viewValue}
+                {...(focusedField && { focusedField })}
+                showGenerateButton={false}
               />
+
+              {/* Round 9a-patch2 (C1): button always mounted at bottom of scroll content. */}
+              <div
+                style={{
+                  marginTop: 16,
+                  transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
+                  transformOrigin: "center",
+                }}
+              >
+                <GenerateButtonView
+                  onGenerate={noop}
+                  canGenerate={frame >= FILL_COMPLETE}
+                  isGenerating={frame >= PRESS_END}
+                  onSubmitAttempt={noop}
+                  hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
+                  pressState={frame >= PRESS_START && frame < PRESS_END}
+                />
+              </div>
             </div>
-          }
+          ) : (
+            <>
+              <InvoiceFormView
+                value={viewValue}
+                {...(focusedField && { focusedField })}
+                showGenerateButton={false}
+              />
+
+              {/* Round 9a-patch2 (C1): button always mounted at bottom of scroll content. */}
+              <div
+                style={{
+                  marginTop: 16,
+                  transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
+                  transformOrigin: "center",
+                }}
+              >
+                <GenerateButtonView
+                  onGenerate={noop}
+                  canGenerate={frame >= FILL_COMPLETE}
+                  isGenerating={frame >= PRESS_END}
+                  onSubmitAttempt={noop}
+                  hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
+                  pressState={frame >= PRESS_START && frame < PRESS_END}
+                />
+              </div>
+            </>
+          )}
         </div>
       </Card>
 
