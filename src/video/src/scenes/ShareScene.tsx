@@ -166,17 +166,17 @@ export const ShareScene: React.FC = () => {
         opacity: modalOpacity,
       }} />
 
-      {/* Share modal shell — β1: floating center at 42% viewport, β3: solid background */}
+      {/* Share modal shell — γ4: true-center positioning, β3: solid background */}
       <Card
         // β3: solid background for readability over invoice paper backdrop
         className="border border-zinc-800/80"
         style={{
           position: "absolute",
-          left: width / 2 - 256,
-          top: height * 0.42,
+          left: "50%",
+          top: "50%",
           width: 512,
           padding: 0,
-          transform: `translateY(${modalTranslateY}px)`,
+          transform: `translate(-50%, -50%) translateY(${modalTranslateY}px)`,
           opacity: modalOpacity,
           overflow: "hidden",
           backgroundColor: "rgba(24, 24, 27, 0.96)",
