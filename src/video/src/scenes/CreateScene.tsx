@@ -16,6 +16,8 @@ import { Card } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
 import { TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { DEMO_INVOICE, DEMO_FROM_ADDRESS } from "../constants/demo-invoice";
+import { Caption } from "../components/Caption";
+import { HintBadge } from "../components/HintBadge";
 
 // Creative brief §2: Alex · UI Design · $250 USDC · Arbitrum
 const INVOICE_FROM = "Alex";
@@ -315,6 +317,45 @@ export const CreateScene: React.FC = () => {
           )}
         </div>
       </Card>
+
+      {/* η7: "auto-generated" hint near Invoice No field — local 65–95, early in cascade */}
+      <HintBadge
+        text="auto-generated"
+        startAt={65}
+        endAt={95}
+        variant="ghost"
+        fontSize={14}
+        style={{ left: formLeft + formWidth * 0.55, top: formTop + 28, zIndex: 10 }}
+      />
+
+      {/* η6: "any address, no KYC" hint near wallet field — local 115–175, during wallet typewriter */}
+      <HintBadge
+        text="any address, no KYC"
+        startAt={115}
+        endAt={175}
+        variant="arrow"
+        fontSize={14}
+        style={{ left: formLeft + formWidth * 0.38, top: formTop + formHeight * 0.28, zIndex: 10 }}
+      />
+
+      {/* η2: magic dust hint near totals/amount field — local 220–280 (R1: startAt=220 avoids paper reveal collision) */}
+      <HintBadge
+        text="+ 0.000042 ← magic dust"
+        startAt={220}
+        endAt={280}
+        variant="arrow"
+        fontSize={14}
+        style={{ left: formLeft + formWidth * 0.30, top: formTop + formHeight * 0.72, zIndex: 10 }}
+      />
+
+      {/* η1: "No signup." caption — local 280–340, button reveal moment (Spark Beat 11) */}
+      <Caption
+        text="No signup."
+        position="bottom"
+        startAt={280}
+        endAt={340}
+        fontSize={38}
+      />
 
     </AbsoluteFill>
   );
