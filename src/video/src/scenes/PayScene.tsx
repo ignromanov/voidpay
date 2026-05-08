@@ -19,6 +19,7 @@ import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { RemotionFakeToast } from "../components/RemotionFakeToast";
 import { RemotionPaidConfirmationProgress } from "../components/RemotionPaidConfirmationProgress";
+import { Caption } from "../components/Caption";
 import { DEMO_INVOICE, DEMO_CONTENT_HASH } from "../constants/demo-invoice";
 
 // Deterministic demo tx hash for the paid-state watermark
@@ -278,6 +279,16 @@ export const PayScene: React.FC = () => {
       <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={200} hold={60} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={310} hold={90} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={440} hold={120} stackOffset={0} anchor="below-panel" />
+
+      {/* ζ5: Spark caption — Content Anchor #1 "Not our servers" reframe.
+           startAt=460 local: T4 "Payment received" fires at f440; caption enters 20fr into T4 hold.
+           Viewer reads chain confirmation first, then looks up to see the privacy claim. No endAt — persists to scene end. */}
+      <Caption
+        text="Not our servers."
+        position="top"
+        startAt={460}
+        fontSize={38}
+      />
     </AbsoluteFill>
   );
 };
