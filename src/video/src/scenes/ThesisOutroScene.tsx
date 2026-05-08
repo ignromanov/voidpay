@@ -2,6 +2,7 @@ import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } fr
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
 import { COLORS } from "../constants/colors";
+import { RemotionAuroraText } from "../components/RemotionAuroraText";
 
 /**
  * Scene 4 — Thesis Outro (5s, 150 frames @ 30fps).
@@ -14,7 +15,7 @@ import { COLORS } from "../constants/colors";
  */
 export const ThesisOutroScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width } = useVideoConfig();
 
   const enter = spring({ frame, fps, config: SPRING_CONFIGS.smooth, durationInFrames: 30 });
   const urlEnter = spring({
@@ -27,6 +28,10 @@ export const ThesisOutroScene: React.FC = () => {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
+
+  // Round 9c: adaptive font sizes — portrait (1080w) has more vertical real estate.
+  const heroFontSize = width < 1200 ? 110 : 96;
+  const urlFontSize = width < 1200 ? 42 : 36;
 
   return (
     <AbsoluteFill
@@ -43,19 +48,19 @@ export const ThesisOutroScene: React.FC = () => {
         <div
           style={{
             fontFamily: `${FONT_SANS}, sans-serif`,
-            fontSize: 96,
+            fontSize: heroFontSize,
             fontWeight: 600,
             color: COLORS.textCaption,
             letterSpacing: "-0.03em",
             lineHeight: 1.1,
           }}
         >
-          Cryptographic receipts.
+          <RemotionAuroraText>Cryptographic receipts.</RemotionAuroraText>
         </div>
         <div
           style={{
             fontFamily: `${FONT_SANS}, sans-serif`,
-            fontSize: 96,
+            fontSize: heroFontSize,
             fontWeight: 400,
             color: "rgba(255,255,255,0.5)",
             letterSpacing: "-0.03em",
@@ -74,7 +79,7 @@ export const ThesisOutroScene: React.FC = () => {
           borderRadius: 999,
           padding: "14px 28px",
           fontFamily: `${FONT_SANS}, sans-serif`,
-          fontSize: 36,
+          fontSize: urlFontSize,
           fontWeight: 500,
           color: COLORS.textCaption,
           display: "inline-flex",
@@ -85,7 +90,9 @@ export const ThesisOutroScene: React.FC = () => {
       >
         {/* voidpay + .xyz joined — no whitespace/gap between them */}
         <span>
-          <span style={{ color: COLORS.violet }}>voidpay</span>
+          <RemotionAuroraText style={{ fontSize: urlFontSize, fontWeight: 500 }} phaseFrames={45}>
+            voidpay
+          </RemotionAuroraText>
           <span style={{ color: "rgba(255,255,255,0.6)" }}>.xyz</span>
         </span>
         <span style={{ opacity: 0.6 }}>→</span>

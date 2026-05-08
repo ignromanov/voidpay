@@ -1,6 +1,7 @@
-import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONT_SANS } from "../fonts";
 import { COLORS } from "../constants/colors";
+import { RemotionAuroraText } from "../components/RemotionAuroraText";
 
 /**
  * Scene 0 — Thesis Hook (3s, 90 frames @ 30fps).
@@ -17,6 +18,7 @@ import { COLORS } from "../constants/colors";
  */
 export const ThesisHookScene: React.FC = () => {
   const frame = useCurrentFrame();
+  const { width } = useVideoConfig();
 
   // Beat 1: "The invoice…"  fades in 0-18, holds 18-30, fades out 30-36
   const beat1 =
@@ -28,10 +30,13 @@ export const ThesisHookScene: React.FC = () => {
   const beat2 =
     interpolate(frame, [30, 48], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
+  // Round 9c: adaptive font-size — portrait (1080w) reads smaller at 72; bump to 84.
+  const fontSize = width < 1200 ? 84 : 72;
+
   const sharedTextStyle: React.CSSProperties = {
     position: "absolute",
     fontFamily: `${FONT_SANS}, sans-serif`,
-    fontSize: 72,
+    fontSize,
     fontWeight: 600,
     color: COLORS.textCaption,
     textAlign: "center",
@@ -43,8 +48,12 @@ export const ThesisHookScene: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
-      <span style={{ ...sharedTextStyle, opacity: beat1 }}>The invoice…</span>
-      <span style={{ ...sharedTextStyle, opacity: beat2 }}>is the URL.</span>
+      <span style={{ ...sharedTextStyle, opacity: beat1 }}>
+        <RemotionAuroraText>The invoice…</RemotionAuroraText>
+      </span>
+      <span style={{ ...sharedTextStyle, opacity: beat2 }}>
+        <RemotionAuroraText phaseFrames={30}>is the URL.</RemotionAuroraText>
+      </span>
     </AbsoluteFill>
   );
 };
