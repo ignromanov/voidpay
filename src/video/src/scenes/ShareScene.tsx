@@ -5,10 +5,15 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import {
+  InvoicePaper,
+  INVOICE_BASE_WIDTH,
+  INVOICE_BASE_HEIGHT,
+} from "@/widgets/invoice-paper";
 import { NetworkBackground } from "@/widgets/network-background";
 import { LinkTab, InvoiceSummary } from "@/widgets/share-modal";
 import { QRTab } from "@/features/payment-qr";
-import { Card, Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui";
+import { Card, Tabs, TabsList, TabsTrigger } from "@/shared/ui";
 import { CheckCircleIcon } from "@/shared/ui/icons";
 import { DEMO_FROM_ADDRESS, DEMO_INVOICE } from "../constants/demo-invoice";
 import { COLORS } from "../constants/colors";
@@ -40,8 +45,86 @@ const COPY_CLICK_FRAME = 110;
 // S2 extended +40fr (260→300) to fund this without compressing QR window.
 const QR_TAB_FROM_FRAME = 190;
 
+// Tab slide duration — 0.6s @ 30fps
+const SLIDE_DURATION = 18;
+const SLIDE_START = QR_TAB_FROM_FRAME - 4;
+
+// Round 9c L2: InvoicePaper backdrop props — hoisted for prop-identity stability (P1.2).
+const PAPER_PROPS = {
+  data: DEMO_INVOICE,
+  status: "pending",
+  variant: "default",
+} as const;
+
 const noop = () => {
   /* Remotion renders static frames — click handlers never fire */
+};
+
+// Round 9c L2: PaperBackdrop — full-bleed InvoicePaper centered in viewport.
+// Paper biased upward so modal at bottom doesn't overlap signature area.
+const PaperBackdrop: React.FC = () => {
+  const { width, height } = useVideoConfig();
+  const targetWidth = width * 0.92;
+  const scale = targetWidth / INVOICE_BASE_WIDTH;
+  const scaledH = INVOICE_BASE_HEIGHT * scale;
+  const top = Math.max(40, (height - scaledH) / 2 - 80);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: (width - INVOICE_BASE_WIDTH * scale) / 2,
+        top,
+        width: INVOICE_BASE_WIDTH,
+        height: INVOICE_BASE_HEIGHT,
+        transform: `scale(${scale})`,
+        transformOrigin: "top left",
+      }}
+    >
+      <InvoicePaper {...PAPER_PROPS} />
+    </div>
+  );
+};
+
+// Round 9c L5: SlideTabContent — frame-driven horizontal slide between Link and QR tabs.
+const SlideTabContent: React.FC<{
+  active: "link" | "qr";
+  link: React.ReactNode;
+  qr: React.ReactNode;
+}> = ({ active: _active, link, qr }) => {
+  const frame = useCurrentFrame();
+
+  const progress = interpolate(
+    frame,
+    [SLIDE_START, SLIDE_START + SLIDE_DURATION],
+    [0, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
+  return (
+    <>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          transform: `translateX(${-progress * 100}%)`,
+          opacity: 1 - progress,
+        }}
+      >
+        {link}
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          transform: `translateX(${(1 - progress) * 100}%)`,
+          opacity: progress,
+        }}
+      >
+        {qr}
+      </div>
+    </>
+  );
 };
 
 export const ShareScene: React.FC = () => {
@@ -70,22 +153,26 @@ export const ShareScene: React.FC = () => {
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackground />
 
-      {/* Dimmed backdrop */}
+      {/* Round 9c L2: InvoicePaper as scene backdrop */}
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
+        <PaperBackdrop />
+      </AbsoluteFill>
+
+      {/* Dimmed backdrop — reduced to 0.45 so paper reads through */}
       <div style={{
         position: "absolute",
         inset: 0,
-        background: "rgba(0,0,0,0.6)",
+        background: "rgba(0,0,0,0.45)",
         opacity: modalOpacity,
       }} />
 
-      {/* Share modal shell — 512px wide, matches real ShareModal layout.
-          Centered on screen. */}
+      {/* Share modal shell — 512px wide, bottom-biased for portrait so paper reads above */}
       <Card
         variant="glass"
         style={{
           position: "absolute",
           left: width / 2 - 256,
-          top: height / 2 - 280,
+          top: height - 720,
           width: 512,
           padding: 0,
           transform: `translateY(${modalTranslateY}px)`,
@@ -128,29 +215,30 @@ export const ShareScene: React.FC = () => {
           <InvoiceSummary invoice={DEMO_INVOICE} />
         </div>
 
-        {/* Tabs — real ShareModal px-6 pb-6 pattern */}
+        {/* Round 9c L5: Tabs with frame-driven slide animation */}
         <div style={{ padding: "0 24px 24px 24px" }}>
           <Tabs value={tabValue} onValueChange={() => {}} className="w-full">
             <TabsList className="w-full">
               <TabsTrigger value="link" className="flex-1">Link</TabsTrigger>
               <TabsTrigger value="qr" className="flex-1">QR Code</TabsTrigger>
             </TabsList>
-            <div style={{ minHeight: 200 }}>
-              <TabsContent value="link">
-                <LinkTab
-                  url={SHARE_URL}
-                  copied={copied}
-                  onCopy={noop}
-                  telegramUrl={TELEGRAM_URL}
-                  twitterUrl={TWITTER_URL}
-                  emailUrl={EMAIL_URL}
-                  includeOg={false}
-                  onOgToggle={noop}
-                />
-              </TabsContent>
-              <TabsContent value="qr">
-                <QRTab url={SHARE_URL} />
-              </TabsContent>
+            <div style={{ position: "relative", minHeight: 200, overflow: "hidden" }}>
+              <SlideTabContent
+                active={tabValue}
+                link={
+                  <LinkTab
+                    url={SHARE_URL}
+                    copied={copied}
+                    onCopy={noop}
+                    telegramUrl={TELEGRAM_URL}
+                    twitterUrl={TWITTER_URL}
+                    emailUrl={EMAIL_URL}
+                    includeOg={false}
+                    onOgToggle={noop}
+                  />
+                }
+                qr={<QRTab url={SHARE_URL} />}
+              />
             </div>
           </Tabs>
         </div>
