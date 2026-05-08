@@ -49,12 +49,14 @@ export const RemotionFakeToast: React.FC<Props> = ({
   if (local < 0 || local > hold + fadeOut) return null;
 
   const slideIn = spring({ frame: Math.min(local, 8), fps, config: { damping: 20, mass: 1, stiffness: 120 } });
-  const slideOffset = (1 - slideIn) * (isPortrait ? -100 : 400);  // portrait: from above (-100), landscape: from right (+400)
+  // θ7: portrait toasts slide up from bottom (positive offset = below, 0 = final position)
+  const slideOffset = (1 - slideIn) * (isPortrait ? 100 : 400);   // portrait: from below (+100), landscape: from right (+400)
 
   // Fade-out
   const exitProgress = local > hold ? (local - hold) / fadeOut : 0;
   const opacity = 1 - exitProgress;
-  const exitOffset = exitProgress * (isPortrait ? -60 : 400);     // portrait: drift up small, landscape: slide right
+  // θ7: portrait toasts drift down on exit (matching enter direction reversal)
+  const exitOffset = exitProgress * (isPortrait ? 60 : 400);      // portrait: drift down, landscape: slide right
 
   const style = VARIANT_STYLE[variant];
 
@@ -63,8 +65,8 @@ export const RemotionFakeToast: React.FC<Props> = ({
 
   const positionStyle: React.CSSProperties = isPortrait
     ? {
-        // γ5: top-center in portrait — avoids right-edge clipping during slide
-        top: 80 + stackOffset,
+        // θ7: bottom-center in portrait — top zone is reserved for Caption.tsx pills
+        bottom: 80 + stackOffset,
         left: "50%",
       }
     : (anchor === "below-panel"
