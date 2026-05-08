@@ -59,7 +59,18 @@ export const RemotionRoot: React.FC = () => {
   return (
     <>
       <Folder name="VoidPayDemo">
-        {/* Primary: 16:9 landscape, 45s @ 30fps per creative-brief-v2 §3. */}
+        {/* Primary: 9:16 portrait, 45s @ 30fps. Round 9c: phone-first GTM. */}
+        <Composition
+          id="VoidPayDemo-9x16"
+          component={VoidPayDemo}
+          durationInFrames={TOTAL_DURATION}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={DemoPropsSchema}
+          defaultProps={DEFAULT_PROPS}
+        />
+        {/* Secondary: 16:9 landscape (round 9d will re-derive layout). */}
         <Composition
           id="VoidPayDemo-16x9"
           component={VoidPayDemo}
