@@ -1,4 +1,5 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { NetworkBackground } from "@/widgets/network-background";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
 import { COLORS } from "../constants/colors";
@@ -37,13 +38,16 @@ export const ThesisOutroScene: React.FC = () => {
     <AbsoluteFill
       style={{
         backgroundColor: "#000",
+        opacity,
+      }}
+    >
+      <NetworkBackground />
+      <AbsoluteFill style={{
         justifyContent: "center",
         alignItems: "center",
         flexDirection: "column",
         gap: 48,
-        opacity,
-      }}
-    >
+      }}>
       <div style={{ transform: `translateY(${(1 - enter) * 20}px)`, textAlign: "center" }}>
         <div
           style={{
@@ -98,6 +102,7 @@ export const ThesisOutroScene: React.FC = () => {
         <span style={{ opacity: 0.6 }}>→</span>
       </div>
 
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };

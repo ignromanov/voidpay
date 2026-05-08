@@ -1,4 +1,5 @@
 import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { NetworkBackground } from "@/widgets/network-background";
 import { FONT_SANS } from "../fonts";
 import { COLORS } from "../constants/colors";
 import { RemotionAuroraText } from "../components/RemotionAuroraText";
@@ -48,6 +49,7 @@ export const ThesisHookScene: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
+      <NetworkBackground />
       <span style={{ ...sharedTextStyle, opacity: beat1 }}>
         <RemotionAuroraText>The invoice…</RemotionAuroraText>
       </span>
