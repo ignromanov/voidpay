@@ -15,6 +15,11 @@ type HintBadgeProps = {
    * "arrow": violet text + subtle dark pill background.
    */
   variant?: "ghost" | "arrow";
+  /**
+   * Font size in px. Default 20 — legible at 9:16 portrait phone playback.
+   * ui-ux-pro-max rule: minimum 16px body text on mobile; hints are secondary
+   * annotations so 20px is the floor, not 14-15px from prior rounds.
+   */
   fontSize?: number;
 };
 
@@ -24,7 +29,7 @@ export const HintBadge: React.FC<HintBadgeProps> = ({
   endAt,
   style,
   variant = "ghost",
-  fontSize = 15,
+  fontSize = 20,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -64,14 +69,17 @@ export const HintBadge: React.FC<HintBadgeProps> = ({
         style={{
           display: "inline-flex",
           alignItems: "center",
-          background: isArrow ? "rgba(13, 13, 17, 0.75)" : "transparent",
-          border: isArrow ? "1px solid rgba(124, 58, 237, 0.35)" : "none",
-          borderRadius: isArrow ? 6 : 0,
-          padding: isArrow ? "4px 10px" : "2px 0",
+          // θ3: darker background + stronger border for portrait legibility (WCAG 4.5:1 goal)
+          background: isArrow ? "rgba(9, 9, 11, 0.88)" : "transparent",
+          border: isArrow ? "1px solid rgba(124, 58, 237, 0.55)" : "none",
+          borderRadius: isArrow ? 8 : 0,
+          // θ3: proportional padding for 20px base font
+          padding: isArrow ? "6px 14px" : "2px 0",
           fontFamily: `${FONT_SANS}, sans-serif`,
           fontSize,
-          fontWeight: 500,
-          color: "rgba(139, 92, 246, 0.9)",
+          fontWeight: 600,
+          // θ3: full violet saturation — ghost variant was 90%, now 100% for contrast floor
+          color: "rgba(167, 139, 250, 1)",
           letterSpacing: "-0.01em",
           whiteSpace: "nowrap",
         }}
