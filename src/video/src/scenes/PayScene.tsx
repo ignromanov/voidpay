@@ -274,8 +274,8 @@ export const PayScene: React.FC = () => {
       {/* Narrative toasts — anchored below panel right edge */}
       {/* Round 9a-patch3 (D1): T3 "Sending transaction" removed (overlapped T2). T2 stays at
           startAt=200. Confirming toast fires at 310 when tx is submitted. */}
-      <RemotionFakeToast variant="success" title="Wallet connected" startAt={130} hold={45} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={200} hold={45} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Wallet connected" startAt={130} hold={60} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={200} hold={60} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={310} hold={90} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={440} hold={120} stackOffset={0} anchor="below-panel" />
     </AbsoluteFill>

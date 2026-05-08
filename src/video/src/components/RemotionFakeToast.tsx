@@ -89,23 +89,23 @@ export const RemotionFakeToast: React.FC<Props> = ({
         background: "rgba(39, 39, 42, 0.85)",
         backdropFilter: "blur(12px)",
         border: `1px solid ${style.borderColor}`,
-        borderRadius: 12,
-        padding: 16,
+        borderRadius: 14,
+        padding: "20px 24px",
         display: "flex",
         alignItems: "center",
         gap: 12,
         boxShadow: "0 20px 25px -5px rgba(0,0,0,0.5)",
-        maxWidth: 420,
+        maxWidth: 540,
         zIndex: 9999,
       }}
     >
-      <span style={{ fontSize: 20, color: style.iconColor }}>{style.icon}</span>
+      <span style={{ fontSize: 32, color: style.iconColor }}>{style.icon}</span>
       <div>
-        <div style={{ fontSize: 14, fontWeight: 500, color: "#fff", fontFamily: `${FONT_SANS}, sans-serif` }}>
+        <div style={{ fontSize: 22, fontWeight: 600, color: "#fff", fontFamily: `${FONT_SANS}, sans-serif`, letterSpacing: -0.2 }}>
           {title}
         </div>
         {description && (
-          <div style={{ fontSize: 12, color: "rgb(161, 161, 170)", marginTop: 2, fontFamily: `${FONT_SANS}, sans-serif` }}>
+          <div style={{ fontSize: 16, color: "rgb(161, 161, 170)", marginTop: 4, fontFamily: `${FONT_SANS}, sans-serif` }}>
             {description}
           </div>
         )}
