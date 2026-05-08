@@ -48,40 +48,43 @@ export const RemotionFakeToast: React.FC<Props> = ({
   const local = frame - startAt;
   if (local < 0 || local > hold + fadeOut) return null;
 
-  // Slide-in from right: spring 8fr
   const slideIn = spring({ frame: Math.min(local, 8), fps, config: { damping: 20, mass: 1, stiffness: 120 } });
-  const slideX = (1 - slideIn) * 400;
+  const slideOffset = (1 - slideIn) * (isPortrait ? -100 : 400);  // portrait: from above (-100), landscape: from right (+400)
 
   // Fade-out
   const exitProgress = local > hold ? (local - hold) / fadeOut : 0;
   const opacity = 1 - exitProgress;
-  const exitX = exitProgress * 400;
+  const exitOffset = exitProgress * (isPortrait ? -60 : 400);     // portrait: drift up small, landscape: slide right
 
   const style = VARIANT_STYLE[variant];
 
   const panelTop = (height - PANEL_HEIGHT) / 2;
   const panelBottom = panelTop + PANEL_HEIGHT;
-  // Round 9a-patch3-revert: toast RIGHT edge aligns with PaymentPanel RIGHT edge
-  // (panel right = 18% from screen right). Ignat 2026-05-07 verdict on p12.3:
-  // "Их нужно равнять по правому краю тоаста и правому краю панели оплаты."
-  // Round 9c L6: in portrait (bottom-sheet), align to panel's internal right padding (24px).
-  const rightOffset = isPortrait ? "24px" : "18%";
-  const positionStyle: React.CSSProperties = anchor === "below-panel"
+
+  const positionStyle: React.CSSProperties = isPortrait
     ? {
-        right: rightOffset,
-        bottom: height - panelBottom - 80 - stackOffset,
+        // γ5: top-center in portrait — avoids right-edge clipping during slide
+        top: 80 + stackOffset,
+        left: "50%",
       }
-    : {
-        right: 24,
-        bottom: 24 + stackOffset,
-      };
+    : (anchor === "below-panel"
+        ? {
+            right: "18%",
+            bottom: height - panelBottom - 80 - stackOffset,
+          }
+        : {
+            right: 24,
+            bottom: 24 + stackOffset,
+          });
 
   return (
     <div
       style={{
         position: "absolute",
         ...positionStyle,
-        transform: `translateX(${slideX + exitX}px)`,
+        transform: isPortrait
+          ? `translateX(-50%) translateY(${slideOffset + exitOffset}px)`
+          : `translateX(${slideOffset + exitOffset}px)`,
         opacity,
         background: "rgba(39, 39, 42, 0.85)",
         backdropFilter: "blur(12px)",
