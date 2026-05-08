@@ -214,6 +214,7 @@ export const CreateScene: React.FC = () => {
           padding: 24,
           overflow: "hidden",
           opacity: formOpacity,
+          zIndex: 2,
           backgroundColor: "rgba(24, 24, 27, 0.96)",
           boxShadow: `
             0 0 ${glowSpread}px rgba(124, 58, 237, ${glowIntensity}),

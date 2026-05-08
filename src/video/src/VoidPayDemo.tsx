@@ -25,7 +25,7 @@ export const VoidPayDemo: React.FC<DemoProps> = () => {
   });
 
   return (
-    <AbsoluteFill>
+    <AbsoluteFill style={{ backgroundColor: "#000" }}>
       <TransitionSeries>
         <TransitionSeries.Sequence durationInFrames={SCENE_DURATIONS.thesisHook}>
           <ThesisHookScene />

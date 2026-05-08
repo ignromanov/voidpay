@@ -129,7 +129,7 @@ const SlideTabContent: React.FC<{
 
 export const ShareScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
   // Modal slide-up
   const modalTranslateY = interpolate(

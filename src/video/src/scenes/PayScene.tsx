@@ -119,7 +119,7 @@ const PaperBackdrop: React.FC<{ paid: boolean }> = ({ paid }) => {
 
 export const PayScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
   // Card entrance — panel rises from bottom using this as the slide-up progress
   const cardScale = spring({ frame, fps, config: SPRING_CONFIGS.smooth });
