@@ -66,7 +66,12 @@ const PaperBackdrop: React.FC<{ frame: number }> = ({ frame: f }) => {
   const targetWidth = width * 0.92;
   const scale = targetWidth / INVOICE_BASE_WIDTH;
   const scaledH = INVOICE_BASE_HEIGHT * scale;
-  const top = Math.max(40, (height - scaledH) / 2 - 80);
+  // θ4: balanced vertical centering — center paper in [80, height-100] band
+  // so top margin equals bottom margin, excluding caption zone (top) and toast zone (bottom).
+  const availableTop = 80;
+  const availableBottom = height - 100;
+  const availableHeight = availableBottom - availableTop;
+  const top = availableTop + Math.max(0, (availableHeight - scaledH) / 2);
 
   const enter = interpolate(
     f,
@@ -173,9 +178,11 @@ export const CreateScene: React.FC = () => {
     : 0;
   const buttonGlowOpacity = baseGlow + fillPulseDelta + settledHalo;
 
-  // γ1: Form true-centered with generous margins so paper backdrop reads through.
-  const formWidth  = isPortrait ? Math.min(800, width * 0.74)  : 768;     // 800 on 1080 (140px each side)
-  const formHeight = isPortrait ? Math.round(height * 0.58)    : 720;     // 1114 on 1920 (~400px top+bot)
+  // θ2: Form width reduced to ~67% of prior 800px = ~540px, creating focused central column.
+  // Font-size is bumped proportionally from 20px → 26px so visual mass per field is preserved.
+  // At 1080 viewport: formWidth=540 → 270px margin each side (breathing room for paper backdrop).
+  const formWidth  = isPortrait ? Math.min(560, width * 0.52)  : 768;     // θ2: 560 on 1080 (260px each side)
+  const formHeight = isPortrait ? Math.round(height * 0.62)    : 720;     // slightly taller to fit content
   const formLeft   = (width - formWidth) / 2;
   const formTop    = isPortrait ? (height - formHeight) / 2     : (height - formHeight) / 2;
 
@@ -250,20 +257,44 @@ export const CreateScene: React.FC = () => {
                 position: "relative",
                 width: "100%",
                 height: "100%",
-                fontSize: "20px",                  // ε1: bump base font-size; cascades to em/rem children (1.25× of 16px)
+                // θ2: bumped from 20px → 26px (proportional to narrower form width)
+                // ui-ux-pro-max rule: readable at portrait phone playback scale
+                fontSize: "26px",
                 overflowX: "visible",              // ε1: prevents right-column clipping at Card edge
-                overflowY: "hidden",               // ζ1: clip bottom so button doesn't bleed past Card (ε1 regression fix)
+                overflowY: "hidden",               // ζ1: clip bottom so button doesn't bleed past Card
                 paddingRight: 8,                   // ε1: small extra right pad so values don't touch border
               }}
             >
-              {/* ζ2: override absolute-px Tailwind sub-labels that don't cascade from the 20px wrapper base */}
+              {/* ζ2 + θ2: override absolute-px Tailwind sub-labels; floor raised from 16px → 18px for portrait legibility */}
               <style>{`
                 .remotion-create-portrait .text-xs,
                 .remotion-create-portrait [class*="text-[11px]"],
                 .remotion-create-portrait [class*="text-[10px]"] {
-                  font-size: 16px !important;
+                  font-size: 18px !important;
                 }
               `}</style>
+
+              {/* θ1: Invoice Details header — matches production InvoiceFormView page header */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 16,
+                paddingBottom: 12,
+                borderBottom: "1px solid rgba(63, 63, 70, 0.5)",
+              }}>
+                <div style={{
+                  fontSize: "22px",
+                  fontWeight: 700,
+                  color: "rgba(244, 244, 245, 1)",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1.2,
+                }}>
+                  <span style={{ color: "rgba(139, 92, 246, 1)" }}>Invoice</span>
+                  {" "}Details
+                </div>
+              </div>
+
               <InvoiceFormView
                 value={viewValue}
                 {...(focusedField && { focusedField })}
@@ -348,10 +379,12 @@ export const CreateScene: React.FC = () => {
         style={{ left: formLeft + formWidth * 0.30, top: formTop + formHeight * 0.72, zIndex: 10 }}
       />
 
-      {/* η1: "No signup." caption — local 280–340, button reveal moment (Spark Beat 11) */}
+      {/* η1: "No signup." caption — local 280–340, button reveal moment (Spark Beat 11).
+           θ7 cross-impact: moved bottom→top. Bottom zone now reserved for toasts.
+           Top zone is clear at f280 (η7 exited at 95, η6 exited at 175, η2 is a hint not caption). */}
       <Caption
         text="No signup."
-        position="bottom"
+        position="top"
         startAt={280}
         endAt={340}
         fontSize={38}
