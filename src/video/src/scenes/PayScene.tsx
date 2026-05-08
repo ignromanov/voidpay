@@ -20,6 +20,7 @@ import { SPRING_CONFIGS } from "../constants/timing";
 import { RemotionFakeToast } from "../components/RemotionFakeToast";
 import { RemotionPaidConfirmationProgress } from "../components/RemotionPaidConfirmationProgress";
 import { Caption } from "../components/Caption";
+import { HintBadge } from "../components/HintBadge";
 import { DEMO_INVOICE, DEMO_CONTENT_HASH } from "../constants/demo-invoice";
 
 // Deterministic demo tx hash for the paid-state watermark
@@ -279,6 +280,31 @@ export const PayScene: React.FC = () => {
       <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={200} hold={60} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={310} hold={90} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={440} hold={120} stackOffset={0} anchor="below-panel" />
+
+      {/* η3: "Open link. Pay." caption — local 15–80, scene opener before panel is interactive.
+           startAt=15 (R3: give cardScale spring 15fr to animate before caption enters per Spark note). */}
+      <Caption
+        text="Open link. Pay."
+        position="top"
+        startAt={15}
+        endAt={80}
+        fontSize={38}
+      />
+
+      {/* η4: magic dust hint below panel during violet glow — local 210–300 (MAGIC_DUST_HIGHLIGHT window) */}
+      <HintBadge
+        text="unique micro-amount ← payment ID"
+        startAt={210}
+        endAt={300}
+        variant="arrow"
+        fontSize={14}
+        style={{
+          left: "50%",
+          bottom: "28%",
+          transform: "translateX(-50%)",
+          zIndex: 10,
+        }}
+      />
 
       {/* ζ5: Spark caption — Content Anchor #1 "Not our servers" reframe.
            startAt=460 local: T4 "Payment received" fires at f440; caption enters 20fr into T4 hold.
