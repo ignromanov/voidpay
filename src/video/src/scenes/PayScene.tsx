@@ -64,9 +64,11 @@ const MAGIC_DUST_PEAK_END  = 320;  // 120fr peak hold ends (per creative-brief �
 const CONFIRMATIONS_REQUIRED = 12;
 
 // Round 9c L3: pre-CTA panel exit — panel fades + small drift before crossfade to S4.
-// S3 ends at S-local 575. Crossfade starts at S-local 555.
-const PANEL_EXIT_START = 535;
-const PANEL_EXIT_END   = 555;
+// S3 ends at S-local 575. Crossfade starts at S-local 515.
+// γ6: paper-alone "paid invoice" window 3× longer — was 20fr (555→575), now 60fr (515→575).
+// Panel exits earlier within S3, paper alone in paid state holds longer before S4 crossfade.
+const PANEL_EXIT_START = 495;
+const PANEL_EXIT_END   = 515;
 
 // β1: floating center panel width — ~60% of 1080 viewport
 const PANEL_WIDTH = 640;
@@ -208,10 +210,11 @@ export const PayScene: React.FC = () => {
       <div
         style={{
           position: "absolute",
-          left: (width - PANEL_WIDTH) / 2,
-          top: height * 0.42,
+          left: "50%",
+          top: "50%",
           width: PANEL_WIDTH,
-          transform: `scale(${cardScale}) translateY(${panelExit}px)`,
+          // γ4: true-center positioning + scale + exit
+          transform: `translate(-50%, -50%) scale(${cardScale}) translateY(${panelExit}px)`,
           transformOrigin: "center center",
           opacity: cardScale * (1 - panelExitOpacity),
           borderRadius: 16,
