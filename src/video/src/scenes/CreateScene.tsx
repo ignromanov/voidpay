@@ -70,6 +70,9 @@ export const CreateScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
 
+  // Round 9c L7: portrait re-layout — form centered, paper in lower half.
+  const isPortrait = width < 1200;
+
   // Frame-driven snapshot for the real InvoiceFormView.
   const viewValue = useMemo(() => {
     const fromName = typewrite(INVOICE_FROM, frame, FROM_START);
@@ -118,68 +121,97 @@ export const CreateScene: React.FC = () => {
     frame < FILL_COMPLETE ? "token" :
     undefined;
 
-  // Round 9a: violet pulse glow active throughout fill (Ignat: "пульсирование всё время с начала
-  // заполнения до конца"). Pulse intensity peaks during cascade, then settles to a calm halo
-  // after BUTTON_VISIBLE so the button hand-off doesn't compete with the glow rhythm.
+  // Round 9a: violet pulse glow active throughout fill.
   const baseGlow = 0.25;
   const fillPulseDelta =
     frame >= INVOICE_NO_APPEAR && frame < BUTTON_VISIBLE
       ? interpolate(Math.sin(frame * 0.08), [-1, 1], [0.05, 0.4])
       : 0;
   const settledHalo = frame >= BUTTON_VISIBLE
-    ? interpolate(Math.sin(frame * 0.08), [-1, 1], [0.0, 0.15])  // calmer post-fill
+    ? interpolate(Math.sin(frame * 0.08), [-1, 1], [0.0, 0.15])
     : 0;
   const buttonGlowOpacity = baseGlow + fillPulseDelta + settledHalo;
 
-  // Paper preview layout — depends only on composition size.
+  // Round 9c L7: form layout — portrait centered, landscape left-side.
+  const formWidth = isPortrait ? Math.min(960, width * 0.9) : width * 0.36;
+  const formLeft = isPortrait ? (width - formWidth) / 2 : width * 0.06;
+  const formTop = isPortrait ? 80 : height * 0.06;
+  const formHeight = isPortrait ? height * 0.44 : height * 0.88;
+
+  // Round 9c L7: paper layout — portrait lower half, landscape right-side.
   const paperLayout = useMemo(() => {
+    if (isPortrait) {
+      // Paper takes lower portion of portrait viewport
+      const targetW = width * 0.85;
+      const scale = targetW / INVOICE_BASE_WIDTH;
+      const scaledW = INVOICE_BASE_WIDTH * scale;
+      const scaledH = INVOICE_BASE_HEIGHT * scale;
+      return {
+        left: (width - scaledW) / 2,
+        top: height * 0.55,
+        scaledW,
+        scaledH,
+        scale,
+      };
+    }
+    // Landscape: paper in right half
     const containerW = width * 0.38;
     const containerH = height * 0.8;
     const scale = Math.min(
       containerW / INVOICE_BASE_WIDTH,
       containerH / INVOICE_BASE_HEIGHT,
     );
+    const scaledW = INVOICE_BASE_WIDTH * scale;
+    const scaledH = INVOICE_BASE_HEIGHT * scale;
     return {
-      containerW,
-      containerH,
+      left: width - width * 0.06 - scaledW - (containerW - scaledW) / 2,
+      top: height * 0.1 + (containerH - scaledH) / 2,
+      scaledW,
+      scaledH,
       scale,
-      scaledW: INVOICE_BASE_WIDTH * scale,
-      scaledH: INVOICE_BASE_HEIGHT * scale,
     };
-  }, [width, height]);
+  }, [width, height, isPortrait]);
+
+  // Form fade-out when paper appears — form dims to 0.3 to establish paper as new focus.
+  const formOpacity = frame >= PAPER_APPEAR
+    ? interpolate(
+        frame,
+        [PAPER_APPEAR, PAPER_VISIBLE_AT],
+        [1, 0.3],
+        { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+      )
+    : 1;
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackground />
 
-      {/* Void glow overlay behind the form card — always visible, pulses when Generate button appears */}
+      {/* Void glow overlay behind the form card */}
       <div
         style={{
           position: "absolute",
-          left: width * 0.06 - 24,
-          top: height * 0.06 - 24,
-          width: width * 0.36 + 48,
-          height: height * 0.88 + 48,
+          left: formLeft - 24,
+          top: formTop - 24,
+          width: formWidth + 48,
+          height: formHeight + 48,
           borderRadius: 32,
           boxShadow: `0 0 60px rgba(124,58,237,${buttonGlowOpacity * 0.6}), 0 0 120px rgba(124,58,237,${buttonGlowOpacity * 0.3})`,
           pointerEvents: "none",
         }}
       />
 
-      {/* Round 7 — Card holds form panel + button INSIDE the scroll-translated div.
-          Button uses real GenerateButton from @/widgets/invoice-form (same component
-          as production form). canGenerate forced to true once frame >= BUTTON_VISIBLE.
-          Press-scale wrapper localized to the button only. */}
+      {/* Round 7 — Card holds form panel + button INSIDE the scroll-translated div. */}
       <Card
         variant="glass"
         style={{
           position: "absolute",
-          left: width * 0.06,
-          top: height * 0.06,
-          width: width * 0.36,
-          height: height * 0.88,
+          left: formLeft,
+          top: formTop,
+          width: formWidth,
+          height: formHeight,
           padding: 24,
           overflow: "hidden",
+          opacity: formOpacity,
         }}
       >
         <div
@@ -198,10 +230,7 @@ export const CreateScene: React.FC = () => {
             showGenerateButton={false}
           />
 
-          {/* Round 9a-patch2 (C1): button always mounted at bottom of scroll content (production
-              form has it visible always). Scroll naturally brings it into view. Press-scale + hover
-              visuals are gated by frame inside the View props.
-              (C4): isGenerating fires at PRESS_END — spinner + "Generating…" label visible until S1 end. */}
+          {/* Round 9a-patch2 (C1): button always mounted at bottom of scroll content. */}
           {
             <div
               style={{
@@ -223,15 +252,14 @@ export const CreateScene: React.FC = () => {
         </div>
       </Card>
 
-      {/* Round 9a: InvoicePaper appears AFTER form fill complete (Ignat #1.3).
-          Fade-in PAPER_APPEAR→PAPER_VISIBLE_AT. Violet accent pulse during 50fr hold
-          (Ignat #1.15 follow-up: "можно тоже добавить пульсирование, чтобы акцентировать"). */}
+      {/* Round 9a: InvoicePaper appears AFTER form fill complete.
+          Round 9c L7: in portrait, paper appears in lower half (top = height * 0.55). */}
       {frame >= PAPER_APPEAR && (
         <div
           style={{
             position: "absolute",
-            right: width * 0.06 + (paperLayout.containerW - paperLayout.scaledW) / 2,
-            top: height * 0.1 + (paperLayout.containerH - paperLayout.scaledH) / 2,
+            left: paperLayout.left,
+            top: paperLayout.top,
             width: paperLayout.scaledW,
             height: paperLayout.scaledH,
             opacity: interpolate(
@@ -248,7 +276,7 @@ export const CreateScene: React.FC = () => {
             )}px)`,
           }}
         >
-          {/* Violet accent pulse around paper — peaks at PAPER_PULSE_PEAK, fades by PAPER_HOLD_END */}
+          {/* Violet accent pulse around paper */}
           <div
             style={{
               position: "absolute",
@@ -276,7 +304,7 @@ export const CreateScene: React.FC = () => {
               transformOrigin: "top left",
             }}
           >
-            {/* Round 9a-patch2 (C6): Path A — 'draft' is a valid InvoicePaperStatus value. */}
+            {/* Round 9a-patch2 (C6): 'draft' is a valid InvoicePaperStatus value. */}
             <InvoicePaper data={DEMO_INVOICE} status="draft" variant="default" />
           </div>
         </div>
