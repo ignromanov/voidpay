@@ -63,6 +63,11 @@ const MAGIC_DUST_HIGHLIGHT = 180;  // ramp-in start (20fr ramp to peak)
 const MAGIC_DUST_PEAK_END  = 320;  // 120fr peak hold ends (per creative-brief §8 strict)
 const CONFIRMATIONS_REQUIRED = 12;
 
+// Round 9c L3: pre-CTA panel exit — panel slides down before crossfade to S4.
+// S3 ends at S-local 575. Crossfade starts at S-local 555.
+const PANEL_EXIT_START = 535;
+const PANEL_EXIT_END   = 555;
+
 const stepAt = (frame: number): { step: PaymentStep; idleSubState: IdleSubState } => {
   if (frame >= SUCCESS) return { step: 'success', idleSubState: 'ready' };
   if (frame >= PHASE_CONFIRMING) return { step: 'confirming', idleSubState: 'ready' };
@@ -81,11 +86,37 @@ const pressScale = (frame: number, triggerFrame: number): number =>
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
+// Round 9c L2: PaperBackdrop — full-bleed InvoicePaper centered in viewport.
+// Paper is status-driven (pending → paid as payment progresses).
+const PaperBackdrop: React.FC<{ paid: boolean }> = ({ paid }) => {
+  const { width, height } = useVideoConfig();
+  const targetWidth = width * 0.92;
+  const scale = targetWidth / INVOICE_BASE_WIDTH;
+  const scaledH = INVOICE_BASE_HEIGHT * scale;
+  const top = Math.max(40, (height - scaledH) / 2 - 80);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: (width - INVOICE_BASE_WIDTH * scale) / 2,
+        top,
+        width: INVOICE_BASE_WIDTH,
+        height: INVOICE_BASE_HEIGHT,
+        transform: `scale(${scale})`,
+        transformOrigin: "top left",
+      }}
+    >
+      <InvoicePaper {...(paid ? PAPER_PROPS_PAID : PAPER_PROPS_PENDING)} />
+    </div>
+  );
+};
+
 export const PayScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
-  // Card entrance (shared by paper + panel so they rise together)
+  // Card entrance — panel rises from bottom using this as the slide-up progress
   const cardScale = spring({ frame, fps, config: SPRING_CONFIGS.smooth });
 
   const { step, idleSubState } = stepAt(frame);
@@ -100,7 +131,7 @@ export const PayScene: React.FC = () => {
   // after triggerFrame+7, so reporting PRESS_CONNECT for all later frames is harmless.
   const ctaPressTriggerFrame = frame >= PRESS_CONNECT ? PRESS_CONNECT : -1;
 
-  // Round 9a: restore reorg-progress visual (Ignat: "под кнопкой не хватает прогресса оплаты").
+  // Round 9a: restore reorg-progress visual.
   // Drive confirmations.current frame-by-frame so RemotionPaidConfirmationProgress fills smoothly.
   // Production widget still receives current=required (hides its own framer-motion block per
   // round-7 hack) — the new overlay is rendered separately and is Remotion-safe.
@@ -118,21 +149,6 @@ export const PayScene: React.FC = () => {
     [],
   );
 
-  // Scale real A4 paper (794×1123) to fit the left pane.
-  const { paperScale, paperScaledW, paperScaledH } = useMemo(() => {
-    const containerW = width * 0.42;
-    const containerH = height * 0.82;
-    const scale = Math.min(
-      containerW / INVOICE_BASE_WIDTH,
-      containerH / INVOICE_BASE_HEIGHT,
-    );
-    return {
-      paperScale: scale,
-      paperScaledW: INVOICE_BASE_WIDTH * scale,
-      paperScaledH: INVOICE_BASE_HEIGHT * scale,
-    };
-  }, [width, height]);
-
   // Violet pulse overlay over the totals band — round 9a-patch2: peak window 180-320 (140fr
   // ramp/hold/fade with 120fr peak hold inside). Straddles sending→confirming for continuity.
   const magicDustPulseOpacity = interpolate(
@@ -145,67 +161,56 @@ export const PayScene: React.FC = () => {
   // Real flow: hash exists once tx is submitted (after sending → confirming).
   const panelTxHash = step === 'confirming' || step === 'success' ? DEMO_TX_HASH : undefined;
 
+  // Round 9c L2: paper shows paid state from confirming onwards (D3 carryover).
+  const paperPaid = step === 'confirming' || step === 'success';
+
+  // Round 9c L3: pre-CTA panel exit — panel slides down, paper alone before crossfade.
+  const panelExit = interpolate(
+    frame,
+    [PANEL_EXIT_START, PANEL_EXIT_END],
+    [0, 320],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const panelExitOpacity = interpolate(
+    frame,
+    [PANEL_EXIT_START, PANEL_EXIT_END],
+    [0, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackground />
 
-      {/* Left: real InvoicePaper (Arbitrum USDC invoice with Magic Dust) */}
-      <div
-        style={{
-          position: "absolute",
-          left: width * 0.08,
-          top: height * 0.09,
-          width: paperScaledW,
-          height: paperScaledH,
-          transform: `scale(${cardScale})`,
-          transformOrigin: "top left",
-        }}
-      >
+      {/* Round 9c L2: InvoicePaper as full-bleed scene backdrop */}
+      <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
+        <PaperBackdrop paid={paperPaid} />
+      </AbsoluteFill>
+
+      {/* Magic Dust violet pulse — halo over the paper totals area */}
+      {magicDustPulseOpacity > 0.01 && (
         <div
           style={{
-            width: INVOICE_BASE_WIDTH,
-            height: INVOICE_BASE_HEIGHT,
-            transform: `scale(${paperScale})`,
-            transformOrigin: "top left",
+            position: "absolute",
+            inset: 0,
+            background: `radial-gradient(ellipse at center 75%, ${COLORS.violetGlow} 0%, transparent 50%)`,
+            opacity: magicDustPulseOpacity,
+            pointerEvents: "none",
+            mixBlendMode: "screen",
           }}
-        >
-          {/* Round 9a-patch3 (D3): paper flips to PAID at confirming (tx submitted, hash exists)
-              per Ignat — "до подтверждения в on-chain". Old behavior: only at success (after final
-              confirmation). New: confirming + success → paid; everything else → pending. */}
-          <InvoicePaper
-            {...(step === 'confirming' || step === 'success' ? PAPER_PROPS_PAID : PAPER_PROPS_PENDING)}
-          />
-        </div>
+        />
+      )}
 
-        {/* Magic Dust violet pulse — halo over the totals band */}
-        {magicDustPulseOpacity > 0.01 && (
-          <div
-            style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              bottom: paperScaledH * 0.22,
-              height: 120,
-              background: `radial-gradient(ellipse at center, ${COLORS.violetGlow} 0%, transparent 70%)`,
-              opacity: magicDustPulseOpacity,
-              pointerEvents: "none",
-              mixBlendMode: "screen",
-            }}
-          />
-        )}
-      </div>
-
-      {/* Right: real PaymentPanel — frame drives status, confirmations, txHash.
-          Width matches the real /pay layout (max-w-md ~= 448px) so the widget
-          renders at its intended density rather than stretched. */}
+      {/* Round 9c L6: PaymentPanel as bottom sheet — anchored to bottom, rises on cardScale,
+          exits before CTA via panelExit slide-down. */}
       <div
         style={{
           position: "absolute",
-          right: width * 0.18,
-          top: "50%",
-          width: 480,
-          transform: `translate(0, -50%) scale(${cardScale})`,
-          transformOrigin: "top right",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          transform: `translateY(${(1 - cardScale) * 200 + panelExit}px)`,
+          opacity: cardScale * (1 - panelExitOpacity),
         }}
       >
         <PaymentPanel

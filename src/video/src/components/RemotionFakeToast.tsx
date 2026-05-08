@@ -41,7 +41,10 @@ export const RemotionFakeToast: React.FC<Props> = ({
   anchor = "bottom-right",
 }) => {
   const frame = useCurrentFrame();
-  const { fps, height } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  // Round 9c L6: in portrait the panel is a full-width bottom sheet —
+  // align toast right edge to panel's internal right padding (24px).
+  const isPortrait = width < 1200;
   const local = frame - startAt;
   if (local < 0 || local > hold + fadeOut) return null;
 
@@ -61,9 +64,11 @@ export const RemotionFakeToast: React.FC<Props> = ({
   // Round 9a-patch3-revert: toast RIGHT edge aligns with PaymentPanel RIGHT edge
   // (panel right = 18% from screen right). Ignat 2026-05-07 verdict on p12.3:
   // "Их нужно равнять по правому краю тоаста и правому краю панели оплаты."
+  // Round 9c L6: in portrait (bottom-sheet), align to panel's internal right padding (24px).
+  const rightOffset = isPortrait ? "24px" : "18%";
   const positionStyle: React.CSSProperties = anchor === "below-panel"
     ? {
-        right: "18%",
+        right: rightOffset,
         bottom: height - panelBottom - 80 - stackOffset,
       }
     : {
