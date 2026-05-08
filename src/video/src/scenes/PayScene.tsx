@@ -63,10 +63,13 @@ const MAGIC_DUST_HIGHLIGHT = 180;  // ramp-in start (20fr ramp to peak)
 const MAGIC_DUST_PEAK_END  = 320;  // 120fr peak hold ends (per creative-brief §8 strict)
 const CONFIRMATIONS_REQUIRED = 12;
 
-// Round 9c L3: pre-CTA panel exit — panel slides down before crossfade to S4.
+// Round 9c L3: pre-CTA panel exit — panel fades + small drift before crossfade to S4.
 // S3 ends at S-local 575. Crossfade starts at S-local 555.
 const PANEL_EXIT_START = 535;
 const PANEL_EXIT_END   = 555;
+
+// β1: floating center panel width — ~60% of 1080 viewport
+const PANEL_WIDTH = 640;
 
 const stepAt = (frame: number): { step: PaymentStep; idleSubState: IdleSubState } => {
   if (frame >= SUCCESS) return { step: 'success', idleSubState: 'ready' };
@@ -114,7 +117,7 @@ const PaperBackdrop: React.FC<{ paid: boolean }> = ({ paid }) => {
 
 export const PayScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
 
   // Card entrance — panel rises from bottom using this as the slide-up progress
   const cardScale = spring({ frame, fps, config: SPRING_CONFIGS.smooth });
@@ -164,11 +167,11 @@ export const PayScene: React.FC = () => {
   // Round 9c L2: paper shows paid state from confirming onwards (D3 carryover).
   const paperPaid = step === 'confirming' || step === 'success';
 
-  // Round 9c L3: pre-CTA panel exit — panel slides down, paper alone before crossfade.
+  // Round 9c L3 + β2: pre-CTA panel exit — fade + small downward drift (was 320px slide).
   const panelExit = interpolate(
     frame,
     [PANEL_EXIT_START, PANEL_EXIT_END],
-    [0, 320],
+    [0, 24],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
   const panelExitOpacity = interpolate(
@@ -201,16 +204,21 @@ export const PayScene: React.FC = () => {
         />
       )}
 
-      {/* Round 9c L6: PaymentPanel as bottom sheet — anchored to bottom, rises on cardScale,
-          exits before CTA via panelExit slide-down. */}
+      {/* β1+β2: Payment panel as floating center modal — replaces bottom-sheet (round 9c L6). */}
       <div
         style={{
           position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          transform: `translateY(${(1 - cardScale) * 200 + panelExit}px)`,
+          left: (width - PANEL_WIDTH) / 2,
+          top: height * 0.42,
+          width: PANEL_WIDTH,
+          transform: `scale(${cardScale}) translateY(${panelExit}px)`,
+          transformOrigin: "center center",
           opacity: cardScale * (1 - panelExitOpacity),
+          borderRadius: 16,
+          backgroundColor: "rgba(24, 24, 27, 0.96)",
+          border: "1px solid rgba(63, 63, 70, 0.8)",
+          boxShadow: "0 25px 80px -20px rgba(0,0,0,0.8), 0 8px 32px -8px rgba(0,0,0,0.5)",
+          overflow: "hidden",
         }}
       >
         <PaymentPanel
