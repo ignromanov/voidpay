@@ -11,14 +11,14 @@ import {
   INVOICE_BASE_HEIGHT,
 } from "@/widgets/invoice-paper";
 import { NetworkBackground } from "@/widgets/network-background";
-import { LinkTab, InvoiceSummary } from "@/widgets/share-modal";
-import { QRTab } from "@/features/payment-qr";
-import { Card, Tabs, TabsList, TabsTrigger } from "@/shared/ui";
+import { InvoiceSummary } from "@/widgets/share-modal";
+import { Card } from "@/shared/ui";
 import { CheckCircleIcon } from "@/shared/ui/icons";
 import { DEMO_FROM_ADDRESS, DEMO_INVOICE } from "../constants/demo-invoice";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
+import { RemotionLinkTab } from "../components/RemotionLinkTab";
 
 // Full URL — 4x longer hash payload (~560 chars) so the LinkTab URL visibly
 // truncates with ellipsis and reads as "very long / data-dense".
@@ -31,23 +31,8 @@ const HASH_PAYLOAD =
   "AxgC4DmAhgBYAuADgE4CuN4IgbghgTg9gRgFwAYEsA2UBOB7AjgKYCOAxgC4DmAhgBYA" +
   "uADgE4CuAxgC4DmAhgBYAuADgE4CuAxgC4DmAhgBYAuADgE4Cu";
 const SHARE_URL = `https://voidpay.xyz/pay?og=VP-0001_250_USDC_arb_${DEMO_FROM_ADDRESS}#${HASH_PAYLOAD}`;
-const TELEGRAM_URL = `https://t.me/share/url?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent("Pay me in crypto — VoidPay invoice")}`;
-const TWITTER_URL = `https://twitter.com/intent/tweet?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent("Pay me in crypto — VoidPay invoice")}`;
-const EMAIL_URL = `mailto:?subject=${encodeURIComponent("VoidPay invoice")}&body=${encodeURIComponent(SHARE_URL)}`;
-
-// Frame at which the narrative "Copy" click fires — round 9a: pushed from 60→110
-// to give Link-tab idle 80fr / 2.667s read window before copy fires (Ignat #2.3).
-// round-9a: Copy fires once via boolean flip; CopyOverlay motion.div animate restarts
-// each Remotion frame (Fix B: acceptable for p12 preview; production snapshot unaffected).
+// Frame at which the narrative "Copy" click fires (ε2: QR tab and social share removed).
 const COPY_CLICK_FRAME = 110;
-// QR_TAB_FROM_FRAME — round 9a-patch2 (C5): extended from 150→190 (copied state held longer).
-// Old (patch1): copy 110 → QR 150 (40fr feedback). New: copy 110 → QR 190 (80fr feedback).
-// S2 extended +40fr (260→300) to fund this without compressing QR window.
-const QR_TAB_FROM_FRAME = 190;
-
-// Tab slide duration — 0.6s @ 30fps
-const SLIDE_DURATION = 18;
-const SLIDE_START = QR_TAB_FROM_FRAME - 4;
 
 // Round 9c L2: InvoicePaper backdrop props — hoisted for prop-identity stability (P1.2).
 const PAPER_PROPS = {
@@ -56,9 +41,6 @@ const PAPER_PROPS = {
   variant: "default",
 } as const;
 
-const noop = () => {
-  /* Remotion renders static frames — click handlers never fire */
-};
 
 // Round 9c L2: PaperBackdrop — full-bleed InvoicePaper centered in viewport.
 // Paper biased upward so modal at bottom doesn't overlap signature area.
@@ -86,46 +68,6 @@ const PaperBackdrop: React.FC = () => {
   );
 };
 
-// Round 9c L5: SlideTabContent — frame-driven horizontal slide between Link and QR tabs.
-const SlideTabContent: React.FC<{
-  active: "link" | "qr";
-  link: React.ReactNode;
-  qr: React.ReactNode;
-}> = ({ active: _active, link, qr }) => {
-  const frame = useCurrentFrame();
-
-  const progress = interpolate(
-    frame,
-    [SLIDE_START, SLIDE_START + SLIDE_DURATION],
-    [0, 1],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
-
-  return (
-    <>
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          transform: `translateX(${-progress * 100}%)`,
-          opacity: 1 - progress,
-        }}
-      >
-        {link}
-      </div>
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          transform: `translateX(${(1 - progress) * 100}%)`,
-          opacity: progress,
-        }}
-      >
-        {qr}
-      </div>
-    </>
-  );
-};
 
 export const ShareScene: React.FC = () => {
   const frame = useCurrentFrame();
@@ -145,9 +87,6 @@ export const ShareScene: React.FC = () => {
   // Narrative "copied" state: flips at COPY_CLICK_FRAME so the real LinkTab
   // shows its own "Copied!" affordance (CopyOverlay flash + icon swap).
   const copied = frame >= COPY_CLICK_FRAME + 10;
-
-  // Frame drives the tab value — no user interaction in Remotion
-  const tabValue = frame >= QR_TAB_FROM_FRAME ? "qr" : "link";
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
@@ -218,32 +157,9 @@ export const ShareScene: React.FC = () => {
           <InvoiceSummary invoice={DEMO_INVOICE} />
         </div>
 
-        {/* Round 9c L5: Tabs with frame-driven slide animation */}
+        {/* ε2: RemotionLinkTab — video-only fork, no social share, no QR tab */}
         <div style={{ padding: "0 24px 24px 24px" }}>
-          <Tabs value={tabValue} onValueChange={() => {}} className="w-full">
-            <TabsList className="w-full">
-              <TabsTrigger value="link" className="flex-1">Link</TabsTrigger>
-              <TabsTrigger value="qr" className="flex-1">QR Code</TabsTrigger>
-            </TabsList>
-            <div style={{ position: "relative", minHeight: 200, overflow: "hidden" }}>
-              <SlideTabContent
-                active={tabValue}
-                link={
-                  <LinkTab
-                    url={SHARE_URL}
-                    copied={copied}
-                    onCopy={noop}
-                    telegramUrl={TELEGRAM_URL}
-                    twitterUrl={TWITTER_URL}
-                    emailUrl={EMAIL_URL}
-                    includeOg={false}
-                    onOgToggle={noop}
-                  />
-                }
-                qr={<QRTab url={SHARE_URL} />}
-              />
-            </div>
-          </Tabs>
+          <RemotionLinkTab url={SHARE_URL} copied={copied} />
         </div>
       </Card>
 
