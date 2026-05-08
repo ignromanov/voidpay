@@ -72,8 +72,9 @@ const CONFIRMATIONS_REQUIRED = 12;
 const PANEL_EXIT_START = 495;
 const PANEL_EXIT_END   = 515;
 
-// ε5: panel width ~48% of 1080 viewport (was 60%) — more paper context visible
-const PANEL_WIDTH = 520;
+// θ6: panel width +1.5× — reverting ε5 reduction (520) back toward production size.
+// 520 × 1.5 = 780. Matches production PaymentPanel proportions at ~72% of 1080 viewport.
+const PANEL_WIDTH = 780;
 
 const stepAt = (frame: number): { step: PaymentStep; idleSubState: IdleSubState } => {
   if (frame >= SUCCESS) return { step: 'success', idleSubState: 'ready' };
@@ -215,8 +216,8 @@ export const PayScene: React.FC = () => {
           left: "50%",
           top: "50%",
           width: PANEL_WIDTH,
-          // γ4: true-center positioning + scale + exit
-          transform: `translate(-50%, -50%) scale(${cardScale * 0.92}) translateY(${panelExit}px)`,
+          // θ6: ε5 ×0.92 scale removed — panel at full scale matching production size
+          transform: `translate(-50%, -50%) scale(${cardScale}) translateY(${panelExit}px)`,
           transformOrigin: "center center",
           opacity: cardScale * (1 - panelExitOpacity),
           borderRadius: 16,
@@ -291,16 +292,19 @@ export const PayScene: React.FC = () => {
         fontSize={38}
       />
 
-      {/* η4: magic dust hint below panel during violet glow — local 210–300 (MAGIC_DUST_HIGHLIGHT window) */}
+      {/* η4: magic dust hint — θ7 cross-impact: was bottom:28% (collides with bottom toasts).
+           Repositioned to top-center, above panel. Enters at 210, exits at 300.
+           Top zone: ζ5 "Not our servers." starts at f460 — no collision at f210-300.
+           η3 "Open link. Pay." exits at f80 — no collision either. Top is clear at f210. */}
       <HintBadge
         text="unique micro-amount ← payment ID"
         startAt={210}
         endAt={300}
         variant="arrow"
-        fontSize={14}
+        fontSize={20}
         style={{
           left: "50%",
-          bottom: "28%",
+          top: 80,
           transform: "translateX(-50%)",
           zIndex: 10,
         }}
