@@ -110,6 +110,7 @@ export const ShareScene: React.FC = () => {
       {/* Share modal shell — γ4: true-center positioning, β3: solid background */}
       {/* ζ3: top shifted 50%→48% — paper mass occupies upper frame, modal visual center is slightly
            below mathematical center; 48% places it in the visual center of the dark space below paper */}
+      {/* θ5: width increased from 512→600 to accommodate full production density (social row, OG toggle, privacy note) */}
       <Card
         // β3: solid background for readability over invoice paper backdrop
         className="border border-zinc-800/80"
@@ -117,7 +118,7 @@ export const ShareScene: React.FC = () => {
           position: "absolute",
           left: "50%",
           top: "48%",
-          width: 512,
+          width: 600,
           padding: 0,
           transform: `translate(-50%, -50%) translateY(${modalTranslateY}px)`,
           opacity: modalOpacity,
@@ -161,10 +162,53 @@ export const ShareScene: React.FC = () => {
           <InvoiceSummary invoice={DEMO_INVOICE} />
         </div>
 
-        {/* ε2: RemotionLinkTab — video-only fork, no social share, no QR tab */}
-        {/* η5: "invoice data →" ghost hint overlaid on URL hash field — local 80–160 (R2: startAt=80,
-             20fr after ζ4 caption enters at 60, avoids 3-layer density at frame 60; exits at 160,
-             50fr after COPY_CLICK_FRAME=110). Positioned bottom-right of the permalink box. */}
+        {/* θ5: Tab switcher — Link/QR tabs, matching production ShareModal density.
+             Reverts ε2 simplification. Shows Link tab first, then demonstrates QR tab switch.
+             Tab switch fires at COPY_CLICK_FRAME (f110) so viewer sees both tabs. */}
+        <div style={{ padding: "0 24px 8px 24px" }}>
+          {/* Tab bar — production-parity: full-width, Link + QR Code */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            background: "rgba(39, 39, 42, 0.6)",
+            borderRadius: 8,
+            padding: 3,
+            marginBottom: 14,
+          }}>
+            {(["Link", "QR Code"] as const).map((label) => {
+              // θ5: Link tab active before COPY_CLICK_FRAME, QR Code tab active after
+              const isActive = frame < COPY_CLICK_FRAME
+                ? label === "Link"
+                : label === "QR Code";
+              return (
+                <div
+                  key={label}
+                  style={{
+                    height: 34,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 6,
+                    fontSize: 13,
+                    fontWeight: isActive ? 600 : 400,
+                    color: isActive ? "rgba(244, 244, 245, 1)" : "rgba(113, 113, 122, 1)",
+                    background: isActive ? "rgba(63, 63, 70, 0.8)" : "transparent",
+                    fontFamily: `${FONT_SANS}, sans-serif`,
+                    letterSpacing: "-0.01em",
+                    transition: "none",
+                  }}
+                >
+                  {label}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* θ5: Full production density RemotionLinkTab + η5 hint repositioned */}
+        {/* η5: "invoice data →" ghost hint — R2: startAt=80, endAt=160.
+             θ5 cross-impact: modal is now wider (600px), so hint repositioned to top of permalink
+             box (right:12, top:8 relative to the permalink wrapper div). */}
         <div style={{ padding: "0 24px 24px 24px", position: "relative" }}>
           <RemotionLinkTab url={SHARE_URL} copied={copied} />
           <HintBadge
@@ -172,8 +216,8 @@ export const ShareScene: React.FC = () => {
             startAt={80}
             endAt={160}
             variant="ghost"
-            fontSize={13}
-            style={{ right: 12, top: 28, zIndex: 10 }}
+            fontSize={15}
+            style={{ right: 12, top: 8, zIndex: 10 }}
           />
         </div>
       </Card>
