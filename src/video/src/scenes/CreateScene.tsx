@@ -238,16 +238,30 @@ export const CreateScene: React.FC = () => {
           }}
         >
           {/* ε1: font-size CSS replaces transform-scale (γ2 conceptual error: pre-divide + scale = layout-neutral).
-               overflow: visible prevents right-column TOTAL clipping at Card edge. */}
+               ζ1: overflowX:visible preserves right-column; overflowY:hidden clips button at Card bottom.
+               ζ2: sub-label overrides — <style> block forces min 16px on absolute-px Tailwind classes
+                    (text-xs 12px / text-[11px]) used by INVOICE NO., DATES, YOUR NAME sub-labels. */}
           {isPortrait ? (
-            <div style={{
-              position: "relative",
-              width: "100%",
-              height: "100%",
-              fontSize: "20px",                  // ε1: bump base font-size; cascades to em/rem children (1.25× of 16px)
-              overflow: "visible",               // ε1: prevents right-column clipping at Card edge
-              paddingRight: 8,                   // ε1: small extra right pad so values don't touch border
-            }}>
+            <div
+              className="remotion-create-portrait"
+              style={{
+                position: "relative",
+                width: "100%",
+                height: "100%",
+                fontSize: "20px",                  // ε1: bump base font-size; cascades to em/rem children (1.25× of 16px)
+                overflowX: "visible",              // ε1: prevents right-column clipping at Card edge
+                overflowY: "hidden",               // ζ1: clip bottom so button doesn't bleed past Card (ε1 regression fix)
+                paddingRight: 8,                   // ε1: small extra right pad so values don't touch border
+              }}
+            >
+              {/* ζ2: override absolute-px Tailwind sub-labels that don't cascade from the 20px wrapper base */}
+              <style>{`
+                .remotion-create-portrait .text-xs,
+                .remotion-create-portrait [class*="text-[11px]"],
+                .remotion-create-portrait [class*="text-[10px]"] {
+                  font-size: 16px !important;
+                }
+              `}</style>
               <InvoiceFormView
                 value={viewValue}
                 {...(focusedField && { focusedField })}
