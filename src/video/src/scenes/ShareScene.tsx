@@ -110,7 +110,7 @@ export const ShareScene: React.FC = () => {
       {/* Share modal shell — γ4: true-center positioning, β3: solid background */}
       {/* ζ3: top shifted 50%→48% — paper mass occupies upper frame, modal visual center is slightly
            below mathematical center; 48% places it in the visual center of the dark space below paper */}
-      {/* θ5: width increased from 512→600 to accommodate full production density (social row, OG toggle, privacy note) */}
+      {/* θ5: width 512→600 for density; ι2: 600→660 (+10%) to absorb ×1.5 internal text scaling */}
       <Card
         // β3: solid background for readability over invoice paper backdrop
         className="border border-zinc-800/80"
@@ -118,7 +118,7 @@ export const ShareScene: React.FC = () => {
           position: "absolute",
           left: "50%",
           top: "48%",
-          width: 600,
+          width: 660,
           padding: 0,
           transform: `translate(-50%, -50%) translateY(${modalTranslateY}px)`,
           opacity: modalOpacity,
@@ -133,27 +133,27 @@ export const ShareScene: React.FC = () => {
           background: "linear-gradient(90deg, #8b5cf6, #d946ef, #8b5cf6)",
         }} />
 
-        {/* Header — "Invoice Ready" pattern from ShareModal.tsx (px-6 pt-6 ≈ 24px) */}
-        <div style={{ padding: "16px 24px" }}>
+        {/* Header — "Invoice Ready" pattern from ShareModal.tsx; ι2: padding + sizes ×1.5 */}
+        <div style={{ padding: "24px 32px" }}>
           <div style={{
             display: "flex",
             alignItems: "center",
-            gap: 8,
+            gap: 10,
             fontFamily: `${FONT_SANS}, sans-serif`,
-            fontSize: 20,
+            fontSize: 30,
             fontWeight: 700,
             color: COLORS.textPrimary,
             letterSpacing: "-0.02em",
-            marginBottom: 4,
+            marginBottom: 6,
           }}>
-            <CheckCircleIcon size={20} style={{ color: COLORS.violet }} />
+            <CheckCircleIcon size={30} style={{ color: COLORS.violet }} />
             Invoice Ready
           </div>
           <div style={{
             fontFamily: `${FONT_SANS}, sans-serif`,
-            fontSize: 14,
+            fontSize: 21,
             color: "rgba(113, 113, 122, 1)",
-            marginBottom: 16,
+            marginBottom: 24,
           }}>
             Share this link to get paid
           </div>
@@ -165,15 +165,16 @@ export const ShareScene: React.FC = () => {
         {/* θ5: Tab switcher — Link/QR tabs, matching production ShareModal density.
              Reverts ε2 simplification. Shows Link tab first, then demonstrates QR tab switch.
              Tab switch fires at COPY_CLICK_FRAME (f110) so viewer sees both tabs. */}
-        <div style={{ padding: "0 24px 8px 24px" }}>
+        {/* ι2: tab section padding scaled; tab height 34→44px; fontSize 13→20px */}
+        <div style={{ padding: "0 32px 12px 32px" }}>
           {/* Tab bar — production-parity: full-width, Link + QR Code */}
           <div style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             background: "rgba(39, 39, 42, 0.6)",
             borderRadius: 8,
-            padding: 3,
-            marginBottom: 14,
+            padding: 4,
+            marginBottom: 18,
           }}>
             {(["Link", "QR Code"] as const).map((label) => {
               // θ5: Link tab active before COPY_CLICK_FRAME, QR Code tab active after
@@ -184,12 +185,12 @@ export const ShareScene: React.FC = () => {
                 <div
                   key={label}
                   style={{
-                    height: 34,
+                    height: 44,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: 6,
-                    fontSize: 13,
+                    fontSize: 20,
                     fontWeight: isActive ? 600 : 400,
                     color: isActive ? "rgba(244, 244, 245, 1)" : "rgba(113, 113, 122, 1)",
                     background: isActive ? "rgba(63, 63, 70, 0.8)" : "transparent",
@@ -207,16 +208,18 @@ export const ShareScene: React.FC = () => {
 
         {/* θ5: Full production density RemotionLinkTab + η5 hint repositioned */}
         {/* η5: "invoice data →" ghost hint — R2: startAt=80, endAt=160.
-             θ5 cross-impact: modal is now wider (600px), so hint repositioned to top of permalink
-             box (right:12, top:8 relative to the permalink wrapper div). */}
-        <div style={{ padding: "0 24px 24px 24px", position: "relative" }}>
+             ι2 judgment: η5 exempted from full ×2 rule. At right:12, top:8 inside the permalink
+             wrapper, ×2 of 15px = 30px would overflow above the wrapper bounds.
+             Decision: 24px (×1.6) — large enough to read, fits in the header zone above permalink box.
+             θ5 cross-impact: repositioned to top of permalink box. */}
+        <div style={{ padding: "0 32px 32px 32px", position: "relative" }}>
           <RemotionLinkTab url={SHARE_URL} copied={copied} />
           <HintBadge
             text="invoice data →"
             startAt={80}
             endAt={160}
             variant="ghost"
-            fontSize={15}
+            fontSize={24}
             style={{ right: 12, top: 8, zIndex: 10 }}
           />
         </div>

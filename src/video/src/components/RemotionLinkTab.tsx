@@ -54,32 +54,34 @@ function parseUrlParts(url: string): {
 export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, ogEnabled = false }) => {
   const { protocol, domain, path, ogParams, hash } = parseUrlParts(url);
 
+  // ι2: all internal text/spacing scaled ×1.5 from θ5 values.
+  // Modal width bumped 600→660px in ShareScene to absorb the scaling without overflow.
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, fontFamily: `${FONT_SANS}, sans-serif` }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 21, fontFamily: `${FONT_SANS}, sans-serif` }}>
 
       {/* Permalink — color-coded matching production LinkTab */}
       <div>
         <div style={{
-          fontSize: 11,
+          fontSize: 17,
           fontWeight: 500,
           color: "rgba(161, 161, 170, 0.9)",
           letterSpacing: "0.05em",
           textTransform: "uppercase",
-          marginBottom: 6,
+          marginBottom: 9,
         }}>
           Permalink
         </div>
         <div style={{
-          fontSize: 11,
+          fontSize: 17,
           fontFamily: "monospace",
           letterSpacing: -0.3,
           wordBreak: "break-all",
           lineHeight: 1.6,
           background: "rgba(9, 9, 11, 1)",
           border: "1px solid rgba(63, 63, 70, 0.8)",
-          borderRadius: 8,
-          padding: "10px 12px",
-          maxHeight: 88,
+          borderRadius: 10,
+          padding: "15px 18px",
+          maxHeight: 132,
           overflow: "hidden",
         }}>
           <span style={{ color: "rgba(82, 82, 91, 1)" }}>{protocol}</span>
@@ -94,27 +96,27 @@ export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, o
 
       {/* Copy Link — primary void CTA matching production */}
       <div style={{
-        height: 52,
+        height: 78,
         background: "linear-gradient(135deg, rgba(124, 58, 237, 1) 0%, rgba(109, 40, 217, 1) 100%)",
-        borderRadius: 10,
+        borderRadius: 12,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 8,
+        gap: 12,
         boxShadow: "0 4px 24px rgba(124, 58, 237, 0.4)",
         border: "1px solid rgba(139, 92, 246, 0.3)",
       }}>
         {copied ? (
           <>
-            <CheckIcon size={18} style={{ color: "rgba(52, 211, 153, 1)" }} />
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#fff", letterSpacing: -0.2 }}>
+            <CheckIcon size={27} style={{ color: "rgba(52, 211, 153, 1)" }} />
+            <span style={{ fontSize: 21, fontWeight: 600, color: "#fff", letterSpacing: -0.2 }}>
               Copied!
             </span>
           </>
         ) : (
           <>
-            <CopyIcon size={18} style={{ color: "#fff" }} />
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#fff", letterSpacing: -0.2 }}>
+            <CopyIcon size={27} style={{ color: "#fff" }} />
+            <span style={{ fontSize: 21, fontWeight: 600, color: "#fff", letterSpacing: -0.2 }}>
               Copy Link
             </span>
           </>
@@ -122,66 +124,66 @@ export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, o
       </div>
 
       {/* 3-col social share row — matching production color scheme */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 9 }}>
         {/* Telegram */}
         <div style={{
-          height: 40,
+          height: 60,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: 5,
-          borderRadius: 8,
+          gap: 7,
+          borderRadius: 10,
           border: "1px solid rgba(0, 136, 204, 0.2)",
           background: "rgba(0, 136, 204, 0.1)",
-          fontSize: 12,
+          fontSize: 18,
           fontWeight: 600,
           color: "rgba(0, 136, 204, 1)",
         }}>
-          <SendIcon size={13} style={{ color: "rgba(0, 136, 204, 1)" }} />
+          <SendIcon size={19} style={{ color: "rgba(0, 136, 204, 1)" }} />
           Telegram
         </div>
         {/* Twitter */}
         <div style={{
-          height: 40,
+          height: 60,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: 5,
-          borderRadius: 8,
+          gap: 7,
+          borderRadius: 10,
           border: "1px solid rgba(255, 255, 255, 0.1)",
           background: "rgba(255, 255, 255, 0.05)",
-          fontSize: 12,
+          fontSize: 18,
           fontWeight: 600,
           color: "rgba(255, 255, 255, 1)",
         }}>
-          <TwitterIcon size={13} style={{ color: "#fff" }} />
+          <TwitterIcon size={19} style={{ color: "#fff" }} />
           Twitter
         </div>
         {/* Email */}
         <div style={{
-          height: 40,
+          height: 60,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: 5,
-          borderRadius: 8,
+          gap: 7,
+          borderRadius: 10,
           border: "1px solid rgba(239, 68, 68, 0.2)",
           background: "rgba(239, 68, 68, 0.1)",
-          fontSize: 12,
+          fontSize: 18,
           fontWeight: 600,
           color: "rgba(248, 113, 113, 1)",
         }}>
-          <MailIcon size={13} style={{ color: "rgba(248, 113, 113, 1)" }} />
+          <MailIcon size={19} style={{ color: "rgba(248, 113, 113, 1)" }} />
           Email
         </div>
       </div>
 
       {/* OG toggle — amber, matching production */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "2px 4px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "2px 4px" }}>
         <div style={{
-          width: 18,
-          height: 18,
-          borderRadius: 4,
+          width: 27,
+          height: 27,
+          borderRadius: 6,
           flexShrink: 0,
           display: "flex",
           alignItems: "center",
@@ -189,26 +191,26 @@ export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, o
           background: ogEnabled ? "rgba(245, 158, 11, 1)" : "transparent",
           border: ogEnabled ? "1px solid rgba(245, 158, 11, 1)" : "1px solid rgba(82, 82, 91, 1)",
         }}>
-          {ogEnabled && <CheckIcon size={11} style={{ color: "#fff" }} />}
+          {ogEnabled && <CheckIcon size={16} style={{ color: "#fff" }} />}
         </div>
         <div>
           <div style={{
-            fontSize: 12,
+            fontSize: 18,
             fontWeight: 500,
             color: ogEnabled ? "rgba(251, 191, 36, 1)" : "rgba(113, 113, 122, 1)",
           }}>
             Link preview card
           </div>
-          <div style={{ fontSize: 11, color: "rgba(82, 82, 91, 1)", marginTop: 1 }}>
+          <div style={{ fontSize: 17, color: "rgba(82, 82, 91, 1)", marginTop: 2 }}>
             Shows amount &amp; network in social previews
           </div>
         </div>
       </div>
 
       {/* Privacy by design note */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 7, padding: "0 4px" }}>
-        <LockIcon size={12} style={{ color: "rgba(82, 82, 91, 1)", marginTop: 1, flexShrink: 0 }} />
-        <div style={{ fontSize: 11, color: "rgba(113, 113, 122, 1)", lineHeight: 1.5 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "0 4px" }}>
+        <LockIcon size={18} style={{ color: "rgba(82, 82, 91, 1)", marginTop: 2, flexShrink: 0 }} />
+        <div style={{ fontSize: 17, color: "rgba(113, 113, 122, 1)", lineHeight: 1.5 }}>
           <strong style={{ color: "rgba(161, 161, 170, 1)" }}>Privacy by design.</strong>
           {" "}Invoice data is encoded in the link. No servers. No tracking.
         </div>
