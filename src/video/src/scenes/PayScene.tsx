@@ -42,35 +42,39 @@ const PAPER_PROPS_PAID = {
   variant: "default",
 } as const;
 
-// Phase timing — round 9a-patch2 (S3-local frames):
-//   0–50    idle:disconnected   ("Connect Wallet" — only press needed)
-//  48–57    press-scale on Connect (THE only press in this scene)
-//  50–130   connecting  (spinner "Connecting…", progress 25%)
-// 130–200   switching   (spinner "Switching…", progress 45%)
-// 200–310   sending     (spinner "Sending…", progress 70%)
-// 310–440   confirming  (CTA hidden, reorg progress visible, progress 90%)
-// 440–575   success     (paid watermark, progress 100%)
+// Phase timing — κ-3 reshuffle (S3-local frames):
+//   0–90    idle:disconnected   ("Connect Wallet" — only press needed)
+//           Extended from 50→90 so B1 beat is visible even through the 20fr crossfade entry
+//  85–94    press-scale on Connect (THE only press in this scene)
+//  90–170   connecting  (spinner "Connecting…", progress 25%)
+// 170–240   switching   (spinner "Switching…", progress 45%)
+// 240–340   sending     (spinner "Sending…", progress 70%)
+// 340–470   confirming  (CTA hidden, reorg progress visible, progress 90%; paper still PENDING)
+// 470–575   success     (paid watermark, progress 100%)
 //
 // Single-press model per Ignat (round 9a-patch2 C7): user clicks Connect ONCE; then
 // continuous progress. No return to idle:wrong-network or idle:ready between transitions.
 // idle:disconnected = 0 (initial state, no explicit constant needed)
-const PRESS_CONNECT        = 48;
-const PHASE_CONNECTING     = 50;
-const PHASE_SWITCHING      = 130;
-const PHASE_SENDING        = 200;
-const PHASE_CONFIRMING     = 310;
-const SUCCESS              = 440;
-// Magic Dust window — peak hold straddles sending→confirming for narrative continuity.
-const MAGIC_DUST_HIGHLIGHT = 180;  // ramp-in start (20fr ramp to peak)
-const MAGIC_DUST_PEAK_END  = 320;  // 120fr peak hold ends (per creative-brief §8 strict)
+//
+// κ-3 key fix: paperPaid now only triggers at SUCCESS (not confirming), making B4 visually
+// distinct from B5 — pending paper + progress bar vs paid paper + "Payment Successful" panel.
+const PRESS_CONNECT        = 85;
+const PHASE_CONNECTING     = 90;
+const PHASE_SWITCHING      = 170;
+const PHASE_SENDING        = 240;
+const PHASE_CONFIRMING     = 340;
+const SUCCESS              = 470;
+// Magic Dust window — shifted to align with new sending phase (240-340).
+// Ramp starts at PHASE_SENDING, peak holds through sending into confirming start.
+const MAGIC_DUST_HIGHLIGHT = 240;  // ramp-in start (20fr ramp to peak)
+const MAGIC_DUST_PEAK_END  = 390;  // peak hold ends at confirming+50fr for narrative continuity
 const CONFIRMATIONS_REQUIRED = 12;
 
-// Round 9c L3: pre-CTA panel exit — panel fades + small drift before crossfade to S4.
-// S3 ends at S-local 575. Crossfade starts at S-local 515.
-// γ6: paper-alone "paid invoice" window 3× longer — was 20fr (555→575), now 60fr (515→575).
-// Panel exits earlier within S3, paper alone in paid state holds longer before S4 crossfade.
-const PANEL_EXIT_START = 495;
-const PANEL_EXIT_END   = 515;
+// κ-3: pre-CTA panel exit shifted to match new SUCCESS=470.
+// Panel exits at local 525-545, giving 30fr paper-alone window (545-575) before S4 crossfade.
+// SUCCESS=470, panel exits at 525 (55fr into success = 1.83s of success with panel visible).
+const PANEL_EXIT_START = 525;
+const PANEL_EXIT_END   = 545;
 
 // θ6: panel width +1.5× — reverting ε5 reduction (520) back toward production size.
 // 520 × 1.5 = 780. Matches production PaymentPanel proportions at ~72% of 1080 viewport.
@@ -169,8 +173,9 @@ export const PayScene: React.FC = () => {
   // Real flow: hash exists once tx is submitted (after sending → confirming).
   const panelTxHash = step === 'confirming' || step === 'success' ? DEMO_TX_HASH : undefined;
 
-  // Round 9c L2: paper shows paid state from confirming onwards (D3 carryover).
-  const paperPaid = step === 'confirming' || step === 'success';
+  // κ-3: paper shows paid state only at success — keeps B4 (confirming) visually distinct
+  // from B5 (success): pending paper + progress bar vs paid paper + "Payment Successful" panel.
+  const paperPaid = step === 'success';
 
   // Round 9c L3 + β2: pre-CTA panel exit — fade + small downward drift (was 320px slide).
   const panelExit = interpolate(
@@ -279,32 +284,34 @@ export const PayScene: React.FC = () => {
       </div>
 
       {/* Narrative toasts — anchored below panel right edge */}
-      {/* Round 9a-patch3 (D1): T3 "Sending transaction" removed (overlapped T2). T2 stays at
-          startAt=200. Confirming toast fires at 310 when tx is submitted. */}
-      <RemotionFakeToast variant="success" title="Wallet connected" startAt={130} hold={60} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={200} hold={60} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={310} hold={90} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={440} hold={120} stackOffset={0} anchor="below-panel" />
+      {/* κ-3 toast timings — shifted to match new phase windows:
+          T1 fires at PHASE_SWITCHING (170), T2 fires at PHASE_SENDING (240),
+          T3 fires at PHASE_CONFIRMING (340) hold=140 (spans into success for continuity),
+          T4 fires at SUCCESS (470) hold=120. */}
+      <RemotionFakeToast variant="success" title="Wallet connected" startAt={170} hold={60} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={240} hold={60} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={340} hold={140} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={470} hold={120} stackOffset={0} anchor="below-panel" />
 
-      {/* η3: "Open link. Pay." caption — local 15–80, scene opener before panel is interactive.
-           startAt=15 (R3: give cardScale spring 15fr to animate before caption enters per Spark note). */}
+      {/* ε3: "Open link. Pay." caption — local 15–88, scene opener during idle:disconnected beat.
+           κ-3: extended endAt 80→88 to cover the full idle window (0-90) minus a 2fr gap before
+           PRESS_CONNECT (85). Gives B1 a clear caption across the full visible idle window. */}
       <Caption
         text="Open link. Pay."
         position="top"
         startAt={15}
-        endAt={80}
+        endAt={88}
         fontSize={38}
       />
 
-      {/* η4: magic dust hint — θ7 cross-impact: was bottom:28% (collides with bottom toasts).
-           Repositioned to top-center, above panel. Enters at 210, exits at 300.
-           Top zone: ζ5 "Not our servers." starts at f460 — no collision at f210-300.
-           η3 "Open link. Pay." exits at f80 — no collision either. Top is clear at f210.
-           ι4: fontSize 20→40 (×2). top bumped 80→90 to prevent clipping at very top edge. */}
+      {/* η4: magic dust hint — κ-3: shifted to align with new sending phase (240-340).
+           Enters at 255 (15fr into sending, giving Magic Dust ramp time to build),
+           exits at 345 (5fr into confirming). Top zone clear: ε3 exits at 88, ζ5 starts at 490.
+           ι4: fontSize 40, top:90 (prevent clipping at top edge). */}
       <HintBadge
         text="unique micro-amount ← payment ID"
-        startAt={210}
-        endAt={300}
+        startAt={255}
+        endAt={345}
         variant="arrow"
         fontSize={40}
         style={{
@@ -316,12 +323,13 @@ export const PayScene: React.FC = () => {
       />
 
       {/* ζ5: Spark caption — Content Anchor #1 "Not our servers" reframe.
-           startAt=460 local: T4 "Payment received" fires at f440; caption enters 20fr into T4 hold.
-           Viewer reads chain confirmation first, then looks up to see the privacy claim. No endAt — persists to scene end. */}
+           κ-3: startAt=490 local (20fr into new SUCCESS=470); T4 fires at 470.
+           Viewer reads chain confirmation first (T4 toast), then looks up to see privacy claim.
+           No endAt — persists to scene end. */}
       <Caption
         text="Not our servers."
         position="top"
-        startAt={460}
+        startAt={490}
         fontSize={38}
       />
     </AbsoluteFill>
