@@ -70,7 +70,7 @@ export const DEMO_INVOICE: Invoice = {
     walletAddress: DEMO_FROM_ADDRESS,
   },
   client: {
-    name: 'Freelance Client',
+    name: 'Acme Corp',
   },
   items: [
     {
