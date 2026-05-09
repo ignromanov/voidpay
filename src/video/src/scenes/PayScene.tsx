@@ -210,12 +210,16 @@ export const PayScene: React.FC = () => {
       )}
 
       {/* β1+β2: Payment panel as floating center modal — replaces bottom-sheet (round 9c L6). */}
+      {/* ι3: fontSize:24px on wrapper drives em-cascade into PaymentPanel internals.
+           Panel outer width stays at θ6's 780px — only text grows proportionally.
+           24px = 1.5× browser default 16px, matching the ×1.5 intent for this panel. */}
       <div
         style={{
           position: "absolute",
           left: "50%",
           top: "50%",
           width: PANEL_WIDTH,
+          fontSize: "24px",
           // θ6: ε5 ×0.92 scale removed — panel at full scale matching production size
           transform: `translate(-50%, -50%) scale(${cardScale}) translateY(${panelExit}px)`,
           transformOrigin: "center center",
@@ -295,16 +299,17 @@ export const PayScene: React.FC = () => {
       {/* η4: magic dust hint — θ7 cross-impact: was bottom:28% (collides with bottom toasts).
            Repositioned to top-center, above panel. Enters at 210, exits at 300.
            Top zone: ζ5 "Not our servers." starts at f460 — no collision at f210-300.
-           η3 "Open link. Pay." exits at f80 — no collision either. Top is clear at f210. */}
+           η3 "Open link. Pay." exits at f80 — no collision either. Top is clear at f210.
+           ι4: fontSize 20→40 (×2). top bumped 80→90 to prevent clipping at very top edge. */}
       <HintBadge
         text="unique micro-amount ← payment ID"
         startAt={210}
         endAt={300}
         variant="arrow"
-        fontSize={20}
+        fontSize={40}
         style={{
           left: "50%",
-          top: 80,
+          top: 90,
           transform: "translateX(-50%)",
           zIndex: 10,
         }}
