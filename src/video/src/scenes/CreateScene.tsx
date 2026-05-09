@@ -257,34 +257,34 @@ export const CreateScene: React.FC = () => {
                 position: "relative",
                 width: "100%",
                 height: "100%",
-                // θ2: bumped from 20px → 26px (proportional to narrower form width)
-                // ui-ux-pro-max rule: readable at portrait phone playback scale
-                fontSize: "26px",
+                // ι1: bumped from 26px → 34px (×1.3 of θ2's 26px — form internals scale proportionally)
+                // Card outer width stays at θ2 560px — only internals grow.
+                fontSize: "34px",
                 overflowX: "visible",              // ε1: prevents right-column clipping at Card edge
                 overflowY: "hidden",               // ζ1: clip bottom so button doesn't bleed past Card
                 paddingRight: 8,                   // ε1: small extra right pad so values don't touch border
               }}
             >
-              {/* ζ2 + θ2: override absolute-px Tailwind sub-labels; floor raised from 16px → 18px for portrait legibility */}
+              {/* ζ2 + θ2 + ι1: override absolute-px Tailwind sub-labels; floor raised 18px → 23px (×1.3) */}
               <style>{`
                 .remotion-create-portrait .text-xs,
                 .remotion-create-portrait [class*="text-[11px]"],
                 .remotion-create-portrait [class*="text-[10px]"] {
-                  font-size: 18px !important;
+                  font-size: 23px !important;
                 }
               `}</style>
 
-              {/* θ1: Invoice Details header — matches production InvoiceFormView page header */}
+              {/* θ1 + ι1: Invoice Details header — 22px → 29px (×1.3) */}
               <div style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                marginBottom: 16,
-                paddingBottom: 12,
+                marginBottom: 20,
+                paddingBottom: 14,
                 borderBottom: "1px solid rgba(63, 63, 70, 0.5)",
               }}>
                 <div style={{
-                  fontSize: "22px",
+                  fontSize: "29px",
                   fontWeight: 700,
                   color: "rgba(244, 244, 245, 1)",
                   letterSpacing: "-0.02em",
@@ -350,32 +350,35 @@ export const CreateScene: React.FC = () => {
       </Card>
 
       {/* η7: "auto-generated" hint near Invoice No field — local 65–95, early in cascade */}
+      {/* ι1: fontSize 14→28 (×2 per ι4 rule) */}
       <HintBadge
         text="auto-generated"
         startAt={65}
         endAt={95}
         variant="ghost"
-        fontSize={14}
+        fontSize={28}
         style={{ left: formLeft + formWidth * 0.55, top: formTop + 28, zIndex: 10 }}
       />
 
       {/* η6: "any address, no KYC" hint near wallet field — local 115–175, during wallet typewriter */}
+      {/* ι1: fontSize 14→28 (×2 per ι4 rule) */}
       <HintBadge
         text="any address, no KYC"
         startAt={115}
         endAt={175}
         variant="arrow"
-        fontSize={14}
+        fontSize={28}
         style={{ left: formLeft + formWidth * 0.38, top: formTop + formHeight * 0.28, zIndex: 10 }}
       />
 
       {/* η2: magic dust hint near totals/amount field — local 220–280 (R1: startAt=220 avoids paper reveal collision) */}
+      {/* ι1: fontSize 14→28 (×2 per ι4 rule) */}
       <HintBadge
         text="+ 0.000042 ← magic dust"
         startAt={220}
         endAt={280}
         variant="arrow"
-        fontSize={14}
+        fontSize={28}
         style={{ left: formLeft + formWidth * 0.30, top: formTop + formHeight * 0.72, zIndex: 10 }}
       />
 
