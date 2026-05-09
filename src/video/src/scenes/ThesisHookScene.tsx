@@ -11,8 +11,8 @@ import { RemotionAuroraText } from "../components/RemotionAuroraText";
  * Round-9a: beat keyframes shifted -12fr so text starts at frame 0.
  *  0–18:  fade-in "The invoice…"
  * 18–30:  hold "The invoice…"
- * 30–36:  fade-out "The invoice…"
- * 30–48:  fade-in "is the URL." (overlaps tail of fade-out for natural cross)
+ * 30–48:  fade-out "The invoice…" (overlaps fade-in of beat 2 for symmetric cross-fade)
+ * 30–48:  fade-in "is the URL." (overlaps fade-out above for true cross-fade; both ~50% at f39)
  * 48–90:  hold "is the URL." → scene end (cross-fade transition closes visual)
  *
  * NOT <Caption> — the text IS the scene.
@@ -21,10 +21,10 @@ export const ThesisHookScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { width } = useVideoConfig();
 
-  // Beat 1: "The invoice…"  fades in 0-18, holds 18-30, fades out 30-36
+  // Beat 1: "The invoice…"  fades in 0-18, holds 18-30, fades out 30-48 (symmetric with beat2 fade-in)
   const beat1 =
     interpolate(frame, [0, 18], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }) *
-    interpolate(frame, [30, 36], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+    interpolate(frame, [30, 48], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
   // Beat 2: "is the URL."  fades in 30-48, holds 48→scene end (no fade-out —
   // cross-fade transition closes the visual).
