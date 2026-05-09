@@ -16,9 +16,10 @@ type HintBadgeProps = {
    */
   variant?: "ghost" | "arrow";
   /**
-   * Font size in px. Default 20 — legible at 9:16 portrait phone playback.
-   * ui-ux-pro-max rule: minimum 16px body text on mobile; hints are secondary
-   * annotations so 20px is the floor, not 14-15px from prior rounds.
+   * Font size in px. Default 40 — legible at 9:16 portrait phone playback.
+   * ι4: doubled from θ3's 20px floor → 40px. ui-ux-pro-max rule: hints are
+   * secondary annotations but must be readable without squinting on portrait phone.
+   * Callers may pass a smaller override when layout space is constrained (e.g. η5).
    */
   fontSize?: number;
 };
@@ -29,7 +30,7 @@ export const HintBadge: React.FC<HintBadgeProps> = ({
   endAt,
   style,
   variant = "ghost",
-  fontSize = 20,
+  fontSize = 40,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -73,8 +74,8 @@ export const HintBadge: React.FC<HintBadgeProps> = ({
           background: isArrow ? "rgba(9, 9, 11, 0.88)" : "transparent",
           border: isArrow ? "1px solid rgba(124, 58, 237, 0.55)" : "none",
           borderRadius: isArrow ? 8 : 0,
-          // θ3: proportional padding for 20px base font
-          padding: isArrow ? "6px 14px" : "2px 0",
+          // ι4: proportional padding for 40px base font (doubled from θ3's 6px 14px)
+          padding: isArrow ? "12px 28px" : "2px 0",
           fontFamily: `${FONT_SANS}, sans-serif`,
           fontSize,
           fontWeight: 600,
