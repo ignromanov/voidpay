@@ -16,6 +16,7 @@ import { Card } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
 import { TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { DEMO_INVOICE, DEMO_FROM_ADDRESS } from "../constants/demo-invoice";
+import { FONT_MONO } from "../fonts";
 import { Caption } from "../components/Caption";
 import { HintBadge } from "../components/HintBadge";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
@@ -217,7 +218,7 @@ export const CreateScene: React.FC = () => {
       {/* β2: InvoicePaper as persistent backdrop, grows from PAPER_APPEAR BEHIND form (z=1) */}
       <PaperBackdrop frame={frame} />
 
-      {/* β1+β3+β4: Form Card — vertically dominant, solid background, stays at opacity 1. */}
+      {/* β1+β3+β4: Form Card — Mocks v2 form spec: rgba(14,14,19,0.95) bg, zinc border */}
       <Card
         style={{
           position: "absolute",
@@ -229,13 +230,10 @@ export const CreateScene: React.FC = () => {
           overflow: "hidden",
           opacity: formOpacity,
           zIndex: 2,
-          backgroundColor: "rgba(24, 24, 27, 0.96)",
-          boxShadow: `
-            0 0 ${glowSpread}px rgba(124, 58, 237, ${glowIntensity}),
-            0 0 ${glowSpread / 2}px rgba(124, 58, 237, ${glowIntensity * 0.7}),
-            0 25px 80px -20px rgba(0,0,0,0.8)
-          `,
-          borderRadius: 16,
+          backgroundColor: "rgba(14,14,19,0.95)",
+          border: "1px solid rgba(63,63,70,0.5)",
+          boxShadow: `0 16px 50px rgba(0,0,0,0.5), 0 0 ${glowSpread}px rgba(124,58,237,${glowIntensity * 0.5})`,
+          borderRadius: 12,
         }}
       >
         <div
@@ -276,7 +274,7 @@ export const CreateScene: React.FC = () => {
                 }
               `}</style>
 
-              {/* θ1 + ι1: Invoice Details header — 22px → 29px (×1.3) */}
+              {/* v2: "/ Create invoice" header — mono slash prefix + sans title */}
               <div style={{
                 display: "flex",
                 alignItems: "center",
@@ -286,14 +284,22 @@ export const CreateScene: React.FC = () => {
                 borderBottom: "1px solid rgba(63, 63, 70, 0.5)",
               }}>
                 <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
                   fontSize: "29px",
                   fontWeight: 700,
                   color: "rgba(244, 244, 245, 1)",
-                  letterSpacing: "-0.02em",
+                  letterSpacing: "-0.005em",
                   lineHeight: 1.2,
                 }}>
-                  <span style={{ color: "rgba(139, 92, 246, 1)" }}>Invoice</span>
-                  {" "}Details
+                  <span style={{
+                    fontFamily: `${FONT_MONO}, monospace`,
+                    fontWeight: 500,
+                    fontSize: "23px",
+                    color: "#71717a",
+                  }}>/</span>
+                  Create invoice
                 </div>
               </div>
 
