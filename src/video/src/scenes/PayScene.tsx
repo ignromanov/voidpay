@@ -57,8 +57,13 @@ const stepAt = (frame: number): SkinStep => {
 // Paper is status-driven (pending → paid as payment progresses).
 // C10: PayScene exception — paper sits at top:64px below browser chrome per mock.
 // Chrome bar height ~60px (18px padding × 2 + 15px dot + 9px content) + 4px gap = ~64px.
+// F6 fix: blur/dim while panel is foreground (F9-F11); sharp at F12 paper-alone window.
 const CHROME_HEIGHT = 64;   // mock top:64px — paper starts just below chrome
-const PaperBackdrop: React.FC<{ paid: boolean }> = ({ paid }) => {
+const PaperBackdrop: React.FC<{
+  paid: boolean;
+  blurPx: number;
+  dimOpacity: number;
+}> = ({ paid, blurPx, dimOpacity }) => {
   const { width, height } = useVideoConfig();
   const targetWidth = width * 0.92;
   const scale = targetWidth / INVOICE_BASE_WIDTH;
@@ -77,6 +82,8 @@ const PaperBackdrop: React.FC<{ paid: boolean }> = ({ paid }) => {
         height: INVOICE_BASE_HEIGHT,
         transform: `scale(${scale})`,
         transformOrigin: "top left",
+        opacity: dimOpacity,
+        filter: blurPx > 0 ? `blur(${blurPx}px)` : undefined,
       }}
     >
       <InvoicePaper
@@ -126,14 +133,33 @@ export const PayScene: React.FC = () => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
+  // F6 fix: paper blurred+dimmed while panel is foreground (F9-F11).
+  // Transitions to sharp+full at PANEL_EXIT_END (545) — paper-alone window (F12).
+  const paperBlur = interpolate(
+    frame,
+    [PANEL_EXIT_START, PANEL_EXIT_END],
+    [2, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const paperDim = interpolate(
+    frame,
+    [PANEL_EXIT_START, PANEL_EXIT_END],
+    [0.4, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackgroundLayer variant="soft" />
       <NetworkBackground />
 
-      {/* Round 9c L2: InvoicePaper as full-bleed scene backdrop */}
+      {/* F6 fix: paper blurred while panel foreground, sharp at F12 paper-alone */}
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
-        <PaperBackdrop paid={paperPaid} />
+        <PaperBackdrop
+          paid={paperPaid}
+          blurPx={paperBlur}
+          dimOpacity={paperDim}
+        />
       </AbsoluteFill>
 
       {/* Magic Dust violet pulse — halo over the paper totals area */}
