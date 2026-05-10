@@ -362,24 +362,31 @@ export const CreateScene: React.FC = () => {
 
       {/* η6: "any address, no KYC" hint near wallet field — local 115–175, during wallet typewriter */}
       {/* ι1: fontSize 14→28 (×2 per ι4 rule) */}
+      {/* κ-4: repositioned ABOVE wallet field label (was 0.28 — on top of the field text).
+           0.16 targets the zone above the wallet row label, avoiding overlap with address text. */}
       <HintBadge
         text="any address, no KYC"
         startAt={115}
         endAt={175}
         variant="arrow"
         fontSize={28}
-        style={{ left: formLeft + formWidth * 0.38, top: formTop + formHeight * 0.28, zIndex: 10 }}
+        style={{ left: formLeft + formWidth * 0.20, top: formTop + formHeight * 0.16, zIndex: 10 }}
       />
 
-      {/* η2: magic dust hint near totals/amount field — local 220–280 (R1: startAt=220 avoids paper reveal collision) */}
+      {/* η2: magic dust hint — local 220–280 (R1: startAt=220 avoids paper reveal collision) */}
       {/* ι1: fontSize 14→28 (×2 per ι4 rule) */}
+      {/* κ-4: repositioned to RIGHT of form card so the ← arrow points toward the paper TOTAL column.
+           Was inside form at 0.30×width, 0.72×height — arrow pointed at form fields, not paper totals.
+           New position: anchored so right edge stays within viewport (1080px wide).
+           formLeft+formWidth = 820; hint text ~280px wide at fontSize 28; right edge cap at width-16.
+           Using right-anchor: position from right side of viewport so text never clips. */}
       <HintBadge
         text="+ 0.000042 ← magic dust"
         startAt={220}
         endAt={280}
         variant="arrow"
         fontSize={28}
-        style={{ left: formLeft + formWidth * 0.30, top: formTop + formHeight * 0.72, zIndex: 10 }}
+        style={{ right: 16, top: formTop + formHeight * 0.72, zIndex: 10 }}
       />
 
       {/* η1: "No signup." caption — local 280–340, button reveal moment (Spark Beat 11).

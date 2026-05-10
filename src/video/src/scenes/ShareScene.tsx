@@ -206,24 +206,32 @@ export const ShareScene: React.FC = () => {
           </div>
         </div>
 
-        {/* θ5: Full production density RemotionLinkTab + η5 hint repositioned */}
-        {/* η5: "invoice data →" ghost hint — R2: startAt=80, endAt=160.
-             ι2 judgment: η5 exempted from full ×2 rule. At right:12, top:8 inside the permalink
-             wrapper, ×2 of 15px = 30px would overflow above the wrapper bounds.
-             Decision: 24px (×1.6) — large enough to read, fits in the header zone above permalink box.
-             θ5 cross-impact: repositioned to top of permalink box. */}
-        <div style={{ padding: "0 32px 32px 32px", position: "relative" }}>
+        {/* θ5: Full production density RemotionLinkTab */}
+        <div style={{ padding: "0 32px 32px 32px" }}>
           <RemotionLinkTab url={SHARE_URL} copied={copied} />
-          <HintBadge
-            text="invoice data →"
-            startAt={80}
-            endAt={160}
-            variant="ghost"
-            fontSize={24}
-            style={{ right: 12, top: 8, zIndex: 10 }}
-          />
         </div>
       </Card>
+
+      {/* η5: "invoice data →" ghost hint — κ-4 fix: moved outside Card to avoid overflow:hidden clip.
+           Was: inside relative div at right:12, top:8 — clipped by Card overflow:hidden, never visible.
+           Now: AbsoluteFill-level overlay, anchored to the right side of the URL permalink box.
+           Card center-x ≈ 50vw; card width=660; permalink box right edge ≈ 50%+330-32 = 50%+298.
+           Top: modal top ≈ 48%−(cardHeight/2); permalink box starts ~330px from card top.
+           Using percentage-free px: right side of URL box is at roughly 68% from left (50%+18%).
+           Position: right of URL box, at the hash fragment zone — ghost annotation, no background.
+           startAt=80 endAt=160 per R2 spec; fontSize=24 per ι2 judgment. */}
+      <HintBadge
+        text="invoice data →"
+        startAt={80}
+        endAt={160}
+        variant="ghost"
+        fontSize={24}
+        style={{
+          left: "calc(50% + 140px)",
+          top: "calc(48% - 90px)",
+          zIndex: 20,
+        }}
+      />
 
       {/* ζ4: Spark caption — Content Anchor #3 "Payments can be reduced to pure data"
            startAt=60 local: modal fully entered by ~f20, 60fr stagger lets viewer read header first.
