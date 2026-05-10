@@ -19,6 +19,7 @@ import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS } from "../fonts";
 import { RemotionLinkTab } from "../components/RemotionLinkTab";
+import { RemotionQRTab } from "../components/RemotionQRTab";
 import { Caption } from "../components/Caption";
 import { HintBadge } from "../components/HintBadge";
 
@@ -86,9 +87,11 @@ export const ShareScene: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
-  // Narrative "copied" state: flips at COPY_CLICK_FRAME so the real LinkTab
-  // shows its own "Copied!" affordance (CopyOverlay flash + icon swap).
-  const copied = frame >= COPY_CLICK_FRAME + 10;
+  // κ-5 RC-6: tab body and indicator must swap at the same frame (COPY_CLICK_FRAME).
+  // "copied" fires 10fr BEFORE the tab swap so viewer sees "Copied!" on the Link
+  // tab briefly, then the whole tab (indicator + body) flips to QR Code together.
+  const showQR = frame >= COPY_CLICK_FRAME;
+  const copied = frame >= COPY_CLICK_FRAME - 10;
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
@@ -177,10 +180,10 @@ export const ShareScene: React.FC = () => {
             marginBottom: 18,
           }}>
             {(["Link", "QR Code"] as const).map((label) => {
-              // θ5: Link tab active before COPY_CLICK_FRAME, QR Code tab active after
-              const isActive = frame < COPY_CLICK_FRAME
-                ? label === "Link"
-                : label === "QR Code";
+              // κ-5: tab indicator and body both switch at COPY_CLICK_FRAME via showQR
+              const isActive = showQR
+                ? label === "QR Code"
+                : label === "Link";
               return (
                 <div
                   key={label}
@@ -206,9 +209,14 @@ export const ShareScene: React.FC = () => {
           </div>
         </div>
 
-        {/* θ5: Full production density RemotionLinkTab */}
+        {/* κ-5 RC-6: body swaps in sync with tab indicator at COPY_CLICK_FRAME.
+             Before swap: Link tab content (permalink + Copy Link CTA + social share).
+             After swap: QR Code tab content (QR image + scan hint + Download QR). */}
         <div style={{ padding: "0 32px 32px 32px" }}>
-          <RemotionLinkTab url={SHARE_URL} copied={copied} />
+          {showQR
+            ? <RemotionQRTab url={SHARE_URL} />
+            : <RemotionLinkTab url={SHARE_URL} copied={copied} />
+          }
         </div>
       </Card>
 
