@@ -48,7 +48,11 @@ const PAPER_PROPS = {
 
 // Round 9c L2: PaperBackdrop — full-bleed InvoicePaper centered in viewport.
 // Paper biased upward so modal at bottom doesn't overlap signature area.
-const PaperBackdrop: React.FC = () => {
+// C5: accepts dim opacity + blur for modal-foregrounded frames (F6-F8).
+const PaperBackdrop: React.FC<{ dimOpacity: number; blurPx: number }> = ({
+  dimOpacity,
+  blurPx,
+}) => {
   const { width, height } = useVideoConfig();
   const targetWidth = width * 0.92;
   const scale = targetWidth / INVOICE_BASE_WIDTH;
@@ -65,6 +69,8 @@ const PaperBackdrop: React.FC = () => {
         height: INVOICE_BASE_HEIGHT,
         transform: `scale(${scale})`,
         transformOrigin: "top left",
+        opacity: dimOpacity,
+        filter: blurPx > 0 ? `blur(${blurPx}px)` : undefined,
       }}
     >
       <InvoicePaper {...PAPER_PROPS} />
@@ -99,9 +105,19 @@ export const ShareScene: React.FC = () => {
       <NetworkBackgroundLayer variant="soft" />
       <NetworkBackground />
 
-      {/* Round 9c L2: InvoicePaper as scene backdrop */}
+      {/* Round 9c L2: InvoicePaper as scene backdrop.
+           C5: F6 entrance 0.35/1.5px → F7/F8 0.3/2px — modal is always foregrounded in S2. */}
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
-        <PaperBackdrop />
+        <PaperBackdrop
+          dimOpacity={interpolate(frame, [0, 15, COPY_CLICK_FRAME], [0.35, 0.35, 0.3], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+          })}
+          blurPx={interpolate(frame, [0, 15, COPY_CLICK_FRAME], [1.5, 1.5, 2.0], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+          })}
+        />
       </AbsoluteFill>
 
       {/* Dimmed backdrop — β3: reduced to 0.30 so paper reads clearly through */}

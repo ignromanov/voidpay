@@ -63,13 +63,17 @@ const noop = () => {
 
 // β2: PaperBackdrop — full-bleed InvoicePaper centered in viewport, frame-driven entrance.
 // Renders BEHIND the form Card (z=1 vs form z=default). Grows from PAPER_APPEAR.
-const PaperBackdrop: React.FC<{ frame: number }> = ({ frame: f }) => {
+// C5: accepts blur/dim overrides for when CTA/modal is foregrounded.
+const PaperBackdrop: React.FC<{ frame: number; dimOpacity?: number; blurPx?: number }> = ({
+  frame: f,
+  dimOpacity,
+  blurPx,
+}) => {
   const { width, height } = useVideoConfig();
   const targetWidth = width * 0.92;
   const scale = targetWidth / INVOICE_BASE_WIDTH;
   const scaledH = INVOICE_BASE_HEIGHT * scale;
   // θ4: balanced vertical centering — center paper in [80, height-100] band
-  // so top margin equals bottom margin, excluding caption zone (top) and toast zone (bottom).
   const availableTop = 80;
   const availableBottom = height - 100;
   const availableHeight = availableBottom - availableTop;
@@ -82,9 +86,10 @@ const PaperBackdrop: React.FC<{ frame: number }> = ({ frame: f }) => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
   const paperScale = scale * (0.92 + enter * 0.08);  // 92% → 100% scale ramp
-  // ε6: dim paper backdrop in S1 to push it visually behind the form
-  // (S2 + S3 use full-opacity PaperBackdrop — this dimming is S1-only)
-  const paperOpacity = enter * 0.65;
+  // ε6: dim paper backdrop in S1 to push it visually behind the form.
+  // C5: when modal/CTA is foregrounded, apply additional dimOpacity override.
+  const baseOpacity = enter * 0.65;
+  const paperOpacity = dimOpacity !== undefined ? dimOpacity : baseOpacity;
 
   if (enter <= 0) return null;
 
@@ -99,6 +104,7 @@ const PaperBackdrop: React.FC<{ frame: number }> = ({ frame: f }) => {
         transform: `scale(${paperScale})`,
         transformOrigin: "top left",
         opacity: paperOpacity,
+        filter: blurPx ? `blur(${blurPx}px)` : undefined,
         zIndex: 1,
       }}
     >
@@ -215,8 +221,21 @@ export const CreateScene: React.FC = () => {
         }}
       />
 
-      {/* β2: InvoicePaper as persistent backdrop, grows from PAPER_APPEAR BEHIND form (z=1) */}
-      <PaperBackdrop frame={frame} />
+      {/* β2: InvoicePaper as persistent backdrop, grows from PAPER_APPEAR BEHIND form (z=1).
+           C5: F5 (Generate pressed) — paper dims to 0.4 opacity + 0.5px blur. */}
+      <PaperBackdrop
+        frame={frame}
+        {...(frame >= PRESS_START && {
+          dimOpacity: interpolate(frame, [PRESS_START, PRESS_START + 8], [0.65, 0.4], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+          }),
+          blurPx: interpolate(frame, [PRESS_START, PRESS_START + 8], [0, 0.5], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+          }),
+        })}
+      />
 
       {/* β1+β3+β4: Form Card — Mocks v2 form spec: rgba(14,14,19,0.95) bg, zinc border */}
       <Card
