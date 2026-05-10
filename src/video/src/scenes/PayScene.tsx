@@ -103,12 +103,17 @@ const pressScale = (frame: number, triggerFrame: number): number =>
 
 // Round 9c L2: PaperBackdrop — full-bleed InvoicePaper centered in viewport.
 // Paper is status-driven (pending → paid as payment progresses).
+// C10: PayScene exception — paper sits at top:64px below browser chrome per mock.
+// Chrome bar height ~60px (18px padding × 2 + 15px dot + 9px content) + 4px gap = ~64px.
+const CHROME_HEIGHT = 64;   // mock top:64px — paper starts just below chrome
 const PaperBackdrop: React.FC<{ paid: boolean }> = ({ paid }) => {
   const { width, height } = useVideoConfig();
   const targetWidth = width * 0.92;
   const scale = targetWidth / INVOICE_BASE_WIDTH;
   const scaledH = INVOICE_BASE_HEIGHT * scale;
-  const top = Math.max(40, (height - scaledH) / 2 - 80);
+  // Center paper in the space below chrome bar
+  const availableHeight = height - CHROME_HEIGHT;
+  const top = CHROME_HEIGHT + Math.max(0, (availableHeight - scaledH) / 2);
 
   return (
     <div

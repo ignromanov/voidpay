@@ -47,8 +47,8 @@ const PAPER_PROPS = {
 
 
 // Round 9c L2: PaperBackdrop — full-bleed InvoicePaper centered in viewport.
-// Paper biased upward so modal at bottom doesn't overlap signature area.
 // C5: accepts dim opacity + blur for modal-foregrounded frames (F6-F8).
+// C10: true vertical center per Mocks v2 .paper anchor (top:50% translate -50%).
 const PaperBackdrop: React.FC<{ dimOpacity: number; blurPx: number }> = ({
   dimOpacity,
   blurPx,
@@ -57,7 +57,8 @@ const PaperBackdrop: React.FC<{ dimOpacity: number; blurPx: number }> = ({
   const targetWidth = width * 0.92;
   const scale = targetWidth / INVOICE_BASE_WIDTH;
   const scaledH = INVOICE_BASE_HEIGHT * scale;
-  const top = Math.max(40, (height - scaledH) / 2 - 80);
+  // C10: true center — paper at vertical midpoint of viewport
+  const top = (height - scaledH) / 2;
 
   return (
     <div
