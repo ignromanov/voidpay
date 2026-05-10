@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   AbsoluteFill,
   interpolate,
@@ -10,60 +11,94 @@ import {
   INVOICE_BASE_WIDTH,
   INVOICE_BASE_HEIGHT,
 } from "@/widgets/invoice-paper";
+import { PaymentPanel } from "@/widgets/payment-panel";
+import { SmartPayButtonView } from "@/features/payment";
+import type { PaymentStep, IdleSubState } from "@/features/payment";
 import { NetworkBackground } from "@/widgets/network-background";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { RemotionFakeToast } from "../components/RemotionFakeToast";
+import { RemotionPaidConfirmationProgress } from "../components/RemotionPaidConfirmationProgress";
 import { Caption } from "../components/Caption";
 import { HintBadge } from "../components/HintBadge";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
 import { BrowserChrome } from "../components/BrowserChrome";
 import { WalletPill } from "../components/WalletPill";
-import { RemotionPaymentPanelSkin } from "../components/RemotionPaymentPanelSkin";
-import { DEMO_INVOICE } from "../constants/demo-invoice";
+import { DEMO_INVOICE, DEMO_CONTENT_HASH } from "../constants/demo-invoice";
+
+// Deterministic demo tx hash for the paid-state watermark
+const DEMO_TX_HASH =
+  "0xabc123def456789012345678901234567890abcdef1234567890abcdef123456" as const;
+
+// Hoisted to module scope so prop identities are stable across every frame —
+// prevents InvoicePaper re-renders from fresh object references (P1.2).
+const PAPER_PROPS_PENDING = {
+  data: DEMO_INVOICE,
+  status: "pending",
+  variant: "default",
+} as const;
+
+const PAPER_PROPS_PAID = {
+  data: DEMO_INVOICE,
+  status: "paid",
+  txHash: DEMO_TX_HASH,
+  variant: "default",
+} as const;
 
 // Phase timing — κ-3 reshuffle (S3-local frames):
-//   0–90    idle:disconnected   ("Connect Wallet")
-//  90–170   connecting
-// 170–240   switching
-// 240–340   sending
-// 340–470   confirming
-// 470–575   success/paid
+//   0–90    idle:disconnected   ("Connect Wallet" — only press needed)
+//           Extended from 50→90 so B1 beat is visible even through the 20fr crossfade entry
+//  85–94    press-scale on Connect (THE only press in this scene)
+//  90–170   connecting  (spinner "Connecting…", progress 25%)
+// 170–240   switching   (spinner "Switching…", progress 45%)
+// 240–340   sending     (spinner "Sending…", progress 70%)
+// 340–470   confirming  (CTA hidden, reorg progress visible, progress 90%; paper still PENDING)
+// 470–575   success     (paid watermark, progress 100%)
+//
+// Single-press model per Ignat (round 9a-patch2 C7): user clicks Connect ONCE; then
+// continuous progress. No return to idle:wrong-network or idle:ready between transitions.
+const PRESS_CONNECT        = 85;
 const PHASE_CONNECTING     = 90;
 const PHASE_SWITCHING      = 170;
 const PHASE_SENDING        = 240;
 const PHASE_CONFIRMING     = 340;
 const SUCCESS              = 470;
+// Magic Dust window — shifted to align with new sending phase (240-340).
 const MAGIC_DUST_HIGHLIGHT = 240;
 const MAGIC_DUST_PEAK_END  = 390;
 const CONFIRMATIONS_REQUIRED = 12;
 
+// κ-3: panel exits at 525-545, giving 30fr paper-alone window before S4 crossfade.
 const PANEL_EXIT_START = 525;
 const PANEL_EXIT_END   = 545;
-const PANEL_WIDTH = 780;
 
-type SkinStep = 'idle' | 'connecting' | 'switching' | 'sending' | 'confirming' | 'paid';
-
-const stepAt = (frame: number): SkinStep => {
-  if (frame >= SUCCESS) return 'paid';
-  if (frame >= PHASE_CONFIRMING) return 'confirming';
-  if (frame >= PHASE_SENDING) return 'sending';
-  if (frame >= PHASE_SWITCHING) return 'switching';
-  if (frame >= PHASE_CONNECTING) return 'connecting';
-  return 'idle';
+const stepAt = (frame: number): { step: PaymentStep; idleSubState: IdleSubState } => {
+  if (frame >= SUCCESS) return { step: 'success', idleSubState: 'ready' };
+  if (frame >= PHASE_CONFIRMING) return { step: 'confirming', idleSubState: 'ready' };
+  if (frame >= PHASE_SENDING) return { step: 'sending', idleSubState: 'ready' };
+  if (frame >= PHASE_SWITCHING) return { step: 'switching', idleSubState: 'wrong-network' };
+  if (frame >= PHASE_CONNECTING) return { step: 'connecting', idleSubState: 'disconnected' };
+  return { step: 'idle', idleSubState: 'disconnected' };
 };
+
+/** press-scale on transition frames; 5fr ramp 0.96→1 right after the trigger frame. */
+const pressScale = (frame: number, triggerFrame: number): number =>
+  interpolate(
+    frame,
+    [triggerFrame - 2, triggerFrame, triggerFrame + 5, triggerFrame + 7],
+    [1, 0.96, 0.96, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
 
 // Round 9c L2: PaperBackdrop — full-bleed InvoicePaper centered in viewport.
 // Paper is status-driven (pending → paid as payment progresses).
 // C10: PayScene exception — paper sits at top:64px below browser chrome per mock.
-// Chrome bar height ~60px (18px padding × 2 + 15px dot + 9px content) + 4px gap = ~64px.
-// F6 fix: blur/dim while panel is foreground (F9-F11); sharp at F12 paper-alone window.
-const CHROME_HEIGHT = 64;   // mock top:64px — paper starts just below chrome
-const PaperBackdrop: React.FC<{
-  paid: boolean;
-  blurPx: number;
-  dimOpacity: number;
-}> = ({ paid, blurPx, dimOpacity }) => {
+const CHROME_HEIGHT = 64;
+const PaperBackdrop: React.FC<{ paid: boolean; blurPx: number; dimOpacity: number }> = ({
+  paid,
+  blurPx,
+  dimOpacity,
+}) => {
   const { width, height } = useVideoConfig();
   const targetWidth = width * 0.92;
   const scale = targetWidth / INVOICE_BASE_WIDTH;
@@ -86,32 +121,48 @@ const PaperBackdrop: React.FC<{
         filter: blurPx > 0 ? `blur(${blurPx}px)` : undefined,
       }}
     >
-      <InvoicePaper
-        data={DEMO_INVOICE}
-        status={paid ? "paid" : "pending"}
-        variant="default"
-      />
+      <InvoicePaper {...(paid ? PAPER_PROPS_PAID : PAPER_PROPS_PENDING)} />
     </div>
   );
 };
 
 export const PayScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width } = useVideoConfig();
 
+  // Mocks v2 surgical: panel width = 84% of stage width
+  const panelWidth = Math.round(width * 0.84);
+
+  // Card entrance — panel rises from bottom using this as the slide-up progress
   const cardScale = spring({ frame, fps, config: SPRING_CONFIGS.smooth });
-  const step = stepAt(frame);
-  const paperPaid = step === 'paid';
 
-  // Confirming progress 0→CONFIRMATIONS_REQUIRED across the confirming window
+  const { step, idleSubState } = stepAt(frame);
+
+  // Map PaymentStep → PaymentPanel's narrower {pending, confirming, paid} contract.
+  const panelStatus: "pending" | "confirming" | "paid" =
+    step === 'success' ? 'paid' :
+    step === 'confirming' ? 'confirming' :
+    'pending';
+
+  // Round 9a-patch2 (C7): only one press in single-press model.
+  const ctaPressTriggerFrame = frame >= PRESS_CONNECT ? PRESS_CONNECT : -1;
+
+  // Round 9a: restore reorg-progress visual.
   const confirmingProgress = interpolate(
     frame,
     [PHASE_CONFIRMING, SUCCESS],
     [0, CONFIRMATIONS_REQUIRED],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
+  const confirmations = useMemo(
+    () => ({
+      current: CONFIRMATIONS_REQUIRED,
+      required: CONFIRMATIONS_REQUIRED,
+    }),
+    [],
+  );
 
-  // Magic dust violet pulse — peak window straddles sending→confirming
+  // Violet pulse overlay over the totals band
   const magicDustPulseOpacity = interpolate(
     frame,
     [MAGIC_DUST_HIGHLIGHT - 10, MAGIC_DUST_HIGHLIGHT + 10, MAGIC_DUST_PEAK_END - 10, MAGIC_DUST_PEAK_END + 10],
@@ -119,7 +170,12 @@ export const PayScene: React.FC = () => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
-  // Pre-CTA panel exit — fade + small downward drift
+  const panelTxHash = step === 'confirming' || step === 'success' ? DEMO_TX_HASH : undefined;
+
+  // κ-3: paper shows paid state only at success
+  const paperPaid = step === 'success';
+
+  // Round 9c L3 + β2: pre-CTA panel exit — fade + small downward drift
   const panelExit = interpolate(
     frame,
     [PANEL_EXIT_START, PANEL_EXIT_END],
@@ -133,7 +189,7 @@ export const PayScene: React.FC = () => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
-  // F6 fix: paper blurred+dimmed while panel is foreground (F9-F11).
+  // 206edeb fix: paper blurred+dimmed while panel is foreground (F9-F11).
   // Transitions to sharp+full at PANEL_EXIT_END (545) — paper-alone window (F12).
   const paperBlur = interpolate(
     frame,
@@ -153,7 +209,8 @@ export const PayScene: React.FC = () => {
       <NetworkBackgroundLayer variant="soft" />
       <NetworkBackground />
 
-      {/* F6 fix: paper blurred while panel foreground, sharp at F12 paper-alone */}
+      {/* Round 9c L2: InvoicePaper as full-bleed scene backdrop.
+           206edeb fix: paper blurred while panel foreground, sharp at F12 paper-alone. */}
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
         <PaperBackdrop
           paid={paperPaid}
@@ -176,28 +233,87 @@ export const PayScene: React.FC = () => {
         />
       )}
 
-      {/* β1+β2: Payment panel as floating center modal — replaces bottom-sheet (round 9c L6). */}
-      {/* ι3: fontSize:24px on wrapper drives em-cascade into PaymentPanel internals.
-           Panel outer width stays at θ6's 780px — only text grows proportionally.
-           24px = 1.5× browser default 16px, matching the ×1.5 intent for this panel. */}
+      {/* β1+β2: Payment panel as floating center modal.
+           Mocks v2 surgical: width = 84% of stage, side padding = 36px (12px × 3).
+           F10 text sizes via fontSize: "24px" em-cascade into PaymentPanel internals. */}
       <div
         style={{
           position: "absolute",
           left: "50%",
           top: "50%",
-          width: PANEL_WIDTH,
-          // F4 fix: RemotionPaymentPanelSkin owns all internal sizing — no em-cascade wrapper
+          width: panelWidth,
+          fontSize: "24px",
+          // θ6: panel at full scale matching production size
           transform: `translate(-50%, -50%) scale(${cardScale}) translateY(${panelExit}px)`,
           transformOrigin: "center center",
           opacity: cardScale * (1 - panelExitOpacity),
+          borderRadius: 30,
+          backgroundColor: "rgba(24, 24, 27, 0.96)",
+          border: "1px solid rgba(63, 63, 70, 0.8)",
+          boxShadow: "0 25px 80px -20px rgba(0,0,0,0.8), 0 8px 32px -8px rgba(0,0,0,0.5)",
+          overflow: "hidden",
+          padding: "36px 36px 30px",
         }}
       >
-        {/* F4 fix: skin replaces production PaymentPanel — Mocks v2 ×3 sizes, frame-driven */}
-        <RemotionPaymentPanelSkin
-          step={step}
-          confirmingProgress={confirmingProgress}
-          magicDustPulseOpacity={magicDustPulseOpacity}
-        />
+        <PaymentPanel
+          invoice={DEMO_INVOICE}
+          contentHash={DEMO_CONTENT_HASH}
+          status={panelStatus}
+          txHash={panelTxHash}
+          confirmations={confirmations}
+          source="received"
+          finalized={panelStatus === "paid"}
+        >
+          {/* CTA — drives SmartPayButtonView per-frame across 6 idle sub-states + sending. */}
+          {(step !== 'confirming' && step !== 'success') && (
+            <div
+              style={{
+                transform: ctaPressTriggerFrame >= 0
+                  ? `scale(${pressScale(frame, ctaPressTriggerFrame)})`
+                  : undefined,
+                transformOrigin: "center",
+              }}
+            >
+              <SmartPayButtonView
+                step={step}
+                idleSubState={idleSubState}
+                currency={DEMO_INVOICE.currency}
+                subtotal="250000000"
+                decimals={6}
+              />
+            </div>
+          )}
+
+          {/* Round 9a: reorg progress overlay — Remotion-safe frame-driven bar. */}
+          {step === 'confirming' && (
+            <div style={{ marginTop: 12 }}>
+              <RemotionPaidConfirmationProgress
+                current={confirmingProgress}
+                required={CONFIRMATIONS_REQUIRED}
+              />
+            </div>
+          )}
+
+          {/* F10 surgical: spinner driven by frame*8 rotation during sending state */}
+          {step === 'sending' && (
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                width: 32,
+                height: 32,
+                marginTop: -16,
+                marginLeft: -16,
+                border: "3px solid rgba(139,92,246,0.2)",
+                borderTop: "3px solid rgba(139,92,246,1)",
+                borderRadius: "50%",
+                transform: `translate(-50%, -50%) rotate(${frame * 8}deg)`,
+                pointerEvents: "none",
+              }}
+            />
+          )}
+        </PaymentPanel>
       </div>
 
       {/* C6: BrowserChrome — mock .chrome spec, full S3 duration (F9-F12) */}
@@ -220,18 +336,12 @@ export const PayScene: React.FC = () => {
       )}
 
       {/* Narrative toasts — anchored below panel right edge */}
-      {/* κ-3 toast timings — shifted to match new phase windows:
-          T1 fires at PHASE_SWITCHING (170), T2 fires at PHASE_SENDING (240),
-          T3 fires at PHASE_CONFIRMING (340) hold=140 (spans into success for continuity),
-          T4 fires at SUCCESS (470) hold=120. */}
       <RemotionFakeToast variant="success" title="Wallet connected" startAt={170} hold={60} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={240} hold={60} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={340} hold={140} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={470} hold={120} stackOffset={0} anchor="below-panel" />
 
-      {/* ε3: "Open link. Pay." caption — local 15–88, scene opener during idle:disconnected beat.
-           κ-3: extended endAt 80→88 to cover the full idle window (0-90) minus a 2fr gap before
-           PRESS_CONNECT (85). Gives B1 a clear caption across the full visible idle window. */}
+      {/* ε3: "Open link. Pay." caption — local 15–88 */}
       <Caption
         text="Open link. Pay."
         position="top"
@@ -254,9 +364,7 @@ export const PayScene: React.FC = () => {
         }}
       />
 
-      {/* ζ5: Spark caption — Content Anchor #1 "Not our servers" reframe.
-           κ-3: startAt=490 local (20fr into new SUCCESS=470); T4 fires at 470.
-           C8: emerald variant signals payment success (color shift per mock F12). */}
+      {/* ζ5: Spark caption — "Not our servers" */}
       <Caption
         text="Not our servers."
         position="top"
