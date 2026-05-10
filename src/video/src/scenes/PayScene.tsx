@@ -343,13 +343,13 @@ export const PayScene: React.FC = () => {
 
       {/* ζ5: Spark caption — Content Anchor #1 "Not our servers" reframe.
            κ-3: startAt=490 local (20fr into new SUCCESS=470); T4 fires at 470.
-           Viewer reads chain confirmation first (T4 toast), then looks up to see privacy claim.
-           No endAt — persists to scene end. */}
+           C8: emerald variant signals payment success (color shift per mock F12). */}
       <Caption
         text="Not our servers."
         position="top"
         startAt={490}
         fontSize={38}
+        variant="emerald"
       />
     </AbsoluteFill>
   );
