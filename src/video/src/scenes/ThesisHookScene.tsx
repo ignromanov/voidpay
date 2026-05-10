@@ -66,7 +66,7 @@ export const ThesisHookScene: React.FC = () => {
             lineHeight: 1.05,
           }}
         >
-          <span style={{ color: "#71717a", opacity: 0.35 }}>The invoice</span>
+          <span style={{ color: "#71717a", opacity: 0.50 }}>The invoice</span>
           <br />
           <RemotionAuroraText phaseFrames={0}>is&nbsp;the&nbsp;URL.</RemotionAuroraText>
         </div>
