@@ -82,7 +82,9 @@ const PaperBackdrop: React.FC<{ dimOpacity: number; blurPx: number }> = ({
 
 export const ShareScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width } = useVideoConfig();
+  // Mocks v2 surgical: modal width = 84% of stage width
+  const modalWidth = Math.round(width * 0.84);
 
   // Modal slide-up
   const modalTranslateY = interpolate(
@@ -121,13 +123,18 @@ export const ShareScene: React.FC = () => {
         />
       </AbsoluteFill>
 
-      {/* F6 fix: drop extra dim overlay — paper dimOpacity (0.35/0.3) is the only darkening.
-           Double-stacking rgba(0,0,0,0.30) over paper opacity was over-darkening. */}
+      {/* Dimmed backdrop — β3: reduced to 0.30 so paper reads clearly through */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        background: "rgba(0,0,0,0.30)",
+        opacity: modalOpacity,
+      }} />
 
       {/* Share modal shell — γ4: true-center positioning, β3: solid background */}
       {/* ζ3: top shifted 50%→48% — paper mass occupies upper frame, modal visual center is slightly
            below mathematical center; 48% places it in the visual center of the dark space below paper */}
-      {/* θ5: width 512→600 for density; ι2: 600→660 (+10%) to absorb ×1.5 internal text scaling */}
+      {/* Mocks v2 surgical: width = 84% of stage, side padding = 36px (12px × 3) */}
       <Card
         // β3: solid background for readability over invoice paper backdrop
         className="border border-zinc-800/80"
@@ -135,13 +142,15 @@ export const ShareScene: React.FC = () => {
           position: "absolute",
           left: "50%",
           top: "48%",
-          width: 660,
+          width: modalWidth,
           padding: 0,
           transform: `translate(-50%, -50%) translateY(${modalTranslateY}px)`,
           opacity: modalOpacity,
           overflow: "hidden",
           backgroundColor: "rgba(24, 24, 27, 0.96)",
+          border: "1px solid rgba(139,92,246,0.25)",
           boxShadow: "0 25px 80px -20px rgba(0,0,0,0.8), 0 8px 32px -8px rgba(0,0,0,0.5)",
+          borderRadius: 30,
         }}
       >
         {/* Violet top gradient bar — matches real ShareModal */}
@@ -150,7 +159,8 @@ export const ShareScene: React.FC = () => {
           background: "linear-gradient(90deg, #8b5cf6, #d946ef, #8b5cf6)",
         }} />
 
-        {/* Header — "Invoice Ready" pattern from ShareModal.tsx; F3 fix: sizes ×3 per Mocks v2 */}
+        {/* Header — "Invoice Ready" pattern from ShareModal.tsx; ι2: padding + sizes ×1.5 */}
+        {/* F8 surgical: header fontSize 30→39, subtitle 21→27, padding 24px→30px/36px */}
         <div style={{ padding: "30px 36px" }}>
           <div style={{
             display: "flex",
@@ -179,8 +189,12 @@ export const ShareScene: React.FC = () => {
           <InvoiceSummary invoice={DEMO_INVOICE} />
         </div>
 
-        {/* Tab switcher — F3 fix: tab font 9.5px → 28.5px per Mocks v2; tab height 18px → 54px */}
+        {/* θ5: Tab switcher — Link/QR tabs, matching production ShareModal density.
+             Reverts ε2 simplification. Shows Link tab first, then demonstrates QR tab switch.
+             Tab switch fires at COPY_CLICK_FRAME (f110) so viewer sees both tabs. */}
+        {/* F8 surgical: tab section side padding = 36px; tab height 44→54px; fontSize 20→28.5px */}
         <div style={{ padding: "0 36px 18px 36px" }}>
+          {/* Tab bar — production-parity: full-width, Link + QR Code */}
           <div style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
@@ -190,6 +204,7 @@ export const ShareScene: React.FC = () => {
             marginBottom: 18,
           }}>
             {(["Link", "QR Code"] as const).map((label) => {
+              // κ-5: tab indicator and body both switch at COPY_CLICK_FRAME via showQR
               const isActive = showQR
                 ? label === "QR Code"
                 : label === "Link";
@@ -221,6 +236,7 @@ export const ShareScene: React.FC = () => {
         {/* κ-5 RC-6: body swaps in sync with tab indicator at COPY_CLICK_FRAME.
              Before swap: Link tab content (permalink + Copy Link CTA + social share).
              After swap: QR Code tab content (QR image + scan hint + Download QR). */}
+        {/* F8 surgical: body side padding = 36px */}
         <div style={{ padding: "0 36px 36px 36px" }}>
           {showQR
             ? <RemotionQRTab url={SHARE_URL} />
