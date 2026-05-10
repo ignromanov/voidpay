@@ -306,10 +306,7 @@ export const PayScene: React.FC = () => {
         fontSize={38}
       />
 
-      {/* η4: magic dust hint — κ-3: shifted to align with new sending phase (240-340).
-           Enters at 255 (15fr into sending, giving Magic Dust ramp time to build),
-           exits at 345 (5fr into confirming). Top zone clear: ε3 exits at 88, ζ5 starts at 490.
-           ι4: fontSize 40, top:90 (prevent clipping at top edge). */}
+      {/* η4 (F10): Mocks v2 anchor top:24.7% right:3.9% — "unique micro-amount ← payment ID" */}
       <HintBadge
         text="unique micro-amount ← payment ID"
         startAt={255}
@@ -317,9 +314,8 @@ export const PayScene: React.FC = () => {
         variant="arrow"
         fontSize={40}
         style={{
-          left: "50%",
-          top: 90,
-          transform: "translateX(-50%)",
+          top: "24.7%",
+          right: "3.9%",
           zIndex: 10,
         }}
       />

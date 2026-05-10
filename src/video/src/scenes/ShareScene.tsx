@@ -222,23 +222,16 @@ export const ShareScene: React.FC = () => {
         </div>
       </Card>
 
-      {/* η5: "invoice data →" ghost hint — κ-4 fix: moved outside Card to avoid overflow:hidden clip.
-           Was: inside relative div at right:12, top:8 — clipped by Card overflow:hidden, never visible.
-           Now: AbsoluteFill-level overlay, anchored to the right side of the URL permalink box.
-           Card center-x ≈ 50vw; card width=660; permalink box right edge ≈ 50%+330-32 = 50%+298.
-           Top: modal top ≈ 48%−(cardHeight/2); permalink box starts ~330px from card top.
-           Using percentage-free px: right side of URL box is at roughly 68% from left (50%+18%).
-           Position: right of URL box, at the hash fragment zone — ghost annotation, no background.
-           startAt=80 endAt=160 per R2 spec; fontSize=24 per ι2 judgment. */}
+      {/* η5 (F7): Mocks v2 anchor top:31.3% right:3.9% — "invoice data → in the hash" */}
       <HintBadge
-        text="invoice data →"
+        text="invoice data → in the hash"
         startAt={80}
         endAt={160}
-        variant="ghost"
+        variant="arrow"
         fontSize={24}
         style={{
-          left: "calc(50% + 140px)",
-          top: "calc(48% - 90px)",
+          top: "31.3%",
+          right: "3.9%",
           zIndex: 20,
         }}
       />

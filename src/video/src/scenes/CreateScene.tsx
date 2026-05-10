@@ -351,44 +351,34 @@ export const CreateScene: React.FC = () => {
         </div>
       </Card>
 
-      {/* η7: "auto-generated" hint near Invoice No field — local 65–95, early in cascade */}
-      {/* ι1: fontSize 14→28 (×2 per ι4 rule) */}
+      {/* η7 (F2): Mocks v2 anchor top:21.6% right:6.7% — "No DB → link is the data" */}
       <HintBadge
-        text="auto-generated"
+        text="No DB → link is the data"
         startAt={65}
         endAt={95}
-        variant="ghost"
+        variant="arrow"
         fontSize={28}
-        style={{ left: formLeft + formWidth * 0.55, top: formTop + 28, zIndex: 10 }}
+        style={{ top: "21.6%", right: "6.7%", zIndex: 10 }}
       />
 
-      {/* η6: "any address, no KYC" hint near wallet field — local 115–175, during wallet typewriter */}
-      {/* ι1: fontSize 14→28 (×2 per ι4 rule) */}
-      {/* κ-4: repositioned ABOVE wallet field label (was 0.28 — on top of the field text).
-           0.16 targets the zone above the wallet row label, avoiding overlap with address text. */}
+      {/* η6 (F3): Mocks v2 anchor top:27.3% left:3.9% — "Your wallet. No KYC. No bank." */}
       <HintBadge
-        text="any address, no KYC"
+        text="Your wallet. No KYC. No bank."
         startAt={115}
         endAt={175}
         variant="arrow"
         fontSize={28}
-        style={{ left: formLeft + formWidth * 0.20, top: formTop + formHeight * 0.16, zIndex: 10 }}
+        style={{ top: "27.3%", left: "3.9%", zIndex: 10 }}
       />
 
-      {/* η2: magic dust hint — local 220–280 (R1: startAt=220 avoids paper reveal collision) */}
-      {/* ι1: fontSize 14→28 (×2 per ι4 rule) */}
-      {/* κ-4: repositioned to RIGHT of form card so the ← arrow points toward the paper TOTAL column.
-           Was inside form at 0.30×width, 0.72×height — arrow pointed at form fields, not paper totals.
-           New position: anchored so right edge stays within viewport (1080px wide).
-           formLeft+formWidth = 820; hint text ~280px wide at fontSize 28; right edge cap at width-16.
-           Using right-anchor: position from right side of viewport so text never clips. */}
+      {/* η2 (F4): Mocks v2 anchor top:51.6% right:6.7% — "Magic dust → unique payment ID" */}
       <HintBadge
-        text="+ 0.000042 ← magic dust"
+        text="Magic dust → unique payment ID"
         startAt={220}
         endAt={280}
         variant="arrow"
         fontSize={28}
-        style={{ right: 16, top: formTop + formHeight * 0.72, zIndex: 10 }}
+        style={{ top: "51.6%", right: "6.7%", zIndex: 10 }}
       />
 
       {/* η1: "No signup." caption — local 280–340, button reveal moment (Spark Beat 11).
