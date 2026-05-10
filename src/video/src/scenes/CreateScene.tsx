@@ -18,6 +18,7 @@ import { TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { DEMO_INVOICE, DEMO_FROM_ADDRESS } from "../constants/demo-invoice";
 import { Caption } from "../components/Caption";
 import { HintBadge } from "../components/HintBadge";
+import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
 
 // Creative brief §2: Alex · UI Design · $250 USDC · Arbitrum
 const INVOICE_FROM = "Alex";
@@ -196,6 +197,7 @@ export const CreateScene: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
+      <NetworkBackgroundLayer variant="soft" />
       <NetworkBackground />
 
       {/* Void glow overlay behind the form card */}

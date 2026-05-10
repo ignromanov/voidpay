@@ -22,6 +22,7 @@ import { RemotionLinkTab } from "../components/RemotionLinkTab";
 import { RemotionQRTab } from "../components/RemotionQRTab";
 import { Caption } from "../components/Caption";
 import { HintBadge } from "../components/HintBadge";
+import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
 
 // Full URL — 4x longer hash payload (~560 chars) so the LinkTab URL visibly
 // truncates with ellipsis and reads as "very long / data-dense".
@@ -95,6 +96,7 @@ export const ShareScene: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
+      <NetworkBackgroundLayer variant="soft" />
       <NetworkBackground />
 
       {/* Round 9c L2: InvoicePaper as scene backdrop */}

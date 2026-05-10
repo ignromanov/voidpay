@@ -3,6 +3,7 @@ import { NetworkBackground } from "@/widgets/network-background";
 import { FONT_SANS } from "../fonts";
 import { COLORS } from "../constants/colors";
 import { RemotionAuroraText } from "../components/RemotionAuroraText";
+import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
 
 /**
  * Scene 0 — Thesis Hook (3s, 90 frames @ 30fps).
@@ -49,6 +50,7 @@ export const ThesisHookScene: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
+      <NetworkBackgroundLayer variant="strong" />
       <NetworkBackground />
       <span style={{ ...sharedTextStyle, opacity: beat1 }}>
         <RemotionAuroraText>The invoice…</RemotionAuroraText>

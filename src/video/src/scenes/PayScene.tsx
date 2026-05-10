@@ -21,6 +21,7 @@ import { RemotionFakeToast } from "../components/RemotionFakeToast";
 import { RemotionPaidConfirmationProgress } from "../components/RemotionPaidConfirmationProgress";
 import { Caption } from "../components/Caption";
 import { HintBadge } from "../components/HintBadge";
+import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
 import { DEMO_INVOICE, DEMO_CONTENT_HASH } from "../constants/demo-invoice";
 
 // Deterministic demo tx hash for the paid-state watermark
@@ -193,6 +194,7 @@ export const PayScene: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
+      <NetworkBackgroundLayer variant="soft" />
       <NetworkBackground />
 
       {/* Round 9c L2: InvoicePaper as full-bleed scene backdrop */}
