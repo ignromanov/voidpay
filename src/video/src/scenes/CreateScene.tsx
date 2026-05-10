@@ -16,10 +16,10 @@ import { Card } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
 import { TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { DEMO_INVOICE, DEMO_FROM_ADDRESS } from "../constants/demo-invoice";
+import { FONT_MONO } from "../fonts";
 import { Caption } from "../components/Caption";
 import { HintBadge } from "../components/HintBadge";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
-import { RemotionInvoiceFormSkin } from "../components/RemotionInvoiceFormSkin";
 
 // Creative brief §2: Alex · UI Design · $250 USDC · Arbitrum
 const INVOICE_FROM = "Alex";
@@ -186,10 +186,8 @@ export const CreateScene: React.FC = () => {
     : 0;
   const buttonGlowOpacity = baseGlow + fillPulseDelta + settledHalo;
 
-  // θ2: Form width reduced to ~67% of prior 800px = ~540px, creating focused central column.
-  // Font-size is bumped proportionally from 20px → 26px so visual mass per field is preserved.
-  // At 1080 viewport: formWidth=540 → 270px margin each side (breathing room for paper backdrop).
-  const formWidth  = isPortrait ? Math.min(560, width * 0.52)  : 768;     // θ2: 560 on 1080 (260px each side)
+  // Mocks v2 surgical: portrait width = 84% of stage (907px on 1080), landscape keeps 768.
+  const formWidth  = isPortrait ? Math.round(width * 0.84) : 768;
   const formHeight = isPortrait ? Math.round(height * 0.62)    : 720;     // slightly taller to fit content
   const formLeft   = (width - formWidth) / 2;
   const formTop    = isPortrait ? (height - formHeight) / 2     : (height - formHeight) / 2;
@@ -245,7 +243,7 @@ export const CreateScene: React.FC = () => {
           top: formTop,
           width: formWidth,
           height: formHeight,
-          padding: "24px 32px 24px 24px",  // ε1: right-pad 32px so right-column TOTAL values don't clip
+          padding: "36px",  // Mocks v2 surgical: 12px → 36px in 1080 viewport (×3)
           overflow: "hidden",
           opacity: formOpacity,
           zIndex: 2,
@@ -271,32 +269,80 @@ export const CreateScene: React.FC = () => {
                     (text-xs 12px / text-[11px]) used by INVOICE NO., DATES, YOUR NAME sub-labels. */}
           {isPortrait ? (
             <div
+              className="remotion-create-portrait"
               style={{
                 position: "relative",
                 width: "100%",
                 height: "100%",
-                overflowX: "visible",
-                overflowY: "hidden",
+                // ι1: bumped from 26px → 34px (×1.3 of θ2's 26px — form internals scale proportionally)
+                // Card outer width stays at Mocks v2 84% — only internals grow.
+                fontSize: "34px",
+                overflowX: "visible",              // ε1: prevents right-column clipping at Card edge
+                overflowY: "hidden",               // ζ1: clip bottom so button doesn't bleed past Card
+                paddingRight: 8,                   // ε1: small extra right pad so values don't touch border
               }}
             >
-              {/* F2 post-render fix: RemotionInvoiceFormSkin replaces production InvoiceFormView
-                   in portrait branch. All internal sizes from Mocks v2 ×3 scaling. */}
-              <RemotionInvoiceFormSkin
-                focusedField={
-                  focusedField === "from" || focusedField === "client" ? undefined :
-                  focusedField === "lineItem" ? "description" :
-                  focusedField === "network" || focusedField === "token" ? "wallet" :
-                  undefined
+              {/* ζ2 + ι1: override absolute-px Tailwind sub-labels; floor raised 18px → 23px (×1.3) */}
+              <style>{`
+                .remotion-create-portrait .text-xs,
+                .remotion-create-portrait [class*="text-[11px]"],
+                .remotion-create-portrait [class*="text-[10px]"] {
+                  font-size: 23px !important;
                 }
-                showWallet={frame >= WALLET_APPEAR}
-                showClient={frame >= CLIENT_APPEAR}
-                showDescription={frame >= LINE_DESC_APPEAR}
-                showPrice={frame >= LINE_PRICE_APPEAR}
-                magicDustOn={frame >= MAGIC_DUST_TOGGLE_FRAME}
-                ctaEnabled={frame >= FILL_COMPLETE}
-                ctaPressed={frame >= PRESS_START && frame < PRESS_END}
-                ctaGenerating={frame >= PRESS_END}
+              `}</style>
+
+              {/* v2: "/ Create invoice" header — mono slash prefix + sans title */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 20,
+                paddingBottom: 14,
+                borderBottom: "1px solid rgba(63, 63, 70, 0.5)",
+              }}>
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: "29px",
+                  fontWeight: 700,
+                  color: "rgba(244, 244, 245, 1)",
+                  letterSpacing: "-0.005em",
+                  lineHeight: 1.2,
+                }}>
+                  <span style={{
+                    fontFamily: `${FONT_MONO}, monospace`,
+                    fontWeight: 500,
+                    fontSize: "23px",
+                    color: "#71717a",
+                  }}>/</span>
+                  Create invoice
+                </div>
+              </div>
+
+              <InvoiceFormView
+                value={viewValue}
+                {...(focusedField && { focusedField })}
+                showGenerateButton={false}
               />
+
+              {/* Round 9a-patch2 (C1): button always mounted at bottom of scroll content. */}
+              <div
+                style={{
+                  marginTop: 16,
+                  transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
+                  transformOrigin: "center",
+                }}
+              >
+                <GenerateButtonView
+                  onGenerate={noop}
+                  canGenerate={frame >= FILL_COMPLETE}
+                  isGenerating={frame >= PRESS_END}
+                  onSubmitAttempt={noop}
+                  hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
+                  pressState={frame >= PRESS_START && frame < PRESS_END}
+                />
+              </div>
             </div>
           ) : (
             <>
