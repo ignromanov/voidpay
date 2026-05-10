@@ -121,13 +121,8 @@ export const ShareScene: React.FC = () => {
         />
       </AbsoluteFill>
 
-      {/* Dimmed backdrop — β3: reduced to 0.30 so paper reads clearly through */}
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        background: "rgba(0,0,0,0.30)",
-        opacity: modalOpacity,
-      }} />
+      {/* F6 fix: drop extra dim overlay — paper dimOpacity (0.35/0.3) is the only darkening.
+           Double-stacking rgba(0,0,0,0.30) over paper opacity was over-darkening. */}
 
       {/* Share modal shell — γ4: true-center positioning, β3: solid background */}
       {/* ζ3: top shifted 50%→48% — paper mass occupies upper frame, modal visual center is slightly
@@ -155,25 +150,25 @@ export const ShareScene: React.FC = () => {
           background: "linear-gradient(90deg, #8b5cf6, #d946ef, #8b5cf6)",
         }} />
 
-        {/* Header — "Invoice Ready" pattern from ShareModal.tsx; ι2: padding + sizes ×1.5 */}
-        <div style={{ padding: "24px 32px" }}>
+        {/* Header — "Invoice Ready" pattern from ShareModal.tsx; F3 fix: sizes ×3 per Mocks v2 */}
+        <div style={{ padding: "30px 36px" }}>
           <div style={{
             display: "flex",
             alignItems: "center",
             gap: 10,
             fontFamily: `${FONT_SANS}, sans-serif`,
-            fontSize: 30,
+            fontSize: 39,
             fontWeight: 700,
             color: COLORS.textPrimary,
             letterSpacing: "-0.02em",
             marginBottom: 6,
           }}>
-            <CheckCircleIcon size={30} style={{ color: COLORS.violet }} />
+            <CheckCircleIcon size={39} style={{ color: COLORS.violet }} />
             Invoice Ready
           </div>
           <div style={{
             fontFamily: `${FONT_SANS}, sans-serif`,
-            fontSize: 21,
+            fontSize: 27,
             color: "rgba(113, 113, 122, 1)",
             marginBottom: 24,
           }}>
@@ -184,12 +179,8 @@ export const ShareScene: React.FC = () => {
           <InvoiceSummary invoice={DEMO_INVOICE} />
         </div>
 
-        {/* θ5: Tab switcher — Link/QR tabs, matching production ShareModal density.
-             Reverts ε2 simplification. Shows Link tab first, then demonstrates QR tab switch.
-             Tab switch fires at COPY_CLICK_FRAME (f110) so viewer sees both tabs. */}
-        {/* ι2: tab section padding scaled; tab height 34→44px; fontSize 13→20px */}
-        <div style={{ padding: "0 32px 12px 32px" }}>
-          {/* Tab bar — production-parity: full-width, Link + QR Code */}
+        {/* Tab switcher — F3 fix: tab font 9.5px → 28.5px per Mocks v2; tab height 18px → 54px */}
+        <div style={{ padding: "0 36px 18px 36px" }}>
           <div style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
@@ -199,7 +190,6 @@ export const ShareScene: React.FC = () => {
             marginBottom: 18,
           }}>
             {(["Link", "QR Code"] as const).map((label) => {
-              // κ-5: tab indicator and body both switch at COPY_CLICK_FRAME via showQR
               const isActive = showQR
                 ? label === "QR Code"
                 : label === "Link";
@@ -207,12 +197,12 @@ export const ShareScene: React.FC = () => {
                 <div
                   key={label}
                   style={{
-                    height: 44,
+                    height: 54,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: 6,
-                    fontSize: 20,
+                    fontSize: 28.5,
                     fontWeight: isActive ? 600 : 400,
                     color: isActive ? "rgba(244, 244, 245, 1)" : "rgba(113, 113, 122, 1)",
                     background: isActive ? "rgba(63, 63, 70, 0.8)" : "transparent",
@@ -231,7 +221,7 @@ export const ShareScene: React.FC = () => {
         {/* κ-5 RC-6: body swaps in sync with tab indicator at COPY_CLICK_FRAME.
              Before swap: Link tab content (permalink + Copy Link CTA + social share).
              After swap: QR Code tab content (QR image + scan hint + Download QR). */}
-        <div style={{ padding: "0 32px 32px 32px" }}>
+        <div style={{ padding: "0 36px 36px 36px" }}>
           {showQR
             ? <RemotionQRTab url={SHARE_URL} />
             : <RemotionLinkTab url={SHARE_URL} copied={copied} />
