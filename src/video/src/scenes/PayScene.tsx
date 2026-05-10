@@ -22,6 +22,8 @@ import { RemotionPaidConfirmationProgress } from "../components/RemotionPaidConf
 import { Caption } from "../components/Caption";
 import { HintBadge } from "../components/HintBadge";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
+import { BrowserChrome } from "../components/BrowserChrome";
+import { WalletPill } from "../components/WalletPill";
 import { DEMO_INVOICE, DEMO_CONTENT_HASH } from "../constants/demo-invoice";
 
 // Deterministic demo tx hash for the paid-state watermark
@@ -284,6 +286,25 @@ export const PayScene: React.FC = () => {
           )}
         </PaymentPanel>
       </div>
+
+      {/* C6: BrowserChrome — mock .chrome spec, full S3 duration (F9-F12) */}
+      <BrowserChrome
+        opacity={interpolate(frame, [0, 20], [0, 1], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+        })}
+      />
+
+      {/* C7: WalletPill — disconnected (F9) → connected (F10-F11), exits at success (F12) */}
+      {frame < SUCCESS && (
+        <WalletPill
+          connected={frame >= PHASE_CONNECTING}
+          opacity={interpolate(frame, [0, 20], [0, 1], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+          })}
+        />
+      )}
 
       {/* Narrative toasts — anchored below panel right edge */}
       {/* κ-3 toast timings — shifted to match new phase windows:
