@@ -93,8 +93,7 @@ const pressScale = (frame: number, triggerFrame: number): number =>
 
 // Round 9c L2: PaperBackdrop — full-bleed InvoicePaper centered in viewport.
 // Paper is status-driven (pending → paid as payment progresses).
-// C10: PayScene exception — paper sits at top:64px below browser chrome per mock.
-const CHROME_HEIGHT = 64;
+// T4c: true-center alignment (canonical, matches CreateScene + ShareScene).
 const PaperBackdrop: React.FC<{ paid: boolean; blurPx: number; dimOpacity: number }> = ({
   paid,
   blurPx,
@@ -104,9 +103,7 @@ const PaperBackdrop: React.FC<{ paid: boolean; blurPx: number; dimOpacity: numbe
   const targetWidth = width * 0.92;
   const scale = targetWidth / INVOICE_BASE_WIDTH;
   const scaledH = INVOICE_BASE_HEIGHT * scale;
-  // Center paper in the space below chrome bar
-  const availableHeight = height - CHROME_HEIGHT;
-  const top = CHROME_HEIGHT + Math.max(0, (availableHeight - scaledH) / 2);
+  const top = (height - scaledH) / 2;
 
   return (
     <div
@@ -257,7 +254,58 @@ export const PayScene: React.FC = () => {
         .remotion-pay-panel a[href="/create"] { display: none !important; }
         .remotion-pay-panel .text-xs,
         .remotion-pay-panel [class*="text-[10px]"],
-        .remotion-pay-panel [class*="text-[11px]"] { font-size: 24px !important; line-height: 1.4 !important; }
+        .remotion-pay-panel [class*="text-[11px]"]  { font-size: 24px !important; line-height: 1.4 !important; }
+        .remotion-pay-panel .text-sm                { font-size: 28px !important; line-height: 1.45 !important; }
+        .remotion-pay-panel .text-base              { font-size: 32px !important; line-height: 1.5 !important; }
+        .remotion-pay-panel .text-lg                { font-size: 36px !important; line-height: 1.5 !important; }
+        .remotion-pay-panel .text-xl                { font-size: 40px !important; line-height: 1.4 !important; }
+        .remotion-pay-panel .text-2xl               { font-size: 48px !important; line-height: 1.3 !important; }
+        .remotion-pay-panel .text-3xl               { font-size: 60px !important; line-height: 1.2 !important; }
+        .remotion-pay-panel .text-4xl               { font-size: 72px !important; line-height: 1.1 !important; }
+
+        /* Form control heights */
+        .remotion-pay-panel .h-7  { height: 56px !important; }
+        .remotion-pay-panel .h-8  { height: 64px !important; }
+        .remotion-pay-panel .h-9  { height: 72px !important; }
+        .remotion-pay-panel .h-10 { height: 80px !important; }
+        .remotion-pay-panel .h-11 { height: 88px !important; }
+
+        /* Icon dimensions (lucide-react svg via w-N/h-N) */
+        .remotion-pay-panel .w-3 { width: 24px !important; }
+        .remotion-pay-panel .h-3 { height: 24px !important; }
+        .remotion-pay-panel .w-4 { width: 32px !important; }
+        .remotion-pay-panel .h-4 { height: 32px !important; }
+        .remotion-pay-panel .w-5 { width: 40px !important; }
+        .remotion-pay-panel .h-5 { height: 40px !important; }
+        .remotion-pay-panel .w-6 { width: 48px !important; }
+        .remotion-pay-panel .h-6 { height: 48px !important; }
+
+        /* Padding scale-up (common form classes) */
+        .remotion-pay-panel .p-0\\.5 { padding: 4px !important; }
+        .remotion-pay-panel .p-1    { padding: 8px !important; }
+        .remotion-pay-panel .p-1\\.5 { padding: 12px !important; }
+        .remotion-pay-panel .p-2    { padding: 16px !important; }
+        .remotion-pay-panel .p-3    { padding: 24px !important; }
+        .remotion-pay-panel .p-4    { padding: 32px !important; }
+        .remotion-pay-panel .px-2   { padding-left: 16px !important; padding-right: 16px !important; }
+        .remotion-pay-panel .px-3   { padding-left: 24px !important; padding-right: 24px !important; }
+        .remotion-pay-panel .py-1   { padding-top: 8px !important; padding-bottom: 8px !important; }
+        .remotion-pay-panel .py-2   { padding-top: 16px !important; padding-bottom: 16px !important; }
+        .remotion-pay-panel .py-2\\.5 { padding-top: 20px !important; padding-bottom: 20px !important; }
+        .remotion-pay-panel .py-3   { padding-top: 24px !important; padding-bottom: 24px !important; }
+        .remotion-pay-panel .pt-2   { padding-top: 16px !important; }
+        .remotion-pay-panel .pt-4   { padding-top: 32px !important; }
+
+        /* Gap scale-up */
+        .remotion-pay-panel .gap-1   { gap: 8px !important; }
+        .remotion-pay-panel .gap-1\\.5 { gap: 12px !important; }
+        .remotion-pay-panel .gap-2   { gap: 16px !important; }
+        .remotion-pay-panel .gap-3   { gap: 24px !important; }
+        .remotion-pay-panel .gap-4   { gap: 32px !important; }
+
+        /* Border radius — keep visually proportional */
+        .remotion-pay-panel .rounded-lg { border-radius: 16px !important; }
+        .remotion-pay-panel .rounded-xl { border-radius: 24px !important; }
       `}</style>
       <div
         className="remotion-pay-panel"
@@ -266,15 +314,15 @@ export const PayScene: React.FC = () => {
           left: "50%",
           top: "50%",
           width: panelWidth,
-          fontSize: "24px",
+          fontSize: "inherit",
           // θ6: panel at full scale matching production size
           transform: `translate(-50%, -50%) scale(${cardScale}) translateY(${panelExit}px)`,
           transformOrigin: "center center",
           opacity: cardScale * (1 - panelExitOpacity),
           borderRadius: 30,
           backgroundColor: "rgba(24, 24, 27, 0.96)",
-          border: "1px solid rgba(63, 63, 70, 0.8)",
-          boxShadow: "0 25px 80px -20px rgba(0,0,0,0.8), 0 8px 32px -8px rgba(0,0,0,0.5)",
+          border: "none",
+          boxShadow: "none",
           overflow: "hidden",
           padding: "36px 36px 30px",
         }}
