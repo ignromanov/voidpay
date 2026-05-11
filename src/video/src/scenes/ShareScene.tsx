@@ -38,8 +38,9 @@ const HASH_PAYLOAD =
   "AxgC4DmAhgBYAuADgE4CuN4IgbghgTg9gRgFwAYEsA2UBOB7AjgKYCOAxgC4DmAhgBYA" +
   "uADgE4CuAxgC4DmAhgBYAuADgE4CuAxgC4DmAhgBYAuADgE4Cu";
 const SHARE_URL = `https://voidpay.xyz/pay?og=VP-0001_250_USDC_arb_${DEMO_FROM_ADDRESS}#${HASH_PAYLOAD}`;
-// Frame at which the narrative "Copy" click fires (ε2: QR tab and social share removed).
-const COPY_CLICK_FRAME = 110;
+// Frame at which the narrative "Copy" click fires — Link tab dominant 0-208 (~6.9s share dominance),
+// QR tab demonstrative 200-300 (~3.3s). Ignat 2026-05-11: share is the primary action, QR is the alternative.
+const COPY_CLICK_FRAME = 200;
 
 // Round 9c L2: InvoicePaper backdrop props — hoisted for prop-identity stability (P1.2).
 const PAPER_PROPS = {
@@ -305,7 +306,7 @@ export const ShareScene: React.FC = () => {
         text="URL = invoice."
         position="top"
         startAt={60}
-        endAt={250}
+        endAt={290}
         fontSize={38}
       />
 
