@@ -73,11 +73,7 @@ const PaperBackdrop: React.FC<{ frame: number; dimOpacity?: number; blurPx?: num
   const targetWidth = width * 0.92;
   const scale = targetWidth / INVOICE_BASE_WIDTH;
   const scaledH = INVOICE_BASE_HEIGHT * scale;
-  // θ4: balanced vertical centering — center paper in [80, height-100] band
-  const availableTop = 80;
-  const availableBottom = height - 100;
-  const availableHeight = availableBottom - availableTop;
-  const top = availableTop + Math.max(0, (availableHeight - scaledH) / 2);
+  const top = (height - scaledH) / 2;
 
   const enter = interpolate(
     f,
@@ -274,21 +270,68 @@ export const CreateScene: React.FC = () => {
                 position: "relative",
                 width: "100%",
                 height: "100%",
-                // ι1: bumped from 26px → 34px (×1.3 of θ2's 26px — form internals scale proportionally)
-                // Card outer width stays at Mocks v2 84% — only internals grow.
-                fontSize: "34px",
+                fontSize: "inherit",
                 overflowX: "visible",              // ε1: prevents right-column clipping at Card edge
                 overflowY: "hidden",               // ζ1: clip bottom so button doesn't bleed past Card
                 paddingRight: 8,                   // ε1: small extra right pad so values don't touch border
               }}
             >
-              {/* ζ2 + ι1: override absolute-px Tailwind sub-labels; floor raised 18px → 23px (×1.3) */}
+              {/* ×2 Tailwind cascade for 9:16 portrait — Mocks v2 density */}
               <style>{`
                 .remotion-create-portrait .text-xs,
-                .remotion-create-portrait [class*="text-[11px]"],
-                .remotion-create-portrait [class*="text-[10px]"] {
-                  font-size: 23px !important;
-                }
+                .remotion-create-portrait [class*="text-[10px]"],
+                .remotion-create-portrait [class*="text-[11px]"]  { font-size: 24px !important; line-height: 1.4 !important; }
+                .remotion-create-portrait .text-sm                { font-size: 28px !important; line-height: 1.45 !important; }
+                .remotion-create-portrait .text-base              { font-size: 32px !important; line-height: 1.5 !important; }
+                .remotion-create-portrait .text-lg                { font-size: 36px !important; line-height: 1.5 !important; }
+                .remotion-create-portrait .text-xl                { font-size: 40px !important; line-height: 1.4 !important; }
+                .remotion-create-portrait .text-2xl               { font-size: 48px !important; line-height: 1.3 !important; }
+                .remotion-create-portrait .text-3xl               { font-size: 60px !important; line-height: 1.2 !important; }
+                .remotion-create-portrait .text-4xl               { font-size: 72px !important; line-height: 1.1 !important; }
+
+                /* Form control heights */
+                .remotion-create-portrait .h-7  { height: 56px !important; }
+                .remotion-create-portrait .h-8  { height: 64px !important; }
+                .remotion-create-portrait .h-9  { height: 72px !important; }
+                .remotion-create-portrait .h-10 { height: 80px !important; }
+                .remotion-create-portrait .h-11 { height: 88px !important; }
+
+                /* Icon dimensions (lucide-react svg via w-N/h-N) */
+                .remotion-create-portrait .w-3 { width: 24px !important; }
+                .remotion-create-portrait .h-3 { height: 24px !important; }
+                .remotion-create-portrait .w-4 { width: 32px !important; }
+                .remotion-create-portrait .h-4 { height: 32px !important; }
+                .remotion-create-portrait .w-5 { width: 40px !important; }
+                .remotion-create-portrait .h-5 { height: 40px !important; }
+                .remotion-create-portrait .w-6 { width: 48px !important; }
+                .remotion-create-portrait .h-6 { height: 48px !important; }
+
+                /* Padding scale-up (common form classes) */
+                .remotion-create-portrait .p-0\\.5 { padding: 4px !important; }
+                .remotion-create-portrait .p-1    { padding: 8px !important; }
+                .remotion-create-portrait .p-1\\.5 { padding: 12px !important; }
+                .remotion-create-portrait .p-2    { padding: 16px !important; }
+                .remotion-create-portrait .p-3    { padding: 24px !important; }
+                .remotion-create-portrait .p-4    { padding: 32px !important; }
+                .remotion-create-portrait .px-2   { padding-left: 16px !important; padding-right: 16px !important; }
+                .remotion-create-portrait .px-3   { padding-left: 24px !important; padding-right: 24px !important; }
+                .remotion-create-portrait .py-1   { padding-top: 8px !important; padding-bottom: 8px !important; }
+                .remotion-create-portrait .py-2   { padding-top: 16px !important; padding-bottom: 16px !important; }
+                .remotion-create-portrait .py-2\\.5 { padding-top: 20px !important; padding-bottom: 20px !important; }
+                .remotion-create-portrait .py-3   { padding-top: 24px !important; padding-bottom: 24px !important; }
+                .remotion-create-portrait .pt-2   { padding-top: 16px !important; }
+                .remotion-create-portrait .pt-4   { padding-top: 32px !important; }
+
+                /* Gap scale-up */
+                .remotion-create-portrait .gap-1   { gap: 8px !important; }
+                .remotion-create-portrait .gap-1\\.5 { gap: 12px !important; }
+                .remotion-create-portrait .gap-2   { gap: 16px !important; }
+                .remotion-create-portrait .gap-3   { gap: 24px !important; }
+                .remotion-create-portrait .gap-4   { gap: 32px !important; }
+
+                /* Border radius — keep visually proportional */
+                .remotion-create-portrait .rounded-lg { border-radius: 16px !important; }
+                .remotion-create-portrait .rounded-xl { border-radius: 24px !important; }
               `}</style>
 
               {/* v2: "/ Create invoice" header — mono slash prefix + sans title */}
