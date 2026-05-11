@@ -423,7 +423,7 @@ export const CreateScene: React.FC = () => {
         startAt={65}
         endAt={95}
         variant="arrow"
-        fontSize={28}
+        fontSize={34}
         style={{ top: "21.6%", right: "6.7%", zIndex: 10 }}
       />
 
@@ -433,7 +433,7 @@ export const CreateScene: React.FC = () => {
         startAt={115}
         endAt={175}
         variant="arrow"
-        fontSize={28}
+        fontSize={34}
         style={{ top: "27.3%", left: "3.9%", zIndex: 10 }}
       />
 
@@ -443,7 +443,7 @@ export const CreateScene: React.FC = () => {
         startAt={220}
         endAt={280}
         variant="arrow"
-        fontSize={28}
+        fontSize={34}
         style={{ top: "51.6%", right: "6.7%", zIndex: 10 }}
       />
 
