@@ -5,6 +5,9 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+
+// F4.4: cross-fade duration between Link tab and QR tab (frames)
+const TAB_CROSSFADE_DURATION = 8;
 import {
   InvoicePaper,
   INVOICE_BASE_WIDTH,
@@ -103,6 +106,22 @@ export const ShareScene: React.FC = () => {
   const showQR = frame >= COPY_CLICK_FRAME;
   const copied = frame >= COPY_CLICK_FRAME - 10;
 
+  // F4.4: 8fr cross-fade opacity drivers for tab body transition.
+  // Link tab fades out [COPY_CLICK_FRAME, COPY_CLICK_FRAME+8].
+  // QR tab fades in [COPY_CLICK_FRAME, COPY_CLICK_FRAME+8].
+  const linkTabOpacity = interpolate(
+    frame,
+    [COPY_CLICK_FRAME, COPY_CLICK_FRAME + TAB_CROSSFADE_DURATION],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const qrTabOpacity = interpolate(
+    frame,
+    [COPY_CLICK_FRAME, COPY_CLICK_FRAME + TAB_CROSSFADE_DURATION],
+    [0, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackgroundLayer variant="soft" />
@@ -185,8 +204,15 @@ export const ShareScene: React.FC = () => {
             Share this link to get paid
           </div>
 
-          {/* InvoiceSummary block — real widget component, presentational only */}
-          <InvoiceSummary invoice={DEMO_INVOICE} />
+          {/* InvoiceSummary block — real widget component, presentational only.
+               F4.2: override sub-line text to min 24px for 9:16 legibility (was ~9px illegible). */}
+          <div className="remotion-summary-override">
+            <style>{`
+              .remotion-summary-override .text-xs { font-size: 24px !important; line-height: 1.4 !important; }
+              .remotion-summary-override .text-zinc-500 { color: #a1a1aa !important; }
+            `}</style>
+            <InvoiceSummary invoice={DEMO_INVOICE} />
+          </div>
         </div>
 
         {/* θ5: Tab switcher — Link/QR tabs, matching production ShareModal density.
@@ -233,15 +259,28 @@ export const ShareScene: React.FC = () => {
           </div>
         </div>
 
-        {/* κ-5 RC-6: body swaps in sync with tab indicator at COPY_CLICK_FRAME.
-             Before swap: Link tab content (permalink + Copy Link CTA + social share).
-             After swap: QR Code tab content (QR image + scan hint + Download QR). */}
+        {/* κ-5 RC-6 + F4.4: body cross-fades between Link and QR over 8fr.
+             Both tabs rendered simultaneously during transition, with opacity drivers.
+             After cross-fade, only the active tab is visible. */}
         {/* F8 surgical: body side padding = 36px */}
-        <div style={{ padding: "0 36px 36px 36px" }}>
-          {showQR
-            ? <RemotionQRTab url={SHARE_URL} />
-            : <RemotionLinkTab url={SHARE_URL} copied={copied} />
-          }
+        <div style={{ padding: "0 36px 36px 36px", position: "relative" }}>
+          {/* Link tab — fades out at COPY_CLICK_FRAME */}
+          <div style={{
+            opacity: linkTabOpacity,
+            position: linkTabOpacity < 1 ? "absolute" : "relative",
+            top: linkTabOpacity < 1 ? 0 : undefined,
+            left: linkTabOpacity < 1 ? 36 : undefined,
+            right: linkTabOpacity < 1 ? 36 : undefined,
+            pointerEvents: linkTabOpacity > 0 ? "auto" : "none",
+          }}>
+            <RemotionLinkTab url={SHARE_URL} copied={copied} />
+          </div>
+          {/* QR tab — fades in at COPY_CLICK_FRAME */}
+          {frame >= COPY_CLICK_FRAME && (
+            <div style={{ opacity: qrTabOpacity }}>
+              <RemotionQRTab url={SHARE_URL} />
+            </div>
+          )}
         </div>
       </Card>
 
