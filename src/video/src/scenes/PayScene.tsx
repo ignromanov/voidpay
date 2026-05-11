@@ -68,9 +68,10 @@ const MAGIC_DUST_HIGHLIGHT = 240;
 const MAGIC_DUST_PEAK_END  = 390;
 const CONFIRMATIONS_REQUIRED = 12;
 
-// κ-3: panel exits at 525-545, giving 30fr paper-alone window before S4 crossfade.
-const PANEL_EXIT_START = 525;
-const PANEL_EXIT_END   = 545;
+// F2.A4: panel exits at 505-525 (shifted 20fr earlier), giving 50fr paper-alone window (1.67s).
+// κ-3 original: 525-545 → 30fr. New: 505-525 → paper-alone 525-575 = 50fr.
+const PANEL_EXIT_START = 505;
+const PANEL_EXIT_END   = 525;
 
 const stepAt = (frame: number): { step: PaymentStep; idleSubState: IdleSubState } => {
   if (frame >= SUCCESS) return { step: 'success', idleSubState: 'ready' };
@@ -219,24 +220,47 @@ export const PayScene: React.FC = () => {
         />
       </AbsoluteFill>
 
-      {/* Magic Dust violet pulse — halo over the paper totals area */}
+      {/* F1.C1: Magic Dust visual peak — violet halo anchored to paper totals area.
+           Spec: bottom-right of totals, radial-gradient ellipse, blur(14px).
+           Text-shadow on dust digits injected via <style> tag into paper backdrop. */}
       {magicDustPulseOpacity > 0.01 && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: `radial-gradient(ellipse at center 75%, ${COLORS.violetGlow} 0%, transparent 50%)`,
-            opacity: magicDustPulseOpacity,
-            pointerEvents: "none",
-            mixBlendMode: "screen",
-          }}
-        />
+        <>
+          {/* Halo: anchored ~78% down (totals area) right edge of paper */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "18%",
+              right: "4%",
+              width: 300,
+              height: 160,
+              background: "radial-gradient(ellipse, rgba(167,139,250,0.85) 0%, rgba(167,139,250,0.25) 35%, transparent 70%)",
+              filter: "blur(14px)",
+              opacity: magicDustPulseOpacity,
+              pointerEvents: "none",
+            }}
+          />
+          {/* Dust digit glow — text-shadow on MagicDustBadge amounts via global style */}
+          <style>{`
+            .remotion-dust-glow [data-magic-dust] .font-mono,
+            .remotion-dust-glow .magic-dust-amount {
+              text-shadow: 0 0 12px rgba(167,139,250,0.9) !important;
+            }
+          `}</style>
+        </>
       )}
 
       {/* β1+β2: Payment panel as floating center modal.
            Mocks v2 surgical: width = 84% of stage, side padding = 36px (12px × 3).
-           F10 text sizes via fontSize: "24px" em-cascade into PaymentPanel internals. */}
+           F10 text sizes via fontSize: "24px" em-cascade into PaymentPanel internals.
+           F2.D1: CreateYourOwnCta suppressed — voice-gate violation (self-referential in video). */}
+      <style>{`
+        .remotion-pay-panel a[href="/create"] { display: none !important; }
+        .remotion-pay-panel .text-xs,
+        .remotion-pay-panel [class*="text-[10px]"],
+        .remotion-pay-panel [class*="text-[11px]"] { font-size: 24px !important; line-height: 1.4 !important; }
+      `}</style>
       <div
+        className="remotion-pay-panel"
         style={{
           position: "absolute",
           left: "50%",
@@ -284,15 +308,8 @@ export const PayScene: React.FC = () => {
             </div>
           )}
 
-          {/* Round 9a: reorg progress overlay — Remotion-safe frame-driven bar. */}
-          {step === 'confirming' && (
-            <div style={{ marginTop: 12 }}>
-              <RemotionPaidConfirmationProgress
-                current={confirmingProgress}
-                required={CONFIRMATIONS_REQUIRED}
-              />
-            </div>
-          )}
+          {/* CTA slot — only during pending/connecting/switching/sending */}
+          {/* Note: confirming and success states are handled outside the panel */}
 
           {/* F10 surgical: spinner driven by frame*8 rotation during sending state */}
           {step === 'sending' && (
@@ -315,6 +332,31 @@ export const PayScene: React.FC = () => {
           )}
         </PaymentPanel>
       </div>
+
+      {/* F1.A2: Confirming progress overlay — rendered OUTSIDE PaymentPanel because
+           PaymentPanel's children slot is inside isPending block; during confirming
+           panelStatus='confirming' → isPaid=true → isPending=false → children never render.
+           Absolute overlay positioned at panel bottom, same horizontal bounds as panel. */}
+      {step === 'confirming' && (
+        <div
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            width: panelWidth,
+            transform: `translate(-50%, calc(-50% + 200px)) scale(${cardScale}) translateY(${panelExit}px)`,
+            transformOrigin: "center center",
+            opacity: cardScale * (1 - panelExitOpacity),
+            padding: "0 36px",
+            pointerEvents: "none",
+          }}
+        >
+          <RemotionPaidConfirmationProgress
+            current={confirmingProgress}
+            required={CONFIRMATIONS_REQUIRED}
+          />
+        </div>
+      )}
 
       {/* C6: BrowserChrome — mock .chrome spec, full S3 duration (F9-F12) */}
       <BrowserChrome
