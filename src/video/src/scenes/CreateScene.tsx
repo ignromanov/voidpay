@@ -54,8 +54,10 @@ const MAGIC_DUST_TOGGLE_FRAME = 200;  // round 9a-patch2 (C3): toggle off→on a
 // Round 9a-patch2 (C2): final offset reduced -420 → -360 to remove empty space below form.
 // D5 (round-9e): cascade ×2 made form taller — extend endpoint frame 188 → 195 and
 // offset -360 → -900 so Token & Network block scrolls fully into view before FILL_COMPLETE.
-const SCROLL_FRAMES  = [115, 150, 175, 195];
-const SCROLL_OFFSETS = [0, -120, -400, -900];
+// D15 (unified scroll): extend to frame 265 with offset -2000 so Generate button bottom is
+// fully in view before BUTTON_VISIBLE=280. Single translateY driver — no secondary motions.
+const SCROLL_FRAMES  = [115, 150, 175, 195, 265];
+const SCROLL_OFFSETS = [0, -120, -400, -900, -2000];
 
 const noop = () => {
   /* Remotion renders static frames — click handlers never fire */
@@ -337,6 +339,20 @@ export const CreateScene: React.FC = () => {
                 /* D3: CalendarIcon in date label uses inline size={12} (not Tailwind class) —
                    scale SVGs inside text-[10px] label spans to match cascade ×2 density */
                 .remotion-create-portrait [class*="text-[10px]"] svg { width: 24px !important; height: 24px !important; }
+
+                /* D15: Icons using size={N} prop render SVG width/height attributes directly —
+                   not caught by Tailwind class cascade above. Scale ×2 for portrait density.
+                   Covers: CoinsIcon(16), FingerprintIcon(16), AlertCircleIcon(12),
+                           NetworkIcon(24), TokenIcon(24), Share2Icon(20), ArrowRightIcon(16),
+                           Loader2Icon via h-5/w-5 (already covered above). */
+                .remotion-create-portrait svg[width="12"]  { width: 24px !important; height: 24px !important; }
+                .remotion-create-portrait svg[height="12"] { width: 24px !important; height: 24px !important; }
+                .remotion-create-portrait svg[width="16"]  { width: 32px !important; height: 32px !important; }
+                .remotion-create-portrait svg[height="16"] { width: 32px !important; height: 32px !important; }
+                .remotion-create-portrait svg[width="20"]  { width: 40px !important; height: 40px !important; }
+                .remotion-create-portrait svg[height="20"] { width: 40px !important; height: 40px !important; }
+                .remotion-create-portrait svg[width="24"]  { width: 48px !important; height: 48px !important; }
+                .remotion-create-portrait svg[height="24"] { width: 48px !important; height: 48px !important; }
               `}</style>
 
               {/* D2: Header matches production CreateWorkspace — violet "Invoice" + white " Details" */}
