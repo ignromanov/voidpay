@@ -297,6 +297,12 @@ export const PayScene: React.FC = () => {
         .remotion-pay-panel .pt-5   { padding-top: 40px !important; }
         .remotion-pay-panel .pr-12  { padding-right: 96px !important; }
 
+        /* D18: frame-driven spinner — kill CSS animate-spin, use per-frame rotate */
+        .remotion-pay-panel .motion-safe\\:animate-\\[spin_1\\.5s_linear_infinite\\] {
+          animation: none !important;
+          transform: rotate(${frame * 8}deg) !important;
+        }
+
         /* Gap scale-up */
         .remotion-pay-panel .gap-0\\.5 { gap: 4px !important; }
         .remotion-pay-panel .gap-1   { gap: 8px !important; }
@@ -373,26 +379,6 @@ export const PayScene: React.FC = () => {
 
           {/* CTA slot — only during pending/connecting/switching/sending */}
           {/* Note: confirming and success states are handled outside the panel */}
-
-          {/* F10 surgical: spinner driven by frame*8 rotation during sending state */}
-          {step === 'sending' && (
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                width: 32,
-                height: 32,
-                marginTop: -16,
-                marginLeft: -16,
-                border: "3px solid rgba(139,92,246,0.2)",
-                borderTop: "3px solid rgba(139,92,246,1)",
-                borderRadius: "50%",
-                transform: `translate(-50%, -50%) rotate(${frame * 8}deg)`,
-                pointerEvents: "none",
-              }}
-            />
-          )}
         </PaymentPanel>
         </div>
       </div>
