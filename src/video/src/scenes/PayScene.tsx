@@ -18,7 +18,6 @@ import { NetworkBackground } from "@/widgets/network-background";
 import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { RemotionFakeToast } from "../components/RemotionFakeToast";
-import { RemotionPaidConfirmationProgress } from "../components/RemotionPaidConfirmationProgress";
 import { Caption } from "../components/Caption";
 import { HintBadge } from "../components/HintBadge";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
@@ -145,13 +144,6 @@ export const PayScene: React.FC = () => {
   // Round 9a-patch2 (C7): only one press in single-press model.
   const ctaPressTriggerFrame = frame >= PRESS_CONNECT ? PRESS_CONNECT : -1;
 
-  // Round 9a: restore reorg-progress visual.
-  const confirmingProgress = interpolate(
-    frame,
-    [PHASE_CONFIRMING, SUCCESS],
-    [0, CONFIRMATIONS_REQUIRED],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
   const confirmations = useMemo(
     () => ({
       current: CONFIRMATIONS_REQUIRED,
@@ -400,31 +392,6 @@ export const PayScene: React.FC = () => {
           )}
         </PaymentPanel>
       </div>
-
-      {/* F1.A2: Confirming progress overlay — rendered OUTSIDE PaymentPanel because
-           PaymentPanel's children slot is inside isPending block; during confirming
-           panelStatus='confirming' → isPaid=true → isPending=false → children never render.
-           Absolute overlay positioned at panel bottom, same horizontal bounds as panel. */}
-      {step === 'confirming' && (
-        <div
-          style={{
-            position: "absolute",
-            left: "50%",
-            top: "50%",
-            width: panelWidth,
-            transform: `translate(-50%, calc(-50% + 200px)) scale(${cardScale}) translateY(${panelExit}px)`,
-            transformOrigin: "center center",
-            opacity: cardScale * (1 - panelExitOpacity),
-            padding: "0 36px",
-            pointerEvents: "none",
-          }}
-        >
-          <RemotionPaidConfirmationProgress
-            current={confirmingProgress}
-            required={CONFIRMATIONS_REQUIRED}
-          />
-        </div>
-      )}
 
       {/* C6: BrowserChrome — mock .chrome spec, full S3 duration (F9-F12) */}
       <BrowserChrome
