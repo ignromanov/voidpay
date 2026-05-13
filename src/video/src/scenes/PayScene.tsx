@@ -330,7 +330,7 @@ export const PayScene: React.FC = () => {
           transformOrigin: "center center",
           opacity: cardScale * (1 - panelExitOpacity),
           borderRadius: 30,
-          backgroundColor: "rgba(24, 24, 27, 0.96)",
+          backgroundColor: "transparent",
           border: "none",
           boxShadow: "none",
           // overflow:hidden clips PaymentPanel's own border/shadow flush to our rounded corners
