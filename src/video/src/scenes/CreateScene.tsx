@@ -16,7 +16,6 @@ import { Card } from "@/shared/ui";
 import { COLORS } from "../constants/colors";
 import { TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { DEMO_INVOICE, DEMO_FROM_ADDRESS } from "../constants/demo-invoice";
-import { FONT_MONO } from "../fonts";
 import { Caption } from "../components/Caption";
 import { HintBadge } from "../components/HintBadge";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
@@ -334,7 +333,7 @@ export const CreateScene: React.FC = () => {
                 .remotion-create-portrait .rounded-xl { border-radius: 24px !important; }
               `}</style>
 
-              {/* v2: "/ Create invoice" header — mono slash prefix + sans title */}
+              {/* D2: Header matches production CreateWorkspace — violet "Invoice" + white " Details" */}
               <div style={{
                 display: "flex",
                 alignItems: "center",
@@ -353,13 +352,8 @@ export const CreateScene: React.FC = () => {
                   letterSpacing: "-0.005em",
                   lineHeight: 1.2,
                 }}>
-                  <span style={{
-                    fontFamily: `${FONT_MONO}, monospace`,
-                    fontWeight: 500,
-                    fontSize: "23px",
-                    color: "#71717a",
-                  }}>/</span>
-                  Create invoice
+                  <span style={{ color: "#8b5cf6" }}>Invoice</span>
+                  {" Details"}
                 </div>
               </div>
 
