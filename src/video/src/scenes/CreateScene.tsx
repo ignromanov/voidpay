@@ -361,7 +361,8 @@ export const CreateScene: React.FC = () => {
 
                 /* D23: animate-spin is a CSS keyframe — uncontrolled in Remotion (appears very fast).
                    Nullify it and replace with frame-driven rotation via CSS custom property
-                   --remotion-spin injected on the wrapper div when isGenerating. */
+                   --remotion-spin injected on the wrapper div when isGenerating.
+                   Rate: frame*8 = 240deg/s @ 30fps ≈ 1.5s/rev, matching production animate-spin. */
                 .remotion-create-portrait .animate-spin {
                   animation: none !important;
                   transform: rotate(var(--remotion-spin, 0deg)) !important;
@@ -406,7 +407,7 @@ export const CreateScene: React.FC = () => {
                   marginTop: 16,
                   transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
                   transformOrigin: "center",
-                  ...(frame >= PRESS_END && { "--remotion-spin": `${frame * 10}deg` } as React.CSSProperties),
+                  ...(frame >= PRESS_END && { "--remotion-spin": `${frame * 8}deg` } as React.CSSProperties),
                 }}
               >
                 <GenerateButtonView
