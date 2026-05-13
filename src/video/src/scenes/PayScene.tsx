@@ -316,8 +316,6 @@ export const PayScene: React.FC = () => {
         .remotion-pay-panel .rounded-lg { border-radius: 16px !important; }
         .remotion-pay-panel .rounded-xl { border-radius: 24px !important; }
 
-        /* Shadow/border strip — PaymentPanel root has shadow + conditional border */
-        .remotion-pay-panel [data-testid="payment-panel"] { box-shadow: none !important; border: none !important; }
       `}</style>
       <div
         className="remotion-pay-panel"
@@ -335,10 +333,15 @@ export const PayScene: React.FC = () => {
           backgroundColor: "rgba(24, 24, 27, 0.96)",
           border: "none",
           boxShadow: "none",
+          // overflow:hidden clips PaymentPanel's own border/shadow flush to our rounded corners
           overflow: "hidden",
-          padding: "36px 36px 30px",
+          // No padding here — padding is on the inner wrapper so PaymentPanel is flush
+          // and overflow:hidden clips any conditional border from isPaid state
+          padding: 0,
         }}
       >
+        {/* Inner padding wrapper — keeps content inset while PaymentPanel border is clipped by outer overflow:hidden */}
+        <div style={{ padding: "36px 36px 30px" }}>
         <PaymentPanel
           invoice={DEMO_INVOICE}
           contentHash={DEMO_CONTENT_HASH}
@@ -391,7 +394,15 @@ export const PayScene: React.FC = () => {
             />
           )}
         </PaymentPanel>
+        </div>
       </div>
+      {/* Border/shadow strip placed AFTER panel in DOM so this <style> wins the cascade over Tailwind */}
+      <style>{`
+        .remotion-pay-panel [data-testid="payment-panel"] { box-shadow: none !important; border-width: 0px !important; border-style: none !important; border-color: transparent !important; outline: none !important; }
+        .remotion-pay-panel [data-testid="payment-panel"][data-status="paid"],
+        .remotion-pay-panel [data-testid="payment-panel"][data-status="confirming"] { border-width: 0px !important; border-style: none !important; border-color: transparent !important; }
+        .remotion-pay-panel [data-testid="gradient-bar"] { display: none !important; }
+      `}</style>
 
       {/* C6: BrowserChrome — mock .chrome spec, full S3 duration (F9-F12) */}
       <BrowserChrome
