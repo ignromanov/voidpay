@@ -93,22 +93,35 @@ const pressScale = (frame: number, triggerFrame: number): number =>
 // Round 9c L2: PaperBackdrop — full-bleed InvoicePaper centered in viewport.
 // Paper is status-driven (pending → paid as payment progresses).
 // T4c: true-center alignment (canonical, matches CreateScene + ShareScene).
-const PaperBackdrop: React.FC<{ paid: boolean; blurPx: number; dimOpacity: number }> = ({
+// D12: accepts explicit containerWidth/containerHeight for landscape column layout.
+const PaperBackdrop: React.FC<{
+  paid: boolean;
+  blurPx: number;
+  dimOpacity: number;
+  containerWidth?: number;
+  containerHeight?: number;
+  offsetTop?: number;
+}> = ({
   paid,
   blurPx,
   dimOpacity,
+  containerWidth,
+  containerHeight,
+  offsetTop = 0,
 }) => {
   const { width, height } = useVideoConfig();
-  const targetWidth = width * 0.92;
+  const cw = containerWidth ?? width;
+  const ch = containerHeight ?? height;
+  const targetWidth = cw * 0.92;
   const scale = targetWidth / INVOICE_BASE_WIDTH;
   const scaledH = INVOICE_BASE_HEIGHT * scale;
-  const top = (height - scaledH) / 2;
+  const top = (ch - scaledH) / 2 + offsetTop;
 
   return (
     <div
       style={{
         position: "absolute",
-        left: (width - INVOICE_BASE_WIDTH * scale) / 2,
+        left: (cw - INVOICE_BASE_WIDTH * scale) / 2,
         top,
         width: INVOICE_BASE_WIDTH,
         height: INVOICE_BASE_HEIGHT,
@@ -123,11 +136,17 @@ const PaperBackdrop: React.FC<{ paid: boolean; blurPx: number; dimOpacity: numbe
   );
 };
 
+// Height of BrowserChrome bar: padding(18×2=36) + dot(15) = 51px
+const CHROME_HEIGHT = 51;
+// Max panel width in landscape right column (D13)
+const PANEL_MAX_WIDTH = 640;
+
 export const PayScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, width } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
+  const isLandscape = width > height;
 
-  // Mocks v2 surgical: panel width = 84% of stage width
+  // Mocks v2 surgical: panel width = 84% of stage width (portrait only)
   const panelWidth = Math.round(width * 0.84);
 
   // Card entrance — panel rises from bottom using this as the slide-up progress
@@ -194,6 +213,295 @@ export const PayScene: React.FC = () => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
+  // Shared panel JSX — used in both portrait and landscape branches
+  const panelCascadeStyle = (
+    <style>{`
+      .remotion-pay-panel a[href="/create"] { display: none !important; }
+      .remotion-pay-panel [class*="text-[9px]"]   { font-size: 22px !important; line-height: 1.4 !important; }
+      .remotion-pay-panel .text-xs,
+      .remotion-pay-panel [class*="text-[10px]"],
+      .remotion-pay-panel [class*="text-[11px]"]  { font-size: 24px !important; line-height: 1.4 !important; }
+      .remotion-pay-panel .text-sm                { font-size: 28px !important; line-height: 1.45 !important; }
+      .remotion-pay-panel .text-base              { font-size: 32px !important; line-height: 1.5 !important; }
+      .remotion-pay-panel .text-lg                { font-size: 36px !important; line-height: 1.5 !important; }
+      .remotion-pay-panel .text-xl                { font-size: 40px !important; line-height: 1.4 !important; }
+      .remotion-pay-panel .text-2xl               { font-size: 48px !important; line-height: 1.3 !important; }
+      .remotion-pay-panel .text-3xl               { font-size: 60px !important; line-height: 1.2 !important; }
+      .remotion-pay-panel .text-4xl               { font-size: 72px !important; line-height: 1.1 !important; }
+
+      /* Form control heights */
+      .remotion-pay-panel .h-7  { height: 56px !important; }
+      .remotion-pay-panel .h-8  { height: 64px !important; }
+      .remotion-pay-panel .h-9  { height: 72px !important; }
+      .remotion-pay-panel .h-10 { height: 80px !important; }
+      .remotion-pay-panel .h-11 { height: 88px !important; }
+      .remotion-pay-panel .h-12 { height: 96px !important; }
+      .remotion-pay-panel .h-14 { height: 112px !important; }
+
+      /* Icon dimensions (lucide-react svg via w-N/h-N) */
+      .remotion-pay-panel .w-3 { width: 24px !important; }
+      .remotion-pay-panel .h-3 { height: 24px !important; }
+      .remotion-pay-panel .w-4 { width: 32px !important; }
+      .remotion-pay-panel .h-4 { height: 32px !important; }
+      .remotion-pay-panel .w-5 { width: 40px !important; }
+      .remotion-pay-panel .h-5 { height: 40px !important; }
+      .remotion-pay-panel .w-6 { width: 48px !important; }
+      .remotion-pay-panel .h-6 { height: 48px !important; }
+      .remotion-pay-panel .w-11 { width: 88px !important; }
+      .remotion-pay-panel .h-11 { height: 88px !important; }
+      .remotion-pay-panel .w-12 { width: 96px !important; }
+
+      /* D20: checkmark icon inside h-12/w-12 circle uses size={24} prop (px); scale up to match container */
+      .remotion-pay-panel .h-12.w-12 svg { width: 48px !important; height: 48px !important; }
+
+      /* Padding scale-up (common form classes) */
+      .remotion-pay-panel .p-0\\.5 { padding: 4px !important; }
+      .remotion-pay-panel .p-1    { padding: 8px !important; }
+      .remotion-pay-panel .p-1\\.5 { padding: 12px !important; }
+      .remotion-pay-panel .p-2    { padding: 16px !important; }
+      .remotion-pay-panel .p-3    { padding: 24px !important; }
+      .remotion-pay-panel .p-4    { padding: 32px !important; }
+      .remotion-pay-panel .px-2   { padding-left: 16px !important; padding-right: 16px !important; }
+      .remotion-pay-panel .px-3   { padding-left: 24px !important; padding-right: 24px !important; }
+      .remotion-pay-panel .px-4   { padding-left: 32px !important; padding-right: 32px !important; }
+      .remotion-pay-panel .px-6   { padding-left: 48px !important; padding-right: 48px !important; }
+      .remotion-pay-panel .py-0\\.5 { padding-top: 4px !important; padding-bottom: 4px !important; }
+      .remotion-pay-panel .py-1   { padding-top: 8px !important; padding-bottom: 8px !important; }
+      .remotion-pay-panel .py-2   { padding-top: 16px !important; padding-bottom: 16px !important; }
+      .remotion-pay-panel .py-2\\.5 { padding-top: 20px !important; padding-bottom: 20px !important; }
+      .remotion-pay-panel .py-3   { padding-top: 24px !important; padding-bottom: 24px !important; }
+      .remotion-pay-panel .pt-2   { padding-top: 16px !important; }
+      .remotion-pay-panel .pt-4   { padding-top: 32px !important; }
+      .remotion-pay-panel .pt-5   { padding-top: 40px !important; }
+      .remotion-pay-panel .pr-12  { padding-right: 96px !important; }
+
+      /* D18: frame-driven spinner — kill CSS animate-spin, use per-frame rotate */
+      .remotion-pay-panel .motion-safe\\:animate-\\[spin_1\\.5s_linear_infinite\\] {
+        animation: none !important;
+        transform: rotate(${frame * 8}deg) !important;
+      }
+
+      /* Gap scale-up */
+      .remotion-pay-panel .gap-0\\.5 { gap: 4px !important; }
+      .remotion-pay-panel .gap-1   { gap: 8px !important; }
+      .remotion-pay-panel .gap-1\\.5 { gap: 12px !important; }
+      .remotion-pay-panel .gap-2   { gap: 16px !important; }
+      .remotion-pay-panel .gap-2\\.5 { gap: 20px !important; }
+      .remotion-pay-panel .gap-3   { gap: 24px !important; }
+      .remotion-pay-panel .gap-4   { gap: 32px !important; }
+
+      /* Space-y scale-up (vertical rhythm inside panel) */
+      .remotion-pay-panel .space-y-2 > * + * { margin-top: 16px !important; }
+      .remotion-pay-panel .space-y-4 > * + * { margin-top: 32px !important; }
+
+      /* Border radius — keep visually proportional */
+      .remotion-pay-panel .rounded    { border-radius: 8px !important; }
+      .remotion-pay-panel .rounded-full { border-radius: 9999px !important; }
+      .remotion-pay-panel .rounded-lg { border-radius: 16px !important; }
+      .remotion-pay-panel .rounded-xl { border-radius: 24px !important; }
+    `}</style>
+  );
+
+  // Shared border/shadow strip — placed after panel in DOM so cascade wins over Tailwind
+  const panelBorderStrip = (
+    <style>{`
+      .remotion-pay-panel [data-testid="payment-panel"] { box-shadow: none !important; border-width: 0px !important; border-style: none !important; border-color: transparent !important; outline: none !important; }
+      .remotion-pay-panel [data-testid="payment-panel"][data-status="paid"],
+      .remotion-pay-panel [data-testid="payment-panel"][data-status="confirming"] { border-width: 0px !important; border-style: none !important; border-color: transparent !important; }
+      .remotion-pay-panel [data-testid="gradient-bar"] { display: none !important; }
+    `}</style>
+  );
+
+  // Shared PaymentPanel inner content
+  const paymentPanelContent = (
+    <PaymentPanel
+      invoice={DEMO_INVOICE}
+      contentHash={DEMO_CONTENT_HASH}
+      status={panelStatus}
+      txHash={panelTxHash}
+      confirmations={confirmations}
+      source="received"
+      finalized={panelStatus === "paid"}
+    >
+      {/* CTA — drives SmartPayButtonView per-frame across 6 idle sub-states + sending. */}
+      {(step !== 'confirming' && step !== 'success') && (
+        <div
+          style={{
+            transform: ctaPressTriggerFrame >= 0
+              ? `scale(${pressScale(frame, ctaPressTriggerFrame)})`
+              : undefined,
+            transformOrigin: "center",
+          }}
+        >
+          <SmartPayButtonView
+            step={step}
+            idleSubState={idleSubState}
+            currency={DEMO_INVOICE.currency}
+            subtotal="250000000"
+            decimals={6}
+          />
+        </div>
+      )}
+    </PaymentPanel>
+  );
+
+  // Shared overlay elements (BrowserChrome, WalletPill, toasts, captions, hints)
+  // These are full-viewport and identical in both orientations.
+  const chromeOpacity = interpolate(frame, [0, 20], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const walletOpacity = interpolate(frame, [0, 20], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  // D12: Landscape two-column layout
+  if (isLandscape) {
+    const colWidth = width / 2;
+    // Paper sized to 85% of left column width, vertically centered below chrome
+    const paperTargetWidth = colWidth * 0.85;
+    const paperScale = paperTargetWidth / INVOICE_BASE_WIDTH;
+    const paperScaledH = INVOICE_BASE_HEIGHT * paperScale;
+    const availableH = height - CHROME_HEIGHT;
+    const paperTop = (availableH - paperScaledH) / 2 + CHROME_HEIGHT;
+
+    // Magic dust halo in landscape: anchored to paper totals area in left column
+    // Totals area ~78% down paper, right edge of paper within left column
+    const paperLeft = (colWidth - INVOICE_BASE_WIDTH * paperScale) / 2;
+    const haloLeft = paperLeft + INVOICE_BASE_WIDTH * paperScale - 80;
+    const haloTop = paperTop + paperScaledH * 0.72;
+
+    return (
+      <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
+        <NetworkBackgroundLayer variant="soft" />
+        <NetworkBackground />
+
+        {/* LEFT column — InvoicePaper centered below chrome */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            top: CHROME_HEIGHT,
+            width: colWidth,
+            height: availableH,
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              left: paperLeft,
+              top: paperTop - CHROME_HEIGHT, // relative to column top (which is at CHROME_HEIGHT)
+              width: INVOICE_BASE_WIDTH,
+              height: INVOICE_BASE_HEIGHT,
+              transform: `scale(${paperScale})`,
+              transformOrigin: "top left",
+              opacity: paperDim,
+              filter: paperBlur > 0 ? `blur(${paperBlur}px)` : undefined,
+            }}
+          >
+            <InvoicePaper {...(paperPaid ? PAPER_PROPS_PAID : PAPER_PROPS_PENDING)} />
+          </div>
+        </div>
+
+        {/* F1.C1: Magic Dust visual peak — anchored to paper totals in left column */}
+        {magicDustPulseOpacity > 0.01 && (
+          <>
+            <div
+              style={{
+                position: "absolute",
+                left: haloLeft,
+                top: haloTop,
+                width: 300,
+                height: 160,
+                background: "radial-gradient(ellipse, rgba(167,139,250,0.85) 0%, rgba(167,139,250,0.25) 35%, transparent 70%)",
+                filter: "blur(14px)",
+                opacity: magicDustPulseOpacity,
+                pointerEvents: "none",
+              }}
+            />
+            <style>{`
+              .remotion-dust-glow [data-magic-dust] .font-mono,
+              .remotion-dust-glow .magic-dust-amount {
+                text-shadow: 0 0 12px rgba(167,139,250,0.9) !important;
+              }
+            `}</style>
+          </>
+        )}
+
+        {/* RIGHT column — PaymentPanel, maxWidth 640, centered */}
+        {panelCascadeStyle}
+        <div
+          style={{
+            position: "absolute",
+            left: colWidth,
+            top: CHROME_HEIGHT,
+            width: colWidth,
+            height: availableH,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "48px 24px",
+            boxSizing: "border-box",
+          }}
+        >
+          <div
+            className="remotion-pay-panel"
+            style={{
+              width: "100%",
+              maxWidth: PANEL_MAX_WIDTH,
+              fontSize: "inherit",
+              transform: `scale(${cardScale}) translateY(${panelExit}px)`,
+              transformOrigin: "center center",
+              opacity: cardScale * (1 - panelExitOpacity),
+              borderRadius: 30,
+              backgroundColor: "transparent",
+              border: "none",
+              boxShadow: "none",
+              overflow: "hidden",
+              padding: 0,
+            }}
+          >
+            <div style={{ padding: "36px 36px 30px" }}>
+              {paymentPanelContent}
+            </div>
+          </div>
+        </div>
+        {panelBorderStrip}
+
+        {/* BrowserChrome — full-width top overlay over BOTH columns */}
+        <BrowserChrome opacity={chromeOpacity} />
+
+        {/* WalletPill — top-right of FULL viewport (not confined to right column) */}
+        {frame < SUCCESS && (
+          <WalletPill
+            connected={frame >= PHASE_CONNECTING}
+            opacity={walletOpacity}
+          />
+        )}
+
+        {/* Narrative toasts */}
+        <RemotionFakeToast variant="success" title="Wallet connected" startAt={170} hold={60} stackOffset={0} anchor="below-panel" />
+        <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={240} hold={60} stackOffset={0} anchor="below-panel" />
+        <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={340} hold={140} stackOffset={0} anchor="below-panel" />
+        <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={470} hold={120} stackOffset={0} anchor="below-panel" />
+
+        {/* Captions */}
+        <Caption text="Open link. Pay." position="top" startAt={15} endAt={88} fontSize={38} />
+        <HintBadge
+          text="unique micro-amount ← payment ID"
+          startAt={255}
+          endAt={345}
+          variant="arrow"
+          fontSize={40}
+          style={{ top: "24.7%", right: "3.9%", zIndex: 10 }}
+        />
+        <Caption text="Not our servers." position="top" startAt={490} fontSize={38} variant="emerald" />
+      </AbsoluteFill>
+    );
+  }
+
+  // Portrait (9x16) — UNCHANGED from p30
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackgroundLayer variant="soft" />
@@ -242,92 +550,7 @@ export const PayScene: React.FC = () => {
            Mocks v2 surgical: width = 84% of stage, side padding = 36px (12px × 3).
            F10 text sizes via fontSize: "24px" em-cascade into PaymentPanel internals.
            F2.D1: CreateYourOwnCta suppressed — voice-gate violation (self-referential in video). */}
-      <style>{`
-        .remotion-pay-panel a[href="/create"] { display: none !important; }
-        .remotion-pay-panel [class*="text-[9px]"]   { font-size: 22px !important; line-height: 1.4 !important; }
-        .remotion-pay-panel .text-xs,
-        .remotion-pay-panel [class*="text-[10px]"],
-        .remotion-pay-panel [class*="text-[11px]"]  { font-size: 24px !important; line-height: 1.4 !important; }
-        .remotion-pay-panel .text-sm                { font-size: 28px !important; line-height: 1.45 !important; }
-        .remotion-pay-panel .text-base              { font-size: 32px !important; line-height: 1.5 !important; }
-        .remotion-pay-panel .text-lg                { font-size: 36px !important; line-height: 1.5 !important; }
-        .remotion-pay-panel .text-xl                { font-size: 40px !important; line-height: 1.4 !important; }
-        .remotion-pay-panel .text-2xl               { font-size: 48px !important; line-height: 1.3 !important; }
-        .remotion-pay-panel .text-3xl               { font-size: 60px !important; line-height: 1.2 !important; }
-        .remotion-pay-panel .text-4xl               { font-size: 72px !important; line-height: 1.1 !important; }
-
-        /* Form control heights */
-        .remotion-pay-panel .h-7  { height: 56px !important; }
-        .remotion-pay-panel .h-8  { height: 64px !important; }
-        .remotion-pay-panel .h-9  { height: 72px !important; }
-        .remotion-pay-panel .h-10 { height: 80px !important; }
-        .remotion-pay-panel .h-11 { height: 88px !important; }
-        .remotion-pay-panel .h-12 { height: 96px !important; }
-        .remotion-pay-panel .h-14 { height: 112px !important; }
-
-        /* Icon dimensions (lucide-react svg via w-N/h-N) */
-        .remotion-pay-panel .w-3 { width: 24px !important; }
-        .remotion-pay-panel .h-3 { height: 24px !important; }
-        .remotion-pay-panel .w-4 { width: 32px !important; }
-        .remotion-pay-panel .h-4 { height: 32px !important; }
-        .remotion-pay-panel .w-5 { width: 40px !important; }
-        .remotion-pay-panel .h-5 { height: 40px !important; }
-        .remotion-pay-panel .w-6 { width: 48px !important; }
-        .remotion-pay-panel .h-6 { height: 48px !important; }
-        .remotion-pay-panel .w-11 { width: 88px !important; }
-        .remotion-pay-panel .h-11 { height: 88px !important; }
-        .remotion-pay-panel .w-12 { width: 96px !important; }
-
-        /* D20: checkmark icon inside h-12/w-12 circle uses size={24} prop (px); scale up to match container */
-        .remotion-pay-panel .h-12.w-12 svg { width: 48px !important; height: 48px !important; }
-
-        /* Padding scale-up (common form classes) */
-        .remotion-pay-panel .p-0\\.5 { padding: 4px !important; }
-        .remotion-pay-panel .p-1    { padding: 8px !important; }
-        .remotion-pay-panel .p-1\\.5 { padding: 12px !important; }
-        .remotion-pay-panel .p-2    { padding: 16px !important; }
-        .remotion-pay-panel .p-3    { padding: 24px !important; }
-        .remotion-pay-panel .p-4    { padding: 32px !important; }
-        .remotion-pay-panel .px-2   { padding-left: 16px !important; padding-right: 16px !important; }
-        .remotion-pay-panel .px-3   { padding-left: 24px !important; padding-right: 24px !important; }
-        .remotion-pay-panel .px-4   { padding-left: 32px !important; padding-right: 32px !important; }
-        .remotion-pay-panel .px-6   { padding-left: 48px !important; padding-right: 48px !important; }
-        .remotion-pay-panel .py-0\\.5 { padding-top: 4px !important; padding-bottom: 4px !important; }
-        .remotion-pay-panel .py-1   { padding-top: 8px !important; padding-bottom: 8px !important; }
-        .remotion-pay-panel .py-2   { padding-top: 16px !important; padding-bottom: 16px !important; }
-        .remotion-pay-panel .py-2\\.5 { padding-top: 20px !important; padding-bottom: 20px !important; }
-        .remotion-pay-panel .py-3   { padding-top: 24px !important; padding-bottom: 24px !important; }
-        .remotion-pay-panel .pt-2   { padding-top: 16px !important; }
-        .remotion-pay-panel .pt-4   { padding-top: 32px !important; }
-        .remotion-pay-panel .pt-5   { padding-top: 40px !important; }
-        .remotion-pay-panel .pr-12  { padding-right: 96px !important; }
-
-        /* D18: frame-driven spinner — kill CSS animate-spin, use per-frame rotate */
-        .remotion-pay-panel .motion-safe\\:animate-\\[spin_1\\.5s_linear_infinite\\] {
-          animation: none !important;
-          transform: rotate(${frame * 8}deg) !important;
-        }
-
-        /* Gap scale-up */
-        .remotion-pay-panel .gap-0\\.5 { gap: 4px !important; }
-        .remotion-pay-panel .gap-1   { gap: 8px !important; }
-        .remotion-pay-panel .gap-1\\.5 { gap: 12px !important; }
-        .remotion-pay-panel .gap-2   { gap: 16px !important; }
-        .remotion-pay-panel .gap-2\\.5 { gap: 20px !important; }
-        .remotion-pay-panel .gap-3   { gap: 24px !important; }
-        .remotion-pay-panel .gap-4   { gap: 32px !important; }
-
-        /* Space-y scale-up (vertical rhythm inside panel) */
-        .remotion-pay-panel .space-y-2 > * + * { margin-top: 16px !important; }
-        .remotion-pay-panel .space-y-4 > * + * { margin-top: 32px !important; }
-
-        /* Border radius — keep visually proportional */
-        .remotion-pay-panel .rounded    { border-radius: 8px !important; }
-        .remotion-pay-panel .rounded-full { border-radius: 9999px !important; }
-        .remotion-pay-panel .rounded-lg { border-radius: 16px !important; }
-        .remotion-pay-panel .rounded-xl { border-radius: 24px !important; }
-
-      `}</style>
+      {panelCascadeStyle}
       <div
         className="remotion-pay-panel"
         style={{
@@ -353,64 +576,20 @@ export const PayScene: React.FC = () => {
       >
         {/* Inner padding wrapper — keeps content inset while PaymentPanel border is clipped by outer overflow:hidden */}
         <div style={{ padding: "36px 36px 30px" }}>
-        <PaymentPanel
-          invoice={DEMO_INVOICE}
-          contentHash={DEMO_CONTENT_HASH}
-          status={panelStatus}
-          txHash={panelTxHash}
-          confirmations={confirmations}
-          source="received"
-          finalized={panelStatus === "paid"}
-        >
-          {/* CTA — drives SmartPayButtonView per-frame across 6 idle sub-states + sending. */}
-          {(step !== 'confirming' && step !== 'success') && (
-            <div
-              style={{
-                transform: ctaPressTriggerFrame >= 0
-                  ? `scale(${pressScale(frame, ctaPressTriggerFrame)})`
-                  : undefined,
-                transformOrigin: "center",
-              }}
-            >
-              <SmartPayButtonView
-                step={step}
-                idleSubState={idleSubState}
-                currency={DEMO_INVOICE.currency}
-                subtotal="250000000"
-                decimals={6}
-              />
-            </div>
-          )}
-
-          {/* CTA slot — only during pending/connecting/switching/sending */}
-          {/* Note: confirming and success states are handled outside the panel */}
-        </PaymentPanel>
+          {paymentPanelContent}
         </div>
       </div>
       {/* Border/shadow strip placed AFTER panel in DOM so this <style> wins the cascade over Tailwind */}
-      <style>{`
-        .remotion-pay-panel [data-testid="payment-panel"] { box-shadow: none !important; border-width: 0px !important; border-style: none !important; border-color: transparent !important; outline: none !important; }
-        .remotion-pay-panel [data-testid="payment-panel"][data-status="paid"],
-        .remotion-pay-panel [data-testid="payment-panel"][data-status="confirming"] { border-width: 0px !important; border-style: none !important; border-color: transparent !important; }
-        .remotion-pay-panel [data-testid="gradient-bar"] { display: none !important; }
-      `}</style>
+      {panelBorderStrip}
 
       {/* C6: BrowserChrome — mock .chrome spec, full S3 duration (F9-F12) */}
-      <BrowserChrome
-        opacity={interpolate(frame, [0, 20], [0, 1], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
-        })}
-      />
+      <BrowserChrome opacity={chromeOpacity} />
 
       {/* C7: WalletPill — disconnected (F9) → connected (F10-F11), exits at success (F12) */}
       {frame < SUCCESS && (
         <WalletPill
           connected={frame >= PHASE_CONNECTING}
-          opacity={interpolate(frame, [0, 20], [0, 1], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          })}
+          opacity={walletOpacity}
         />
       )}
 
