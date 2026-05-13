@@ -53,22 +53,27 @@ const PAPER_PROPS = {
 // Round 9c L2: PaperBackdrop — full-bleed InvoicePaper centered in viewport.
 // C5: accepts dim opacity + blur for modal-foregrounded frames (F6-F8).
 // C10: true vertical center per Mocks v2 .paper anchor (top:50% translate -50%).
-const PaperBackdrop: React.FC<{ dimOpacity: number; blurPx: number }> = ({
-  dimOpacity,
-  blurPx,
-}) => {
+// containerWidth/containerHeight: override for landscape column mode (default = full viewport).
+const PaperBackdrop: React.FC<{
+  dimOpacity: number;
+  blurPx: number;
+  containerWidth?: number;
+  containerHeight?: number;
+}> = ({ dimOpacity, blurPx, containerWidth, containerHeight }) => {
   const { width, height } = useVideoConfig();
-  const targetWidth = width * 0.92;
+  const cw = containerWidth ?? width;
+  const ch = containerHeight ?? height;
+  const targetWidth = cw * 0.92;
   const scale = targetWidth / INVOICE_BASE_WIDTH;
   const scaledH = INVOICE_BASE_HEIGHT * scale;
-  // C10: true center — paper at vertical midpoint of viewport
-  const top = (height - scaledH) / 2;
+  // C10: true center — paper at vertical midpoint of container
+  const top = (ch - scaledH) / 2;
 
   return (
     <div
       style={{
         position: "absolute",
-        left: (width - INVOICE_BASE_WIDTH * scale) / 2,
+        left: (cw - INVOICE_BASE_WIDTH * scale) / 2,
         top,
         width: INVOICE_BASE_WIDTH,
         height: INVOICE_BASE_HEIGHT,
@@ -86,8 +91,9 @@ const PaperBackdrop: React.FC<{ dimOpacity: number; blurPx: number }> = ({
 
 export const ShareScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, width } = useVideoConfig();
-  // Mocks v2 surgical: modal width = 84% of stage width
+  const { fps, width, height } = useVideoConfig();
+  const isLandscape = width > height;
+  // Mocks v2 surgical: modal width = 84% of stage width (portrait only)
   const modalWidth = Math.round(width * 0.84);
 
   // Modal slide-up
@@ -123,6 +129,223 @@ export const ShareScene: React.FC = () => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
+  // Shared animation values used in both portrait and landscape
+  const dimOpacity = interpolate(frame, [0, 15, COPY_CLICK_FRAME], [0.35, 0.35, 0.3], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const blurPx = interpolate(frame, [0, 15, COPY_CLICK_FRAME], [1.5, 1.5, 2.0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  // ─── Landscape (16:9) — two-column layout ───────────────────────────────────
+  if (isLandscape) {
+    const PANEL_MAX_WIDTH = 640;
+    const colW = width / 2;
+
+    return (
+      <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
+        <NetworkBackgroundLayer variant="soft" />
+        <NetworkBackground />
+
+        {/* LEFT — paper, vertically centered in left half */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: colW,
+            height: "100%",
+          }}
+        >
+          <PaperBackdrop
+            dimOpacity={dimOpacity}
+            blurPx={blurPx}
+            containerWidth={colW}
+            containerHeight={height}
+          />
+        </div>
+
+        {/* RIGHT — modal + hint badge, maxWidth capped */}
+        <div
+          style={{
+            position: "absolute",
+            left: colW,
+            top: 0,
+            width: colW,
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "48px 24px",
+            boxSizing: "border-box",
+          }}
+        >
+          <div style={{ width: "100%", maxWidth: PANEL_MAX_WIDTH, position: "relative" }}>
+            {/* η5 HintBadge — anchored relative to right column */}
+            <HintBadge
+              text="invoice data → in the hash"
+              startAt={80}
+              endAt={160}
+              variant="arrow"
+              fontSize={20}
+              style={{
+                position: "absolute",
+                top: -40,
+                right: 0,
+                zIndex: 20,
+              }}
+            />
+
+            {/* Share modal shell */}
+            <Card
+              className="border border-zinc-800/80"
+              style={{
+                position: "relative",
+                width: "100%",
+                padding: 0,
+                transform: `translateY(${modalTranslateY}px)`,
+                opacity: modalOpacity,
+                overflow: "hidden",
+                backgroundColor: "rgba(24, 24, 27, 0.96)",
+                border: "1px solid rgba(139,92,246,0.25)",
+                boxShadow: "0 25px 80px -20px rgba(0,0,0,0.8), 0 8px 32px -8px rgba(0,0,0,0.5)",
+                borderRadius: 20,
+              }}
+            >
+              {/* Violet top gradient bar */}
+              <div style={{
+                height: 4,
+                background: "linear-gradient(90deg, #8b5cf6, #d946ef, #8b5cf6)",
+              }} />
+
+              {/* Header */}
+              <div style={{ padding: "20px 24px" }}>
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontFamily: `${FONT_SANS}, sans-serif`,
+                  fontSize: 26,
+                  fontWeight: 700,
+                  color: COLORS.textPrimary,
+                  letterSpacing: "-0.02em",
+                  marginBottom: 4,
+                }}>
+                  <CheckCircleIcon size={26} style={{ color: COLORS.violet }} />
+                  Invoice Ready
+                </div>
+                <div style={{
+                  fontFamily: `${FONT_SANS}, sans-serif`,
+                  fontSize: 18,
+                  color: "rgba(113, 113, 122, 1)",
+                  marginBottom: 16,
+                }}>
+                  Share this link to get paid
+                </div>
+
+                {/* InvoiceSummary */}
+                <div className="remotion-summary-override remotion-summary-landscape">
+                  <style>{`
+                    .remotion-summary-landscape .text-base,
+                    .remotion-summary-landscape .text-lg { font-size: 22px !important; line-height: 1.2 !important; }
+                    .remotion-summary-landscape .font-mono { font-family: monospace !important; }
+                    .remotion-summary-landscape .font-extrabold { font-weight: 800 !important; }
+                    .remotion-summary-landscape .tabular-nums { font-variant-numeric: tabular-nums !important; }
+                    .remotion-summary-landscape .text-zinc-100 { color: #f4f4f5 !important; }
+                    .remotion-summary-landscape .text-xs { font-size: 14px !important; line-height: 1.4 !important; }
+                    .remotion-summary-landscape .text-zinc-500 { color: #a1a1aa !important; }
+                    .remotion-summary-landscape .text-violet-400 { color: #a78bfa !important; }
+                    .remotion-summary-landscape .bg-violet-500\\/10 { background-color: rgba(139,92,246,0.15) !important; }
+                    .remotion-summary-landscape .px-1\\.5 { padding-left: 6px !important; padding-right: 6px !important; }
+                    .remotion-summary-landscape .py-0\\.5 { padding-top: 3px !important; padding-bottom: 3px !important; }
+                    .remotion-summary-landscape .rounded { border-radius: 6px !important; }
+                    .remotion-summary-landscape .font-semibold { font-weight: 600 !important; }
+                    .remotion-summary-landscape .gap-2 { gap: 10px !important; }
+                    .remotion-summary-landscape .px-3 { padding-left: 14px !important; padding-right: 14px !important; }
+                    .remotion-summary-landscape .py-2\\.5 { padding-top: 10px !important; padding-bottom: 10px !important; }
+                    .remotion-summary-landscape .sm\\:px-4 { padding-left: 16px !important; padding-right: 16px !important; }
+                    .remotion-summary-landscape .sm\\:py-3 { padding-top: 12px !important; padding-bottom: 12px !important; }
+                    .remotion-summary-landscape .gap-3 { gap: 12px !important; }
+                    .remotion-summary-landscape .rounded-lg { border-radius: 8px !important; }
+                  `}</style>
+                  <InvoiceSummary invoice={DEMO_INVOICE} />
+                </div>
+              </div>
+
+              {/* Tab switcher */}
+              <div style={{ padding: "0 24px 12px 24px" }}>
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  background: "rgba(39, 39, 42, 1)",
+                  borderRadius: 8,
+                  padding: 4,
+                  marginBottom: 12,
+                }}>
+                  {(["Link", "QR Code"] as const).map((label) => {
+                    const isActive = showQR ? label === "QR Code" : label === "Link";
+                    return (
+                      <div
+                        key={label}
+                        style={{
+                          height: 36,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: 6,
+                          fontSize: 18,
+                          fontWeight: isActive ? 500 : 400,
+                          color: isActive ? "rgba(244, 244, 245, 1)" : "rgba(113, 113, 122, 1)",
+                          background: isActive ? "rgba(24, 24, 27, 1)" : "transparent",
+                          boxShadow: isActive ? "0 1px 3px 0 rgba(0,0,0,0.4)" : "none",
+                          fontFamily: `${FONT_SANS}, sans-serif`,
+                          letterSpacing: "-0.01em",
+                        }}
+                      >
+                        {label}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Tab body */}
+              <div style={{ padding: "0 24px 24px 24px", position: "relative" }}>
+                <div style={{
+                  opacity: linkTabOpacity,
+                  position: linkTabOpacity < 1 ? "absolute" : "relative",
+                  top: linkTabOpacity < 1 ? 0 : undefined,
+                  left: linkTabOpacity < 1 ? 24 : undefined,
+                  right: linkTabOpacity < 1 ? 24 : undefined,
+                  pointerEvents: linkTabOpacity > 0 ? "auto" : "none",
+                }}>
+                  <RemotionLinkTab url={SHARE_URL} copied={copied} />
+                </div>
+                {frame >= COPY_CLICK_FRAME && (
+                  <div style={{ opacity: qrTabOpacity }}>
+                    <RemotionQRTab url={SHARE_URL} />
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* ζ4 Caption — AbsoluteFill level, spans full viewport */}
+        <Caption
+          text="URL = invoice."
+          position="top"
+          startAt={60}
+          endAt={290}
+          fontSize={32}
+        />
+      </AbsoluteFill>
+    );
+  }
+
+  // ─── Portrait (9:16) — unchanged ────────────────────────────────────────────
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackgroundLayer variant="soft" />
@@ -131,16 +354,7 @@ export const ShareScene: React.FC = () => {
       {/* Round 9c L2: InvoicePaper as scene backdrop.
            C5: F6 entrance 0.35/1.5px → F7/F8 0.3/2px — modal is always foregrounded in S2. */}
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
-        <PaperBackdrop
-          dimOpacity={interpolate(frame, [0, 15, COPY_CLICK_FRAME], [0.35, 0.35, 0.3], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          })}
-          blurPx={interpolate(frame, [0, 15, COPY_CLICK_FRAME], [1.5, 1.5, 2.0], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          })}
-        />
+        <PaperBackdrop dimOpacity={dimOpacity} blurPx={blurPx} />
       </AbsoluteFill>
 
       {/* Dimmed backdrop — β3: reduced to 0.30 so paper reads clearly through */}
