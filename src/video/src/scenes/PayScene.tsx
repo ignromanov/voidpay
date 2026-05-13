@@ -275,6 +275,10 @@ export const PayScene: React.FC = () => {
         .remotion-pay-panel .h-6 { height: 48px !important; }
         .remotion-pay-panel .w-11 { width: 88px !important; }
         .remotion-pay-panel .h-11 { height: 88px !important; }
+        .remotion-pay-panel .w-12 { width: 96px !important; }
+
+        /* D20: checkmark icon inside h-12/w-12 circle uses size={24} prop (px); scale up to match container */
+        .remotion-pay-panel .h-12.w-12 svg { width: 48px !important; height: 48px !important; }
 
         /* Padding scale-up (common form classes) */
         .remotion-pay-panel .p-0\\.5 { padding: 4px !important; }
