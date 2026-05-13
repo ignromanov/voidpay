@@ -9,8 +9,8 @@ import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
  *
  * F1 post-render fix: full phrase visible from frame 0 — no internal cross-fade.
  * Scene entrance crossfade is handled by Root.tsx at scene boundaries.
- * Both lines render with Mocks v2 canonical opacities:
- *   - "The invoice" → muted (#71717a, opacity 0.35)
+ * Color split matches landing Hero (D1):
+ *   - "The invoice" → bold white (#FFFFFF)
  *   - "is the URL." → aurora full opacity
  *
  * Mock viewport 360×640 → 1080×1920: multiply font sizes ×3.
@@ -56,7 +56,7 @@ export const ThesisHookScene: React.FC = () => {
           VoidPay
         </div>
 
-        {/* H1: top line muted (0.35 opacity), aurora bottom line at full opacity */}
+        {/* H1: line 1 bold white, line 2 violet aurora — matches landing Hero */}
         <div
           style={{
             fontFamily: `${FONT_SANS}, sans-serif`,
@@ -66,7 +66,7 @@ export const ThesisHookScene: React.FC = () => {
             lineHeight: 1.05,
           }}
         >
-          <span style={{ color: "#71717a", opacity: 0.50 }}>The invoice</span>
+          <span style={{ color: "#FFFFFF" }}>The invoice</span>
           <br />
           <RemotionAuroraText phaseFrames={0}>is&nbsp;the&nbsp;URL.</RemotionAuroraText>
         </div>

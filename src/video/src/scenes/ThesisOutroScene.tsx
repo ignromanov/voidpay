@@ -11,7 +11,7 @@ import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
  *
  * Mocks v2 F13 hero import (import point #9):
  *   pre-line: "No accounts · no DB · no servers" (mono)
- *   h1: full aurora "The invoice\nis the URL."
+ *   h1: white "The invoice" + aurora "is the URL." — matches landing Hero
  *   sub: "Encoded into the link itself.\nOpen. Pay. Done."
  *   voidpay.xyz wordmark — centered in flex-column block (no margin-top:auto)
  *
@@ -88,7 +88,7 @@ export const ThesisOutroScene: React.FC = () => {
           No accounts · no DB · no servers
         </div>
 
-        {/* H1: full aurora "The invoice\nis the URL." */}
+        {/* H1: line 1 bold white, line 2 violet aurora — matches landing Hero (D11) */}
         <div
           style={{
             fontFamily: `${FONT_SANS}, sans-serif`,
@@ -99,11 +99,9 @@ export const ThesisOutroScene: React.FC = () => {
             marginBottom: 36,
           }}
         >
-          <RemotionAuroraText>
-            The invoice
-            <br />
-            is the URL.
-          </RemotionAuroraText>
+          <span style={{ color: "#FFFFFF" }}>The invoice</span>
+          <br />
+          <RemotionAuroraText>is&nbsp;the&nbsp;URL.</RemotionAuroraText>
         </div>
 
         {/* Sub: "Encoded into the link itself.\nOpen. Pay. Done." */}
