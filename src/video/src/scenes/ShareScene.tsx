@@ -268,7 +268,7 @@ export const ShareScene: React.FC = () => {
                     fontSize: 28.5,
                     fontWeight: isActive ? 600 : 400,
                     color: isActive ? "rgba(244, 244, 245, 1)" : "rgba(113, 113, 122, 1)",
-                    background: isActive ? "rgba(63, 63, 70, 0.8)" : "transparent",
+                    background: "transparent",
                     fontFamily: `${FONT_SANS}, sans-serif`,
                     letterSpacing: "-0.01em",
                     transition: "none",
