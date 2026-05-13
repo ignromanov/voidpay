@@ -56,8 +56,11 @@ const MAGIC_DUST_TOGGLE_FRAME = 200;  // round 9a-patch2 (C3): toggle off→on a
 // offset -360 → -900 so Token & Network block scrolls fully into view before FILL_COMPLETE.
 // D15 (unified scroll): extend to frame 265 with offset -2000 so Generate button bottom is
 // fully in view before BUTTON_VISIBLE=280. Single translateY driver — no secondary motions.
+// D21 audit: confirmed single translateY source. -2000 overshoots — form scrolls too far up
+// and Generate button exits top of card by f280. Calibrated endpoint by iterative stills:
+// -760 still too short (button not in view); -1100 targets button bottom flush with card edge.
 const SCROLL_FRAMES  = [115, 150, 175, 195, 265];
-const SCROLL_OFFSETS = [0, -120, -400, -900, -2000];
+const SCROLL_OFFSETS = [0, -120, -400, -900, -1100];
 
 const noop = () => {
   /* Remotion renders static frames — click handlers never fire */
@@ -298,6 +301,8 @@ export const CreateScene: React.FC = () => {
                 .remotion-create-portrait .h-9  { height: 72px !important; }
                 .remotion-create-portrait .h-10 { height: 80px !important; }
                 .remotion-create-portrait .h-11 { height: 88px !important; }
+                /* D22: Generate button uses h-14 (56px) — scale to 112px for 2× portrait density */
+                .remotion-create-portrait .h-14 { height: 112px !important; }
 
                 /* Icon dimensions (lucide-react svg via w-N/h-N) */
                 .remotion-create-portrait .w-3 { width: 24px !important; }
@@ -353,6 +358,14 @@ export const CreateScene: React.FC = () => {
                 .remotion-create-portrait svg[height="20"] { width: 40px !important; height: 40px !important; }
                 .remotion-create-portrait svg[width="24"]  { width: 48px !important; height: 48px !important; }
                 .remotion-create-portrait svg[height="24"] { width: 48px !important; height: 48px !important; }
+
+                /* D23: animate-spin is a CSS keyframe — uncontrolled in Remotion (appears very fast).
+                   Nullify it and replace with frame-driven rotation via CSS custom property
+                   --remotion-spin injected on the wrapper div when isGenerating. */
+                .remotion-create-portrait .animate-spin {
+                  animation: none !important;
+                  transform: rotate(var(--remotion-spin, 0deg)) !important;
+                }
               `}</style>
 
               {/* D2: Header matches production CreateWorkspace — violet "Invoice" + white " Details" */}
@@ -386,11 +399,14 @@ export const CreateScene: React.FC = () => {
               />
 
               {/* Round 9a-patch2 (C1): button always mounted at bottom of scroll content. */}
+              {/* D23: --remotion-spin injects frame-driven rotation for the Loader2 spinner
+                  (animate-spin CSS keyframe is disabled in the portrait cascade above). */}
               <div
                 style={{
                   marginTop: 16,
                   transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
                   transformOrigin: "center",
+                  ...(frame >= PRESS_END && { "--remotion-spin": `${frame * 10}deg` } as React.CSSProperties),
                 }}
               >
                 <GenerateButtonView
