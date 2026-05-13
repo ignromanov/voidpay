@@ -52,9 +52,10 @@ const MAGIC_DUST_TOGGLE_FRAME = 200;  // round 9a-patch2 (C3): toggle off→on a
 // Round 9a-patch1 (B1): end 200 → 188 (mp4 8.600s) — scroll stops earlier so empty form
 // space below the last field doesn't drift into view at the bottom of the Card.
 // Round 9a-patch2 (C2): final offset reduced -420 → -360 to remove empty space below form.
-// Dev: verify via still at frame 258; adjust this single constant if needed.
-const SCROLL_FRAMES  = [115, 150, 175, 188];
-const SCROLL_OFFSETS = [0, -120, -240, -360];
+// D5 (round-9e): cascade ×2 made form taller — extend endpoint frame 188 → 195 and
+// offset -360 → -900 so Token & Network block scrolls fully into view before FILL_COMPLETE.
+const SCROLL_FRAMES  = [115, 150, 175, 195];
+const SCROLL_OFFSETS = [0, -120, -400, -900];
 
 const noop = () => {
   /* Remotion renders static frames — click handlers never fire */
@@ -268,10 +269,11 @@ export const CreateScene: React.FC = () => {
               style={{
                 position: "relative",
                 width: "100%",
-                height: "100%",
+                // D5: removed height:"100%" — it capped the scrollable content at card-height,
+                // preventing translateY from revealing below-the-fold sections. The Card's own
+                // overflow:hidden clips at the card boundary; button is naturally clipped there.
                 fontSize: "inherit",
                 overflowX: "visible",              // ε1: prevents right-column clipping at Card edge
-                overflowY: "hidden",               // ζ1: clip bottom so button doesn't bleed past Card
                 paddingRight: 8,                   // ε1: small extra right pad so values don't touch border
               }}
             >
@@ -331,6 +333,10 @@ export const CreateScene: React.FC = () => {
                 /* Border radius — keep visually proportional */
                 .remotion-create-portrait .rounded-lg { border-radius: 16px !important; }
                 .remotion-create-portrait .rounded-xl { border-radius: 24px !important; }
+
+                /* D3: CalendarIcon in date label uses inline size={12} (not Tailwind class) —
+                   scale SVGs inside text-[10px] label spans to match cascade ×2 density */
+                .remotion-create-portrait [class*="text-[10px]"] svg { width: 24px !important; height: 24px !important; }
               `}</style>
 
               {/* D2: Header matches production CreateWorkspace — violet "Invoice" + white " Details" */}
