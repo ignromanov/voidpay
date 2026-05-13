@@ -254,6 +254,13 @@ export const PayScene: React.FC = () => {
       /* D20: checkmark icon inside h-12/w-12 circle uses size={24} prop (px); scale up to match container */
       .remotion-pay-panel .h-12.w-12 svg { width: 48px !important; height: 48px !important; }
 
+      /* D29: footer + magic dust icons use size={N} SVG prop (not Tailwind w-N/h-N classes).
+         Production-parity ratio: text-xs (24px after cascade) / 12px base ≈ 2×.
+         FingerprintIcon size={10} → 20px; footer icons size={12} → 24px. */
+      .remotion-pay-panel svg[width="10"], .remotion-pay-panel svg[height="10"] { width: 20px !important; height: 20px !important; }
+      .remotion-pay-panel svg[width="12"], .remotion-pay-panel svg[height="12"] { width: 24px !important; height: 24px !important; }
+      .remotion-pay-panel svg[width="14"], .remotion-pay-panel svg[height="14"] { width: 28px !important; height: 28px !important; }
+
       /* Padding scale-up (common form classes) */
       .remotion-pay-panel .p-0\\.5 { padding: 4px !important; }
       .remotion-pay-panel .p-1    { padding: 8px !important; }
