@@ -6,8 +6,8 @@ import {
   useVideoConfig,
 } from "remotion";
 
-// F4.4: cross-fade duration between Link tab and QR tab (frames)
-const TAB_CROSSFADE_DURATION = 8;
+// D27: instant tab swap — 1-frame window eliminates blink where both tabs at half opacity
+const TAB_CROSSFADE_DURATION = 1;
 import {
   InvoicePaper,
   INVOICE_BASE_WIDTH,
