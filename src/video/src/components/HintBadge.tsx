@@ -100,6 +100,9 @@ export const HintBadge: React.FC<HintBadgeProps> = ({
         position: "absolute",
         opacity,
         pointerEvents: "none",
+        // Intrinsic width: prevents block-level stretch when positioned with `right:`.
+        // display:inline-block makes the absolute wrapper shrink to its inline-flex child.
+        display: "inline-block",
         ...style,
       }}
     >
@@ -118,7 +121,6 @@ export const HintBadge: React.FC<HintBadgeProps> = ({
             "0 6px 18px rgba(0,0,0,0.55)",
             "0 0 14px rgba(124,58,237,0.35)",
           ].join(", "),
-          maxWidth: "540px",  // 180px mock × 3
           textAlign: "center",
         }}
       >
