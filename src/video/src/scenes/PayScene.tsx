@@ -275,8 +275,14 @@ export const PayScene: React.FC = () => {
       .remotion-pay-panel .pt-5   { padding-top: 40px !important; }
       .remotion-pay-panel .pr-12  { padding-right: 96px !important; }
 
-      /* D18: frame-driven spinner — kill CSS animate-spin, use per-frame rotate */
-      .remotion-pay-panel .motion-safe\\:animate-\\[spin_1\\.5s_linear_infinite\\] {
+      /* D18/D28: frame-driven spinner — kill ALL animate-spin variants, use per-frame rotate.
+         Three distinct Tailwind classes used across PaymentPanel/SmartPayButtonView:
+         1. motion-safe:animate-[spin_1.5s_linear_infinite]  → SmartPayButtonView button span
+         2. motion-safe:animate-spin                         → SecondaryActions, StatusBadge, PollingStatus
+         3. animate-spin                                     → fallback (no motion-safe wrapper) */
+      .remotion-pay-panel .motion-safe\\:animate-\\[spin_1\\.5s_linear_infinite\\],
+      .remotion-pay-panel .motion-safe\\:animate-spin,
+      .remotion-pay-panel .animate-spin {
         animation: none !important;
         transform: rotate(${frame * 8}deg) !important;
       }
