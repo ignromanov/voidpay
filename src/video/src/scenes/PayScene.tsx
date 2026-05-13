@@ -269,6 +269,8 @@ export const PayScene: React.FC = () => {
         .remotion-pay-panel .h-9  { height: 72px !important; }
         .remotion-pay-panel .h-10 { height: 80px !important; }
         .remotion-pay-panel .h-11 { height: 88px !important; }
+        .remotion-pay-panel .h-12 { height: 96px !important; }
+        .remotion-pay-panel .h-14 { height: 112px !important; }
 
         /* Icon dimensions (lucide-react svg via w-N/h-N) */
         .remotion-pay-panel .w-3 { width: 24px !important; }
@@ -279,6 +281,8 @@ export const PayScene: React.FC = () => {
         .remotion-pay-panel .h-5 { height: 40px !important; }
         .remotion-pay-panel .w-6 { width: 48px !important; }
         .remotion-pay-panel .h-6 { height: 48px !important; }
+        .remotion-pay-panel .w-11 { width: 88px !important; }
+        .remotion-pay-panel .h-11 { height: 88px !important; }
 
         /* Padding scale-up (common form classes) */
         .remotion-pay-panel .p-0\\.5 { padding: 4px !important; }
@@ -289,23 +293,39 @@ export const PayScene: React.FC = () => {
         .remotion-pay-panel .p-4    { padding: 32px !important; }
         .remotion-pay-panel .px-2   { padding-left: 16px !important; padding-right: 16px !important; }
         .remotion-pay-panel .px-3   { padding-left: 24px !important; padding-right: 24px !important; }
+        .remotion-pay-panel .px-4   { padding-left: 32px !important; padding-right: 32px !important; }
+        .remotion-pay-panel .px-6   { padding-left: 48px !important; padding-right: 48px !important; }
+        .remotion-pay-panel .py-0\\.5 { padding-top: 4px !important; padding-bottom: 4px !important; }
         .remotion-pay-panel .py-1   { padding-top: 8px !important; padding-bottom: 8px !important; }
         .remotion-pay-panel .py-2   { padding-top: 16px !important; padding-bottom: 16px !important; }
         .remotion-pay-panel .py-2\\.5 { padding-top: 20px !important; padding-bottom: 20px !important; }
         .remotion-pay-panel .py-3   { padding-top: 24px !important; padding-bottom: 24px !important; }
         .remotion-pay-panel .pt-2   { padding-top: 16px !important; }
         .remotion-pay-panel .pt-4   { padding-top: 32px !important; }
+        .remotion-pay-panel .pt-5   { padding-top: 40px !important; }
+        .remotion-pay-panel .pr-12  { padding-right: 96px !important; }
 
         /* Gap scale-up */
+        .remotion-pay-panel .gap-0\\.5 { gap: 4px !important; }
         .remotion-pay-panel .gap-1   { gap: 8px !important; }
         .remotion-pay-panel .gap-1\\.5 { gap: 12px !important; }
         .remotion-pay-panel .gap-2   { gap: 16px !important; }
+        .remotion-pay-panel .gap-2\\.5 { gap: 20px !important; }
         .remotion-pay-panel .gap-3   { gap: 24px !important; }
         .remotion-pay-panel .gap-4   { gap: 32px !important; }
 
+        /* Space-y scale-up (vertical rhythm inside panel) */
+        .remotion-pay-panel .space-y-2 > * + * { margin-top: 16px !important; }
+        .remotion-pay-panel .space-y-4 > * + * { margin-top: 32px !important; }
+
         /* Border radius — keep visually proportional */
+        .remotion-pay-panel .rounded    { border-radius: 8px !important; }
+        .remotion-pay-panel .rounded-full { border-radius: 9999px !important; }
         .remotion-pay-panel .rounded-lg { border-radius: 16px !important; }
         .remotion-pay-panel .rounded-xl { border-radius: 24px !important; }
+
+        /* Shadow/border strip — PaymentPanel root has shadow + conditional border */
+        .remotion-pay-panel [data-testid="payment-panel"] { box-shadow: none !important; border: none !important; }
       `}</style>
       <div
         className="remotion-pay-panel"
