@@ -244,6 +244,7 @@ export const PayScene: React.FC = () => {
            F2.D1: CreateYourOwnCta suppressed — voice-gate violation (self-referential in video). */}
       <style>{`
         .remotion-pay-panel a[href="/create"] { display: none !important; }
+        .remotion-pay-panel [class*="text-[9px]"]   { font-size: 22px !important; line-height: 1.4 !important; }
         .remotion-pay-panel .text-xs,
         .remotion-pay-panel [class*="text-[10px]"],
         .remotion-pay-panel [class*="text-[11px]"]  { font-size: 24px !important; line-height: 1.4 !important; }
