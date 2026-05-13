@@ -94,18 +94,33 @@ export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, o
         </div>
       </div>
 
-      {/* Copy Link — primary void CTA matching production */}
+      {/* Copy Link — production Button variant="void":
+           bg-black border border-electric-violet/30 (rgba(124,58,237,0.3))
+           shadow-[0_0_20px_-5px_rgba(124,58,237,0.3),0_0_60px_-15px_rgba(124,58,237,0.15)]
+           with CopyOverlay = violet radial gradient inside. NOT a solid gradient fill. */}
       <div style={{
         height: 78,
-        background: "linear-gradient(135deg, rgba(124, 58, 237, 1) 0%, rgba(109, 40, 217, 1) 100%)",
-        borderRadius: 12,
+        background: "#000000",
+        borderRadius: 8,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         gap: 12,
-        boxShadow: "0 4px 24px rgba(124, 58, 237, 0.4)",
-        border: "1px solid rgba(139, 92, 246, 0.3)",
+        boxShadow: "0 0 20px -5px rgba(124,58,237,0.3), 0 0 60px -15px rgba(124,58,237,0.15)",
+        border: "1px solid rgba(124, 58, 237, 0.3)",
+        position: "relative",
+        overflow: "hidden",
       }}>
+        {/* CopyOverlay: violet idle / emerald success — matches production CopyOverlay */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          borderRadius: "inherit",
+          background: copied
+            ? "radial-gradient(ellipse 100% 80% at 50% 50%, rgba(52,211,153,0.25) 0%, rgba(16,185,129,0.13) 50%, transparent 70%)"
+            : "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(124,58,237,0.22) 0%, rgba(109,40,217,0.13) 40%, transparent 70%)",
+          pointerEvents: "none",
+        }} />
         {copied ? (
           <>
             <CheckIcon size={27} style={{ color: "rgba(52, 211, 153, 1)" }} />

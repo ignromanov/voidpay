@@ -241,11 +241,14 @@ export const ShareScene: React.FC = () => {
              Tab switch fires at COPY_CLICK_FRAME (f110) so viewer sees both tabs. */}
         {/* F8 surgical: tab section side padding = 36px; tab height 44→54px; fontSize 20→28.5px */}
         <div style={{ padding: "0 36px 18px 36px" }}>
-          {/* Tab bar — production-parity: full-width, Link + QR Code */}
+          {/* Tab bar — production-parity: full-width, Link + QR Code.
+               Production: TabsList = bg-muted (zinc-800 pill) p-1 rounded-lg h-9 w-full.
+               TabsTrigger active = bg-background (zinc-900 card) shadow rounded-md.
+               TabsTrigger inactive = text-muted-foreground (zinc-400), no background. */}
           <div style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
-            background: "rgba(39, 39, 42, 0.6)",
+            background: "rgba(39, 39, 42, 1)",
             borderRadius: 8,
             padding: 4,
             marginBottom: 18,
@@ -266,14 +269,13 @@ export const ShareScene: React.FC = () => {
                     gap: 8,
                     borderRadius: 6,
                     fontSize: 28.5,
-                    fontWeight: isActive ? 600 : 400,
+                    fontWeight: isActive ? 500 : 400,
                     color: isActive ? "rgba(244, 244, 245, 1)" : "rgba(113, 113, 122, 1)",
-                    background: "transparent",
+                    // Active: bg-background card + shadow (production data-[state=active]:bg-background data-[state=active]:shadow)
+                    background: isActive ? "rgba(24, 24, 27, 1)" : "transparent",
+                    boxShadow: isActive ? "0 1px 3px 0 rgba(0,0,0,0.4), 0 1px 2px -1px rgba(0,0,0,0.4)" : "none",
                     fontFamily: `${FONT_SANS}, sans-serif`,
                     letterSpacing: "-0.01em",
-                    transition: "none",
-                    // D6: violet underline on active tab, matching production bevel
-                    boxShadow: isActive ? "inset 0 -2px 0 0 rgba(139,92,246,0.8)" : "none",
                   }}
                 >
                   {label}
