@@ -206,11 +206,31 @@ export const ShareScene: React.FC = () => {
           </div>
 
           {/* InvoiceSummary block — real widget component, presentational only.
-               F4.2: override sub-line text to min 24px for 9:16 legibility (was ~9px illegible). */}
+               D6: cascade overrides for amount sum (text-base/lg→36px) + network chip (text-xs→22px).
+               F4.2: sub-line text min 24px for 9:16 legibility. */}
           <div className="remotion-summary-override">
             <style>{`
-              .remotion-summary-override .text-xs { font-size: 24px !important; line-height: 1.4 !important; }
+              .remotion-summary-override .text-base,
+              .remotion-summary-override .text-lg { font-size: 36px !important; line-height: 1.2 !important; }
+              .remotion-summary-override .font-mono { font-family: monospace !important; }
+              .remotion-summary-override .font-extrabold { font-weight: 800 !important; }
+              .remotion-summary-override .tabular-nums { font-variant-numeric: tabular-nums !important; }
+              .remotion-summary-override .text-zinc-100 { color: #f4f4f5 !important; }
+              .remotion-summary-override .text-xs { font-size: 22px !important; line-height: 1.4 !important; }
               .remotion-summary-override .text-zinc-500 { color: #a1a1aa !important; }
+              .remotion-summary-override .text-violet-400 { color: #a78bfa !important; }
+              .remotion-summary-override .bg-violet-500\\/10 { background-color: rgba(139,92,246,0.15) !important; }
+              .remotion-summary-override .px-1\\.5 { padding-left: 10px !important; padding-right: 10px !important; }
+              .remotion-summary-override .py-0\\.5 { padding-top: 4px !important; padding-bottom: 4px !important; }
+              .remotion-summary-override .rounded { border-radius: 6px !important; }
+              .remotion-summary-override .font-semibold { font-weight: 600 !important; }
+              .remotion-summary-override .gap-2 { gap: 16px !important; }
+              .remotion-summary-override .px-3 { padding-left: 24px !important; padding-right: 24px !important; }
+              .remotion-summary-override .py-2\\.5 { padding-top: 18px !important; padding-bottom: 18px !important; }
+              .remotion-summary-override .sm\\:px-4 { padding-left: 28px !important; padding-right: 28px !important; }
+              .remotion-summary-override .sm\\:py-3 { padding-top: 20px !important; padding-bottom: 20px !important; }
+              .remotion-summary-override .gap-3 { gap: 18px !important; }
+              .remotion-summary-override .rounded-lg { border-radius: 12px !important; }
             `}</style>
             <InvoiceSummary invoice={DEMO_INVOICE} />
           </div>
@@ -243,6 +263,7 @@ export const ShareScene: React.FC = () => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    gap: 8,
                     borderRadius: 6,
                     fontSize: 28.5,
                     fontWeight: isActive ? 600 : 400,
@@ -251,6 +272,8 @@ export const ShareScene: React.FC = () => {
                     fontFamily: `${FONT_SANS}, sans-serif`,
                     letterSpacing: "-0.01em",
                     transition: "none",
+                    // D6: violet underline on active tab, matching production bevel
+                    boxShadow: isActive ? "inset 0 -2px 0 0 rgba(139,92,246,0.8)" : "none",
                   }}
                 >
                   {label}

@@ -57,7 +57,7 @@ export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, o
   // ι2: all internal text/spacing scaled ×1.5 from θ5 values.
   // Modal width bumped 600→660px in ShareScene to absorb the scaling without overflow.
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 21, fontFamily: `${FONT_SANS}, sans-serif` }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 30, fontFamily: `${FONT_SANS}, sans-serif` }}>
 
       {/* Permalink — color-coded matching production LinkTab */}
       <div>
