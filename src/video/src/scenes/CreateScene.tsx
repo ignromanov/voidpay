@@ -69,13 +69,16 @@ const noop = () => {
 // β2: PaperBackdrop — full-bleed InvoicePaper centered in viewport, frame-driven entrance.
 // Renders BEHIND the form Card (z=1 vs form z=default). Grows from PAPER_APPEAR.
 // C5: accepts blur/dim overrides for when CTA/modal is foregrounded.
-const PaperBackdrop: React.FC<{ frame: number; dimOpacity?: number; blurPx?: number }> = ({
+// landscape: columnWidth overrides the width used for scaling (left-column half-viewport).
+const PaperBackdrop: React.FC<{ frame: number; dimOpacity?: number; blurPx?: number; columnWidth?: number }> = ({
   frame: f,
   dimOpacity,
   blurPx,
+  columnWidth,
 }) => {
   const { width, height } = useVideoConfig();
-  const targetWidth = width * 0.92;
+  const containerWidth = columnWidth ?? width;
+  const targetWidth = containerWidth * (columnWidth ? 0.85 : 0.92);
   const scale = targetWidth / INVOICE_BASE_WIDTH;
   const scaledH = INVOICE_BASE_HEIGHT * scale;
   const top = (height - scaledH) / 2;
@@ -98,7 +101,7 @@ const PaperBackdrop: React.FC<{ frame: number; dimOpacity?: number; blurPx?: num
     <div
       style={{
         position: "absolute",
-        left: (width - INVOICE_BASE_WIDTH * paperScale) / 2,
+        left: (containerWidth - INVOICE_BASE_WIDTH * paperScale) / 2,
         top,
         width: INVOICE_BASE_WIDTH,
         height: INVOICE_BASE_HEIGHT,
@@ -127,6 +130,8 @@ export const CreateScene: React.FC = () => {
 
   // Round 9c L7: portrait re-layout — form centered, paper in lower half.
   const isPortrait = width < 1200;
+  // D12-D14: landscape two-column layout (16:9 = 1920×1080, width > height).
+  const isLandscape = width > height;
 
   // Frame-driven snapshot for the real InvoiceFormView.
   const viewValue = useMemo(() => {
@@ -201,6 +206,199 @@ export const CreateScene: React.FC = () => {
   // β3.3: form stays at opacity 1 throughout S1 — paper is backdrop, not replacement.
   const formOpacity = 1;
 
+  // D12-D14: landscape two-column layout — paper LEFT, form RIGHT, max 640px.
+  const PANEL_MAX_WIDTH = 640;
+
+  if (isLandscape) {
+    const halfW = width / 2;
+    const dimOpacity = frame >= PRESS_START
+      ? interpolate(frame, [PRESS_START, PRESS_START + 8], [0.65, 0.4], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+        })
+      : undefined;
+    const blurPx = frame >= PRESS_START
+      ? interpolate(frame, [PRESS_START, PRESS_START + 8], [0, 0.5], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+        })
+      : undefined;
+
+    return (
+      <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
+        <NetworkBackgroundLayer variant="soft" />
+        <NetworkBackground />
+
+        {/* LEFT column — InvoicePaper vertically centered */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: halfW,
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "48px 24px",
+            boxSizing: "border-box",
+          }}
+        >
+          <PaperBackdrop
+            frame={frame}
+            columnWidth={halfW}
+            dimOpacity={dimOpacity}
+            blurPx={blurPx}
+          />
+        </div>
+
+        {/* RIGHT column — form + hints, maxWidth clamped */}
+        <div
+          style={{
+            position: "absolute",
+            left: halfW,
+            top: 0,
+            width: halfW,
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "48px 24px",
+            boxSizing: "border-box",
+          }}
+        >
+          {/* Void glow overlay behind the form card */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: 32,
+              boxShadow: `0 0 60px rgba(124,58,237,${buttonGlowOpacity * 0.6}), 0 0 120px rgba(124,58,237,${buttonGlowOpacity * 0.3})`,
+              pointerEvents: "none",
+            }}
+          />
+
+          <div style={{ width: "100%", maxWidth: PANEL_MAX_WIDTH, position: "relative" }}>
+            {/* Form Card */}
+            <Card
+              style={{
+                width: "100%",
+                height: formHeight,
+                padding: "24px",
+                overflow: "hidden",
+                opacity: formOpacity,
+                zIndex: 2,
+                backgroundColor: "rgba(14,14,19,0.95)",
+                border: "1px solid rgba(63,63,70,0.5)",
+                boxShadow: `0 16px 50px rgba(0,0,0,0.5), 0 0 ${glowSpread}px rgba(124,58,237,${glowIntensity * 0.5})`,
+                borderRadius: 12,
+              }}
+            >
+              <div
+                style={{
+                  transform: `translateY(${interpolate(
+                    frame,
+                    SCROLL_FRAMES,
+                    SCROLL_OFFSETS,
+                    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+                  )}px)`,
+                }}
+              >
+                <div
+                  className="remotion-create-scene"
+                  style={{ position: "relative", width: "100%", fontSize: "inherit", overflowX: "visible", paddingRight: 8 }}
+                >
+                  {/* Header */}
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 12,
+                    paddingBottom: 10,
+                    borderBottom: "1px solid rgba(63, 63, 70, 0.5)",
+                  }}>
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      fontSize: "18px",
+                      fontWeight: 700,
+                      color: "rgba(244, 244, 245, 1)",
+                      letterSpacing: "-0.005em",
+                      lineHeight: 1.2,
+                    }}>
+                      <span style={{ color: "#8b5cf6" }}>Invoice</span>
+                      {" Details"}
+                    </div>
+                  </div>
+
+                  <InvoiceFormView
+                    value={viewValue}
+                    {...(focusedField && { focusedField })}
+                    showGenerateButton={false}
+                  />
+
+                  <div
+                    style={{
+                      marginTop: 12,
+                      transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
+                      transformOrigin: "center",
+                    }}
+                  >
+                    <GenerateButtonView
+                      onGenerate={noop}
+                      canGenerate={frame >= FILL_COMPLETE}
+                      isGenerating={frame >= PRESS_END}
+                      onSubmitAttempt={noop}
+                      hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
+                      pressState={frame >= PRESS_START && frame < PRESS_END}
+                    />
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* HintBadges anchored to right column — same % coords, now relative to column */}
+            <HintBadge
+              text="No DB → link is the data"
+              startAt={65}
+              endAt={95}
+              variant="arrow"
+              fontSize={22}
+              style={{ top: "21.6%", right: "6.7%", zIndex: 10 }}
+            />
+            <HintBadge
+              text="Your wallet. No KYC. No bank."
+              startAt={115}
+              endAt={175}
+              variant="arrow"
+              fontSize={22}
+              style={{ top: "27.3%", left: "3.9%", zIndex: 10 }}
+            />
+            <HintBadge
+              text="Magic dust → unique payment ID"
+              startAt={220}
+              endAt={280}
+              variant="arrow"
+              fontSize={22}
+              style={{ top: "51.6%", right: "6.7%", zIndex: 10 }}
+            />
+          </div>
+        </div>
+
+        {/* Caption at AbsoluteFill level — spans full viewport */}
+        <Caption
+          text="No signup."
+          position="top"
+          startAt={280}
+          endAt={340}
+          fontSize={38}
+        />
+      </AbsoluteFill>
+    );
+  }
+
+  // Portrait — existing implementation untouched
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackgroundLayer variant="soft" />
