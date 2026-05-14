@@ -99,34 +99,48 @@ export const Caption: React.FC<CaptionProps> = ({
   // Mocks v2 variant colors
   const isEmerald = variant === "emerald";
   const borderColor = isEmerald
-    ? "rgba(52,211,153,0.55)"      // emerald
-    : "rgba(167,139,250,0.45)";   // violet-400/45
+    ? "rgba(52,211,153,0.80)"      // emerald
+    : "rgba(167,139,250,0.75)";   // violet-400/75 — raised from 0.45
   const textColor = isEmerald ? "#34d399" : "#a78bfa";
+  const dotColor = isEmerald ? "#34d399" : "#a78bfa";
   const glowColor = isEmerald
-    ? "rgba(52,211,153,0.3)"
-    : "rgba(167,139,250,0.25)";
+    ? "rgba(52,211,153,0.45)"
+    : "rgba(167,139,250,0.45)";   // raised from 0.25
 
   return (
     <div style={{ ...containerStyle, opacity, transform: `translateY(${translateY}px)` }}>
       <div
         style={{
           display: "inline-flex",
+          alignItems: "center",
+          gap: 18,
           maxWidth,
           // Mocks v2 .caption: rgba(20,20,27,0.85) bg + backdrop-filter blur(8px)
-          background: "rgba(20,20,27,0.85)",
+          background: "rgba(20,20,27,0.88)",
           backdropFilter: "blur(8px)",
-          border: `1px solid ${borderColor}`,
+          border: `1.5px solid ${borderColor}`,
           borderRadius: 999,
           // 9px 18px × 3 = 27px 54px
           padding: "27px 54px",
-          boxShadow: `0 0 24px ${glowColor}`,
+          boxShadow: `0 0 32px ${glowColor}, 0 0 8px ${glowColor}`,
         }}
       >
+        {/* Leading dot — HintBadge accent signature */}
+        <span
+          style={{
+            width: 12,
+            height: 12,
+            borderRadius: "50%",
+            background: dotColor,
+            flexShrink: 0,
+            boxShadow: `0 0 6px ${dotColor}`,
+          }}
+        />
         <span
           style={{
             fontFamily: `${FONT_SANS}, sans-serif`,
             fontSize,
-            fontWeight: 600,
+            fontWeight: 700,
             color: textColor,
             letterSpacing: "-0.01em",
             textAlign: "center",
