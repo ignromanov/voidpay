@@ -321,7 +321,9 @@ export const PayScene: React.FC = () => {
       .remotion-pay-panel [data-testid="payment-panel"] { box-shadow: none !important; border-width: 0px !important; border-style: none !important; border-color: transparent !important; outline: none !important; }
       .remotion-pay-panel [data-testid="payment-panel"][data-status="paid"],
       .remotion-pay-panel [data-testid="payment-panel"][data-status="confirming"] { border-width: 0px !important; border-style: none !important; border-color: transparent !important; }
-      .remotion-pay-panel [data-testid="gradient-bar"] { display: none !important; }
+      /* D31: gradient bar (h-1 = 4px) scaled to 12px for video visibility; animate-pulse killed (CSS flicker) */
+      .remotion-pay-panel [data-testid="gradient-bar"] { height: 12px !important; }
+      .remotion-pay-panel .motion-safe\\:animate-pulse { animation: none !important; }
     `}</style>
   );
 
