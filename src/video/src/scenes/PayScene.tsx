@@ -62,10 +62,6 @@ const PHASE_SWITCHING      = 170;
 const PHASE_SENDING        = 240;
 const PHASE_CONFIRMING     = 340;
 const SUCCESS              = 470;
-// D42: WalletPill shows connected only after connecting+switching animations complete.
-// PHASE_SENDING (240) = when "Wallet connected" toast finishes and tx send begins —
-// this is the earliest point the user has seen the full connection confirmed.
-const PHASE_CONNECTED = PHASE_SENDING;
 // Magic Dust window — shifted to align with new sending phase (240-340).
 const MAGIC_DUST_HIGHLIGHT = 240;
 const MAGIC_DUST_PEAK_END  = 390;
@@ -506,7 +502,7 @@ export const PayScene: React.FC = () => {
         {/* WalletPill — top-right of FULL viewport (not confined to right column) */}
         {frame < SUCCESS && (
           <WalletPill
-            connected={frame >= PHASE_CONNECTED}
+            connected={frame >= PHASE_SWITCHING}
             opacity={walletOpacity}
           />
         )}
@@ -619,7 +615,7 @@ export const PayScene: React.FC = () => {
       {/* C7: WalletPill — disconnected (F9) → connected (F10-F11), exits at success (F12) */}
       {frame < SUCCESS && (
         <WalletPill
-          connected={frame >= PHASE_CONNECTED}
+          connected={frame >= PHASE_CONNECTING}
           opacity={walletOpacity}
         />
       )}
