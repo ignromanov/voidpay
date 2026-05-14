@@ -138,8 +138,8 @@ const PaperBackdrop: React.FC<{
 
 // Height of BrowserChrome bar: padding(18×2=36) + dot(15) = 51px
 const CHROME_HEIGHT = 51;
-// Max panel width in landscape right column (D13)
-const PANEL_MAX_WIDTH = 640;
+// Max panel width in landscape right column (D13; D38: widened to 880)
+const PANEL_MAX_WIDTH = 880;
 
 export const PayScene: React.FC = () => {
   const frame = useCurrentFrame();
@@ -330,6 +330,10 @@ export const PayScene: React.FC = () => {
       /* D31: gradient bar (h-1 = 4px) scaled to 12px for video visibility; animate-pulse killed (CSS flicker) */
       .remotion-pay-panel [data-testid="gradient-bar"] { height: 12px !important; }
       .remotion-pay-panel .motion-safe\\:animate-pulse { animation: none !important; }
+      /* D34: success state gradient bar — emerald matches "Payment Successful" theme */
+      .remotion-pay-panel [data-testid="payment-panel"][data-status="paid"] [data-testid="gradient-bar"] {
+        background: linear-gradient(to right, rgb(16, 185, 129), rgb(52, 211, 153)) !important;
+      }
     `}</style>
   );
 
@@ -380,11 +384,13 @@ export const PayScene: React.FC = () => {
   // D12: Landscape two-column layout
   if (isLandscape) {
     const colWidth = width / 2;
-    // Paper sized to 85% of left column width, vertically centered below chrome
+    // Paper sized to fit within left column, constrained by both width and height (D36)
     const paperTargetWidth = colWidth * 0.85;
-    const paperScale = paperTargetWidth / INVOICE_BASE_WIDTH;
-    const paperScaledH = INVOICE_BASE_HEIGHT * paperScale;
     const availableH = height - CHROME_HEIGHT;
+    const paperScaleByWidth = paperTargetWidth / INVOICE_BASE_WIDTH;
+    const paperScaleByHeight = (availableH * 0.92) / INVOICE_BASE_HEIGHT;
+    const paperScale = Math.min(paperScaleByWidth, paperScaleByHeight);
+    const paperScaledH = INVOICE_BASE_HEIGHT * paperScale;
     const paperTop = (availableH - paperScaledH) / 2 + CHROME_HEIGHT;
 
     // Magic dust halo in landscape: anchored to paper totals area in left column
@@ -417,8 +423,6 @@ export const PayScene: React.FC = () => {
               height: INVOICE_BASE_HEIGHT,
               transform: `scale(${paperScale})`,
               transformOrigin: "top left",
-              opacity: paperDim,
-              filter: paperBlur > 0 ? `blur(${paperBlur}px)` : undefined,
             }}
           >
             <InvoicePaper {...(paperPaid ? PAPER_PROPS_PAID : PAPER_PROPS_PENDING)} />
@@ -496,7 +500,7 @@ export const PayScene: React.FC = () => {
         {/* WalletPill — top-right of FULL viewport (not confined to right column) */}
         {frame < SUCCESS && (
           <WalletPill
-            connected={frame >= PHASE_CONNECTING}
+            connected={frame >= PHASE_SWITCHING}
             opacity={walletOpacity}
           />
         )}
