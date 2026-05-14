@@ -7,6 +7,8 @@ declare global {
 export const AnalyticsEvent = {
   // Core funnel
   INVOICE_CREATE: 'invoice-create',
+  // Mobile / WebView
+  MOBILE_TG_WEBVIEW_BLOCKED: 'mobile-tg-webview-blocked',
   PAY_PAGE_LOAD: 'pay-page-load',
   WALLET_CONNECT: 'wallet-connect',
   PAY_TX_SENT: 'pay-tx-sent',
@@ -35,6 +37,7 @@ export const AnalyticsEvent = {
 type AnalyticsEventName = (typeof AnalyticsEvent)[keyof typeof AnalyticsEvent]
 
 interface EventProperties {
+  'mobile-tg-webview-blocked': Record<string, never> // no payload — privacy invariant (GH#214)
   'invoice-create': { network: string; token_symbol: string; line_item_count: number }
   'pay-page-load': { network: string; token_symbol: string; referrer_domain: string }
   'wallet-connect': { wallet_type: string; page: string }
