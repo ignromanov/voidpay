@@ -20,7 +20,7 @@ import { usePayInvoice } from './use-pay-invoice'
 import type { PayInvoiceState } from './use-pay-invoice'
 import { StatusBadge, MinimizedPill } from '@/widgets/payment-panel'
 import { CreatorHintBanner } from './CreatorHintBanner'
-import { InAppBrowserGuard } from '@/shared/ui/in-app-browser-guard'
+import { InAppBrowserGuard } from '@/widgets/in-app-browser-guard'
 
 /**
  * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.
