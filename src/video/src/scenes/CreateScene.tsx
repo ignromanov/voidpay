@@ -566,10 +566,17 @@ export const CreateScene: React.FC = () => {
                   transform: rotate(var(--remotion-spin, 0deg)) !important;
                 }
 
-                /* D26: Switch toggle fix — Remotion doesn't render CSS transitions; thumb renders
-                   at mid-state. Also the ×2 cascade scales w-10/h-5 track and w-4/h-4 thumb to
-                   80px/40px and 32px/32px, but translate-x-5 stays at 20px (thumb mid-track).
-                   Fix: null transitions + hard-set thumb to correct ON position (44px = 80-32-4). */
+                /* D30: Switch toggle redesign — D26 fix had two bugs:
+                   1. w-10 track width was not cascaded (only w-3..w-6 covered) — track stayed
+                      40px wide, making it a square instead of a pill (the "design problem").
+                   2. OFF state translateX(2px) overrode translate-x-0 incorrectly; the
+                      left-0.5 base class already provides the 2px left inset, so OFF = 0px.
+                   Correct cascade:
+                     Track: w-10→80px wide, h-5→40px tall (proper pill, 2:1 ratio)
+                     Thumb: w-4→32px, h-4→32px (already covered above)
+                     ON: track 80px - thumb 32px - right gap 2px - base left 2px = translateX(44px)
+                     OFF: translateX(0px) — left-0.5 (2px) handles left inset naturally */
+                .remotion-create-portrait .w-10 { width: 80px !important; }
                 .remotion-create-portrait [role="switch"] {
                   transition: none !important;
                 }
@@ -580,7 +587,7 @@ export const CreateScene: React.FC = () => {
                   transform: translateX(44px) !important;
                 }
                 .remotion-create-portrait [role="switch"][aria-checked="false"] span {
-                  transform: translateX(2px) !important;
+                  transform: translateX(0px) !important;
                 }
               `}</style>
 
