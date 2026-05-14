@@ -11,4 +11,4 @@ export {
 } from './custom-transport'
 
 // WebView detection
-export { isInAppBrowser } from './detect-webview'
+export { isInAppBrowser, isTelegramWebView } from './detect-webview'
