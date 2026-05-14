@@ -61,13 +61,11 @@ const MAGIC_DUST_TOGGLE_FRAME = 200;  // round 9a-patch2 (C3): toggle off→on a
 // -760 still too short (button not in view); -1100 targets button bottom flush with card edge.
 const SCROLL_FRAMES  = [115, 150, 175, 195, 265];
 const SCROLL_OFFSETS = [0, -120, -400, -900, -1100];
-// D36: landscape scroll offsets — form renders at native scale (no ×2 CSS cascade) inside
-// a 720px-tall card. Content is shorter than portrait, so portrait's -1100 endpoint
-// massively overshoots. Proportional reduction: landscape card 720px vs portrait ~669px
-// BUT without 2× text cascade, landscape content is roughly half the length.
-// Calibrated to keep Generate button in view at f265 without pushing form above card top.
+// D41: landscape scroll endpoint recalibrated — form has no ×2 CSS cascade so content
+// is much shorter than portrait. -1160 (atlas-V) massively overshoots; Generate button
+// exits the top of the card before f280. Reduced to -800 to keep button visible at f265.
 const SCROLL_FRAMES_LANDSCAPE  = [115, 150, 175, 195, 265];
-const SCROLL_OFFSETS_LANDSCAPE = [0, -60, -180, -380, -1160];
+const SCROLL_OFFSETS_LANDSCAPE = [0, -60, -180, -380, -800];
 
 const noop = () => {
   /* Remotion renders static frames — click handlers never fire */
@@ -86,22 +84,23 @@ const PaperBackdrop: React.FC<{ frame: number; dimOpacity?: number; blurPx?: num
 }) => {
   const { width, height } = useVideoConfig();
   const containerWidth = columnWidth ?? width;
-  // D36: when in landscape column mode, size by height (viewport-safe) rather than by width.
-  // Available height = viewport minus column top/bottom padding (48px each side).
-  // targetWidth derived from A4 aspect ratio so paper fits without overflow.
+    // D39: canonical landscape paper sizing (Kai-locked formula).
+  // Guarantees top ≥ 48px, bottom ≥ 48px, centered within available area.
   let scale: number;
-  let scaledH: number;
+  let top: number;
   if (columnWidth) {
-    const availableHeight = height - 96; // 48px top + 48px bottom padding
-    const targetHeight = availableHeight * 0.92;
-    scale = targetHeight / INVOICE_BASE_HEIGHT;
-    scaledH = targetHeight;
+    const PAPER_VPAD = 48;
+    const availH = height - PAPER_VPAD * 2;
+    const scaleByH = availH / INVOICE_BASE_HEIGHT;
+    const scaleByW = (columnWidth * 0.85) / INVOICE_BASE_WIDTH;
+    scale = Math.min(scaleByW, scaleByH);
+    top = PAPER_VPAD + (availH - INVOICE_BASE_HEIGHT * scale) / 2;
   } else {
     const targetWidth = containerWidth * 0.92;
     scale = targetWidth / INVOICE_BASE_WIDTH;
-    scaledH = INVOICE_BASE_HEIGHT * scale;
+    const scaledH = INVOICE_BASE_HEIGHT * scale;
+    top = (height - scaledH) / 2;
   }
-  const top = (height - scaledH) / 2;
 
   const enter = interpolate(
     f,
@@ -287,19 +286,8 @@ export const CreateScene: React.FC = () => {
             boxSizing: "border-box",
           }}
         >
-          {/* Void glow overlay behind the form card */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              borderRadius: 32,
-              boxShadow: `0 0 60px rgba(124,58,237,${buttonGlowOpacity * 0.6}), 0 0 120px rgba(124,58,237,${buttonGlowOpacity * 0.3})`,
-              pointerEvents: "none",
-            }}
-          />
-
           <div style={{ width: "100%", maxWidth: PANEL_MAX_WIDTH, position: "relative" }}>
-            {/* Form Card */}
+            {/* Form Card — glow lives here, centered on the card (D40: no column-level glow) */}
             <Card
               style={{
                 width: "100%",
@@ -310,7 +298,7 @@ export const CreateScene: React.FC = () => {
                 zIndex: 2,
                 backgroundColor: "rgba(14,14,19,0.95)",
                 border: "1px solid rgba(63,63,70,0.5)",
-                boxShadow: `0 16px 50px rgba(0,0,0,0.5), 0 0 ${glowSpread}px rgba(124,58,237,${glowIntensity * 0.5})`,
+                boxShadow: `0 16px 50px rgba(0,0,0,0.5), 0 0 ${glowSpread}px rgba(124,58,237,${glowIntensity * 0.5}), 0 0 60px rgba(124,58,237,${buttonGlowOpacity * 0.4}), 0 0 120px rgba(124,58,237,${buttonGlowOpacity * 0.2})`,
                 borderRadius: 12,
               }}
             >
@@ -586,19 +574,23 @@ export const CreateScene: React.FC = () => {
                   transform: rotate(var(--remotion-spin, 0deg)) !important;
                 }
 
-                /* D30: Switch toggle redesign — D26 fix had two bugs:
-                   1. w-10 track width was not cascaded (only w-3..w-6 covered) — track stayed
-                      40px wide, making it a square instead of a pill (the "design problem").
-                   2. OFF state translateX(2px) overrode translate-x-0 incorrectly; the
-                      left-0.5 base class already provides the 2px left inset, so OFF = 0px.
-                   Correct cascade:
-                     Track: w-10→80px wide, h-5→40px tall (proper pill, 2:1 ratio)
-                     Thumb: w-4→32px, h-4→32px (already covered above)
-                     ON: track 80px - thumb 32px - right gap 2px - base left 2px = translateX(44px)
-                     OFF: translateX(0px) — left-0.5 (2px) handles left inset naturally */
+                /* D30/D43: Switch toggle — track pill + thumb position.
+                   Track: w-10→80px wide, h-5→40px tall (proper 2:1 pill)
+                   Thumb: w-4→32px, h-4→32px (covered by icon cascade above)
+                   ON: translateX(44px) = 80 - 32 - 2(right) - 2(left-0.5) = 44
+                   OFF: translateX(0px) — left-0.5 (2px) handles left inset naturally
+                   D43: explicit bg-color on track — Tailwind bg-violet-600/bg-zinc-700
+                   classes may lose to cascade; force directly on aria-checked attribute. */
                 .remotion-create-portrait .w-10 { width: 80px !important; }
                 .remotion-create-portrait [role="switch"] {
                   transition: none !important;
+                  border-radius: 9999px !important;
+                }
+                .remotion-create-portrait [role="switch"][aria-checked="true"] {
+                  background: rgb(124, 58, 237) !important;
+                }
+                .remotion-create-portrait [role="switch"][aria-checked="false"] {
+                  background: rgb(63, 63, 70) !important;
                 }
                 .remotion-create-portrait [role="switch"] span {
                   transition: none !important;

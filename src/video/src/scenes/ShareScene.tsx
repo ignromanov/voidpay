@@ -63,13 +63,13 @@ const PaperBackdrop: React.FC<{
   const { width, height } = useVideoConfig();
   const cw = containerWidth ?? width;
   const ch = containerHeight ?? height;
-  const targetWidth = cw * 0.92;
-  const scale = targetWidth / INVOICE_BASE_WIDTH;
-  const scaledH = INVOICE_BASE_HEIGHT * scale;
-  // D36: clamp top to 16px min — scaledH may exceed ch in landscape (1123*scale > viewport height),
-  // which would produce negative top and cause paper to overflow above screen edge.
-  const topCentered = (ch - scaledH) / 2;
-  const top = Math.max(16, topCentered);
+  // D39: canonical sizing (Kai-locked) — guarantees top/bottom ≥ 48px, true center, no Math.max clamps.
+  const PAPER_VPAD = 48;
+  const availH = ch - PAPER_VPAD * 2;
+  const scaleByH = availH / INVOICE_BASE_HEIGHT;
+  const scaleByW = (cw * 0.85) / INVOICE_BASE_WIDTH;
+  const scale = Math.min(scaleByW, scaleByH);
+  const top = PAPER_VPAD + (availH - INVOICE_BASE_HEIGHT * scale) / 2;
 
   return (
     <div
@@ -314,23 +314,27 @@ export const ShareScene: React.FC = () => {
                 </div>
               </div>
 
-              {/* Tab body — D33: same pre-mount + absolute-when-swapping fix as portrait */}
+              {/* Tab body — D33: same pre-mount + absolute-when-swapping fix as portrait.
+                   D44: fixed minHeight wrapper prevents container reflow on tab swap.
+                   Landscape LinkTab uses same components — minHeight matches portrait calculation. */}
               <div style={{ padding: "0 24px 24px 24px", position: "relative" }}>
-                <div style={{
-                  opacity: linkTabOpacity,
-                  position: showQR ? "absolute" : "relative",
-                  top: showQR ? 0 : undefined,
-                  left: showQR ? 0 : undefined,
-                  right: showQR ? 0 : undefined,
-                  pointerEvents: linkTabOpacity > 0 ? "auto" : "none",
-                }}>
-                  <RemotionLinkTab url={SHARE_URL} copied={copied} />
-                </div>
-                {frame >= COPY_CLICK_FRAME - 1 && (
-                  <div style={{ opacity: qrTabOpacity }}>
-                    <RemotionQRTab url={SHARE_URL} />
+                <div style={{ position: "relative", minHeight: 490 }}>
+                  <div style={{
+                    opacity: linkTabOpacity,
+                    position: showQR ? "absolute" : "relative",
+                    top: showQR ? 0 : undefined,
+                    left: showQR ? 0 : undefined,
+                    right: showQR ? 0 : undefined,
+                    pointerEvents: linkTabOpacity > 0 ? "auto" : "none",
+                  }}>
+                    <RemotionLinkTab url={SHARE_URL} copied={copied} />
                   </div>
-                )}
+                  {frame >= COPY_CLICK_FRAME - 1 && (
+                    <div style={{ opacity: qrTabOpacity }}>
+                      <RemotionQRTab url={SHARE_URL} />
+                    </div>
+                  )}
+                </div>
               </div>
             </Card>
           </div>
@@ -505,26 +509,34 @@ export const ShareScene: React.FC = () => {
         {/* κ-5 RC-6 + F4.4: body cross-fades between Link and QR over 1fr (TAB_CROSSFADE_DURATION).
              D33: both tabs always rendered; wrapper uses position:relative for the visible tab and
              position:absolute for the fading tab — container height never collapses because QR is
-             pre-mounted one frame before swap (COPY_CLICK_FRAME-1) so no empty-box frame exists. */}
+             pre-mounted one frame before swap (COPY_CLICK_FRAME-1) so no empty-box frame exists.
+             D44: fixed minHeight on wrapper = LinkTab natural height so QRTab (shorter) does not
+             shrink the container when Link goes position:absolute at swap frame. */}
         {/* F8 surgical: body side padding = 36px */}
         <div style={{ padding: "0 36px 36px 36px", position: "relative" }}>
-          {/* Link tab — fades out at COPY_CLICK_FRAME; absolute while fading so QR holds height */}
-          <div style={{
-            opacity: linkTabOpacity,
-            position: showQR ? "absolute" : "relative",
-            top: showQR ? 0 : undefined,
-            left: showQR ? 0 : undefined,
-            right: showQR ? 0 : undefined,
-            pointerEvents: linkTabOpacity > 0 ? "auto" : "none",
-          }}>
-            <RemotionLinkTab url={SHARE_URL} copied={copied} />
-          </div>
-          {/* QR tab — pre-mounted 1 frame before swap so no empty-box frame at COPY_CLICK_FRAME */}
-          {frame >= COPY_CLICK_FRAME - 1 && (
-            <div style={{ opacity: qrTabOpacity }}>
-              <RemotionQRTab url={SHARE_URL} />
+          {/* D44: fixed-height inner wrapper — prevents container reflow on tab swap.
+               LinkTab height: Permalink(~132) + CopyBtn(78) + SocialRow(60) + OGToggle(~50)
+               + PrivacyNote(~50) + gaps(30×4=120) ≈ 490px. QRTab ≈ 441px (50px shorter).
+               Setting minHeight=490 ensures container stays constant through the swap. */}
+          <div style={{ position: "relative", minHeight: 490 }}>
+            {/* Link tab — fades out at COPY_CLICK_FRAME; absolute while fading so QR holds height */}
+            <div style={{
+              opacity: linkTabOpacity,
+              position: showQR ? "absolute" : "relative",
+              top: showQR ? 0 : undefined,
+              left: showQR ? 0 : undefined,
+              right: showQR ? 0 : undefined,
+              pointerEvents: linkTabOpacity > 0 ? "auto" : "none",
+            }}>
+              <RemotionLinkTab url={SHARE_URL} copied={copied} />
             </div>
-          )}
+            {/* QR tab — pre-mounted 1 frame before swap so no empty-box frame at COPY_CLICK_FRAME */}
+            {frame >= COPY_CLICK_FRAME - 1 && (
+              <div style={{ opacity: qrTabOpacity }}>
+                <RemotionQRTab url={SHARE_URL} />
+              </div>
+            )}
+          </div>
         </div>
       </Card>
 

@@ -62,6 +62,10 @@ const PHASE_SWITCHING      = 170;
 const PHASE_SENDING        = 240;
 const PHASE_CONFIRMING     = 340;
 const SUCCESS              = 470;
+// D42: WalletPill shows connected only after connecting+switching animations complete.
+// PHASE_SENDING (240) = when "Wallet connected" toast finishes and tx send begins —
+// this is the earliest point the user has seen the full connection confirmed.
+const PHASE_CONNECTED = PHASE_SENDING;
 // Magic Dust window — shifted to align with new sending phase (240-340).
 const MAGIC_DUST_HIGHLIGHT = 240;
 const MAGIC_DUST_PEAK_END  = 390;
@@ -384,14 +388,16 @@ export const PayScene: React.FC = () => {
   // D12: Landscape two-column layout
   if (isLandscape) {
     const colWidth = width / 2;
-    // Paper sized to fit within left column, constrained by both width and height (D36)
-    const paperTargetWidth = colWidth * 0.85;
-    const availableH = height - CHROME_HEIGHT;
-    const paperScaleByWidth = paperTargetWidth / INVOICE_BASE_WIDTH;
-    const paperScaleByHeight = (availableH * 0.92) / INVOICE_BASE_HEIGHT;
-    const paperScale = Math.min(paperScaleByWidth, paperScaleByHeight);
+    // Column containers span full height below chrome bar
+    const colH = height - CHROME_HEIGHT;
+    // D39: canonical paper sizing (Kai-locked formula — matches CreateScene + ShareScene)
+    const PAPER_VPAD = 48;
+    const availH = height - PAPER_VPAD * 2 - CHROME_HEIGHT;
+    const scaleByH = availH / INVOICE_BASE_HEIGHT;
+    const scaleByW = (colWidth * 0.85) / INVOICE_BASE_WIDTH;
+    const paperScale = Math.min(scaleByW, scaleByH);
     const paperScaledH = INVOICE_BASE_HEIGHT * paperScale;
-    const paperTop = (availableH - paperScaledH) / 2 + CHROME_HEIGHT;
+    const paperTop = CHROME_HEIGHT + PAPER_VPAD + (availH - paperScaledH) / 2;
 
     // Magic dust halo in landscape: anchored to paper totals area in left column
     // Totals area ~78% down paper, right edge of paper within left column
@@ -411,7 +417,7 @@ export const PayScene: React.FC = () => {
             left: 0,
             top: CHROME_HEIGHT,
             width: colWidth,
-            height: availableH,
+            height: colH,
           }}
         >
           <div
@@ -462,7 +468,7 @@ export const PayScene: React.FC = () => {
             left: colWidth,
             top: CHROME_HEIGHT,
             width: colWidth,
-            height: availableH,
+            height: colH,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -500,7 +506,7 @@ export const PayScene: React.FC = () => {
         {/* WalletPill — top-right of FULL viewport (not confined to right column) */}
         {frame < SUCCESS && (
           <WalletPill
-            connected={frame >= PHASE_SWITCHING}
+            connected={frame >= PHASE_CONNECTED}
             opacity={walletOpacity}
           />
         )}
@@ -613,7 +619,7 @@ export const PayScene: React.FC = () => {
       {/* C7: WalletPill — disconnected (F9) → connected (F10-F11), exits at success (F12) */}
       {frame < SUCCESS && (
         <WalletPill
-          connected={frame >= PHASE_CONNECTING}
+          connected={frame >= PHASE_CONNECTED}
           opacity={walletOpacity}
         />
       )}
