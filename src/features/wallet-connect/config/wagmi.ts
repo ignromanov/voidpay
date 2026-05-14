@@ -20,13 +20,11 @@
 
 import { createStorage } from 'wagmi'
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
-import type { CreateWalletFn } from '@rainbow-me/rainbowkit/wallets'
 import {
   rainbowWallet,
   metaMaskWallet,
   walletConnectWallet,
   safeWallet,
-  coinbaseWallet,
 } from '@rainbow-me/rainbowkit/wallets'
 import { getSupportedChains, ALL_CHAIN_IDS } from '@/entities/network'
 import { createTransportsForChains, isTelegramWebView } from '@/shared/lib'
@@ -76,13 +74,17 @@ const transports = createTransportsForChains([...ALL_CHAIN_IDS])
  * short-circuits that branch → falls through to the QR modal instead.
  * This is the correct fix for Telegram WebView (GH#214).
  */
-function stripMobile(factory: CreateWalletFn): CreateWalletFn {
-  return (opts) => ({ ...factory(opts), mobile: undefined })
+function stripMobile<T extends (opts: { projectId: string }) => unknown>(factory: T): T {
+  return ((opts: { projectId: string }) => ({ ...(factory(opts) as object), mobile: undefined })) as T
 }
 
 /**
  * Wallet list for Telegram WebView: mobile deep-links stripped so the
  * WalletConnect QR modal is the only connect path (no wc: redirect).
+ *
+ * coinbaseWallet excluded: deprecated in RainbowKit v2.2.11 (replaced by
+ * `base`) and as a deep-link wallet its mobile field is the only meaningful
+ * feature — without it, it becomes a redundant WC entry.
  */
 const TELEGRAM_WALLET_LIST = [
   {
@@ -90,7 +92,6 @@ const TELEGRAM_WALLET_LIST = [
     wallets: [
       stripMobile(rainbowWallet),
       stripMobile(metaMaskWallet),
-      stripMobile(coinbaseWallet),
       stripMobile(safeWallet),
       walletConnectWallet, // already has no mobile
     ],
