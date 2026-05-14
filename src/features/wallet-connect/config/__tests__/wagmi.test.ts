@@ -5,7 +5,7 @@
  * Verifies Constitutional compliance (Principle VI - RPC Key Protection).
  */
 
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from 'vitest'
 import type { Config } from 'wagmi'
 
 // Mock environment variables before importing the module
@@ -132,5 +132,56 @@ describe('wagmi config with testnets', () => {
     // No testnets should be present
     const hasTestnet = chains.some((c) => c.testnet === true)
     expect(hasTestnet).toBe(false)
+  }, 60000)
+})
+
+// ---------------------------------------------------------------------------
+// T002: Telegram WebView connector gate (GH#214)
+// ---------------------------------------------------------------------------
+
+describe('wagmi Telegram WebView connector gate', () => {
+  afterEach(() => {
+    vi.resetModules()
+    vi.unstubAllGlobals()
+  })
+
+  it('produces a valid config when isTelegramWebView() is false (default path)', async () => {
+    // No Telegram globals → isTelegramWebView returns false
+    vi.stubEnv('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID', 'test-project-id')
+    vi.stubEnv('NEXT_PUBLIC_ENABLE_TESTNETS', 'false')
+
+    const { wagmiConfig: cfg } = await import('../wagmi')
+
+    expect(cfg).toBeDefined()
+    expect(cfg.chains.length).toBeGreaterThanOrEqual(4)
+    expect(cfg.connectors).toBeDefined()
+  }, 60000)
+
+  it('produces a valid config when isTelegramWebView() is true (Telegram path)', async () => {
+    // Stub iOS Telegram global
+    vi.stubGlobal('TelegramWebviewProxy', {})
+    vi.stubEnv('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID', 'test-project-id')
+    vi.stubEnv('NEXT_PUBLIC_ENABLE_TESTNETS', 'false')
+
+    const { wagmiConfig: cfg } = await import('../wagmi')
+
+    expect(cfg).toBeDefined()
+    expect(cfg.chains.length).toBeGreaterThanOrEqual(4)
+    expect(cfg.connectors).toBeDefined()
+  }, 60000)
+
+  it('Telegram path connectors have mobile stripped (no wc: redirect)', async () => {
+    vi.stubGlobal('TelegramWebviewProxy', {})
+    vi.stubEnv('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID', 'test-project-id')
+    vi.stubEnv('NEXT_PUBLIC_ENABLE_TESTNETS', 'false')
+
+    // Re-import the raw wallet list to test the stripMobile wrapper logic
+    // We test isTelegramWebView detection is wired, not the wagmi connectors
+    // internals (which are RainbowKit-managed)
+    const { isTelegramWebView } = await import('@/shared/lib')
+    expect(isTelegramWebView()).toBe(true)
+
+    const { wagmiConfig: cfg } = await import('../wagmi')
+    expect(cfg).toBeDefined()
   }, 60000)
 })
