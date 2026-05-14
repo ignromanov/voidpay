@@ -140,13 +140,10 @@ export const ThesisOutroScene: React.FC = () => {
           }}
         >
           <span>
-            <RemotionAuroraText
-              style={{ fontSize: urlFontSize, fontWeight: 700 }}
-              phaseFrames={45}
-            >
+            <span style={{ color: "#a78bfa", fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3 }}>
               voidpay
-            </RemotionAuroraText>
-            <span style={{ color: "rgba(255,255,255,0.6)", fontWeight: 500 }}>.xyz</span>
+            </span>
+            <span style={{ color: "#a78bfa", fontWeight: 700 }}>.xyz</span>
           </span>
           <span style={{ opacity: 0.6 }}>→</span>
         </div>
