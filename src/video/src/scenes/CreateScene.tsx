@@ -61,6 +61,13 @@ const MAGIC_DUST_TOGGLE_FRAME = 200;  // round 9a-patch2 (C3): toggle off→on a
 // -760 still too short (button not in view); -1100 targets button bottom flush with card edge.
 const SCROLL_FRAMES  = [115, 150, 175, 195, 265];
 const SCROLL_OFFSETS = [0, -120, -400, -900, -1100];
+// D36: landscape scroll offsets — form renders at native scale (no ×2 CSS cascade) inside
+// a 720px-tall card. Content is shorter than portrait, so portrait's -1100 endpoint
+// massively overshoots. Proportional reduction: landscape card 720px vs portrait ~669px
+// BUT without 2× text cascade, landscape content is roughly half the length.
+// Calibrated to keep Generate button in view at f265 without pushing form above card top.
+const SCROLL_FRAMES_LANDSCAPE  = [115, 150, 175, 195, 265];
+const SCROLL_OFFSETS_LANDSCAPE = [0, -60, -180, -380, -1160];
 
 const noop = () => {
   /* Remotion renders static frames — click handlers never fire */
@@ -70,6 +77,7 @@ const noop = () => {
 // Renders BEHIND the form Card (z=1 vs form z=default). Grows from PAPER_APPEAR.
 // C5: accepts blur/dim overrides for when CTA/modal is foregrounded.
 // landscape: columnWidth overrides the width used for scaling (left-column half-viewport).
+// D36: landscape paper sizing is height-driven to prevent top/bottom overflow on 16:9.
 const PaperBackdrop: React.FC<{ frame: number; dimOpacity?: number; blurPx?: number; columnWidth?: number }> = ({
   frame: f,
   dimOpacity,
@@ -78,9 +86,21 @@ const PaperBackdrop: React.FC<{ frame: number; dimOpacity?: number; blurPx?: num
 }) => {
   const { width, height } = useVideoConfig();
   const containerWidth = columnWidth ?? width;
-  const targetWidth = containerWidth * (columnWidth ? 0.85 : 0.92);
-  const scale = targetWidth / INVOICE_BASE_WIDTH;
-  const scaledH = INVOICE_BASE_HEIGHT * scale;
+  // D36: when in landscape column mode, size by height (viewport-safe) rather than by width.
+  // Available height = viewport minus column top/bottom padding (48px each side).
+  // targetWidth derived from A4 aspect ratio so paper fits without overflow.
+  let scale: number;
+  let scaledH: number;
+  if (columnWidth) {
+    const availableHeight = height - 96; // 48px top + 48px bottom padding
+    const targetHeight = availableHeight * 0.92;
+    scale = targetHeight / INVOICE_BASE_HEIGHT;
+    scaledH = targetHeight;
+  } else {
+    const targetWidth = containerWidth * 0.92;
+    scale = targetWidth / INVOICE_BASE_WIDTH;
+    scaledH = INVOICE_BASE_HEIGHT * scale;
+  }
   const top = (height - scaledH) / 2;
 
   const enter = interpolate(
@@ -298,8 +318,8 @@ export const CreateScene: React.FC = () => {
                 style={{
                   transform: `translateY(${interpolate(
                     frame,
-                    SCROLL_FRAMES,
-                    SCROLL_OFFSETS,
+                    SCROLL_FRAMES_LANDSCAPE,
+                    SCROLL_OFFSETS_LANDSCAPE,
                     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
                   )}px)`,
                 }}
