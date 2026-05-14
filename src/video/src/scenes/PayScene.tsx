@@ -260,6 +260,12 @@ export const PayScene: React.FC = () => {
       .remotion-pay-panel svg[width="10"], .remotion-pay-panel svg[height="10"] { width: 20px !important; height: 20px !important; }
       .remotion-pay-panel svg[width="12"], .remotion-pay-panel svg[height="12"] { width: 24px !important; height: 24px !important; }
       .remotion-pay-panel svg[width="14"], .remotion-pay-panel svg[height="14"] { width: 28px !important; height: 28px !important; }
+      /* D32: SmartPayButtonView spinner uses Loader2Icon size={18}; scale up to 48px for visibility */
+      .remotion-pay-panel svg[width="18"], .remotion-pay-panel svg[height="18"] { width: 48px !important; height: 48px !important; }
+
+      /* D32: kill animate-breathing text pulse (custom Tailwind animation — flickers at video FPS).
+         Only the spinner should animate; text label stays static. */
+      .remotion-pay-panel .motion-safe\\:animate-breathing { animation: none !important; }
 
       /* Padding scale-up (common form classes) */
       .remotion-pay-panel .p-0\\.5 { padding: 4px !important; }
