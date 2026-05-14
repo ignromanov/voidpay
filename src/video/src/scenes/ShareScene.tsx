@@ -66,8 +66,10 @@ const PaperBackdrop: React.FC<{
   const targetWidth = cw * 0.92;
   const scale = targetWidth / INVOICE_BASE_WIDTH;
   const scaledH = INVOICE_BASE_HEIGHT * scale;
-  // C10: true center — paper at vertical midpoint of container
-  const top = (ch - scaledH) / 2;
+  // D36: clamp top to 16px min — scaledH may exceed ch in landscape (1123*scale > viewport height),
+  // which would produce negative top and cause paper to overflow above screen edge.
+  const topCentered = (ch - scaledH) / 2;
+  const top = Math.max(16, topCentered);
 
   return (
     <div
@@ -150,6 +152,7 @@ export const ShareScene: React.FC = () => {
         <NetworkBackground />
 
         {/* LEFT — paper, vertically centered in left half */}
+        {/* D37: landscape paper must never blur/dim — invoice stays fully readable as persistent context */}
         <div
           style={{
             position: "absolute",
@@ -160,8 +163,8 @@ export const ShareScene: React.FC = () => {
           }}
         >
           <PaperBackdrop
-            dimOpacity={dimOpacity}
-            blurPx={blurPx}
+            dimOpacity={1}
+            blurPx={0}
             containerWidth={colW}
             containerHeight={height}
           />
