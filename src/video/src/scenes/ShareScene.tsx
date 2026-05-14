@@ -311,19 +311,19 @@ export const ShareScene: React.FC = () => {
                 </div>
               </div>
 
-              {/* Tab body */}
+              {/* Tab body — D33: same pre-mount + absolute-when-swapping fix as portrait */}
               <div style={{ padding: "0 24px 24px 24px", position: "relative" }}>
                 <div style={{
                   opacity: linkTabOpacity,
-                  position: linkTabOpacity < 1 ? "absolute" : "relative",
-                  top: linkTabOpacity < 1 ? 0 : undefined,
-                  left: linkTabOpacity < 1 ? 24 : undefined,
-                  right: linkTabOpacity < 1 ? 24 : undefined,
+                  position: showQR ? "absolute" : "relative",
+                  top: showQR ? 0 : undefined,
+                  left: showQR ? 0 : undefined,
+                  right: showQR ? 0 : undefined,
                   pointerEvents: linkTabOpacity > 0 ? "auto" : "none",
                 }}>
                   <RemotionLinkTab url={SHARE_URL} copied={copied} />
                 </div>
-                {frame >= COPY_CLICK_FRAME && (
+                {frame >= COPY_CLICK_FRAME - 1 && (
                   <div style={{ opacity: qrTabOpacity }}>
                     <RemotionQRTab url={SHARE_URL} />
                   </div>
@@ -499,24 +499,25 @@ export const ShareScene: React.FC = () => {
           </div>
         </div>
 
-        {/* κ-5 RC-6 + F4.4: body cross-fades between Link and QR over 8fr.
-             Both tabs rendered simultaneously during transition, with opacity drivers.
-             After cross-fade, only the active tab is visible. */}
+        {/* κ-5 RC-6 + F4.4: body cross-fades between Link and QR over 1fr (TAB_CROSSFADE_DURATION).
+             D33: both tabs always rendered; wrapper uses position:relative for the visible tab and
+             position:absolute for the fading tab — container height never collapses because QR is
+             pre-mounted one frame before swap (COPY_CLICK_FRAME-1) so no empty-box frame exists. */}
         {/* F8 surgical: body side padding = 36px */}
         <div style={{ padding: "0 36px 36px 36px", position: "relative" }}>
-          {/* Link tab — fades out at COPY_CLICK_FRAME */}
+          {/* Link tab — fades out at COPY_CLICK_FRAME; absolute while fading so QR holds height */}
           <div style={{
             opacity: linkTabOpacity,
-            position: linkTabOpacity < 1 ? "absolute" : "relative",
-            top: linkTabOpacity < 1 ? 0 : undefined,
-            left: linkTabOpacity < 1 ? 36 : undefined,
-            right: linkTabOpacity < 1 ? 36 : undefined,
+            position: showQR ? "absolute" : "relative",
+            top: showQR ? 0 : undefined,
+            left: showQR ? 0 : undefined,
+            right: showQR ? 0 : undefined,
             pointerEvents: linkTabOpacity > 0 ? "auto" : "none",
           }}>
             <RemotionLinkTab url={SHARE_URL} copied={copied} />
           </div>
-          {/* QR tab — fades in at COPY_CLICK_FRAME */}
-          {frame >= COPY_CLICK_FRAME && (
+          {/* QR tab — pre-mounted 1 frame before swap so no empty-box frame at COPY_CLICK_FRAME */}
+          {frame >= COPY_CLICK_FRAME - 1 && (
             <div style={{ opacity: qrTabOpacity }}>
               <RemotionQRTab url={SHARE_URL} />
             </div>
