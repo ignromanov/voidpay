@@ -5,10 +5,13 @@
 import type { CaptionEntry } from "./create-captions";
 
 export const SHARE_CAPTIONS_VERTICAL: CaptionEntry[] = [
-  { text: "Invoice ready.",                 startAt: 0,   endAt: 70,  weight: 700, emphasizedWord: "ready",    position: 45, fontSize: 106 },
-  { text: "The link is the invoice.",       startAt: 80,  endAt: 145, weight: 700, emphasizedWord: "link",     position: 45, fontSize: 106 },
-  { text: "Hash never leaves the browser.", startAt: 155, endAt: 225, weight: 500, emphasizedWord: "browser",  position: 44, fontSize: 73 },
-  { text: "Share it anywhere.",             startAt: 235, endAt: 295, weight: 500, emphasizedWord: "anywhere", position: 44, fontSize: 73 },
+  // Path C: positions in lower-third (y=73%) — modal occupies y=320-1300px (~17-68%); caption clears modal
+  // Round-9o: sizes standardized — hero 86 (was 106), sub 60 (was 73)
+  // Round-9p: one register down — hero 86→72, sub 60→50
+  { text: "Invoice ready.",                 startAt: 0,   endAt: 70,  weight: 700, emphasizedWord: "ready",    position: 73, fontSize: 72 },
+  { text: "The link is the invoice.",       startAt: 80,  endAt: 145, weight: 700, emphasizedWord: "link",     position: 73, fontSize: 72 },
+  { text: "Hash never leaves the browser.", startAt: 155, endAt: 225, weight: 500, emphasizedWord: "browser",  position: 73, fontSize: 50 },
+  { text: "Share it anywhere.",             startAt: 235, endAt: 295, weight: 500, emphasizedWord: "anywhere", position: 73, fontSize: 50 },
 ];
 
 export const SHARE_CAPTIONS_LANDSCAPE: CaptionEntry[] = [

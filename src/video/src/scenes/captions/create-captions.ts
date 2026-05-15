@@ -15,10 +15,12 @@ export type CaptionEntry = {
 };
 
 export const CREATE_CAPTIONS_VERTICAL: CaptionEntry[] = [
-  { text: "Raw addresses look unprofessional.", startAt: 0,   endAt: 70,  weight: 500, emphasizedWord: "unprofessional", position: 44, fontSize: 73 },
-  { text: "Fill a form.",                       startAt: 80,  endAt: 150, weight: 700, emphasizedWord: "form",           position: 45, fontSize: 106 },
-  { text: "Get a link.",                        startAt: 160, endAt: 230, weight: 700, emphasizedWord: "link",           position: 45, fontSize: 106 },
-  { text: "No account. No KYC.",                startAt: 310, endAt: 370, weight: 700, emphasizedWord: "KYC",            position: 45, fontSize: 106 },
+  // Round-9o: sizes standardized — hero 86 (was 106), sub 60 (was 73). Positions kept (S1 captions overlay form during fill — pill backdrop + zIndex handle contrast)
+  // Round-9p: one register down — hero 86→72, sub 60→50
+  { text: "Raw addresses look unprofessional.", startAt: 0,   endAt: 70,  weight: 500, emphasizedWord: "unprofessional", position: 45, fontSize: 50 },
+  { text: "Fill a form.",                       startAt: 80,  endAt: 150, weight: 700, emphasizedWord: "form",           position: 45, fontSize: 72 },
+  { text: "Get a link.",                        startAt: 160, endAt: 230, weight: 700, emphasizedWord: "link",           position: 45, fontSize: 72 },
+  { text: "No account. No KYC.",                startAt: 310, endAt: 370, weight: 700, emphasizedWord: "KYC",            position: 45, fontSize: 72 },
 ];
 
 export const CREATE_CAPTIONS_LANDSCAPE: CaptionEntry[] = [

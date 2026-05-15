@@ -24,6 +24,7 @@ import { FONT_SANS } from "../fonts";
 import { RemotionLinkTab } from "../components/RemotionLinkTab";
 import { RemotionQRTab } from "../components/RemotionQRTab";
 import { Caption } from "../components/Caption";
+import { HintBadge } from "../components/HintBadge";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
 import { useAspect } from "../hooks/useAspect";
 import { SHARE_CAPTIONS_VERTICAL, SHARE_CAPTIONS_LANDSCAPE } from "./captions/share-captions";
@@ -39,15 +40,17 @@ const HASH_PAYLOAD =
   "AxgC4DmAhgBYAuADgE4CuN4IgbghgTg9gRgFwAYEsA2UBOB7AjgKYCOAxgC4DmAhgBYA" +
   "uADgE4CuAxgC4DmAhgBYAuADgE4CuAxgC4DmAhgBYAuADgE4Cu";
 const SHARE_URL = `https://voidpay.xyz/pay?og=VP-0001_250_USDC_arb_${DEMO_FROM_ADDRESS}#${HASH_PAYLOAD}`;
-// Frame at which the narrative "Copy" click fires — Link tab dominant 0-208 (~6.9s share dominance),
-// QR tab demonstrative 200-300 (~3.3s). Ignat 2026-05-11: share is the primary action, QR is the alternative.
-const COPY_CLICK_FRAME = 200;
+// Round-9o: tab swap delayed to S2-local 230 — coincides with end of "Hash never leaves" caption (225)
+// and start of "Share it anywhere." caption (235), so QR appears with its companion text.
+const COPY_FRAME = 100;
+const TAB_SWAP_FRAME = 230;
 
 // Round 9c L2: InvoicePaper backdrop props — hoisted for prop-identity stability (P1.2).
 const PAPER_PROPS = {
   data: DEMO_INVOICE,
   status: "pending",
   variant: "default",
+  magicDustEmphasis: true,
 } as const;
 
 
@@ -112,34 +115,31 @@ export const ShareScene: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
-  // κ-5 RC-6: tab body and indicator must swap at the same frame (COPY_CLICK_FRAME).
-  // "copied" fires 10fr BEFORE the tab swap so viewer sees "Copied!" on the Link
-  // tab briefly, then the whole tab (indicator + body) flips to QR Code together.
-  const showQR = frame >= COPY_CLICK_FRAME;
-  const copied = frame >= COPY_CLICK_FRAME - 10;
+  // Round 9m stagger: copy fires at COPY_FRAME (100), tab swap at TAB_SWAP_FRAME (130).
+  // Viewer sees "Copied!" on Link tab for 30fr, then tab indicator + body swap to QR.
+  const showQR = frame >= TAB_SWAP_FRAME;
+  const copied = frame >= COPY_FRAME;
 
-  // F4.4: 8fr cross-fade opacity drivers for tab body transition.
-  // Link tab fades out [COPY_CLICK_FRAME, COPY_CLICK_FRAME+8].
-  // QR tab fades in [COPY_CLICK_FRAME, COPY_CLICK_FRAME+8].
+  // F4.4: 1fr cross-fade opacity drivers for tab body transition at TAB_SWAP_FRAME.
   const linkTabOpacity = interpolate(
     frame,
-    [COPY_CLICK_FRAME, COPY_CLICK_FRAME + TAB_CROSSFADE_DURATION],
+    [TAB_SWAP_FRAME, TAB_SWAP_FRAME + TAB_CROSSFADE_DURATION],
     [1, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
   const qrTabOpacity = interpolate(
     frame,
-    [COPY_CLICK_FRAME, COPY_CLICK_FRAME + TAB_CROSSFADE_DURATION],
+    [TAB_SWAP_FRAME, TAB_SWAP_FRAME + TAB_CROSSFADE_DURATION],
     [0, 1],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
   // Shared animation values used in both portrait and landscape
-  const dimOpacity = interpolate(frame, [0, 15, COPY_CLICK_FRAME], [0.35, 0.35, 0.3], {
+  const dimOpacity = interpolate(frame, [0, 15, TAB_SWAP_FRAME], [0.35, 0.35, 0.3], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const blurPx = interpolate(frame, [0, 15, COPY_CLICK_FRAME], [1.5, 1.5, 2.0], {
+  const blurPx = interpolate(frame, [0, 15, TAB_SWAP_FRAME], [1.5, 1.5, 2.0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -318,7 +318,7 @@ export const ShareScene: React.FC = () => {
                   }}>
                     <RemotionLinkTab url={SHARE_URL} copied={copied} />
                   </div>
-                  {frame >= COPY_CLICK_FRAME - 1 && (
+                  {frame >= TAB_SWAP_FRAME - 1 && (
                     <div style={{ opacity: qrTabOpacity }}>
                       <RemotionQRTab url={SHARE_URL} />
                     </div>
@@ -366,9 +366,8 @@ export const ShareScene: React.FC = () => {
         opacity: modalOpacity,
       }} />
 
-      {/* Share modal shell — γ4: true-center positioning, β3: solid background */}
-      {/* ζ3: top shifted 50%→48% — paper mass occupies upper frame, modal visual center is slightly
-           below mathematical center; 48% places it in the visual center of the dark space below paper */}
+      {/* Share modal shell — Round 9m: top=320px, height=980px so caption at y=1410 has room below.
+           Modal max-bottom = 320+980 = 1300 < 1410 caption position. */}
       {/* Mocks v2 surgical: width = 84% of stage, side padding = 36px (12px × 3) */}
       <Card
         // β3: solid background for readability over invoice paper backdrop
@@ -376,10 +375,11 @@ export const ShareScene: React.FC = () => {
         style={{
           position: "absolute",
           left: "50%",
-          top: "48%",
+          top: 320,
           width: modalWidth,
+          height: 980,
           padding: 0,
-          transform: `translate(-50%, -50%) translateY(${modalTranslateY}px)`,
+          transform: `translateX(-50%) translateY(${modalTranslateY}px)`,
           opacity: modalOpacity,
           overflow: "hidden",
           backgroundColor: "rgba(24, 24, 27, 0.96)",
@@ -524,8 +524,8 @@ export const ShareScene: React.FC = () => {
             }}>
               <RemotionLinkTab url={SHARE_URL} copied={copied} />
             </div>
-            {/* QR tab — pre-mounted 1 frame before swap so no empty-box frame at COPY_CLICK_FRAME */}
-            {frame >= COPY_CLICK_FRAME - 1 && (
+            {/* QR tab — pre-mounted 1 frame before swap so no empty-box frame at TAB_SWAP_FRAME */}
+            {frame >= TAB_SWAP_FRAME - 1 && (
               <div style={{ opacity: qrTabOpacity }}>
                 <RemotionQRTab url={SHARE_URL} />
               </div>
@@ -533,6 +533,21 @@ export const ShareScene: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      {/* η5: "invoice data →" hint over violet hash payload area.
+           Modal top=320, header≈240, summary≈130 → permalink section starts ~top 690.
+           HintBadge floats above the permalink box. */}
+      <HintBadge
+        text="invoice data →"
+        startAt={80}
+        endAt={160}
+        fontSize={28}
+        style={{
+          top: 670,
+          left: "50%",
+          transform: "translateX(-50%)",
+        }}
+      />
 
       {/* S2 captions — round-9l kinetic typography */}
       {captions.map((c) => (

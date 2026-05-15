@@ -36,6 +36,7 @@ const PAPER_PROPS_PENDING = {
   data: DEMO_INVOICE,
   status: "pending",
   variant: "default",
+  magicDustEmphasis: true,
 } as const;
 
 const PAPER_PROPS_PAID = {
@@ -43,6 +44,7 @@ const PAPER_PROPS_PAID = {
   status: "paid",
   txHash: DEMO_TX_HASH,
   variant: "default",
+  magicDustEmphasis: true,
 } as const;
 
 // Phase timing — round-9m reshuffle (S3-local frames):
@@ -522,27 +524,14 @@ export const PayScene: React.FC = () => {
         <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={310} hold={140} stackOffset={0} anchor="below-panel" />
         <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={440} hold={120} stackOffset={0} anchor="below-panel" />
 
-        {/* Inline caption ε3 — "Open link. Pay." at S3-local 15→80 (landscape y=80%) */}
-        <Caption
-          text="Open link. Pay."
-          startAt={15}
-          endAt={80}
-          fontSize={86}
-          position={80}
-          weight={700}
-          emphasizedWord="Pay."
-          springConfig="smooth"
-          variant="violet"
-        />
-
-        {/* η4 hint — Magic Dust unique micro-amount annotation (landscape) */}
+        {/* η4 hint — Magic Dust unique micro-amount annotation (landscape, round-9o: bottom 10%) */}
         <HintBadge
           text="unique micro-amount ← payment ID"
           startAt={230}
           endAt={310}
-          style={{ bottom: "28%", left: "25%", transform: "translateX(-50%)" }}
+          style={{ bottom: "10%", left: "25%", transform: "translateX(-50%)" }}
           variant="arrow"
-          fontSize={32}
+          fontSize={22}
         />
 
         {/* Captions from caption-data (landscape) */}
@@ -662,27 +651,14 @@ export const PayScene: React.FC = () => {
       <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={310} hold={140} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={440} hold={120} stackOffset={0} anchor="below-panel" />
 
-      {/* Inline caption ε3 — "Open link. Pay." at S3-local 15→80 (portrait y=920px) */}
-      <Caption
-        text="Open link. Pay."
-        startAt={15}
-        endAt={80}
-        fontSize={86}
-        position={920}
-        weight={700}
-        emphasizedWord="Pay."
-        springConfig="smooth"
-        variant="violet"
-      />
-
-      {/* η4 hint — Magic Dust unique micro-amount annotation */}
+      {/* η4 hint — Magic Dust unique micro-amount annotation (round-9o: bottom 10%) */}
       <HintBadge
         text="unique micro-amount ← payment ID"
         startAt={230}
         endAt={310}
-        style={{ bottom: "32%", left: "50%", transform: "translateX(-50%)" }}
+        style={{ bottom: "10%", left: "50%", transform: "translateX(-50%)" }}
         variant="arrow"
-        fontSize={36}
+        fontSize={28}
       />
 
       {/* Captions from caption-data (portrait) */}

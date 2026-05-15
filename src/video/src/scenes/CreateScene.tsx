@@ -45,7 +45,7 @@ const FILL_COMPLETE     = 195;  // last field landed (was BUTTON_VISIBLE in roun
 const PAPER_APPEAR      = 200;  // round 9a: post-fill — InvoicePaper fade-in starts here
 const PAPER_VISIBLE_AT  = 230;  // fade-in done (30fr ramp)
 const BUTTON_VISIBLE    = 280;  // round 9a: button reveals AFTER paper hold
-const PRESS_START       = 290;
+const PRESS_START       = 240;
 const PRESS_END         = 307;
 // round 9a-patch2 (C4): isGenerating={frame >= PRESS_END} holds 307–350 (43fr), crossfade 340–350.
 const MAGIC_DUST_TOGGLE_FRAME = 200;  // round 9a-patch2 (C3): toggle off→on after TOKEN_APPEAR=179
@@ -133,7 +133,7 @@ const PaperBackdrop: React.FC<{ frame: number; dimOpacity?: number; blurPx?: num
         zIndex: 1,
       }}
     >
-      <InvoicePaper data={DEMO_INVOICE} status="draft" variant="default" />
+      <InvoicePaper data={DEMO_INVOICE} status="draft" variant="default" magicDustEmphasis={true} />
     </div>
   );
 };
@@ -155,7 +155,9 @@ export const CreateScene: React.FC = () => {
   const isLandscape = width > height;
 
   const { isVertical } = useAspect();
-  const captions = isVertical ? CREATE_CAPTIONS_VERTICAL : CREATE_CAPTIONS_LANDSCAPE;
+  // round-9m F2: drop ghost "Fill a form." watermark that renders behind form and adds noise
+  const rawCaptions = isVertical ? CREATE_CAPTIONS_VERTICAL : CREATE_CAPTIONS_LANDSCAPE;
+  const captions = rawCaptions.filter((c) => c.text !== "Fill a form.");
 
   // Frame-driven snapshot for the real InvoiceFormView.
   const viewValue = useMemo(() => {
@@ -381,9 +383,9 @@ export const CreateScene: React.FC = () => {
               style={{ top: "21.6%", right: "6.7%", zIndex: 10 }}
             />
             <HintBadge
-              text="Your wallet. No KYC. No bank."
-              startAt={115}
-              endAt={175}
+              text="auto-generated"
+              startAt={65}
+              endAt={115}
               variant="arrow"
               fontSize={22}
               style={{ top: "27.3%", left: "3.9%", zIndex: 10 }}
@@ -702,17 +704,17 @@ export const CreateScene: React.FC = () => {
         startAt={65}
         endAt={95}
         variant="arrow"
-        fontSize={34}
+        fontSize={28}
         style={{ top: "21.6%", right: "6.7%", zIndex: 10 }}
       />
 
-      {/* η6 (F3): Mocks v2 anchor top:27.3% left:3.9% — "Your wallet. No KYC. No bank." */}
+      {/* η7 (round-9m): "auto-generated" hint at S1-local 65 */}
       <HintBadge
-        text="Your wallet. No KYC. No bank."
-        startAt={115}
-        endAt={175}
+        text="auto-generated"
+        startAt={65}
+        endAt={115}
         variant="arrow"
-        fontSize={34}
+        fontSize={28}
         style={{ top: "27.3%", left: "3.9%", zIndex: 10 }}
       />
 
@@ -722,7 +724,7 @@ export const CreateScene: React.FC = () => {
         startAt={220}
         endAt={280}
         variant="arrow"
-        fontSize={34}
+        fontSize={28}
         style={{ top: "51.6%", right: "6.7%", zIndex: 10 }}
       />
 
@@ -741,6 +743,20 @@ export const CreateScene: React.FC = () => {
           springConfig={c.springConfig ?? "smooth"}
         />
       ))}
+      {/* ε1 "No signup." — round-9m inline (missing from captions data; fires at PRESS_START=240) */}
+      {isVertical && (
+        <Caption
+          text="No signup."
+          startAt={240}
+          endAt={310}
+          weight={700}
+          emphasizedWord="signup."
+          position={49}
+          fontSize={86}
+          variant="violet"
+          springConfig="smooth"
+        />
+      )}
 
     </AbsoluteFill>
   );

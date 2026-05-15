@@ -2,25 +2,27 @@ import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } fr
 import { NetworkBackground } from "@/widgets/network-background";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { FONT_SANS, FONT_MONO } from "../fonts";
-import { COLORS } from "../constants/colors";
 import { RemotionAuroraText } from "../components/RemotionAuroraText";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
+import { Caption } from "../components/Caption";
+import { useAspect } from "../hooks/useAspect";
+import { getOutroCaption } from "./captions/thesis-captions";
 
 /**
  * Scene 4 — Thesis Outro (3.5s, 105 frames @ 30fps).
  *
- * Mocks v2 F13 hero import (import point #9):
- *   pre-line: "No accounts · no DB · no servers" (mono)
- *   h1: white "The invoice" + aurora "is the URL." — matches landing Hero
- *   sub: "Encoded into the link itself.\nOpen. Pay. Done."
- *   voidpay.xyz wordmark — centered in flex-column block (no margin-top:auto)
- *
- * Per Ignat: "поместить надписи по центру" — drop the bottom-pinned voidpay.xyz.
- * All four elements form one centered flex-column block.
+ * Round-9m fixes:
+ * - Hero stack pushed +120px via paddingTop: 360px (mirror S0).
+ * - Sub-text trimmed to 1 line.
+ * - URL pill "voidpay" uses RemotionAuroraText with phaseFrames=45 offset
+ *   so it doesn't animate in lockstep with the hero aurora — creates depth.
+ * - Caption position overridden to 71% (≈1360/1920), compact fontSize=74.
  */
 export const ThesisOutroScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width } = useVideoConfig();
+  const { isVertical } = useAspect();
+  const outroCap = getOutroCaption(isVertical);
 
   // ε3: delay thesis entrance by 12fr to let S3→S4 crossfade complete first
   const TEXT_DELAY = 12;
@@ -43,11 +45,14 @@ export const ThesisOutroScene: React.FC = () => {
 
   // Mock 360px base → 1080px × 3 scaling
   const isPortrait = width < 1200;
-  // .pre: 8px → 24px; .h1: 26px → 78px; .sub: 11px → 33px; .voidpay: ~16px → 48px
   const preFontSize  = isPortrait ? 24 : 20;
   const heroFontSize = isPortrait ? 78 : 66;
   const subFontSize  = isPortrait ? 33 : 28;
   const urlFontSize  = isPortrait ? 42 : 36;
+
+  // Round-9o: caption canonical sub size 60 (was 74); position 69 lower-third (mirror S0)
+  const captionPosition = isVertical ? 69 : outroCap.position;
+  const captionFontSize = isVertical ? 50 : outroCap.fontSize;
 
   return (
     <AbsoluteFill
@@ -59,7 +64,7 @@ export const ThesisOutroScene: React.FC = () => {
       <NetworkBackgroundLayer variant="strong" />
       <NetworkBackground />
 
-      {/* Centered flex-column block — all 4 elements as one unit */}
+      {/* Round-9o: hero stack vertically centered (was paddingTop 360 push) — mirrors S0 revert */}
       <AbsoluteFill
         style={{
           display: "flex",
@@ -104,7 +109,7 @@ export const ThesisOutroScene: React.FC = () => {
           <RemotionAuroraText>is&nbsp;the&nbsp;URL.</RemotionAuroraText>
         </div>
 
-        {/* Sub: "Encoded into the link itself.\nOpen. Pay. Done." */}
+        {/* Sub-text trimmed to 1 line per round-9m F13 fix */}
         <div
           style={{
             fontFamily: `${FONT_SANS}, sans-serif`,
@@ -117,11 +122,9 @@ export const ThesisOutroScene: React.FC = () => {
           }}
         >
           Encoded into the link itself.
-          <br />
-          Open. Pay. Done.
         </div>
 
-        {/* voidpay.xyz wordmark — centered in block (no margin-top:auto) */}
+        {/* voidpay.xyz wordmark — "voidpay" uses aurora with phase offset for depth */}
         <div
           style={{
             transform: `translateY(${(1 - urlEnter) * 20}px)`,
@@ -131,8 +134,7 @@ export const ThesisOutroScene: React.FC = () => {
             padding: "14px 28px",
             fontFamily: `${FONT_SANS}, sans-serif`,
             fontSize: urlFontSize,
-            fontWeight: 500,
-            color: COLORS.textCaption,
+            fontWeight: 700,
             display: "inline-flex",
             alignItems: "center",
             gap: 16,
@@ -140,14 +142,30 @@ export const ThesisOutroScene: React.FC = () => {
           }}
         >
           <span>
-            <span style={{ color: "#a78bfa", fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3 }}>
+            <RemotionAuroraText
+              phaseFrames={45}
+              style={{ fontSize: urlFontSize, fontWeight: 700 }}
+            >
               voidpay
-            </span>
+            </RemotionAuroraText>
             <span style={{ color: "#a78bfa", fontWeight: 700 }}>.xyz</span>
           </span>
-          <span style={{ opacity: 0.6 }}>→</span>
+          <span style={{ opacity: 0.6, color: "#a1a1aa" }}>→</span>
         </div>
       </AbsoluteFill>
+
+      {/* Closing caption — "Works even if we shut down." per round-9l spec §3/§4 S4 */}
+      {/* position/fontSize overridden to round-9m spec: 71% / compact 74px */}
+      <Caption
+        text={outroCap.text}
+        startAt={outroCap.startAt}
+        endAt={outroCap.endAt}
+        weight={outroCap.weight}
+        emphasizedWord={outroCap.emphasizedWord}
+        position={captionPosition}
+        fontSize={captionFontSize}
+        variant={outroCap.variant}
+      />
     </AbsoluteFill>
   );
 };

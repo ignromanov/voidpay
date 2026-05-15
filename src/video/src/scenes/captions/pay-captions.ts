@@ -3,13 +3,16 @@ import type { CaptionEntry } from "./create-captions";
 // 9:16: 7 captions. Magic Dust hero @ S-local 220-340 (global 900-1020), springConfig overshoot, position center 50%.
 // Emerald boundary: starts at S-local 425. Violet for all prior.
 export const PAY_CAPTIONS_VERTICAL: CaptionEntry[] = [
-  { text: "Payer opens the link.",          startAt: 0,   endAt: 70,  weight: 500, emphasizedWord: "opens",        position: 44, fontSize: 73,  variant: "violet" },
-  { text: "No intermediary.",              startAt: 80,  endAt: 155, weight: 700, emphasizedWord: "intermediary", position: 45, fontSize: 106, variant: "violet" },
-  { text: "Wallet to wallet.",             startAt: 165, endAt: 215, weight: 700, emphasizedWord: "wallet",       position: 45, fontSize: 106, variant: "violet" },
-  { text: "Unique amount. Unique payment.", startAt: 220, endAt: 340, weight: 700, emphasizedWord: "Unique",       position: 50, fontSize: 106, variant: "violet", springConfig: "overshoot" },
-  { text: "Exact match on-chain.",         startAt: 350, endAt: 420, weight: 500, emphasizedWord: "match",        position: 44, fontSize: 73,  variant: "violet" },
-  { text: "Not our servers.",              startAt: 425, endAt: 490, weight: 700, emphasizedWord: "servers",      position: 45, fontSize: 106, variant: "emerald" },
-  { text: "Payment confirmed.",            startAt: 495, endAt: 555, weight: 700, emphasizedWord: "confirmed",    position: 45, fontSize: 106, variant: "emerald" },
+  // Round-9o: all S3 captions moved to lower-third (y=75%) — were 44-50% which overlapped payment panel
+  // Sizes standardized: hero 86 (was 106), sub 60 (was 73)
+  // Round-9p: one register down — hero 86→72, sub 60→50
+  { text: "Payer opens the link.",          startAt: 0,   endAt: 70,  weight: 500, emphasizedWord: "opens",        position: 75, fontSize: 50, variant: "violet" },
+  { text: "No intermediary.",              startAt: 80,  endAt: 155, weight: 700, emphasizedWord: "intermediary", position: 75, fontSize: 72, variant: "violet" },
+  { text: "Wallet to wallet.",             startAt: 165, endAt: 215, weight: 700, emphasizedWord: "wallet",       position: 75, fontSize: 72, variant: "violet" },
+  { text: "Unique amount. Unique payment.", startAt: 220, endAt: 340, weight: 700, emphasizedWord: "Unique",       position: 75, fontSize: 72, variant: "violet", springConfig: "overshoot" },
+  { text: "Exact match on-chain.",         startAt: 350, endAt: 420, weight: 500, emphasizedWord: "match",        position: 75, fontSize: 50, variant: "violet" },
+  { text: "Not our servers.",              startAt: 425, endAt: 490, weight: 700, emphasizedWord: "servers",      position: 75, fontSize: 72, variant: "emerald" },
+  { text: "Payment confirmed.",            startAt: 495, endAt: 555, weight: 700, emphasizedWord: "confirmed",    position: 75, fontSize: 72, variant: "emerald" },
 ];
 
 // 16:9: 6 captions. Hero @ same S-local 220-340 (overshoot, center).
