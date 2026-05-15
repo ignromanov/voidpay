@@ -191,7 +191,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
         </div>
 
         {/* Payment Panel — floating bottom overlay */}
-        {/* On Telegram WebView the fixed guard panel (~80px) sits at bottom-0; bump bottom to avoid overlap */}
+        {/* 6rem offset clears the InAppBrowserGuard panel (~80px, fixed z-40) in Telegram WebView */}
         <div className={`absolute left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5 print:hidden ${isTg ? 'bottom-[max(6rem,calc(env(safe-area-inset-bottom,0px)+5.5rem))]' : 'bottom-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))]'}`}>
           <CreatorHintBanner isCreator={source === 'created'} />
           <AnimatePresence mode="wait">
