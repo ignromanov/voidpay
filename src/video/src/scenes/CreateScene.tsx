@@ -19,6 +19,8 @@ import { DEMO_INVOICE, DEMO_FROM_ADDRESS } from "../constants/demo-invoice";
 import { Caption } from "../components/Caption";
 import { HintBadge } from "../components/HintBadge";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
+import { useAspect } from "../hooks/useAspect";
+import { CREATE_CAPTIONS_VERTICAL, CREATE_CAPTIONS_LANDSCAPE } from "./captions/create-captions";
 
 // Creative brief §2: Alex · UI Design · $250 USDC · Arbitrum
 const INVOICE_FROM = "Alex";
@@ -151,6 +153,9 @@ export const CreateScene: React.FC = () => {
   const isPortrait = width < 1200;
   // D12-D14: landscape two-column layout (16:9 = 1920×1080, width > height).
   const isLandscape = width > height;
+
+  const { isVertical } = useAspect();
+  const captions = isVertical ? CREATE_CAPTIONS_VERTICAL : CREATE_CAPTIONS_LANDSCAPE;
 
   // Frame-driven snapshot for the real InvoiceFormView.
   const viewValue = useMemo(() => {
@@ -394,14 +399,21 @@ export const CreateScene: React.FC = () => {
           </div>
         </div>
 
-        {/* Caption at AbsoluteFill level — spans full viewport */}
-        <Caption
-          text="No signup."
-          position="top"
-          startAt={280}
-          endAt={340}
-          fontSize={38}
-        />
+        {/* S1 captions — round-9l spec §4 (16:9 landscape) */}
+        {captions.map((c, i) => (
+          <Caption
+            key={i}
+            text={c.text}
+            startAt={c.startAt}
+            endAt={c.endAt}
+            weight={c.weight}
+            emphasizedWord={c.emphasizedWord}
+            position={c.position}
+            fontSize={c.fontSize}
+            variant={c.variant ?? "violet"}
+            springConfig={c.springConfig ?? "smooth"}
+          />
+        ))}
       </AbsoluteFill>
     );
   }
@@ -714,16 +726,21 @@ export const CreateScene: React.FC = () => {
         style={{ top: "51.6%", right: "6.7%", zIndex: 10 }}
       />
 
-      {/* η1: "No signup." caption — local 280–340, button reveal moment (Spark Beat 11).
-           θ7 cross-impact: moved bottom→top. Bottom zone now reserved for toasts.
-           Top zone is clear at f280 (η7 exited at 95, η6 exited at 175, η2 is a hint not caption). */}
-      <Caption
-        text="No signup."
-        position="top"
-        startAt={280}
-        endAt={340}
-        fontSize={38}
-      />
+      {/* S1 captions — round-9l spec §3 (9:16 portrait) */}
+      {captions.map((c, i) => (
+        <Caption
+          key={i}
+          text={c.text}
+          startAt={c.startAt}
+          endAt={c.endAt}
+          weight={c.weight}
+          emphasizedWord={c.emphasizedWord}
+          position={c.position}
+          fontSize={c.fontSize}
+          variant={c.variant ?? "violet"}
+          springConfig={c.springConfig ?? "smooth"}
+        />
+      ))}
 
     </AbsoluteFill>
   );
