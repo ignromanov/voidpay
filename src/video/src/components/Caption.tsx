@@ -1,54 +1,145 @@
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONT_SANS } from "../fonts";
 import { SPRING_CONFIGS } from "../constants/timing";
+import {
+  computeEntry,
+  computeExit,
+  computeWordPopColorOpacity,
+  computeWordPopScale,
+  resolveYPercent,
+  type CaptionSpringConfig,
+  type CaptionWeight,
+} from "./Caption.helpers";
 
 type CaptionVariant = "violet" | "emerald";
-type CaptionPosition = "top" | "bottom";
+type CaptionPosition = "top" | "bottom" | "center" | number;
 
 type CaptionProps = {
   text: string;
   /** Frame (local to parent Sequence) when caption starts fading in */
   startAt?: number;
-  /** Fade-in duration in frames */
+  /** Fade-in duration in frames (legacy pill path only) */
   fadeDuration?: number;
   /** Frame when caption starts fading out (undefined = stays visible) */
   endAt?: number;
-  /** Fade-out duration in frames */
+  /** Fade-out duration in frames (legacy pill path only) */
   fadeOutDuration?: number;
   fontSize?: number;
   /**
-   * "bottom" (legacy): bottom: 13%, maxWidth: 80%.
-   * "top" (v2): top: 38px×3=114px anchored, maxWidth: 50%.
+   * "bottom" | "top" — legacy pill positions (backward compat).
+   * "center" — 50% of viewport height (kinetic path).
+   * number — explicit 0-100% of viewport height (kinetic path).
    */
   position?: CaptionPosition;
   /**
-   * "violet" (default): violet border/text/shadow — matches mock .caption.
-   * "emerald": emerald border/text/shadow — success state (F12 "Not our servers.").
+   * "violet" (default): violet border/text/shadow.
+   * "emerald": emerald border/text/shadow — success state.
    */
   variant?: CaptionVariant;
+  /** Font weight: 700 = statement (spring entry), 500 = supporting (bezier entry). Default 500. */
+  weight?: CaptionWeight;
+  /** Single word from `text` to highlight with word-pop animation. Case-sensitive. */
+  emphasizedWord?: string;
+  /** Entry spring config: "smooth" (default) or "overshoot" (Magic Dust hero). */
+  springConfig?: CaptionSpringConfig;
 };
 
-/**
- * Caption — Mocks v2 import (import point #8).
- *
- * Renders a pill chip anchored top:114px (38px mock × 3) centered horizontally.
- * Matches mock .caption spec: rgba(20,20,27,0.85) bg, backdrop-filter blur(8px),
- * violet-400 border + text + glow. Emerald variant for success state.
- */
-export const Caption: React.FC<CaptionProps> = ({
-  text,
-  startAt = 0,
-  fadeDuration = 12,
-  endAt,
-  fadeOutDuration = 8,
-  fontSize = 39,
-  position = "bottom",
-  variant = "violet",
-}) => {
-  const frame = useCurrentFrame();
-  const { fps, width } = useVideoConfig();
+/** Returns true when any new-API prop is active, routing to kinetic text mode. */
+function isKineticMode(props: CaptionProps): boolean {
+  return (
+    props.weight !== undefined ||
+    props.emphasizedWord !== undefined ||
+    props.springConfig !== undefined ||
+    props.position === "center" ||
+    typeof props.position === "number"
+  );
+}
 
-  // Spring-based fade-in: smooth entry with translateY
+/**
+ * Caption — dual-mode caption component.
+ *
+ * Legacy mode (backward compat): pill chip with dark bg, border glow, dot.
+ * Kinetic mode (new API): white text at yPercent position with word-pop support.
+ * Kinetic activates when weight / emphasizedWord / springConfig is set,
+ * or position is "center" or a number (0-100% of viewport height).
+ */
+export const Caption: React.FC<CaptionProps> = (props) => {
+  const {
+    text,
+    startAt = 0,
+    fadeDuration = 12,
+    endAt,
+    fadeOutDuration = 8,
+    fontSize = 39,
+    position = "bottom",
+    variant = "violet",
+    weight = 500,
+    emphasizedWord,
+    springConfig = "smooth",
+  } = props;
+
+  const frame = useCurrentFrame();
+  const { fps, width, height } = useVideoConfig();
+
+  if (isKineticMode(props)) {
+    return (
+      <KineticCaption
+        text={text}
+        startAt={startAt}
+        endAt={endAt ?? startAt + 60}
+        fontSize={fontSize}
+        position={position as "top" | "bottom" | "center" | number}
+        variant={variant}
+        weight={weight}
+        emphasizedWord={emphasizedWord}
+        springConfig={springConfig}
+        frame={frame}
+        fps={fps}
+        width={width}
+        height={height}
+      />
+    );
+  }
+
+  return (
+    <LegacyPillCaption
+      text={text}
+      startAt={startAt}
+      fadeDuration={fadeDuration}
+      endAt={endAt}
+      fadeOutDuration={fadeOutDuration}
+      fontSize={fontSize}
+      position={position as "top" | "bottom"}
+      variant={variant}
+      frame={frame}
+      fps={fps}
+      width={width}
+    />
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Legacy pill caption (existing callers — no changes to visual output)
+// ---------------------------------------------------------------------------
+
+type LegacyPillProps = {
+  text: string;
+  startAt: number;
+  fadeDuration: number;
+  endAt: number | undefined;
+  fadeOutDuration: number;
+  fontSize: number;
+  position: "top" | "bottom";
+  variant: CaptionVariant;
+  frame: number;
+  fps: number;
+  width: number;
+};
+
+function LegacyPillCaption({
+  text, startAt, fadeDuration, endAt, fadeOutDuration,
+  fontSize, position, variant, frame, fps, width,
+}: LegacyPillProps) {
   const enterSpring = spring({
     frame: frame - startAt,
     fps,
@@ -57,55 +148,27 @@ export const Caption: React.FC<CaptionProps> = ({
   });
 
   const fadeInOpacity = interpolate(enterSpring, [0, 1], [0, 1]);
-
-  // Linear fade-out
   const fadeOutOpacity = endAt !== undefined
-    ? interpolate(
-        frame,
-        [endAt, endAt + fadeOutDuration],
-        [1, 0],
-        { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-      )
+    ? interpolate(frame, [endAt, endAt + fadeOutDuration], [1, 0], {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+      })
     : 1;
 
   const opacity = fadeInOpacity * fadeOutOpacity;
-
-  // Entry translate: top slides down from -10, bottom slides up from +10
   const slideFrom = position === "top" ? -10 : 10;
   const translateY = interpolate(enterSpring, [0, 1], [slideFrom, 0]);
 
-  // Mocks v2 .caption: top:38px (mock) × 3 = 114px at 1920 height.
-  // bottom: legacy 13% preserved.
   const containerStyle: React.CSSProperties = position === "top"
-    ? {
-        position: "absolute",
-        top: 114,           // 38px × 3 — anchored top per mock
-        left: 0,
-        width,
-        display: "flex",
-        justifyContent: "center",
-      }
-    : {
-        position: "absolute",
-        bottom: "13%",
-        left: 0,
-        width,
-        display: "flex",
-        justifyContent: "center",
-      };
+    ? { position: "absolute", top: 114, left: 0, width, display: "flex", justifyContent: "center" }
+    : { position: "absolute", bottom: "13%", left: 0, width, display: "flex", justifyContent: "center" };
 
   const maxWidth = position === "top" ? "50%" : "80%";
-
-  // Mocks v2 variant colors
   const isEmerald = variant === "emerald";
-  const borderColor = isEmerald
-    ? "rgba(52,211,153,0.80)"      // emerald
-    : "rgba(167,139,250,0.75)";   // violet-400/75 — raised from 0.45
+  const borderColor = isEmerald ? "rgba(52,211,153,0.80)" : "rgba(167,139,250,0.75)";
   const textColor = isEmerald ? "#34d399" : "#a78bfa";
   const dotColor = isEmerald ? "#34d399" : "#a78bfa";
-  const glowColor = isEmerald
-    ? "rgba(52,211,153,0.45)"
-    : "rgba(167,139,250,0.45)";   // raised from 0.25
+  const glowColor = isEmerald ? "rgba(52,211,153,0.45)" : "rgba(167,139,250,0.45)";
 
   return (
     <div style={{ ...containerStyle, opacity, transform: `translateY(${translateY}px)` }}>
@@ -115,41 +178,125 @@ export const Caption: React.FC<CaptionProps> = ({
           alignItems: "center",
           gap: 18,
           maxWidth,
-          // Mocks v2 .caption: rgba(20,20,27,0.85) bg + backdrop-filter blur(8px)
           background: "rgba(20,20,27,0.88)",
           backdropFilter: "blur(8px)",
           border: `1.5px solid ${borderColor}`,
           borderRadius: 999,
-          // 9px 18px × 3 = 27px 54px
           padding: "27px 54px",
           boxShadow: `0 0 32px ${glowColor}, 0 0 8px ${glowColor}`,
         }}
       >
-        {/* Leading dot — HintBadge accent signature */}
-        <span
-          style={{
-            width: 12,
-            height: 12,
-            borderRadius: "50%",
-            background: dotColor,
-            flexShrink: 0,
-            boxShadow: `0 0 6px ${dotColor}`,
-          }}
-        />
-        <span
-          style={{
-            fontFamily: `${FONT_SANS}, sans-serif`,
-            fontSize,
-            fontWeight: 700,
-            color: textColor,
-            letterSpacing: "-0.01em",
-            textAlign: "center",
-            whiteSpace: "nowrap",
-          }}
-        >
+        <span style={{ width: 12, height: 12, borderRadius: "50%", background: dotColor, flexShrink: 0, boxShadow: `0 0 6px ${dotColor}` }} />
+        <span style={{ fontFamily: `${FONT_SANS}, sans-serif`, fontSize, fontWeight: 700, color: textColor, letterSpacing: "-0.01em", textAlign: "center", whiteSpace: "nowrap" }}>
           {text}
         </span>
       </div>
     </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Kinetic caption (new API — white text, word-pop, position by %)
+// ---------------------------------------------------------------------------
+
+type KineticCaptionProps = {
+  text: string;
+  startAt: number;
+  endAt: number;
+  fontSize: number;
+  position: "top" | "bottom" | "center" | number;
+  variant: CaptionVariant;
+  weight: CaptionWeight;
+  emphasizedWord: string | undefined;
+  springConfig: CaptionSpringConfig;
+  frame: number;
+  fps: number;
+  width: number;
+  height: number;
 };
+
+function KineticCaption({
+  text, startAt, endAt, fontSize, position, variant,
+  weight, emphasizedWord, springConfig,
+  frame, fps, width, height,
+}: KineticCaptionProps) {
+  const entryValue = computeEntry(frame, fps, startAt, weight, springConfig);
+  const exitOpacity = computeExit(frame, endAt);
+
+  const opacity = interpolate(entryValue, [0, 1], [0, 1]) * exitOpacity;
+  const translateY = interpolate(entryValue, [0, 1], [12, 0]);
+
+  const yPercent = resolveYPercent(position);
+  const topPx = `${yPercent}%`;
+
+  const isEmerald = variant === "emerald";
+  const baseColor = isEmerald ? "#34d399" : "#ffffff";
+  const fontWeight = weight;
+  const letterSpacing = weight === 700 ? "-0.02em" : "-0.01em";
+
+  const renderText = () => {
+    if (!emphasizedWord || !text.includes(emphasizedWord)) {
+      return <span style={{ color: baseColor }}>{text}</span>;
+    }
+
+    const idx = text.indexOf(emphasizedWord);
+    const before = text.slice(0, idx);
+    const after = text.slice(idx + emphasizedWord.length);
+
+    const scale = computeWordPopScale(frame, startAt, endAt, weight);
+    const colorOpacity = computeWordPopColorOpacity(frame, startAt, endAt);
+    // Blend white → violet using colorOpacity
+    const r = Math.round(255 + (0xa7 - 255) * colorOpacity);
+    const g = Math.round(255 + (0x8b - 255) * colorOpacity);
+    const b = Math.round(255 + (0xfa - 255) * colorOpacity);
+    const wordColor = isEmerald ? "#34d399" : `rgb(${r},${g},${b})`;
+
+    return (
+      <>
+        {before && <span style={{ color: baseColor }}>{before}</span>}
+        <span
+          style={{
+            color: wordColor,
+            display: "inline-block",
+            transform: `scale(${scale})`,
+            transformOrigin: "center bottom",
+          }}
+        >
+          {emphasizedWord}
+        </span>
+        {after && <span style={{ color: baseColor }}>{after}</span>}
+      </>
+    );
+  };
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: topPx,
+        left: 0,
+        width,
+        display: "flex",
+        justifyContent: "center",
+        transform: `translateY(calc(-50% + ${translateY}px))`,
+        opacity,
+      }}
+    >
+      <span
+        style={{
+          fontFamily: `${FONT_SANS}, sans-serif`,
+          fontSize,
+          fontWeight,
+          letterSpacing,
+          lineHeight: 1.2,
+          textAlign: "center",
+          // Subtle text shadow for legibility on dark video bg
+          textShadow: `0 2px 16px rgba(0,0,0,0.7)`,
+          color: baseColor,
+        }}
+      >
+        {renderText()}
+      </span>
+    </div>
+  );
+}
