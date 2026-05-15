@@ -52,7 +52,7 @@ function HostileIABBottomPanel({ onDismiss }: HostileIABBottomPanelProps) {
   }
 
   return (
-    <div className="fixed bottom-[calc(2.75rem+env(safe-area-inset-bottom,0px))] inset-x-0 z-40 border-t border-amber-500/30 bg-zinc-900/95 px-4 py-3 backdrop-blur-sm">
+    <div className="fixed bottom-[calc(2.75rem+env(safe-area-inset-bottom,0px))] inset-x-0 z-50 border-t border-b border-amber-500/30 bg-zinc-900/95 px-4 py-3 backdrop-blur-sm">
       <div className="mx-auto max-w-2xl">
         <div className="flex items-start gap-3">
           <AlertTriangleIcon aria-hidden="true" className="h-4 w-4 shrink-0 translate-y-0.5 text-amber-400" />

@@ -188,9 +188,10 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
           </ScaledInvoicePreview>
         </div>
 
-        {/* Payment Panel — floating bottom overlay */}
-        {/* 9rem offset clears the repositioned InAppBrowserGuard panel (z-40, sits at 2.75rem+safe-area above Footer) in Telegram WebView */}
-        <div className={`absolute left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5 print:hidden ${isHostile ? 'bottom-[max(9rem,calc(env(safe-area-inset-bottom,0px)+8.75rem))]' : 'bottom-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))]'}`}>
+        {/* Payment Panel — floating bottom overlay (position is constant; the
+            InAppBrowserGuard warning sits ABOVE it at higher z-index and is
+            dismissible, so no positional shift in hostile-IAB path) */}
+        <div className="absolute left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 bottom-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))] md:bottom-5 print:hidden">
           <CreatorHintBanner isCreator={source === 'created'} />
           <AnimatePresence mode="wait">
             {isMinimized ? (
