@@ -19,6 +19,7 @@ import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { RemotionFakeToast } from "../components/RemotionFakeToast";
 import { Caption } from "../components/Caption";
+import { HintBadge } from "../components/HintBadge";
 import { PAY_CAPTIONS_VERTICAL, PAY_CAPTIONS_LANDSCAPE } from "./captions/pay-captions";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
 import { BrowserChrome } from "../components/BrowserChrome";
@@ -44,35 +45,28 @@ const PAPER_PROPS_PAID = {
   variant: "default",
 } as const;
 
-// Phase timing — κ-3 reshuffle (S3-local frames):
-//   0–90    idle:disconnected   ("Connect Wallet" — only press needed)
-//           Extended from 50→90 so B1 beat is visible even through the 20fr crossfade entry
-//  85–94    press-scale on Connect (THE only press in this scene)
-//  90–170   connecting  (spinner "Connecting…", progress 25%)
-// 170–240   switching   (spinner "Switching…", progress 45%)
-// 240–340   sending     (spinner "Sending…", progress 70%)
-// 340–470   confirming  (CTA hidden, reorg progress visible, progress 90%; paper still PENDING)
-// 470–575   success     (paid watermark, progress 100%)
+// Phase timing — round-9m reshuffle (S3-local frames):
+//   0–200   idle:disconnected   ("Connect Wallet" visible)
+// 195–204   press-scale on Connect (THE only press in this scene)
+// 200–220   idle:connected      (wallet connected, network switch toast)
+// 220–310   sending             (Magic Dust peak window)
+// 310–440   confirming          (progress bar visible, paper still PENDING)
+// 440–575   success             (paper flips PAID)
 //
-// Single-press model per Ignat (round 9a-patch2 C7): user clicks Connect ONCE; then
-// continuous progress. No return to idle:wrong-network or idle:ready between transitions.
-const PRESS_CONNECT        = 85;
-const PHASE_CONNECTING     = 90;
-const PHASE_SWITCHING      = 170;
-const PHASE_SENDING        = 240;
-const PHASE_CONFIRMING     = 340;
-const SUCCESS              = 470;
-// D42: WalletPill shows connected only after connecting+switching animations complete.
-// PHASE_SENDING (240) = when "Wallet connected" toast finishes and tx send begins —
-// this is the earliest point the user has seen the full connection confirmed.
-const PHASE_CONNECTED = PHASE_SENDING;
-// Magic Dust window — shifted to align with new sending phase (240-340).
-const MAGIC_DUST_HIGHLIGHT = 240;
-const MAGIC_DUST_PEAK_END  = 390;
+// Single-press model: user clicks Connect ONCE, then continuous progress.
+const PRESS_CONNECT        = 195;
+const PHASE_IDLE_CONNECTED = 200;
+const PHASE_SENDING        = 220;
+const PHASE_CONFIRMING     = 310;
+const SUCCESS              = 440;
+// WalletPill shows connected once idle:connected phase begins (200).
+const PHASE_CONNECTED = PHASE_IDLE_CONNECTED;
+// Magic Dust window — aligned with sending phase (220-310).
+const MAGIC_DUST_HIGHLIGHT = 220;
+const MAGIC_DUST_PEAK_END  = 310;
 const CONFIRMATIONS_REQUIRED = 12;
 
-// F2.A4: panel exits at 505-525 (shifted 20fr earlier), giving 50fr paper-alone window (1.67s).
-// κ-3 original: 525-545 → 30fr. New: 505-525 → paper-alone 525-575 = 50fr.
+// Panel exits at 505-525, giving paper-alone window (505-575).
 const PANEL_EXIT_START = 505;
 const PANEL_EXIT_END   = 525;
 
@@ -80,8 +74,7 @@ const stepAt = (frame: number): { step: PaymentStep; idleSubState: IdleSubState 
   if (frame >= SUCCESS) return { step: 'success', idleSubState: 'ready' };
   if (frame >= PHASE_CONFIRMING) return { step: 'confirming', idleSubState: 'ready' };
   if (frame >= PHASE_SENDING) return { step: 'sending', idleSubState: 'ready' };
-  if (frame >= PHASE_SWITCHING) return { step: 'switching', idleSubState: 'wrong-network' };
-  if (frame >= PHASE_CONNECTING) return { step: 'connecting', idleSubState: 'disconnected' };
+  if (frame >= PHASE_IDLE_CONNECTED) return { step: 'idle', idleSubState: 'ready' };
   return { step: 'idle', idleSubState: 'disconnected' };
 };
 
@@ -175,11 +168,19 @@ export const PayScene: React.FC = () => {
     [],
   );
 
-  // Violet pulse overlay over the totals band
+  // Violet halo over totals area — brief spec: [200,220,310,330]
   const magicDustPulseOpacity = interpolate(
     frame,
-    [MAGIC_DUST_HIGHLIGHT - 10, MAGIC_DUST_HIGHLIGHT + 10, MAGIC_DUST_PEAK_END - 10, MAGIC_DUST_PEAK_END + 10],
+    [MAGIC_DUST_HIGHLIGHT, MAGIC_DUST_HIGHLIGHT + 20, MAGIC_DUST_PEAK_END, MAGIC_DUST_PEAK_END + 20],
     [0, 0.55, 0.55, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
+  // UI dim during Magic Dust peak — subordinates chrome+panel to caption+halo
+  const uiDimOpacity = interpolate(
+    frame,
+    [200, 212, 308, 320],
+    [1.0, 0.4, 0.4, 1.0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
@@ -460,64 +461,91 @@ export const PayScene: React.FC = () => {
           </>
         )}
 
-        {/* RIGHT column — PaymentPanel, maxWidth 640, centered */}
-        {panelCascadeStyle}
-        <div
-          style={{
-            position: "absolute",
-            left: colWidth,
-            top: CHROME_HEIGHT,
-            width: colWidth,
-            height: colH,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "48px 24px",
-            boxSizing: "border-box",
-          }}
-        >
+        {/* UI dim wrap during Magic Dust peak — right column panel + chrome dim together */}
+        <div style={{ position: "absolute", inset: 0, opacity: uiDimOpacity, pointerEvents: "none" }}>
+          {/* RIGHT column — PaymentPanel, maxWidth 640, centered */}
+          {panelCascadeStyle}
           <div
-            className="remotion-pay-panel"
             style={{
-              width: "100%",
-              maxWidth: PANEL_MAX_WIDTH,
-              fontSize: "inherit",
-              transform: `scale(${cardScale}) translateY(${panelExit}px)`,
-              transformOrigin: "center center",
-              opacity: cardScale * (1 - panelExitOpacity),
-              borderRadius: 30,
-              backgroundColor: "transparent",
-              border: "none",
-              boxShadow: "none",
-              overflow: "hidden",
-              padding: 0,
+              position: "absolute",
+              left: colWidth,
+              top: CHROME_HEIGHT,
+              width: colWidth,
+              height: colH,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "48px 24px",
+              boxSizing: "border-box",
             }}
           >
-            <div style={{ padding: "36px 36px 30px" }}>
-              {paymentPanelContent}
+            <div
+              className="remotion-pay-panel"
+              style={{
+                width: "100%",
+                maxWidth: PANEL_MAX_WIDTH,
+                fontSize: "inherit",
+                transform: `scale(${cardScale}) translateY(${panelExit}px)`,
+                transformOrigin: "center center",
+                opacity: cardScale * (1 - panelExitOpacity),
+                borderRadius: 30,
+                backgroundColor: "transparent",
+                border: "none",
+                boxShadow: "none",
+                overflow: "hidden",
+                padding: 0,
+                pointerEvents: "auto",
+              }}
+            >
+              <div style={{ padding: "36px 36px 30px" }}>
+                {paymentPanelContent}
+              </div>
             </div>
           </div>
+          {panelBorderStrip}
+
+          {/* BrowserChrome — full-width top overlay over BOTH columns */}
+          <BrowserChrome opacity={chromeOpacity} />
+
+          {/* WalletPill — top-right of FULL viewport (not confined to right column) */}
+          {frame < SUCCESS && (
+            <WalletPill
+              connected={frame >= PHASE_CONNECTED}
+              opacity={walletOpacity}
+            />
+          )}
         </div>
-        {panelBorderStrip}
-
-        {/* BrowserChrome — full-width top overlay over BOTH columns */}
-        <BrowserChrome opacity={chromeOpacity} />
-
-        {/* WalletPill — top-right of FULL viewport (not confined to right column) */}
-        {frame < SUCCESS && (
-          <WalletPill
-            connected={frame >= PHASE_CONNECTED}
-            opacity={walletOpacity}
-          />
-        )}
 
         {/* Narrative toasts */}
-        <RemotionFakeToast variant="success" title="Wallet connected" startAt={170} hold={60} stackOffset={0} anchor="below-panel" />
-        <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={240} hold={60} stackOffset={0} anchor="below-panel" />
-        <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={340} hold={140} stackOffset={0} anchor="below-panel" />
-        <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={470} hold={120} stackOffset={0} anchor="below-panel" />
+        <RemotionFakeToast variant="success" title="Wallet connected" startAt={200} hold={40} stackOffset={0} anchor="below-panel" />
+        <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={210} hold={40} stackOffset={0} anchor="below-panel" />
+        <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={310} hold={140} stackOffset={0} anchor="below-panel" />
+        <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={440} hold={120} stackOffset={0} anchor="below-panel" />
 
-        {/* Captions */}
+        {/* Inline caption ε3 — "Open link. Pay." at S3-local 15→80 (landscape y=80%) */}
+        <Caption
+          text="Open link. Pay."
+          startAt={15}
+          endAt={80}
+          fontSize={86}
+          position={80}
+          weight={700}
+          emphasizedWord="Pay."
+          springConfig="smooth"
+          variant="violet"
+        />
+
+        {/* η4 hint — Magic Dust unique micro-amount annotation (landscape) */}
+        <HintBadge
+          text="unique micro-amount ← payment ID"
+          startAt={230}
+          endAt={310}
+          style={{ bottom: "28%", left: "25%", transform: "translateX(-50%)" }}
+          variant="arrow"
+          fontSize={32}
+        />
+
+        {/* Captions from caption-data (landscape) */}
         {PAY_CAPTIONS_LANDSCAPE.map((c) => (
           <Caption
             key={c.startAt}
@@ -581,60 +609,83 @@ export const PayScene: React.FC = () => {
         </>
       )}
 
-      {/* β1+β2: Payment panel as floating center modal.
-           Mocks v2 surgical: width = 84% of stage, side padding = 36px (12px × 3).
-           F10 text sizes via fontSize: "24px" em-cascade into PaymentPanel internals.
-           F2.D1: CreateYourOwnCta suppressed — voice-gate violation (self-referential in video). */}
-      {panelCascadeStyle}
-      <div
-        className="remotion-pay-panel"
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "50%",
-          width: panelWidth,
-          fontSize: "inherit",
-          // θ6: panel at full scale matching production size
-          transform: `translate(-50%, -50%) scale(${cardScale}) translateY(${panelExit}px)`,
-          transformOrigin: "center center",
-          opacity: cardScale * (1 - panelExitOpacity),
-          borderRadius: 30,
-          backgroundColor: "transparent",
-          border: "none",
-          boxShadow: "none",
-          // overflow:hidden clips PaymentPanel's own border/shadow flush to our rounded corners
-          overflow: "hidden",
-          // No padding here — padding is on the inner wrapper so PaymentPanel is flush
-          // and overflow:hidden clips any conditional border from isPaid state
-          padding: 0,
-        }}
-      >
-        {/* Inner padding wrapper — keeps content inset while PaymentPanel border is clipped by outer overflow:hidden */}
-        <div style={{ padding: "36px 36px 30px" }}>
-          {paymentPanelContent}
+      {/* UI dim wrap during Magic Dust peak — panel + chrome dim together */}
+      <div style={{ position: "absolute", inset: 0, opacity: uiDimOpacity, pointerEvents: "none" }}>
+        {/* β1+β2: Payment panel as floating center modal.
+             Mocks v2 surgical: width = 84% of stage, side padding = 36px (12px × 3).
+             F2.D1: CreateYourOwnCta suppressed — voice-gate violation (self-referential in video). */}
+        {panelCascadeStyle}
+        <div
+          className="remotion-pay-panel"
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            width: panelWidth,
+            fontSize: "inherit",
+            // θ6: panel at full scale matching production size
+            transform: `translate(-50%, -50%) scale(${cardScale}) translateY(${panelExit}px)`,
+            transformOrigin: "center center",
+            opacity: cardScale * (1 - panelExitOpacity),
+            borderRadius: 30,
+            backgroundColor: "transparent",
+            border: "none",
+            boxShadow: "none",
+            overflow: "hidden",
+            padding: 0,
+            pointerEvents: "auto",
+          }}
+        >
+          {/* Inner padding wrapper */}
+          <div style={{ padding: "36px 36px 30px" }}>
+            {paymentPanelContent}
+          </div>
         </div>
+        {/* Border/shadow strip placed AFTER panel in DOM so this <style> wins the cascade over Tailwind */}
+        {panelBorderStrip}
+
+        {/* C6: BrowserChrome — mock .chrome spec, full S3 duration (F9-F12) */}
+        <BrowserChrome opacity={chromeOpacity} />
+
+        {/* C7: WalletPill — disconnected (F9) → connected (F10-F11), exits at success (F12) */}
+        {frame < SUCCESS && (
+          <WalletPill
+            connected={frame >= PHASE_CONNECTED}
+            opacity={walletOpacity}
+          />
+        )}
       </div>
-      {/* Border/shadow strip placed AFTER panel in DOM so this <style> wins the cascade over Tailwind */}
-      {panelBorderStrip}
-
-      {/* C6: BrowserChrome — mock .chrome spec, full S3 duration (F9-F12) */}
-      <BrowserChrome opacity={chromeOpacity} />
-
-      {/* C7: WalletPill — disconnected (F9) → connected (F10-F11), exits at success (F12) */}
-      {frame < SUCCESS && (
-        <WalletPill
-          connected={frame >= PHASE_CONNECTED}
-          opacity={walletOpacity}
-        />
-      )}
 
       {/* Narrative toasts — anchored below panel right edge */}
-      <RemotionFakeToast variant="success" title="Wallet connected" startAt={170} hold={60} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={240} hold={60} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={340} hold={140} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={470} hold={120} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Wallet connected" startAt={200} hold={40} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={210} hold={40} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={310} hold={140} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={440} hold={120} stackOffset={0} anchor="below-panel" />
 
-      {/* Captions */}
+      {/* Inline caption ε3 — "Open link. Pay." at S3-local 15→80 (portrait y=920px) */}
+      <Caption
+        text="Open link. Pay."
+        startAt={15}
+        endAt={80}
+        fontSize={86}
+        position={920}
+        weight={700}
+        emphasizedWord="Pay."
+        springConfig="smooth"
+        variant="violet"
+      />
+
+      {/* η4 hint — Magic Dust unique micro-amount annotation */}
+      <HintBadge
+        text="unique micro-amount ← payment ID"
+        startAt={230}
+        endAt={310}
+        style={{ bottom: "32%", left: "50%", transform: "translateX(-50%)" }}
+        variant="arrow"
+        fontSize={36}
+      />
+
+      {/* Captions from caption-data (portrait) */}
       {PAY_CAPTIONS_VERTICAL.map((c) => (
         <Caption
           key={c.startAt}
