@@ -1,21 +1,25 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { AlertTriangleIcon, ExternalLinkIcon } from '@/shared/ui/icons'
 import { isInAppBrowser, isTelegramWebView } from '@/shared/lib'
-import { track, AnalyticsEvent } from '@/features/analytics/lib/track'
 import { toast } from '@/shared/lib/toast'
 import { Button } from '@/shared/ui/button'
 
 /**
  * Shows a contextual in-app browser warning:
  *
- * - Telegram WebView: blocking interstitial with "Copy link" + "Show QR Code"
- *   (non-dismissible — wallet connect dead-ends in Telegram, GH#214)
+ * - Telegram WebView: passive bottom panel with "Copy link" CTA
+ *   (non-blocking — invoice is fully visible, GH#214 D+B UX pivot)
  * - Other in-app browsers (Instagram, FB, X…): dismissible banner
  * - Regular browsers: null
  */
-export function InAppBrowserGuard() {
+
+interface InAppBrowserGuardProps {
+  onShowQRClick?: (() => void) | undefined
+}
+
+export function InAppBrowserGuard({ onShowQRClick }: InAppBrowserGuardProps) {
   const [mode, setMode] = useState<'telegram' | 'banner' | 'none'>('none')
 
   useEffect(() => {
@@ -26,29 +30,21 @@ export function InAppBrowserGuard() {
     }
   }, [])
 
-  if (mode === 'telegram') return <TelegramInterstitial onProceed={() => setMode('none')} />
+  if (mode === 'telegram') return <TelegramBottomPanel onShowQRClick={onShowQRClick} />
   if (mode === 'banner') return <InAppBrowserBanner />
   return null
 }
 
 // ---------------------------------------------------------------------------
-// Telegram blocking interstitial
+// Telegram passive bottom panel
 // ---------------------------------------------------------------------------
 
-interface TelegramInterstitialProps {
-  onProceed: () => void
+interface TelegramBottomPanelProps {
+  onShowQRClick?: (() => void) | undefined
 }
 
-function TelegramInterstitial({ onProceed }: TelegramInterstitialProps) {
+function TelegramBottomPanel({ onShowQRClick }: TelegramBottomPanelProps) {
   const [clipboardFailed, setClipboardFailed] = useState(false)
-  const firedRef = useRef(false)
-
-  // Fire once per mount — guard against StrictMode double-invoke
-  useEffect(() => {
-    if (firedRef.current) return
-    firedRef.current = true
-    track(AnalyticsEvent.MOBILE_TG_WEBVIEW_BLOCKED)
-  }, [])
 
   async function handleCopyLink() {
     try {
@@ -61,53 +57,40 @@ function TelegramInterstitial({ onProceed }: TelegramInterstitialProps) {
   }
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="tg-interstitial-title"
-      aria-describedby="tg-interstitial-desc"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95 p-4"
-    >
-      <div className="w-full max-w-sm rounded-2xl border border-amber-500/30 bg-zinc-900 p-6 shadow-xl">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500/10">
-            <AlertTriangleIcon className="h-5 w-5 text-amber-400" />
-          </div>
-          <h2 id="tg-interstitial-title" className="text-base font-semibold text-white">
-            Wallet connection unavailable
-          </h2>
+    <div className="fixed bottom-0 inset-x-0 z-40 border-t border-amber-500/30 bg-zinc-900/95 px-4 py-3 backdrop-blur-sm">
+      <div className="mx-auto max-w-2xl">
+        <div className="flex items-center gap-3">
+          <AlertTriangleIcon className="h-4 w-4 shrink-0 text-amber-400" />
+          <p className="min-w-0 flex-1 text-sm text-zinc-300">
+            Wallet connect doesn&apos;t work in Telegram — open in Safari/Chrome to pay
+          </p>
         </div>
 
-        <p id="tg-interstitial-desc" className="mb-5 text-sm text-zinc-400">
-          Telegram&apos;s built-in browser blocks wallet connections. Open this
-          link in Safari or Chrome to pay.
-        </p>
-
-        <div className="flex flex-col gap-3">
+        <div className="mt-2.5 flex flex-wrap gap-2">
           <Button
             variant="outline"
-            size="lg"
-            className="w-full"
+            size="sm"
+            className="gap-1.5"
             onClick={handleCopyLink}
           >
-            <ExternalLinkIcon className="h-4 w-4" />
+            <ExternalLinkIcon className="h-3.5 w-3.5" />
             Copy link
           </Button>
 
-          <button
-            type="button"
-            onClick={onProceed}
-            className="min-h-[44px] rounded-lg px-4 py-2 text-sm text-zinc-400 transition-colors hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-500"
-          >
-            Show QR Code instead
-          </button>
+          {onShowQRClick && (
+            <button
+              type="button"
+              onClick={onShowQRClick}
+              className="min-h-[36px] rounded-lg px-3 py-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-500"
+            >
+              Show QR Code
+            </button>
+          )}
         </div>
 
         {clipboardFailed && (
-          <div className="mt-4">
-            <p className="mb-1.5 text-xs text-zinc-500">
-              Tap &amp; hold to copy:
-            </p>
+          <div className="mt-3">
+            <p className="mb-1.5 text-xs text-zinc-500">Tap &amp; hold to copy:</p>
             <input
               readOnly
               aria-label="Invoice link"
