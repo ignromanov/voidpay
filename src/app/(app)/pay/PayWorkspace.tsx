@@ -21,6 +21,7 @@ import type { PayInvoiceState } from './use-pay-invoice'
 import { StatusBadge, MinimizedPill } from '@/widgets/payment-panel'
 import { CreatorHintBanner } from './CreatorHintBanner'
 import { InAppBrowserGuard } from '@/widgets/in-app-browser-guard'
+import { useIsTelegramWebView } from '@/widgets/in-app-browser-guard/lib/use-is-telegram-webview'
 
 /**
  * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.
@@ -33,6 +34,18 @@ const PayButton = dynamic(
     loading: () => (
       <Button variant="void" size="lg" className="h-14 w-full" disabled>
         Smart Pay
+      </Button>
+    ),
+  },
+)
+
+const TelegramPayButton = dynamic(
+  () => import('./TelegramPayButton').then((m) => ({ default: m.TelegramPayButton })),
+  {
+    ssr: false,
+    loading: () => (
+      <Button variant="void" size="lg" className="h-14 w-full" disabled>
+        Open in browser to pay
       </Button>
     ),
   },
@@ -117,6 +130,9 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
   const [isMinimized, setIsMinimized] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [devPaymentStep, setDevPaymentStep] = useState<DevPaymentVisualStep | null>(null)
+  const [tgModalOpen, setTgModalOpen] = useState(false)
+
+  const isTg = useIsTelegramWebView()
 
   const handlePaymentSuccess = useCallback(() => { setPaymentError(null) }, [])
   const handlePaymentError = useCallback((error: PaymentError) => { setPaymentError(error.message) }, [])
@@ -152,7 +168,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
       )}
 
       <div className="relative z-10 h-full w-full" data-network={networkId}>
-        <InAppBrowserGuard />
+        <InAppBrowserGuard onShowQRClick={() => setTgModalOpen(true)} />
         <StatusBadge status={panelStatus} isSyncing={isSyncing} />
 
         {/* Invoice Preview — centered in safe zone */}
@@ -225,6 +241,12 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                           This invoice opens for payment on {new Date(invoice.issuedAt * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </p>
                       </div>
+                    ) : isTg ? (
+                      <TelegramPayButton
+                        open={tgModalOpen}
+                        onOpen={() => setTgModalOpen(true)}
+                        onClose={() => setTgModalOpen(false)}
+                      />
                     ) : (
                       <PayButton
                         invoice={invoice}
