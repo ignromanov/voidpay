@@ -55,11 +55,81 @@ export const DemoPropsSchema = z.object({});
 
 const DEFAULT_PROPS: z.infer<typeof DemoPropsSchema> = {};
 
+// AC2: silent video — no <Audio> components in this composition tree.
+
 export const RemotionRoot: React.FC = () => {
   return (
     <>
       <Folder name="VoidPayDemo">
-        {/* Primary: 9:16 portrait, 45s @ 30fps. Round 9c: phone-first GTM. */}
+        {/* Round 9l: 3 hook variants × 2 aspect ratios = 6 named compositions.
+            Old IDs (VoidPayDemo-9x16, VoidPayDemo-16x9) kept as v1 aliases for
+            backward-compat with existing build scripts and render commands. */}
+
+        {/* 9:16 portrait variants */}
+        <Composition
+          id="VoidPayDemo-9x16-v1"
+          component={VoidPayDemo}
+          durationInFrames={TOTAL_DURATION}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={DemoPropsSchema}
+          defaultProps={{ ...DEFAULT_PROPS, hookVariant: "v1" as const }}
+        />
+        <Composition
+          id="VoidPayDemo-9x16-v2"
+          component={VoidPayDemo}
+          durationInFrames={TOTAL_DURATION}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={DemoPropsSchema}
+          defaultProps={{ ...DEFAULT_PROPS, hookVariant: "v2" as const }}
+        />
+        <Composition
+          id="VoidPayDemo-9x16-v3"
+          component={VoidPayDemo}
+          durationInFrames={TOTAL_DURATION}
+          fps={30}
+          width={1080}
+          height={1920}
+          schema={DemoPropsSchema}
+          defaultProps={{ ...DEFAULT_PROPS, hookVariant: "v3" as const }}
+        />
+
+        {/* 16:9 landscape variants */}
+        <Composition
+          id="VoidPayDemo-16x9-v1"
+          component={VoidPayDemo}
+          durationInFrames={TOTAL_DURATION}
+          fps={30}
+          width={1920}
+          height={1080}
+          schema={DemoPropsSchema}
+          defaultProps={{ ...DEFAULT_PROPS, hookVariant: "v1" as const }}
+        />
+        <Composition
+          id="VoidPayDemo-16x9-v2"
+          component={VoidPayDemo}
+          durationInFrames={TOTAL_DURATION}
+          fps={30}
+          width={1920}
+          height={1080}
+          schema={DemoPropsSchema}
+          defaultProps={{ ...DEFAULT_PROPS, hookVariant: "v2" as const }}
+        />
+        <Composition
+          id="VoidPayDemo-16x9-v3"
+          component={VoidPayDemo}
+          durationInFrames={TOTAL_DURATION}
+          fps={30}
+          width={1920}
+          height={1080}
+          schema={DemoPropsSchema}
+          defaultProps={{ ...DEFAULT_PROPS, hookVariant: "v3" as const }}
+        />
+
+        {/* Backward-compat aliases — point to v1 default hook variant */}
         <Composition
           id="VoidPayDemo-9x16"
           component={VoidPayDemo}
@@ -68,9 +138,8 @@ export const RemotionRoot: React.FC = () => {
           width={1080}
           height={1920}
           schema={DemoPropsSchema}
-          defaultProps={DEFAULT_PROPS}
+          defaultProps={{ ...DEFAULT_PROPS, hookVariant: "v1" as const }}
         />
-        {/* Secondary: 16:9 landscape (round 9d will re-derive layout). */}
         <Composition
           id="VoidPayDemo-16x9"
           component={VoidPayDemo}
@@ -79,7 +148,7 @@ export const RemotionRoot: React.FC = () => {
           width={1920}
           height={1080}
           schema={DemoPropsSchema}
-          defaultProps={DEFAULT_PROPS}
+          defaultProps={{ ...DEFAULT_PROPS, hookVariant: "v1" as const }}
         />
       </Folder>
 

@@ -11,15 +11,18 @@ import { ThesisOutroScene } from "./scenes/ThesisOutroScene";
 
 import type { z } from "zod";
 import type { DemoPropsSchema } from "./Root";
+import type { HookVariant } from "./scenes/captions/thesis-captions";
 
-export type DemoProps = z.infer<typeof DemoPropsSchema>;
+export type DemoProps = z.infer<typeof DemoPropsSchema> & {
+  hookVariant?: HookVariant;
+};
 
 /**
  * 5-scene arc per creative-brief-v2 §3.
  * S0 ThesisHook -> S1 Create -> S2 Share -> S3 Pay -> S4 ThesisOutro.
  * Cross-fade 20fr between all scenes (TRANSITION_DURATIONS.crossFade).
  */
-export const VoidPayDemo: React.FC<DemoProps> = () => {
+export const VoidPayDemo: React.FC<DemoProps> = ({ hookVariant = "v1" }) => {
   const fadeTiming = linearTiming({
     durationInFrames: TRANSITION_DURATIONS.crossFade,
   });
@@ -28,7 +31,7 @@ export const VoidPayDemo: React.FC<DemoProps> = () => {
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
       <TransitionSeries>
         <TransitionSeries.Sequence durationInFrames={SCENE_DURATIONS.thesisHook}>
-          <ThesisHookScene />
+          <ThesisHookScene hookVariant={hookVariant} />
         </TransitionSeries.Sequence>
 
         <TransitionSeries.Transition presentation={fade()} timing={fadeTiming} />
