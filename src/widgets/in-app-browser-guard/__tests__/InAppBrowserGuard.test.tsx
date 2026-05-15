@@ -66,6 +66,15 @@ describe('InAppBrowserGuard', () => {
     expect(screen.queryByText('In-app browser detected')).toBeNull()
   })
 
+  it('bottom panel sits above floating Footer (uses calc offset, not bottom-0)', () => {
+    setTelegram(true)
+    const { container } = render(<InAppBrowserGuard />)
+    // The outermost panel div must NOT use bottom-0; it must use the safe-area-aware offset
+    const panel = container.firstElementChild as HTMLElement
+    expect(panel).not.toHaveClass('bottom-0')
+    expect(panel.className).toContain('bottom-[calc(2.75rem+env(safe-area-inset-bottom,0px))]')
+  })
+
   it('does not render interstitial (old blocking dialog) in Telegram', () => {
     setTelegram(true)
     render(<InAppBrowserGuard />)

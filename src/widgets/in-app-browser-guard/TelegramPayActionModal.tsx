@@ -65,7 +65,7 @@ export function TelegramPayActionModal({ open, onClose }: TelegramPayActionModal
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
       <DialogContent
         size="sm"
-        className="border-amber-500/20 bg-zinc-900 text-white"
+        className="w-[calc(100%-2rem)] border-amber-500/20 bg-zinc-900 text-white"
       >
         <DialogTitle className="text-base font-semibold text-white pr-8">
           Open in another browser to pay
