@@ -19,7 +19,7 @@ import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { RemotionFakeToast } from "../components/RemotionFakeToast";
 import { Caption } from "../components/Caption";
-import { HintBadge } from "../components/HintBadge";
+import { PAY_CAPTIONS_VERTICAL, PAY_CAPTIONS_LANDSCAPE } from "./captions/pay-captions";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
 import { BrowserChrome } from "../components/BrowserChrome";
 import { WalletPill } from "../components/WalletPill";
@@ -518,16 +518,20 @@ export const PayScene: React.FC = () => {
         <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={470} hold={120} stackOffset={0} anchor="below-panel" />
 
         {/* Captions */}
-        <Caption text="Open link. Pay." position="top" startAt={15} endAt={88} fontSize={38} />
-        <HintBadge
-          text="unique micro-amount ← payment ID"
-          startAt={255}
-          endAt={345}
-          variant="arrow"
-          fontSize={40}
-          style={{ top: "24.7%", right: "3.9%", zIndex: 10 }}
-        />
-        <Caption text="Not our servers." position="top" startAt={490} fontSize={38} variant="emerald" />
+        {PAY_CAPTIONS_LANDSCAPE.map((c) => (
+          <Caption
+            key={c.startAt}
+            text={c.text}
+            startAt={c.startAt}
+            endAt={c.endAt}
+            fontSize={c.fontSize}
+            position={c.position}
+            variant={c.variant}
+            weight={c.weight}
+            emphasizedWord={c.emphasizedWord}
+            springConfig={c.springConfig}
+          />
+        ))}
       </AbsoluteFill>
     );
   }
@@ -630,37 +634,21 @@ export const PayScene: React.FC = () => {
       <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={340} hold={140} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={470} hold={120} stackOffset={0} anchor="below-panel" />
 
-      {/* ε3: "Open link. Pay." caption — local 15–88 */}
-      <Caption
-        text="Open link. Pay."
-        position="top"
-        startAt={15}
-        endAt={88}
-        fontSize={38}
-      />
-
-      {/* η4 (F10): Mocks v2 anchor top:24.7% right:3.9% — "unique micro-amount ← payment ID" */}
-      <HintBadge
-        text="unique micro-amount ← payment ID"
-        startAt={255}
-        endAt={345}
-        variant="arrow"
-        fontSize={40}
-        style={{
-          top: "24.7%",
-          right: "3.9%",
-          zIndex: 10,
-        }}
-      />
-
-      {/* ζ5: Spark caption — "Not our servers" */}
-      <Caption
-        text="Not our servers."
-        position="top"
-        startAt={490}
-        fontSize={38}
-        variant="emerald"
-      />
+      {/* Captions */}
+      {PAY_CAPTIONS_VERTICAL.map((c) => (
+        <Caption
+          key={c.startAt}
+          text={c.text}
+          startAt={c.startAt}
+          endAt={c.endAt}
+          fontSize={c.fontSize}
+          position={c.position}
+          variant={c.variant}
+          weight={c.weight}
+          emphasizedWord={c.emphasizedWord}
+          springConfig={c.springConfig}
+        />
+      ))}
     </AbsoluteFill>
   );
 };
