@@ -20,8 +20,7 @@ import { usePayInvoice } from './use-pay-invoice'
 import type { PayInvoiceState } from './use-pay-invoice'
 import { StatusBadge, MinimizedPill } from '@/widgets/payment-panel'
 import { CreatorHintBanner } from './CreatorHintBanner'
-import { InAppBrowserGuard } from '@/widgets/in-app-browser-guard'
-import { useIsTelegramWebView } from '@/widgets/in-app-browser-guard/lib/use-is-telegram-webview'
+import { InAppBrowserGuard, useIsTelegramWebView } from '@/widgets/in-app-browser-guard'
 
 /**
  * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.
@@ -192,7 +191,8 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
         </div>
 
         {/* Payment Panel — floating bottom overlay */}
-        <div className="absolute bottom-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))] left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5 print:hidden">
+        {/* On Telegram WebView the fixed guard panel (~80px) sits at bottom-0; bump bottom to avoid overlap */}
+        <div className={`absolute left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5 print:hidden ${isTg ? 'bottom-[max(6rem,calc(env(safe-area-inset-bottom,0px)+5.5rem))]' : 'bottom-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))]'}`}>
           <CreatorHintBanner isCreator={source === 'created'} />
           <AnimatePresence mode="wait">
             {isMinimized ? (
