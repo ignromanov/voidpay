@@ -19,17 +19,17 @@ import { PlusIcon, ClockIcon } from '@/shared/ui/icons'
 import { VoidLogo } from '@/shared/ui/void-logo'
 import { Button } from '@/shared/ui/button'
 import { LazyWalletButton as WalletButton } from '@/features/wallet-connect'
-import { isTelegramWebView } from '@/shared/lib'
+import { isHostileInAppBrowser } from '@/shared/lib'
 import { TelegramGateProvider, useTelegramGate } from '@/widgets/in-app-browser-guard'
 
 /**
- * WalletButton wrapper that intercepts the connect click in Telegram WebView.
- * Must be a child of TelegramGateProvider.
+ * WalletButton wrapper that intercepts the connect click in Tier-1 hostile
+ * in-app browsers. Must be a child of TelegramGateProvider.
  */
-function TelegramAwareWalletButton() {
+function HostileIABAwareWalletButton() {
   const gate = useTelegramGate()
-  const isTg = isTelegramWebView()
-  const extraProps = isTg ? { onBeforeConnect: () => { gate.open(); return true } } : {}
+  const isHostile = isHostileInAppBrowser()
+  const extraProps = isHostile ? { onBeforeConnect: () => { gate.open(); return true } } : {}
   return <WalletButton {...extraProps} />
 }
 
@@ -72,7 +72,7 @@ export function Navigation() {
               {/* Separator */}
               <div className="mx-2 h-6 w-px bg-zinc-800" />
 
-              <TelegramAwareWalletButton />
+              <HostileIABAwareWalletButton />
             </div>
           </div>
         </div>

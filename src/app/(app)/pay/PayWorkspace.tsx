@@ -20,7 +20,7 @@ import { usePayInvoice } from './use-pay-invoice'
 import type { PayInvoiceState } from './use-pay-invoice'
 import { StatusBadge, MinimizedPill } from '@/widgets/payment-panel'
 import { CreatorHintBanner } from './CreatorHintBanner'
-import { InAppBrowserGuard, useIsTelegramWebView } from '@/widgets/in-app-browser-guard'
+import { InAppBrowserGuard, useIsHostileInAppBrowser } from '@/widgets/in-app-browser-guard'
 
 /**
  * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.
@@ -129,7 +129,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
   const [isMinimized, setIsMinimized] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [devPaymentStep, setDevPaymentStep] = useState<DevPaymentVisualStep | null>(null)
-  const isTg = useIsTelegramWebView()
+  const isHostile = useIsHostileInAppBrowser()
 
   const handlePaymentSuccess = useCallback(() => { setPaymentError(null) }, [])
   const handlePaymentError = useCallback((error: PaymentError) => { setPaymentError(error.message) }, [])
@@ -190,7 +190,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
 
         {/* Payment Panel — floating bottom overlay */}
         {/* 9rem offset clears the repositioned InAppBrowserGuard panel (z-40, sits at 2.75rem+safe-area above Footer) in Telegram WebView */}
-        <div className={`absolute left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5 print:hidden ${isTg ? 'bottom-[max(9rem,calc(env(safe-area-inset-bottom,0px)+8.75rem))]' : 'bottom-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))]'}`}>
+        <div className={`absolute left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5 print:hidden ${isHostile ? 'bottom-[max(9rem,calc(env(safe-area-inset-bottom,0px)+8.75rem))]' : 'bottom-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))]'}`}>
           <CreatorHintBanner isCreator={source === 'created'} />
           <AnimatePresence mode="wait">
             {isMinimized ? (
@@ -239,7 +239,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                           This invoice opens for payment on {new Date(invoice.issuedAt * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </p>
                       </div>
-                    ) : isTg ? (
+                    ) : isHostile ? (
                       <TelegramPayButton />
                     ) : (
                       <PayButton

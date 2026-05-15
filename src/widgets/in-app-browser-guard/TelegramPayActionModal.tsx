@@ -39,7 +39,7 @@ export function TelegramPayActionModal({ open, onClose }: TelegramPayActionModal
     }
     if (firedRef.current) return
     firedRef.current = true
-    track(AnalyticsEvent.MOBILE_TG_PAY_INTERCEPTED)
+    track(AnalyticsEvent.MOBILE_IAB_PAY_INTERCEPTED)
   }, [open])
 
   // Reset clipboard fallback on close
@@ -72,7 +72,7 @@ export function TelegramPayActionModal({ open, onClose }: TelegramPayActionModal
         </DialogTitle>
 
         <DialogDescription className="text-sm text-zinc-400">
-          Wallet connect doesn&apos;t work inside Telegram. Copy this link to open in Safari or
+          Wallet connect doesn&apos;t work inside this app. Copy this link to open in Safari or
           Chrome, or show a QR code to scan from another device.
         </DialogDescription>
 

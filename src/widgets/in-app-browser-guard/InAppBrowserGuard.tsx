@@ -2,17 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { AlertTriangleIcon, ExternalLinkIcon } from '@/shared/ui/icons'
-import { isInAppBrowser, isTelegramWebView } from '@/shared/lib'
+import { isHostileInAppBrowser } from '@/shared/lib'
 import { toast } from '@/shared/lib/toast'
 import { Button } from '@/shared/ui/button'
 
 /**
- * Shows a contextual in-app browser warning:
- *
- * - Telegram WebView: passive bottom panel with "Copy link" CTA
- *   (non-blocking — invoice is fully visible, GH#214 D+B UX pivot)
- * - Other in-app browsers (Instagram, FB, X…): dismissible banner
- * - Regular browsers: null
+ * Shows a passive bottom panel when a Tier-1 hostile in-app browser is detected
+ * (Telegram, X/Twitter, Instagram, Facebook, Messenger, TikTok, LinkedIn,
+ * WeChat, Snapchat, Threads) — all share the same WalletConnect deep-link
+ * breakage. Non-hostile browsers render null.
  */
 
 interface InAppBrowserGuardProps {
@@ -20,30 +18,27 @@ interface InAppBrowserGuardProps {
 }
 
 export function InAppBrowserGuard({ onShowQRClick }: InAppBrowserGuardProps) {
-  const [mode, setMode] = useState<'telegram' | 'banner' | 'none'>('none')
+  const [mode, setMode] = useState<'panel' | 'none'>('none')
 
   useEffect(() => {
-    if (isTelegramWebView()) {
-      setMode('telegram')
-    } else if (isInAppBrowser()) {
-      setMode('banner')
+    if (isHostileInAppBrowser()) {
+      setMode('panel')
     }
   }, [])
 
-  if (mode === 'telegram') return <TelegramBottomPanel onShowQRClick={onShowQRClick} />
-  if (mode === 'banner') return <InAppBrowserBanner />
+  if (mode === 'panel') return <HostileIABBottomPanel onShowQRClick={onShowQRClick} />
   return null
 }
 
 // ---------------------------------------------------------------------------
-// Telegram passive bottom panel
+// Passive bottom panel (Tier-1 hostile in-app browsers)
 // ---------------------------------------------------------------------------
 
-interface TelegramBottomPanelProps {
+interface HostileIABBottomPanelProps {
   onShowQRClick?: (() => void) | undefined
 }
 
-function TelegramBottomPanel({ onShowQRClick }: TelegramBottomPanelProps) {
+function HostileIABBottomPanel({ onShowQRClick }: HostileIABBottomPanelProps) {
   const [clipboardFailed, setClipboardFailed] = useState(false)
 
   async function handleCopyLink() {
@@ -62,7 +57,7 @@ function TelegramBottomPanel({ onShowQRClick }: TelegramBottomPanelProps) {
         <div className="flex items-center gap-3">
           <AlertTriangleIcon aria-hidden="true" className="h-4 w-4 shrink-0 text-amber-400" />
           <p className="min-w-0 flex-1 text-sm text-zinc-300">
-            Wallet connect doesn&apos;t work in Telegram — open in Safari/Chrome to pay
+            Wallet connect doesn&apos;t work in this in-app browser — open in Safari/Chrome to pay
           </p>
         </div>
 
@@ -100,55 +95,6 @@ function TelegramBottomPanel({ onShowQRClick }: TelegramBottomPanelProps) {
             />
           </div>
         )}
-      </div>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Dismissible banner (non-Telegram in-app browsers)
-// ---------------------------------------------------------------------------
-
-function InAppBrowserBanner() {
-  const [visible, setVisible] = useState(true)
-
-  if (!visible) return null
-
-  return (
-    <div className="mx-auto mb-4 max-w-2xl rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3">
-      <div className="flex items-start gap-3">
-        <AlertTriangleIcon aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-amber-200">
-            In-app browser detected
-          </p>
-          <p className="mt-1 text-sm text-amber-200/70">
-            Crypto wallets don&apos;t work inside Telegram, Instagram, or similar apps.
-            Open this link in your regular browser to connect a wallet and pay.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              try {
-                window.open(window.location.href, '_system')
-              } catch {
-                // Fallback: just inform the user
-              }
-            }}
-            className="mt-2 min-h-[44px] px-3 py-2 rounded-lg inline-flex items-center gap-1.5 text-sm font-medium text-amber-300 transition-colors hover:text-amber-200"
-          >
-            <ExternalLinkIcon className="h-4 w-4" />
-            Open in browser
-          </button>
-        </div>
-        <button
-          type="button"
-          onClick={() => setVisible(false)}
-          className="flex h-11 w-11 items-center justify-center rounded-lg shrink-0 text-amber-400/60 transition-colors hover:text-amber-300"
-          aria-label="Dismiss"
-        >
-          &times;
-        </button>
       </div>
     </div>
   )
