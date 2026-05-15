@@ -15,19 +15,11 @@ vi.mock('@/shared/lib', async (importOriginal) => {
   }
 })
 
-vi.mock('@/features/analytics/lib/track', () => ({
-  track: vi.fn(),
-  AnalyticsEvent: {
-    MOBILE_TG_WEBVIEW_BLOCKED: 'mobile-tg-webview-blocked',
-  },
-}))
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 import { isTelegramWebView, isInAppBrowser } from '@/shared/lib'
-import { track } from '@/features/analytics/lib/track'
 
 function setTelegram(value: boolean) {
   vi.mocked(isTelegramWebView).mockReturnValue(value)
@@ -60,47 +52,29 @@ describe('InAppBrowserGuard', () => {
     setInAppBrowser(true)
     render(<InAppBrowserGuard />)
     expect(screen.getByText('In-app browser detected')).toBeInTheDocument()
-    // Interstitial must NOT be present
-    expect(screen.queryByRole('dialog')).toBeNull()
+    // Panel must NOT be present
+    expect(screen.queryByText(/open in safari/i)).toBeNull()
   })
 
-  it('renders Telegram interstitial when isTelegramWebView is true', () => {
+  it('renders passive bottom panel when isTelegramWebView is true', () => {
     setTelegram(true)
     render(<InAppBrowserGuard />)
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText('Wallet connection unavailable')).toBeInTheDocument()
+    expect(screen.getByText(/open in safari\/chrome to pay/i)).toBeInTheDocument()
+    // No dialog role — panel is informational, not a dialog
+    expect(screen.queryByRole('dialog')).toBeNull()
     // Banner must NOT be present
     expect(screen.queryByText('In-app browser detected')).toBeNull()
   })
 
-  // ─── A11y ────────────────────────────────────────────────────────────────
-
-  it('interstitial has aria-modal="true"', () => {
+  it('does not render interstitial (old blocking dialog) in Telegram', () => {
     setTelegram(true)
     render(<InAppBrowserGuard />)
-    const dialog = screen.getByRole('dialog')
-    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(screen.queryByText('Wallet connection unavailable')).toBeNull()
   })
 
-  // ─── Analytics ──────────────────────────────────────────────────────────
+  // ─── Copy link — behaviour assertions ───────────────────────────────────
 
-  it('fires mobile-tg-webview-blocked exactly once on mount', () => {
-    setTelegram(true)
-    render(<InAppBrowserGuard />)
-    expect(track).toHaveBeenCalledOnce()
-    expect(track).toHaveBeenCalledWith('mobile-tg-webview-blocked')
-  })
-
-  it('does not fire analytics event in banner mode', () => {
-    setTelegram(false)
-    setInAppBrowser(true)
-    render(<InAppBrowserGuard />)
-    expect(track).not.toHaveBeenCalled()
-  })
-
-  // ─── Copy link ───────────────────────────────────────────────────────────
-
-  it('keeps fallback hidden when clipboard.writeText resolves successfully', async () => {
+  it('keeps fallback hidden when clipboard.writeText resolves', async () => {
     setTelegram(true)
     vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined)
 
@@ -108,10 +82,7 @@ describe('InAppBrowserGuard', () => {
     render(<InAppBrowserGuard />)
     await user.click(screen.getByRole('button', { name: /copy link/i }))
 
-    // Behaviour assertion: successful copy must NOT trigger the readonly-input fallback.
-    // Pairs with the rejection test below — together they prove both try/catch branches
-    // exercise navigator.clipboard.writeText (avoids vitest+happy-dom call-tracking quirks
-    // with vi.spyOn on host-object accessors).
+    // Success path: readonly-input fallback must NOT appear
     expect(screen.queryByLabelText('Invoice link')).not.toBeInTheDocument()
   })
 
@@ -126,16 +97,35 @@ describe('InAppBrowserGuard', () => {
     expect(await screen.findByLabelText('Invoice link')).toBeInTheDocument()
   })
 
-  // ─── Show QR Code ────────────────────────────────────────────────────────
+  // ─── Show QR Code CTA ────────────────────────────────────────────────────
 
-  it('dismisses interstitial when Show QR Code is clicked', async () => {
+  it('calls onShowQRClick when Show QR Code button is clicked', async () => {
     setTelegram(true)
+    const onShowQRClick = vi.fn()
+    const user = userEvent.setup()
+    render(<InAppBrowserGuard onShowQRClick={onShowQRClick} />)
+
+    await user.click(screen.getByRole('button', { name: /show qr code/i }))
+
+    expect(onShowQRClick).toHaveBeenCalledOnce()
+  })
+
+  it('does not render Show QR Code button when onShowQRClick is not provided', () => {
+    setTelegram(true)
+    render(<InAppBrowserGuard />)
+    expect(screen.queryByRole('button', { name: /show qr code/i })).toBeNull()
+  })
+
+  // ─── Banner branch preserved ─────────────────────────────────────────────
+
+  it('banner is dismissible via X button', async () => {
+    setInAppBrowser(true)
     const user = userEvent.setup()
     render(<InAppBrowserGuard />)
 
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: /show qr code/i }))
+    expect(screen.getByText('In-app browser detected')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /dismiss/i }))
 
-    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.queryByText('In-app browser detected')).toBeNull()
   })
 })
