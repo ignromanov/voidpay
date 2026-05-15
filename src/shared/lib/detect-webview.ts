@@ -40,3 +40,22 @@ export function isTelegramWebView(): boolean {
     'TelegramWebview' in window
   )
 }
+
+// Vendored from shalanah/inapp-spy (MIT) — UA bucket of Tier-1 hostile in-app browsers
+// that break WalletConnect's `wc:` redirect the same way Telegram does, but expose no
+// reliable runtime global. Source: research report 2026-05-15.
+const HOSTILE_IAB_UA = /FBAN|FB_IAB|Instagram|Twitter|Barcelona|musical_ly|Bytedance|MicroMessenger|LinkedInApp|Snapchat/i
+
+/**
+ * Returns true if the current runtime is a Tier-1 hostile in-app browser that
+ * breaks WalletConnect deep-links (Telegram via globals, others via UA token).
+ *
+ * Covers: Telegram, X/Twitter, Instagram, Facebook/Messenger, TikTok,
+ *         LinkedIn, WeChat, Snapchat, Threads.
+ */
+export function isHostileInAppBrowser(): boolean {
+  if (typeof window === 'undefined') return false
+  if (isTelegramWebView()) return true
+  if (typeof navigator === 'undefined') return false
+  return HOSTILE_IAB_UA.test(navigator.userAgent)
+}
