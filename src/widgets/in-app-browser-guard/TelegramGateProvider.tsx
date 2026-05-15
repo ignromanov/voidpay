@@ -23,8 +23,19 @@ export function TelegramGateProvider({ children }: { children: ReactNode }) {
   )
 }
 
+/**
+ * Returns the TelegramGate context value.
+ *
+ * Safe-fallback: when called outside <TelegramGateProvider> (e.g. Navigation
+ * renders before the lazy Web3Provider resolves), returns a no-op gate so the
+ * page doesn't crash. Components inside Web3Provider scope get the real gate.
+ */
+const NOOP_GATE: TelegramGateContextValue = {
+  isOpen: false,
+  open: () => {},
+  close: () => {},
+}
+
 export function useTelegramGate(): TelegramGateContextValue {
-  const ctx = useContext(TelegramGateContext)
-  if (!ctx) throw new Error('useTelegramGate must be used inside <TelegramGateProvider>')
-  return ctx
+  return useContext(TelegramGateContext) ?? NOOP_GATE
 }

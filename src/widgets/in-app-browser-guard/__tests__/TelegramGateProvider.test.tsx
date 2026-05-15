@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, userEvent } from '@/shared/lib/test-utils'
 import { TelegramGateProvider, useTelegramGate } from '../TelegramGateProvider'
 
@@ -80,19 +79,18 @@ describe('TelegramGateProvider', () => {
     expect(screen.getByTestId('gate-state').textContent).toBe('closed')
   })
 
-  it('useTelegramGate throws when used outside provider', () => {
-    // Suppress React's error boundary console noise
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
+  it('useTelegramGate returns NOOP_GATE when used outside provider', () => {
+    // Orphan consumer: no module-level capture (react-hooks/globals rule).
+    // open/close are no-ops; rendered output reflects gate.isOpen.
     function Orphan() {
-      useTelegramGate()
-      return null
+      const gate = useTelegramGate()
+      // Invoke no-ops during render to verify they don't throw and don't change state.
+      gate.open()
+      gate.close()
+      return <span data-testid="orphan-state">{gate.isOpen ? 'open' : 'closed'}</span>
     }
 
-    expect(() => render(<Orphan />)).toThrow(
-      'useTelegramGate must be used inside <TelegramGateProvider>',
-    )
-
-    consoleSpy.mockRestore()
+    expect(() => render(<Orphan />)).not.toThrow()
+    expect(screen.getByTestId('orphan-state')).toHaveTextContent('closed')
   })
 })
