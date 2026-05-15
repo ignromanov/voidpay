@@ -129,8 +129,6 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
   const [isMinimized, setIsMinimized] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [devPaymentStep, setDevPaymentStep] = useState<DevPaymentVisualStep | null>(null)
-  const [tgModalOpen, setTgModalOpen] = useState(false)
-
   const isTg = useIsTelegramWebView()
 
   const handlePaymentSuccess = useCallback(() => { setPaymentError(null) }, [])
@@ -167,7 +165,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
       )}
 
       <div className="relative z-10 h-full w-full" data-network={networkId}>
-        <InAppBrowserGuard onShowQRClick={() => setTgModalOpen(true)} />
+        <InAppBrowserGuard />
         <StatusBadge status={panelStatus} isSyncing={isSyncing} />
 
         {/* Invoice Preview — centered in safe zone */}
@@ -191,8 +189,8 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
         </div>
 
         {/* Payment Panel — floating bottom overlay */}
-        {/* 6rem offset clears the InAppBrowserGuard panel (~80px, fixed z-40) in Telegram WebView */}
-        <div className={`absolute left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5 print:hidden ${isTg ? 'bottom-[max(6rem,calc(env(safe-area-inset-bottom,0px)+5.5rem))]' : 'bottom-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))]'}`}>
+        {/* 9rem offset clears the repositioned InAppBrowserGuard panel (z-40, sits at 2.75rem+safe-area above Footer) in Telegram WebView */}
+        <div className={`absolute left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5 print:hidden ${isTg ? 'bottom-[max(9rem,calc(env(safe-area-inset-bottom,0px)+8.75rem))]' : 'bottom-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))]'}`}>
           <CreatorHintBanner isCreator={source === 'created'} />
           <AnimatePresence mode="wait">
             {isMinimized ? (
@@ -242,11 +240,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                         </p>
                       </div>
                     ) : isTg ? (
-                      <TelegramPayButton
-                        open={tgModalOpen}
-                        onOpen={() => setTgModalOpen(true)}
-                        onClose={() => setTgModalOpen(false)}
-                      />
+                      <TelegramPayButton />
                     ) : (
                       <PayButton
                         invoice={invoice}

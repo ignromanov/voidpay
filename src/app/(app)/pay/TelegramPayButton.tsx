@@ -1,36 +1,38 @@
 'use client'
 
 import { Web3Provider } from '@/features/wallet-connect/providers'
-import { TelegramPayActionModal } from '@/widgets/in-app-browser-guard'
+import { useTelegramGate } from '@/widgets/in-app-browser-guard'
 import { Button } from '@/shared/ui/button'
 
-interface TelegramPayButtonProps {
-  open: boolean
-  onOpen: () => void
-  onClose: () => void
+/**
+ * TelegramPayButton — Pay button for Telegram WebView.
+ *
+ * Opens the global TelegramGateProvider modal (mounted in Navigation)
+ * which offers "Copy link" and "Show QR Code" options.
+ *
+ * Wrapped in Web3Provider so useTelegramGate's modal (via Navigation's
+ * TelegramGateProvider) can resolve useConnectModal when "Show QR Code"
+ * is clicked.
+ */
+function TelegramPayButtonInner() {
+  const gate = useTelegramGate()
+  return (
+    <Button
+      variant="void"
+      size="lg"
+      className="h-14 w-full"
+      aria-haspopup="dialog"
+      onClick={gate.open}
+    >
+      Open in browser to pay
+    </Button>
+  )
 }
 
-/**
- * TelegramPayButton — Web3-scoped trigger + modal for Telegram WebView.
- *
- * Mirrors PayButton's pattern: wraps Web3Provider so that
- * TelegramPayActionModal can call useConnectModal() from RainbowKit.
- * Rendered via next/dynamic (ssr:false) from PayWorkspace.
- */
-export function TelegramPayButton({ open, onOpen, onClose }: TelegramPayButtonProps) {
+export function TelegramPayButton() {
   return (
     <Web3Provider>
-      <Button
-        variant="void"
-        size="lg"
-        className="h-14 w-full"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        onClick={onOpen}
-      >
-        Open in browser to pay
-      </Button>
-      <TelegramPayActionModal open={open} onClose={onClose} />
+      <TelegramPayButtonInner />
     </Web3Provider>
   )
 }
