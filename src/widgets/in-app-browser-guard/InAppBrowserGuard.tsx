@@ -81,7 +81,7 @@ function TelegramBottomPanel({ onShowQRClick }: TelegramBottomPanelProps) {
             <button
               type="button"
               onClick={onShowQRClick}
-              className="min-h-[36px] rounded-lg px-3 py-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-500"
+              className="min-h-[44px] rounded-lg px-4 py-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-500"
             >
               Show QR Code
             </button>
