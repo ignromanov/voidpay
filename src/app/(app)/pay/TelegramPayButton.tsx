@@ -24,6 +24,8 @@ export function TelegramPayButton({ open, onOpen, onClose }: TelegramPayButtonPr
         variant="void"
         size="lg"
         className="h-14 w-full"
+        aria-haspopup="dialog"
+        aria-expanded={open}
         onClick={onOpen}
       >
         Open in browser to pay
