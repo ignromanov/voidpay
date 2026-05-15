@@ -60,7 +60,7 @@ function TelegramBottomPanel({ onShowQRClick }: TelegramBottomPanelProps) {
     <div className="fixed bottom-0 inset-x-0 z-40 border-t border-amber-500/30 bg-zinc-900/95 px-4 py-3 backdrop-blur-sm">
       <div className="mx-auto max-w-2xl">
         <div className="flex items-center gap-3">
-          <AlertTriangleIcon className="h-4 w-4 shrink-0 text-amber-400" />
+          <AlertTriangleIcon aria-hidden="true" className="h-4 w-4 shrink-0 text-amber-400" />
           <p className="min-w-0 flex-1 text-sm text-zinc-300">
             Wallet connect doesn&apos;t work in Telegram — open in Safari/Chrome to pay
           </p>
@@ -69,8 +69,8 @@ function TelegramBottomPanel({ onShowQRClick }: TelegramBottomPanelProps) {
         <div className="mt-2.5 flex flex-wrap gap-2">
           <Button
             variant="outline"
-            size="sm"
-            className="gap-1.5"
+            size="default"
+            className="min-h-[44px] gap-1.5"
             onClick={handleCopyLink}
           >
             <ExternalLinkIcon className="h-3.5 w-3.5" />
@@ -117,7 +117,7 @@ function InAppBrowserBanner() {
   return (
     <div className="mx-auto mb-4 max-w-2xl rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3">
       <div className="flex items-start gap-3">
-        <AlertTriangleIcon className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+        <AlertTriangleIcon aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-amber-200">
             In-app browser detected
