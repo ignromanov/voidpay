@@ -2,13 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { ExternalLinkIcon, XIcon } from '@/shared/ui/icons'
+import { ExternalLinkIcon } from '@/shared/ui/icons'
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogDescription,
-  DialogClose,
 } from '@/shared/ui/dialog'
 import { Button } from '@/shared/ui/button'
 import { toast } from '@/shared/lib/toast'
@@ -68,17 +67,9 @@ export function TelegramPayActionModal({ open, onClose }: TelegramPayActionModal
         size="sm"
         className="border-amber-500/20 bg-zinc-900 text-white"
       >
-        <div className="flex items-start justify-between gap-4">
-          <DialogTitle className="text-base font-semibold text-white">
-            Open in another browser to pay
-          </DialogTitle>
-          <DialogClose
-            className="shrink-0 cursor-pointer rounded-lg p-1 text-zinc-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-500"
-            aria-label="Close"
-          >
-            <XIcon className="h-4 w-4" />
-          </DialogClose>
-        </div>
+        <DialogTitle className="text-base font-semibold text-white pr-8">
+          Open in another browser to pay
+        </DialogTitle>
 
         <DialogDescription className="text-sm text-zinc-400">
           Wallet connect doesn&apos;t work inside Telegram. Copy this link to open in Safari or
