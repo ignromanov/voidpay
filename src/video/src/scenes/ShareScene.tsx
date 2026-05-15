@@ -24,8 +24,9 @@ import { FONT_SANS } from "../fonts";
 import { RemotionLinkTab } from "../components/RemotionLinkTab";
 import { RemotionQRTab } from "../components/RemotionQRTab";
 import { Caption } from "../components/Caption";
-import { HintBadge } from "../components/HintBadge";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
+import { useAspect } from "../hooks/useAspect";
+import { SHARE_CAPTIONS_VERTICAL, SHARE_CAPTIONS_LANDSCAPE } from "./captions/share-captions";
 
 // Full URL — 4x longer hash payload (~560 chars) so the LinkTab URL visibly
 // truncates with ellipsis and reads as "very long / data-dense".
@@ -95,6 +96,8 @@ export const ShareScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
   const isLandscape = width > height;
+  const { isVertical } = useAspect();
+  const captions = isVertical ? SHARE_CAPTIONS_VERTICAL : SHARE_CAPTIONS_LANDSCAPE;
   // Mocks v2 surgical: modal width = 84% of stage width (portrait only)
   const modalWidth = Math.round(width * 0.84);
 
@@ -170,7 +173,7 @@ export const ShareScene: React.FC = () => {
           />
         </div>
 
-        {/* RIGHT — modal + hint badge, maxWidth capped */}
+        {/* RIGHT — modal, maxWidth capped */}
         <div
           style={{
             position: "absolute",
@@ -186,20 +189,6 @@ export const ShareScene: React.FC = () => {
           }}
         >
           <div style={{ width: "100%", maxWidth: PANEL_MAX_WIDTH, position: "relative" }}>
-            {/* η5 HintBadge — anchored relative to right column */}
-            <HintBadge
-              text="invoice data → in the hash"
-              startAt={80}
-              endAt={160}
-              variant="arrow"
-              fontSize={20}
-              style={{
-                position: "absolute",
-                top: -40,
-                right: 0,
-                zIndex: 20,
-              }}
-            />
 
             {/* Share modal shell */}
             <Card
@@ -340,14 +329,19 @@ export const ShareScene: React.FC = () => {
           </div>
         </div>
 
-        {/* ζ4 Caption — AbsoluteFill level, spans full viewport */}
-        <Caption
-          text="URL = invoice."
-          position="top"
-          startAt={60}
-          endAt={290}
-          fontSize={32}
-        />
+        {/* S2 captions — AbsoluteFill level, spans full viewport */}
+        {captions.map((c) => (
+          <Caption
+            key={c.startAt}
+            text={c.text}
+            startAt={c.startAt}
+            endAt={c.endAt}
+            weight={c.weight}
+            emphasizedWord={c.emphasizedWord}
+            position={c.position}
+            fontSize={c.fontSize}
+          />
+        ))}
       </AbsoluteFill>
     );
   }
@@ -540,30 +534,19 @@ export const ShareScene: React.FC = () => {
         </div>
       </Card>
 
-      {/* η5 (F7): Mocks v2 anchor top:31.3% right:3.9% — "invoice data → in the hash" */}
-      <HintBadge
-        text="invoice data → in the hash"
-        startAt={80}
-        endAt={160}
-        variant="arrow"
-        fontSize={24}
-        style={{
-          top: "31.3%",
-          right: "3.9%",
-          zIndex: 20,
-        }}
-      />
-
-      {/* ζ4: Spark caption — Content Anchor #3 "Payments can be reduced to pure data"
-           startAt=60 local: modal fully entered by ~f20, 60fr stagger lets viewer read header first.
-           endAt=250: persists through Copy click at ~f120, fades before quiet hold at f250. */}
-      <Caption
-        text="URL = invoice."
-        position="top"
-        startAt={60}
-        endAt={290}
-        fontSize={38}
-      />
+      {/* S2 captions — round-9l kinetic typography */}
+      {captions.map((c) => (
+        <Caption
+          key={c.startAt}
+          text={c.text}
+          startAt={c.startAt}
+          endAt={c.endAt}
+          weight={c.weight}
+          emphasizedWord={c.emphasizedWord}
+          position={c.position}
+          fontSize={c.fontSize}
+        />
+      ))}
 
     </AbsoluteFill>
   );
