@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { ExternalLinkIcon } from '@/shared/ui/icons'
 import {
   Dialog,
@@ -19,15 +18,17 @@ interface TelegramPayActionModalProps {
 }
 
 /**
- * Reactive action modal for Telegram WebView D+B UX pattern.
+ * Reactive action modal for the hostile-in-app-browser D+B UX pattern.
  *
- * Opens when the user attempts to pay inside Telegram WebView.
- * Offers: Copy link (clipboard) or Show QR Code (RainbowKit connect modal).
+ * Opens when the user attempts to pay inside a hostile in-app browser.
+ * Offers a single primary action: Copy link → open in Safari/Chrome.
  *
- * MUST be rendered inside Web3Provider — useConnectModal requires wagmi context.
+ * Wallet-connect from inside hostile WebViews was tried via RainbowKit's
+ * connect modal but produced a wallet picker instead of a scannable QR
+ * (RK shows wallet list first; users misread it as a dead end). Removed
+ * 2026-05-15.
  */
 export function TelegramPayActionModal({ open, onClose }: TelegramPayActionModalProps) {
-  const { openConnectModal } = useConnectModal()
   const [clipboardFailed, setClipboardFailed] = useState(false)
   const firedRef = useRef(false)
 
@@ -56,11 +57,6 @@ export function TelegramPayActionModal({ open, onClose }: TelegramPayActionModal
     }
   }
 
-  function handleShowQR() {
-    openConnectModal?.()
-    onClose()
-  }
-
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
       <DialogContent
@@ -72,8 +68,8 @@ export function TelegramPayActionModal({ open, onClose }: TelegramPayActionModal
         </DialogTitle>
 
         <DialogDescription className="text-sm text-zinc-400">
-          Wallet connect doesn&apos;t work inside this app. Copy this link to open in Safari or
-          Chrome, or show a QR code to scan from another device.
+          Wallet connect doesn&apos;t work inside this app. Copy this link and open it in
+          Safari or Chrome to pay.
         </DialogDescription>
 
         <div className="flex flex-col gap-3 pt-1">
@@ -85,15 +81,6 @@ export function TelegramPayActionModal({ open, onClose }: TelegramPayActionModal
           >
             <ExternalLinkIcon className="h-4 w-4" />
             Copy link
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="lg"
-            className="w-full text-zinc-300 hover:text-white"
-            onClick={handleShowQR}
-          >
-            Show QR Code
           </Button>
         </div>
 

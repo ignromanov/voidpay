@@ -89,20 +89,20 @@ describe('InAppBrowserGuard', () => {
     expect(await screen.findByLabelText('Invoice link')).toBeInTheDocument()
   })
 
-  // ─── Show QR Code CTA ────────────────────────────────────────────────────
+  // ─── Dismissibility ─────────────────────────────────────────────────────
 
-  it('calls onShowQRClick when Show QR Code button is clicked', async () => {
+  it('hides the panel when the dismiss button is clicked', async () => {
     setHostile(true)
-    const onShowQRClick = vi.fn()
     const user = userEvent.setup()
-    render(<InAppBrowserGuard onShowQRClick={onShowQRClick} />)
+    render(<InAppBrowserGuard />)
+    expect(screen.getByText(/open in safari\/chrome to pay/i)).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /show qr code/i }))
+    await user.click(screen.getByRole('button', { name: /dismiss/i }))
 
-    expect(onShowQRClick).toHaveBeenCalledOnce()
+    expect(screen.queryByText(/open in safari\/chrome to pay/i)).not.toBeInTheDocument()
   })
 
-  it('does not render Show QR Code button when onShowQRClick is not provided', () => {
+  it('does not render a Show QR Code button (removed 2026-05-15)', () => {
     setHostile(true)
     render(<InAppBrowserGuard />)
     expect(screen.queryByRole('button', { name: /show qr code/i })).toBeNull()

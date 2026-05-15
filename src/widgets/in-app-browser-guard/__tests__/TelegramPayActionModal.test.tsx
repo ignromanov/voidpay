@@ -6,12 +6,6 @@ import { TelegramPayActionModal } from '../TelegramPayActionModal'
 // Module mocks
 // ---------------------------------------------------------------------------
 
-const mockOpenConnectModal = vi.fn()
-
-vi.mock('@rainbow-me/rainbowkit', () => ({
-  useConnectModal: vi.fn(() => ({ openConnectModal: mockOpenConnectModal })),
-}))
-
 vi.mock('@/features/analytics/lib/track', () => ({
   track: vi.fn(),
   AnalyticsEvent: {
@@ -88,22 +82,16 @@ describe('TelegramPayActionModal', () => {
     expect(await screen.findByLabelText('Invoice link')).toBeInTheDocument()
   })
 
-  // ─── Show QR Code ────────────────────────────────────────────────────────
+  // ─── Show QR Code removed (2026-05-15) ───────────────────────────────────
 
-  it('calls openConnectModal and onClose when Show QR Code is clicked', async () => {
-    const onClose = vi.fn()
-    const user = userEvent.setup()
-    render(<TelegramPayActionModal open={true} onClose={onClose} />)
-
-    await user.click(screen.getByRole('button', { name: /show qr code/i }))
-
-    expect(mockOpenConnectModal).toHaveBeenCalledOnce()
-    expect(onClose).toHaveBeenCalledOnce()
+  it('does not render a Show QR Code button (removed 2026-05-15)', () => {
+    render(<TelegramPayActionModal open={true} onClose={vi.fn()} />)
+    expect(screen.queryByRole('button', { name: /show qr code/i })).toBeNull()
   })
 
   // ─── Analytics ───────────────────────────────────────────────────────────
 
-  it('fires mobile-tg-pay-intercepted once when modal opens', () => {
+  it('fires mobile-iab-pay-intercepted once when modal opens', () => {
     render(<TelegramPayActionModal open={true} onClose={vi.fn()} />)
 
     expect(track).toHaveBeenCalledOnce()
