@@ -218,21 +218,33 @@ type KineticCaptionProps = {
 function KineticCaption({
   text, startAt, endAt, fontSize, position, variant,
   weight, emphasizedWord, springConfig,
-  frame, fps, width, height,
+  frame, fps, width,
 }: KineticCaptionProps) {
   const entryValue = computeEntry(frame, fps, startAt, weight, springConfig);
   const exitOpacity = computeExit(frame, endAt);
 
   const opacity = interpolate(entryValue, [0, 1], [0, 1]) * exitOpacity;
+  // translateY on outer pill wrapper so entire pill slides in/out
   const translateY = interpolate(entryValue, [0, 1], [12, 0]);
 
   const yPercent = resolveYPercent(position);
   const topPx = `${yPercent}%`;
 
   const isEmerald = variant === "emerald";
-  const baseColor = isEmerald ? "#34d399" : "#ffffff";
+  const isCompact = fontSize <= 80;
+
+  // Pill accent colour — violet (default) or emerald per spec
+  const accentRgb = isEmerald ? "16,185,129" : "167,139,250";
+  const dotHex = isEmerald ? "#10b981" : "#a78bfa";
+
+  // Pill geometry
+  const pillPadding = isCompact ? "22px 44px" : "28px 52px";
+  const pillGap = isCompact ? 18 : 22;
+
+  // Text
   const fontWeight = weight;
   const letterSpacing = weight === 700 ? "-0.02em" : "-0.01em";
+  const baseColor = "#ffffff";
 
   const renderText = () => {
     if (!emphasizedWord || !text.includes(emphasizedWord)) {
@@ -245,11 +257,12 @@ function KineticCaption({
 
     const scale = computeWordPopScale(frame, startAt, endAt, weight);
     const colorOpacity = computeWordPopColorOpacity(frame, startAt, endAt);
-    // Blend white → violet using colorOpacity
-    const r = Math.round(255 + (0xa7 - 255) * colorOpacity);
-    const g = Math.round(255 + (0x8b - 255) * colorOpacity);
-    const b = Math.round(255 + (0xfa - 255) * colorOpacity);
-    const wordColor = isEmerald ? "#34d399" : `rgb(${r},${g},${b})`;
+    // Blend white → accent colour using colorOpacity
+    const accentValues = isEmerald ? [0x10, 0xb9, 0x81] : [0xa7, 0x8b, 0xfa];
+    const r = Math.round(255 + (accentValues[0] - 255) * colorOpacity);
+    const g = Math.round(255 + (accentValues[1] - 255) * colorOpacity);
+    const b = Math.round(255 + (accentValues[2] - 255) * colorOpacity);
+    const wordColor = `rgb(${r},${g},${b})`;
 
     return (
       <>
@@ -270,6 +283,7 @@ function KineticCaption({
   };
 
   return (
+    // Outer positioning + entry/exit animation — translateY on the whole pill
     <div
       style={{
         position: "absolute",
@@ -282,21 +296,53 @@ function KineticCaption({
         opacity,
       }}
     >
-      <span
+      {/* Path C pill backdrop */}
+      <div
         style={{
-          fontFamily: `${FONT_SANS}, sans-serif`,
-          fontSize,
-          fontWeight,
-          letterSpacing,
-          lineHeight: 1.2,
-          textAlign: "center",
-          // Subtle text shadow for legibility on dark video bg
-          textShadow: `0 2px 16px rgba(0,0,0,0.7)`,
-          color: baseColor,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: pillGap,
+          maxWidth: "88vw",
+          background: "rgba(20,20,27,0.85)",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          border: `1.5px solid rgba(${accentRgb},0.80)`,
+          borderRadius: 28,
+          padding: pillPadding,
+          boxShadow: [
+            `0 0 36px rgba(${accentRgb},0.32)`,
+            `0 0 8px rgba(${accentRgb},0.40)`,
+            `0 18px 40px rgba(0,0,0,0.55)`,
+          ].join(", "),
         }}
       >
-        {renderText()}
-      </span>
+        {/* Leading dot */}
+        <span
+          style={{
+            width: 18,
+            height: 18,
+            borderRadius: "50%",
+            background: dotHex,
+            boxShadow: `0 0 12px ${dotHex}`,
+            flexShrink: 0,
+            display: "inline-block",
+          }}
+        />
+        {/* Caption text */}
+        <span
+          style={{
+            fontFamily: `${FONT_SANS}, sans-serif`,
+            fontSize,
+            fontWeight,
+            letterSpacing,
+            lineHeight: 1.12,
+            textAlign: "center",
+            color: baseColor,
+          }}
+        >
+          {renderText()}
+        </span>
+      </div>
     </div>
   );
 }

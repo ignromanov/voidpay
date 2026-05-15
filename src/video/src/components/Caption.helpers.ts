@@ -84,11 +84,14 @@ export function computeWordPopColorOpacity(
   startAt: number,
   endAt: number,
 ): number {
-  const visibleDuration = endAt - startAt;
-  const holdEnd = startAt + visibleDuration * 0.9;
+  // 4fr fade-in, hold, 6fr fade-out — covers the full visible window.
+  // For captions shorter than 10fr (off-spec), clamp to a single-frame in/out
+  // to keep inputRange strictly monotonic.
+  const inEnd = Math.min(startAt + 4, endAt - 1);
+  const outStart = Math.max(inEnd + 1, endAt - 6);
   return interpolate(
     frame,
-    [startAt, startAt + 4, holdEnd, endAt - 6],
+    [startAt, inEnd, outStart, endAt],
     [0, 1, 1, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
