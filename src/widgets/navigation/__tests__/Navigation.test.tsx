@@ -4,12 +4,12 @@ import { render, screen, createNavigationMock } from '@/shared/lib/test-utils'
 // Mock next/navigation with shared factory
 vi.mock('next/navigation', () => createNavigationMock({ pathname: '/' }))
 
-// isTelegramWebView — default false; individual tests override
+// isHostileInAppBrowser — default false; individual tests override
 vi.mock('@/shared/lib', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/shared/lib')>()
   return {
     ...actual,
-    isTelegramWebView: vi.fn(() => false),
+    isHostileInAppBrowser: vi.fn(() => false),
   }
 })
 
@@ -33,14 +33,14 @@ vi.mock('@/features/wallet-connect', () => ({
   },
 }))
 
-import { isTelegramWebView } from '@/shared/lib'
+import { isHostileInAppBrowser } from '@/shared/lib'
 import { Navigation } from '../Navigation'
 
 describe('Navigation', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     capturedOnBeforeConnect = undefined
-    vi.mocked(isTelegramWebView).mockReturnValue(false)
+    vi.mocked(isHostileInAppBrowser).mockReturnValue(false)
   })
 
   describe('rendering', () => {
@@ -95,21 +95,21 @@ describe('Navigation', () => {
     })
   })
 
-  describe('Telegram WebView intercept', () => {
+  describe('hostile IAB intercept', () => {
     it('passes onBeforeConnect=undefined to WalletButton in regular browser', () => {
-      vi.mocked(isTelegramWebView).mockReturnValue(false)
+      vi.mocked(isHostileInAppBrowser).mockReturnValue(false)
       render(<Navigation />)
       expect(capturedOnBeforeConnect).toBeUndefined()
     })
 
-    it('passes onBeforeConnect callback to WalletButton in Telegram WebView', () => {
-      vi.mocked(isTelegramWebView).mockReturnValue(true)
+    it('passes onBeforeConnect callback to WalletButton in hostile in-app browser', () => {
+      vi.mocked(isHostileInAppBrowser).mockReturnValue(true)
       render(<Navigation />)
       expect(capturedOnBeforeConnect).toBeTypeOf('function')
     })
 
-    it('onBeforeConnect calls gate.open() and returns true in Telegram', async () => {
-      vi.mocked(isTelegramWebView).mockReturnValue(true)
+    it('onBeforeConnect calls gate.open() and returns true in hostile IAB', async () => {
+      vi.mocked(isHostileInAppBrowser).mockReturnValue(true)
       render(<Navigation />)
 
       const result = capturedOnBeforeConnect?.()

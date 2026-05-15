@@ -10,8 +10,7 @@ vi.mock('@/shared/lib', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/shared/lib')>()
   return {
     ...actual,
-    isTelegramWebView: vi.fn(() => false),
-    isInAppBrowser: vi.fn(() => false),
+    isHostileInAppBrowser: vi.fn(() => false),
   }
 })
 
@@ -19,14 +18,10 @@ vi.mock('@/shared/lib', async (importOriginal) => {
 // Helpers
 // ---------------------------------------------------------------------------
 
-import { isTelegramWebView, isInAppBrowser } from '@/shared/lib'
+import { isHostileInAppBrowser } from '@/shared/lib'
 
-function setTelegram(value: boolean) {
-  vi.mocked(isTelegramWebView).mockReturnValue(value)
-}
-
-function setInAppBrowser(value: boolean) {
-  vi.mocked(isInAppBrowser).mockReturnValue(value)
+function setHostile(value: boolean) {
+  vi.mocked(isHostileInAppBrowser).mockReturnValue(value)
 }
 
 // ---------------------------------------------------------------------------
@@ -36,8 +31,7 @@ function setInAppBrowser(value: boolean) {
 describe('InAppBrowserGuard', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    setTelegram(false)
-    setInAppBrowser(false)
+    setHostile(false)
   })
 
   // ─── Render branches ────────────────────────────────────────────────────
@@ -47,27 +41,16 @@ describe('InAppBrowserGuard', () => {
     expect(container.firstChild).toBeNull()
   })
 
-  it('renders dismissible banner for non-Telegram in-app browser', () => {
-    setTelegram(false)
-    setInAppBrowser(true)
-    render(<InAppBrowserGuard />)
-    expect(screen.getByText('In-app browser detected')).toBeInTheDocument()
-    // Panel must NOT be present
-    expect(screen.queryByText(/open in safari/i)).toBeNull()
-  })
-
-  it('renders passive bottom panel when isTelegramWebView is true', () => {
-    setTelegram(true)
+  it('renders passive bottom panel when isHostileInAppBrowser is true', () => {
+    setHostile(true)
     render(<InAppBrowserGuard />)
     expect(screen.getByText(/open in safari\/chrome to pay/i)).toBeInTheDocument()
     // No dialog role — panel is informational, not a dialog
     expect(screen.queryByRole('dialog')).toBeNull()
-    // Banner must NOT be present
-    expect(screen.queryByText('In-app browser detected')).toBeNull()
   })
 
   it('bottom panel sits above floating Footer (uses calc offset, not bottom-0)', () => {
-    setTelegram(true)
+    setHostile(true)
     const { container } = render(<InAppBrowserGuard />)
     // The outermost panel div must NOT use bottom-0; it must use the safe-area-aware offset
     const panel = container.firstElementChild as HTMLElement
@@ -75,8 +58,8 @@ describe('InAppBrowserGuard', () => {
     expect(panel.className).toContain('bottom-[calc(2.75rem+env(safe-area-inset-bottom,0px))]')
   })
 
-  it('does not render interstitial (old blocking dialog) in Telegram', () => {
-    setTelegram(true)
+  it('does not render interstitial (old blocking dialog) in hostile IAB', () => {
+    setHostile(true)
     render(<InAppBrowserGuard />)
     expect(screen.queryByText('Wallet connection unavailable')).toBeNull()
   })
@@ -84,7 +67,7 @@ describe('InAppBrowserGuard', () => {
   // ─── Copy link — behaviour assertions ───────────────────────────────────
 
   it('keeps fallback hidden when clipboard.writeText resolves', async () => {
-    setTelegram(true)
+    setHostile(true)
     vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined)
 
     const user = userEvent.setup()
@@ -96,7 +79,7 @@ describe('InAppBrowserGuard', () => {
   })
 
   it('shows fallback input when clipboard.writeText rejects', async () => {
-    setTelegram(true)
+    setHostile(true)
     vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('NotAllowedError'))
 
     const user = userEvent.setup()
@@ -109,7 +92,7 @@ describe('InAppBrowserGuard', () => {
   // ─── Show QR Code CTA ────────────────────────────────────────────────────
 
   it('calls onShowQRClick when Show QR Code button is clicked', async () => {
-    setTelegram(true)
+    setHostile(true)
     const onShowQRClick = vi.fn()
     const user = userEvent.setup()
     render(<InAppBrowserGuard onShowQRClick={onShowQRClick} />)
@@ -120,21 +103,8 @@ describe('InAppBrowserGuard', () => {
   })
 
   it('does not render Show QR Code button when onShowQRClick is not provided', () => {
-    setTelegram(true)
+    setHostile(true)
     render(<InAppBrowserGuard />)
     expect(screen.queryByRole('button', { name: /show qr code/i })).toBeNull()
-  })
-
-  // ─── Banner branch preserved ─────────────────────────────────────────────
-
-  it('banner is dismissible via X button', async () => {
-    setInAppBrowser(true)
-    const user = userEvent.setup()
-    render(<InAppBrowserGuard />)
-
-    expect(screen.getByText('In-app browser detected')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: /dismiss/i }))
-
-    expect(screen.queryByText('In-app browser detected')).toBeNull()
   })
 })

@@ -13,7 +13,7 @@ vi.mock('@rainbow-me/rainbowkit', () => ({
 vi.mock('@/features/analytics/lib/track', () => ({
   track: vi.fn(),
   AnalyticsEvent: {
-    MOBILE_TG_PAY_INTERCEPTED: 'mobile-tg-pay-intercepted',
+    MOBILE_IAB_PAY_INTERCEPTED: 'mobile-iab-pay-intercepted',
   },
 }))
 

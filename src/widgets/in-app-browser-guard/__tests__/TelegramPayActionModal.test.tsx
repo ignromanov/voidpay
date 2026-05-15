@@ -15,7 +15,7 @@ vi.mock('@rainbow-me/rainbowkit', () => ({
 vi.mock('@/features/analytics/lib/track', () => ({
   track: vi.fn(),
   AnalyticsEvent: {
-    MOBILE_TG_PAY_INTERCEPTED: 'mobile-tg-pay-intercepted',
+    MOBILE_IAB_PAY_INTERCEPTED: 'mobile-iab-pay-intercepted',
   },
 }))
 
@@ -107,7 +107,7 @@ describe('TelegramPayActionModal', () => {
     render(<TelegramPayActionModal open={true} onClose={vi.fn()} />)
 
     expect(track).toHaveBeenCalledOnce()
-    expect(track).toHaveBeenCalledWith('mobile-tg-pay-intercepted')
+    expect(track).toHaveBeenCalledWith('mobile-iab-pay-intercepted')
   })
 
   it('does not fire analytics when modal is closed', () => {
