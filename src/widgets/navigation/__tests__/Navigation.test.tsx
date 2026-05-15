@@ -13,14 +13,14 @@ vi.mock('@/shared/lib', async (importOriginal) => {
   }
 })
 
-// Mock TelegramGateProvider / useTelegramGate
+// Mock OpenInBrowserGateProvider / useOpenInBrowserGate
 const mockGateOpen = vi.fn()
 vi.mock('@/widgets/in-app-browser-guard', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/widgets/in-app-browser-guard')>()
   return {
     ...actual,
-    TelegramGateProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    useTelegramGate: vi.fn(() => ({ isOpen: false, open: mockGateOpen, close: vi.fn() })),
+    OpenInBrowserGateProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    useOpenInBrowserGate: vi.fn(() => ({ isOpen: false, open: mockGateOpen, close: vi.fn() })),
   }
 })
 

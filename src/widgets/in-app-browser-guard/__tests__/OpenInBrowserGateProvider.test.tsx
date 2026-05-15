@@ -1,5 +1,5 @@
 import { render, screen, userEvent } from '@/shared/lib/test-utils'
-import { TelegramGateProvider, useTelegramGate } from '../TelegramGateProvider'
+import { OpenInBrowserGateProvider, useOpenInBrowserGate } from '../OpenInBrowserGateProvider'
 
 // ---------------------------------------------------------------------------
 // Module mocks
@@ -21,12 +21,12 @@ vi.mock('@/features/analytics/lib/track', () => ({
 // ---------------------------------------------------------------------------
 
 function OpenButton() {
-  const gate = useTelegramGate()
+  const gate = useOpenInBrowserGate()
   return <button onClick={gate.open}>Open gate</button>
 }
 
 function StateDisplay() {
-  const gate = useTelegramGate()
+  const gate = useOpenInBrowserGate()
   return <span data-testid="gate-state">{gate.isOpen ? 'open' : 'closed'}</span>
 }
 
@@ -34,16 +34,16 @@ function StateDisplay() {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('TelegramGateProvider', () => {
+describe('OpenInBrowserGateProvider', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('starts with modal closed', () => {
     render(
-      <TelegramGateProvider>
+      <OpenInBrowserGateProvider>
         <StateDisplay />
-      </TelegramGateProvider>,
+      </OpenInBrowserGateProvider>,
     )
     expect(screen.getByTestId('gate-state').textContent).toBe('closed')
     expect(screen.queryByRole('dialog')).toBeNull()
@@ -52,10 +52,10 @@ describe('TelegramGateProvider', () => {
   it('open() shows the modal', async () => {
     const user = userEvent.setup()
     render(
-      <TelegramGateProvider>
+      <OpenInBrowserGateProvider>
         <OpenButton />
         <StateDisplay />
-      </TelegramGateProvider>,
+      </OpenInBrowserGateProvider>,
     )
     await user.click(screen.getByRole('button', { name: 'Open gate' }))
     expect(screen.getByTestId('gate-state').textContent).toBe('open')
@@ -65,10 +65,10 @@ describe('TelegramGateProvider', () => {
   it('close() hides the modal (via dialog Close button)', async () => {
     const user = userEvent.setup()
     render(
-      <TelegramGateProvider>
+      <OpenInBrowserGateProvider>
         <OpenButton />
         <StateDisplay />
-      </TelegramGateProvider>,
+      </OpenInBrowserGateProvider>,
     )
     await user.click(screen.getByRole('button', { name: 'Open gate' }))
     expect(screen.getByRole('dialog')).toBeInTheDocument()
@@ -79,11 +79,11 @@ describe('TelegramGateProvider', () => {
     expect(screen.getByTestId('gate-state').textContent).toBe('closed')
   })
 
-  it('useTelegramGate returns NOOP_GATE when used outside provider', () => {
+  it('useOpenInBrowserGate returns NOOP_GATE when used outside provider', () => {
     // Orphan consumer: no module-level capture (react-hooks/globals rule).
     // open/close are no-ops; rendered output reflects gate.isOpen.
     function Orphan() {
-      const gate = useTelegramGate()
+      const gate = useOpenInBrowserGate()
       // Invoke no-ops during render to verify they don't throw and don't change state.
       gate.open()
       gate.close()

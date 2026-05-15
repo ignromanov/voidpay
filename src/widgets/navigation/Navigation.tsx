@@ -7,9 +7,9 @@
  * - Left: VoidLogo + brand name (links to Home)
  * - Right: History link, Create button, Connect wallet
  *
- * In Telegram WebView: the wallet "Connect" button is intercepted by the
- * TelegramGateProvider so that clicking it opens TelegramPayActionModal
- * (the "go to browser / Show QR Code" gate) instead of the RainbowKit modal
+ * In hostile in-app browsers: the wallet "Connect" button is intercepted by the
+ * OpenInBrowserGateProvider so that clicking it opens OpenInBrowserModal
+ * (the "open in another browser" gate) instead of the RainbowKit modal
  * directly. Connected-state buttons (chain, account) are not intercepted.
  */
 
@@ -20,14 +20,14 @@ import { VoidLogo } from '@/shared/ui/void-logo'
 import { Button } from '@/shared/ui/button'
 import { LazyWalletButton as WalletButton } from '@/features/wallet-connect'
 import { isHostileInAppBrowser } from '@/shared/lib'
-import { TelegramGateProvider, useTelegramGate } from '@/widgets/in-app-browser-guard'
+import { OpenInBrowserGateProvider, useOpenInBrowserGate } from '@/widgets/in-app-browser-guard'
 
 /**
  * WalletButton wrapper that intercepts the connect click in Tier-1 hostile
- * in-app browsers. Must be a child of TelegramGateProvider.
+ * in-app browsers. Must be a child of OpenInBrowserGateProvider.
  */
-function HostileIABAwareWalletButton() {
-  const gate = useTelegramGate()
+function OpenInBrowserAwareWalletButton() {
+  const gate = useOpenInBrowserGate()
   const isHostile = isHostileInAppBrowser()
   const extraProps = isHostile ? { onBeforeConnect: () => { gate.open(); return true } } : {}
   return <WalletButton {...extraProps} />
@@ -38,7 +38,7 @@ export function Navigation() {
   const isHistory = pathname === '/history'
 
   return (
-    <TelegramGateProvider>
+    <OpenInBrowserGateProvider>
       <nav className="fixed top-0 right-0 left-0 z-50 border-b border-zinc-800/30 bg-zinc-950/60 backdrop-blur-xl pt-[env(safe-area-inset-top,0px)] print:hidden">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
@@ -72,11 +72,11 @@ export function Navigation() {
               {/* Separator */}
               <div className="mx-2 h-6 w-px bg-zinc-800" />
 
-              <HostileIABAwareWalletButton />
+              <OpenInBrowserAwareWalletButton />
             </div>
           </div>
         </div>
       </nav>
-    </TelegramGateProvider>
+    </OpenInBrowserGateProvider>
   )
 }

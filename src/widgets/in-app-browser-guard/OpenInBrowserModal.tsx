@@ -12,7 +12,7 @@ import { Button } from '@/shared/ui/button'
 import { toast } from '@/shared/lib/toast'
 import { track, AnalyticsEvent } from '@/features/analytics/lib/track'
 
-interface TelegramPayActionModalProps {
+interface OpenInBrowserModalProps {
   open: boolean
   onClose: () => void
 }
@@ -28,7 +28,7 @@ interface TelegramPayActionModalProps {
  * (RK shows wallet list first; users misread it as a dead end). Removed
  * 2026-05-15.
  */
-export function TelegramPayActionModal({ open, onClose }: TelegramPayActionModalProps) {
+export function OpenInBrowserModal({ open, onClose }: OpenInBrowserModalProps) {
   const [clipboardFailed, setClipboardFailed] = useState(false)
   const firedRef = useRef(false)
 

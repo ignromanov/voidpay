@@ -23,7 +23,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { usePathname } from 'next/navigation'
 import { useAccount } from 'wagmi'
 import { track, AnalyticsEvent } from '@/features/analytics'
-import { TelegramGateProvider } from '@/widgets/in-app-browser-guard'
+import { OpenInBrowserGateProvider } from '@/widgets/in-app-browser-guard'
 
 // Context to track Web3 loading state
 const Web3LoadedContext = createContext(false)
@@ -97,14 +97,14 @@ export function LazyWeb3Provider({ children }: LazyWeb3ProviderProps) {
 
   // Always render Web3Provider - it handles its own loading state internally
   // This prevents the unmount/remount cycle that caused flashing
-  // TelegramGateProvider must sit inside Web3Provider so useConnectModal resolves
+  // OpenInBrowserGateProvider must sit inside Web3Provider so useConnectModal resolves
   return (
     <Web3LoadedContext.Provider value={isLoaded}>
       <Web3Provider>
-        <TelegramGateProvider>
+        <OpenInBrowserGateProvider>
           <WalletConnectTracker />
           {children}
-        </TelegramGateProvider>
+        </OpenInBrowserGateProvider>
       </Web3Provider>
     </Web3LoadedContext.Provider>
   )

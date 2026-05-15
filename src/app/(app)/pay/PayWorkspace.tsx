@@ -38,8 +38,8 @@ const PayButton = dynamic(
   },
 )
 
-const TelegramPayButton = dynamic(
-  () => import('./TelegramPayButton').then((m) => ({ default: m.TelegramPayButton })),
+const OpenInBrowserPayButton = dynamic(
+  () => import('./OpenInBrowserPayButton').then((m) => ({ default: m.OpenInBrowserPayButton })),
   {
     ssr: false,
     loading: () => (
@@ -241,7 +241,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                         </p>
                       </div>
                     ) : isHostile ? (
-                      <TelegramPayButton />
+                      <OpenInBrowserPayButton />
                     ) : (
                       <PayButton
                         invoice={invoice}
