@@ -46,36 +46,51 @@ const PAPER_PROPS_PAID = {
   magicDustEmphasis: true,
 } as const;
 
-// Phase timing — round-9m reshuffle (S3-local frames):
-//   0–200   idle:disconnected   ("Connect Wallet" visible)
-// 195–204   press-scale on Connect (THE only press in this scene)
-// 200–220   idle:connected      (wallet connected, network switch toast)
-// 220–310   sending             (Magic Dust peak window)
-// 310–440   confirming          (progress bar visible, paper still PENDING)
-// 440–575   success             (paper flips PAID)
+// Phase timing — round-9r (S3-local frames):
+//   0–194   idle:disconnected   ("Connect Wallet" button)
+// 195–204   press-scale on Connect
+// 195–220   idle:connecting     (spinner / "Connecting..." state)
+// 220–245   idle:wrong-network  ("Switch to Arbitrum" button, ~25fr ≈ 0.83s)
+// 246–250   press-scale on Switch
+// 246–270   idle:switching      (spinner / "Switching..." state, ~25fr)
+// 270–290   idle:ready          ("Pay" button visible, ~20fr legibility window)
+// 291–295   press-scale on Pay
+// 291–380   sending             (Magic Dust window aligned)
+// 380–465   confirming          (progress bar visible, paper still PENDING; −60fr from R9m)
+// 465–575   success             (paper flips PAID; +60fr paid-alone window vs R9m)
 //
-// Single-press model: user clicks Connect ONCE, then continuous progress.
-const PRESS_CONNECT        = 195;
-const PHASE_IDLE_CONNECTED = 200;
-const PHASE_SENDING        = 220;
-const PHASE_CONFIRMING     = 310;
-const SUCCESS              = 440;
-// WalletPill shows connected once idle:connected phase begins (200).
-const PHASE_CONNECTED = PHASE_IDLE_CONNECTED;
-// Magic Dust window — aligned with sending phase (220-310).
-const MAGIC_DUST_HIGHLIGHT = 220;
-const MAGIC_DUST_PEAK_END  = 310;
+// Single-press model: Connect → Switch → Pay each get one press trigger.
+const PRESS_CONNECT        = 195;  // R9r
+const PRESS_SWITCH         = 246;  // R9r: new Switch Network press
+const PRESS_PAY            = 291;  // R9r: new Pay press
+const PHASE_CONNECTING     = 195;  // R9r
+const PHASE_WRONG_NETWORK  = 220;  // R9r
+const PHASE_SWITCHING      = 246;  // R9r
+const PHASE_READY          = 270;  // R9r: "Pay" button visible
+const PHASE_SENDING        = 291;  // R9r (was 220)
+const PHASE_CONFIRMING     = 380;  // R9r (was 310; −60fr from R9m = confirming shortened)
+const SUCCESS              = 465;  // R9r (was 440; −60fr → paid-alone +2s)
+// WalletPill shows connected once connecting phase begins (195).
+const PHASE_CONNECTED = PHASE_CONNECTING;
+// Magic Dust window — aligned with sending phase (291-380).
+const MAGIC_DUST_HIGHLIGHT = 291;  // R9r
+const MAGIC_DUST_PEAK_END  = 380;  // R9r
 const CONFIRMATIONS_REQUIRED = 12;
 
-// Panel exits at 505-525, giving paper-alone window (505-575).
-const PANEL_EXIT_START = 505;
-const PANEL_EXIT_END   = 525;
+// Panel exits at 445-465, giving paper-alone window (465-575). R9r: −60fr from R9m.
+const PANEL_EXIT_START = 445;  // R9r (was 505)
+const PANEL_EXIT_END   = 465;  // R9r (was 525)
 
+// R9r: stepAt returns correct step+idleSubState across full connection flow.
+// 'connecting' and 'switching' are top-level PaymentStep values (not idle sub-states).
 const stepAt = (frame: number): { step: PaymentStep; idleSubState: IdleSubState } => {
-  if (frame >= SUCCESS) return { step: 'success', idleSubState: 'ready' };
-  if (frame >= PHASE_CONFIRMING) return { step: 'confirming', idleSubState: 'ready' };
-  if (frame >= PHASE_SENDING) return { step: 'sending', idleSubState: 'ready' };
-  if (frame >= PHASE_IDLE_CONNECTED) return { step: 'idle', idleSubState: 'ready' };
+  if (frame >= SUCCESS)           return { step: 'success',    idleSubState: 'ready' };
+  if (frame >= PHASE_CONFIRMING)  return { step: 'confirming', idleSubState: 'ready' };
+  if (frame >= PHASE_SENDING)     return { step: 'sending',    idleSubState: 'ready' };
+  if (frame >= PHASE_READY)       return { step: 'idle',       idleSubState: 'ready' };
+  if (frame >= PHASE_SWITCHING)   return { step: 'switching',  idleSubState: 'ready' };
+  if (frame >= PHASE_WRONG_NETWORK) return { step: 'idle',     idleSubState: 'wrong-network' };
+  if (frame >= PHASE_CONNECTING)  return { step: 'connecting', idleSubState: 'disconnected' };
   return { step: 'idle', idleSubState: 'disconnected' };
 };
 
@@ -158,8 +173,11 @@ export const PayScene: React.FC = () => {
     step === 'confirming' ? 'confirming' :
     'pending';
 
-  // Round 9a-patch2 (C7): only one press in single-press model.
-  const ctaPressTriggerFrame = frame >= PRESS_CONNECT ? PRESS_CONNECT : -1;
+  // R9r: three presses — Connect, Switch, Pay. Pick the most-recent active trigger.
+  const ctaPressTriggerFrame =
+    frame >= PRESS_PAY     ? PRESS_PAY     :
+    frame >= PRESS_SWITCH  ? PRESS_SWITCH  :
+    frame >= PRESS_CONNECT ? PRESS_CONNECT : -1;
 
   const confirmations = useMemo(
     () => ({
@@ -177,13 +195,10 @@ export const PayScene: React.FC = () => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
-  // UI dim during Magic Dust peak — subordinates chrome+panel to caption+halo
-  const uiDimOpacity = interpolate(
-    frame,
-    [200, 212, 308, 320],
-    [1.0, 0.4, 0.4, 1.0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
+  // R9r: No dim in either aspect per user requirement.
+  // Portrait: "Don't dim the screen on payment panel."
+  // Landscape: stricter — no dim and no blur.
+  const uiDimOpacity = 1.0;
 
   const panelTxHash = step === 'confirming' || step === 'success' ? DEMO_TX_HASH : undefined;
 
@@ -204,20 +219,19 @@ export const PayScene: React.FC = () => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
-  // 206edeb fix: paper blurred+dimmed while panel is foreground (F9-F11).
-  // Transitions to sharp+full at PANEL_EXIT_END (545) — paper-alone window (F12).
-  const paperBlur = interpolate(
-    frame,
-    [PANEL_EXIT_START, PANEL_EXIT_END],
-    [2, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
-  const paperDim = interpolate(
-    frame,
-    [PANEL_EXIT_START, PANEL_EXIT_END],
-    [0.4, 1],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
+  // R9r: aspect-conditional blur/dim policy.
+  // Portrait: blur paper while panel is foreground (invoice hidden behind panel),
+  //   transitions to sharp at PANEL_EXIT_END. No dim (paperDim constant 1.0).
+  // Landscape: no blur, no dim — paper always sharp and full-opacity.
+  const paperBlur = isLandscape
+    ? 0
+    : interpolate(
+        frame,
+        [PANEL_EXIT_START, PANEL_EXIT_END],
+        [2, 0],
+        { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+      );
+  const paperDim = 1.0;
 
   // Shared panel JSX — used in both portrait and landscape branches
   const panelCascadeStyle = (
@@ -517,11 +531,11 @@ export const PayScene: React.FC = () => {
           )}
         </div>
 
-        {/* Narrative toasts */}
-        <RemotionFakeToast variant="success" title="Wallet connected" startAt={200} hold={40} stackOffset={0} anchor="below-panel" />
-        <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={210} hold={40} stackOffset={0} anchor="below-panel" />
-        <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={310} hold={140} stackOffset={0} anchor="below-panel" />
-        <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={440} hold={120} stackOffset={0} anchor="below-panel" />
+        {/* Narrative toasts — R9r: frames aligned to new phase constants; confirming toast right-aligned (Concern 4) */}
+        <RemotionFakeToast variant="success" title="Wallet connected" startAt={220} hold={40} stackOffset={0} anchor="below-panel" />
+        <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={270} hold={40} stackOffset={0} anchor="below-panel" />
+        <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={380} hold={80} stackOffset={0} anchor="below-panel" rightAlign />
+        <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={465} hold={100} stackOffset={0} anchor="below-panel" />
 
         {/* Captions from caption-data (landscape) */}
         {PAY_CAPTIONS_LANDSCAPE.map((c) => (
@@ -634,11 +648,11 @@ export const PayScene: React.FC = () => {
         )}
       </div>
 
-      {/* Narrative toasts — anchored below panel right edge */}
-      <RemotionFakeToast variant="success" title="Wallet connected" startAt={200} hold={40} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={210} hold={40} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={310} hold={140} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={440} hold={120} stackOffset={0} anchor="below-panel" />
+      {/* Narrative toasts — R9r: frames aligned to new phase constants; portrait anchor unchanged */}
+      <RemotionFakeToast variant="success" title="Wallet connected" startAt={220} hold={40} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={270} hold={40} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={380} hold={80} stackOffset={0} anchor="below-panel" />
+      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={465} hold={100} stackOffset={0} anchor="below-panel" />
 
       {/* Captions from caption-data (portrait) */}
       {PAY_CAPTIONS_VERTICAL.map((c) => (

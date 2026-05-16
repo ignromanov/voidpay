@@ -207,7 +207,7 @@ export const ShareScene: React.FC = () => {
             >
               {/* Violet top gradient bar */}
               <div style={{
-                height: 4,
+                height: 8,
                 background: "linear-gradient(90deg, #8b5cf6, #d946ef, #8b5cf6)",
               }} />
 
@@ -389,7 +389,7 @@ export const ShareScene: React.FC = () => {
       >
         {/* Violet top gradient bar — matches real ShareModal */}
         <div style={{
-          height: 4,
+          height: 8,
           background: "linear-gradient(90deg, #8b5cf6, #d946ef, #8b5cf6)",
         }} />
 

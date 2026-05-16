@@ -31,7 +31,7 @@ export const getHookCaption = (variant: HookVariant, isVertical: boolean): Capti
     endAt:         85,
     weight:        700,
     emphasizedWord: h.emphasized,
-    position:      isVertical ? 45 : 50,
+    position:      isVertical ? 45 : 80,
     fontSize:      isVertical ? 72 : 81,
     variant:       "violet",
   };
@@ -44,7 +44,7 @@ export const getOutroCaption = (isVertical: boolean): CaptionEntry => ({
   endAt:         isVertical ? 70 : 75,
   weight:        700,
   emphasizedWord: "shut down",
-  position:      50,
+  position:      isVertical ? 50 : 80,
   fontSize:      isVertical ? 86 : 81,
   variant:       "violet",
 });

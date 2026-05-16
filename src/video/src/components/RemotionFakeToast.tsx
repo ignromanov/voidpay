@@ -28,6 +28,12 @@ type Props = {
    * - 'below-panel' — just below the PaymentPanel's lower edge, right-aligned to panel
    */
   anchor?: "bottom-right" | "below-panel";
+  /**
+   * R9r Concern 4: when true, pins toast to right:0 instead of right:"18%".
+   * Used in landscape to avoid collision with captions in the bottom-third area.
+   * Has no effect in portrait (portrait uses center alignment regardless).
+   */
+  rightAlign?: boolean;
 };
 
 export const RemotionFakeToast: React.FC<Props> = ({
@@ -39,6 +45,7 @@ export const RemotionFakeToast: React.FC<Props> = ({
   fadeOut = 12,
   stackOffset = 0,
   anchor = "bottom-right",
+  rightAlign = false,
 }) => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
@@ -71,7 +78,8 @@ export const RemotionFakeToast: React.FC<Props> = ({
       }
     : (anchor === "below-panel"
         ? {
-            right: "18%",
+            // R9r Concern 4: rightAlign pins to right edge (avoids caption collision in landscape)
+            right: rightAlign ? 0 : "18%",
             bottom: height - panelBottom - 80 - stackOffset,
           }
         : {
@@ -98,7 +106,7 @@ export const RemotionFakeToast: React.FC<Props> = ({
         gap: 12,
         boxShadow: "0 20px 25px -5px rgba(0,0,0,0.5)",
         maxWidth: 540,
-        zIndex: 9999,
+        zIndex: 90,  // R9r: Caption.tsx uses 100 — toast renders below captions
       }}
     >
       <span style={{ fontSize: 32, color: style.iconColor }}>{style.icon}</span>
