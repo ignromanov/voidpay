@@ -18,9 +18,15 @@ import { FONT_MONO } from "../fonts";
 type BrowserChromeProps = {
   /** Opacity for entrance animation. Default 1. */
   opacity?: number;
+  /**
+   * Extension point for D2 (Phase 5) — account chip in the top-right of the chrome bar.
+   * Not yet implemented; reserved prop so callers can wire it when the chip is built.
+   * Default false.
+   */
+  showAccountChip?: boolean;
 };
 
-export const BrowserChrome: React.FC<BrowserChromeProps> = ({ opacity = 1 }) => {
+export const BrowserChrome: React.FC<BrowserChromeProps> = ({ opacity = 1, showAccountChip: _showAccountChip = false }) => {
   const { width, height } = useVideoConfig();
   const isPortrait = width < height;
 

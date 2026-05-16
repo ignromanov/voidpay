@@ -12,7 +12,6 @@ import { Caption } from "../../components/Caption";
 import { PAY_CAPTIONS_LANDSCAPE, PAY_CAPTIONS_V2_LANDSCAPE } from "../captions/pay-captions";
 import type { HookVariant } from "../captions/thesis-captions";
 import { NetworkBackgroundLayer } from "../../components/NetworkBackgroundLayer";
-import { BrowserChrome } from "../../components/BrowserChrome";
 import { WalletPill } from "../../components/WalletPill";
 import {
   CHROME_HEIGHT_LANDSCAPE,
@@ -86,10 +85,6 @@ export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = "v1" }) => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
-  const chromeOpacity = interpolate(frame, [0, 20], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
   const walletOpacity = interpolate(frame, [0, 20], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -192,9 +187,6 @@ export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = "v1" }) => {
           </div>
         </div>
         <PanelBorderStrip />
-
-        {/* BrowserChrome — full-width top overlay over BOTH columns */}
-        <BrowserChrome opacity={chromeOpacity} />
 
         {/* WalletPill — top-right of FULL viewport (not confined to right column) */}
         {frame < SUCCESS && (

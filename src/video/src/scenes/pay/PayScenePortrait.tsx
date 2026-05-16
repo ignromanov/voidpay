@@ -7,7 +7,6 @@ import { Caption } from "../../components/Caption";
 import { PAY_CAPTIONS_VERTICAL, PAY_CAPTIONS_V2_VERTICAL } from "../captions/pay-captions";
 import type { HookVariant } from "../captions/thesis-captions";
 import { NetworkBackgroundLayer } from "../../components/NetworkBackgroundLayer";
-import { BrowserChrome } from "../../components/BrowserChrome";
 import { WalletPill } from "../../components/WalletPill";
 import { PaperBackdrop } from "../../components/PaperBackdrop";
 import {
@@ -92,10 +91,6 @@ export const PayScenePortrait: React.FC<Props> = ({ hookVariant = "v1" }) => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
-  const chromeOpacity = interpolate(frame, [0, 20], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
   const walletOpacity = interpolate(frame, [0, 20], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -176,9 +171,6 @@ export const PayScenePortrait: React.FC<Props> = ({ hookVariant = "v1" }) => {
         </div>
         {/* Border/shadow strip placed AFTER panel in DOM so this <style> wins the cascade over Tailwind */}
         <PanelBorderStrip />
-
-        {/* C6: BrowserChrome — mock .chrome spec, full S3 duration (F9-F12) */}
-        <BrowserChrome opacity={chromeOpacity} />
 
         {/* C7: WalletPill — disconnected (F9) → connected (F10-F11), exits at success (F12) */}
         {frame < SUCCESS && (
