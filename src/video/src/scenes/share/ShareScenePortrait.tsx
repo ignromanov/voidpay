@@ -185,9 +185,8 @@ export const ShareScenePortrait: React.FC<Props> = ({
         {/* F8 surgical: body side padding = 36px */}
         <div style={{ padding: "0 36px 36px 36px", position: "relative" }}>
           {/* D44: fixed-height inner wrapper — prevents container reflow on tab swap.
-               LinkTab height: Permalink(~132) + CopyBtn(78) + SocialRow(60) + OGToggle(~50)
-               + PrivacyNote(~50) + gaps(30×4=120) ≈ 490px. QRTab ≈ 441px (50px shorter).
-               Setting minHeight=490 ensures container stays constant through the swap. */}
+               LinkTab height: Permalink(~132) + CopyBtn(78) + SocialRow(60) + PrivacyNote(~50)
+               + gaps(30×3=90) ≈ 410px. QRTab ≈ 441px. minHeight=490 keeps constant through swap. */}
           <div style={{ position: "relative", minHeight: 490 }}>
             {/* Link tab — fades out at COPY_CLICK_FRAME; absolute while fading so QR holds height */}
             <div style={{

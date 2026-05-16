@@ -7,7 +7,6 @@ import { FONT_SANS } from "../fonts";
  *   - Color-coded permalink display
  *   - Copy Link primary CTA
  *   - 3-col social share row (Telegram / Twitter / Email)
- *   - Link preview card toggle (OG, amber)
  *   - Privacy by design note
  *
  * No tabs (Link/QR) rendered here — ShareScene drives tab-switch animation
@@ -23,8 +22,6 @@ import { FONT_SANS } from "../fonts";
 interface RemotionLinkTabProps {
   url: string;
   copied: boolean;
-  /** Whether OG toggle is shown as active (amber) */
-  ogEnabled?: boolean;
 }
 
 /**
@@ -34,7 +31,6 @@ function parseUrlParts(url: string): {
   protocol: string;
   domain: string;
   path: string;
-  ogParams: string;
   hash: string;
 } {
   try {
@@ -43,16 +39,15 @@ function parseUrlParts(url: string): {
       protocol: parsed.protocol + "//",
       domain: parsed.host,
       path: parsed.pathname,
-      ogParams: parsed.search,
       hash: parsed.hash,
     };
   } catch {
-    return { protocol: "", domain: "", path: url, ogParams: "", hash: "" };
+    return { protocol: "", domain: "", path: url, hash: "" };
   }
 }
 
-export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, ogEnabled = false }) => {
-  const { protocol, domain, path, ogParams, hash } = parseUrlParts(url);
+export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied }) => {
+  const { protocol, domain, path, hash } = parseUrlParts(url);
 
   // ι2: all internal text/spacing scaled ×1.5 from θ5 values.
   // Modal width bumped 600→660px in ShareScene to absorb the scaling without overflow.
@@ -87,9 +82,6 @@ export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, o
           <span style={{ color: "rgba(82, 82, 91, 1)" }}>{protocol}</span>
           <span style={{ color: "rgba(139, 92, 246, 1)", fontWeight: 600 }}>{domain}</span>
           <span style={{ color: "rgba(139, 92, 246, 0.7)" }}>{path}</span>
-          {ogEnabled && ogParams && (
-            <span style={{ color: "rgba(245, 158, 11, 1)" }}>{ogParams}</span>
-          )}
           {hash && <span style={{ color: "rgba(161, 161, 170, 0.8)" }}>{hash}</span>}
         </div>
       </div>
@@ -190,35 +182,6 @@ export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, o
         }}>
           <MailIcon size={19} style={{ color: "rgba(248, 113, 113, 1)" }} />
           Email
-        </div>
-      </div>
-
-      {/* OG toggle — amber, matching production */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "2px 4px" }}>
-        <div style={{
-          width: 27,
-          height: 27,
-          borderRadius: 6,
-          flexShrink: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: ogEnabled ? "rgba(245, 158, 11, 1)" : "transparent",
-          border: ogEnabled ? "1px solid rgba(245, 158, 11, 1)" : "1px solid rgba(82, 82, 91, 1)",
-        }}>
-          {ogEnabled && <CheckIcon size={16} style={{ color: "#fff" }} />}
-        </div>
-        <div>
-          <div style={{
-            fontSize: 18,
-            fontWeight: 500,
-            color: ogEnabled ? "rgba(251, 191, 36, 1)" : "rgba(113, 113, 122, 1)",
-          }}>
-            Link preview card
-          </div>
-          <div style={{ fontSize: 17, color: "rgba(82, 82, 91, 1)", marginTop: 2 }}>
-            Shows amount &amp; network in social previews
-          </div>
         </div>
       </div>
 
