@@ -57,7 +57,7 @@ export interface LineItemsSectionViewProps {
     description?: string
     quantity?: number
     rate?: string
-  }>
+  }> | undefined
   focused?: boolean
 }
 

@@ -97,7 +97,8 @@ export function InvoiceFormView({
         {...(networkLabel !== undefined && { networkLabel })}
         {...(tokenSymbol !== undefined && { tokenSymbol })}
         {...(chainId !== undefined && { chainId })}
-        focusedField={focusedField === 'token' || focusedField === 'network' ? focusedField : undefined}
+        {...(focusedField === 'token' && { focusedField })}
+        {...(focusedField === 'network' && { focusedField })}
       />
 
       {total && (
