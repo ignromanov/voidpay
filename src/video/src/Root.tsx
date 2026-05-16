@@ -169,7 +169,7 @@ export const RemotionRoot: React.FC = () => {
         {/* Scene 5 still — Magic Dust moment per creative-brief-v2 §3.
             Composition (not Still) so `useCurrentFrame()` inside PayScene can
             advance to the Magic Dust peak. Render poster with:
-            pnpm exec remotion still Thumbnail-Scene5 public/video/poster-scene5.png --frame=240 */}
+            pnpm exec remotion still Thumbnail-Scene5 public/video/poster-scene5.png --frame=291 */}
         <Composition
           id="Thumbnail-Scene5"
           component={PayScene}

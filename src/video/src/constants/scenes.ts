@@ -13,7 +13,7 @@ export const SCENE_DURATIONS = {
 //   S3 starts 680, ends 1255 (680+575).
 //   S4 starts 1235, ends 1340 (1235+105).
 //   Black tail 1340-1350 (10fr).
-// Magic Dust peak window in S3 single-press model: S-local 200-320 (120fr); midpoint 260 → global 940.
+// Magic Dust peak in S3 single-press model: S3 start 680 + S3-local MAGIC_DUST_HIGHLIGHT 291 = global 971.
 
 /** Transition durations in frames (cross-fade only for v2) */
 export const TRANSITION_DURATIONS = {
@@ -39,9 +39,9 @@ export const TEASER_DURATION = 450;
  *   S2 starts at 400, ends at 700 (400+300).
  *   S3 starts at 680, ends at 1255 (680+575).
  *   S4 starts at 1235, ends at 1340 (1235+105).
- *   Peak window in S3 single-press model: S-local 200-320 (120fr); midpoint 260 → global 940.
+ *   S3 global start 680 + S3-local MAGIC_DUST_HIGHLIGHT 291 = global 971.
  */
-export const MAGIC_DUST_PEAK_FRAME = 940;  // round 9a-patch2 — was 860 in patch1, was 770 in r8
+export const MAGIC_DUST_PEAK_FRAME = 971;  // Iris 058 fix — was 940 (stale R9 drift); 680+291=971
 export const MAGIC_DUST_PEAK_HOLD = 120;   // 4s peak hold per creative-brief §8 strict
 
 /** FPS — canonical source (also re-exported from timing.ts) */
