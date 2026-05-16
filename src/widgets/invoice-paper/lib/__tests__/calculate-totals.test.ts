@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateTotals } from '../calculate-totals'
+import { calculateTotals, hasNonZeroAmount, splitMagicDustTotal } from '../calculate-totals'
 
 /**
  * Tests for calculateTotals with BigInt arithmetic
@@ -91,5 +91,47 @@ describe('calculateTotals', () => {
     const result = calculateTotals({ items, decimals: ethDecimals })
     expect(result.subtotal).toBe('5.00')
     expect(result.total).toBe('5.00')
+  })
+})
+
+describe('hasNonZeroAmount', () => {
+  it('returns true for positive amounts', () => {
+    expect(hasNonZeroAmount('1.00')).toBe(true)
+    expect(hasNonZeroAmount('0.01')).toBe(true)
+    expect(hasNonZeroAmount('1,000.00')).toBe(true)
+  })
+
+  it('returns false for zero amounts', () => {
+    expect(hasNonZeroAmount('0.00')).toBe(false)
+    expect(hasNonZeroAmount('0')).toBe(false)
+    expect(hasNonZeroAmount('0.000000')).toBe(false)
+  })
+
+  it('returns false for null, undefined, and empty string', () => {
+    expect(hasNonZeroAmount(null)).toBe(false)
+    expect(hasNonZeroAmount(undefined)).toBe(false)
+    expect(hasNonZeroAmount('')).toBe(false)
+  })
+})
+
+describe('splitMagicDustTotal', () => {
+  it('splits total and magic dust into base and dust parts', () => {
+    const result = splitMagicDustTotal('250.00', '0.000042')
+    expect(result).toEqual({ base: '250.', dust: '000042' })
+  })
+
+  it('uses integer part when total has no decimal', () => {
+    const result = splitMagicDustTotal('250', '0.000042')
+    expect(result).toEqual({ base: '250.', dust: '000042' })
+  })
+
+  it('returns null when magicDust is null', () => {
+    expect(splitMagicDustTotal('250.00', null)).toBeNull()
+  })
+
+  it('returns null when magicDust is not in "0.XXXXXX" format', () => {
+    expect(splitMagicDustTotal('250.00', '1.000042')).toBeNull()
+    expect(splitMagicDustTotal('250.00', '0')).toBeNull()
+    expect(splitMagicDustTotal('250.00', 'abc')).toBeNull()
   })
 })
