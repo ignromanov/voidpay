@@ -5,8 +5,6 @@
  */
 
 export { SmartPayButton } from './ui/SmartPayButton'
-export { SmartPayButtonView } from './ui/SmartPayButtonView'
-export type { SmartPayButtonViewProps } from './ui/SmartPayButtonView'
 export type { SmartPayButtonProps, PaymentError, PaymentStep, IdleSubState, AnimatedIdleSubState, DevPaymentVisualStep } from './model/types'
 
 // Verification

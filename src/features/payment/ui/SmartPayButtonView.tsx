@@ -8,24 +8,20 @@ import { FluidOverlay } from './FluidOverlay'
 import { IN_PROGRESS_STEPS } from '../model/types'
 import type { PaymentStep, AnimatedIdleSubState } from '../model/types'
 
-// ---------------------------------------------------------------------------
-// Helpers (lifted from SmartPayButton)
-// ---------------------------------------------------------------------------
-
-function getStepCount(idleSubState: AnimatedIdleSubState): { total: number; offset: number } {
-  if (idleSubState === 'disconnected') return { total: 3, offset: 0 }
-  if (idleSubState === 'wrong-network') return { total: 2, offset: 0 }
-  return { total: 1, offset: 0 }
+function getStepCount(idleSubState: AnimatedIdleSubState): number {
+  if (idleSubState === 'disconnected') return 3
+  if (idleSubState === 'wrong-network') return 2
+  return 1
 }
 
-export function getButtonLabel(
+function getButtonLabel(
   step: PaymentStep,
   idleSubState: AnimatedIdleSubState,
   currency: string,
   subtotal: string,
   decimals: number,
 ): { primary: string; secondary?: string } {
-  const { total } = getStepCount(idleSubState)
+  const total = getStepCount(idleSubState)
 
   switch (step) {
     case 'idle': {
@@ -55,7 +51,7 @@ export function getButtonLabel(
 }
 
 /** Progress fraction (0–1) for the linear bar at the button bottom edge */
-export function getProgress(step: PaymentStep): number {
+function getProgress(step: PaymentStep): number {
   switch (step) {
     case 'connecting':
       return 0.25
@@ -73,7 +69,7 @@ export function getProgress(step: PaymentStep): number {
 }
 
 /** Screen-reader label with full context */
-export function getAriaLabel(
+function getAriaLabel(
   step: PaymentStep,
   idleSubState: AnimatedIdleSubState,
   currency: string,

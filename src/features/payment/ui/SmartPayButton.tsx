@@ -6,7 +6,8 @@ import { usePaymentFlow } from '../model/use-payment-flow'
 import { usePaymentToast } from '../model/use-payment-toast'
 import { parseDevOverride } from '../model/types'
 import type { SmartPayButtonProps } from '../model/types'
-import { SmartPayButtonView, getAriaLabel } from './SmartPayButtonView'
+import { IN_PROGRESS_STEPS } from '../model/types'
+import { SmartPayButtonView } from './SmartPayButtonView'
 
 // ---------------------------------------------------------------------------
 // Component
@@ -63,7 +64,7 @@ export function SmartPayButton({
   // during wagmi's SSR hydration gap (devOverride bypasses this).
   const isHydratingActive = isHydrating && !devOverride
 
-  const isRealInProgress = ['connecting', 'switching', 'sending', 'confirming'].includes(step)
+  const isRealInProgress = IN_PROGRESS_STEPS.has(step)
   const isSuccessState = step === 'success' && !devOverride
   const canCancel = isRealInProgress && step !== 'confirming' && !devOverride
 
@@ -87,10 +88,6 @@ export function SmartPayButton({
     }
   }, [devOverride, canCancel, showCancel, handleCancel, handlePay, isSuccessState])
 
-  const ariaLabel = isHydratingActive && step === 'idle'
-    ? 'Reconnecting wallet, please wait'
-    : getAriaLabel(step, idleSubState, invoice.currency, subtotal, invoice.decimals)
-
   return (
     <SmartPayButtonView
       step={step}
@@ -103,7 +100,6 @@ export function SmartPayButton({
       onClick={handleClick}
       onMouseEnter={() => { if (canCancel) setShowCancel(true) }}
       onMouseLeave={() => setShowCancel(false)}
-      ariaLabel={ariaLabel}
     />
   )
 }
