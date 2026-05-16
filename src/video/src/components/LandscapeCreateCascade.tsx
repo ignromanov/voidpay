@@ -1,79 +1,80 @@
 /**
- * ×1.2 Tailwind cascade for 16:9 landscape CreateScene.
- * Anchored to PaymentPanel baseline (PanelCascadeStyle.tsx) + 20% uplift.
- * Target: text-base body → 40px, form inputs → 56px, Generate button → 72px.
+ * ×1.7 Tailwind cascade for 16:9 landscape CreateScene.
+ * Scaled from ×1.2 baseline by ratio 17/12 ≈ 1.4167.
+ * Target: text-base body → 57px, form inputs → 79px, Generate button → 102px.
  *
- * Applied to .remotion-create-landscape wrapper in CreateSceneLandscape.tsx.
+ * Applied to .remotion-create-landscape wrapper in CreateSceneLandscape.tsx
+ * (form block only — invoice paper does not receive this cascade).
  */
 export const LandscapeCreateCascade: React.FC = () => (
   <style>{`
     .remotion-create-landscape .text-xs,
     .remotion-create-landscape [class*="text-[10px]"],
-    .remotion-create-landscape [class*="text-[11px]"]  { font-size: 28px !important; line-height: 1.4 !important; }
-    .remotion-create-landscape .text-sm                { font-size: 32px !important; line-height: 1.45 !important; }
-    .remotion-create-landscape .text-base              { font-size: 40px !important; line-height: 1.5 !important; }
-    .remotion-create-landscape .text-lg                { font-size: 44px !important; line-height: 1.5 !important; }
-    .remotion-create-landscape .text-xl                { font-size: 48px !important; line-height: 1.4 !important; }
-    .remotion-create-landscape .text-2xl               { font-size: 58px !important; line-height: 1.3 !important; }
+    .remotion-create-landscape [class*="text-[11px]"]  { font-size: 40px !important; line-height: 1.4 !important; }
+    .remotion-create-landscape .text-sm                { font-size: 45px !important; line-height: 1.45 !important; }
+    .remotion-create-landscape .text-base              { font-size: 57px !important; line-height: 1.5 !important; }
+    .remotion-create-landscape .text-lg                { font-size: 62px !important; line-height: 1.5 !important; }
+    .remotion-create-landscape .text-xl                { font-size: 68px !important; line-height: 1.4 !important; }
+    .remotion-create-landscape .text-2xl               { font-size: 82px !important; line-height: 1.3 !important; }
 
-    /* Form control heights — PaymentPanel h-14=112px baseline ×1.2 → 72px for h-9 (close to brief 56px target) */
-    .remotion-create-landscape .h-7  { height: 56px !important; }
-    .remotion-create-landscape .h-8  { height: 56px !important; }
-    .remotion-create-landscape .h-9  { height: 56px !important; }
-    .remotion-create-landscape .h-10 { height: 64px !important; }
-    .remotion-create-landscape .h-11 { height: 72px !important; }
-    .remotion-create-landscape .h-14 { height: 72px !important; }
+    /* Form control heights — scaled from ×1.2 baseline by 17/12 */
+    .remotion-create-landscape .h-7  { height: 79px !important; }
+    .remotion-create-landscape .h-8  { height: 79px !important; }
+    .remotion-create-landscape .h-9  { height: 79px !important; }
+    .remotion-create-landscape .h-10 { height: 91px !important; }
+    .remotion-create-landscape .h-11 { height: 102px !important; }
+    .remotion-create-landscape .h-14 { height: 102px !important; }
 
     /* Icon dimensions */
-    .remotion-create-landscape .w-3 { width: 28px !important; }
-    .remotion-create-landscape .h-3 { height: 28px !important; }
-    .remotion-create-landscape .w-4 { width: 28px !important; }
-    .remotion-create-landscape .h-4 { height: 28px !important; }
-    .remotion-create-landscape .w-5 { width: 40px !important; }
-    .remotion-create-landscape .h-5 { height: 40px !important; }
-    .remotion-create-landscape .w-6 { width: 48px !important; }
-    .remotion-create-landscape .h-6 { height: 48px !important; }
+    .remotion-create-landscape .w-3 { width: 40px !important; }
+    .remotion-create-landscape .h-3 { height: 40px !important; }
+    .remotion-create-landscape .w-4 { width: 40px !important; }
+    .remotion-create-landscape .h-4 { height: 40px !important; }
+    .remotion-create-landscape .w-5 { width: 57px !important; }
+    .remotion-create-landscape .h-5 { height: 57px !important; }
+    .remotion-create-landscape .w-6 { width: 68px !important; }
+    .remotion-create-landscape .h-6 { height: 68px !important; }
 
     /* Padding scale */
-    .remotion-create-landscape .p-0\\.5 { padding: 4px !important; }
-    .remotion-create-landscape .p-1    { padding: 8px !important; }
-    .remotion-create-landscape .p-1\\.5 { padding: 12px !important; }
-    .remotion-create-landscape .p-2    { padding: 16px !important; }
-    .remotion-create-landscape .p-3    { padding: 24px !important; }
-    .remotion-create-landscape .p-4    { padding: 32px !important; }
-    .remotion-create-landscape .px-2   { padding-left: 16px !important; padding-right: 16px !important; }
-    .remotion-create-landscape .px-3   { padding-left: 24px !important; padding-right: 24px !important; }
-    .remotion-create-landscape .py-1   { padding-top: 8px !important; padding-bottom: 8px !important; }
-    .remotion-create-landscape .py-2   { padding-top: 16px !important; padding-bottom: 16px !important; }
-    .remotion-create-landscape .py-2\\.5 { padding-top: 20px !important; padding-bottom: 20px !important; }
-    .remotion-create-landscape .py-3   { padding-top: 24px !important; padding-bottom: 24px !important; }
-    .remotion-create-landscape .pt-2   { padding-top: 16px !important; }
-    .remotion-create-landscape .pt-4   { padding-top: 32px !important; }
+    .remotion-create-landscape .p-0\\.5 { padding: 6px !important; }
+    .remotion-create-landscape .p-1    { padding: 11px !important; }
+    .remotion-create-landscape .p-1\\.5 { padding: 17px !important; }
+    .remotion-create-landscape .p-2    { padding: 23px !important; }
+    .remotion-create-landscape .p-3    { padding: 34px !important; }
+    .remotion-create-landscape .p-4    { padding: 45px !important; }
+    .remotion-create-landscape .px-2   { padding-left: 23px !important; padding-right: 23px !important; }
+    .remotion-create-landscape .px-3   { padding-left: 34px !important; padding-right: 34px !important; }
+    .remotion-create-landscape .py-1   { padding-top: 11px !important; padding-bottom: 11px !important; }
+    .remotion-create-landscape .py-2   { padding-top: 23px !important; padding-bottom: 23px !important; }
+    .remotion-create-landscape .py-2\\.5 { padding-top: 28px !important; padding-bottom: 28px !important; }
+    .remotion-create-landscape .py-3   { padding-top: 34px !important; padding-bottom: 34px !important; }
+    .remotion-create-landscape .pt-2   { padding-top: 23px !important; }
+    .remotion-create-landscape .pt-4   { padding-top: 45px !important; }
 
     /* Gap scale */
-    .remotion-create-landscape .gap-1   { gap: 8px !important; }
-    .remotion-create-landscape .gap-1\\.5 { gap: 12px !important; }
-    .remotion-create-landscape .gap-2   { gap: 16px !important; }
-    .remotion-create-landscape .gap-3   { gap: 24px !important; }
-    .remotion-create-landscape .gap-4   { gap: 32px !important; }
+    .remotion-create-landscape .gap-1   { gap: 11px !important; }
+    .remotion-create-landscape .gap-1\\.5 { gap: 17px !important; }
+    .remotion-create-landscape .gap-2   { gap: 23px !important; }
+    .remotion-create-landscape .gap-3   { gap: 34px !important; }
+    .remotion-create-landscape .gap-4   { gap: 45px !important; }
 
     /* Border radius */
-    .remotion-create-landscape .rounded-lg { border-radius: 16px !important; }
-    .remotion-create-landscape .rounded-xl { border-radius: 24px !important; }
+    .remotion-create-landscape .rounded-lg { border-radius: 23px !important; }
+    .remotion-create-landscape .rounded-xl { border-radius: 34px !important; }
 
     /* SVGs via size={N} prop — scale icons to match cascade */
-    .remotion-create-landscape [class*="text-[10px]"] svg { width: 28px !important; height: 28px !important; }
-    .remotion-create-landscape svg[width="12"]  { width: 28px !important; height: 28px !important; }
-    .remotion-create-landscape svg[height="12"] { width: 28px !important; height: 28px !important; }
-    .remotion-create-landscape svg[width="16"]  { width: 28px !important; height: 28px !important; }
-    .remotion-create-landscape svg[height="16"] { width: 28px !important; height: 28px !important; }
-    .remotion-create-landscape svg[width="20"]  { width: 40px !important; height: 40px !important; }
-    .remotion-create-landscape svg[height="20"] { width: 40px !important; height: 40px !important; }
-    .remotion-create-landscape svg[width="24"]  { width: 48px !important; height: 48px !important; }
-    .remotion-create-landscape svg[height="24"] { width: 48px !important; height: 48px !important; }
+    .remotion-create-landscape [class*="text-[10px]"] svg { width: 40px !important; height: 40px !important; }
+    .remotion-create-landscape svg[width="12"]  { width: 40px !important; height: 40px !important; }
+    .remotion-create-landscape svg[height="12"] { width: 40px !important; height: 40px !important; }
+    .remotion-create-landscape svg[width="16"]  { width: 40px !important; height: 40px !important; }
+    .remotion-create-landscape svg[height="16"] { width: 40px !important; height: 40px !important; }
+    .remotion-create-landscape svg[width="20"]  { width: 57px !important; height: 57px !important; }
+    .remotion-create-landscape svg[height="20"] { width: 57px !important; height: 57px !important; }
+    .remotion-create-landscape svg[width="24"]  { width: 68px !important; height: 68px !important; }
+    .remotion-create-landscape svg[height="24"] { width: 68px !important; height: 68px !important; }
 
     /* Switch toggle — track + thumb */
-    .remotion-create-landscape .w-10 { width: 80px !important; }
+    .remotion-create-landscape .w-10 { width: 113px !important; }
     .remotion-create-landscape [role="switch"] {
       transition: none !important;
       border-radius: 9999px !important;
@@ -88,7 +89,7 @@ export const LandscapeCreateCascade: React.FC = () => (
       transition: none !important;
     }
     .remotion-create-landscape [role="switch"][aria-checked="true"] span {
-      transform: translateX(44px) !important;
+      transform: translateX(62px) !important;
     }
     .remotion-create-landscape [role="switch"][aria-checked="false"] span {
       transform: translateX(0px) !important;

@@ -54,6 +54,12 @@ export const SCROLL_OFFSETS = [0, -120, -400, -900, -1100];
 export const SCROLL_FRAMES_LANDSCAPE  = [115, 150, 175, 195, 265];
 export const SCROLL_OFFSETS_LANDSCAPE = [0, -60, -180, -380, -800];
 
+// Round-11 Phase 3 B1+B2: 3-stage choreography offsets.
+// Form slides right, invoice slides left, both settle at ±OFFSET from center.
+export const GENERATE_PRESS        = PRESS_END;   // 307 — stage 2 begins when button fires
+export const FORM_OFFSET_RIGHT     = 450;         // px translateX for form in stage 3
+export const INVOICE_OFFSET_LEFT   = 450;         // px translateX for invoice in stage 3
+
 /** Props forwarded to <InvoicePaper> — same in both landscape and portrait. */
 export const CREATE_PAPER_PROPS: ComponentProps<typeof InvoicePaper> = {
   data: DEMO_INVOICE,

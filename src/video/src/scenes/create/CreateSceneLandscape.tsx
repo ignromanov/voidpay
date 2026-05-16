@@ -17,6 +17,9 @@ import {
   SCROLL_START_FRAME,
   SCROLL_DURATION_FRAMES,
   TOTAL_SCROLL_DISTANCE_LANDSCAPE,
+  GENERATE_PRESS,
+  FORM_OFFSET_RIGHT,
+  INVOICE_OFFSET_LEFT,
 } from "./constants";
 
 type Props = {
@@ -35,8 +38,9 @@ const noop = () => {
   /* Remotion renders static frames — click handlers never fire */
 };
 
-// D12-D14: landscape two-column layout — paper LEFT, form RIGHT, max 640px.
-const PANEL_MAX_WIDTH = 640;
+// Stage 2 spring drives form→right split and invoice fade-in/slide-left.
+// Spring easing: same config used in form scroll for visual consistency.
+const SPLIT_SPRING_CONFIG = { damping: 30, stiffness: 80 };
 
 export const CreateSceneLandscape: React.FC<Props> = ({
   frame,
@@ -49,60 +53,86 @@ export const CreateSceneLandscape: React.FC<Props> = ({
   formOpacity,
   hookVariant = "v1",
 }) => {
-  const { width, fps } = useVideoConfig();
-  const halfW = width / 2;
-
-  // A7: landscape invoice paper never dims — stays at entrance opacity through entire scene.
-  const dimOpacity = undefined;
-  const blurPx = undefined;
+  const { fps } = useVideoConfig();
 
   const captions = hookVariant === "v2" ? CREATE_CAPTIONS_V2_LANDSCAPE : CREATE_CAPTIONS_LANDSCAPE;
+
+  // Stage progress: 0 before GENERATE_PRESS, 0→1 during split (stage 2), 1 in stage 3.
+  const stageProgress = spring({
+    frame: frame - GENERATE_PRESS,
+    fps,
+    config: SPLIT_SPRING_CONFIG,
+  });
+
+  // Form: starts center, slides right, scales 1 → 0.7 (×1.7 cascade applied via CSS,
+  // so relative scale here goes 1 → 0.7, giving final ×1.19 visible size in stage 3).
+  const formTranslateX = FORM_OFFSET_RIGHT * stageProgress;
+  const formScale = 1 - 0.3 * stageProgress;
+  const formTransform = `translateX(${formTranslateX}px) scale(${formScale})`;
+
+  // Invoice: fades in and slides left from center during stage 2, fully visible in stage 3.
+  const invoiceOpacity = interpolate(stageProgress, [0, 0.3, 1], [0, 0.7, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const invoiceTranslateX = -INVOICE_OFFSET_LEFT * stageProgress;
+  const invoiceTransform = `translateX(${invoiceTranslateX}px)`;
+
+  // Form scroll — same spring scroll as before, drives the translateY inside the card.
+  const scrollOffset = interpolate(
+    spring({
+      frame: frame - SCROLL_START_FRAME,
+      fps,
+      durationInFrames: SCROLL_DURATION_FRAMES,
+      config: { damping: 30, stiffness: 80 },
+    }),
+    [0, 1],
+    [0, -TOTAL_SCROLL_DISTANCE_LANDSCAPE],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
 
   return (
     <div style={{ position: "absolute", inset: 0, backgroundColor: COLORS.bg }}>
       <NetworkBackgroundLayer variant="soft" />
       <NetworkBackground />
 
-      {/* LEFT column — InvoicePaper vertically centered */}
+      {/* Choreography layer — both elements positioned absolutely in center, then offset via transform */}
       <div
         style={{
           position: "absolute",
-          left: 0,
-          top: 0,
-          width: halfW,
-          height: "100%",
+          inset: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "48px 24px",
-          boxSizing: "border-box",
         }}
       >
-        <CreateScenePaperEnvelope
-          frame={frame}
-          columnWidth={halfW}
-          dimOpacity={dimOpacity}
-          blurPx={blurPx}
-        />
-      </div>
+        {/* Invoice — slides left as stage 2 begins */}
+        <div
+          style={{
+            position: "absolute",
+            width: 680,
+            height: "80%",
+            transform: invoiceTransform,
+            opacity: invoiceOpacity,
+            zIndex: 1,
+          }}
+        >
+          <CreateScenePaperEnvelope
+            frame={frame}
+            columnWidth={680}
+          />
+        </div>
 
-      {/* RIGHT column — form + hints, maxWidth clamped */}
-      <div
-        style={{
-          position: "absolute",
-          left: halfW,
-          top: 0,
-          width: halfW,
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "48px 24px",
-          boxSizing: "border-box",
-        }}
-      >
-        <div style={{ width: "100%", maxWidth: PANEL_MAX_WIDTH, position: "relative" }}>
-          {/* Form Card — glow lives here, centered on the card (D40: no column-level glow) */}
+        {/* Form card — centered in stage 1, slides right in stage 2 */}
+        <div
+          style={{
+            position: "absolute",
+            width: 640,
+            transform: formTransform,
+            transformOrigin: "center center",
+            zIndex: 2,
+          }}
+        >
           <Card
             style={{
               width: "100%",
@@ -110,34 +140,20 @@ export const CreateSceneLandscape: React.FC<Props> = ({
               padding: "24px",
               overflow: "hidden",
               opacity: formOpacity,
-              zIndex: 2,
               backgroundColor: "rgba(14,14,19,0.95)",
               border: "1px solid rgba(63,63,70,0.5)",
               boxShadow: `0 16px 50px rgba(0,0,0,0.5), 0 0 ${glowSpread}px rgba(124,58,237,${glowIntensity * 0.5}), 0 0 60px rgba(124,58,237,${buttonGlowOpacity * 0.4}), 0 0 120px rgba(124,58,237,${buttonGlowOpacity * 0.2})`,
               borderRadius: 12,
             }}
           >
-            <div
-              style={{
-                transform: `translateY(${interpolate(
-                  spring({
-                    frame: frame - SCROLL_START_FRAME,
-                    fps,
-                    durationInFrames: SCROLL_DURATION_FRAMES,
-                    config: { damping: 30, stiffness: 80 },
-                  }),
-                  [0, 1],
-                  [0, -TOTAL_SCROLL_DISTANCE_LANDSCAPE],
-                  { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-                )}px)`,
-              }}
-            >
+            <div style={{ transform: `translateY(${scrollOffset}px)` }}>
               <div
                 className="remotion-create-landscape"
                 style={{ position: "relative", width: "100%", fontSize: "inherit", overflowX: "visible", paddingRight: 8 }}
               >
                 <LandscapeCreateCascade />
-                {/* Header */}
+
+                {/* "Invoice Details" heading — above the form, inside cascade */}
                 <div style={{
                   display: "flex",
                   alignItems: "center",
