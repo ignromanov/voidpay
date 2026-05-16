@@ -238,8 +238,8 @@ function KineticCaption({
   const dotHex = isEmerald ? "#10b981" : "#a78bfa";
 
   // Pill geometry
-  const pillPadding = isCompact ? "22px 44px" : "28px 52px";
-  const pillGap = isCompact ? 18 : 22;
+  const pillPadding = isCompact ? "18px 36px" : "24px 44px";
+  const pillGap = isCompact ? 16 : 18;
 
   // Text
   const fontWeight = weight;
@@ -284,6 +284,7 @@ function KineticCaption({
 
   return (
     // Outer positioning + entry/exit animation — translateY on the whole pill
+    // Round-9o: zIndex 100 ensures caption always renders above scene UI (panels, paper, modal)
     <div
       style={{
         position: "absolute",
@@ -294,6 +295,7 @@ function KineticCaption({
         justifyContent: "center",
         transform: `translateY(calc(-50% + ${translateY}px))`,
         opacity,
+        zIndex: 100,
       }}
     >
       {/* Path C pill backdrop */}
@@ -304,10 +306,10 @@ function KineticCaption({
           gap: pillGap,
           maxWidth: "88vw",
           background: "rgba(20,20,27,0.85)",
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
           border: `1.5px solid rgba(${accentRgb},0.80)`,
-          borderRadius: 28,
+          borderRadius: 24,
           padding: pillPadding,
           boxShadow: [
             `0 0 36px rgba(${accentRgb},0.32)`,
@@ -319,11 +321,11 @@ function KineticCaption({
         {/* Leading dot */}
         <span
           style={{
-            width: 18,
-            height: 18,
+            width: 16,
+            height: 16,
             borderRadius: "50%",
             background: dotHex,
-            boxShadow: `0 0 12px ${dotHex}`,
+            boxShadow: `0 0 10px ${dotHex}`,
             flexShrink: 0,
             display: "inline-block",
           }}

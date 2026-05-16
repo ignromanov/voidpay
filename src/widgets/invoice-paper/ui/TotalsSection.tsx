@@ -14,6 +14,13 @@ interface TotalsSectionProps {
   discountPercent?: string | undefined
   /** Whether to show the unique amount (magic dust) */
   showMagicDust?: boolean
+  /**
+   * When true and magicDust is present, renders the merged total (e.g. "250.000042 USDC")
+   * with the magic dust fractional digits highlighted in violet (#a78bfa).
+   * Hides the separate MagicDustBadge footer line.
+   * @default false
+   */
+  magicDustEmphasis?: boolean
 }
 
 const COMMA_RE = /,/g
@@ -28,10 +35,31 @@ function isNonZero(amount: string | null | undefined): boolean {
   return !isNaN(num) && num > 0
 }
 
+/**
+ * Split a formatted total and magicDust string into base and dust parts.
+ * Example: total="250.00", magicDust="0.000042" → { base: "250.", dust: "000042" }
+ * Returns null if magicDust is not in expected format.
+ */
+function splitMagicDustTotal(
+  total: string,
+  magicDust: string | null
+): { base: string; dust: string } | null {
+  if (!magicDust) return null
+  // magicDust format: "0.000042" — extract digits after "0."
+  const dustMatch = magicDust.match(/^0\.(\d+)$/)
+  if (!dustMatch || !dustMatch[1]) return null
+  const dustDigits: string = dustMatch[1]
+  // total format: "250.00" — use integer part only
+  const intPart = total.split('.')[0] ?? total
+  return { base: `${intPart}.`, dust: dustDigits }
+}
+
 export const TotalsSection = React.memo<TotalsSectionProps>(
-  ({ totals, currency, taxPercent, discountPercent, showMagicDust = true }) => {
+  ({ totals, currency, taxPercent, discountPercent, showMagicDust = true, magicDustEmphasis = false }) => {
     const currencyDisplay = currency || 'TOKEN'
     const currencyClass = currency ? '' : 'text-zinc-300 italic'
+
+    const splitDust = magicDustEmphasis ? splitMagicDustTotal(totals.total, totals.magicDust) : null
 
     return (
       <div className="ml-auto min-w-0 flex-1 overflow-hidden">
@@ -82,19 +110,29 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-lg font-bold tracking-tight text-black flex-shrink-0">Total</span>
           <div className="flex items-baseline gap-1 min-w-0 overflow-hidden">
-            <span
-              className="font-mono text-2xl font-black tracking-tighter text-violet-600 tabular-nums truncate"
-              title={totals.total}
-            >
-              {totals.total}
-            </span>
+            {splitDust ? (
+              <span
+                className="font-mono text-2xl font-black tracking-tighter text-violet-600 tabular-nums truncate"
+                title={`${splitDust.base}${splitDust.dust}`}
+              >
+                {splitDust.base}
+                <span className="paper-total-dust">{splitDust.dust}</span>
+              </span>
+            ) : (
+              <span
+                className="font-mono text-2xl font-black tracking-tighter text-violet-600 tabular-nums truncate"
+                title={totals.total}
+              >
+                {totals.total}
+              </span>
+            )}
             <span className={cn('text-sm font-bold text-zinc-600 flex-shrink-0', currencyClass)}>
               {currencyDisplay}
             </span>
           </div>
         </div>
 
-        {showMagicDust && totals.magicDust && (
+        {showMagicDust && totals.magicDust && !splitDust && (
           <div className="-mt-0.5 flex justify-end">
             <MagicDustBadge label="Unique ID" amount={totals.magicDust} currency={currencyDisplay} variant="light" />
           </div>

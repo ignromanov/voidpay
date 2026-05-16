@@ -15,6 +15,11 @@
  * - Unlayered rules: Override Tailwind/inline styles with !important
  */
 
+/* Magic Dust violet digit emphasis — used when magicDustEmphasis=true on InvoicePaper */
+.paper-total-dust {
+  color: #a78bfa;
+}
+
 @layer invoice-paper.print-base, invoice-paper.print-show, invoice-paper.print-hide;
 
 @media print {

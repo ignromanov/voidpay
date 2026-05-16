@@ -10,6 +10,12 @@ interface PaperTotalsProps {
   taxPercent?: string | undefined
   discountPercent?: string | undefined
   showMagicDust?: boolean
+  /**
+   * When true, renders merged total with magic dust digits in violet (#a78bfa).
+   * Hides the separate MagicDustBadge line.
+   * @default false
+   */
+  magicDustEmphasis?: boolean
   /** Total amount in atomic units for PaymentQR URI generation */
   amount?: string | undefined
   // Payment details props
@@ -30,6 +36,7 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
     taxPercent,
     discountPercent,
     showMagicDust = true,
+    magicDustEmphasis = false,
     amount,
     networkId,
     senderAddress,
@@ -61,6 +68,7 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
             taxPercent={taxPercent}
             discountPercent={discountPercent}
             showMagicDust={showMagicDust}
+            magicDustEmphasis={magicDustEmphasis}
           />
         </div>
       </section>

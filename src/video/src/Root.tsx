@@ -48,12 +48,13 @@ useTrackedInvoiceStore.setState({
   ],
 });
 
-// v2 rescript collapsed the CTA text prop — outro copy is locked in
-// ThesisOutroScene. Schema retained as an empty object so the Composition
-// defaultProps contract still resolves.
-export const DemoPropsSchema = z.object({});
+// Round 9l: schema carries hookVariant for A/B-testable S0 hook copy.
+// Outro copy stays locked in ThesisOutroScene.
+export const DemoPropsSchema = z.object({
+  hookVariant: z.enum(["v1", "v2", "v3"]).optional(),
+});
 
-const DEFAULT_PROPS: z.infer<typeof DemoPropsSchema> = {};
+const DEFAULT_PROPS: z.infer<typeof DemoPropsSchema> = { hookVariant: "v1" };
 
 // AC2: silent video — no <Audio> components in this composition tree.
 
