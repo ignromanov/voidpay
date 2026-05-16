@@ -16,11 +16,13 @@ export type PaymentStep =
   | 'confirming'
   | 'success'
 
-/** Idle sub-states derived from wallet context (not stored in reducer).
- *  Round 9a: 'connecting' and 'switching' added for video v2 animation sub-states.
- *  Production Container (SmartPayButton.tsx) only emits disconnected/wrong-network/ready;
- *  connecting/switching are Remotion-only transitions rendered via SmartPayButtonView. */
-export type IdleSubState = 'disconnected' | 'connecting' | 'wrong-network' | 'switching' | 'ready'
+/** Production reducer emits these only. */
+export type IdleSubState = 'disconnected' | 'wrong-network' | 'ready'
+
+/** Superset for presentational components — adds Remotion-only animation
+ *  sub-states. Container never produces 'connecting'/'switching'; only
+ *  Remotion scenes pass them into the View. */
+export type AnimatedIdleSubState = IdleSubState | 'connecting' | 'switching'
 
 /**
  * Derive the idle sub-state from wallet connection context.
@@ -97,9 +99,9 @@ export type DevPaymentVisualStep =
   | 'success'
 
 /** Parse dev override string into step + idleSubState */
-export function parseDevOverride(dev: DevPaymentVisualStep): { step: PaymentStep; idleSubState: IdleSubState } {
+export function parseDevOverride(dev: DevPaymentVisualStep): { step: PaymentStep; idleSubState: AnimatedIdleSubState } {
   if (dev.startsWith('idle:')) {
-    return { step: 'idle', idleSubState: dev.slice(5) as IdleSubState }
+    return { step: 'idle', idleSubState: dev.slice(5) as AnimatedIdleSubState }
   }
   return { step: dev as PaymentStep, idleSubState: 'ready' }
 }

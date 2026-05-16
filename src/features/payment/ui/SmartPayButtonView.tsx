@@ -5,7 +5,7 @@ import { Loader2Icon, CheckCircleIcon, XIcon } from '@/shared/ui/icons'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { motion } from '@/shared/ui/motion'
 import { FluidOverlay } from './FluidOverlay'
-import type { PaymentStep, IdleSubState } from '../model/types'
+import type { PaymentStep, AnimatedAnimatedIdleSubState } from '../model/types'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -17,7 +17,7 @@ const IN_PROGRESS_STEPS = new Set<PaymentStep>(['connecting', 'switching', 'send
 // Helpers (lifted from SmartPayButton)
 // ---------------------------------------------------------------------------
 
-function getStepCount(idleSubState: IdleSubState): { total: number; offset: number } {
+function getStepCount(idleSubState: AnimatedIdleSubState): { total: number; offset: number } {
   if (idleSubState === 'disconnected') return { total: 3, offset: 0 }
   if (idleSubState === 'wrong-network') return { total: 2, offset: 0 }
   return { total: 1, offset: 0 }
@@ -25,7 +25,7 @@ function getStepCount(idleSubState: IdleSubState): { total: number; offset: numb
 
 export function getButtonLabel(
   step: PaymentStep,
-  idleSubState: IdleSubState,
+  idleSubState: AnimatedIdleSubState,
   currency: string,
   subtotal: string,
   decimals: number,
@@ -80,7 +80,7 @@ export function getProgress(step: PaymentStep): number {
 /** Screen-reader label with full context */
 export function getAriaLabel(
   step: PaymentStep,
-  idleSubState: IdleSubState,
+  idleSubState: AnimatedIdleSubState,
   currency: string,
   subtotal: string,
   decimals: number,
@@ -112,7 +112,7 @@ export function getAriaLabel(
 
 export interface SmartPayButtonViewProps {
   step: PaymentStep
-  idleSubState: IdleSubState
+  idleSubState: AnimatedIdleSubState
   currency: string
   subtotal: string
   decimals: number
