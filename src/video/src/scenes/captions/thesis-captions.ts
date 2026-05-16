@@ -39,7 +39,7 @@ export const getHookCaption = (variant: HookVariant, isVertical: boolean): Capti
     weight:         700,
     emphasizedWord: emphasized,
     position:       isVertical ? 45 : 80,
-    fontSize:       isVertical ? 72 : 81,
+    fontSize:       isVertical ? 72 : 64,
     variant:        "violet",
   };
 };
