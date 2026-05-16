@@ -1,3 +1,4 @@
+import React from 'react'
 import { WalletIcon, UsersIcon } from '@/shared/ui/icons'
 import { Input } from '@/shared/ui/input'
 
@@ -41,13 +42,13 @@ const PARTY_CONFIG = {
  * Shows name, wallet address, and email. No collapsible, no phone/address/taxId.
  * Container: PartySection.tsx
  */
-export function PartySectionView({
+export const PartySectionView = React.memo(function PartySectionView({
   partyType,
   name,
   walletAddress,
   email,
   focused = false,
-}: PartySectionViewProps): React.JSX.Element {
+}: PartySectionViewProps) {
   const config = PARTY_CONFIG[partyType]
   const ringClass = focused ? 'ring-2 ring-violet-500/60 ring-offset-1 ring-offset-zinc-950' : undefined
 
@@ -84,4 +85,4 @@ export function PartySectionView({
       )}
     </div>
   )
-}
+})

@@ -1,3 +1,4 @@
+import React from 'react'
 import { Input } from '@/shared/ui/input'
 import { Text } from '@/shared/ui/typography'
 import { CalendarIcon } from '@/shared/ui/icons'
@@ -15,7 +16,11 @@ export interface MetadataSectionViewProps {
  * No react-hook-form, no browser hooks. Safe for Remotion, SSR, Storybook.
  * Container: MetadataSection.tsx
  */
-export function MetadataSectionView({ invoiceId, issuedAt, dueAt }: MetadataSectionViewProps): React.JSX.Element {
+export const MetadataSectionView = React.memo(function MetadataSectionView({
+  invoiceId,
+  issuedAt,
+  dueAt,
+}: MetadataSectionViewProps) {
   return (
     <div className="space-y-4 rounded-xl border border-zinc-800/50 bg-zinc-900/50 p-4">
       <Input
@@ -51,4 +56,4 @@ export function MetadataSectionView({ invoiceId, issuedAt, dueAt }: MetadataSect
       </div>
     </div>
   )
-}
+})

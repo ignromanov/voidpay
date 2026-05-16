@@ -1,3 +1,4 @@
+import React from 'react'
 import { Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
 
@@ -48,12 +49,12 @@ export interface InvoiceFormViewProps {
  *
  * Composed from *SectionView components — no inline subviews.
  */
-export function InvoiceFormView({
+export const InvoiceFormView = React.memo(function InvoiceFormView({
   className,
   value,
   focusedField,
   showGenerateButton = false,
-}: InvoiceFormViewProps): React.JSX.Element {
+}: InvoiceFormViewProps) {
   const {
     invoiceId,
     issuedAt,
@@ -125,4 +126,4 @@ export function InvoiceFormView({
       )}
     </div>
   )
-}
+})

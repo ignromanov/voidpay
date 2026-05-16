@@ -1,3 +1,4 @@
+import React from 'react'
 import { FingerprintIcon, AlertCircleIcon } from '@/shared/ui/icons'
 import { Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/utils'
@@ -13,7 +14,9 @@ export interface LinkOptionsSectionViewProps {
  * No useCreatorStore, no browser hooks. Safe for Remotion, SSR, Storybook.
  * Container: LinkOptionsSection.tsx (which uses the real MagicDustToggle)
  */
-export function LinkOptionsSectionView({ magicDustEnabled = true }: LinkOptionsSectionViewProps): React.JSX.Element {
+export const LinkOptionsSectionView = React.memo(function LinkOptionsSectionView({
+  magicDustEnabled = true,
+}: LinkOptionsSectionViewProps) {
   return (
     <div className="space-y-3 border-t border-zinc-800/50 pt-4">
       <div className="rounded-lg border border-zinc-800/50 bg-zinc-900/50 p-3">
@@ -61,4 +64,4 @@ export function LinkOptionsSectionView({ magicDustEnabled = true }: LinkOptionsS
       </div>
     </div>
   )
-}
+})

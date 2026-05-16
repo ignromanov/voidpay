@@ -1,3 +1,4 @@
+import React from 'react'
 import { CoinsIcon } from '@/shared/ui/icons'
 import { Heading } from '@/shared/ui/typography'
 import { NetworkIcon } from '@/shared/ui/network-icon'
@@ -18,12 +19,12 @@ export interface PaymentSectionViewProps {
  * No useCreatorStore, no NetworkSelect/TokenSelect interactives. Safe for Remotion, SSR, Storybook.
  * Container: PaymentSection.tsx
  */
-export function PaymentSectionView({
+export const PaymentSectionView = React.memo(function PaymentSectionView({
   networkLabel,
   tokenSymbol,
   chainId,
   focusedField,
-}: PaymentSectionViewProps): React.JSX.Element {
+}: PaymentSectionViewProps) {
   const focusRing = 'ring-2 ring-violet-500/60 ring-offset-1 ring-offset-zinc-950'
 
   return (
@@ -64,4 +65,4 @@ export function PaymentSectionView({
       </div>
     </div>
   )
-}
+})

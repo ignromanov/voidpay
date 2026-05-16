@@ -1,3 +1,4 @@
+import React from 'react'
 import { Button } from '@/shared/ui/button'
 import { Text } from '@/shared/ui/typography'
 import { PlusIcon } from '@/shared/ui/icons'
@@ -10,7 +11,14 @@ export interface LineItemRowViewProps {
   focused?: boolean
 }
 
-export function LineItemRowView({ description, quantity, rate, focused = false }: LineItemRowViewProps): React.JSX.Element {
+const EMPTY_LINE_ITEMS: Array<{ description?: string; quantity?: number; rate?: string }> = [{}]
+
+export const LineItemRowView = React.memo(function LineItemRowView({
+  description,
+  quantity,
+  rate,
+  focused = false,
+}: LineItemRowViewProps) {
   return (
     <div
       className={cn(
@@ -50,7 +58,7 @@ export function LineItemRowView({ description, quantity, rate, focused = false }
       </div>
     </div>
   )
-}
+})
 
 export interface LineItemsSectionViewProps {
   lineItems?: Array<{
@@ -68,8 +76,11 @@ export interface LineItemsSectionViewProps {
  * Add Item button is rendered but disabled (non-interactive).
  * Container: LineItemsSection.tsx
  */
-export function LineItemsSectionView({ lineItems, focused = false }: LineItemsSectionViewProps): React.JSX.Element {
-  const items = lineItems?.length ? lineItems : [{}]
+export const LineItemsSectionView = React.memo(function LineItemsSectionView({
+  lineItems,
+  focused = false,
+}: LineItemsSectionViewProps) {
+  const items = lineItems?.length ? lineItems : EMPTY_LINE_ITEMS
 
   return (
     <div className="space-y-4 border-t border-zinc-800/50 pt-4">
@@ -95,4 +106,4 @@ export function LineItemsSectionView({ lineItems, focused = false }: LineItemsSe
       </div>
     </div>
   )
-}
+})

@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { Share2Icon, ArrowRightIcon, Loader2Icon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 

@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { Button } from '@/shared/ui/button'
 import { Loader2Icon, CheckCircleIcon, XIcon } from '@/shared/ui/icons'
 import { formatAmount } from '@/shared/lib/amount-utils'
@@ -120,10 +121,21 @@ export interface SmartPayButtonViewProps {
 }
 
 // ---------------------------------------------------------------------------
+// Module-level motion constants (stable references, never recreated per render)
+// ---------------------------------------------------------------------------
+
+const WHILE_HOVER = { scale: 1.015 } as const
+const WHILE_TAP = { scale: 0.985 } as const
+const SPRING_TRANSITION = { type: 'spring', stiffness: 300, damping: 25 } as const
+
+const PROGRESS_INITIAL = { scaleX: 0 } as const
+const PROGRESS_TRANSITION = { duration: 0.6, ease: 'easeOut' } as const
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function SmartPayButtonView({
+export const SmartPayButtonView = React.memo(function SmartPayButtonView({
   step,
   idleSubState,
   currency,
@@ -158,12 +170,12 @@ export function SmartPayButtonView({
     <motion.div
       className="relative w-full"
       {...(!isInProgress && canInteract && {
-        whileHover: { scale: 1.015 },
-        whileTap: { scale: 0.985 },
+        whileHover: WHILE_HOVER,
+        whileTap: WHILE_TAP,
       })}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+      transition={SPRING_TRANSITION}
     >
       <Button
         variant="void"
@@ -223,18 +235,18 @@ export function SmartPayButtonView({
         {progress > 0 && (
           <motion.div
             className="absolute inset-x-0 bottom-0 h-0.5 origin-left"
-            initial={{ scaleX: 0 }}
+            initial={PROGRESS_INITIAL}
             animate={{
               scaleX: progress,
               backgroundColor: isSuccess
                 ? 'oklch(78% 0.16 165)'
                 : 'oklch(65% 0.22 280)',
             }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
+            transition={PROGRESS_TRANSITION}
             style={{ backgroundColor: 'oklch(65% 0.22 280)' }}
           />
         )}
       </Button>
     </motion.div>
   )
-}
+})
