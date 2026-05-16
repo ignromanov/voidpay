@@ -10,9 +10,6 @@ const VARIANT_STYLE: Record<Variant, { borderColor: string; iconColor: string; i
   loading: { borderColor: "rgba(168, 85, 247, 0.4)",  iconColor: "rgb(167, 139, 250)", icon: "◉" },
 };
 
-// Estimated panel height (matches PayScene PANEL_HEIGHT constant)
-const PANEL_HEIGHT = 580;
-
 type Props = {
   variant: Variant;
   title: string;
@@ -20,20 +17,11 @@ type Props = {
   startAt: number;
   hold: number;
   fadeOut?: number;
-  /** Vertical stack offset — use 0/72/144 for stacked toasts */
+  /**
+   * Vertical stack offset level (integer). Each level adds 100px upward.
+   * Use when two toasts may overlap in time.
+   */
   stackOffset?: number;
-  /**
-   * Positioning anchor:
-   * - 'bottom-right' (default) — fixed bottom-right corner
-   * - 'below-panel' — just below the PaymentPanel's lower edge, right-aligned to panel
-   */
-  anchor?: "bottom-right" | "below-panel";
-  /**
-   * R9r Concern 4: when true, pins toast to right:0 instead of right:"18%".
-   * Used in landscape to avoid collision with captions in the bottom-third area.
-   * Has no effect in portrait (portrait uses center alignment regardless).
-   */
-  rightAlign?: boolean;
 };
 
 export const RemotionFakeToast: React.FC<Props> = ({
@@ -44,57 +32,45 @@ export const RemotionFakeToast: React.FC<Props> = ({
   hold,
   fadeOut = 12,
   stackOffset = 0,
-  anchor = "bottom-right",
-  rightAlign = false,
 }) => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
-  // Round 9c L6: in portrait the panel is a full-width bottom sheet —
-  // align toast right edge to panel's internal right padding (24px).
-  const isPortrait = width < 1200;
+  const isPortrait = width < height;
   const local = frame - startAt;
   if (local < 0 || local > hold + fadeOut) return null;
 
   const slideIn = spring({ frame: Math.min(local, 8), fps, config: { damping: 20, mass: 1, stiffness: 120 } });
-  // θ7: portrait toasts slide up from bottom (positive offset = below, 0 = final position)
-  const slideOffset = (1 - slideIn) * (isPortrait ? 100 : 400);   // portrait: from below (+100), landscape: from right (+400)
+  // Portrait: slides up from below (+100px); Landscape: slides in from right (+400px)
+  const slideOffset = (1 - slideIn) * (isPortrait ? 100 : 400);
 
-  // Fade-out
   const exitProgress = local > hold ? (local - hold) / fadeOut : 0;
   const opacity = 1 - exitProgress;
-  // θ7: portrait toasts drift down on exit (matching enter direction reversal)
-  const exitOffset = exitProgress * (isPortrait ? 60 : 400);      // portrait: drift down, landscape: slide right
+  // Portrait: drifts down on exit; Landscape: slides back right
+  const exitOffset = exitProgress * (isPortrait ? 60 : 400);
 
   const style = VARIANT_STYLE[variant];
 
-  const panelTop = (height - PANEL_HEIGHT) / 2;
-  const panelBottom = panelTop + PANEL_HEIGHT;
+  // Unified positioning:
+  //   Landscape: bottom-right corner — fixed right:80, bottom:80 + stack
+  //   Portrait:  bottom-center — left:50%, translateX(-50%), bottom:80 + stack
+  const bottomBase = 80;
+  const stackPx = stackOffset * 100;
+  const bottom = bottomBase + stackPx;
 
   const positionStyle: React.CSSProperties = isPortrait
-    ? {
-        // θ7: bottom-center in portrait — top zone is reserved for Caption.tsx pills
-        bottom: 80 + stackOffset,
-        left: "50%",
-      }
-    : (anchor === "below-panel"
-        ? {
-            // R9r Concern 4: rightAlign pins to right edge (avoids caption collision in landscape)
-            right: rightAlign ? 0 : "18%",
-            bottom: height - panelBottom - 80 - stackOffset,
-          }
-        : {
-            right: 24,
-            bottom: 24 + stackOffset,
-          });
+    ? { bottom, left: "50%" }
+    : { bottom, right: 80 };
+
+  const transform = isPortrait
+    ? `translateX(-50%) translateY(${slideOffset + exitOffset}px)`
+    : `translateX(${slideOffset + exitOffset}px)`;
 
   return (
     <div
       style={{
         position: "absolute",
         ...positionStyle,
-        transform: isPortrait
-          ? `translateX(-50%) translateY(${slideOffset + exitOffset}px)`
-          : `translateX(${slideOffset + exitOffset}px)`,
+        transform,
         opacity,
         background: "rgba(39, 39, 42, 0.85)",
         backdropFilter: "blur(12px)",
@@ -105,8 +81,8 @@ export const RemotionFakeToast: React.FC<Props> = ({
         alignItems: "center",
         gap: 12,
         boxShadow: "0 20px 25px -5px rgba(0,0,0,0.5)",
-        maxWidth: 540,
-        zIndex: 90,  // R9r: Caption.tsx uses 100 — toast renders below captions
+        maxWidth: isPortrait ? 400 : 480,
+        zIndex: 90,  // Caption.tsx uses 100 — toast renders below captions
       }}
     >
       <span style={{ fontSize: 32, color: style.iconColor }}>{style.icon}</span>

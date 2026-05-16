@@ -1,4 +1,4 @@
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { FONT_SANS } from "../fonts";
 import { SPRING_CONFIGS } from "../constants/timing";
 import {
@@ -223,6 +223,22 @@ function KineticCaption({
   const entryValue = computeEntry(frame, fps, startAt, weight, springConfig);
   const exitOpacity = computeExit(frame, endAt);
 
+  // Pulse dot: 1s sin-cycle at 30fps — calm rhythm, not rapid blink
+  const PULSE_PERIOD = 30;
+  const phase = frame % PULSE_PERIOD;
+  const pulseOpacity = interpolate(
+    phase,
+    [0, PULSE_PERIOD / 2, PULSE_PERIOD],
+    [0.5, 1.0, 0.5],
+    { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const pulseScale = interpolate(
+    phase,
+    [0, PULSE_PERIOD / 2, PULSE_PERIOD],
+    [0.85, 1.15, 0.85],
+    { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
   const opacity = interpolate(entryValue, [0, 1], [0, 1]) * exitOpacity;
   // translateY on outer pill wrapper so entire pill slides in/out
   const translateY = interpolate(entryValue, [0, 1], [12, 0]);
@@ -318,7 +334,7 @@ function KineticCaption({
           ].join(", "),
         }}
       >
-        {/* Leading dot */}
+        {/* Leading dot — sin-pulse: calm 1s rhythm */}
         <span
           style={{
             width: 16,
@@ -328,6 +344,8 @@ function KineticCaption({
             boxShadow: `0 0 10px ${dotHex}`,
             flexShrink: 0,
             display: "inline-block",
+            opacity: pulseOpacity,
+            transform: `scale(${pulseScale})`,
           }}
         />
         {/* Caption text */}
@@ -340,6 +358,7 @@ function KineticCaption({
             lineHeight: 1.12,
             textAlign: "center",
             color: baseColor,
+            whiteSpace: "pre-line",
           }}
         >
           {renderText()}
