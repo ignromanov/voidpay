@@ -99,7 +99,7 @@ export const CreateScene: React.FC<Props> = ({ hookVariant = "v1" }) => {
 
   // Mocks v2 surgical: portrait width = 84% of stage (907px on 1080), landscape keeps 768.
   const formWidth  = isPortrait ? Math.round(width * 0.84) : 768;
-  const formHeight = isPortrait ? Math.round(height * 0.62) : 720;
+  const formHeight = isPortrait ? Math.round(height * 0.713) : 720;  // B3: +15% vertical stretch (0.62 → 0.713)
   const formLeft   = (width - formWidth) / 2;
   const formTop    = (height - formHeight) / 2;
 
