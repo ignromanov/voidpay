@@ -5,6 +5,7 @@ import { FONT_SANS, FONT_MONO } from "../fonts";
 import { RemotionAuroraText } from "../components/RemotionAuroraText";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
 import { Caption } from "../components/Caption";
+import { PulseGlow } from "../components/PulseGlow";
 import { useAspect } from "../hooks/useAspect";
 import { getOutroCaption, type HookVariant } from "./captions/thesis-captions";
 
@@ -129,6 +130,7 @@ export const ThesisOutroScene: React.FC<ThesisOutroSceneProps> = ({ hookVariant 
         </div>
 
         {/* voidpay.xyz wordmark — "voidpay" uses aurora with phase offset for depth */}
+        <PulseGlow rgb="124, 58, 237" spread={24} period={30}>
         <div
           style={{
             transform: `translateY(${(1 - urlEnter) * 20}px) scale(${0.95 + 0.05 * urlEnter})`,
@@ -156,6 +158,7 @@ export const ThesisOutroScene: React.FC<ThesisOutroSceneProps> = ({ hookVariant 
           </span>
           <span style={{ opacity: 0.9, color: "#a78bfa" }}>→</span>
         </div>
+        </PulseGlow>
       </AbsoluteFill>
 
       {/* Closing caption — "Works even if we shut down." per round-9l spec §3/§4 S4 */}

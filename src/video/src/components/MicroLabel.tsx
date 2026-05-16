@@ -1,4 +1,4 @@
-import { interpolate, useCurrentFrame } from "remotion";
+import { interpolate, useCurrentFrame, Easing } from "remotion";
 import { FONT_SANS } from "../fonts";
 
 type MicroLabelProps = {
@@ -49,6 +49,21 @@ export const MicroLabel: React.FC<MicroLabelProps> = ({
 
   const opacity = fadeIn * fadeOut;
 
+  const PULSE_PERIOD = 30;
+  const glowPhase = frame % PULSE_PERIOD;
+  const glowOpacity = interpolate(
+    glowPhase,
+    [0, PULSE_PERIOD / 2, PULSE_PERIOD],
+    [0.3, 0.6, 0.3],
+    { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const glowSpread = interpolate(
+    glowPhase,
+    [0, PULSE_PERIOD / 2, PULSE_PERIOD],
+    [16, 28, 16],
+    { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
   const alignItems =
     anchor === "center" ? "center" : anchor === "right" ? "flex-end" : "flex-start";
 
@@ -78,7 +93,7 @@ export const MicroLabel: React.FC<MicroLabelProps> = ({
             background: "rgba(15, 15, 18, 0.85)",
             backdropFilter: "blur(8px)",
             border: "1px solid rgba(124, 58, 237, 0.6)",
-            boxShadow: "0 0 24px rgba(124, 58, 237, 0.5), 0 0 48px rgba(124, 58, 237, 0.3), 0 4px 16px rgba(0,0,0,0.5)",
+            boxShadow: `0 0 ${glowSpread}px rgba(124, 58, 237, ${glowOpacity}), 0 0 ${glowSpread * 2}px rgba(124, 58, 237, ${glowOpacity * 0.6}), 0 4px 16px rgba(0,0,0,0.5)`,
             display: "inline-block",
           }}
         >

@@ -1,4 +1,4 @@
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { interpolate, spring, useCurrentFrame, useVideoConfig, Easing } from "remotion";
 import { FONT_SANS, FONT_MONO } from "../fonts";
 import { SPRING_CONFIGS } from "../constants/timing";
 
@@ -62,6 +62,21 @@ export const HintBadge: React.FC<HintBadgeProps> = ({
 
   const opacity = fadeInOpacity * fadeOutOpacity;
 
+  const PULSE_PERIOD = 30;
+  const glowPhase = frame % PULSE_PERIOD;
+  const glowOpacity = interpolate(
+    glowPhase,
+    [0, PULSE_PERIOD / 2, PULSE_PERIOD],
+    [0.25, 0.55, 0.25],
+    { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const glowSpread = interpolate(
+    glowPhase,
+    [0, PULSE_PERIOD / 2, PULSE_PERIOD],
+    [10, 20, 10],
+    { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
   // Dot size: 5px in mock (360 base) × 3 = 15px at 1080
   const dotSize = Math.round(fontSize * 0.375);
   // Gap: 7px mock × 3 = 21px
@@ -119,7 +134,7 @@ export const HintBadge: React.FC<HintBadgeProps> = ({
           boxShadow: [
             "0 0 0 2px rgba(255,255,255,0.06)",
             "0 6px 18px rgba(0,0,0,0.55)",
-            "0 0 14px rgba(124,58,237,0.35)",
+            `0 0 ${glowSpread}px rgba(124,58,237,${glowOpacity})`,
           ].join(", "),
           textAlign: "center",
         }}
