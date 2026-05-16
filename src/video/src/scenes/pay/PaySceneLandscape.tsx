@@ -1,10 +1,10 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import {
-  InvoicePaper,
   INVOICE_BASE_WIDTH,
   INVOICE_BASE_HEIGHT,
 } from "@/widgets/invoice-paper";
 import { NetworkBackground } from "@/widgets/network-background";
+import { PaperBackdrop } from "../../components/PaperBackdrop";
 import { COLORS } from "../../constants/colors";
 import { SPRING_CONFIGS } from "../../constants/timing";
 import { RemotionFakeToast } from "../../components/RemotionFakeToast";
@@ -24,6 +24,8 @@ import {
   SUCCESS,
   PAPER_PROPS_PENDING,
   PAPER_PROPS_PAID,
+  DEMO_TX_HASH,
+  CONFIRMATIONS_REQUIRED,
 } from "./constants";
 import { stepAt, ctaPressTrigger } from "./phases";
 import { PanelCascadeStyle } from "./PanelCascadeStyle";
@@ -48,7 +50,7 @@ export const PaySceneLandscape: React.FC = () => {
   const ctaPressTriggerFrame = ctaPressTrigger(frame);
 
   const confirmations = useMemo(
-    () => ({ current: 12, required: 12 }),
+    () => ({ current: CONFIRMATIONS_REQUIRED, required: CONFIRMATIONS_REQUIRED }),
     [],
   );
 
@@ -62,7 +64,7 @@ export const PaySceneLandscape: React.FC = () => {
   // R9r: no dim and no blur in landscape
   const uiDimOpacity = 1.0;
 
-  const panelTxHash = step === 'confirming' || step === 'success' ? "0xabc123def456789012345678901234567890abcdef1234567890abcdef123456" as const : undefined;
+  const panelTxHash = step === 'confirming' || step === 'success' ? DEMO_TX_HASH : undefined;
 
   const paperPaid = step === 'success';
 
@@ -120,19 +122,13 @@ export const PaySceneLandscape: React.FC = () => {
           height: colH,
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            left: paperLeft,
-            top: paperTop - CHROME_HEIGHT, // relative to column top (which is at CHROME_HEIGHT)
-            width: INVOICE_BASE_WIDTH,
-            height: INVOICE_BASE_HEIGHT,
-            transform: `scale(${paperScale})`,
-            transformOrigin: "top left",
-          }}
-        >
-          <InvoicePaper {...(paperPaid ? PAPER_PROPS_PAID : PAPER_PROPS_PENDING)} />
-        </div>
+        <PaperBackdrop
+          paperProps={paperPaid ? PAPER_PROPS_PAID : PAPER_PROPS_PENDING}
+          containerWidth={colWidth}
+          containerHeight={height - CHROME_HEIGHT}
+          opacity={1}
+          blurPx={0}
+        />
       </div>
 
       {/* F1.C1: Magic Dust visual peak — anchored to paper totals in left column */}

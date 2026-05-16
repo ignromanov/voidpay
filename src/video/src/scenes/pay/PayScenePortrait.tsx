@@ -19,6 +19,8 @@ import {
   SUCCESS,
   PAPER_PROPS_PENDING,
   PAPER_PROPS_PAID,
+  DEMO_TX_HASH,
+  CONFIRMATIONS_REQUIRED,
 } from "./constants";
 import { stepAt, ctaPressTrigger } from "./phases";
 import { PanelCascadeStyle } from "./PanelCascadeStyle";
@@ -46,7 +48,7 @@ export const PayScenePortrait: React.FC = () => {
   const ctaPressTriggerFrame = ctaPressTrigger(frame);
 
   const confirmations = useMemo(
-    () => ({ current: 12, required: 12 }),
+    () => ({ current: CONFIRMATIONS_REQUIRED, required: CONFIRMATIONS_REQUIRED }),
     [],
   );
 
@@ -60,7 +62,7 @@ export const PayScenePortrait: React.FC = () => {
   // R9r: No dim in portrait per user requirement.
   const uiDimOpacity = 1.0;
 
-  const panelTxHash = step === 'confirming' || step === 'success' ? "0xabc123def456789012345678901234567890abcdef1234567890abcdef123456" as const : undefined;
+  const panelTxHash = step === 'confirming' || step === 'success' ? DEMO_TX_HASH : undefined;
 
   const paperPaid = step === 'success';
 
