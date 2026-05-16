@@ -57,3 +57,11 @@ export const CHROME_HEIGHT_LANDSCAPE = 61; // 51 × 1.2, rounded
 export const CHROME_HEIGHT_PORTRAIT  = 76; // 51 × 1.5, rounded
 // Max panel width in landscape right column (D13; D38: widened to 880)
 export const PANEL_MAX_WIDTH = 880;
+
+// Round-11 phase-6: pack-into-URL animation (F2).
+// Last 30fr of PayScene (S3-local 575–605) — invoice paper scales/fades toward browser chrome.
+// PACK_START_LOCAL = SCENE_DURATIONS.pay - PACK_DURATION = 605 - 30 = 575.
+export const PACK_DURATION = 30;
+export const PACK_START_LOCAL = 575;
+export const PACK_Y_OFFSET_LANDSCAPE = 400;  // px toward top chrome (canvas height 1080px)
+export const PACK_Y_OFFSET_PORTRAIT  = 800;  // px toward top chrome (canvas height 1920px)

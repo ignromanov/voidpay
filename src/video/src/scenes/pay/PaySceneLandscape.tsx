@@ -26,6 +26,8 @@ import {
   PAPER_PROPS_PAID,
   DEMO_TX_HASH,
   CONFIRMATIONS_REQUIRED,
+  PACK_START_LOCAL,
+  PACK_Y_OFFSET_LANDSCAPE,
 } from "./constants";
 import { stepAt, ctaPressTrigger } from "./phases";
 import { PanelCascadeStyle } from "./PanelCascadeStyle";
@@ -107,6 +109,19 @@ export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = "v1" }) => {
   const haloLeft = paperLeft + INVOICE_BASE_WIDTH * paperScale - 80;
   const haloTop = paperTop + paperScaledH * 0.72;
 
+  // F2: pack-into-URL animation — last 30fr of PayScene (S3-local 575–605).
+  // Invoice paper scales down + translates toward browser chrome + fades out,
+  // visualising VoidPay's "URL is the source of truth" privacy metaphor.
+  const packProgress = frame >= PACK_START_LOCAL
+    ? spring({
+        frame: frame - PACK_START_LOCAL,
+        fps,
+        config: { damping: 25, stiffness: 80 },
+      })
+    : 0;
+  const paperPackTransform = `scale(${1 - packProgress}) translateY(${-PACK_Y_OFFSET_LANDSCAPE * packProgress}px)`;
+  const paperPackOpacity = 1 - packProgress;
+
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackgroundLayer variant="soft" />
@@ -120,6 +135,9 @@ export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = "v1" }) => {
           top: CHROME_HEIGHT_LANDSCAPE,
           width: colWidth,
           height: colH,
+          transform: paperPackTransform,
+          transformOrigin: "center center",
+          opacity: paperPackOpacity,
         }}
       >
         <PaperBackdrop
