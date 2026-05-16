@@ -10,13 +10,24 @@
  * - LocalStorage persistence via createStorage
  * - All supported mainnet/testnet chains
  *
+ * Telegram WebView gate (GH#214):
+ * When isTelegramWebView() is true, each wallet's `mobile` field is
+ * stripped so RainbowKit falls through to the WC QR modal instead of
+ * executing `window.location.href = "wc:..."` which causes a blank page.
+ *
  * @see https://wagmi.sh/core/api/createConfig
  */
 
 import { createStorage } from 'wagmi'
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
+import {
+  rainbowWallet,
+  metaMaskWallet,
+  walletConnectWallet,
+  safeWallet,
+} from '@rainbow-me/rainbowkit/wallets'
 import { getSupportedChains, ALL_CHAIN_IDS } from '@/entities/network'
-import { createTransportsForChains } from '@/shared/lib'
+import { createTransportsForChains, isTelegramWebView } from '@/shared/lib'
 import { WAGMI_STORAGE_KEY } from '@/shared/config'
 
 /**
@@ -56,13 +67,54 @@ const chains = getSupportedChains()
 const transports = createTransportsForChains([...ALL_CHAIN_IDS])
 
 /**
+ * Wraps a wallet factory so its `mobile` field is always undefined.
+ *
+ * RainbowKit checks `wallet.mobile?.getUri` to decide whether to do
+ * `window.location.href = "wc:..."`. Setting mobile to undefined
+ * short-circuits that branch → falls through to the QR modal instead.
+ * This is the correct fix for Telegram WebView (GH#214).
+ */
+function stripMobile<T extends (opts: { projectId: string }) => unknown>(factory: T): T {
+  return ((opts: { projectId: string }) => ({ ...(factory(opts) as object), mobile: undefined })) as T
+}
+
+/**
+ * Wallet list for Telegram WebView: mobile deep-links stripped so the
+ * WalletConnect QR modal is the only connect path (no wc: redirect).
+ *
+ * coinbaseWallet excluded: deprecated in RainbowKit v2.2.11 (replaced by
+ * `base`) and as a deep-link wallet its mobile field is the only meaningful
+ * feature — without it, it becomes a redundant WC entry.
+ */
+const TELEGRAM_WALLET_LIST = [
+  {
+    groupName: 'Scan to connect',
+    wallets: [
+      stripMobile(rainbowWallet),
+      stripMobile(metaMaskWallet),
+      stripMobile(safeWallet),
+      walletConnectWallet, // already has no mobile
+    ],
+  },
+]
+
+const sharedStorageConfig = createStorage({
+  storage:
+    typeof window !== 'undefined'
+      ? window.localStorage
+      : {
+          getItem: () => null,
+          setItem: () => {},
+          removeItem: () => {},
+        },
+  key: WAGMI_STORAGE_KEY,
+})
+
+/**
  * Wagmi configuration using RainbowKit's getDefaultConfig
  *
- * This provides:
- * - Pre-configured connectors (MetaMask, WalletConnect, Coinbase, Rainbow)
- * - Automatic wallet detection
- * - Mobile wallet support via WalletConnect
- * - SSR-safe storage with LocalStorage persistence
+ * In Telegram WebView: uses a custom wallet list with mobile stripped.
+ * Elsewhere: uses RainbowKit's built-in default wallet list.
  */
 export const wagmiConfig = getDefaultConfig({
   appName: 'VoidPay',
@@ -70,17 +122,8 @@ export const wagmiConfig = getDefaultConfig({
   chains,
   transports,
   ssr: true,
-  storage: createStorage({
-    storage:
-      typeof window !== 'undefined'
-        ? window.localStorage
-        : {
-            getItem: () => null,
-            setItem: () => {},
-            removeItem: () => {},
-          },
-    key: WAGMI_STORAGE_KEY,
-  }),
+  storage: sharedStorageConfig,
+  ...(isTelegramWebView() ? { wallets: TELEGRAM_WALLET_LIST } : {}),
 })
 
 /**
