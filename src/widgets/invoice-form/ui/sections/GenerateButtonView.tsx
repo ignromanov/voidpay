@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import { Share2Icon, ArrowRightIcon, Loader2Icon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 
@@ -23,7 +23,7 @@ export interface GenerateButtonViewProps {
  * safe for Remotion render path by design). Hover/press states driven by props
  * so Remotion can simulate user interaction frame-by-frame.
  */
-export function GenerateButtonView({
+export const GenerateButtonView = React.memo(function GenerateButtonView({
   onGenerate,
   canGenerate,
   isGenerating = false,
@@ -31,23 +31,28 @@ export function GenerateButtonView({
   hoverState = false,
   pressState = false,
 }: GenerateButtonViewProps) {
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     if (!canGenerate) {
       onSubmitAttempt?.()
       return
     }
     onGenerate?.()
-  }
+  }, [canGenerate, onGenerate, onSubmitAttempt])
+
+  // Only apply frame-precise transform in the Remotion path (hoverState/pressState
+  // are undefined in production). Production path gets style={undefined} so the
+  // Button's native CSS hover styles are not suppressed.
+  const interactive = hoverState || pressState
+  const remotionStyle: React.CSSProperties | undefined = interactive
+    ? {
+        transform: pressState ? 'scale(0.97)' : 'scale(1.02)',
+        transformOrigin: 'center',
+        transition: 'none',
+      }
+    : undefined
 
   return (
-    <div
-      className="pt-4"
-      style={{
-        transform: pressState ? 'scale(0.97)' : hoverState ? 'scale(1.02)' : undefined,
-        transformOrigin: 'center',
-        transition: 'none', // Remotion: no CSS transitions
-      }}
-    >
+    <div className="pt-4" style={remotionStyle}>
       <Button
         onClick={handleClick}
         disabled={isGenerating}
@@ -69,4 +74,4 @@ export function GenerateButtonView({
       </Button>
     </div>
   )
-}
+})

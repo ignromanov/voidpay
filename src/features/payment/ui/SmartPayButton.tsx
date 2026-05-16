@@ -72,6 +72,9 @@ export function SmartPayButton({
   const [showCancel, setShowCancel] = useState(false)
   useEffect(() => { setShowCancel(false) }, [step])
 
+  const handleMouseEnter = useCallback(() => { if (canCancel) setShowCancel(true) }, [canCancel])
+  const handleMouseLeave = useCallback(() => { setShowCancel(false) }, [])
+
   const handleClick = useCallback(() => {
     if (devOverride) return
     if (canCancel && showCancel) {
@@ -98,8 +101,8 @@ export function SmartPayButton({
       isHydrating={isHydratingActive}
       showCancel={showCancel && canCancel}
       onClick={handleClick}
-      onMouseEnter={() => { if (canCancel) setShowCancel(true) }}
-      onMouseLeave={() => setShowCancel(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     />
   )
 }
