@@ -99,16 +99,22 @@ export function usePaymentPolling(params: UsePaymentPollingParams): UsePaymentPo
   const doFetch = useMemo(
     () => createDoFetch(
       { toAddress, chainId, category, fromBlock, ...(contractAddress ? { contractAddress } : {}), exactTotal },
+      // eslint-disable-next-line react-hooks/refs -- intentional: ref objects passed to factory; .current is read inside async fetch callbacks, never during render
       { abortRef, consec429Ref },
       dispatch,
+      // eslint-disable-next-line react-hooks/refs -- intentional: flushStop closes over refs internally, not accessed during render
       flushStop,
     ),
     [toAddress, chainId, category, fromBlock, contractAddress, exactTotal, flushStop],
   )
 
   // ---- Loop assignments (updated every render via .current) ----
+  // assign* functions write loop refs' .current to point at the latest callbacks;
+  // this is intentional — loops always invoke the most-recent doFetch/setTxHash without re-subscribing.
   const loopRefs = { isActiveRef, sessionModeRef, sessionStartedAtRef, timerRef }
+  // eslint-disable-next-line react-hooks/refs -- intentional: see block comment above
   assignAggressiveLoop(aggressiveLoopRef, loopRefs, doFetch, setTxHash, contentHash, flushStop)
+  // eslint-disable-next-line react-hooks/refs -- intentional: see block comment above
   assignWatchingLoop(watchingLoopRef, watchStepRef, loopRefs, doFetch, setTxHash, contentHash, flushStop)
 
   // ---- Visibility handler ----

@@ -130,12 +130,17 @@ export function usePaymentVerification({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, isReceiptSuccess, receiptBlockStr, publicClient])
 
-  // Keep store action refs stable so async callbacks always use the latest
+  // Keep store action refs stable so async callbacks always use the latest.
+  // Pattern: create ref once, update .current every render so async callbacks
+  // always read the latest action without being listed as effect dependencies.
   const setStoreErrorRef = useRef(setStoreError)
+  // eslint-disable-next-line react-hooks/refs -- intentional latest-ref pattern: async callbacks read .current at call time to avoid stale closures
   setStoreErrorRef.current = setStoreError
   const setConfirmationsRef = useRef(setConfirmations)
+  // eslint-disable-next-line react-hooks/refs -- intentional latest-ref pattern
   setConfirmationsRef.current = setConfirmations
   const setValidatedRef = useRef(setValidated)
+  // eslint-disable-next-line react-hooks/refs -- intentional latest-ref pattern
   setValidatedRef.current = setValidated
 
   const readyToVerify =
@@ -191,6 +196,7 @@ export function usePaymentVerification({
       invoice.currency ?? 'TOKEN',
     )
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: verification state transition fires exactly once when erc20Ready flips; guard above ensures idempotency
     if (!result.verified) { handleVerifyError(result); return }
     completeVerification(receipt.blockNumber)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -209,6 +215,7 @@ export function usePaymentVerification({
       invoice.currency ?? 'ETH',
     )
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: verification state transition fires exactly once when nativeReady flips; guard above ensures idempotency
     if (!result.verified) { handleVerifyError(result); return }
     completeVerification(receipt.blockNumber)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -219,6 +226,7 @@ export function usePaymentVerification({
     if (!enabled) return
     if (!nativeFetchError) return
     setStoreErrorRef.current(contentHash, nativeFetchError)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: propagates fetch error to local state exactly once when nativeFetchError becomes defined
     setVerifyError(nativeFetchError)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nativeFetchError])
@@ -232,6 +240,7 @@ export function usePaymentVerification({
     const current = Math.max(0, Number(currentBlock - txBlockNumber))
     const progress: ConfirmationProgress = { current, required: requiredConfirmations }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: confirmation counter drives UI progress bar; fires on every new block after verifyDone, no cascade risk
     setLocalConfirmations(progress)
     setConfirmationsRef.current(contentHash, progress)
 

@@ -11,6 +11,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 const mockAccount = {
   address: undefined as `0x${string}` | undefined,
@@ -24,7 +25,7 @@ vi.mock('wagmi', () => ({
 }))
 
 vi.mock('@rainbow-me/rainbowkit', () => ({
-  useConnectModal: vi.fn(() => ({ openConnectModal: vi.fn() })),
+  useConnectModal: vi.fn(() => ({ connectModalOpen: false, openConnectModal: vi.fn() })),
   useAccountModal: vi.fn(() => ({ openAccountModal: vi.fn() })),
   useChainModal: vi.fn(() => ({ openChainModal: vi.fn() })),
 }))
@@ -93,5 +94,62 @@ describe('WalletButton', () => {
     expect(button).toBeDisabled()
     expect(button).toHaveAttribute('aria-busy', 'true')
     expect(button.textContent).toContain('Reconnecting')
+  })
+
+  describe('onBeforeConnect intercept', () => {
+    it('calls onBeforeConnect instead of openConnectModal when it returns true', async () => {
+      const { useConnectModal } = await import('@rainbow-me/rainbowkit')
+      const mockOpenConnectModal = vi.fn()
+      vi.mocked(useConnectModal).mockReturnValue({ connectModalOpen: false, openConnectModal: mockOpenConnectModal })
+
+      const onBeforeConnect = vi.fn(() => true)
+      const user = userEvent.setup()
+      render(<WalletButton onBeforeConnect={onBeforeConnect} />)
+
+      await user.click(screen.getByRole('button', { name: /connect/i }))
+
+      expect(onBeforeConnect).toHaveBeenCalledOnce()
+      expect(mockOpenConnectModal).not.toHaveBeenCalled()
+    })
+
+    it('calls openConnectModal when onBeforeConnect returns false', async () => {
+      const { useConnectModal } = await import('@rainbow-me/rainbowkit')
+      const mockOpenConnectModal = vi.fn()
+      vi.mocked(useConnectModal).mockReturnValue({ connectModalOpen: false, openConnectModal: mockOpenConnectModal })
+
+      const onBeforeConnect = vi.fn(() => false)
+      const user = userEvent.setup()
+      render(<WalletButton onBeforeConnect={onBeforeConnect} />)
+
+      await user.click(screen.getByRole('button', { name: /connect/i }))
+
+      expect(onBeforeConnect).toHaveBeenCalledOnce()
+      expect(mockOpenConnectModal).toHaveBeenCalledOnce()
+    })
+
+    it('calls openConnectModal normally when onBeforeConnect is not provided', async () => {
+      const { useConnectModal } = await import('@rainbow-me/rainbowkit')
+      const mockOpenConnectModal = vi.fn()
+      vi.mocked(useConnectModal).mockReturnValue({ connectModalOpen: false, openConnectModal: mockOpenConnectModal })
+
+      const user = userEvent.setup()
+      render(<WalletButton />)
+
+      await user.click(screen.getByRole('button', { name: /connect/i }))
+
+      expect(mockOpenConnectModal).toHaveBeenCalledOnce()
+    })
+
+    it('does not intercept connected-state buttons (chain, account modals)', async () => {
+      mockAccount.isConnected = true
+      mockAccount.address = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+
+      const onBeforeConnect = vi.fn(() => true)
+      render(<WalletButton onBeforeConnect={onBeforeConnect} />)
+
+      // When connected, Connect button is not rendered at all
+      expect(screen.queryByRole('button', { name: /connect/i })).toBeNull()
+      expect(onBeforeConnect).not.toHaveBeenCalled()
+    })
   })
 })

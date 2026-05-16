@@ -20,7 +20,7 @@ import { usePayInvoice } from './use-pay-invoice'
 import type { PayInvoiceState } from './use-pay-invoice'
 import { StatusBadge, MinimizedPill } from '@/widgets/payment-panel'
 import { CreatorHintBanner } from './CreatorHintBanner'
-import { InAppBrowserGuard } from '@/shared/ui/in-app-browser-guard'
+import { InAppBrowserGuard, useIsHostileInAppBrowser } from '@/widgets/in-app-browser-guard'
 
 /**
  * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.
@@ -33,6 +33,18 @@ const PayButton = dynamic(
     loading: () => (
       <Button variant="void" size="lg" className="h-14 w-full" disabled>
         Smart Pay
+      </Button>
+    ),
+  },
+)
+
+const OpenInBrowserPayButton = dynamic(
+  () => import('./OpenInBrowserPayButton').then((m) => ({ default: m.OpenInBrowserPayButton })),
+  {
+    ssr: false,
+    loading: () => (
+      <Button variant="void" size="lg" className="h-14 w-full" disabled>
+        Open in browser to pay
       </Button>
     ),
   },
@@ -117,6 +129,7 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
   const [isMinimized, setIsMinimized] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [devPaymentStep, setDevPaymentStep] = useState<DevPaymentVisualStep | null>(null)
+  const isHostile = useIsHostileInAppBrowser()
 
   const handlePaymentSuccess = useCallback(() => { setPaymentError(null) }, [])
   const handlePaymentError = useCallback((error: PaymentError) => { setPaymentError(error.message) }, [])
@@ -175,8 +188,10 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
           </ScaledInvoicePreview>
         </div>
 
-        {/* Payment Panel — floating bottom overlay */}
-        <div className="absolute bottom-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))] left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 md:bottom-5 print:hidden">
+        {/* Payment Panel — floating bottom overlay (position is constant; the
+            InAppBrowserGuard warning sits ABOVE it at higher z-index and is
+            dismissible, so no positional shift in hostile-IAB path) */}
+        <div className="absolute left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 bottom-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))] md:bottom-5 print:hidden">
           <CreatorHintBanner isCreator={source === 'created'} />
           <AnimatePresence mode="wait">
             {isMinimized ? (
@@ -225,6 +240,8 @@ function PayWorkspaceReady({ invoice, payInvoice }: PayWorkspaceReadyProps) {
                           This invoice opens for payment on {new Date(invoice.issuedAt * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </p>
                       </div>
+                    ) : isHostile ? (
+                      <OpenInBrowserPayButton />
                     ) : (
                       <PayButton
                         invoice={invoice}

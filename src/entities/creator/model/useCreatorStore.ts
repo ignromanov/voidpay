@@ -23,21 +23,7 @@ import {
   createUiSlice,
   type CreatorStore,
 } from './slices'
-
-/**
- * Initial state
- */
-const initialState = {
-  version: 1 as const,
-  activeDraft: null,
-  lineItems: [],
-  templates: [],
-  preferences: {},
-  idCounter: {
-    currentValue: 1,
-    prefix: 'INV',
-  },
-}
+import { CREATOR_INITIAL_STATE } from './initial-state'
 
 /**
  * Migration function for future schema versions
@@ -93,7 +79,7 @@ const migrate = (persistedState: any, version: number): Partial<CreatorStore> =>
     }
 
     // Return initial state for data corruption
-    return initialState
+    return CREATOR_INITIAL_STATE
   }
 }
 
