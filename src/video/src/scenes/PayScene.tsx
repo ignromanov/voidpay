@@ -19,7 +19,6 @@ import { COLORS } from "../constants/colors";
 import { SPRING_CONFIGS } from "../constants/timing";
 import { RemotionFakeToast } from "../components/RemotionFakeToast";
 import { Caption } from "../components/Caption";
-import { HintBadge } from "../components/HintBadge";
 import { PAY_CAPTIONS_VERTICAL, PAY_CAPTIONS_LANDSCAPE } from "./captions/pay-captions";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
 import { BrowserChrome } from "../components/BrowserChrome";
@@ -524,16 +523,6 @@ export const PayScene: React.FC = () => {
         <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={310} hold={140} stackOffset={0} anchor="below-panel" />
         <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={440} hold={120} stackOffset={0} anchor="below-panel" />
 
-        {/* η4 hint — Magic Dust unique micro-amount annotation (landscape, round-9o: bottom 10%) */}
-        <HintBadge
-          text="unique micro-amount ← payment ID"
-          startAt={230}
-          endAt={310}
-          style={{ bottom: "10%", left: "25%", transform: "translateX(-50%)" }}
-          variant="arrow"
-          fontSize={22}
-        />
-
         {/* Captions from caption-data (landscape) */}
         {PAY_CAPTIONS_LANDSCAPE.map((c) => (
           <Caption
@@ -650,16 +639,6 @@ export const PayScene: React.FC = () => {
       <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={210} hold={40} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={310} hold={140} stackOffset={0} anchor="below-panel" />
       <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={440} hold={120} stackOffset={0} anchor="below-panel" />
-
-      {/* η4 hint — Magic Dust unique micro-amount annotation (round-9o: bottom 10%) */}
-      <HintBadge
-        text="unique micro-amount ← payment ID"
-        startAt={230}
-        endAt={310}
-        style={{ bottom: "10%", left: "50%", transform: "translateX(-50%)" }}
-        variant="arrow"
-        fontSize={28}
-      />
 
       {/* Captions from caption-data (portrait) */}
       {PAY_CAPTIONS_VERTICAL.map((c) => (

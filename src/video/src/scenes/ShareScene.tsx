@@ -24,7 +24,6 @@ import { FONT_SANS } from "../fonts";
 import { RemotionLinkTab } from "../components/RemotionLinkTab";
 import { RemotionQRTab } from "../components/RemotionQRTab";
 import { Caption } from "../components/Caption";
-import { HintBadge } from "../components/HintBadge";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
 import { useAspect } from "../hooks/useAspect";
 import { SHARE_CAPTIONS_VERTICAL, SHARE_CAPTIONS_LANDSCAPE } from "./captions/share-captions";
@@ -533,21 +532,6 @@ export const ShareScene: React.FC = () => {
           </div>
         </div>
       </Card>
-
-      {/* η5: "invoice data →" hint over violet hash payload area.
-           Modal top=320, header≈240, summary≈130 → permalink section starts ~top 690.
-           HintBadge floats above the permalink box. */}
-      <HintBadge
-        text="invoice data →"
-        startAt={80}
-        endAt={160}
-        fontSize={28}
-        style={{
-          top: 670,
-          left: "50%",
-          transform: "translateX(-50%)",
-        }}
-      />
 
       {/* S2 captions — round-9l kinetic typography */}
       {captions.map((c) => (

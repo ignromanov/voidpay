@@ -113,16 +113,29 @@ export const ThesisHookScene: React.FC<Props> = ({ hookVariant = "v1" }) => {
       </AbsoluteFill>
 
       {/* Hook variant caption overlay — A/B test text per round-9l spec §2 */}
-      {/* position/fontSize overridden to round-9m spec: 71% / compact 74px */}
+      {/* round-9q: hook window shortened to 5-45; second caption fires 50-85 */}
       <Caption
         text={cap.text}
         startAt={cap.startAt}
-        endAt={cap.endAt}
+        endAt={45}
         weight={cap.weight}
         emphasizedWord={cap.emphasizedWord}
         position={captionPosition}
         fontSize={captionFontSize}
         variant={cap.variant}
+      />
+
+      {/* round-9q: second S0 caption — "Raw addresses look unprofessional." */}
+      <Caption
+        text={isVertical ? "Raw addresses look unprofessional." : "Raw wallet addresses look unprofessional."}
+        startAt={50}
+        endAt={85}
+        weight={500}
+        emphasizedWord="unprofessional"
+        position={captionPosition}
+        fontSize={isVertical ? 50 : 59}
+        variant="violet"
+        springConfig="smooth"
       />
     </AbsoluteFill>
   );

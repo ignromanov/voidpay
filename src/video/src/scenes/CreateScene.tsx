@@ -17,7 +17,6 @@ import { COLORS } from "../constants/colors";
 import { TYPEWRITER_CHAR_FRAMES } from "../constants/timing";
 import { DEMO_INVOICE, DEMO_FROM_ADDRESS } from "../constants/demo-invoice";
 import { Caption } from "../components/Caption";
-import { HintBadge } from "../components/HintBadge";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
 import { useAspect } from "../hooks/useAspect";
 import { CREATE_CAPTIONS_VERTICAL, CREATE_CAPTIONS_LANDSCAPE } from "./captions/create-captions";
@@ -155,9 +154,7 @@ export const CreateScene: React.FC = () => {
   const isLandscape = width > height;
 
   const { isVertical } = useAspect();
-  // round-9m F2: drop ghost "Fill a form." watermark that renders behind form and adds noise
-  const rawCaptions = isVertical ? CREATE_CAPTIONS_VERTICAL : CREATE_CAPTIONS_LANDSCAPE;
-  const captions = rawCaptions.filter((c) => c.text !== "Fill a form.");
+  const captions = isVertical ? CREATE_CAPTIONS_VERTICAL : CREATE_CAPTIONS_LANDSCAPE;
 
   // Frame-driven snapshot for the real InvoiceFormView.
   const viewValue = useMemo(() => {
@@ -373,31 +370,6 @@ export const CreateScene: React.FC = () => {
               </div>
             </Card>
 
-            {/* HintBadges anchored to right column — same % coords, now relative to column */}
-            <HintBadge
-              text="No DB → link is the data"
-              startAt={65}
-              endAt={95}
-              variant="arrow"
-              fontSize={22}
-              style={{ top: "21.6%", right: "6.7%", zIndex: 10 }}
-            />
-            <HintBadge
-              text="auto-generated"
-              startAt={65}
-              endAt={115}
-              variant="arrow"
-              fontSize={22}
-              style={{ top: "27.3%", left: "3.9%", zIndex: 10 }}
-            />
-            <HintBadge
-              text="Magic dust → unique payment ID"
-              startAt={220}
-              endAt={280}
-              variant="arrow"
-              fontSize={22}
-              style={{ top: "51.6%", right: "6.7%", zIndex: 10 }}
-            />
           </div>
         </div>
 
@@ -698,37 +670,7 @@ export const CreateScene: React.FC = () => {
         </div>
       </Card>
 
-      {/* η7 (F2): Mocks v2 anchor top:21.6% right:6.7% — "No DB → link is the data" */}
-      <HintBadge
-        text="No DB → link is the data"
-        startAt={65}
-        endAt={95}
-        variant="arrow"
-        fontSize={28}
-        style={{ top: "21.6%", right: "6.7%", zIndex: 10 }}
-      />
-
-      {/* η7 (round-9m): "auto-generated" hint at S1-local 65 */}
-      <HintBadge
-        text="auto-generated"
-        startAt={65}
-        endAt={115}
-        variant="arrow"
-        fontSize={28}
-        style={{ top: "27.3%", left: "3.9%", zIndex: 10 }}
-      />
-
-      {/* η2 (F4): Mocks v2 anchor top:51.6% right:6.7% — "Magic dust → unique payment ID" */}
-      <HintBadge
-        text="Magic dust → unique payment ID"
-        startAt={220}
-        endAt={280}
-        variant="arrow"
-        fontSize={28}
-        style={{ top: "51.6%", right: "6.7%", zIndex: 10 }}
-      />
-
-      {/* S1 captions — round-9l spec §3 (9:16 portrait) */}
+      {/* S1 captions — round-9q spec §3 (9:16 portrait) */}
       {captions.map((c, i) => (
         <Caption
           key={i}
@@ -743,20 +685,6 @@ export const CreateScene: React.FC = () => {
           springConfig={c.springConfig ?? "smooth"}
         />
       ))}
-      {/* ε1 "No signup." — round-9m inline (missing from captions data; fires at PRESS_START=240) */}
-      {isVertical && (
-        <Caption
-          text="No signup."
-          startAt={240}
-          endAt={310}
-          weight={700}
-          emphasizedWord="signup."
-          position={49}
-          fontSize={86}
-          variant="violet"
-          springConfig="smooth"
-        />
-      )}
 
     </AbsoluteFill>
   );
