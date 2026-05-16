@@ -5,13 +5,8 @@ import { Loader2Icon, CheckCircleIcon, XIcon } from '@/shared/ui/icons'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { motion } from '@/shared/ui/motion'
 import { FluidOverlay } from './FluidOverlay'
-import type { PaymentStep, AnimatedAnimatedIdleSubState } from '../model/types'
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const IN_PROGRESS_STEPS = new Set<PaymentStep>(['connecting', 'switching', 'sending', 'confirming'])
+import { IN_PROGRESS_STEPS } from '../model/types'
+import type { PaymentStep, AnimatedIdleSubState } from '../model/types'
 
 // ---------------------------------------------------------------------------
 // Helpers (lifted from SmartPayButton)

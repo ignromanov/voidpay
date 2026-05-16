@@ -79,6 +79,11 @@ export type PaymentAction =
   | { type: 'ERROR'; error: PaymentError }
   | { type: 'RESET' }
 
+/** Steps that represent an in-progress payment operation */
+export const IN_PROGRESS_STEPS = new Set<PaymentStep>([
+  'connecting', 'switching', 'sending', 'confirming',
+])
+
 /** Initial payment state */
 export const INITIAL_PAYMENT_STATE: PaymentState = {
   step: 'idle',
