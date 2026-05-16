@@ -17,6 +17,8 @@ import {
   SCROLL_START_FRAME,
   SCROLL_DURATION_FRAMES,
   TOTAL_SCROLL_DISTANCE_PORTRAIT,
+  FORM_FADE_START_OFFSET,
+  FORM_HALF_OPACITY,
 } from "./constants";
 
 type Props = {
@@ -51,11 +53,29 @@ export const CreateScenePortrait: React.FC<Props> = ({
   glowSpread,
   glowIntensity,
   buttonGlowOpacity,
-  formOpacity,
+  // formOpacity prop intentionally overridden below by C1+C2 fade dance (portrait-specific).
   hookVariant = "v1",
 }) => {
   const { fps } = useVideoConfig();
   const captions = hookVariant === "v2" ? CREATE_CAPTIONS_V2_VERTICAL : CREATE_CAPTIONS_VERTICAL;
+
+  // C1+C2+C3: portrait-specific fade dance (round-11 phase 4).
+  // C1: form fades 1.0 → FORM_HALF_OPACITY from (PRESS_START - FORM_FADE_START_OFFSET) → PRESS_START.
+  // C2: form continues 0.5 → 0.0 from PRESS_START → PRESS_END (simultaneously invoice fades in).
+  // C3: invoice visible alone from PRESS_END to scene end.
+  const fadeStart = PRESS_START - FORM_FADE_START_OFFSET;
+  const formOpacity = interpolate(
+    frame,
+    [fadeStart, PRESS_START, PRESS_END],
+    [1.0, FORM_HALF_OPACITY, 0.0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const invoiceOpacity = interpolate(
+    frame,
+    [fadeStart, PRESS_END],
+    [0.0, 1.0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
 
   return (
     <div style={{ position: "absolute", inset: 0, backgroundColor: COLORS.bg }}>
@@ -76,21 +96,15 @@ export const CreateScenePortrait: React.FC<Props> = ({
         }}
       />
 
-      {/* β2: InvoicePaper as persistent backdrop, grows from PAPER_APPEAR BEHIND form (z=1).
-           C5: F5 (Generate pressed) — paper dims to 0.4 opacity + 0.5px blur. */}
-      <CreateScenePaperEnvelope
-        frame={frame}
-        {...(frame >= PRESS_START && {
-          dimOpacity: interpolate(frame, [PRESS_START, PRESS_START + 8], [0.65, 0.4], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          }),
-          blurPx: interpolate(frame, [PRESS_START, PRESS_START + 8], [0, 0.5], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          }),
-        })}
-      />
+      {/* C1+C2+C3: invoice stacked behind form. invoiceOpacity drives the cross-fade.
+           dimOpacity=1.0 disables CreateScenePaperEnvelope's internal dim logic so
+           the outer wrapper has sole control over opacity. zIndex:1 stays below Card zIndex:2. */}
+      <div style={{ position: "absolute", inset: 0, opacity: invoiceOpacity, zIndex: 1 }}>
+        <CreateScenePaperEnvelope
+          frame={frame}
+          dimOpacity={1.0}
+        />
+      </div>
 
       {/* β1+β3+β4: Form Card — Mocks v2 form spec: rgba(14,14,19,0.95) bg, zinc border */}
       <Card

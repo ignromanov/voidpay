@@ -1,20 +1,20 @@
 /** Scene durations in frames (at 30fps) — round-9s §Composition */
 export const SCENE_DURATIONS = {
   thesisHook:  90,    // 3.000s — unchanged
-  create:      330,   // 11.000s — round 9s: -20fr (was 350) defect-5 cut to remove cross-fade budget
+  create:      360,   // 12.000s — round-11 phase-4: +30fr (was 330) for invoice-only hold after press
   share:       280,   // 9.333s  — round 9s: -20fr (was 300) defect-5 cut
   pay:         575,   // 19.167s — unchanged
   thesisOutro:  75,   // 2.500s  — round 9s: -30fr (was 105) defect-5 cut
 } as const;
 
-// Round 9s math (no transition overlaps — Series clean cuts):
+// Round-11 phase-4 math (no transition overlaps — Series clean cuts):
 //   S0 ends 90.
-//   S1 starts 90, ends 420 (90+330).
-//   S2 starts 420, ends 700 (420+280).
-//   S3 starts 700, ends 1275 (700+575).
-//   S4 starts 1275, ends 1350 (1275+75).
-//   Total = 90+330+280+575+75 = 1350. No black tail needed.
-// Magic Dust peak in S3: S3 start 700 + S3-local MAGIC_DUST_HIGHLIGHT 225 = global 925.
+//   S1 starts 90, ends 450 (90+360).
+//   S2 starts 450, ends 730 (450+280).
+//   S3 starts 730, ends 1305 (730+575).
+//   S4 starts 1305, ends 1380 (1305+75).
+//   Total = 90+360+280+575+75 = 1380. No black tail needed.
+// Magic Dust peak in S3: S3 start 730 + S3-local MAGIC_DUST_HIGHLIGHT 225 = global 955.
 
 /** Transition durations in frames (retained for reference; not used with Series) */
 export const TRANSITION_DURATIONS = {
@@ -22,26 +22,26 @@ export const TRANSITION_DURATIONS = {
 } as const;
 
 /**
- * Primary composition duration = 1350 frames (45s @ 30fps).
- * Round 9s: TransitionSeries replaced with Series (defect-5 — clean cuts, no cross-fade).
- * Sum of scenes = 90 + 330 + 280 + 575 + 75 = 1350. Exact fit, no tail.
+ * Primary composition duration = 1380 frames (46s @ 30fps).
+ * Round-11 phase-4: S1 (create) extended 330 → 360fr for invoice-only hold (C3).
+ * Sum of scenes = 90 + 360 + 280 + 575 + 75 = 1380. Exact fit, no tail.
  */
-export const TOTAL_DURATION = 1350;
+export const TOTAL_DURATION = 1380;
 
 /** Teaser (15s self-contained) per creative-brief-v2 §7. */
 export const TEASER_DURATION = 450;
 
 /**
  * Magic Dust peak — global frame where S3 Pay scene shows the highlighted
- * micro-amount. Round-9s timeline (Series, no overlap):
+ * micro-amount. Round-11 phase-4 timeline (Series, no overlap):
  *   S0 ends at 90.
- *   S1 starts at 90, ends at 420 (90+330).
- *   S2 starts at 420, ends at 700 (420+280).
- *   S3 starts at 700, ends at 1275 (700+575).
- *   S4 starts at 1275, ends at 1350 (1275+75).
- *   S3 global start 700 + S3-local MAGIC_DUST_HIGHLIGHT 225 = global 925.
+ *   S1 starts at 90, ends at 450 (90+360).
+ *   S2 starts at 450, ends at 730 (450+280).
+ *   S3 starts at 730, ends at 1305 (730+575).
+ *   S4 starts at 1305, ends at 1380 (1305+75).
+ *   S3 global start 730 + S3-local MAGIC_DUST_HIGHLIGHT 225 = global 955.
  */
-export const MAGIC_DUST_PEAK_FRAME = 925;  // round 9s: 700+225=925
+export const MAGIC_DUST_PEAK_FRAME = 955;  // round-11 phase-4: 730+225=955
 export const MAGIC_DUST_PEAK_HOLD = 120;   // 4s peak hold per creative-brief §8 strict
 
 /** FPS — canonical source (also re-exported from timing.ts) */

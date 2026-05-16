@@ -60,6 +60,14 @@ export const GENERATE_PRESS        = PRESS_END;   // 307 — stage 2 begins when
 export const FORM_OFFSET_RIGHT     = 450;         // px translateX for form in stage 3
 export const INVOICE_OFFSET_LEFT   = 450;         // px translateX for invoice in stage 3
 
+// Round-11 Phase 4 C1+C2+C3: 9:16 portrait fade dance constants.
+// C1: form starts fading 60fr before PRESS_START (1.0 → 0.5).
+// C2: invoice fades in behind form during same window (0.0 → 1.0 by PRESS_END).
+// C3: invoice-only hold after PRESS_END (PRESS_END → scene end, ≈53fr ≈ 1.77s).
+export const FORM_FADE_START_OFFSET = 60;   // frames before PRESS_START where form begins fading
+export const FORM_HALF_OPACITY      = 0.5;  // form opacity at PRESS_START midpoint
+export const INVOICE_HOLD_AFTER_PRESS = 45; // 1.5s @ 30fps (informational; actual hold = scene end - PRESS_END)
+
 /** Props forwarded to <InvoicePaper> — same in both landscape and portrait. */
 export const CREATE_PAPER_PROPS: ComponentProps<typeof InvoicePaper> = {
   data: DEMO_INVOICE,
