@@ -12,7 +12,7 @@ export interface GenerateButtonProps {
 
 /**
  * Generate invoice link button — Container.
- * Delegates rendering to GenerateButtonView (round-9a extraction).
+ * Delegates rendering to GenerateButtonView.
  * Production: no Remotion frame, so hover/press are CSS-native (no prop injection).
  */
 export function GenerateButton({ onGenerate, canGenerate, isGenerating = false, onSubmitAttempt }: GenerateButtonProps) {

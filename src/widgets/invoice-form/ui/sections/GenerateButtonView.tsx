@@ -9,19 +9,15 @@ export interface GenerateButtonViewProps {
   canGenerate: boolean
   isGenerating?: boolean | undefined
   onSubmitAttempt?: () => void
-  /** Round 9a: simulate hover state for Remotion render */
+  /** Simulated hover state for Remotion frame-driven rendering */
   hoverState?: boolean
-  /** Round 9a: simulate press state for Remotion render */
+  /** Simulated press state for Remotion frame-driven rendering */
   pressState?: boolean
 }
 
 /**
- * Presentational Generate button — extracted from GenerateButton (round-9a).
- * Parallel to SmartPayButtonView from round-6.
- *
- * Strips framer-motion (none in production GenerateButton, but this View is
- * safe for Remotion render path by design). Hover/press states driven by props
- * so Remotion can simulate user interaction frame-by-frame.
+ * Presentational Generate button. Hover/press states driven by props so
+ * Remotion can simulate user interaction frame-by-frame without framer-motion.
  */
 export const GenerateButtonView = React.memo(function GenerateButtonView({
   onGenerate,
