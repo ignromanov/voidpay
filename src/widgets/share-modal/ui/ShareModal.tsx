@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
-import { CheckCircleIcon } from '@/shared/ui/icons'
+import { CheckCircleIcon, LinkIcon, QrCodeIcon } from '@/shared/ui/icons'
 import {
   Dialog,
   DialogContent,
@@ -35,6 +35,10 @@ const QRTab = dynamic(
   () => import('@/features/payment-qr').then(mod => ({ default: mod.QRTab })),
   { ssr: false, loading: () => <QRSkeleton /> }
 )
+
+function toShareTab(v: string): ShareTab {
+  return v === 'qr' ? 'qr' : 'link'
+}
 
 export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgToggle }: ShareModalProps) {
   const [activeTab, setActiveTab] = useState<ShareTab>('link')
@@ -100,10 +104,10 @@ export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgTo
 
         <div className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6">
           {invoice && <InvoiceSummary invoice={invoice} />}
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ShareTab)}>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(toShareTab(v))}>
             <TabsList className="w-full">
-              <TabsTrigger value="link" className="flex-1">Link</TabsTrigger>
-              <TabsTrigger value="qr" className="flex-1">QR Code</TabsTrigger>
+              <TabsTrigger value="link" className="flex-1 gap-2"><LinkIcon size={16} /> Link</TabsTrigger>
+              <TabsTrigger value="qr" className="flex-1 gap-2"><QrCodeIcon size={16} /> QR Code</TabsTrigger>
             </TabsList>
             <div className="min-h-[200px]">
               <TabsContent value="link">
