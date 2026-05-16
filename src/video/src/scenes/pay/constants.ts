@@ -21,42 +21,39 @@ export const PAPER_PROPS_PAID = {
   magicDustEmphasis: true,
 } as const;
 
-// Phase timing — round-9r (S3-local frames):
-//   0–194   idle:disconnected   ("Connect Wallet" button)
-// 195–204   press-scale on Connect
-// 195–220   idle:connecting     (spinner / "Connecting..." state)
-// 220–245   idle:wrong-network  ("Switch to Arbitrum" button, ~25fr ≈ 0.83s)
-// 246–250   press-scale on Switch
-// 246–270   idle:switching      (spinner / "Switching..." state, ~25fr)
-// 270–290   idle:ready          ("Pay" button visible, ~20fr legibility window)
-// 291–295   press-scale on Pay
-// 291–380   sending             (Magic Dust window aligned)
-// 380–465   confirming          (progress bar visible, paper still PENDING; −60fr from R9m)
-// 465–575   success             (paper flips PAID; +60fr paid-alone window vs R9m)
+// Phase timing — round-10b (S3-local frames):
+//   0– 99   idle:disconnected   ("Connect Wallet" button)  [100fr, -50fr from r9]
+// 100–109   press-scale on Connect
+// 100–139   connecting loader   (~40fr, +15fr breathing room)
+// 140–189   switching loader    (~50fr; unchanged)
+// 190–299   sending loader      (~110fr; unchanged) — Magic Dust window
+// 300–419   confirming          (~120fr, +35fr; paper flips PAID here per defect-4)
+// 420–464   success             (~45fr; panel visible with emerald gradient bar — defect-1)
+// 465–484   panel exit          (~20fr)
+// 485–574   paper-alone PAID    (~90fr finalized hold)
 //
-// Single-press model: Connect → Switch → Pay each get one press trigger.
-export const PRESS_CONNECT        = 195;  // R9r
-export const PRESS_SWITCH         = 246;  // R9r: new Switch Network press
-export const PRESS_PAY            = 291;  // R9r: new Pay press
-export const PHASE_CONNECTING     = 195;  // R9r
-export const PHASE_WRONG_NETWORK  = 220;  // R9r
-export const PHASE_SWITCHING      = 246;  // R9r
-export const PHASE_READY          = 270;  // R9r: "Pay" button visible
-export const PHASE_SENDING        = 291;  // R9r (was 220)
-export const PHASE_CONFIRMING     = 380;  // R9r (was 310; −60fr from R9m = confirming shortened)
-export const SUCCESS              = 465;  // R9r (was 440; −60fr → paid-alone +2s)
-// WalletPill shows connected once connecting phase begins (195).
+// Single-press model: Connect only — Switch and Pay absorbed into loaders.
+export const PRESS_CONNECT        = 100;
+export const PHASE_CONNECTING     = 100;
+export const PHASE_SWITCHING      = 140;  // absorbs wrong-network; starts right after connecting
+export const PHASE_SENDING        = 190;  // absorbs ready; starts right after switching
+export const PHASE_CONFIRMING     = 300;
+export const SUCCESS              = 420;
+// WalletPill shows connected once connecting phase begins (100).
 export const PHASE_CONNECTED = PHASE_CONNECTING;
-// Magic Dust window — aligned with sending phase (291-380).
-export const MAGIC_DUST_HIGHLIGHT = 291;  // R9r
-export const MAGIC_DUST_PEAK_END  = 380;  // R9r
+// Magic Dust window — aligned with sending phase (190–300).
+export const MAGIC_DUST_HIGHLIGHT = 190;
+export const MAGIC_DUST_PEAK_END  = 300;
 export const CONFIRMATIONS_REQUIRED = 12;
 
-// Panel exits at 445-465, giving paper-alone window (465-575). R9r: −60fr from R9m.
-export const PANEL_EXIT_START = 445;  // R9r (was 505)
-export const PANEL_EXIT_END   = 465;  // R9r (was 525)
+// Panel exits at 465-484, giving paper-alone window (485-574). Defect-1: SUCCESS+45fr gap for emerald bar.
+export const PANEL_EXIT_START = 465;  // SUCCESS + 45fr (emerald border visible 1.5s)
+export const PANEL_EXIT_END   = 485;  // +20fr exit duration
 
-// Height of BrowserChrome bar: padding(18×2=36) + dot(15) = 51px
-export const CHROME_HEIGHT = 51;
+// BrowserChrome bar heights — scaled per aspect ratio (B2: ×1.2 landscape, ×1.5 portrait).
+// Base: padding(18×2=36) + dot(15) = 51px
+export const CHROME_HEIGHT = 51;           // legacy — kept for backward compat
+export const CHROME_HEIGHT_LANDSCAPE = 61; // 51 × 1.2, rounded
+export const CHROME_HEIGHT_PORTRAIT  = 76; // 51 × 1.5, rounded
 // Max panel width in landscape right column (D13; D38: widened to 880)
 export const PANEL_MAX_WIDTH = 880;

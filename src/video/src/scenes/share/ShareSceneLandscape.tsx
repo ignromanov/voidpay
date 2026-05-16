@@ -7,6 +7,7 @@ import { NetworkBackgroundLayer } from "../../components/NetworkBackgroundLayer"
 import { RemotionLinkTab } from "../../components/RemotionLinkTab";
 import { RemotionQRTab } from "../../components/RemotionQRTab";
 import { Caption } from "../../components/Caption";
+import { LandscapeShareCascade } from "../../components/LandscapeShareCascade";
 import { COLORS } from "../../constants/colors";
 import { FONT_SANS } from "../../fonts";
 import { SHARE_URL, SHARE_PAPER_PROPS, TAB_SWAP_FRAME } from "./constants";
@@ -96,6 +97,8 @@ export const ShareSceneLandscape: React.FC<Props> = ({
               borderRadius: 20,
             }}
           >
+            <div className="remotion-share-landscape">
+            <LandscapeShareCascade />
             {/* Violet top gradient bar */}
             <div style={{
               height: 8,
@@ -190,6 +193,7 @@ export const ShareSceneLandscape: React.FC<Props> = ({
                 )}
               </div>
             </div>
+            </div>{/* end remotion-share-landscape */}
           </Card>
         </div>
       </div>

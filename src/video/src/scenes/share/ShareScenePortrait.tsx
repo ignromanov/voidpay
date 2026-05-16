@@ -66,23 +66,24 @@ export const ShareScenePortrait: React.FC<Props> = ({
         opacity: modalOpacity,
       }} />
 
-      {/* Share modal shell — Round 9m: top=320px, height=980px so caption at y=1410 has room below.
-           Modal max-bottom = 320+980 = 1300 < 1410 caption position. */}
-      {/* Mocks v2 surgical: width = 84% of stage, side padding = 36px (12px × 3) */}
+      {/* Share modal shell — A8: vertically centered via top:50% + translateY(-50%) so modal
+           stays in the middle regardless of viewport height.
+           A9: backgroundColor 0.96 → 0.85 so invoice paper reads through behind the modal.
+           Mocks v2 surgical: width = 84% of stage, side padding = 36px (12px × 3) */}
       <Card
-        // β3: solid background for readability over invoice paper backdrop
+        // β3: semi-transparent background — invoice paper visible behind
         className="border border-zinc-800/80"
         style={{
           position: "absolute",
           left: "50%",
-          top: 320,
+          top: "50%",
           width: modalWidth,
           height: 980,
           padding: 0,
-          transform: `translateX(-50%) translateY(${modalTranslateY}px)`,
+          transform: `translateX(-50%) translateY(calc(-50% + ${modalTranslateY}px))`,
           opacity: modalOpacity,
           overflow: "hidden",
-          backgroundColor: "rgba(24, 24, 27, 0.96)",
+          backgroundColor: "rgba(24, 24, 27, 0.85)",
           border: "1px solid rgba(139,92,246,0.25)",
           boxShadow: "0 25px 80px -20px rgba(0,0,0,0.8), 0 8px 32px -8px rgba(0,0,0,0.5)",
           borderRadius: 30,

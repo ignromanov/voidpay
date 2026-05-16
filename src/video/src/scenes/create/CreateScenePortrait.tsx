@@ -1,20 +1,22 @@
-import { interpolate } from "remotion";
+import { interpolate, spring, useVideoConfig } from "remotion";
 import { InvoiceFormView, GenerateButtonView } from "@/widgets/invoice-form/video-internals";
 import { Card } from "@/shared/ui";
 import { NetworkBackground } from "@/widgets/network-background";
 import { NetworkBackgroundLayer } from "../../components/NetworkBackgroundLayer";
 import { Caption } from "../../components/Caption";
 import { COLORS } from "../../constants/colors";
-import { CREATE_CAPTIONS_VERTICAL } from "../captions/create-captions";
+import { CREATE_CAPTIONS_VERTICAL, CREATE_CAPTIONS_V2_VERTICAL } from "../captions/create-captions";
+import type { HookVariant } from "../captions/thesis-captions";
 import { CreateScenePaperEnvelope } from "./CreateScenePaperEnvelope";
 import { PortraitCascade } from "./PortraitCascade";
 import {
-  SCROLL_FRAMES,
-  SCROLL_OFFSETS,
   FILL_COMPLETE,
   BUTTON_VISIBLE,
   PRESS_START,
   PRESS_END,
+  SCROLL_START_FRAME,
+  SCROLL_DURATION_FRAMES,
+  TOTAL_SCROLL_DISTANCE_PORTRAIT,
 } from "./constants";
 
 type Props = {
@@ -30,6 +32,7 @@ type Props = {
   glowIntensity: number;
   buttonGlowOpacity: number;
   formOpacity: number;
+  hookVariant?: HookVariant;
 };
 
 const noop = () => {
@@ -49,8 +52,10 @@ export const CreateScenePortrait: React.FC<Props> = ({
   glowIntensity,
   buttonGlowOpacity,
   formOpacity,
+  hookVariant = "v1",
 }) => {
-  const captions = CREATE_CAPTIONS_VERTICAL;
+  const { fps } = useVideoConfig();
+  const captions = hookVariant === "v2" ? CREATE_CAPTIONS_V2_VERTICAL : CREATE_CAPTIONS_VERTICAL;
 
   return (
     <div style={{ position: "absolute", inset: 0, backgroundColor: COLORS.bg }}>
@@ -108,9 +113,14 @@ export const CreateScenePortrait: React.FC<Props> = ({
         <div
           style={{
             transform: `translateY(${interpolate(
-              frame,
-              SCROLL_FRAMES,
-              SCROLL_OFFSETS,
+              spring({
+                frame: frame - SCROLL_START_FRAME,
+                fps,
+                durationInFrames: SCROLL_DURATION_FRAMES,
+                config: { damping: 30, stiffness: 80 },
+              }),
+              [0, 1],
+              [0, -TOTAL_SCROLL_DISTANCE_PORTRAIT],
               { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
             )}px)`,
           }}

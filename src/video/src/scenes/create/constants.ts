@@ -23,7 +23,7 @@ export const NETWORK_APPEAR    = 167;
 export const TOKEN_APPEAR      = 179;
 export const FILL_COMPLETE     = 195;  // last field landed (was BUTTON_VISIBLE in round 8)
 export const PAPER_APPEAR      = 200;  // round 9a: post-fill — InvoicePaper fade-in starts here
-export const PAPER_VISIBLE_AT  = 230;  // fade-in done (30fr ramp)
+export const PAPER_VISIBLE_AT  = 260;  // A6: doubled duration 30fr → 60fr for slower appearance
 export const BUTTON_VISIBLE    = 280;  // round 9a: button reveals AFTER paper hold
 export const PRESS_START       = 240;
 export const PRESS_END         = 307;
@@ -41,11 +41,16 @@ export const MAGIC_DUST_TOGGLE_FRAME = 200;  // round 9a-patch2 (C3): toggle off
 // D21 audit: confirmed single translateY source. -2000 overshoots — form scrolls too far up
 // and Generate button exits top of card by f280. Calibrated endpoint by iterative stills:
 // -760 still too short (button not in view); -1100 targets button bottom flush with card edge.
+// A4: spring scroll replaces piecewise-linear. Single spring over [SCROLL_START_FRAME, +150fr].
+// Portrait: -1100 calibrated endpoint (×1.2 for cascade growth → -1320 per A3).
+// Landscape: -960 (was -800 × 1.2 per A3).
+export const SCROLL_START_FRAME = 115;
+export const SCROLL_DURATION_FRAMES = 150;
+export const TOTAL_SCROLL_DISTANCE_PORTRAIT  = 1320;
+export const TOTAL_SCROLL_DISTANCE_LANDSCAPE = 960;
+// Legacy keyframe arrays kept for reference only — no longer used in scene files.
 export const SCROLL_FRAMES  = [115, 150, 175, 195, 265];
 export const SCROLL_OFFSETS = [0, -120, -400, -900, -1100];
-// D41: landscape scroll endpoint recalibrated — form has no ×2 CSS cascade so content
-// is much shorter than portrait. -1160 (atlas-V) massively overshoots; Generate button
-// exits the top of the card before f280. Reduced to -800 to keep button visible at f265.
 export const SCROLL_FRAMES_LANDSCAPE  = [115, 150, 175, 195, 265];
 export const SCROLL_OFFSETS_LANDSCAPE = [0, -60, -180, -380, -800];
 

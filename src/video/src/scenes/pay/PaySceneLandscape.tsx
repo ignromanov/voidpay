@@ -9,12 +9,13 @@ import { COLORS } from "../../constants/colors";
 import { SPRING_CONFIGS } from "../../constants/timing";
 import { RemotionFakeToast } from "../../components/RemotionFakeToast";
 import { Caption } from "../../components/Caption";
-import { PAY_CAPTIONS_LANDSCAPE } from "../captions/pay-captions";
+import { PAY_CAPTIONS_LANDSCAPE, PAY_CAPTIONS_V2_LANDSCAPE } from "../captions/pay-captions";
+import type { HookVariant } from "../captions/thesis-captions";
 import { NetworkBackgroundLayer } from "../../components/NetworkBackgroundLayer";
 import { BrowserChrome } from "../../components/BrowserChrome";
 import { WalletPill } from "../../components/WalletPill";
 import {
-  CHROME_HEIGHT,
+  CHROME_HEIGHT_LANDSCAPE,
   PANEL_MAX_WIDTH,
   PANEL_EXIT_START,
   PANEL_EXIT_END,
@@ -34,7 +35,11 @@ import { MagicDustHalo } from "./MagicDustHalo";
 import { PaymentPanelContent } from "./PaymentPanelContent";
 import { useMemo } from "react";
 
-export const PaySceneLandscape: React.FC = () => {
+type Props = {
+  hookVariant?: HookVariant;
+};
+
+export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = "v1" }) => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
@@ -66,7 +71,7 @@ export const PaySceneLandscape: React.FC = () => {
 
   const panelTxHash = step === 'confirming' || step === 'success' ? DEMO_TX_HASH : undefined;
 
-  const paperPaid = step === 'success';
+  const paperPaid = step === 'confirming' || step === 'success';
 
   const panelExit = interpolate(
     frame,
@@ -91,16 +96,16 @@ export const PaySceneLandscape: React.FC = () => {
   });
 
   const colWidth = width / 2;
-  const colH = height - CHROME_HEIGHT;
+  const colH = height - CHROME_HEIGHT_LANDSCAPE;
 
   // D39: canonical paper sizing (Kai-locked formula — matches CreateScene + ShareScene)
   const PAPER_VPAD = 48;
-  const availH = height - PAPER_VPAD * 2 - CHROME_HEIGHT;
+  const availH = height - PAPER_VPAD * 2 - CHROME_HEIGHT_LANDSCAPE;
   const scaleByH = availH / INVOICE_BASE_HEIGHT;
   const scaleByW = (colWidth * 0.85) / INVOICE_BASE_WIDTH;
   const paperScale = Math.min(scaleByW, scaleByH);
   const paperScaledH = INVOICE_BASE_HEIGHT * paperScale;
-  const paperTop = CHROME_HEIGHT + PAPER_VPAD + (availH - paperScaledH) / 2;
+  const paperTop = CHROME_HEIGHT_LANDSCAPE + PAPER_VPAD + (availH - paperScaledH) / 2;
 
   // Magic dust halo: anchored to paper totals area in left column
   const paperLeft = (colWidth - INVOICE_BASE_WIDTH * paperScale) / 2;
@@ -117,7 +122,7 @@ export const PaySceneLandscape: React.FC = () => {
         style={{
           position: "absolute",
           left: 0,
-          top: CHROME_HEIGHT,
+          top: CHROME_HEIGHT_LANDSCAPE,
           width: colWidth,
           height: colH,
         }}
@@ -125,7 +130,7 @@ export const PaySceneLandscape: React.FC = () => {
         <PaperBackdrop
           paperProps={paperPaid ? PAPER_PROPS_PAID : PAPER_PROPS_PENDING}
           containerWidth={colWidth}
-          containerHeight={height - CHROME_HEIGHT}
+          containerHeight={height - CHROME_HEIGHT_LANDSCAPE}
           opacity={1}
           blurPx={0}
         />
@@ -145,7 +150,7 @@ export const PaySceneLandscape: React.FC = () => {
           style={{
             position: "absolute",
             left: colWidth,
-            top: CHROME_HEIGHT,
+            top: CHROME_HEIGHT_LANDSCAPE,
             width: colWidth,
             height: colH,
             display: "flex",
@@ -200,14 +205,14 @@ export const PaySceneLandscape: React.FC = () => {
         )}
       </div>
 
-      {/* Narrative toasts — R9r: frames aligned to new phase constants; confirming toast right-aligned (Concern 4) */}
-      <RemotionFakeToast variant="success" title="Wallet connected" startAt={220} hold={40} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={270} hold={40} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={380} hold={80} stackOffset={0} anchor="below-panel" rightAlign />
-      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={465} hold={100} stackOffset={0} anchor="below-panel" />
+      {/* Narrative toasts — round-10b: frames aligned to updated phase constants */}
+      <RemotionFakeToast variant="success" title="Wallet connected" startAt={140} hold={40} stackOffset={0} />
+      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={190} hold={40} stackOffset={0} />
+      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={300} hold={80} stackOffset={0} />
+      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={420} hold={100} stackOffset={0} />
 
       {/* Captions from caption-data (landscape) */}
-      {PAY_CAPTIONS_LANDSCAPE.map((c) => (
+      {(hookVariant === "v2" ? PAY_CAPTIONS_V2_LANDSCAPE : PAY_CAPTIONS_LANDSCAPE).map((c) => (
         <Caption
           key={c.startAt}
           text={c.text}

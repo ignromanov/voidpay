@@ -4,13 +4,14 @@ import { COLORS } from "../../constants/colors";
 import { SPRING_CONFIGS } from "../../constants/timing";
 import { RemotionFakeToast } from "../../components/RemotionFakeToast";
 import { Caption } from "../../components/Caption";
-import { PAY_CAPTIONS_VERTICAL } from "../captions/pay-captions";
+import { PAY_CAPTIONS_VERTICAL, PAY_CAPTIONS_V2_VERTICAL } from "../captions/pay-captions";
+import type { HookVariant } from "../captions/thesis-captions";
 import { NetworkBackgroundLayer } from "../../components/NetworkBackgroundLayer";
 import { BrowserChrome } from "../../components/BrowserChrome";
 import { WalletPill } from "../../components/WalletPill";
 import { PaperBackdrop } from "../../components/PaperBackdrop";
 import {
-  CHROME_HEIGHT,
+  CHROME_HEIGHT_PORTRAIT,
   PANEL_EXIT_START,
   PANEL_EXIT_END,
   MAGIC_DUST_HIGHLIGHT,
@@ -29,7 +30,11 @@ import { MagicDustHalo } from "./MagicDustHalo";
 import { PaymentPanelContent } from "./PaymentPanelContent";
 import { useMemo } from "react";
 
-export const PayScenePortrait: React.FC = () => {
+type Props = {
+  hookVariant?: HookVariant;
+};
+
+export const PayScenePortrait: React.FC<Props> = ({ hookVariant = "v1" }) => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
@@ -64,7 +69,7 @@ export const PayScenePortrait: React.FC = () => {
 
   const panelTxHash = step === 'confirming' || step === 'success' ? DEMO_TX_HASH : undefined;
 
-  const paperPaid = step === 'success';
+  const paperPaid = step === 'confirming' || step === 'success';
 
   const panelExit = interpolate(
     frame,
@@ -103,20 +108,20 @@ export const PayScenePortrait: React.FC = () => {
 
       {/* Round 9c L2: InvoicePaper as full-bleed scene backdrop.
            Portrait paper: shared PaperBackdrop with D39 canonical sizing.
-           CHROME_HEIGHT passed via containerHeight + parent top offset (offsetTop removed). */}
+           CHROME_HEIGHT_PORTRAIT passed via containerHeight + parent top offset (offsetTop removed). */}
       <div
         style={{
           position: "absolute",
           left: 0,
-          top: CHROME_HEIGHT,
+          top: CHROME_HEIGHT_PORTRAIT,
           width,
-          height: height - CHROME_HEIGHT,
+          height: height - CHROME_HEIGHT_PORTRAIT,
         }}
       >
         <PaperBackdrop
           paperProps={paperPaid ? PAPER_PROPS_PAID : PAPER_PROPS_PENDING}
           containerWidth={width}
-          containerHeight={height - CHROME_HEIGHT}
+          containerHeight={height - CHROME_HEIGHT_PORTRAIT}
           opacity={1.0}
           blurPx={paperBlur}
         />
@@ -184,14 +189,14 @@ export const PayScenePortrait: React.FC = () => {
         )}
       </div>
 
-      {/* Narrative toasts — R9r: frames aligned to new phase constants; portrait anchor unchanged */}
-      <RemotionFakeToast variant="success" title="Wallet connected" startAt={220} hold={40} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={270} hold={40} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={380} hold={80} stackOffset={0} anchor="below-panel" />
-      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={465} hold={100} stackOffset={0} anchor="below-panel" />
+      {/* Narrative toasts — round-10b: frames aligned to updated phase constants */}
+      <RemotionFakeToast variant="success" title="Wallet connected" startAt={140} hold={40} stackOffset={0} />
+      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={190} hold={40} stackOffset={0} />
+      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={300} hold={80} stackOffset={0} />
+      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={420} hold={100} stackOffset={0} />
 
       {/* Captions from caption-data (portrait) */}
-      {PAY_CAPTIONS_VERTICAL.map((c) => (
+      {(hookVariant === "v2" ? PAY_CAPTIONS_V2_VERTICAL : PAY_CAPTIONS_VERTICAL).map((c) => (
         <Caption
           key={c.startAt}
           text={c.text}

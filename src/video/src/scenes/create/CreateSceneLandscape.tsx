@@ -1,19 +1,22 @@
-import { interpolate, useVideoConfig } from "remotion";
+import { interpolate, spring, useVideoConfig } from "remotion";
 import { InvoiceFormView, GenerateButtonView } from "@/widgets/invoice-form/video-internals";
 import { Card } from "@/shared/ui";
 import { NetworkBackground } from "@/widgets/network-background";
 import { NetworkBackgroundLayer } from "../../components/NetworkBackgroundLayer";
 import { Caption } from "../../components/Caption";
+import { LandscapeCreateCascade } from "../../components/LandscapeCreateCascade";
 import { COLORS } from "../../constants/colors";
-import { CREATE_CAPTIONS_LANDSCAPE } from "../captions/create-captions";
+import { CREATE_CAPTIONS_LANDSCAPE, CREATE_CAPTIONS_V2_LANDSCAPE } from "../captions/create-captions";
+import type { HookVariant } from "../captions/thesis-captions";
 import { CreateScenePaperEnvelope } from "./CreateScenePaperEnvelope";
 import {
-  SCROLL_FRAMES_LANDSCAPE,
-  SCROLL_OFFSETS_LANDSCAPE,
   FILL_COMPLETE,
   BUTTON_VISIBLE,
   PRESS_START,
   PRESS_END,
+  SCROLL_START_FRAME,
+  SCROLL_DURATION_FRAMES,
+  TOTAL_SCROLL_DISTANCE_LANDSCAPE,
 } from "./constants";
 
 type Props = {
@@ -25,6 +28,7 @@ type Props = {
   glowIntensity: number;
   buttonGlowOpacity: number;
   formOpacity: number;
+  hookVariant?: HookVariant;
 };
 
 const noop = () => {
@@ -43,24 +47,16 @@ export const CreateSceneLandscape: React.FC<Props> = ({
   glowIntensity,
   buttonGlowOpacity,
   formOpacity,
+  hookVariant = "v1",
 }) => {
-  const { width } = useVideoConfig();
+  const { width, fps } = useVideoConfig();
   const halfW = width / 2;
 
-  const dimOpacity = frame >= PRESS_START
-    ? interpolate(frame, [PRESS_START, PRESS_START + 8], [0.65, 0.4], {
-        extrapolateLeft: "clamp",
-        extrapolateRight: "clamp",
-      })
-    : undefined;
-  const blurPx = frame >= PRESS_START
-    ? interpolate(frame, [PRESS_START, PRESS_START + 8], [0, 0.5], {
-        extrapolateLeft: "clamp",
-        extrapolateRight: "clamp",
-      })
-    : undefined;
+  // A7: landscape invoice paper never dims — stays at entrance opacity through entire scene.
+  const dimOpacity = undefined;
+  const blurPx = undefined;
 
-  const captions = CREATE_CAPTIONS_LANDSCAPE;
+  const captions = hookVariant === "v2" ? CREATE_CAPTIONS_V2_LANDSCAPE : CREATE_CAPTIONS_LANDSCAPE;
 
   return (
     <div style={{ position: "absolute", inset: 0, backgroundColor: COLORS.bg }}>
@@ -124,17 +120,23 @@ export const CreateSceneLandscape: React.FC<Props> = ({
             <div
               style={{
                 transform: `translateY(${interpolate(
-                  frame,
-                  SCROLL_FRAMES_LANDSCAPE,
-                  SCROLL_OFFSETS_LANDSCAPE,
+                  spring({
+                    frame: frame - SCROLL_START_FRAME,
+                    fps,
+                    durationInFrames: SCROLL_DURATION_FRAMES,
+                    config: { damping: 30, stiffness: 80 },
+                  }),
+                  [0, 1],
+                  [0, -TOTAL_SCROLL_DISTANCE_LANDSCAPE],
                   { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
                 )}px)`,
               }}
             >
               <div
-                className="remotion-create-scene"
+                className="remotion-create-landscape"
                 style={{ position: "relative", width: "100%", fontSize: "inherit", overflowX: "visible", paddingRight: 8 }}
               >
+                <LandscapeCreateCascade />
                 {/* Header */}
                 <div style={{
                   display: "flex",

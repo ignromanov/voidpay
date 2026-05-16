@@ -6,7 +6,12 @@ import {
 } from "remotion";
 import { useAspect } from "../hooks/useAspect";
 import { SPRING_CONFIGS } from "../constants/timing";
-import { SHARE_CAPTIONS_VERTICAL, SHARE_CAPTIONS_LANDSCAPE } from "./captions/share-captions";
+import {
+  SHARE_CAPTIONS_VERTICAL,
+  SHARE_CAPTIONS_LANDSCAPE,
+  SHARE_CAPTIONS_V2_VERTICAL,
+  SHARE_CAPTIONS_V2_LANDSCAPE,
+} from "./captions/share-captions";
 import {
   TAB_CROSSFADE_DURATION,
   TAB_SWAP_FRAME,
@@ -14,13 +19,20 @@ import {
 } from "./share/constants";
 import { ShareSceneLandscape } from "./share/ShareSceneLandscape";
 import { ShareScenePortrait } from "./share/ShareScenePortrait";
+import type { HookVariant } from "./captions/thesis-captions";
 
-export const ShareScene: React.FC = () => {
+type Props = {
+  hookVariant?: HookVariant;
+};
+
+export const ShareScene: React.FC<Props> = ({ hookVariant = "v1" }) => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
   const isLandscape = width > height;
   const { isVertical } = useAspect();
-  const captions = isVertical ? SHARE_CAPTIONS_VERTICAL : SHARE_CAPTIONS_LANDSCAPE;
+  const captions = hookVariant === "v2"
+    ? (isVertical ? SHARE_CAPTIONS_V2_VERTICAL : SHARE_CAPTIONS_V2_LANDSCAPE)
+    : (isVertical ? SHARE_CAPTIONS_VERTICAL : SHARE_CAPTIONS_LANDSCAPE);
 
   // Modal slide-up
   const modalTranslateY = interpolate(

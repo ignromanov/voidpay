@@ -3,6 +3,7 @@ import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remo
 import { DEMO_FROM_ADDRESS } from "../constants/demo-invoice";
 import { CreateSceneLandscape } from "./create/CreateSceneLandscape";
 import { CreateScenePortrait } from "./create/CreateScenePortrait";
+import type { HookVariant } from "./captions/thesis-captions";
 import { typewrite } from "./create/typewrite";
 import {
   INVOICE_FROM,
@@ -22,9 +23,14 @@ import {
   FILL_COMPLETE,
   BUTTON_VISIBLE,
   MAGIC_DUST_TOGGLE_FRAME,
+  PAPER_APPEAR,
 } from "./create/constants";
 
-export const CreateScene: React.FC = () => {
+type Props = {
+  hookVariant?: HookVariant;
+};
+
+export const CreateScene: React.FC<Props> = ({ hookVariant = "v1" }) => {
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
   // Round 9c L7: portrait re-layout — form centered, paper in lower half.
@@ -102,8 +108,14 @@ export const CreateScene: React.FC = () => {
   const glowIntensity = 0.35 + neonPulse * 0.3;                         // 0.35 → 0.65
   const glowSpread = 30 + neonPulse * 30;                               // 30 → 60
 
-  // β3.3: form stays at opacity 1 throughout S1 — paper is backdrop, not replacement.
-  const formOpacity = 1;
+  // A5: form dims when invoice paper appears — draws attention to the paper reveal.
+  // Portrait only; landscape uses separate opacity path via CreateSceneLandscape formOpacity prop.
+  const formOpacity = interpolate(
+    frame,
+    [PAPER_APPEAR, PAPER_APPEAR + 20],
+    [1.0, 0.4],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
 
   const sharedProps = {
     frame,
@@ -119,7 +131,7 @@ export const CreateScene: React.FC = () => {
   if (isLandscape) {
     return (
       <AbsoluteFill>
-        <CreateSceneLandscape {...sharedProps} />
+        <CreateSceneLandscape {...sharedProps} hookVariant={hookVariant} />
       </AbsoluteFill>
     );
   }
@@ -132,6 +144,7 @@ export const CreateScene: React.FC = () => {
         formWidth={formWidth}
         formLeft={formLeft}
         formTop={formTop}
+        hookVariant={hookVariant}
       />
     </AbsoluteFill>
   );

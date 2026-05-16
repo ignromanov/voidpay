@@ -6,7 +6,7 @@ import { RemotionAuroraText } from "../components/RemotionAuroraText";
 import { NetworkBackgroundLayer } from "../components/NetworkBackgroundLayer";
 import { Caption } from "../components/Caption";
 import { useAspect } from "../hooks/useAspect";
-import { getOutroCaption } from "./captions/thesis-captions";
+import { getOutroCaption, type HookVariant } from "./captions/thesis-captions";
 
 /**
  * Scene 4 — Thesis Outro (3.5s, 105 frames @ 30fps).
@@ -18,11 +18,15 @@ import { getOutroCaption } from "./captions/thesis-captions";
  *   so it doesn't animate in lockstep with the hero aurora — creates depth.
  * - Caption position overridden to 71% (≈1360/1920), compact fontSize=74.
  */
-export const ThesisOutroScene: React.FC = () => {
+type ThesisOutroSceneProps = {
+  hookVariant?: HookVariant;
+};
+
+export const ThesisOutroScene: React.FC<ThesisOutroSceneProps> = ({ hookVariant = "v1" }) => {
   const frame = useCurrentFrame();
   const { fps, width } = useVideoConfig();
   const { isVertical } = useAspect();
-  const outroCap = getOutroCaption(isVertical);
+  const outroCap = getOutroCaption(isVertical, hookVariant);
 
   // ε3: delay thesis entrance by 12fr to let S3→S4 crossfade complete first
   const TEXT_DELAY = 12;
@@ -48,7 +52,7 @@ export const ThesisOutroScene: React.FC = () => {
   const preFontSize  = isPortrait ? 24 : 20;
   const heroFontSize = isPortrait ? 78 : 66;
   const subFontSize  = isPortrait ? 33 : 28;
-  const urlFontSize  = isPortrait ? 42 : 36;
+  const urlFontSize  = isPortrait ? 56 : 48;
 
   // Round-9o: caption canonical sub size 60 (was 74); position 69 lower-third (mirror S0)
   const captionPosition = isVertical ? 69 : outroCap.position;
@@ -127,9 +131,9 @@ export const ThesisOutroScene: React.FC = () => {
         {/* voidpay.xyz wordmark — "voidpay" uses aurora with phase offset for depth */}
         <div
           style={{
-            transform: `translateY(${(1 - urlEnter) * 20}px)`,
+            transform: `translateY(${(1 - urlEnter) * 20}px) scale(${0.95 + 0.05 * urlEnter})`,
             opacity: urlEnter,
-            border: `1px solid rgba(124, 58, 237, 0.5)`,
+            border: `1.5px solid rgba(139, 92, 246, 0.8)`,
             borderRadius: 999,
             padding: "14px 28px",
             fontFamily: `${FONT_SANS}, sans-serif`,
@@ -138,7 +142,7 @@ export const ThesisOutroScene: React.FC = () => {
             display: "inline-flex",
             alignItems: "center",
             gap: 16,
-            boxShadow: "0 8px 32px rgba(124, 58, 237, 0.25)",
+            boxShadow: "0 12px 40px rgba(124, 58, 237, 0.35), 0 0 0 1px rgba(139, 92, 246, 0.15)",
           }}
         >
           <span>
@@ -148,9 +152,9 @@ export const ThesisOutroScene: React.FC = () => {
             >
               voidpay
             </RemotionAuroraText>
-            <span style={{ color: "#a78bfa", fontWeight: 700 }}>.xyz</span>
+            <span style={{ color: "#c4b5fd", fontWeight: 700 }}>.xyz</span>
           </span>
-          <span style={{ opacity: 0.6, color: "#a1a1aa" }}>→</span>
+          <span style={{ opacity: 0.9, color: "#a78bfa" }}>→</span>
         </div>
       </AbsoluteFill>
 
