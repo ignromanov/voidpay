@@ -1,5 +1,5 @@
 import { interpolate } from "remotion";
-import { InvoiceFormView, GenerateButtonView } from "@/widgets/invoice-form";
+import { InvoiceFormView, GenerateButtonView } from "@/widgets/invoice-form/video-internals";
 import { Card } from "@/shared/ui";
 import { NetworkBackground } from "@/widgets/network-background";
 import { NetworkBackgroundLayer } from "../../components/NetworkBackgroundLayer";

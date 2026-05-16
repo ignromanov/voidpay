@@ -1,5 +1,5 @@
 import { PaymentPanel } from "@/widgets/payment-panel";
-import { SmartPayButtonView } from "@/features/payment";
+import { SmartPayButtonView } from "@/features/payment/video-internals";
 import type { PaymentStep, IdleSubState } from "@/features/payment";
 import { DEMO_INVOICE, DEMO_CONTENT_HASH } from "../../constants/demo-invoice";
 import { pressScale } from "./phases";
