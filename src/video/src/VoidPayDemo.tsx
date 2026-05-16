@@ -26,8 +26,12 @@ export type DemoProps = z.infer<typeof DemoPropsSchema> & {
 const S1_GLOBAL_START = SCENE_DURATIONS.thesisHook; // 90
 const CHROME_VISIBLE_FROM = S1_GLOBAL_START + PRESS_END; // 90 + 307 = 397
 
+/** S3 (PayScene) global frame window — account chip visible in chrome bar during this range. */
+const S3_GLOBAL_START = SCENE_DURATIONS.thesisHook + SCENE_DURATIONS.create + SCENE_DURATIONS.share; // 90+360+280 = 730
+const S4_GLOBAL_START = S3_GLOBAL_START + SCENE_DURATIONS.pay; // 730+575 = 1305
+
 /** Fade-in + slide-down entry over 10 frames (~333ms at 30fps). */
-const ChromeRoot: React.FC = () => {
+const ChromeRoot: React.FC<{ showAccountChip: boolean }> = ({ showAccountChip }) => {
   const frame = useCurrentFrame();
   const localFrame = frame - CHROME_VISIBLE_FROM;
   const entryProgress = interpolate(localFrame, [0, 10], [0, 1], {
@@ -49,7 +53,7 @@ const ChromeRoot: React.FC = () => {
         opacity,
       }}
     >
-      <BrowserChrome />
+      <BrowserChrome showAccountChip={showAccountChip} />
     </div>
   );
 };
@@ -63,6 +67,9 @@ const ChromeRoot: React.FC = () => {
  * through end of composition. Z-index 50: above scene content, below captions (100).
  */
 export const VoidPayDemo: React.FC<DemoProps> = ({ hookVariant = "v1" }) => {
+  const frame = useCurrentFrame();
+  const showAccountChip = frame >= S3_GLOBAL_START && frame < S4_GLOBAL_START;
+
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
       <Series>
@@ -90,7 +97,7 @@ export const VoidPayDemo: React.FC<DemoProps> = ({ hookVariant = "v1" }) => {
       {/* Root-level BrowserChrome — persistent address bar from generate-press through end */}
       <Sequence from={CHROME_VISIBLE_FROM}>
         <AbsoluteFill style={{ zIndex: 50, pointerEvents: "none" }}>
-          <ChromeRoot />
+          <ChromeRoot showAccountChip={showAccountChip} />
         </AbsoluteFill>
       </Sequence>
     </AbsoluteFill>

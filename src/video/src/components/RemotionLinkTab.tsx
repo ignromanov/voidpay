@@ -1,5 +1,6 @@
 import { CheckIcon, CopyIcon, LockIcon, MailIcon, SendIcon, TwitterIcon } from "@/shared/ui/icons";
 import { FONT_SANS } from "../fonts";
+import { UrlChunks } from "./UrlChunks";
 
 /**
  * θ5: Restored production density fork of LinkTab.
@@ -22,32 +23,10 @@ import { FONT_SANS } from "../fonts";
 interface RemotionLinkTabProps {
   url: string;
   copied: boolean;
+  urlFontSize?: number;
 }
 
-/**
- * Parse URL into color-coded segments matching production LinkTab display.
- */
-function parseUrlParts(url: string): {
-  protocol: string;
-  domain: string;
-  path: string;
-  hash: string;
-} {
-  try {
-    const parsed = new URL(url);
-    return {
-      protocol: parsed.protocol + "//",
-      domain: parsed.host,
-      path: parsed.pathname,
-      hash: parsed.hash,
-    };
-  } catch {
-    return { protocol: "", domain: "", path: url, hash: "" };
-  }
-}
-
-export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied }) => {
-  const { protocol, domain, path, hash } = parseUrlParts(url);
+export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, urlFontSize = 56 }) => {
 
   // ι2: all internal text/spacing scaled ×1.5 from θ5 values.
   // Modal width bumped 600→660px in ShareScene to absorb the scaling without overflow.
@@ -67,22 +46,13 @@ export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied })
           Permalink
         </div>
         <div style={{
-          fontSize: 17,
-          fontFamily: "monospace",
-          letterSpacing: -0.3,
-          wordBreak: "break-all",
-          lineHeight: 1.6,
           background: "rgba(9, 9, 11, 1)",
           border: "1px solid rgba(63, 63, 70, 0.8)",
           borderRadius: 10,
           padding: "15px 18px",
-          maxHeight: 132,
           overflow: "hidden",
         }}>
-          <span style={{ color: "rgba(82, 82, 91, 1)" }}>{protocol}</span>
-          <span style={{ color: "rgba(139, 92, 246, 1)", fontWeight: 600 }}>{domain}</span>
-          <span style={{ color: "rgba(139, 92, 246, 0.7)" }}>{path}</span>
-          {hash && <span style={{ color: "rgba(161, 161, 170, 0.8)" }}>{hash}</span>}
+          <UrlChunks url={url} fontSize={urlFontSize} />
         </div>
       </div>
 
