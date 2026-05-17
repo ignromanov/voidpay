@@ -57,13 +57,13 @@ export function KineticCaption({
   const breathSpread = interpolate(
     breathPhase,
     [0, breathPeriod / 2, breathPeriod],
-    [0, 80, 0],
+    [0, 53, 0],
     { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
   const breathOpacity = interpolate(
     breathPhase,
     [0, breathPeriod / 2, breathPeriod],
-    [0, 0.55, 0],
+    [0, 0.37, 0],
     { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
