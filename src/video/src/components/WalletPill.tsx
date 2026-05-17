@@ -51,8 +51,8 @@ export const WalletPill: React.FC<WalletPillProps> = ({ connected, opacity = 1 }
   const right    = Math.round(rightBase    * scale);
 
   const chromeHeight = isPortrait ? CHROME_HEIGHT_PORTRAIT : CHROME_HEIGHT_LANDSCAPE;
-  // Position pill so its top edge is 8px below chrome bottom
-  const top = chromeHeight + Math.round(8 * scale);
+  // Position pill 50px below chrome bottom to avoid visual merge with address bar
+  const top = chromeHeight + Math.round(50 * scale);
 
   // B3: sin-pulse on connected dot (period 30fr = 1s at 30fps)
   const period = 30;

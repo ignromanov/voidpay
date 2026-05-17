@@ -18,53 +18,9 @@ import { FONT_MONO } from "../fonts";
 type BrowserChromeProps = {
   /** Opacity for entrance animation. Default 1. */
   opacity?: number;
-  /**
-   * D2 (Phase 5) — account chip in the top-right of the chrome bar.
-   * Shown only during PayScene (S3). Default false.
-   */
-  showAccountChip?: boolean;
 };
 
-/** Connected-wallet indicator shown inside chrome bar during PayScene. */
-const AccountChip: React.FC<{ isPortrait: boolean }> = ({ isPortrait }) => {
-  const scale = isPortrait ? 1.5 : 1.2;
-  const fontSize   = Math.round(14 * scale);
-  const dotSize    = Math.round(8  * scale);
-  const padV       = Math.round(5  * scale);
-  const padH       = Math.round(11 * scale);
-  const gap        = Math.round(7  * scale);
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap,
-        padding: `${padV}px ${padH}px`,
-        borderRadius: 999,
-        background: "rgba(124, 58, 237, 0.15)",
-        border: "1px solid rgba(167, 139, 250, 0.3)",
-        fontFamily: `${FONT_MONO}, monospace`,
-        fontSize,
-        color: "#ddd6fe",
-        flexShrink: 0,
-      }}
-    >
-      <span
-        style={{
-          width: dotSize,
-          height: dotSize,
-          borderRadius: 9999,
-          background: "#10b981",
-          flexShrink: 0,
-        }}
-      />
-      <span>0x42a3…7e91</span>
-    </div>
-  );
-};
-
-export const BrowserChrome: React.FC<BrowserChromeProps> = ({ opacity = 1, showAccountChip = false }) => {
+export const BrowserChrome: React.FC<BrowserChromeProps> = ({ opacity = 1 }) => {
   const { width, height } = useVideoConfig();
   const isPortrait = width < height;
 
@@ -132,8 +88,6 @@ export const BrowserChrome: React.FC<BrowserChromeProps> = ({ opacity = 1, showA
         </span>
       </div>
 
-      {/* Account chip — PayScene only, right of URL pill */}
-      {showAccountChip && <AccountChip isPortrait={isPortrait} />}
     </div>
   );
 };
