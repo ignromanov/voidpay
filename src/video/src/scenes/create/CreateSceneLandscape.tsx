@@ -10,6 +10,10 @@ import { CREATE_CAPTIONS_LANDSCAPE, CREATE_CAPTIONS_V2_LANDSCAPE } from "../capt
 import type { HookVariant } from "../captions/thesis-captions";
 import { CreateScenePaperEnvelope } from "./CreateScenePaperEnvelope";
 import {
+  FILL_COMPLETE,
+  BUTTON_VISIBLE,
+  PRESS_START,
+  PRESS_END,
   SCROLL_START_FRAME,
   SCROLL_END_FRAME,
   SCROLL_DURATION_FRAMES,
@@ -18,7 +22,6 @@ import {
   FORM_OFFSET_RIGHT,
   INVOICE_OFFSET_LEFT,
 } from "./constants";
-import { useCreateSceneState } from "./useCreateSceneState";
 
 type Props = {
   frame: number;
@@ -52,9 +55,6 @@ export const CreateSceneLandscape: React.FC<Props> = ({
   hookVariant = "v1",
 }) => {
   const { fps } = useVideoConfig();
-
-  const { buttonPressScale, buttonSpinStyle, canGenerate, isGenerating, hoverState } =
-    useCreateSceneState(frame, hookVariant)
 
   const captions = hookVariant === "v2" ? CREATE_CAPTIONS_V2_LANDSCAPE : CREATE_CAPTIONS_LANDSCAPE;
 
@@ -186,17 +186,17 @@ export const CreateSceneLandscape: React.FC<Props> = ({
                 <div
                   style={{
                     marginTop: 12,
-                    transform: `scale(${buttonPressScale})`,
+                    transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
                     transformOrigin: "center",
-                    ...buttonSpinStyle,
+                    ...(frame >= PRESS_START && frame < PRESS_END && { "--remotion-spin": `${frame * 8}deg` } as React.CSSProperties),
                   }}
                 >
                   <GenerateButtonView
                     onGenerate={noop}
-                    canGenerate={canGenerate}
-                    isGenerating={isGenerating}
+                    canGenerate={frame >= FILL_COMPLETE}
+                    isGenerating={frame >= PRESS_START && frame < PRESS_END}
                     onSubmitAttempt={noop}
-                    hoverState={hoverState}
+                    hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
                     pressState={false}
                   />
                 </div>
