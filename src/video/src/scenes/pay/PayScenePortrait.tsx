@@ -1,115 +1,68 @@
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { NetworkBackground } from "@/widgets/network-background";
-import { COLORS } from "../../constants/colors";
-import { SPRING_CONFIGS } from "../../constants/timing";
-import { RemotionFakeToast } from "../../components/RemotionFakeToast";
-import { Caption } from "../../components/Caption";
-import { PAY_CAPTIONS_VERTICAL, PAY_CAPTIONS_V2_VERTICAL } from "../captions/pay-captions";
-import type { HookVariant } from "../captions/thesis-captions";
-import { NetworkBackgroundLayer } from "../../components/NetworkBackgroundLayer";
-import { WalletPill } from "../../components/WalletPill";
-import { PaperBackdrop } from "../../components/PaperBackdrop";
+import { AbsoluteFill, interpolate, useVideoConfig } from 'remotion'
+import { NetworkBackground } from '@/widgets/network-background'
+import { COLORS } from '../../constants/colors'
+import { RemotionFakeToast } from '../../components/RemotionFakeToast'
+import { Caption } from '../../components/Caption'
+import { PAY_CAPTIONS_VERTICAL, PAY_CAPTIONS_V2_VERTICAL } from '../captions/pay-captions'
+import type { HookVariant } from '../captions/thesis-captions'
+import { NetworkBackgroundLayer } from '../../components/NetworkBackgroundLayer'
+import { WalletPill } from '../../components/WalletPill'
+import { PaperBackdrop } from '../../components/PaperBackdrop'
 import {
   CHROME_HEIGHT_PORTRAIT,
   PANEL_EXIT_START,
   PANEL_EXIT_END,
-  MAGIC_DUST_HIGHLIGHT,
-  MAGIC_DUST_PEAK_END,
   PHASE_CONNECTED,
   SUCCESS,
   PAPER_PROPS_PENDING,
   PAPER_PROPS_PAID,
-  DEMO_TX_HASH,
-  CONFIRMATIONS_REQUIRED,
-  PACK_START_LOCAL,
   PACK_Y_OFFSET_PORTRAIT,
-} from "./constants";
-import { stepAt, ctaPressTrigger } from "./phases";
-import { PanelCascadeStyle } from "./PanelCascadeStyle";
-import { PanelBorderStrip } from "./PanelBorderStrip";
-import { MagicDustHalo } from "./MagicDustHalo";
-import { PaymentPanelContent } from "./PaymentPanelContent";
-import { useMemo } from "react";
+} from './constants'
+import { PanelCascadeStyle } from './PanelCascadeStyle'
+import { PanelBorderStrip } from './PanelBorderStrip'
+import { MagicDustHalo } from './MagicDustHalo'
+import { PaymentPanelContent } from './PaymentPanelContent'
+import { usePaySceneState } from './usePaySceneState'
 
 type Props = {
-  hookVariant?: HookVariant;
-};
+  hookVariant?: HookVariant
+}
 
-export const PayScenePortrait: React.FC<Props> = ({ hookVariant = "v1" }) => {
-  const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+export const PayScenePortrait: React.FC<Props> = ({ hookVariant = 'v1' }) => {
+  const { width, height } = useVideoConfig()
 
   // Mocks v2 surgical: panel width = 84% of stage width (portrait only)
-  const panelWidth = Math.round(width * 0.84);
+  const panelWidth = Math.round(width * 0.84)
 
-  const cardScale = spring({ frame, fps, config: SPRING_CONFIGS.smooth });
-
-  const { step, idleSubState } = stepAt(frame);
-
-  const panelStatus: "pending" | "confirming" | "paid" =
-    step === 'success' ? 'paid' :
-    step === 'confirming' ? 'confirming' :
-    'pending';
-
-  const ctaPressTriggerFrame = ctaPressTrigger(frame);
-
-  const confirmations = useMemo(
-    () => ({ current: CONFIRMATIONS_REQUIRED, required: CONFIRMATIONS_REQUIRED }),
-    [],
-  );
-
-  const magicDustPulseOpacity = interpolate(
+  const {
     frame,
-    [MAGIC_DUST_HIGHLIGHT, MAGIC_DUST_HIGHLIGHT + 20, MAGIC_DUST_PEAK_END, MAGIC_DUST_PEAK_END + 20],
-    [0, 0.55, 0.55, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
+    cardScale,
+    step,
+    idleSubState,
+    panelStatus,
+    ctaPressTriggerFrame,
+    confirmations,
+    magicDustPulseOpacity,
+    panelTxHash,
+    paperPaid,
+    panelExit,
+    panelExitOpacity,
+    walletOpacity,
+    packProgress,
+    paperPackOpacity,
+  } = usePaySceneState(hookVariant)
 
   // R9r: No dim in portrait per user requirement.
-  const uiDimOpacity = 1.0;
-
-  const panelTxHash = step === 'confirming' || step === 'success' ? DEMO_TX_HASH : undefined;
-
-  const paperPaid = step === 'confirming' || step === 'success';
-
-  const panelExit = interpolate(
-    frame,
-    [PANEL_EXIT_START, PANEL_EXIT_END],
-    [0, 24],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
-  const panelExitOpacity = interpolate(
-    frame,
-    [PANEL_EXIT_START, PANEL_EXIT_END],
-    [0, 1],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
+  const uiDimOpacity = 1.0
 
   // Portrait: blur paper while panel is foreground, sharp at PANEL_EXIT_END.
-  const paperBlur = interpolate(
-    frame,
-    [PANEL_EXIT_START, PANEL_EXIT_END],
-    [2, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-  );
+  const paperBlur = interpolate(frame, [PANEL_EXIT_START, PANEL_EXIT_END], [2, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  })
 
-  const walletOpacity = interpolate(frame, [0, 20], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  // F2: pack-into-URL animation — last 30fr of PayScene (S3-local 575–605).
-  // Invoice paper scales down + translates toward browser chrome + fades out,
-  // visualising VoidPay's "URL is the source of truth" privacy metaphor.
-  const packProgress = frame >= PACK_START_LOCAL
-    ? spring({
-        frame: frame - PACK_START_LOCAL,
-        fps,
-        config: { damping: 25, stiffness: 80 },
-      })
-    : 0;
-  const paperPackTransform = `scale(${1 - packProgress}) translateY(${-PACK_Y_OFFSET_PORTRAIT * packProgress}px)`;
-  const paperPackOpacity = 1 - packProgress;
+  // F2: pack-into-URL animation — portrait-specific Y offset.
+  const paperPackTransform = `scale(${1 - packProgress}) translateY(${-PACK_Y_OFFSET_PORTRAIT * packProgress}px)`
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
@@ -121,13 +74,13 @@ export const PayScenePortrait: React.FC<Props> = ({ hookVariant = "v1" }) => {
            CHROME_HEIGHT_PORTRAIT passed via containerHeight + parent top offset (offsetTop removed). */}
       <div
         style={{
-          position: "absolute",
+          position: 'absolute',
           left: 0,
           top: CHROME_HEIGHT_PORTRAIT,
           width,
           height: height - CHROME_HEIGHT_PORTRAIT,
           transform: paperPackTransform,
-          transformOrigin: "center top",
+          transformOrigin: 'center top',
           opacity: paperPackOpacity,
         }}
       >
@@ -144,11 +97,11 @@ export const PayScenePortrait: React.FC<Props> = ({ hookVariant = "v1" }) => {
            Spec: bottom-right of totals, radial-gradient ellipse, blur(14px). */}
       <MagicDustHalo
         opacity={magicDustPulseOpacity}
-        position={{ kind: "percentage", bottom: "18%", right: "4%" }}
+        position={{ kind: 'percentage', bottom: '18%', right: '4%' }}
       />
 
       {/* UI dim wrap during Magic Dust peak — panel + chrome dim together */}
-      <div style={{ position: "absolute", inset: 0, opacity: uiDimOpacity, pointerEvents: "none" }}>
+      <div style={{ position: 'absolute', inset: 0, opacity: uiDimOpacity, pointerEvents: 'none' }}>
         {/* β1+β2: Payment panel as floating center modal.
              Mocks v2 surgical: width = 84% of stage, side padding = 36px (12px × 3).
              F2.D1: CreateYourOwnCta suppressed — voice-gate violation (self-referential in video). */}
@@ -156,26 +109,26 @@ export const PayScenePortrait: React.FC<Props> = ({ hookVariant = "v1" }) => {
         <div
           className="remotion-pay-panel"
           style={{
-            position: "absolute",
-            left: "50%",
-            top: "50%",
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
             width: panelWidth,
-            fontSize: "inherit",
+            fontSize: 'inherit',
             // θ6: panel at full scale matching production size
             transform: `translate(-50%, -50%) scale(${cardScale}) translateY(${panelExit}px)`,
-            transformOrigin: "center center",
+            transformOrigin: 'center center',
             opacity: cardScale * (1 - panelExitOpacity),
             borderRadius: 30,
-            backgroundColor: "transparent",
-            border: "none",
-            boxShadow: "none",
-            overflow: "hidden",
+            backgroundColor: 'transparent',
+            border: 'none',
+            boxShadow: 'none',
+            overflow: 'hidden',
             padding: 0,
-            pointerEvents: "auto",
+            pointerEvents: 'auto',
           }}
         >
           {/* Inner padding wrapper */}
-          <div style={{ padding: "36px 36px 30px" }}>
+          <div style={{ padding: '36px 36px 30px' }}>
             <PaymentPanelContent
               frame={frame}
               step={step}
@@ -192,21 +145,44 @@ export const PayScenePortrait: React.FC<Props> = ({ hookVariant = "v1" }) => {
 
         {/* C7: WalletPill — disconnected (F9) → connected (F10-F11), exits at success (F12) */}
         {frame < SUCCESS && (
-          <WalletPill
-            connected={frame >= PHASE_CONNECTED}
-            opacity={walletOpacity}
-          />
+          <WalletPill connected={frame >= PHASE_CONNECTED} opacity={walletOpacity} />
         )}
       </div>
 
       {/* Narrative toasts — round-10b: frames aligned to updated phase constants */}
-      <RemotionFakeToast variant="success" title="Wallet connected" startAt={140} hold={40} stackOffset={0} />
-      <RemotionFakeToast variant="success" title="Network switched to Arbitrum" startAt={190} hold={40} stackOffset={0} />
-      <RemotionFakeToast variant="loading" title="Confirming on-chain" description="Waiting for finality" startAt={300} hold={80} stackOffset={0} />
-      <RemotionFakeToast variant="success" title="Payment received" description="Cryptographic receipt verified" startAt={420} hold={100} stackOffset={0} />
+      <RemotionFakeToast
+        variant="success"
+        title="Wallet connected"
+        startAt={140}
+        hold={40}
+        stackOffset={0}
+      />
+      <RemotionFakeToast
+        variant="success"
+        title="Network switched to Arbitrum"
+        startAt={190}
+        hold={40}
+        stackOffset={0}
+      />
+      <RemotionFakeToast
+        variant="loading"
+        title="Confirming on-chain"
+        description="Waiting for finality"
+        startAt={300}
+        hold={80}
+        stackOffset={0}
+      />
+      <RemotionFakeToast
+        variant="success"
+        title="Payment received"
+        description="Cryptographic receipt verified"
+        startAt={420}
+        hold={100}
+        stackOffset={0}
+      />
 
       {/* Captions from caption-data (portrait) */}
-      {(hookVariant === "v2" ? PAY_CAPTIONS_V2_VERTICAL : PAY_CAPTIONS_VERTICAL).map((c) => (
+      {(hookVariant === 'v2' ? PAY_CAPTIONS_V2_VERTICAL : PAY_CAPTIONS_VERTICAL).map((c) => (
         <Caption
           key={c.startAt}
           text={c.text}
@@ -221,5 +197,5 @@ export const PayScenePortrait: React.FC<Props> = ({ hookVariant = "v1" }) => {
         />
       ))}
     </AbsoluteFill>
-  );
-};
+  )
+}
