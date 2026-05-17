@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { cn } from '@/shared/lib/utils'
 import { MagicDustBadge } from '@/shared/ui/magic-dust-badge'
-import { Totals, splitMagicDustTotal, hasNonZeroAmount } from '../lib/calculate-totals'
+import { Totals, hasNonZeroAmount } from '../lib/calculate-totals'
 
 interface TotalsSectionProps {
   /** Calculated totals object (all values are pre-formatted strings) */
@@ -14,24 +14,13 @@ interface TotalsSectionProps {
   discountPercent?: string | undefined
   /** Whether to show the unique amount (magic dust) */
   showMagicDust?: boolean
-  /**
-   * When true and magicDust is present, renders the merged total (e.g. "250.000042 USDC")
-   * with the magic dust fractional digits highlighted in violet (#a78bfa).
-   * Hides the separate MagicDustBadge footer line.
-   * @default false
-   */
-  magicDustEmphasis?: boolean
 }
 
 export const TotalsSection = React.memo<TotalsSectionProps>(
-  ({ totals, currency, taxPercent, discountPercent, showMagicDust = true, magicDustEmphasis = false }) => {
+  ({ totals, currency, taxPercent, discountPercent, showMagicDust = true }) => {
     const currencyDisplay = currency || 'TOKEN'
     const currencyClass = currency ? '' : 'text-zinc-300 italic'
 
-    const splitDust = useMemo(
-      () => (magicDustEmphasis ? splitMagicDustTotal(totals.total, totals.magicDust) : null),
-      [magicDustEmphasis, totals.total, totals.magicDust]
-    )
     const showTax = useMemo(() => hasNonZeroAmount(totals.taxAmount), [totals.taxAmount])
     const showDiscount = useMemo(() => hasNonZeroAmount(totals.discountAmount), [totals.discountAmount])
 
@@ -84,29 +73,19 @@ export const TotalsSection = React.memo<TotalsSectionProps>(
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-lg font-bold tracking-tight text-black flex-shrink-0">Total</span>
           <div className="flex items-baseline gap-1 min-w-0 overflow-hidden">
-            {splitDust ? (
-              <span
-                className="font-mono text-2xl font-black tracking-tighter text-violet-600 tabular-nums truncate"
-                title={`${splitDust.base}${splitDust.dust}`}
-              >
-                {splitDust.base}
-                <span className="paper-total-dust">{splitDust.dust}</span>
-              </span>
-            ) : (
-              <span
-                className="font-mono text-2xl font-black tracking-tighter text-violet-600 tabular-nums truncate"
-                title={totals.total}
-              >
-                {totals.total}
-              </span>
-            )}
+            <span
+              className="font-mono text-2xl font-black tracking-tighter text-violet-600 tabular-nums truncate"
+              title={totals.total}
+            >
+              {totals.total}
+            </span>
             <span className={cn('text-sm font-bold text-zinc-600 flex-shrink-0', currencyClass)}>
               {currencyDisplay}
             </span>
           </div>
         </div>
 
-        {showMagicDust && totals.magicDust && !splitDust && (
+        {showMagicDust && totals.magicDust && (
           <div className="-mt-0.5 flex justify-end">
             <MagicDustBadge label="Unique ID" amount={totals.magicDust} currency={currencyDisplay} variant="light" />
           </div>

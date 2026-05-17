@@ -61,7 +61,6 @@ export const InvoicePaper = React.memo(
         txHashValidated = true,
         variant = 'default',
         showTexture = true,
-        magicDustEmphasis = false,
         invoiceUrl,
         className,
         containerRef,
@@ -179,7 +178,6 @@ export const InvoicePaper = React.memo(
                     tokenAddress={data.tokenAddress}
                     txHash={txHash}
                     txHashValidated={txHashValidated}
-                    magicDustEmphasis={magicDustEmphasis}
                     variant={variant}
                     status={status}
                   />

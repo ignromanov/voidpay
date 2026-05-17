@@ -45,15 +45,6 @@ interface InvoicePaperBaseProps {
   showTexture?: boolean | undefined
 
   /**
-   * When true, renders merged total with magic dust digits highlighted in violet.
-   * Example: "250.000042 USDC" with "000042" in #a78bfa.
-   * Hides the separate MagicDustBadge footer line.
-   * @default false
-   */
-  magicDustEmphasis?: boolean | undefined
-
-
-  /**
    * Invoice URL for sharing/linking.
    * When provided with variant='full', the invoice title becomes a clickable link.
    */

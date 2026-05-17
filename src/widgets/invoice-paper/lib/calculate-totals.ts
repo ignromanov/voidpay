@@ -154,19 +154,3 @@ export function hasNonZeroAmount(amount: string | null | undefined): boolean {
   return !isNaN(num) && num > 0
 }
 
-/**
- * Split a formatted total and magicDust string into base and dust parts.
- * Example: total="250.00", magicDust="0.000042" → { base: "250.", dust: "000042" }
- * Returns null if magicDust is not present or not in expected "0.XXXXXX" format.
- */
-export function splitMagicDustTotal(
-  total: string,
-  magicDust: string | null
-): { base: string; dust: string } | null {
-  if (!magicDust) return null
-  const dustMatch = magicDust.match(/^0\.(\d+)$/)
-  if (!dustMatch || !dustMatch[1]) return null
-  const dustDigits: string = dustMatch[1]
-  const intPart = total.split('.')[0] ?? total
-  return { base: `${intPart}.`, dust: dustDigits }
-}

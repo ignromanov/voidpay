@@ -10,7 +10,6 @@ export const PAPER_PROPS_PENDING = {
   data: DEMO_INVOICE,
   status: 'pending',
   variant: 'default',
-  magicDustEmphasis: true,
 } as const
 
 export const PAPER_PROPS_PAID = {
@@ -18,7 +17,6 @@ export const PAPER_PROPS_PAID = {
   status: 'paid',
   txHash: DEMO_TX_HASH,
   variant: 'default',
-  magicDustEmphasis: true,
 } as const
 
 // Phase timing — round-10b (S3-local frames):

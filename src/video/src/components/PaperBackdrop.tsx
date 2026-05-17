@@ -9,7 +9,7 @@ import {
 const PAPER_VPAD = 48;
 
 export type PaperBackdropProps = {
-  /** Props forwarded verbatim to <InvoicePaper> — controls content/status/variant/magicDustEmphasis. */
+  /** Props forwarded verbatim to <InvoicePaper> — controls content/status/variant. */
   paperProps: ComponentProps<typeof InvoicePaper>;
   /** Container width override (default: full viewport width). Used for landscape column layouts. */
   containerWidth?: number;

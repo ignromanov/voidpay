@@ -78,5 +78,4 @@ export const CREATE_PAPER_PROPS: ComponentProps<typeof InvoicePaper> = {
   data: DEMO_INVOICE,
   status: "draft",
   variant: "default",
-  magicDustEmphasis: true,
 } as const;

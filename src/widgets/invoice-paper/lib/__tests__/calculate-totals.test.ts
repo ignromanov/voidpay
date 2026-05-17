@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateTotals, hasNonZeroAmount, splitMagicDustTotal } from '../calculate-totals'
+import { calculateTotals, hasNonZeroAmount } from '../calculate-totals'
 
 /**
  * Tests for calculateTotals with BigInt arithmetic
@@ -114,24 +114,3 @@ describe('hasNonZeroAmount', () => {
   })
 })
 
-describe('splitMagicDustTotal', () => {
-  it('splits total and magic dust into base and dust parts', () => {
-    const result = splitMagicDustTotal('250.00', '0.000042')
-    expect(result).toEqual({ base: '250.', dust: '000042' })
-  })
-
-  it('uses integer part when total has no decimal', () => {
-    const result = splitMagicDustTotal('250', '0.000042')
-    expect(result).toEqual({ base: '250.', dust: '000042' })
-  })
-
-  it('returns null when magicDust is null', () => {
-    expect(splitMagicDustTotal('250.00', null)).toBeNull()
-  })
-
-  it('returns null when magicDust is not in "0.XXXXXX" format', () => {
-    expect(splitMagicDustTotal('250.00', '1.000042')).toBeNull()
-    expect(splitMagicDustTotal('250.00', '0')).toBeNull()
-    expect(splitMagicDustTotal('250.00', 'abc')).toBeNull()
-  })
-})

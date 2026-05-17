@@ -26,5 +26,4 @@ export const SHARE_PAPER_PROPS = {
   data: DEMO_INVOICE,
   status: "pending",
   variant: "default",
-  magicDustEmphasis: true,
 } as const;
