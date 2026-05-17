@@ -45,9 +45,10 @@ const CHROME_VISIBLE_DURATION = S4_OUTRO_OVERLAY_START - CHROME_VISIBLE_FROM; //
 
 /** Fade-in + slide-down entry over 10 frames (~333ms at 30fps). */
 const ChromeRoot: React.FC = () => {
+  // useCurrentFrame() is already local to the wrapping Sequence (from=CHROME_VISIBLE_FROM).
+  // Subtracting CHROME_VISIBLE_FROM again would produce -390 at Sequence start → chrome invisible.
   const frame = useCurrentFrame();
-  const localFrame = frame - CHROME_VISIBLE_FROM;
-  const entryProgress = interpolate(localFrame, [0, 10], [0, 1], {
+  const entryProgress = interpolate(frame, [0, 10], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
