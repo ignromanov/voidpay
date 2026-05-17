@@ -1,0 +1,181 @@
+import { Easing, interpolate } from "remotion";
+import { FONT_SANS } from "../fonts";
+import {
+  computeEntry,
+  computeExit,
+  computeWordPopColorOpacity,
+  computeWordPopScale,
+  resolveYPercent,
+  type CaptionSpringConfig,
+  type CaptionWeight,
+} from "./Caption.helpers";
+import type { CaptionVariant } from "./Caption";
+
+type KineticCaptionProps = {
+  text: string;
+  startAt: number;
+  endAt: number;
+  fontSize: number;
+  position: "top" | "bottom" | "center" | number;
+  variant: CaptionVariant;
+  weight: CaptionWeight;
+  emphasizedWord: string | undefined;
+  springConfig: CaptionSpringConfig;
+  frame: number;
+  fps: number;
+  width: number;
+  height: number;
+};
+
+export function KineticCaption({
+  text, startAt, endAt, fontSize, position, variant,
+  weight, emphasizedWord, springConfig,
+  frame, fps, width,
+}: KineticCaptionProps) {
+  const entryValue = computeEntry(frame, fps, startAt, weight, springConfig);
+  const exitOpacity = computeExit(frame, endAt);
+
+  // Pulse dot: 1s sin-cycle at 30fps — calm rhythm, not rapid blink
+  const PULSE_PERIOD = 30;
+  const phase = frame % PULSE_PERIOD;
+  const pulseOpacity = interpolate(
+    phase,
+    [0, PULSE_PERIOD / 2, PULSE_PERIOD],
+    [0.5, 1.0, 0.5],
+    { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const pulseScale = interpolate(
+    phase,
+    [0, PULSE_PERIOD / 2, PULSE_PERIOD],
+    [0.85, 1.15, 0.85],
+    { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
+  const opacity = interpolate(entryValue, [0, 1], [0, 1]) * exitOpacity;
+  // translateY on outer pill wrapper so entire pill slides in/out
+  const translateY = interpolate(entryValue, [0, 1], [12, 0]);
+
+  const yPercent = resolveYPercent(position);
+  const topPx = `${yPercent}%`;
+
+  const isEmerald = variant === "emerald";
+  const isCompact = fontSize <= 80;
+
+  // Pill accent colour — violet (default) or emerald per spec
+  const accentRgb = isEmerald ? "16,185,129" : "167,139,250";
+  const dotHex = isEmerald ? "#10b981" : "#a78bfa";
+
+  // Pill geometry
+  const pillPadding = isCompact ? "18px 36px" : "24px 44px";
+  const pillGap = isCompact ? 16 : 18;
+
+  // Text
+  const fontWeight = weight;
+  const letterSpacing = weight === 700 ? "-0.02em" : "-0.01em";
+  const baseColor = "#ffffff";
+
+  const renderText = () => {
+    if (!emphasizedWord || !text.includes(emphasizedWord)) {
+      return <span style={{ color: baseColor }}>{text}</span>;
+    }
+
+    const idx = text.indexOf(emphasizedWord);
+    const before = text.slice(0, idx);
+    const after = text.slice(idx + emphasizedWord.length);
+
+    const scale = computeWordPopScale(frame, startAt, endAt, weight);
+    const colorOpacity = computeWordPopColorOpacity(frame, startAt, endAt);
+    // Blend white → accent colour using colorOpacity
+    const accentValues = isEmerald ? [0x10, 0xb9, 0x81] : [0xa7, 0x8b, 0xfa];
+    const r = Math.round(255 + (accentValues[0] - 255) * colorOpacity);
+    const g = Math.round(255 + (accentValues[1] - 255) * colorOpacity);
+    const b = Math.round(255 + (accentValues[2] - 255) * colorOpacity);
+    const wordColor = `rgb(${r},${g},${b})`;
+
+    return (
+      <>
+        {before && <span style={{ color: baseColor }}>{before}</span>}
+        <span
+          style={{
+            color: wordColor,
+            display: "inline-block",
+            transform: `scale(${scale})`,
+            transformOrigin: "center bottom",
+          }}
+        >
+          {emphasizedWord}
+        </span>
+        {after && <span style={{ color: baseColor }}>{after}</span>}
+      </>
+    );
+  };
+
+  return (
+    // Outer positioning + entry/exit animation — translateY on the whole pill
+    // Round-9o: zIndex 100 ensures caption always renders above scene UI (panels, paper, modal)
+    <div
+      style={{
+        position: "absolute",
+        top: topPx,
+        left: 0,
+        width,
+        display: "flex",
+        justifyContent: "center",
+        transform: `translateY(calc(-50% + ${translateY}px))`,
+        opacity,
+        zIndex: 100,
+      }}
+    >
+      {/* Path C pill backdrop */}
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: pillGap,
+          maxWidth: "88vw",
+          background: "rgba(20,20,27,0.85)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          border: `1.5px solid rgba(${accentRgb},0.80)`,
+          borderRadius: 24,
+          padding: pillPadding,
+          boxShadow: [
+            `0 0 36px rgba(${accentRgb},0.32)`,
+            `0 0 8px rgba(${accentRgb},0.40)`,
+            `0 18px 40px rgba(0,0,0,0.55)`,
+          ].join(", "),
+        }}
+      >
+        {/* Leading dot — sin-pulse: calm 1s rhythm */}
+        <span
+          style={{
+            width: 16,
+            height: 16,
+            borderRadius: "50%",
+            background: dotHex,
+            boxShadow: `0 0 10px ${dotHex}`,
+            flexShrink: 0,
+            display: "inline-block",
+            opacity: pulseOpacity,
+            transform: `scale(${pulseScale})`,
+          }}
+        />
+        {/* Caption text */}
+        <span
+          style={{
+            fontFamily: `${FONT_SANS}, sans-serif`,
+            fontSize,
+            fontWeight,
+            letterSpacing,
+            lineHeight: 1.12,
+            textAlign: "center",
+            color: baseColor,
+            whiteSpace: "pre-line",
+          }}
+        >
+          {renderText()}
+        </span>
+      </div>
+    </div>
+  );
+}
