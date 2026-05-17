@@ -10,6 +10,7 @@ import {
   type CaptionWeight,
 } from "./Caption.helpers";
 import type { CaptionVariant } from "./Caption";
+import { PulseGlow } from './PulseGlow';
 
 type KineticCaptionProps = {
   text: string;
@@ -66,8 +67,8 @@ export function KineticCaption({
   const dotHex = isEmerald ? "#10b981" : "#a78bfa";
 
   // Pill geometry
-  const pillPadding = isCompact ? "18px 36px" : "24px 44px";
-  const pillGap = isCompact ? 16 : 18;
+  const pillPadding = isCompact ? "20px 40px" : "24px 44px";
+  const pillGap = isCompact ? 14 : 18;
 
   // Text
   const fontWeight = weight;
@@ -127,10 +128,16 @@ export function KineticCaption({
       }}
     >
       {/* Path C pill backdrop */}
+      <PulseGlow
+        rgb={isEmerald ? "16,185,129" : "167,139,250"}
+        spread={28}
+        period={30}
+        borderRadius={24}
+      >
       <div
         style={{
           display: "inline-flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           gap: pillGap,
           maxWidth: "88vw",
           background: "rgba(20,20,27,0.85)",
@@ -140,7 +147,6 @@ export function KineticCaption({
           borderRadius: 24,
           padding: pillPadding,
           boxShadow: [
-            `0 0 36px rgba(${accentRgb},0.32)`,
             `0 0 8px rgba(${accentRgb},0.40)`,
             `0 18px 40px rgba(0,0,0,0.55)`,
           ].join(", "),
@@ -149,8 +155,8 @@ export function KineticCaption({
         {/* Leading dot — sin-pulse: calm 1s rhythm */}
         <span
           style={{
-            width: 16,
-            height: 16,
+            width: 12,
+            height: 12,
             borderRadius: "50%",
             background: dotHex,
             boxShadow: `0 0 10px ${dotHex}`,
@@ -158,6 +164,7 @@ export function KineticCaption({
             display: "inline-block",
             opacity: pulseOpacity,
             transform: `scale(${pulseScale})`,
+            marginTop: 10,
           }}
         />
         {/* Caption text */}
@@ -176,6 +183,7 @@ export function KineticCaption({
           {renderText()}
         </span>
       </div>
+      </PulseGlow>
     </div>
   );
 }
