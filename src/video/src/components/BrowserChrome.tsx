@@ -8,9 +8,9 @@ import { FONT_MONO } from "../fonts";
  * showing the voidpay.xyz/pay#... address. Mounts at top:0 across full
  * width; PayScene mounts it for the full S3 duration (F9-F12).
  *
- * B2 sizing (round-10b):
- *   Landscape (16:9): base × 1.2 — height ~61px
- *   Portrait  (9:16): base × 1.5 — height ~76px
+ * R14-B sizing (aspect-aware):
+ *   Portrait  (9:16): base × 1.5 — height ~76px  (smartphone-like reference)
+ *   Landscape (16:9): ~75-80% of portrait — height 48px (compact, desktop-like)
  *
  * Base: padding(18×2=36) + dot(15) = 51px
  */
@@ -24,17 +24,17 @@ export const BrowserChrome: React.FC<BrowserChromeProps> = ({ opacity = 1 }) => 
   const { width, height } = useVideoConfig();
   const isPortrait = width < height;
 
-  const scale = isPortrait ? 1.5 : 1.2;
-
-  const dotSize  = Math.round(15 * scale);   // base 15px
-  const dotGap   = Math.round(8  * scale);   // base 8px
-  const barGap   = Math.round(18 * scale);   // gap between dots group and URL pill
-  const padV     = Math.round(18 * scale);   // vertical padding
-  const padH     = Math.round(36 * scale);   // horizontal padding
-  const fontSize = Math.round(24 * scale);   // base 24px
-  const urlFont  = Math.round(22 * scale);   // base 22px
-  const urlPadV  = Math.round(9  * scale);   // url pill vertical padding
-  const urlPadH  = Math.round(24 * scale);   // url pill horizontal padding
+  // Portrait: full scale × 1.5; landscape: compact ~75-80% of portrait values
+  const dotSize  = isPortrait ? Math.round(15 * 1.5) : 12;   // portrait 23px / landscape 12px
+  const dotGap   = isPortrait ? Math.round(8  * 1.5) : 8;    // portrait 12px / landscape 8px
+  const barGap   = isPortrait ? Math.round(18 * 1.5) : 14;   // portrait 27px / landscape 14px
+  const padV     = isPortrait ? Math.round(18 * 1.5) : 14;   // portrait 27px / landscape 14px
+  const padH     = isPortrait ? Math.round(36 * 1.5) : 28;   // portrait 54px / landscape 28px
+  const fontSize = isPortrait ? Math.round(24 * 1.5) : 18;   // portrait 36px / landscape 18px
+  const urlFont  = isPortrait ? Math.round(22 * 1.5) : 18;   // portrait 33px / landscape 18px
+  const urlPadV  = isPortrait ? Math.round(9  * 1.5) : 7;    // portrait 14px / landscape 7px
+  const urlPadH  = isPortrait ? Math.round(24 * 1.5) : 18;   // portrait 36px / landscape 18px
+  const urlGap   = isPortrait ? Math.round(8  * 1.5) : 6;    // portrait 12px / landscape 6px
 
   return (
     <div
@@ -73,7 +73,7 @@ export const BrowserChrome: React.FC<BrowserChromeProps> = ({ opacity = 1 }) => 
           fontSize: urlFont,
           display: "flex",
           alignItems: "center",
-          gap: Math.round(8 * scale),
+          gap: urlGap,
           overflow: "hidden",
           whiteSpace: "nowrap",
         }}
