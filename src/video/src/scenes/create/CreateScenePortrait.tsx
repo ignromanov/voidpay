@@ -13,12 +13,12 @@ import {
   FILL_COMPLETE,
   BUTTON_VISIBLE,
   PRESS_START,
+  FADE_MID_FRAME,
   PRESS_END,
   SCROLL_START_FRAME,
+  SCROLL_END_FRAME,
   SCROLL_DURATION_FRAMES,
   TOTAL_SCROLL_DISTANCE_PORTRAIT,
-  FORM_FADE_START_OFFSET,
-  FORM_HALF_OPACITY,
 } from "./constants";
 
 type Props = {
@@ -59,21 +59,19 @@ export const CreateScenePortrait: React.FC<Props> = ({
   const { fps } = useVideoConfig();
   const captions = hookVariant === "v2" ? CREATE_CAPTIONS_V2_VERTICAL : CREATE_CAPTIONS_VERTICAL;
 
-  // C1+C2+C3: portrait-specific fade dance (round-11 phase 4).
-  // C1: form fades 1.0 → FORM_HALF_OPACITY from (PRESS_START - FORM_FADE_START_OFFSET) → PRESS_START.
-  // C2: form continues 0.5 → 0.0 from PRESS_START → PRESS_END (simultaneously invoice fades in).
-  // C3: invoice visible alone from PRESS_END to scene end.
-  const fadeStart = PRESS_START - FORM_FADE_START_OFFSET;
+  // R12-1: portrait fade dance — [PRESS_START=300, FADE_MID_FRAME=320, PRESS_END=340].
+  // Form: 1.0 → 0.5 → 0.0. Invoice: 0.0 → 0.5 → 1.0. Both driven by same 3-keyframe window.
+  // Invoice-only hold from PRESS_END (340) to scene end (360).
   const formOpacity = interpolate(
     frame,
-    [fadeStart, PRESS_START, PRESS_END],
-    [1.0, FORM_HALF_OPACITY, 0.0],
+    [PRESS_START, FADE_MID_FRAME, PRESS_END],
+    [1.0, 0.5, 0.0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
   const invoiceOpacity = interpolate(
     frame,
-    [fadeStart, PRESS_END],
-    [0.0, 1.0],
+    [PRESS_START, FADE_MID_FRAME, PRESS_END],
+    [0.0, 0.5, 1.0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
@@ -128,7 +126,8 @@ export const CreateScenePortrait: React.FC<Props> = ({
           style={{
             transform: `translateY(${interpolate(
               spring({
-                frame: frame - SCROLL_START_FRAME,
+                // R12-1: clamp input frame to SCROLL_END_FRAME so scroll freezes at frame 260.
+                frame: Math.min(frame, SCROLL_END_FRAME) - SCROLL_START_FRAME,
                 fps,
                 durationInFrames: SCROLL_DURATION_FRAMES,
                 config: { damping: 30, stiffness: 80 },

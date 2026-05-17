@@ -15,6 +15,7 @@ import {
   PRESS_START,
   PRESS_END,
   SCROLL_START_FRAME,
+  SCROLL_END_FRAME,
   SCROLL_DURATION_FRAMES,
   TOTAL_SCROLL_DISTANCE_LANDSCAPE,
   GENERATE_PRESS,
@@ -78,10 +79,10 @@ export const CreateSceneLandscape: React.FC<Props> = ({
   const invoiceTranslateX = -INVOICE_OFFSET_LEFT * stageProgress;
   const invoiceTransform = `translateX(${invoiceTranslateX}px)`;
 
-  // Form scroll — same spring scroll as before, drives the translateY inside the card.
+  // Form scroll — same spring scroll as portrait. R12-1: clamp to SCROLL_END_FRAME=260.
   const scrollOffset = interpolate(
     spring({
-      frame: frame - SCROLL_START_FRAME,
+      frame: Math.min(frame, SCROLL_END_FRAME) - SCROLL_START_FRAME,
       fps,
       durationInFrames: SCROLL_DURATION_FRAMES,
       config: { damping: 30, stiffness: 80 },

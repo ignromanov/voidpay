@@ -24,7 +24,7 @@ export type DemoProps = z.infer<typeof DemoPropsSchema> & {
  * Chrome appears at that moment and persists through S2, S3, and S4.
  */
 const S1_GLOBAL_START = SCENE_DURATIONS.thesisHook; // 90
-const CHROME_VISIBLE_FROM = S1_GLOBAL_START + PRESS_END; // 90 + 307 = 397
+const CHROME_VISIBLE_FROM = S1_GLOBAL_START + PRESS_END; // 90 + 340 = 430 (R12-1)
 
 /** S3 (PayScene) global frame window — account chip visible in chrome bar during this range. */
 const S3_GLOBAL_START = SCENE_DURATIONS.thesisHook + SCENE_DURATIONS.create + SCENE_DURATIONS.share; // 90+360+280 = 730

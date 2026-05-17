@@ -24,10 +24,15 @@ export const TOKEN_APPEAR      = 179;
 export const FILL_COMPLETE     = 195;  // last field landed (was BUTTON_VISIBLE in round 8)
 export const PAPER_APPEAR      = 200;  // round 9a: post-fill — InvoicePaper fade-in starts here
 export const PAPER_VISIBLE_AT  = 260;  // A6: doubled duration 30fr → 60fr for slower appearance
+// R12-1: scroll freezes at 260, 40fr static pause before press at 300.
+export const SCROLL_END_FRAME  = 260;  // R12-1: scroll spring input clamped to this frame
 export const BUTTON_VISIBLE    = 280;  // round 9a: button reveals AFTER paper hold
-export const PRESS_START       = 240;
-export const PRESS_END         = 307;
-// round 9a-patch2 (C4): isGenerating={frame >= PRESS_END} holds 307–350 (43fr), crossfade 340–350.
+// R12-1: PRESS_START = FADE_START = 300. Form 1.0→0.5→0.0 over [300,320,340].
+// Invoice 0→0.5→1.0 over same window. PRESS_END = FADE_END = 340 (form fully gone).
+export const PRESS_START       = 300;
+export const FADE_MID_FRAME    = 320;  // R12-1: midpoint of fade dance (form 0.5, invoice 0.5)
+export const PRESS_END         = 340;
+// R12-1: invoice-only hold 340→360 (20fr = 0.67s), then S1 ends at 360.
 export const MAGIC_DUST_TOGGLE_FRAME = 200;  // round 9a-patch2 (C3): toggle off→on after TOKEN_APPEAR=179
 
 // Form scroll keyframes — round 9a: stretched proportionally with cascade.
@@ -54,19 +59,19 @@ export const SCROLL_OFFSETS = [0, -120, -400, -900, -1100];
 export const SCROLL_FRAMES_LANDSCAPE  = [115, 150, 175, 195, 265];
 export const SCROLL_OFFSETS_LANDSCAPE = [0, -60, -180, -380, -800];
 
-// Round-11 Phase 3 B1+B2: 3-stage choreography offsets.
+// Round-11 Phase 3 B1+B2 / R12-1: 3-stage landscape choreography offsets.
 // Form slides right, invoice slides left, both settle at ±OFFSET from center.
-export const GENERATE_PRESS        = PRESS_END;   // 307 — stage 2 begins when button fires
+// R12-1: GENERATE_PRESS = PRESS_START (300). Split window [300, 340] for cross-aspect parity.
+export const GENERATE_PRESS        = PRESS_START; // 300 — stage 2 begins at PRESS_START (R12-1)
 export const FORM_OFFSET_RIGHT     = 450;         // px translateX for form in stage 3
 export const INVOICE_OFFSET_LEFT   = 450;         // px translateX for invoice in stage 3
 
-// Round-11 Phase 4 C1+C2+C3: 9:16 portrait fade dance constants.
-// C1: form starts fading 60fr before PRESS_START (1.0 → 0.5).
-// C2: invoice fades in behind form during same window (0.0 → 1.0 by PRESS_END).
-// C3: invoice-only hold after PRESS_END (PRESS_END → scene end, ≈53fr ≈ 1.77s).
-export const FORM_FADE_START_OFFSET = 60;   // frames before PRESS_START where form begins fading
-export const FORM_HALF_OPACITY      = 0.5;  // form opacity at PRESS_START midpoint
-export const INVOICE_HOLD_AFTER_PRESS = 45; // 1.5s @ 30fps (informational; actual hold = scene end - PRESS_END)
+// Round-11 Phase 4 C1+C2+C3 / R12-1: 9:16 portrait fade dance constants.
+// R12-1 schema: form 1.0→0.5→0.0 over [PRESS_START=300, FADE_MID_FRAME=320, PRESS_END=340].
+// Invoice 0→0.5→1.0 over same window. Invoice-only hold 340→360 (20fr = 0.67s).
+export const FORM_FADE_START_OFFSET = 0;    // R12-1: fade starts exactly at PRESS_START (no pre-offset)
+export const FORM_HALF_OPACITY      = 0.5;  // form/invoice opacity at FADE_MID_FRAME midpoint
+export const INVOICE_HOLD_AFTER_PRESS = 20; // R12-1: 20fr hold (340→360 = 0.67s @ 30fps)
 
 /** Props forwarded to <InvoicePaper> — same in both landscape and portrait. */
 export const CREATE_PAPER_PROPS: ComponentProps<typeof InvoicePaper> = {

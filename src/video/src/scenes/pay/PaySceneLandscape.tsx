@@ -169,7 +169,7 @@ export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = "v1" }) => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: "48px 24px",
+            padding: "0px 24px 160px 24px",
             boxSizing: "border-box",
           }}
         >
