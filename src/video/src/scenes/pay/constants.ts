@@ -63,5 +63,8 @@ export const PANEL_MAX_WIDTH = 880;
 // PACK_START_LOCAL = SCENE_DURATIONS.pay - PACK_DURATION = 605 - 30 = 575.
 export const PACK_DURATION = 30;
 export const PACK_START_LOCAL = 575;
-export const PACK_Y_OFFSET_LANDSCAPE = 400;  // px toward top chrome (canvas height 1080px)
-export const PACK_Y_OFFSET_PORTRAIT  = 800;  // px toward top chrome (canvas height 1920px)
+// R13-D: precise aim at address bar center.
+// Landscape (1920×1080): wrapper top=61, wrapper center y=570.5, chrome center y=30.5 → 540px up.
+// Portrait  (1080×1920): wrapper top=76, wrapper center y=998,   chrome center y=38   → 960px up.
+export const PACK_Y_OFFSET_LANDSCAPE = 540;  // px toward chrome address bar (canvas height 1080px)
+export const PACK_Y_OFFSET_PORTRAIT  = 960;  // px toward chrome address bar (canvas height 1920px)

@@ -136,7 +136,7 @@ export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = "v1" }) => {
           width: colWidth,
           height: colH,
           transform: paperPackTransform,
-          transformOrigin: "center center",
+          transformOrigin: "center top",
           opacity: paperPackOpacity,
         }}
       >

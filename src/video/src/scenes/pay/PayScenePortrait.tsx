@@ -127,7 +127,7 @@ export const PayScenePortrait: React.FC<Props> = ({ hookVariant = "v1" }) => {
           width,
           height: height - CHROME_HEIGHT_PORTRAIT,
           transform: paperPackTransform,
-          transformOrigin: "center center",
+          transformOrigin: "center top",
           opacity: paperPackOpacity,
         }}
       >

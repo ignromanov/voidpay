@@ -7,8 +7,10 @@ export const PanelBorderStrip: React.FC = () => (
     /* D31: gradient bar (h-1 = 4px) scaled to 12px for video visibility; animate-pulse killed (CSS flicker) */
     .remotion-pay-panel [data-testid="gradient-bar"] { height: 12px !important; }
     .remotion-pay-panel .motion-safe\\:animate-pulse { animation: none !important; }
-    /* D34: success state gradient bar — emerald matches "Payment Successful" theme */
-    .remotion-pay-panel [data-testid="payment-panel"][data-status="paid"] [data-testid="gradient-bar"] {
+    /* D34: success state gradient bar — emerald matches "Payment Successful" theme.
+       R13-D: confirming state also gets emerald (paid-but-not-finalized = money sent = green). */
+    .remotion-pay-panel [data-testid="payment-panel"][data-status="paid"] [data-testid="gradient-bar"],
+    .remotion-pay-panel [data-testid="payment-panel"][data-status="confirming"] [data-testid="gradient-bar"] {
       background: linear-gradient(to right, rgb(16, 185, 129), rgb(52, 211, 153)) !important;
     }
   `}</style>
