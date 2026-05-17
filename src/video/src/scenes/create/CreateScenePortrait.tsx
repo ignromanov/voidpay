@@ -10,8 +10,6 @@ import type { HookVariant } from "../captions/thesis-captions";
 import { CreateScenePaperEnvelope } from "./CreateScenePaperEnvelope";
 import { PortraitCascade } from "./PortraitCascade";
 import {
-  FILL_COMPLETE,
-  BUTTON_VISIBLE,
   PRESS_START,
   FADE_MID_FRAME,
   PRESS_END,
@@ -20,6 +18,7 @@ import {
   SCROLL_DURATION_FRAMES,
   TOTAL_SCROLL_DISTANCE_PORTRAIT,
 } from "./constants";
+import { useCreateSceneState } from "./useCreateSceneState";
 
 type Props = {
   frame: number;
@@ -57,6 +56,10 @@ export const CreateScenePortrait: React.FC<Props> = ({
   hookVariant = "v1",
 }) => {
   const { fps } = useVideoConfig();
+
+  const { buttonPressScale, buttonSpinStyle, canGenerate, isGenerating, hoverState } =
+    useCreateSceneState(frame, hookVariant)
+
   const captions = hookVariant === "v2" ? CREATE_CAPTIONS_V2_VERTICAL : CREATE_CAPTIONS_VERTICAL;
 
   // R12-1: portrait fade dance — [PRESS_START=300, FADE_MID_FRAME=320, PRESS_END=340].
@@ -194,17 +197,17 @@ export const CreateScenePortrait: React.FC<Props> = ({
               <div
                 style={{
                   marginTop: 16,
-                  transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
+                  transform: `scale(${buttonPressScale})`,
                   transformOrigin: "center",
-                  ...(frame >= PRESS_START && frame < PRESS_END && { "--remotion-spin": `${frame * 8}deg` } as React.CSSProperties),
+                  ...buttonSpinStyle,
                 }}
               >
                 <GenerateButtonView
                   onGenerate={noop}
-                  canGenerate={frame >= FILL_COMPLETE}
-                  isGenerating={frame >= PRESS_START && frame < PRESS_END}
+                  canGenerate={canGenerate}
+                  isGenerating={isGenerating}
                   onSubmitAttempt={noop}
-                  hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
+                  hoverState={hoverState}
                   pressState={false}
                 />
               </div>
@@ -221,17 +224,17 @@ export const CreateScenePortrait: React.FC<Props> = ({
               <div
                 style={{
                   marginTop: 16,
-                  transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
+                  transform: `scale(${buttonPressScale})`,
                   transformOrigin: "center",
-                  ...(frame >= PRESS_START && frame < PRESS_END && { "--remotion-spin": `${frame * 8}deg` } as React.CSSProperties),
+                  ...buttonSpinStyle,
                 }}
               >
                 <GenerateButtonView
                   onGenerate={noop}
-                  canGenerate={frame >= FILL_COMPLETE}
-                  isGenerating={frame >= PRESS_START && frame < PRESS_END}
+                  canGenerate={canGenerate}
+                  isGenerating={isGenerating}
                   onSubmitAttempt={noop}
-                  hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
+                  hoverState={hoverState}
                   pressState={false}
                 />
               </div>
