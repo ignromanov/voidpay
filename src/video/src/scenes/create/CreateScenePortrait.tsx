@@ -171,7 +171,7 @@ export const CreateScenePortrait: React.FC<Props> = ({
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
-                  fontSize: "38px",
+                  fontSize: "54px",
                   fontWeight: 700,
                   color: "rgba(244, 244, 245, 1)",
                   letterSpacing: "-0.005em",

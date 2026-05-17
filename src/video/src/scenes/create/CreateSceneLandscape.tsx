@@ -166,7 +166,7 @@ export const CreateSceneLandscape: React.FC<Props> = ({
                     display: "flex",
                     alignItems: "center",
                     gap: 8,
-                    fontSize: "24px",
+                    fontSize: "34px",
                     fontWeight: 700,
                     color: "rgba(244, 244, 245, 1)",
                     letterSpacing: "-0.005em",
