@@ -184,7 +184,7 @@ export const ShareSceneLandscape: React.FC<Props> = ({
                   right: showQR ? 0 : undefined,
                   pointerEvents: linkTabOpacity > 0 ? "auto" : "none",
                 }}>
-                  <RemotionLinkTab url={SHARE_URL} copied={copied} urlFontSize={48} />
+                  <RemotionLinkTab url={SHARE_URL} copied={copied} urlFontSize={32} />
                 </div>
                 {frame >= TAB_SWAP_FRAME - 1 && (
                   <div style={{ opacity: qrTabOpacity }}>

@@ -26,7 +26,7 @@ interface RemotionLinkTabProps {
   urlFontSize?: number;
 }
 
-export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, urlFontSize = 56 }) => {
+export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, urlFontSize = 32 }) => {
 
   // ι2: all internal text/spacing scaled ×1.5 from θ5 values.
   // Modal width bumped 600→660px in ShareScene to absorb the scaling without overflow.
