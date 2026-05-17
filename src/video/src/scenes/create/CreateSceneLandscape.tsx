@@ -65,8 +65,7 @@ export const CreateSceneLandscape: React.FC<Props> = ({
     config: SPLIT_SPRING_CONFIG,
   });
 
-  // Form: starts center, slides right, scales 1 → 0.7 (×1.7 cascade applied via CSS,
-  // so relative scale here goes 1 → 0.7, giving final ×1.19 visible size in stage 3).
+  // Form: starts center, slides right, scales 1 → 0.7 (×1.2 cascade applied via CSS).
   const formTranslateX = FORM_OFFSET_RIGHT * stageProgress;
   const formScale = 1 - 0.3 * stageProgress;
   const formTransform = `translateX(${formTranslateX}px) scale(${formScale})`;
@@ -124,11 +123,11 @@ export const CreateSceneLandscape: React.FC<Props> = ({
           />
         </div>
 
-        {/* Form card — centered in stage 1, slides right in stage 2 */}
+        {/* Form card — centered in stage 1, slides right in stage 2. R12-2: width ×1.5 (960), height ×1.2. */}
         <div
           style={{
             position: "absolute",
-            width: 640,
+            width: 960,
             transform: formTransform,
             transformOrigin: "center center",
             zIndex: 2,
@@ -137,7 +136,7 @@ export const CreateSceneLandscape: React.FC<Props> = ({
           <Card
             style={{
               width: "100%",
-              height: formHeight,
+              height: formHeight * 1.2,
               padding: "24px",
               overflow: "hidden",
               opacity: formOpacity,

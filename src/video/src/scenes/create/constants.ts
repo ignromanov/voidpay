@@ -63,8 +63,8 @@ export const SCROLL_OFFSETS_LANDSCAPE = [0, -60, -180, -380, -800];
 // Form slides right, invoice slides left, both settle at ±OFFSET from center.
 // R12-1: GENERATE_PRESS = PRESS_START (300). Split window [300, 340] for cross-aspect parity.
 export const GENERATE_PRESS        = PRESS_START; // 300 — stage 2 begins at PRESS_START (R12-1)
-export const FORM_OFFSET_RIGHT     = 450;         // px translateX for form in stage 3
-export const INVOICE_OFFSET_LEFT   = 450;         // px translateX for invoice in stage 3
+export const FORM_OFFSET_RIGHT     = 675;         // px translateX for form in stage 3 (R12-2: ×1.5 for wider 960px form)
+export const INVOICE_OFFSET_LEFT   = 675;         // px translateX for invoice in stage 3 (R12-2: ×1.5 for wider form)
 
 // Round-11 Phase 4 C1+C2+C3 / R12-1: 9:16 portrait fade dance constants.
 // R12-1 schema: form 1.0→0.5→0.0 over [PRESS_START=300, FADE_MID_FRAME=320, PRESS_END=340].
