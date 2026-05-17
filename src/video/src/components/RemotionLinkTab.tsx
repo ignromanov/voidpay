@@ -26,7 +26,9 @@ interface RemotionLinkTabProps {
   urlFontSize?: number;
 }
 
-export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, urlFontSize = 32 }) => {
+export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, urlFontSize = 28 }) => {
+  // Strip ?og=... query params so displayed URL is clean: https://voidpay.xyz/pay#<hash>
+  const displayUrl = url.replace(/\?og=[^#]+/, "");
 
   // ι2: all internal text/spacing scaled ×1.5 from θ5 values.
   // Modal width bumped 600→660px in ShareScene to absorb the scaling without overflow.
@@ -52,7 +54,7 @@ export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, u
           padding: "15px 18px",
           overflow: "hidden",
         }}>
-          <UrlChunks url={url} fontSize={urlFontSize} />
+          <UrlChunks url={displayUrl} fontSize={urlFontSize} maxLines={6} />
         </div>
       </div>
 

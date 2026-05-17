@@ -78,7 +78,7 @@ export const ShareScenePortrait: React.FC<Props> = ({
           left: "50%",
           top: "50%",
           width: modalWidth,
-          height: 980,
+          height: "auto",
           padding: 0,
           transform: `translateX(-50%) translateY(calc(-50% + ${modalTranslateY}px))`,
           opacity: modalOpacity,
