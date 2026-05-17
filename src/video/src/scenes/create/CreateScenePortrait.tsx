@@ -171,7 +171,7 @@ export const CreateScenePortrait: React.FC<Props> = ({
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
-                  fontSize: "29px",
+                  fontSize: "38px",
                   fontWeight: 700,
                   color: "rgba(244, 244, 245, 1)",
                   letterSpacing: "-0.005em",
@@ -196,16 +196,16 @@ export const CreateScenePortrait: React.FC<Props> = ({
                   marginTop: 16,
                   transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
                   transformOrigin: "center",
-                  ...(frame >= PRESS_END && { "--remotion-spin": `${frame * 8}deg` } as React.CSSProperties),
+                  ...(frame >= PRESS_START && frame < PRESS_END && { "--remotion-spin": `${frame * 8}deg` } as React.CSSProperties),
                 }}
               >
                 <GenerateButtonView
                   onGenerate={noop}
                   canGenerate={frame >= FILL_COMPLETE}
-                  isGenerating={frame >= PRESS_END}
+                  isGenerating={frame >= PRESS_START && frame < PRESS_END}
                   onSubmitAttempt={noop}
                   hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
-                  pressState={frame >= PRESS_START && frame < PRESS_END}
+                  pressState={false}
                 />
               </div>
             </div>
@@ -223,15 +223,16 @@ export const CreateScenePortrait: React.FC<Props> = ({
                   marginTop: 16,
                   transform: `scale(${interpolate(frame, [PRESS_START, PRESS_START + 2, PRESS_END - 2, PRESS_END], [1, 0.96, 0.96, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })})`,
                   transformOrigin: "center",
+                  ...(frame >= PRESS_START && frame < PRESS_END && { "--remotion-spin": `${frame * 8}deg` } as React.CSSProperties),
                 }}
               >
                 <GenerateButtonView
                   onGenerate={noop}
                   canGenerate={frame >= FILL_COMPLETE}
-                  isGenerating={frame >= PRESS_END}
+                  isGenerating={frame >= PRESS_START && frame < PRESS_END}
                   onSubmitAttempt={noop}
                   hoverState={frame >= BUTTON_VISIBLE && frame < PRESS_START}
-                  pressState={frame >= PRESS_START && frame < PRESS_END}
+                  pressState={false}
                 />
               </div>
             </>
