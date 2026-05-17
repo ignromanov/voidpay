@@ -1,6 +1,6 @@
 import { AbsoluteFill, interpolate, Sequence, Series, useCurrentFrame } from "remotion";
 
-import { SCENE_DURATIONS } from "./constants/scenes";
+import { SCENE_DURATIONS, OUTRO_OVERLAP_FRAMES } from "./constants/scenes";
 import { PRESS_END } from "./scenes/create/constants";
 import { ThesisHookScene } from "./scenes/ThesisHookScene";
 import { CreateScene } from "./scenes/CreateScene";
@@ -25,6 +25,20 @@ export type DemoProps = z.infer<typeof DemoPropsSchema> & {
  */
 const S1_GLOBAL_START = SCENE_DURATIONS.thesisHook; // 90
 const CHROME_VISIBLE_FROM = S1_GLOBAL_START + PRESS_END; // 90 + 340 = 430 (R12-1)
+
+/**
+ * Round-13 R13-E: S4 outro overlay start.
+ * S3 ends at global 1335 (90+360+280+605). Outro overlay starts 30fr earlier
+ * so its fade-in plays during the pack-into-URL window (S3-local 575–605).
+ * S3_GLOBAL_END = 90+360+280+605 = 1335. Overlay from = 1335 - 30 = 1305.
+ */
+const S3_GLOBAL_END =
+  SCENE_DURATIONS.thesisHook +
+  SCENE_DURATIONS.create +
+  SCENE_DURATIONS.share +
+  SCENE_DURATIONS.pay; // 1335
+const S4_OUTRO_OVERLAY_START = S3_GLOBAL_END - OUTRO_OVERLAP_FRAMES; // 1305
+const S4_OUTRO_OVERLAY_DURATION = SCENE_DURATIONS.thesisOutro + OUTRO_OVERLAP_FRAMES; // 105
 
 /** Fade-in + slide-down entry over 10 frames (~333ms at 30fps). */
 const ChromeRoot: React.FC = () => {
@@ -61,10 +75,15 @@ const ChromeRoot: React.FC = () => {
  * Round 11 D1: BrowserChrome lifted to composition root — single persistent
  * instance visible from CHROME_VISIBLE_FROM (CreateScene generate-press release)
  * through end of composition. Z-index 50: above scene content, below captions (100).
+ * Round 13 R13-E: S4 ThesisOutro extracted from Series into overlay Sequence
+ * starting at global 1305 (S3 end - 30fr). Its opacity fade-in plays during the
+ * pack-into-URL window, creating a continuous cross-fade instead of a hard cut.
+ * Z-order: outro AbsoluteFill renders above dying paper (Series is earlier in JSX).
  */
 export const VoidPayDemo: React.FC<DemoProps> = ({ hookVariant = "v1" }) => {
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
+      {/* S0–S3 in Series (clean cuts). S4 extracted — see overlay Sequence below. */}
       <Series>
         <Series.Sequence durationInFrames={SCENE_DURATIONS.thesisHook}>
           <ThesisHookScene hookVariant={hookVariant} />
@@ -81,11 +100,14 @@ export const VoidPayDemo: React.FC<DemoProps> = ({ hookVariant = "v1" }) => {
         <Series.Sequence durationInFrames={SCENE_DURATIONS.pay}>
           <PayScene hookVariant={hookVariant} />
         </Series.Sequence>
-
-        <Series.Sequence durationInFrames={SCENE_DURATIONS.thesisOutro}>
-          <ThesisOutroScene hookVariant={hookVariant} />
-        </Series.Sequence>
       </Series>
+
+      {/* S4 outro overlay — starts 30fr before S3 ends (global 1305) so its
+          fade-in and hero entrance animate during the pack-into-URL window.
+          Duration = thesisOutro (75) + overlap (30) = 105fr → ends at 1410. */}
+      <Sequence from={S4_OUTRO_OVERLAY_START} durationInFrames={S4_OUTRO_OVERLAY_DURATION}>
+        <ThesisOutroScene hookVariant={hookVariant} />
+      </Sequence>
 
       {/* Root-level BrowserChrome — persistent address bar from generate-press through end */}
       <Sequence from={CHROME_VISIBLE_FROM}>
