@@ -51,8 +51,14 @@ export const MAGIC_DUST_TOGGLE_FRAME = 200;  // round 9a-patch2 (C3): toggle off
 // Landscape: -960 (was -800 × 1.2 per A3).
 export const SCROLL_START_FRAME = 115;
 export const SCROLL_DURATION_FRAMES = 150;
-export const TOTAL_SCROLL_DISTANCE_PORTRAIT  = 1320;
-export const TOTAL_SCROLL_DISTANCE_LANDSCAPE = 960;
+// Calibrated by Studio preview: button-bottom flush at SCROLL_END_FRAME=260.
+// Increase if button clips bottom of card; decrease if button overshoots upward.
+// Last calibrated: 2026-05-17 — restored pre-A3 baseline (×1.2 bump removed).
+export const TOTAL_SCROLL_DISTANCE_PORTRAIT  = 1100;
+// Calibrated by Studio preview: button-bottom flush at SCROLL_END_FRAME=260.
+// Includes button h-14 (51px) + marginTop (12px) = 63px below last field.
+// Last calibrated: 2026-05-17 — +63 to land button in frame at freeze point.
+export const TOTAL_SCROLL_DISTANCE_LANDSCAPE = 1020;
 // Legacy keyframe arrays kept for reference only — no longer used in scene files.
 export const SCROLL_FRAMES  = [115, 150, 175, 195, 265];
 export const SCROLL_OFFSETS = [0, -120, -400, -900, -1100];
@@ -63,7 +69,8 @@ export const SCROLL_OFFSETS_LANDSCAPE = [0, -60, -180, -380, -800];
 // Form slides right, invoice slides left, both settle at ±OFFSET from center.
 // R12-1: GENERATE_PRESS = PRESS_START (300). Split window [300, 340] for cross-aspect parity.
 export const GENERATE_PRESS        = PRESS_START; // 300 — stage 2 begins at PRESS_START (R12-1)
-export const FORM_OFFSET_RIGHT     = 675;         // px translateX for form in stage 3 (R12-2: ×1.5 for wider 960px form)
+// Proportional to form width — recompute as round(WIDTH * 0.703) if width changes.
+export const FORM_OFFSET_RIGHT     = 607;         // px translateX for form in stage 3 (R15: 960→864 width reduction ×0.9)
 export const INVOICE_OFFSET_LEFT   = 480;         // R14-A: aligned to ShareScene left-column center (colW=960, paperCenter=480 from left = 480 from canvas-center)
 
 // Round-11 Phase 4 C1+C2+C3 / R12-1: 9:16 portrait fade dance constants.

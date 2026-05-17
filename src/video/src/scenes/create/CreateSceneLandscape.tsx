@@ -123,11 +123,11 @@ export const CreateSceneLandscape: React.FC<Props> = ({
           />
         </div>
 
-        {/* Form card — centered in stage 1, slides right in stage 2. R12-2: width ×1.5 (960), height ×1.2. */}
+        {/* Form card — centered in stage 1, slides right in stage 2. R15: width 960→864 (-10%), padding 24→32px. */}
         <div
           style={{
             position: "absolute",
-            width: 960,
+            width: 864,
             transform: formTransform,
             transformOrigin: "center center",
             zIndex: 2,
@@ -137,11 +137,11 @@ export const CreateSceneLandscape: React.FC<Props> = ({
             style={{
               width: "100%",
               height: formHeight * 1.2,
-              padding: "24px",
+              padding: "32px",
               overflow: "hidden",
               opacity: formOpacity,
               backgroundColor: "rgba(14,14,19,0.95)",
-              border: "1px solid rgba(63,63,70,0.5)",
+              border: "1px solid rgba(63,63,70,0.8)",
               boxShadow: `0 16px 50px rgba(0,0,0,0.5), 0 0 ${glowSpread}px rgba(124,58,237,${glowIntensity * 0.5}), 0 0 60px rgba(124,58,237,${buttonGlowOpacity * 0.4}), 0 0 120px rgba(124,58,237,${buttonGlowOpacity * 0.2})`,
               borderRadius: 12,
             }}
@@ -166,7 +166,7 @@ export const CreateSceneLandscape: React.FC<Props> = ({
                     display: "flex",
                     alignItems: "center",
                     gap: 8,
-                    fontSize: "34px",
+                    fontSize: "41px",
                     fontWeight: 700,
                     color: "rgba(244, 244, 245, 1)",
                     letterSpacing: "-0.005em",

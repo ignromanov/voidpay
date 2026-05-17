@@ -1,7 +1,7 @@
 import { AbsoluteFill, interpolate, Sequence, Series, useCurrentFrame } from "remotion";
 
 import { SCENE_DURATIONS, OUTRO_OVERLAP_FRAMES } from "./constants/scenes";
-import { PRESS_END } from "./scenes/create/constants";
+import { PRESS_START } from "./scenes/create/constants";
 import { ThesisHookScene } from "./scenes/ThesisHookScene";
 import { CreateScene } from "./scenes/CreateScene";
 import { ShareScene } from "./scenes/ShareScene";
@@ -20,11 +20,12 @@ export type DemoProps = z.infer<typeof DemoPropsSchema> & {
 /**
  * Global frame at which BrowserChrome becomes visible.
  * S1 (CreateScene) starts at thesisHook duration (90).
- * PRESS_END is the local frame within S1 when the Generate button is released.
+ * PRESS_START is the local frame within S1 when the Generate button is pressed.
+ * Chrome fades in synchronously with invoice fade-in (PRESS_START), not press-end.
  * Chrome appears at that moment and persists through S2, S3, and S4.
  */
 const S1_GLOBAL_START = SCENE_DURATIONS.thesisHook; // 90
-const CHROME_VISIBLE_FROM = S1_GLOBAL_START + PRESS_END; // 90 + 340 = 430 (R12-1)
+const CHROME_VISIBLE_FROM = S1_GLOBAL_START + PRESS_START; // 90 + 300 = 390 (R15)
 
 /**
  * Round-13 R13-E: S4 outro overlay start.

@@ -26,7 +26,7 @@ interface RemotionLinkTabProps {
   urlFontSize?: number;
 }
 
-export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, urlFontSize = 28 }) => {
+export const RemotionLinkTab: React.FC<RemotionLinkTabProps> = ({ url, copied, urlFontSize = 22 }) => {
   // Strip ?og=... query params so displayed URL is clean: https://voidpay.xyz/pay#<hash>
   const displayUrl = url.replace(/\?og=[^#]+/, "");
 
