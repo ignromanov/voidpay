@@ -10,7 +10,6 @@ import {
   type CaptionWeight,
 } from "./Caption.helpers";
 import type { CaptionVariant } from "./Caption";
-import { PulseGlow } from './PulseGlow';
 
 type KineticCaptionProps = {
   text: string;
@@ -49,6 +48,22 @@ export function KineticCaption({
     phase,
     [0, PULSE_PERIOD / 2, PULSE_PERIOD],
     [0.85, 1.15, 0.85],
+    { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
+  // Breathing glow: 36fr period — intentionally drifts vs dot pulse (30fr) for organic feel
+  const breathPeriod = 36;
+  const breathPhase = frame % breathPeriod;
+  const breathSpread = interpolate(
+    breathPhase,
+    [0, breathPeriod / 2, breathPeriod],
+    [0, 80, 0],
+    { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const breathOpacity = interpolate(
+    breathPhase,
+    [0, breathPeriod / 2, breathPeriod],
+    [0, 0.55, 0],
     { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
@@ -128,12 +143,6 @@ export function KineticCaption({
       }}
     >
       {/* Path C pill backdrop */}
-      <PulseGlow
-        rgb={isEmerald ? "16,185,129" : "167,139,250"}
-        spread={28}
-        period={30}
-        borderRadius={24}
-      >
       <div
         style={{
           display: "inline-flex",
@@ -147,7 +156,8 @@ export function KineticCaption({
           borderRadius: 24,
           padding: pillPadding,
           boxShadow: [
-            `0 0 8px rgba(${accentRgb},0.40)`,
+            `0 0 ${breathSpread}px rgba(${accentRgb}, ${breathOpacity})`,
+            `0 0 12px rgba(${accentRgb}, 0.60)`,
             `0 18px 40px rgba(0,0,0,0.55)`,
           ].join(", "),
         }}
@@ -155,8 +165,8 @@ export function KineticCaption({
         {/* Leading dot — sin-pulse: calm 1s rhythm */}
         <span
           style={{
-            width: 12,
-            height: 12,
+            width: 10,
+            height: 10,
             borderRadius: "50%",
             background: dotHex,
             boxShadow: `0 0 10px ${dotHex}`,
@@ -164,7 +174,7 @@ export function KineticCaption({
             display: "inline-block",
             opacity: pulseOpacity,
             transform: `scale(${pulseScale})`,
-            marginTop: 10,
+            marginTop: Math.round(fontSize * 0.08),
           }}
         />
         {/* Caption text */}
@@ -183,7 +193,6 @@ export function KineticCaption({
           {renderText()}
         </span>
       </div>
-      </PulseGlow>
     </div>
   );
 }
