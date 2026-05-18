@@ -39,7 +39,7 @@ useTrackedInvoiceStore.setState({
   invoices: [
     {
       contentHash: DEMO_CONTENT_HASH,
-      invoiceId: "VP-0001",
+      invoiceId: "VP-DEMO-001",
       invoiceUrl: DEMO_INVOICE_URL,
       source: "received",
       createdAt: DEMO_CREATED_AT_ISO,

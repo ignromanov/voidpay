@@ -42,7 +42,7 @@ export const CreateScene: React.FC<Props> = ({ hookVariant = "v1" }) => {
   const viewValue = useMemo(() => {
     const fromName = typewrite(INVOICE_FROM, frame, FROM_START);
     const walletAddress = frame >= WALLET_APPEAR ? DEMO_FROM_ADDRESS : undefined;
-    const client = frame >= CLIENT_APPEAR ? { name: "Acme Corp" } : undefined;
+    const client = frame >= CLIENT_APPEAR ? { name: "VoidPay" } : undefined;
 
     // Line item appears progressively: description first, then rate (price)
     const lineItems = frame >= LINE_DESC_APPEAR
@@ -57,7 +57,7 @@ export const CreateScene: React.FC<Props> = ({ hookVariant = "v1" }) => {
     const tokenSymbol = frame >= TOKEN_APPEAR ? INVOICE_TOKEN : undefined;
 
     return {
-      ...(frame >= INVOICE_NO_APPEAR && { invoiceId: "VP-0001" }),
+      ...(frame >= INVOICE_NO_APPEAR && { invoiceId: "VP-DEMO-001" }),
       ...(frame >= DATES_APPEAR && {
         issuedAt: "2026-04-18",
         dueAt: "2026-04-25",
