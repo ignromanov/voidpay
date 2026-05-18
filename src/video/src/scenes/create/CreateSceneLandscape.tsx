@@ -54,7 +54,8 @@ export const CreateSceneLandscape: React.FC<Props> = ({
   formOpacity: _formOpacity,
   hookVariant = "v1",
 }) => {
-  const { fps } = useVideoConfig();
+  const { fps, width } = useVideoConfig();
+  const colW = width / 2; // 960px — matches ShareSceneLandscape/PaySceneLandscape left-column width
 
   const captions = hookVariant === "v2" ? CREATE_CAPTIONS_V2_LANDSCAPE : CREATE_CAPTIONS_LANDSCAPE;
 
@@ -70,12 +71,14 @@ export const CreateSceneLandscape: React.FC<Props> = ({
   const formScale = 1 - 0.3 * stageProgress;
   const formTransform = `translateX(${formTranslateX}px) scale(${formScale})`;
 
-  // Invoice: fades in and slides left from center during stage 2, fully visible in stage 3.
+  // Invoice: fades in and slides left from canvas center to left-column position.
+  // Column is at left: 0, width: colW — entrance starts at +INVOICE_OFFSET_LEFT offset (canvas center)
+  // and slides to 0 as stageProgress → 1, matching Share/Pay column alignment.
   const invoiceOpacity = interpolate(stageProgress, [0, 0.3, 1], [0, 0.7, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const invoiceTranslateX = -INVOICE_OFFSET_LEFT * stageProgress;
+  const invoiceTranslateX = INVOICE_OFFSET_LEFT * (1 - stageProgress);
   const invoiceTransform = `translateX(${invoiceTranslateX}px)`;
 
   // Form scroll — same spring scroll as portrait. R12-1: clamp to SCROLL_END_FRAME=260.
@@ -96,7 +99,26 @@ export const CreateSceneLandscape: React.FC<Props> = ({
       <NetworkBackgroundLayer variant="soft" />
       <NetworkBackground />
 
-      {/* Choreography layer — both elements positioned absolutely in center, then offset via transform */}
+      {/* Invoice column — LEFT half, absolute, matches ShareSceneLandscape/PaySceneLandscape pattern (R20-F/L3) */}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          width: colW,
+          height: "100%",
+          transform: invoiceTransform,
+          opacity: invoiceOpacity,
+          zIndex: 1,
+        }}
+      >
+        <CreateScenePaperEnvelope
+          frame={frame}
+          columnWidth={colW}
+        />
+      </div>
+
+      {/* Choreography layer — form centered in stage 1, slides right in stage 2 */}
       <div
         style={{
           position: "absolute",
@@ -106,23 +128,6 @@ export const CreateSceneLandscape: React.FC<Props> = ({
           justifyContent: "center",
         }}
       >
-        {/* Invoice — slides left as stage 2 begins */}
-        <div
-          style={{
-            position: "absolute",
-            width: 680,
-            height: "80%",
-            transform: invoiceTransform,
-            opacity: invoiceOpacity,
-            zIndex: 1,
-          }}
-        >
-          <CreateScenePaperEnvelope
-            frame={frame}
-            columnWidth={680}
-          />
-        </div>
-
         {/* Form card — centered in stage 1, slides right in stage 2. R15: width 960→864 (-10%), padding 24→32px. */}
         <div
           style={{

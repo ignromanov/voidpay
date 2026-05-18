@@ -69,8 +69,10 @@ export const SCROLL_OFFSETS_LANDSCAPE = [0, -60, -180, -380, -800];
 // Form slides right, invoice slides left, both settle at ±OFFSET from center.
 // R12-1: GENERATE_PRESS = PRESS_START (300). Split window [300, 340] for cross-aspect parity.
 export const GENERATE_PRESS        = PRESS_START; // 300 — stage 2 begins at PRESS_START (R12-1)
-// Proportional to form width — recompute as round(WIDTH * 0.703) if width changes.
-export const FORM_OFFSET_RIGHT     = 607;         // px translateX for form in stage 3 (R15: 960→864 width reduction ×0.9)
+// Calibrated 2026-05-17 (R20-F/L3): puts form left edge at canvas center (960px),
+// matching ShareSceneLandscape/PaySceneLandscape right-column position.
+// Formula: 960 - (form_width / 2) = 960 - 432 = 528, so translateX = 432.
+export const FORM_OFFSET_RIGHT     = 432;         // px translateX for form in stage 3
 export const INVOICE_OFFSET_LEFT   = 480;         // R14-A: aligned to ShareScene left-column center (colW=960, paperCenter=480 from left = 480 from canvas-center)
 
 // Round-11 Phase 4 C1+C2+C3 / R12-1: 9:16 portrait fade dance constants.
