@@ -44,6 +44,11 @@ export const MAGIC_DUST_HIGHLIGHT = 190
 export const MAGIC_DUST_PEAK_END = 300
 export const CONFIRMATIONS_REQUIRED = 12
 
+// FINALIZE — emerald "confirmation finalized" moment, 40fr after SUCCESS.
+// Used by: caption choreography (Payment confirmed chip starts here),
+// double-tick blink animation (checkmarks pulse for emphasis).
+export const FINALIZE = 460
+
 // Panel exits at 465-484, giving paper-alone window (485-574). Defect-1: SUCCESS+45fr gap for emerald bar.
 export const PANEL_EXIT_START = 465 // SUCCESS + 45fr (emerald border visible 1.5s)
 export const PANEL_EXIT_END = 485 // +20fr exit duration
