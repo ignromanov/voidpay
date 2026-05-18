@@ -11,6 +11,7 @@ import { LandscapeShareCascade } from "../../components/LandscapeShareCascade";
 import { COLORS } from "../../constants/colors";
 import { FONT_SANS } from "../../fonts";
 import { SHARE_URL, SHARE_PAPER_PROPS, TAB_SWAP_FRAME } from "./constants";
+import { CHROME_HEIGHT_LANDSCAPE } from "../pay/constants";
 import { SummaryCascadeLandscape } from "./SummaryCascade";
 import type { CaptionEntry } from "../captions/create-captions";
 
@@ -22,6 +23,7 @@ type Props = {
   copied: boolean;
   linkTabOpacity: number;
   qrTabOpacity: number;
+  tabProgress: number;
   captions: CaptionEntry[];
 };
 
@@ -33,11 +35,15 @@ export const ShareSceneLandscape: React.FC<Props> = ({
   copied,
   linkTabOpacity,
   qrTabOpacity,
+  tabProgress,
   captions,
 }) => {
   const { width, height } = useVideoConfig();
   const PANEL_MAX_WIDTH = 640;
   const colW = width / 2;
+  // R22-C: match PaySceneLandscape canonical left-column geometry so invoice
+  // does not jump at the S2→S3 boundary (global frame 730).
+  const colH = height - CHROME_HEIGHT_LANDSCAPE;
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
@@ -45,14 +51,15 @@ export const ShareSceneLandscape: React.FC<Props> = ({
       <NetworkBackground />
 
       {/* LEFT — paper, vertically centered in left half */}
-      {/* D37: landscape paper must never blur/dim — invoice stays fully readable as persistent context */}
+      {/* D37: landscape paper must never blur/dim — invoice stays fully readable as persistent context.
+          R22-C: top/height/containerHeight match PaySceneLandscape exactly — no jump at S2→S3 boundary. */}
       <div
         style={{
           position: "absolute",
           left: 0,
-          top: 0,
+          top: CHROME_HEIGHT_LANDSCAPE,
           width: colW,
-          height: "100%",
+          height: colH,
         }}
       >
         <PaperBackdrop
@@ -60,7 +67,7 @@ export const ShareSceneLandscape: React.FC<Props> = ({
           opacity={1}
           blurPx={0}
           containerWidth={colW}
-          containerHeight={height}
+          containerHeight={colH}
         />
       </div>
 
@@ -146,7 +153,8 @@ export const ShareSceneLandscape: React.FC<Props> = ({
                 marginBottom: 12,
               }}>
                 {(["Link", "QR Code"] as const).map((label) => {
-                  const isActive = showQR ? label === "QR Code" : label === "Link";
+                  // R22-C: tabProgress crossfade (0=Link, 1=QR) — no binary pop.
+                  const activeWeight = label === "Link" ? 1 - tabProgress : tabProgress;
                   return (
                     <div
                       key={label}
@@ -157,10 +165,10 @@ export const ShareSceneLandscape: React.FC<Props> = ({
                         justifyContent: "center",
                         borderRadius: 6,
                         fontSize: 18,
-                        fontWeight: isActive ? 500 : 400,
-                        color: isActive ? "rgba(244, 244, 245, 1)" : "rgba(113, 113, 122, 1)",
-                        background: isActive ? "rgba(24, 24, 27, 1)" : "transparent",
-                        boxShadow: isActive ? "0 1px 3px 0 rgba(0,0,0,0.4)" : "none",
+                        fontWeight: activeWeight > 0.5 ? 500 : 400,
+                        color: `rgba(${Math.round(113 + (244 - 113) * activeWeight)}, ${Math.round(113 + (244 - 113) * activeWeight)}, ${Math.round(122 + (245 - 122) * activeWeight)}, 1)`,
+                        background: `rgba(24, 24, 27, ${activeWeight})`,
+                        boxShadow: activeWeight > 0.01 ? `0 1px 3px 0 rgba(0,0,0,${0.4 * activeWeight})` : "none",
                         fontFamily: `${FONT_SANS}, sans-serif`,
                         letterSpacing: "-0.01em",
                       }}

@@ -22,6 +22,7 @@ type Props = {
   copied: boolean;
   linkTabOpacity: number;
   qrTabOpacity: number;
+  tabProgress: number;
   dimOpacity: number;
   blurPx: number;
   captions: CaptionEntry[];
@@ -36,6 +37,7 @@ export const ShareScenePortrait: React.FC<Props> = ({
   copied,
   linkTabOpacity,
   qrTabOpacity,
+  tabProgress,
   dimOpacity,
   blurPx,
   captions,
@@ -146,10 +148,8 @@ export const ShareScenePortrait: React.FC<Props> = ({
             marginBottom: 18,
           }}>
             {(["Link", "QR Code"] as const).map((label) => {
-              // κ-5: tab indicator and body both switch at COPY_CLICK_FRAME via showQR
-              const isActive = showQR
-                ? label === "QR Code"
-                : label === "Link";
+              // R22-C: use tabProgress (0=Link, 1=QR) for smooth crossfade instead of binary showQR.
+              const activeWeight = label === "Link" ? 1 - tabProgress : tabProgress;
               return (
                 <div
                   key={label}
@@ -161,11 +161,10 @@ export const ShareScenePortrait: React.FC<Props> = ({
                     gap: 8,
                     borderRadius: 6,
                     fontSize: 28.5,
-                    fontWeight: isActive ? 500 : 400,
-                    color: isActive ? "rgba(244, 244, 245, 1)" : "rgba(113, 113, 122, 1)",
-                    // Active: bg-background card + shadow (production data-[state=active]:bg-background data-[state=active]:shadow)
-                    background: isActive ? "rgba(24, 24, 27, 1)" : "transparent",
-                    boxShadow: isActive ? "0 1px 3px 0 rgba(0,0,0,0.4), 0 1px 2px -1px rgba(0,0,0,0.4)" : "none",
+                    fontWeight: activeWeight > 0.5 ? 500 : 400,
+                    color: `rgba(${Math.round(113 + (244 - 113) * activeWeight)}, ${Math.round(113 + (244 - 113) * activeWeight)}, ${Math.round(122 + (245 - 122) * activeWeight)}, 1)`,
+                    background: `rgba(24, 24, 27, ${activeWeight})`,
+                    boxShadow: activeWeight > 0.01 ? `0 1px 3px 0 rgba(0,0,0,${0.4 * activeWeight}), 0 1px 2px -1px rgba(0,0,0,${0.4 * activeWeight})` : "none",
                     fontFamily: `${FONT_SANS}, sans-serif`,
                     letterSpacing: "-0.01em",
                   }}

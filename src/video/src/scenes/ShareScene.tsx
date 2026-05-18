@@ -46,10 +46,13 @@ export const ShareScene: React.FC<Props> = ({ hookVariant = "v1" }) => {
   });
 
   // Round 9m stagger: copy fires at COPY_FRAME (100), tab swap at TAB_SWAP_FRAME (230).
-  const showQR = frame >= TAB_SWAP_FRAME;
+  // R22-C: showQR switches at midpoint of crossfade (TAB_SWAP_FRAME + TAB_CROSSFADE_DURATION/2)
+  // so the position:relative→absolute layout change happens when both tabs are at 50% opacity,
+  // avoiding a hard jump on the first frame of the swap.
+  const showQR = frame >= TAB_SWAP_FRAME + Math.floor(TAB_CROSSFADE_DURATION / 2);
   const copied = frame >= COPY_FRAME;
 
-  // F4.4: 1fr cross-fade opacity drivers for tab body transition at TAB_SWAP_FRAME.
+  // R22-C: tab body + tab indicator both use same crossfade window (TAB_CROSSFADE_DURATION=10fr).
   const linkTabOpacity = interpolate(
     frame,
     [TAB_SWAP_FRAME, TAB_SWAP_FRAME + TAB_CROSSFADE_DURATION],
@@ -57,6 +60,13 @@ export const ShareScene: React.FC<Props> = ({ hookVariant = "v1" }) => {
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
   const qrTabOpacity = interpolate(
+    frame,
+    [TAB_SWAP_FRAME, TAB_SWAP_FRAME + TAB_CROSSFADE_DURATION],
+    [0, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  // tabProgress: 0 = Link active, 1 = QR active — drives indicator crossfade independently.
+  const tabProgress = interpolate(
     frame,
     [TAB_SWAP_FRAME, TAB_SWAP_FRAME + TAB_CROSSFADE_DURATION],
     [0, 1],
@@ -83,6 +93,7 @@ export const ShareScene: React.FC<Props> = ({ hookVariant = "v1" }) => {
         copied={copied}
         linkTabOpacity={linkTabOpacity}
         qrTabOpacity={qrTabOpacity}
+        tabProgress={tabProgress}
         captions={captions}
       />
     );
@@ -98,6 +109,7 @@ export const ShareScene: React.FC<Props> = ({ hookVariant = "v1" }) => {
       copied={copied}
       linkTabOpacity={linkTabOpacity}
       qrTabOpacity={qrTabOpacity}
+      tabProgress={tabProgress}
       dimOpacity={dimOpacity}
       blurPx={blurPx}
       captions={captions}

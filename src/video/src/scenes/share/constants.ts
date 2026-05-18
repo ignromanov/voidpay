@@ -13,8 +13,8 @@ export const HASH_PAYLOAD =
 
 export const SHARE_URL = `https://voidpay.xyz/pay?og=VP-0001_250_USDC_arb_${DEMO_FROM_ADDRESS}#${HASH_PAYLOAD}`;
 
-// D27: instant tab swap — 1-frame window eliminates blink where both tabs at half opacity
-export const TAB_CROSSFADE_DURATION = 1;
+// R22-C: 10fr crossfade — 1fr was imperceptibly fast (hard-cut flicker in Studio at f230).
+export const TAB_CROSSFADE_DURATION = 10;
 
 // Round 9o: tab swap delayed to S2-local 230 — coincides with end of "Hash never leaves" caption (225)
 // and start of "Share it anywhere." caption (235), so QR appears with its companion text.
