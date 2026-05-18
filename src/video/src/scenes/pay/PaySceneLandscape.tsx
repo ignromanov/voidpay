@@ -44,6 +44,7 @@ export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = 'v1' }) => {
     magicDustPulseOpacity,
     panelTxHash,
     paperPaid,
+    panelFinalized,
     panelExit,
     panelExitOpacity,
     walletOpacity,
@@ -161,6 +162,7 @@ export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = 'v1' }) => {
                 panelTxHash={panelTxHash}
                 confirmations={confirmations}
                 ctaPressTriggerFrame={ctaPressTriggerFrame}
+                panelFinalized={panelFinalized}
               />
             </div>
           </div>

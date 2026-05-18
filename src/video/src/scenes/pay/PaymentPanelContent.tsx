@@ -14,6 +14,7 @@ export const PaymentPanelContent: React.FC<{
   panelTxHash: string | undefined;
   confirmations: { current: number; required: number };
   ctaPressTriggerFrame: number;
+  panelFinalized: boolean;
 }> = ({
   frame,
   step,
@@ -22,6 +23,7 @@ export const PaymentPanelContent: React.FC<{
   panelTxHash,
   confirmations,
   ctaPressTriggerFrame,
+  panelFinalized,
 }) => {
   // Double-tick blink: 8fr period (~0.27s/blink, ~3.75 cycles) over 30fr window starting at FINALIZE.
   // R22 fix: old window was FINALIZE→PANEL_EXIT_START = only 5fr (one cycle never completes).
@@ -46,11 +48,11 @@ export const PaymentPanelContent: React.FC<{
       txHash={panelTxHash}
       confirmations={confirmations}
       source="received"
-      finalized={panelStatus === "paid"}
+      finalized={panelFinalized}
       checkmarkOpacity={blinkOpacity}
     >
       {/* CTA — drives SmartPayButtonView per-frame across 6 idle sub-states + sending. */}
-      {(step !== 'confirming' && step !== 'success') && (
+      {step !== 'success' && (
         <div
           style={{
             transform: ctaPressTriggerFrame >= 0
