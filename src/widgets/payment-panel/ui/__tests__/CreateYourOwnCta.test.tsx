@@ -13,7 +13,7 @@ describe('CreateYourOwnCta', () => {
   it('renders create link', () => {
     render(<CreateYourOwnCta />)
 
-    expect(screen.getByText(/create your own invoice/i)).toBeInTheDocument()
+    expect(screen.getByText(/create an invoice/i)).toBeInTheDocument()
   })
 
   it('links to /create', () => {

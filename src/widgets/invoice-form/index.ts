@@ -1,4 +1,4 @@
-// UI Components
+// UI Components (production public API — no View exports here)
 export { InvoiceForm, type InvoiceFormProps } from './ui'
 export { InvoiceItemRow, type InvoiceItemRowProps } from './ui'
 export { MagicDustToggle, type MagicDustToggleProps } from './ui'

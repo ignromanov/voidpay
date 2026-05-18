@@ -132,6 +132,9 @@ export { NetworkIcon, type NetworkIconProps } from './network-icon'
 export { NETWORK_PALETTE, DEFAULT_PALETTE } from './constants/network-palette'
 export type { NetworkPalette, NetworkThemeName } from './constants/network-palette'
 
+// Tabs (shadcn/Radix-backed, controlled-friendly)
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs'
+
 // WalletButton - Moved to features/wallet-connect (FSD: depends on Web3 feature)
 // Use: import { LazyWalletButton, WalletButton } from '@/features/wallet-connect'
 
