@@ -4,7 +4,7 @@ import { SmartPayButtonView } from "@/features/payment/video-internals";
 import type { PaymentStep, IdleSubState } from "@/features/payment";
 import { DEMO_INVOICE, DEMO_CONTENT_HASH } from "../../constants/demo-invoice";
 import { pressScale } from "./phases";
-import { FINALIZE, PANEL_EXIT_START } from "./constants";
+import { FINALIZE } from "./constants";
 
 export const PaymentPanelContent: React.FC<{
   frame: number;
@@ -23,13 +23,17 @@ export const PaymentPanelContent: React.FC<{
   confirmations,
   ctaPressTriggerFrame,
 }) => {
-  // Double-tick blink: 8fr period pulse during FINALIZE→PANEL_EXIT_START window (~3 blinks at 30fps).
+  // Double-tick blink: 8fr period (~0.27s/blink, ~3.75 cycles) over 30fr window starting at FINALIZE.
+  // R22 fix: old window was FINALIZE→PANEL_EXIT_START = only 5fr (one cycle never completes).
+  // Extended to FINALIZE+30 so blink runs during panel fade-out — blends naturally with global opacity.
+  // Min opacity 0.15 (was 0.4) for a noticeably deep dip per R22 9:16 #3.
+  const BLINK_WINDOW = 30;
   const blinkOpacity =
-    frame >= FINALIZE && frame < PANEL_EXIT_START
+    frame >= FINALIZE && frame < FINALIZE + BLINK_WINDOW
       ? interpolate(
           (frame - FINALIZE) % 8,
           [0, 4, 8],
-          [1.0, 0.4, 1.0],
+          [1.0, 0.15, 1.0],
           { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
         )
       : 1;

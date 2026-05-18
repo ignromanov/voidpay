@@ -57,8 +57,8 @@ export const SCROLL_DURATION_FRAMES = 150;
 export const TOTAL_SCROLL_DISTANCE_PORTRAIT  = 1100;
 // Calibrated by Studio preview: button-bottom flush at SCROLL_END_FRAME=260.
 // Includes button h-14 (51px) + marginTop (12px) = 63px below last field.
-// Last calibrated: 2026-05-17 — +63 to land button in frame at freeze point.
-export const TOTAL_SCROLL_DISTANCE_LANDSCAPE = 1020;
+// 2026-05-18 — +180 per R22 16:9 #1 (Ignat: добавить расстояние прокрутки)
+export const TOTAL_SCROLL_DISTANCE_LANDSCAPE = 1200;
 // Legacy keyframe arrays kept for reference only — no longer used in scene files.
 export const SCROLL_FRAMES  = [115, 150, 175, 195, 265];
 export const SCROLL_OFFSETS = [0, -120, -400, -900, -1100];
