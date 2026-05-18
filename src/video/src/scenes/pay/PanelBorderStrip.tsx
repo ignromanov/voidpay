@@ -14,4 +14,4 @@ export const PanelBorderStrip: React.FC = () => (
       background: linear-gradient(to right, rgb(16, 185, 129), rgb(52, 211, 153)) !important;
     }
   `}</style>
-);
+)
