@@ -51,7 +51,7 @@ export const CreateSceneLandscape: React.FC<Props> = ({
   glowSpread,
   glowIntensity,
   buttonGlowOpacity,
-  formOpacity,
+  formOpacity: _formOpacity,
   hookVariant = "v1",
 }) => {
   const { fps } = useVideoConfig();
@@ -133,13 +133,15 @@ export const CreateSceneLandscape: React.FC<Props> = ({
             zIndex: 2,
           }}
         >
+          {/* formOpacity prop intentionally overridden — landscape form stays fully opaque during slide-right motion;
+              no explicit hide phase exists, so opacity stays 1.0 throughout the scene. */}
           <Card
             style={{
               width: "100%",
               height: formHeight * 1.2,
               padding: "32px",
               overflow: "hidden",
-              opacity: formOpacity,
+              opacity: 1,
               backgroundColor: "rgba(14,14,19,0.95)",
               border: "1px solid rgba(63,63,70,0.8)",
               boxShadow: `0 16px 50px rgba(0,0,0,0.5), 0 0 ${glowSpread}px rgba(124,58,237,${glowIntensity * 0.5}), 0 0 60px rgba(124,58,237,${buttonGlowOpacity * 0.4}), 0 0 120px rgba(124,58,237,${buttonGlowOpacity * 0.2})`,
