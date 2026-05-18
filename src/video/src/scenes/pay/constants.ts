@@ -19,24 +19,26 @@ export const PAPER_PROPS_PAID = {
   variant: 'default',
 } as const
 
-// Phase timing — round-10b (S3-local frames):
-//   0– 99   idle:disconnected   ("Connect Wallet" button)  [100fr, -50fr from r9]
-// 100–109   press-scale on Connect
-// 100–139   connecting loader   (~40fr, +15fr breathing room)
-// 140–189   switching loader    (~50fr; unchanged)
-// 190–299   sending loader      (~110fr; unchanged) — Magic Dust window
-// 300–419   confirming          (~120fr, +35fr; paper flips PAID here per defect-4)
-// 420–464   success             (~45fr; panel visible with emerald gradient bar — defect-1)
-// 465–484   panel exit          (~20fr)
-// 485–574   paper-alone PAID    (~90fr finalized hold)
+// Phase timing — R23 (S3-local frames):
+//   0– 99   idle:disconnected   ("Connect Wallet" button)
+// 100       press-scale on Connect + PHASE_CONNECTING (connecting loader)
+// 140–189   PHASE_SWITCHING     (switching loader, 50fr)
+// 190–299   PHASE_SENDING       (sending loader + Magic Dust window, 110fr)
+// 300       SUCCESS             (paper flips PAID, single tick, emerald gradient bar)
+// 300–379   PHASE_FINALIZING    (finalizing window, 80fr, single tick visible)
+// 380       FINALIZE            (double-tick checkmarks appear + animate, 25fr animation)
+// 380–439   double-tick hold + "Payment confirmed" caption window
+// 440–459   PANEL_EXIT          (panel slides/fades out, 20fr)
+// 460–574   paper-alone PAID    (115fr finalized hold with "Not our servers" + "Works…")
+// 575–604   PACK_START          (pack-into-URL, 30fr, unchanged)
 //
 // Single-press model: Connect only — Switch and Pay absorbed into loaders.
 export const PRESS_CONNECT = 100
 export const PHASE_CONNECTING = 100
 export const PHASE_SWITCHING = 140 // absorbs wrong-network; starts right after connecting
 export const PHASE_SENDING = 190 // absorbs ready; starts right after switching
-export const PHASE_CONFIRMING = 300
-export const SUCCESS = 420
+export const PHASE_FINALIZING = 300
+export const SUCCESS = 300 // paper flips PAID, single tick appears
 // WalletPill shows connected once connecting phase begins (100).
 export const PHASE_CONNECTED = PHASE_CONNECTING
 // Magic Dust window — aligned with sending phase (190–300).
@@ -44,14 +46,14 @@ export const MAGIC_DUST_HIGHLIGHT = 190
 export const MAGIC_DUST_PEAK_END = 300
 export const CONFIRMATIONS_REQUIRED = 12
 
-// FINALIZE — emerald "confirmation finalized" moment, 40fr after SUCCESS.
+// FINALIZE — double-tick checkmarks animate here, 25fr after SUCCESS+80fr finalizing window.
 // Used by: caption choreography (Payment confirmed chip starts here),
 // double-tick blink animation (checkmarks pulse for emphasis).
-export const FINALIZE = 460
+export const FINALIZE = 380
 
-// Panel exits at 465-484, giving paper-alone window (485-574). Defect-1: SUCCESS+45fr gap for emerald bar.
-export const PANEL_EXIT_START = 465 // SUCCESS + 45fr (emerald border visible 1.5s)
-export const PANEL_EXIT_END = 485 // +20fr exit duration
+// Panel exits at 440-459, giving paper-alone window (460-574).
+export const PANEL_EXIT_START = 440
+export const PANEL_EXIT_END = 460 // +20fr exit duration
 
 // BrowserChrome bar heights — scaled per aspect ratio (B2: ×1.2 landscape, ×1.5 portrait).
 // Base: padding(18×2=36) + dot(15) = 51px
