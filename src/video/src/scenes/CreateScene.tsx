@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
-import { DEMO_FROM_ADDRESS } from "../constants/demo-invoice";
+import { DEMO_FROM_ADDRESS, DEMO_NETWORK_ID } from "../constants/demo-invoice";
 import { CreateSceneLandscape } from "./create/CreateSceneLandscape";
 import { CreateScenePortrait } from "./create/CreateScenePortrait";
 import type { HookVariant } from "./captions/thesis-captions";
@@ -69,7 +69,7 @@ export const CreateScene: React.FC<Props> = ({ hookVariant = "v1" }) => {
       ...(lineItems && { lineItems }),
       ...(networkLabel && { networkLabel }),
       ...(tokenSymbol && { tokenSymbol }),
-      ...(frame >= NETWORK_APPEAR && { chainId: 42161 }),
+      ...(frame >= NETWORK_APPEAR && { chainId: DEMO_NETWORK_ID }),
       // C3: toggle off → on at MAGIC_DUST_TOGGLE_FRAME (good anchor for Spark hint copy)
       magicDustEnabled: frame >= MAGIC_DUST_TOGGLE_FRAME,
     };

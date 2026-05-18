@@ -164,7 +164,7 @@ export const PayScenePortrait: React.FC<Props> = ({ hookVariant = 'v1' }) => {
       />
       <RemotionFakeToast
         variant="success"
-        title="Network switched to Arbitrum"
+        title="Network switched to Base"
         startAt={190}
         hold={40}
         stackOffset={0}

@@ -26,10 +26,10 @@ const fontsHandle = delayRender("Load video fonts");
 ensureFonts().then(() => continueRender(fontsHandle));
 
 // Seed the real @/entities/creator store so @/widgets/network-background
-// and any other theme-aware widgets render Arbitrum colors for the demo.
+// and any other theme-aware widgets render Base colors for the demo.
 // Module-level call runs before any composition renders — persist middleware
 // in Remotion's headless Chromium has no prior localStorage to rehydrate from.
-useCreatorStore.setState({ networkTheme: "arbitrum" });
+useCreatorStore.setState({ networkTheme: "base" });
 
 // Seed the real @/entities/invoice store so the real `PaymentPanel` widget
 // resolves a `paidAt` value for its paid-state `PaidConfirmation` subcomponent

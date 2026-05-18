@@ -2,12 +2,12 @@ import type { ComponentProps } from "react";
 import { InvoicePaper } from "@/widgets/invoice-paper";
 import { DEMO_INVOICE } from "../../constants/demo-invoice";
 
-// Creative brief §2: Alex · UI Design · $250 USDC · Arbitrum
-export const INVOICE_FROM = "Alex";
-export const INVOICE_ITEM = "UI Design";
-export const INVOICE_AMOUNT = "250.00";
+// R23-T: You · Support VoidPay · 1.000042 USDC · Base (treasury)
+export const INVOICE_FROM = "You";
+export const INVOICE_ITEM = "Support VoidPay";
+export const INVOICE_AMOUNT = "1.00";
 export const INVOICE_TOKEN = "USDC";
-export const INVOICE_NETWORK = "Arbitrum";
+export const INVOICE_NETWORK = "Base";
 
 // Phase frames — round 9a: 2× field cascade + InvoicePaper post-fill + button-after-paper.
 // Empty hold 0-60 unchanged. Field cascade widened from 65fr → 130fr (Ignat: "растянуть в 2 раза").
