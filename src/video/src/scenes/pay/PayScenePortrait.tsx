@@ -16,7 +16,6 @@ import {
   SUCCESS,
   PAPER_PROPS_PENDING,
   PAPER_PROPS_PAID,
-  PACK_Y_OFFSET_PORTRAIT,
 } from './constants'
 import { PanelCascadeStyle } from './PanelCascadeStyle'
 import { PanelBorderStrip } from './PanelBorderStrip'
@@ -62,8 +61,8 @@ export const PayScenePortrait: React.FC<Props> = ({ hookVariant = 'v1' }) => {
     extrapolateRight: 'clamp',
   })
 
-  // F2: pack-into-URL animation — portrait-specific Y offset.
-  const paperPackTransform = `scale(${1 - packProgress}) translateY(${-PACK_Y_OFFSET_PORTRAIT * packProgress}px)`
+  // F2: pack-into-URL animation — paper implodes to its own center.
+  const paperPackTransform = `scale(${1 - packProgress})`
 
   return (
     <AbsoluteFill
@@ -84,7 +83,7 @@ export const PayScenePortrait: React.FC<Props> = ({ hookVariant = 'v1' }) => {
           width,
           height: height - CHROME_HEIGHT_PORTRAIT,
           transform: paperPackTransform,
-          transformOrigin: 'center top',
+          transformOrigin: 'center',
           opacity: paperPackOpacity,
         }}
       >

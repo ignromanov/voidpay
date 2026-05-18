@@ -18,7 +18,6 @@ import {
   SUCCESS,
   PAPER_PROPS_PENDING,
   PAPER_PROPS_PAID,
-  PACK_Y_OFFSET_LANDSCAPE,
 } from './constants'
 import { PanelCascadeStyle } from './PanelCascadeStyle'
 import { PanelBorderStrip } from './PanelBorderStrip'
@@ -72,8 +71,8 @@ export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = 'v1' }) => {
   const haloLeft = paperLeft + INVOICE_BASE_WIDTH * paperScale - 80
   const haloTop = paperTop + paperScaledH * 0.72
 
-  // F2: pack-into-URL animation — landscape-specific Y offset.
-  const paperPackTransform = `scale(${1 - packProgress}) translateY(${-PACK_Y_OFFSET_LANDSCAPE * packProgress}px)`
+  // F2: pack-into-URL animation — paper implodes to its own center.
+  const paperPackTransform = `scale(${1 - packProgress})`
 
   // R20-B/L5: slide invoice to horizontal center when Pay panel exits.
   // Left-column paper center is at X=colWidth/2 (≈480px). Canvas center is width/2 (≈960px).
@@ -101,7 +100,7 @@ export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = 'v1' }) => {
           width: colWidth,
           height: colH,
           transform: `translateX(${invoiceCenterX}px) ${paperPackTransform}`,
-          transformOrigin: 'center top',
+          transformOrigin: 'center',
           opacity: paperPackOpacity,
         }}
       >
