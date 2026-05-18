@@ -33,7 +33,6 @@ export const ShareScenePortrait: React.FC<Props> = ({
   width,
   modalTranslateY,
   modalOpacity,
-  showQR,
   copied,
   linkTabOpacity,
   qrTabOpacity,
@@ -184,24 +183,36 @@ export const ShareScenePortrait: React.FC<Props> = ({
              shrink the container when Link goes position:absolute at swap frame. */}
         {/* F8 surgical: body side padding = 36px */}
         <div style={{ padding: "0 36px 36px 36px", position: "relative" }}>
-          {/* D44: fixed-height inner wrapper — prevents container reflow on tab swap.
+          {/* R22-D fix: both tabs ALWAYS position:absolute in the relative wrapper —
+               canonical crossfade pattern. Previously Link was relative until showQR
+               flipped, so during the 10fr crossfade both tabs sat in normal flow and
+               stacked vertically (Copied! visible above QR). minHeight 490 already
+               reserves the height of the taller tab so absolute positioning is safe.
+               D44: fixed-height inner wrapper — prevents container reflow on tab swap.
                LinkTab height: Permalink(~132) + CopyBtn(78) + SocialRow(60) + PrivacyNote(~50)
                + gaps(30×3=90) ≈ 410px. QRTab ≈ 441px. minHeight=490 keeps constant through swap. */}
           <div style={{ position: "relative", minHeight: 490 }}>
-            {/* Link tab — fades out at COPY_CLICK_FRAME; absolute while fading so QR holds height */}
+            {/* Link tab — fades out during crossfade */}
             <div style={{
               opacity: linkTabOpacity,
-              position: showQR ? "absolute" : "relative",
-              top: showQR ? 0 : undefined,
-              left: showQR ? 0 : undefined,
-              right: showQR ? 0 : undefined,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
               pointerEvents: linkTabOpacity > 0 ? "auto" : "none",
             }}>
               <RemotionLinkTab url={SHARE_URL} copied={copied} />
             </div>
-            {/* QR tab — pre-mounted 1 frame before swap so no empty-box frame at TAB_SWAP_FRAME */}
+            {/* QR tab — pre-mounted 1fr before swap so no empty-box frame at TAB_SWAP_FRAME */}
             {frame >= TAB_SWAP_FRAME - 1 && (
-              <div style={{ opacity: qrTabOpacity }}>
+              <div style={{
+                opacity: qrTabOpacity,
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                pointerEvents: qrTabOpacity > 0 ? "auto" : "none",
+              }}>
                 <RemotionQRTab url={SHARE_URL} />
               </div>
             )}
