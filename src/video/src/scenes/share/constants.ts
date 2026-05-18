@@ -1,6 +1,12 @@
-import { DEMO_INVOICE, DEMO_INVOICE_URL_SHARE } from "../../constants/demo-invoice";
+import { DEMO_INVOICE, DEMO_INVOICE_URL } from "../../constants/demo-invoice";
 
-export const SHARE_URL = DEMO_INVOICE_URL_SHARE;
+/**
+ * Bare /pay URL (no ?og=...) — production ShareModal default (OG toggle OFF).
+ * Drives QR encoding in ShareScene; sparser QR = easier to scan from a screen.
+ * For social posting (Twitter/Telegram), use DEMO_INVOICE_URL_SHARE which keeps
+ * the ?og= param for social preview cards.
+ */
+export const SHARE_URL = DEMO_INVOICE_URL;
 
 // R22-C: 10fr crossfade — 1fr was imperceptibly fast (hard-cut flicker in Studio at f230).
 export const TAB_CROSSFADE_DURATION = 10;
