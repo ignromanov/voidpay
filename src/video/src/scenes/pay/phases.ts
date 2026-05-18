@@ -2,20 +2,21 @@ import { interpolate } from "remotion";
 import type { PaymentStep, IdleSubState } from "@/features/payment";
 import {
   SUCCESS,
-  PHASE_CONFIRMING,
+  PHASE_FINALIZING,
   PHASE_SENDING,
   PHASE_SWITCHING,
   PHASE_CONNECTING,
   PRESS_CONNECT,
 } from "./constants";
 
-// round-9s: stepAt reflects simplified sequence — no wrong-network or ready substates.
-// Sequence: disconnected → connecting → switching → sending → confirming → success.
+// R23: stepAt reflects updated sequence — SUCCESS@300 collapses confirming into success.
+// No 'confirming' step in video; differentiation between single/double tick is via panelFinalized.
+// Sequence: disconnected → connecting → switching → sending → success.
 export const stepAt = (frame: number): { step: PaymentStep; idleSubState: IdleSubState } => {
-  if (frame >= SUCCESS)           return { step: 'success',    idleSubState: 'ready' };
-  if (frame >= PHASE_CONFIRMING)  return { step: 'confirming', idleSubState: 'ready' };
-  if (frame >= PHASE_SENDING)     return { step: 'sending',    idleSubState: 'ready' };
-  if (frame >= PHASE_SWITCHING)   return { step: 'switching',  idleSubState: 'ready' };
+  if (frame >= SUCCESS)           return { step: 'success',   idleSubState: 'ready' };
+  if (frame >= PHASE_FINALIZING)  return { step: 'success',   idleSubState: 'ready' };
+  if (frame >= PHASE_SENDING)     return { step: 'sending',   idleSubState: 'ready' };
+  if (frame >= PHASE_SWITCHING)   return { step: 'switching', idleSubState: 'disconnected' };
   if (frame >= PHASE_CONNECTING)  return { step: 'connecting', idleSubState: 'disconnected' };
   return { step: 'idle', idleSubState: 'disconnected' };
 };

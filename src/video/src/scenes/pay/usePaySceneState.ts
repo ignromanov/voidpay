@@ -6,6 +6,7 @@ import {
   MAGIC_DUST_PEAK_END,
   PANEL_EXIT_START,
   PANEL_EXIT_END,
+  FINALIZE,
   DEMO_TX_HASH,
   CONFIRMATIONS_REQUIRED,
   PACK_START_LOCAL,
@@ -24,6 +25,7 @@ export type PaySceneState = {
   magicDustPulseOpacity: number
   panelTxHash: string | undefined
   paperPaid: boolean
+  panelFinalized: boolean
   panelExit: number
   panelExitOpacity: number
   walletOpacity: number
@@ -39,8 +41,9 @@ export function usePaySceneState(_hookVariant: HookVariant): PaySceneState {
 
   const { step, idleSubState } = stepAt(frame)
 
+  // R23: no 'confirming' step in video — step maps directly to 'success' from frame 300.
   const panelStatus: 'pending' | 'confirming' | 'paid' =
-    step === 'success' ? 'paid' : step === 'confirming' ? 'confirming' : 'pending'
+    step === 'success' ? 'paid' : 'pending'
 
   const ctaPressTriggerFrame = ctaPressTrigger(frame)
 
@@ -61,9 +64,13 @@ export function usePaySceneState(_hookVariant: HookVariant): PaySceneState {
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   )
 
-  const panelTxHash = step === 'confirming' || step === 'success' ? DEMO_TX_HASH : undefined
+  const panelTxHash = step === 'success' ? DEMO_TX_HASH : undefined
 
-  const paperPaid = step === 'confirming' || step === 'success'
+  // paperPaid flips at SUCCESS (300) — step === 'success' covers frame >= 300.
+  const paperPaid = step === 'success'
+
+  // panelFinalized: double-tick mode — true from FINALIZE (380) onward.
+  const panelFinalized = frame >= FINALIZE
 
   const panelExit = interpolate(frame, [PANEL_EXIT_START, PANEL_EXIT_END], [0, 24], {
     extrapolateLeft: 'clamp',
@@ -101,6 +108,7 @@ export function usePaySceneState(_hookVariant: HookVariant): PaySceneState {
     magicDustPulseOpacity,
     panelTxHash,
     paperPaid,
+    panelFinalized,
     panelExit,
     panelExitOpacity,
     walletOpacity,
