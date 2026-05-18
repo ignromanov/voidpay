@@ -62,4 +62,6 @@ export interface PaymentPanelProps {
   onShareOpen?: () => void
   /** Called when user clicks the minimize button (renders the button when provided) */
   onMinimize?: () => void
+  /** Opacity override for the checkmark badge in PaidConfirmation (video blink animation) */
+  checkmarkOpacity?: number
 }
