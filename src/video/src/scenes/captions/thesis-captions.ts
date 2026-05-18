@@ -44,8 +44,9 @@ export const getHookCaption = (variant: HookVariant, isVertical: boolean): Capti
   };
 };
 
-// S4 closing caption — variant-aware, aspect-aware timing/size
-export const getOutroCaption = (isVertical: boolean, hookVariant: HookVariant = "v1"): CaptionEntry => {
+// S4 closing caption — variant-aware, aspect-aware timing/size.
+// v1/v3: returns null — "Works even if we shut down." moved to pay scene (R23 pay-captions Works-emerald 500-575).
+export const getOutroCaption = (isVertical: boolean, hookVariant: HookVariant = "v1"): CaptionEntry | null => {
   if (hookVariant === "v2") {
     return {
       text:           isVertical
@@ -60,14 +61,5 @@ export const getOutroCaption = (isVertical: boolean, hookVariant: HookVariant = 
       variant:        "violet",
     };
   }
-  return {
-    text:           "Works even if we shut down.",
-    startAt:        5,
-    endAt:          isVertical ? 70 : 75,
-    weight:         700,
-    emphasizedWord: "shut down",
-    position:       isVertical ? 50 : 80,
-    fontSize:       isVertical ? 86 : 81,
-    variant:        "violet",
-  };
+  return null;
 };

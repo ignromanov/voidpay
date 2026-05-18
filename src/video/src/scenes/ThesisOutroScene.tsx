@@ -56,8 +56,9 @@ export const ThesisOutroScene: React.FC<ThesisOutroSceneProps> = ({ hookVariant 
   const urlFontSize  = isPortrait ? 56 : 48;
 
   // Round-9o: caption canonical sub size 60 (was 74); position 69 lower-third (mirror S0)
-  const captionPosition = isVertical ? 69 : outroCap.position;
-  const captionFontSize = isVertical ? 50 : outroCap.fontSize;
+  // outroCap is null for v1/v3 (bare outro — Works moved to pay scene R23).
+  const captionPosition = isVertical ? 69 : (outroCap?.position ?? 80);
+  const captionFontSize = isVertical ? 50 : (outroCap?.fontSize ?? 81);
 
   return (
     <AbsoluteFill
@@ -161,18 +162,19 @@ export const ThesisOutroScene: React.FC<ThesisOutroSceneProps> = ({ hookVariant 
         </PulseGlow>
       </AbsoluteFill>
 
-      {/* Closing caption — "Works even if we shut down." per round-9l spec §3/§4 S4 */}
-      {/* position/fontSize overridden to round-9m spec: 71% / compact 74px */}
-      <Caption
-        text={outroCap.text}
-        startAt={outroCap.startAt}
-        endAt={outroCap.endAt}
-        weight={outroCap.weight}
-        emphasizedWord={outroCap.emphasizedWord}
-        position={captionPosition}
-        fontSize={captionFontSize}
-        variant={outroCap.variant}
-      />
+      {/* Closing caption — v2 only; v1/v3 bare outro (Works moved to pay scene R23) */}
+      {outroCap && (
+        <Caption
+          text={outroCap.text}
+          startAt={outroCap.startAt}
+          endAt={outroCap.endAt}
+          weight={outroCap.weight}
+          emphasizedWord={outroCap.emphasizedWord}
+          position={captionPosition}
+          fontSize={captionFontSize}
+          variant={outroCap.variant}
+        />
+      )}
     </AbsoluteFill>
   );
 };
