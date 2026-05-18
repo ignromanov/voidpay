@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
-import { DEMO_FROM_ADDRESS, DEMO_NETWORK_ID } from "../constants/demo-invoice";
+import { DEMO_TREASURY_ADDRESS, DEMO_NETWORK_ID } from "../constants/demo-invoice";
 import { CreateSceneLandscape } from "./create/CreateSceneLandscape";
 import { CreateScenePortrait } from "./create/CreateScenePortrait";
 import type { HookVariant } from "./captions/thesis-captions";
@@ -41,8 +41,8 @@ export const CreateScene: React.FC<Props> = ({ hookVariant = "v1" }) => {
   // Frame-driven snapshot for the real InvoiceFormView.
   const viewValue = useMemo(() => {
     const fromName = typewrite(INVOICE_FROM, frame, FROM_START);
-    const walletAddress = frame >= WALLET_APPEAR ? DEMO_FROM_ADDRESS : undefined;
-    const client = frame >= CLIENT_APPEAR ? { name: "VoidPay" } : undefined;
+    const walletAddress = frame >= WALLET_APPEAR ? DEMO_TREASURY_ADDRESS : undefined;
+    const client = frame >= CLIENT_APPEAR ? { name: "You" } : undefined;
 
     // Line item appears progressively: description first, then rate (price)
     const lineItems = frame >= LINE_DESC_APPEAR

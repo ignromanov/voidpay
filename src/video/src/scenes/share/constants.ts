@@ -1,4 +1,4 @@
-import { DEMO_FROM_ADDRESS, DEMO_INVOICE } from "../../constants/demo-invoice";
+import { DEMO_TREASURY_ADDRESS, DEMO_INVOICE } from "../../constants/demo-invoice";
 
 // Full URL — 4x longer hash payload (~560 chars) so the LinkTab URL visibly
 // truncates with ellipsis and reads as "very long / data-dense".
@@ -11,7 +11,7 @@ export const HASH_PAYLOAD =
   "AxgC4DmAhgBYAuADgE4CuN4IgbghgTg9gRgFwAYEsA2UBOB7AjgKYCOAxgC4DmAhgBYA" +
   "uADgE4CuAxgC4DmAhgBYAuADgE4CuAxgC4DmAhgBYAuADgE4Cu";
 
-export const SHARE_URL = `https://voidpay.xyz/pay?og=VP-0001_250_USDC_arb_${DEMO_FROM_ADDRESS}#${HASH_PAYLOAD}`;
+export const SHARE_URL = `https://voidpay.xyz/pay?og=VP-0001_250_USDC_arb_${DEMO_TREASURY_ADDRESS}#${HASH_PAYLOAD}`;
 
 // R22-C: 10fr crossfade — 1fr was imperceptibly fast (hard-cut flicker in Studio at f230).
 export const TAB_CROSSFADE_DURATION = 10;

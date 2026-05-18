@@ -2,8 +2,8 @@ import type { ComponentProps } from "react";
 import { InvoicePaper } from "@/widgets/invoice-paper";
 import { DEMO_INVOICE } from "../../constants/demo-invoice";
 
-// R23-T: You · Support VoidPay · 1.000042 USDC · Base (treasury)
-export const INVOICE_FROM = "You";
+// R23-T: VoidPay issues invoice to a generic payer; treasury receives payment.
+export const INVOICE_FROM = "VoidPay";
 export const INVOICE_ITEM = "Support VoidPay";
 export const INVOICE_AMOUNT = "1.00";
 export const INVOICE_TOKEN = "USDC";

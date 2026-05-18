@@ -4,8 +4,9 @@
  * Shape matches PartialInvoice from @/shared/lib/invoice-types so it drops
  * directly into real FSD components (InvoicePaper, PaperTotals, etc.).
  *
- * R23-T: treasury swap — demo now pays VoidPay treasury on Base.
- *   - From:      You (neutral payer placeholder)
+ * Semantics: VoidPay is the invoice ISSUER (from = gets paid).
+ *   - from:      VoidPay treasury — invoice issuer, receives payment
+ *   - client:    You (generic payer — walletAddress omitted)
  *   - Line item: Support VoidPay
  *   - Amount:    1.000042 USDC  (1 + Magic Dust 0.000042)
  *   - Network:   Base (chainId 8453)
@@ -14,15 +15,15 @@
  * Magic Dust: 42 atomic units (0.000042 USDC) encoded into `magicDust` and
  * baked into `total`. Matches the value highlighted in Scene 5.
  *
- * Recipient: VoidPay treasury 0xA8A1F79C4dAa2eC25Af2C91349A6F60c5b41160E
+ * Treasury: 0xA8A1F79C4dAa2eC25Af2C91349A6F60c5b41160E
  */
 
 import type { Address } from 'viem'
 import type { Invoice } from '@/shared/lib/invoice-types'
 
-// Placeholder payer address — neutral, no token holdings, not a precompile (precompiles end at 0x09)
-export const DEMO_FROM_ADDRESS =
-  '0x0000000000000000000000000000000000000001' as Address
+// VoidPay treasury — invoice issuer, receives payment
+export const DEMO_TREASURY_ADDRESS =
+  '0xA8A1F79C4dAa2eC25Af2C91349A6F60c5b41160E' as Address
 
 // Canonical Base USDC contract (Circle-issued)
 export const DEMO_TOKEN_ADDRESS =
@@ -66,12 +67,12 @@ export const DEMO_INVOICE: Invoice = {
   tokenAddress: DEMO_TOKEN_ADDRESS,
   decimals: DEMO_DECIMALS,
   from: {
-    name: 'You',
-    walletAddress: DEMO_FROM_ADDRESS,
+    name: 'VoidPay',
+    walletAddress: DEMO_TREASURY_ADDRESS, // VoidPay treasury — receives payment
   },
   client: {
-    name: 'VoidPay',
-    walletAddress: '0xA8A1F79C4dAa2eC25Af2C91349A6F60c5b41160E' as Address, // VoidPay treasury
+    name: 'You',
+    // walletAddress omitted — generic payer
   },
   items: [
     {
