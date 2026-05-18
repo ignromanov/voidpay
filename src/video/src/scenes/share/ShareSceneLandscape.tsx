@@ -87,6 +87,7 @@ export const ShareSceneLandscape: React.FC<Props> = ({
             style={{
               position: "relative",
               width: "100%",
+              minHeight: 560,
               padding: 0,
               transform: `translateY(${modalTranslateY}px)`,
               opacity: modalOpacity,
