@@ -1,4 +1,4 @@
-import { AbsoluteFill, useVideoConfig } from 'remotion'
+import { AbsoluteFill, Easing, interpolate, useVideoConfig } from 'remotion'
 import { INVOICE_BASE_WIDTH, INVOICE_BASE_HEIGHT } from '@/widgets/invoice-paper'
 import { NetworkBackground } from '@/widgets/network-background'
 import { PaperBackdrop } from '../../components/PaperBackdrop'
@@ -11,6 +11,8 @@ import { NetworkBackgroundLayer } from '../../components/NetworkBackgroundLayer'
 import { WalletPill } from '../../components/WalletPill'
 import {
   CHROME_HEIGHT_LANDSCAPE,
+  PANEL_EXIT_END,
+  PANEL_EXIT_START,
   PANEL_MAX_WIDTH,
   PHASE_CONNECTED,
   SUCCESS,
@@ -72,6 +74,15 @@ export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = 'v1' }) => {
   // F2: pack-into-URL animation — landscape-specific Y offset.
   const paperPackTransform = `scale(${1 - packProgress}) translateY(${-PACK_Y_OFFSET_LANDSCAPE * packProgress}px)`
 
+  // R20-B/L5: slide invoice to horizontal center when Pay panel exits.
+  // Left-column paper center is at X=colWidth/2 (≈480px). Canvas center is width/2 (≈960px).
+  // Shift = width/4 (≈480px) moves paper center from X=480 to X=960.
+  const invoiceCenterX = interpolate(frame, [PANEL_EXIT_START, PANEL_EXIT_END], [0, width / 4], {
+    easing: Easing.inOut(Easing.cubic),
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  })
+
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
       <NetworkBackgroundLayer variant="soft" />
@@ -85,7 +96,7 @@ export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = 'v1' }) => {
           top: CHROME_HEIGHT_LANDSCAPE,
           width: colWidth,
           height: colH,
-          transform: paperPackTransform,
+          transform: `translateX(${invoiceCenterX}px) ${paperPackTransform}`,
           transformOrigin: 'center top',
           opacity: paperPackOpacity,
         }}
