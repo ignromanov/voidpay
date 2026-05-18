@@ -23,7 +23,7 @@ export const LandscapeCreateCascade: React.FC = () => (
     .remotion-create-landscape .h-9  { height: 40px !important; }
     .remotion-create-landscape .h-10 { height: 45px !important; }
     .remotion-create-landscape .h-11 { height: 51px !important; }
-    .remotion-create-landscape .h-14 { height: 51px !important; }
+    .remotion-create-landscape .h-14 { height: 96px !important; }
 
     /* Icon dimensions */
     .remotion-create-landscape .w-3 { width: 20px !important; }
