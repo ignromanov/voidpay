@@ -85,7 +85,10 @@ export const PaySceneLandscape: React.FC<Props> = ({ hookVariant = 'v1' }) => {
   })
 
   return (
-    <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
+    <AbsoluteFill
+      style={{ backgroundColor: COLORS.bg }}
+      className={magicDustPulseOpacity > 0.01 ? 'remotion-dust-glow' : undefined}
+    >
       <NetworkBackgroundLayer variant="soft" />
       <NetworkBackground />
 

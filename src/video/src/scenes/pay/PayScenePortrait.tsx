@@ -66,7 +66,10 @@ export const PayScenePortrait: React.FC<Props> = ({ hookVariant = 'v1' }) => {
   const paperPackTransform = `scale(${1 - packProgress}) translateY(${-PACK_Y_OFFSET_PORTRAIT * packProgress}px)`
 
   return (
-    <AbsoluteFill style={{ backgroundColor: COLORS.bg }}>
+    <AbsoluteFill
+      style={{ backgroundColor: COLORS.bg }}
+      className={magicDustPulseOpacity > 0.01 ? 'remotion-dust-glow' : undefined}
+    >
       <NetworkBackgroundLayer variant="soft" />
       <NetworkBackground />
 
