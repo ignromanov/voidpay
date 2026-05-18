@@ -26,11 +26,12 @@
     "check:block-drift": "pnpm dlx tsx scripts/measure-block-times.ts",
     "prepare": "husky",
     "video:studio": "remotion studio",
-    "video:render:full": "remotion render VoidPayDemo-16x9 public/video/voidpay-full.mp4",
-    "video:render:twitter": "remotion render VoidPayDemo-16x9 public/video/voidpay-twitter.mp4 --frames=0-360",
-    "video:render:landing": "remotion render VoidPayDemo-16x9 public/video/voidpay-landing.mp4 --frames=0-1200",
+    "video:render:v1-16x9": "remotion render VoidPayDemo-16x9-v1 public/video/voidpay-16x9-v1.mp4",
+    "video:render:v1-9x16": "remotion render VoidPayDemo-9x16-v1 public/video/voidpay-9x16-v1.mp4",
+    "video:render:v2-16x9": "remotion render VoidPayDemo-16x9-v2 public/video/voidpay-16x9-v2.mp4",
+    "video:render:v2-9x16": "remotion render VoidPayDemo-9x16-v2 public/video/voidpay-9x16-v2.mp4",
     "video:poster": "remotion still Thumbnail-Scene5 public/video/poster-scene5.png --frame=260",
-    "video:render:all": "pnpm video:render:full && pnpm video:render:twitter && pnpm video:render:landing && pnpm video:poster"
+    "video:render:all": "pnpm video:render:v1-16x9 && pnpm video:render:v1-9x16 && pnpm video:render:v2-16x9 && pnpm video:render:v2-9x16 && pnpm video:poster"
   },
   "keywords": [
     "crypto",
