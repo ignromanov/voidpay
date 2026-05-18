@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { useVideoConfig } from "remotion";
 import { FONT_MONO } from "../fonts";
+import { DEMO_INVOICE_URL } from "../constants/demo-invoice";
 
 /**
  * BrowserChrome — Mocks v2 .chrome spec (import point #6).
@@ -22,6 +24,15 @@ type BrowserChromeProps = {
 
 export const BrowserChrome: React.FC<BrowserChromeProps> = ({ opacity = 1 }) => {
   const { width, height } = useVideoConfig();
+
+  const urlPath = useMemo(() => {
+    try {
+      const u = new URL(DEMO_INVOICE_URL);
+      return u.pathname + u.search + u.hash;
+    } catch {
+      return '/pay';
+    }
+  }, []);
   const isPortrait = width < height;
 
   // Portrait: full scale × 1.5; landscape: compact ~75-80% of portrait values
@@ -82,9 +93,9 @@ export const BrowserChrome: React.FC<BrowserChromeProps> = ({ opacity = 1 }) => 
         <span style={{ color: "#34d399", flexShrink: 0 }}>🔒</span>
         {/* Host */}
         <span style={{ color: "#8b5cf6", fontWeight: 600, flexShrink: 0 }}>voidpay.xyz</span>
-        {/* Path — truncated with ellipsis */}
-        <span style={{ color: "#71717a", overflow: "hidden", textOverflow: "ellipsis" }}>
-          /pay#N4IgbghgTg9g…
+        {/* Path — real URL truncated by CSS ellipsis */}
+        <span style={{ color: "#71717a", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0, flex: 1 }}>
+          {urlPath}
         </span>
       </div>
 

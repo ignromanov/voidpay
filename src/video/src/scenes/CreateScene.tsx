@@ -57,10 +57,10 @@ export const CreateScene: React.FC<Props> = ({ hookVariant = "v1" }) => {
     const tokenSymbol = frame >= TOKEN_APPEAR ? INVOICE_TOKEN : undefined;
 
     return {
-      ...(frame >= INVOICE_NO_APPEAR && { invoiceId: "VP-DEMO-001" }),
+      ...(frame >= INVOICE_NO_APPEAR && { invoiceId: "INV-2026-203" }),
       ...(frame >= DATES_APPEAR && {
-        issuedAt: "2026-04-18",
-        dueAt: "2026-04-25",
+        issuedAt: "2026-05-18",
+        dueAt: "2027-05-17",
       }),
       from: fromName
         ? { name: fromName, ...(walletAddress && { walletAddress }) }

@@ -1,17 +1,6 @@
-import { DEMO_TREASURY_ADDRESS, DEMO_INVOICE } from "../../constants/demo-invoice";
+import { DEMO_INVOICE, DEMO_INVOICE_URL_SHARE } from "../../constants/demo-invoice";
 
-// Full URL — 4x longer hash payload (~560 chars) so the LinkTab URL visibly
-// truncates with ellipsis and reads as "very long / data-dense".
-// og prefix carries recipient address for the address callback (creative-brief-v2 §4).
-export const HASH_PAYLOAD =
-  "N4IgbghgTg9gRgFwAYEsA2UBOB7AjgKYCOAxgC4DmAhgBYAuADgE4CuAxgC4DmAhgBY" +
-  "AuADgE4CuAxgC4DmAhgBYAuADgE4CuN4IgbghgTg9gRgFwAYEsA2UBOB7AjgKYCOAxg" +
-  "C4DmAhgBYAuADgE4CuAxgC4DmAhgBYAuADgE4CuAxgC4DmAhgBYAuADgE4CuN4Igbghg" +
-  "Tg9gRgFwAYEsA2UBOB7AjgKYCOAxgC4DmAhgBYAuADgE4CuAxgC4DmAhgBYAuADgE4Cu" +
-  "AxgC4DmAhgBYAuADgE4CuN4IgbghgTg9gRgFwAYEsA2UBOB7AjgKYCOAxgC4DmAhgBYA" +
-  "uADgE4CuAxgC4DmAhgBYAuADgE4CuAxgC4DmAhgBYAuADgE4Cu";
-
-export const SHARE_URL = `https://voidpay.xyz/pay?og=VP-0001_250_USDC_arb_${DEMO_TREASURY_ADDRESS}#${HASH_PAYLOAD}`;
+export const SHARE_URL = DEMO_INVOICE_URL_SHARE;
 
 // R22-C: 10fr crossfade — 1fr was imperceptibly fast (hard-cut flicker in Studio at f230).
 export const TAB_CROSSFADE_DURATION = 10;
