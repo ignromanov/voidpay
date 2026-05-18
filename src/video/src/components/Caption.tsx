@@ -32,6 +32,8 @@ export type CaptionProps = {
   weight?: CaptionWeight;
   /** Single word from `text` to highlight with word-pop animation. Case-sensitive. */
   emphasizedWord?: string;
+  /** When set, the matching word renders with TikTok-style opacity oscillation (5Hz). */
+  flickerWord?: string;
   /** Entry spring config: "smooth" (default) or "overshoot" (Magic Dust hero). */
   springConfig?: CaptionSpringConfig;
 };
@@ -67,6 +69,7 @@ export const Caption: React.FC<CaptionProps> = (props) => {
     variant = "violet",
     weight = 500,
     emphasizedWord,
+    flickerWord,
     springConfig = "smooth",
   } = props;
 
@@ -84,6 +87,7 @@ export const Caption: React.FC<CaptionProps> = (props) => {
         variant={variant}
         weight={weight}
         emphasizedWord={emphasizedWord}
+        flickerWord={flickerWord}
         springConfig={springConfig}
         frame={frame}
         fps={fps}

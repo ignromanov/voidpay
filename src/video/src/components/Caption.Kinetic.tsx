@@ -20,6 +20,7 @@ type KineticCaptionProps = {
   variant: CaptionVariant;
   weight: CaptionWeight;
   emphasizedWord: string | undefined;
+  flickerWord: string | undefined;
   springConfig: CaptionSpringConfig;
   frame: number;
   fps: number;
@@ -29,7 +30,7 @@ type KineticCaptionProps = {
 
 export function KineticCaption({
   text, startAt, endAt, fontSize, position, variant,
-  weight, emphasizedWord, springConfig,
+  weight, emphasizedWord, flickerWord, springConfig,
   frame, fps, width,
 }: KineticCaptionProps) {
   const entryValue = computeEntry(frame, fps, startAt, weight, springConfig);
@@ -67,6 +68,12 @@ export function KineticCaption({
     { easing: Easing.inOut(Easing.sin), extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
+  // TikTok-style flicker: 6-frame cycle = 5Hz at 30fps
+  const flickerOpacity = interpolate(frame % 6, [0, 3, 6], [0.2, 1.0, 0.2], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
   const opacity = interpolate(entryValue, [0, 1], [0, 1]) * exitOpacity;
   // translateY on outer pill wrapper so entire pill slides in/out
   const translateY = interpolate(entryValue, [0, 1], [12, 0]);
@@ -91,37 +98,57 @@ export function KineticCaption({
   const baseColor = "#ffffff";
 
   const renderText = () => {
-    if (!emphasizedWord || !text.includes(emphasizedWord)) {
-      return <span style={{ color: baseColor }}>{text}</span>;
-    }
-
-    const idx = text.indexOf(emphasizedWord);
-    const before = text.slice(0, idx);
-    const after = text.slice(idx + emphasizedWord.length);
-
     const scale = computeWordPopScale(frame, startAt, endAt, weight);
     const colorOpacity = computeWordPopColorOpacity(frame, startAt, endAt);
-    // Blend white → accent colour using colorOpacity
     const accentValues = isEmerald ? [0x10, 0xb9, 0x81] : [0xa7, 0x8b, 0xfa];
     const r = Math.round(255 + (accentValues[0] - 255) * colorOpacity);
     const g = Math.round(255 + (accentValues[1] - 255) * colorOpacity);
     const b = Math.round(255 + (accentValues[2] - 255) * colorOpacity);
     const wordColor = `rgb(${r},${g},${b})`;
 
+    // Renders a plain text segment, further splitting on flickerWord if present and distinct from emphasizedWord
+    const renderSegment = (segment: string) => {
+      if (!flickerWord || flickerWord === emphasizedWord || !segment.includes(flickerWord)) {
+        return <span style={{ color: baseColor }}>{segment}</span>;
+      }
+      const fi = segment.indexOf(flickerWord);
+      const fb = segment.slice(0, fi);
+      const fa = segment.slice(fi + flickerWord.length);
+      return (
+        <>
+          {fb && <span style={{ color: baseColor }}>{fb}</span>}
+          <span style={{ color: baseColor, opacity: flickerOpacity }}>{flickerWord}</span>
+          {fa && <span style={{ color: baseColor }}>{fa}</span>}
+        </>
+      );
+    };
+
+    if (!emphasizedWord || !text.includes(emphasizedWord)) {
+      return renderSegment(text);
+    }
+
+    const idx = text.indexOf(emphasizedWord);
+    const before = text.slice(0, idx);
+    const after = text.slice(idx + emphasizedWord.length);
+
+    // If flickerWord matches emphasizedWord, flicker opacity replaces base opacity on that span
+    const isFlickered = flickerWord === emphasizedWord;
+
     return (
       <>
-        {before && <span style={{ color: baseColor }}>{before}</span>}
+        {before && renderSegment(before)}
         <span
           style={{
             color: wordColor,
             display: "inline-block",
             transform: `scale(${scale})`,
             transformOrigin: "center bottom",
+            ...(isFlickered ? { opacity: flickerOpacity } : {}),
           }}
         >
           {emphasizedWord}
         </span>
-        {after && <span style={{ color: baseColor }}>{after}</span>}
+        {after && renderSegment(after)}
       </>
     );
   };
