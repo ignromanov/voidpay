@@ -30,8 +30,8 @@
     "video:render:v1-9x16": "remotion render VoidPayDemo-9x16-v1 public/video/voidpay-9x16-v1.mp4",
     "video:render:v2-16x9": "remotion render VoidPayDemo-16x9-v2 public/video/voidpay-16x9-v2.mp4",
     "video:render:v2-9x16": "remotion render VoidPayDemo-9x16-v2 public/video/voidpay-9x16-v2.mp4",
-    "video:poster": "remotion still Thumbnail-Scene5 public/video/poster-scene5.png --frame=260",
-    "video:render:all": "pnpm video:render:v1-16x9 && pnpm video:render:v1-9x16 && pnpm video:render:v2-16x9 && pnpm video:render:v2-9x16 && pnpm video:poster"
+    "video:poster": "remotion still Thumbnail-Scene5 public/video/poster-scene5.png --frame=260 --image-format=png",
+    "video:render:all": "pnpm video:render:v1-16x9 & pnpm video:render:v1-9x16 & pnpm video:render:v2-16x9 & pnpm video:render:v2-9x16 & wait && pnpm video:poster"
   },
   "keywords": [
     "crypto",
