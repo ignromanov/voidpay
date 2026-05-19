@@ -193,8 +193,8 @@ importers:
         specifier: ^17.0.4
         version: 17.0.4
       lucide-static:
-        specifier: ^1.14.0
-        version: 1.14.0
+        specifier: ^1.16.0
+        version: 1.16.0
       postcss:
         specifier: ^8.5.14
         version: 8.5.14
@@ -4594,8 +4594,8 @@ packages:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
     engines: {node: '>=10'}
 
-  lucide-static@1.14.0:
-    resolution: {integrity: sha512-QnAHXC1nk8IXRBmO5ee9JcPiKEVeqf06tKF0bZipxlV++bwUVqvvliC3KA+beDg2lod+WXYIhHde5pQRHkUmqA==}
+  lucide-static@1.16.0:
+    resolution: {integrity: sha512-/EH96rDLRLNKaxuhqHHbmUPx3+qHS/kQRzI1ZGZqnxmh6ljX9yX0xC2UZlQSfBE/n84eNIaxKsv9P8sMiOdCww==}
 
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
@@ -11824,7 +11824,7 @@ snapshots:
     dependencies:
       yallist: 4.0.0
 
-  lucide-static@1.14.0: {}
+  lucide-static@1.16.0: {}
 
   lz-string@1.5.0: {}
 
