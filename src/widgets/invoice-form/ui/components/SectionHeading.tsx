@@ -1,5 +1,3 @@
-'use client'
-
 import type { SVGProps } from 'react'
 
 import { Heading } from '@/shared/ui/typography'

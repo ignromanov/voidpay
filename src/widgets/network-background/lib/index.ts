@@ -15,14 +15,3 @@ export { SVG_GENERATORS, generateSvg } from './svg-generators'
 // Shape Generation
 export type { ShapeZone, ShapeData } from './generate-shapes'
 export { generateShapes } from './generate-shapes'
-
-// PixiJS Modules
-export type { AnimatedShape, Viewport, ShapeDimensions, AnimationParams } from './pixi'
-export {
-  calculateShapeDimensions,
-  calculateAnimationParams,
-  getOrCreateContext,
-  createPixiShape,
-  animateShape,
-  setStaticPosition,
-} from './pixi'

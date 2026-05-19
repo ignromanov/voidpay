@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { Navigation } from '@/widgets/navigation'
-import { Footer } from '@/widgets/footer'
+import { FooterSlot } from '@/widgets/footer'
 import { NetworkBackground } from '@/widgets/network-background'
 import { Toaster } from '@/shared/ui/toaster'
 import { UmamiScript } from '@/features/analytics'
@@ -13,8 +13,8 @@ import './globals.css'
  *
  * Architecture:
  * - Static zinc-950 background (no client JS)
- * - Fixed Navigation (z-50) and Footer (z-40)
- * - Content area with proper padding for fixed elements
+ * - Fixed Navigation (z-50); FooterSlot in document flow (in-flow on landing/content, hidden on app routes)
+ * - Content area (flex-1) pushes Footer to bottom on short pages
  * - Dynamic NetworkBackground rendered by pages (client-side)
  *
  * PERFORMANCE OPTIMIZATION:
@@ -86,15 +86,15 @@ export default function RootLayout({
         {/* Layer 1: Dynamic network-themed background (Client, reads theme from store) */}
         <NetworkBackground />
 
-        {/* Navigation and Footer are fixed, content flows between them */}
+        {/* Navigation is fixed (z-50); Footer rendered conditionally via FooterSlot (in-flow on landing/content pages, hidden on (app) routes which use their own fixed footer) */}
         <Navigation />
 
-        {/* Main content area — pages render NetworkBackground + content here */}
-        <main className="relative z-10 flex-1 pt-[calc(4rem_+_env(safe-area-inset-top,0px))] pb-10 print:pt-0 print:pb-0">
+        {/* Main content area — flex-1 pushes Footer to bottom on short pages */}
+        <main className="relative z-10 flex-1 pt-[calc(4rem_+_env(safe-area-inset-top,0px))] print:pt-0 print:pb-0">
           {children}
         </main>
 
-        <Footer />
+        <FooterSlot />
         <Toaster />
         <UmamiScript />
       </body>

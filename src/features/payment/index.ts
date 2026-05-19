@@ -5,7 +5,7 @@
  */
 
 export { SmartPayButton } from './ui/SmartPayButton'
-export type { SmartPayButtonProps, PaymentError, PaymentStep, DevPaymentVisualStep } from './model/types'
+export type { SmartPayButtonProps, PaymentError, PaymentStep, IdleSubState, AnimatedIdleSubState, DevPaymentVisualStep } from './model/types'
 
 // Verification
 export { verifyNativeReceipt, verifyErc20Receipt } from './lib/verify-receipt'

@@ -8,6 +8,7 @@
 import { useEffect, useRef, createElement } from 'react'
 import { toast as sonnerToast } from 'sonner'
 import { formatAmount } from '@/shared/lib/amount-utils'
+import { useIsMobile } from '@/shared/lib'
 import { getNetworkName } from '@/entities/network'
 import type { PaymentStep, IdleSubState } from './types'
 
@@ -166,6 +167,7 @@ export function usePaymentToast({
   error,
   devOverride,
 }: UsePaymentToastParams): void {
+  const isMobile = useIsMobile()
   const stepsRef = useRef<StepDef[] | null>(null)
   const startSubStateRef = useRef<IdleSubState>(idleSubState)
 
@@ -264,8 +266,8 @@ export function usePaymentToast({
       return
     }
 
-    // Active step — show/update progress toast
-    if (activeKey) {
+    // Active step — show/update progress toast (desktop only; mobile uses RainbowKit inline)
+    if (activeKey && !isMobile) {
       const done = countDone(steps, activeKey)
       const checklist = buildChecklist(steps, activeKey, false)
       const title = `Payment Progress (${done + 1}/${steps.length})`
@@ -276,7 +278,7 @@ export function usePaymentToast({
         duration: Infinity,
       })
     }
-  }, [step, idleSubState, currency, subtotal, decimals, networkId, error, devOverride])
+  }, [step, idleSubState, currency, subtotal, decimals, networkId, error, devOverride, isMobile])
 
   // Cleanup on unmount
   useEffect(() => {

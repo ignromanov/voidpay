@@ -44,7 +44,7 @@ export function MagicDustBadge({
   const tooltipText = isAtomicMode ? `+${amount} ${currency}` : undefined
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1" data-magic-dust="">
       <FingerprintIcon size={10} className={`flex-shrink-0 ${styles.icon}`} aria-hidden="true" />
       <span className={`text-[9px] font-mono ${styles.label}`}>{label}:</span>
       <span className={`text-[9px] font-mono tabular-nums ${styles.amount}`}>

@@ -15,6 +15,8 @@ export const inputVariants = cva(
         default: 'border-zinc-800',
         /** Full error: prominent border after user leaves the field (blurred) */
         error: 'border-red-500/50 focus:border-red-500 focus:ring-red-500/50',
+        /** Read-only display: no focus ring, no interaction — used by View components */
+        readonly: 'border-zinc-800 cursor-default focus:ring-0 focus:border-zinc-800 focus:shadow-none',
       },
     },
     defaultVariants: {
@@ -87,12 +89,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     )
 
     // Determine input state based on error and focus
+    // - readOnly → 'readonly' state (no focus ring, cursor-default, used in View components)
     // - Focused + error → soft error (subtle hint while typing)
     // - Blurred + error → full error (prominent after leaving field)
     // - touched prop is kept for backwards compatibility but focus takes priority
     const isTouched = touched ?? false
-    const inputState = error && !isFocused && isTouched ? 'error' : 'default'
-    const showErrorMessage = error && !isFocused && isTouched
+    const inputState = props.readOnly ? 'readonly' : error && !isFocused && isTouched ? 'error' : 'default'
+    const showErrorMessage = !props.readOnly && error && !isFocused && isTouched
 
     return (
       <div className="w-full" data-field-error={inputState === 'error' || undefined}>

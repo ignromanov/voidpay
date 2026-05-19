@@ -44,7 +44,6 @@ interface InvoicePaperBaseProps {
    */
   showTexture?: boolean | undefined
 
-
   /**
    * Invoice URL for sharing/linking.
    * When provided with variant='full', the invoice title becomes a clickable link.

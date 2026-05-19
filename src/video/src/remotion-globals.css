@@ -1,0 +1,18 @@
+/**
+ * Remotion-only CSS overrides.
+ *
+ * Root layout (src/app/layout.tsx) uses Next.js `geist/font/{sans,mono}` which
+ * auto-generates CSS variables (--font-geist-sans, --font-geist-mono) via
+ * next/font and attaches them to <html>. Remotion has no Next.js layout,
+ * so we set these variables manually here. The font families themselves are
+ * registered via @remotion/fonts in ./fonts.ts and load from /public/fonts/.
+ */
+:root,
+html,
+body {
+  --font-geist-sans: 'Geist Sans';
+  --font-geist-mono: 'Geist Mono';
+  background: transparent;
+  margin: 0;
+  padding: 0;
+}

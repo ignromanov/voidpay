@@ -1,4 +1,4 @@
-export { useHydrated, useWagmiHydrating } from './hooks'
+export { useHydrated, useWagmiHydrating, useIsMobile } from './hooks'
 export { cn } from './utils'
 export { AUTO_SAVE_DEBOUNCE_MS, SEARCH_DEBOUNCE_MS } from './debounce'
 export { generateBlockieHash, getBlockieColor } from './blockie'
@@ -11,4 +11,4 @@ export {
 } from './custom-transport'
 
 // WebView detection
-export { isInAppBrowser } from './detect-webview'
+export { isInAppBrowser, isTelegramWebView, isHostileInAppBrowser } from './detect-webview'

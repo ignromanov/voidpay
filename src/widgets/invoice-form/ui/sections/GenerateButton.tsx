@@ -1,9 +1,7 @@
 'use client'
 
-import { Share2Icon, ArrowRightIcon, Loader2Icon } from '@/shared/ui/icons'
 import { toast } from '@/shared/lib/toast'
-
-import { Button } from '@/shared/ui/button'
+import { GenerateButtonView } from './GenerateButtonView'
 
 export interface GenerateButtonProps {
   onGenerate: (() => void) | undefined
@@ -13,14 +11,12 @@ export interface GenerateButtonProps {
 }
 
 /**
- * Generate invoice link button with glow variant.
+ * Generate invoice link button — Container.
+ * Delegates rendering to GenerateButtonView.
+ * Production: no Remotion frame, so hover/press are CSS-native (no prop injection).
  */
 export function GenerateButton({ onGenerate, canGenerate, isGenerating = false, onSubmitAttempt }: GenerateButtonProps) {
-  const handleClick = () => {
-    if (!canGenerate) {
-      onSubmitAttempt?.()
-      return
-    }
+  const handleGenerate = () => {
     if (onGenerate) {
       onGenerate()
     } else {
@@ -31,26 +27,11 @@ export function GenerateButton({ onGenerate, canGenerate, isGenerating = false, 
   }
 
   return (
-    <div className="pt-4">
-      <Button
-        onClick={handleClick}
-        disabled={isGenerating}
-        variant="glow"
-        className="h-14 w-full cursor-pointer text-base"
-      >
-        {isGenerating ? (
-          <>
-            <Loader2Icon className="mr-2 h-5 w-5 animate-spin" />
-            Generating...
-          </>
-        ) : (
-          <>
-            <Share2Icon size={20} className="mr-2" />
-            Generate Invoice Link
-            <ArrowRightIcon size={16} className="ml-2" />
-          </>
-        )}
-      </Button>
-    </div>
+    <GenerateButtonView
+      onGenerate={handleGenerate}
+      canGenerate={canGenerate}
+      isGenerating={isGenerating}
+      {...(onSubmitAttempt && { onSubmitAttempt })}
+    />
   )
 }

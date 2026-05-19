@@ -27,6 +27,13 @@ import { useWagmiHydrating } from '@/shared/lib'
 
 export interface WalletButtonProps {
   autoConnect?: boolean
+  /**
+   * Called when the user clicks "Connect" and wallet is not yet connected.
+   * If the callback returns true, the default openConnectModal is skipped.
+   * Used by widget-layer consumers (e.g. Navigation in Telegram WebView) to
+   * intercept the connect action without violating FSD layer boundaries.
+   */
+  onBeforeConnect?: () => boolean
 }
 
 /**
@@ -48,13 +55,18 @@ function AutoConnectTrigger() {
   return null
 }
 
-export function WalletButton({ autoConnect = false }: WalletButtonProps) {
+export function WalletButton({ autoConnect = false, onBeforeConnect }: WalletButtonProps) {
   const { address, isConnected } = useAccount()
   const chainId = useChainId()
   const { openConnectModal } = useConnectModal()
   const { openAccountModal } = useAccountModal()
   const { openChainModal } = useChainModal()
   const isHydrating = useWagmiHydrating()
+
+  function handleConnect() {
+    if (onBeforeConnect?.()) return
+    openConnectModal?.()
+  }
 
   // During wagmi hydration/reconnect we show an explicit disabled loading button
   // instead of hiding the UI. Hiding it (opacity:0) made clicks fall through and
@@ -88,7 +100,7 @@ export function WalletButton({ autoConnect = false }: WalletButtonProps) {
           variant="outline"
           size="sm"
           className="gap-1.5"
-          onClick={openConnectModal}
+          onClick={handleConnect}
         >
           <WalletIcon className="h-4 w-4" />
           Connect

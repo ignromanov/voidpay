@@ -4,16 +4,43 @@ import { render, screen, createNavigationMock } from '@/shared/lib/test-utils'
 // Mock next/navigation with shared factory
 vi.mock('next/navigation', () => createNavigationMock({ pathname: '/' }))
 
+// isHostileInAppBrowser — default false; individual tests override
+vi.mock('@/shared/lib', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/shared/lib')>()
+  return {
+    ...actual,
+    isHostileInAppBrowser: vi.fn(() => false),
+  }
+})
+
+// Mock OpenInBrowserGateProvider / useOpenInBrowserGate
+const mockGateOpen = vi.fn()
+vi.mock('@/widgets/in-app-browser-guard', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/widgets/in-app-browser-guard')>()
+  return {
+    ...actual,
+    OpenInBrowserGateProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    useOpenInBrowserGate: vi.fn(() => ({ isOpen: false, open: mockGateOpen, close: vi.fn() })),
+  }
+})
+
 // Mock WalletButton - it has its own tests
+let capturedOnBeforeConnect: (() => boolean) | undefined
 vi.mock('@/features/wallet-connect', () => ({
-  LazyWalletButton: () => <button data-testid="wallet-button">Connect Wallet</button>,
+  LazyWalletButton: ({ onBeforeConnect }: { onBeforeConnect?: () => boolean }) => {
+    capturedOnBeforeConnect = onBeforeConnect
+    return <button data-testid="wallet-button">Connect Wallet</button>
+  },
 }))
 
+import { isHostileInAppBrowser } from '@/shared/lib'
 import { Navigation } from '../Navigation'
 
 describe('Navigation', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    capturedOnBeforeConnect = undefined
+    vi.mocked(isHostileInAppBrowser).mockReturnValue(false)
   })
 
   describe('rendering', () => {
@@ -65,6 +92,30 @@ describe('Navigation', () => {
 
       const nav = container.querySelector('nav')
       expect(nav).toHaveClass('print:hidden')
+    })
+  })
+
+  describe('hostile IAB intercept', () => {
+    it('passes onBeforeConnect=undefined to WalletButton in regular browser', () => {
+      vi.mocked(isHostileInAppBrowser).mockReturnValue(false)
+      render(<Navigation />)
+      expect(capturedOnBeforeConnect).toBeUndefined()
+    })
+
+    it('passes onBeforeConnect callback to WalletButton in hostile in-app browser', () => {
+      vi.mocked(isHostileInAppBrowser).mockReturnValue(true)
+      render(<Navigation />)
+      expect(capturedOnBeforeConnect).toBeTypeOf('function')
+    })
+
+    it('onBeforeConnect calls gate.open() and returns true in hostile IAB', async () => {
+      vi.mocked(isHostileInAppBrowser).mockReturnValue(true)
+      render(<Navigation />)
+
+      const result = capturedOnBeforeConnect?.()
+
+      expect(result).toBe(true)
+      expect(mockGateOpen).toHaveBeenCalledOnce()
     })
   })
 })

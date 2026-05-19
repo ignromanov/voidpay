@@ -32,7 +32,7 @@ type LoadingState = 'idle' | 'loading' | 'ready' | 'error'
 type ErrorType = 'network' | 'unknown'
 
 type ProviderProps = { children: ReactNode }
-type WalletButtonProps = { autoConnect?: boolean }
+type WalletButtonProps = { autoConnect?: boolean; onBeforeConnect?: () => boolean }
 
 import { WAGMI_STORAGE_KEY } from '@/shared/config'
 
@@ -86,7 +86,11 @@ function PlaceholderButton({ onClick, isLoading }: { onClick: () => void; isLoad
  * If a persisted wallet connection is detected on mount, modules are
  * loaded eagerly so the connected state restores automatically.
  */
-export function LazyWalletButton() {
+interface LazyWalletButtonProps {
+  onBeforeConnect?: () => boolean
+}
+
+export function LazyWalletButton({ onBeforeConnect }: LazyWalletButtonProps = {}) {
   const [state, setState] = useState<LoadingState>('idle')
   const [errorType, setErrorType] = useState<ErrorType | null>(null)
   const [Web3Provider, setWeb3Provider] = useState<ComponentType<ProviderProps> | null>(null)
@@ -199,7 +203,10 @@ export function LazyWalletButton() {
   if (state === 'ready' && Web3Provider && WalletButtonComponent) {
     return (
       <Web3Provider>
-        <WalletButtonComponent autoConnect={activatedByClick.current} />
+        <WalletButtonComponent
+          autoConnect={activatedByClick.current}
+          {...(onBeforeConnect ? { onBeforeConnect } : {})}
+        />
       </Web3Provider>
     )
   }

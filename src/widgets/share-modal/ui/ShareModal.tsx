@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
-import { CheckCircleIcon } from '@/shared/ui/icons'
+import { CheckCircleIcon, LinkIcon, QrCodeIcon } from '@/shared/ui/icons'
 import {
   Dialog,
   DialogContent,
@@ -13,9 +13,9 @@ import { cn } from '@/shared/lib/utils'
 import { copyToClipboard } from '@/shared/lib/clipboard'
 import { toAbsoluteUrl } from '@/shared/config/urls'
 import { encodeOGPreview } from '@/features/invoice-codec'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui'
 import type { ShareModalProps, ShareTab } from '../lib/types'
 import { getTelegramShareUrl, getTwitterShareUrl, getEmailShareUrl } from '../lib/social-links'
-import { TabSwitcher } from './TabSwitcher'
 import { LinkTab } from './LinkTab'
 import { InvoiceSummary } from './InvoiceSummary'
 
@@ -35,6 +35,10 @@ const QRTab = dynamic(
   () => import('@/features/payment-qr').then(mod => ({ default: mod.QRTab })),
   { ssr: false, loading: () => <QRSkeleton /> }
 )
+
+function toShareTab(v: string): ShareTab {
+  return v === 'qr' ? 'qr' : 'link'
+}
 
 export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgToggle }: ShareModalProps) {
   const [activeTab, setActiveTab] = useState<ShareTab>('link')
@@ -100,24 +104,29 @@ export function ShareModal({ url, invoice, open, onOpenChange, includeOg, onOgTo
 
         <div className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6">
           {invoice && <InvoiceSummary invoice={invoice} />}
-          <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
-
-          <div className="min-h-[200px]">
-            {activeTab === 'link' ? (
-              <LinkTab
-                url={shareUrl}
-                copied={copied}
-                onCopy={handleCopy}
-                telegramUrl={telegramUrl}
-                twitterUrl={twitterUrl}
-                emailUrl={emailUrl}
-                includeOg={includeOg}
-                onOgToggle={onOgToggle}
-              />
-            ) : (
-              <QRTab url={shareUrl} />
-            )}
-          </div>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(toShareTab(v))}>
+            <TabsList className="w-full">
+              <TabsTrigger value="link" className="flex-1 gap-2"><LinkIcon size={16} /> Link</TabsTrigger>
+              <TabsTrigger value="qr" className="flex-1 gap-2"><QrCodeIcon size={16} /> QR Code</TabsTrigger>
+            </TabsList>
+            <div className="min-h-[200px]">
+              <TabsContent value="link">
+                <LinkTab
+                  url={shareUrl}
+                  copied={copied}
+                  onCopy={handleCopy}
+                  telegramUrl={telegramUrl}
+                  twitterUrl={twitterUrl}
+                  emailUrl={emailUrl}
+                  includeOg={includeOg}
+                  onOgToggle={onOgToggle}
+                />
+              </TabsContent>
+              <TabsContent value="qr">
+                <QRTab url={shareUrl} />
+              </TabsContent>
+            </div>
+          </Tabs>
         </div>
       </DialogContent>
     </Dialog>

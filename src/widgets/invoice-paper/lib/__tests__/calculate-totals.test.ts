@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateTotals } from '../calculate-totals'
+import { calculateTotals, hasNonZeroAmount } from '../calculate-totals'
 
 /**
  * Tests for calculateTotals with BigInt arithmetic
@@ -93,3 +93,24 @@ describe('calculateTotals', () => {
     expect(result.total).toBe('5.00')
   })
 })
+
+describe('hasNonZeroAmount', () => {
+  it('returns true for positive amounts', () => {
+    expect(hasNonZeroAmount('1.00')).toBe(true)
+    expect(hasNonZeroAmount('0.01')).toBe(true)
+    expect(hasNonZeroAmount('1,000.00')).toBe(true)
+  })
+
+  it('returns false for zero amounts', () => {
+    expect(hasNonZeroAmount('0.00')).toBe(false)
+    expect(hasNonZeroAmount('0')).toBe(false)
+    expect(hasNonZeroAmount('0.000000')).toBe(false)
+  })
+
+  it('returns false for null, undefined, and empty string', () => {
+    expect(hasNonZeroAmount(null)).toBe(false)
+    expect(hasNonZeroAmount(undefined)).toBe(false)
+    expect(hasNonZeroAmount('')).toBe(false)
+  })
+})
+

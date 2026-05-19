@@ -8,7 +8,7 @@ export const privacyContent = {
     title: 'Privacy Policy | VoidPay',
     description:
       'VoidPay privacy policy. Zero-backend architecture means your invoice data lives only in the URL hash fragment, never on our servers.',
-    lastUpdated: 'March 2026',
+    lastUpdated: 'May 2026',
   },
 
   sections: [
@@ -69,7 +69,9 @@ export const privacyContent = {
         'When you share an invoice link on social media, platforms like Twitter or Telegram request a preview image. To generate this preview, you can optionally include minimal metadata in the URL query string:',
       codeExample: 'https://voidpay.xyz/pay?og=INV-001_1250_USDC_arb_Acme#N4Ig...',
       additionalContent:
-        'The ?og= parameter contains only: invoice ID, amount, currency, network, and sender name. This is the only data that our server can see, and only if you choose to include it. The full invoice details remain private in the hash fragment.',
+        'The ?og= parameter contains only: invoice ID, amount, currency, network, and sender name. This is the only invoice data the application reads, and only if you choose to include it. The full invoice details remain private in the hash fragment.',
+      infrastructureNote:
+        'Vercel hosts the application and captures full request URLs (including any ?og=... query string) in standard access logs per their retention policy. The invoice hash fragment is never transmitted (RFC 3986) and stays out of all server-side logs. The ?og= token, however, exposes invoice ID, amount, currency, network, and sender name to infrastructure log retention if included. To avoid this exposure entirely, share the bare invoice link — the social preview will be omitted.',
       note: 'This feature is opt-in. Links without the ?og= parameter will show a generic VoidPay preview instead of invoice-specific details.',
     },
     {

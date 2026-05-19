@@ -49,6 +49,7 @@ export function PaymentPanel({
   reorgDetected,
   onShareOpen,
   onMinimize,
+  checkmarkOpacity,
 }: PaymentPanelProps) {
   const [qrOpen, setQrOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
@@ -201,6 +202,7 @@ export function PaymentPanel({
                 confirmations={confirmations}
                 finalized={finalized}
                 reorgDetected={reorgDetected}
+                checkmarkOpacity={checkmarkOpacity ?? 1}
               />
             </motion.div>
           )}

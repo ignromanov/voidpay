@@ -23,6 +23,7 @@ interface PaidConfirmationProps {
   confirmations?: ConfirmationProgress | undefined
   finalized?: boolean | undefined
   reorgDetected?: boolean | undefined
+  checkmarkOpacity?: number
 }
 
 export function PaidConfirmation({
@@ -36,6 +37,7 @@ export function PaidConfirmation({
   confirmations,
   finalized = false,
   reorgDetected = false,
+  checkmarkOpacity = 1,
 }: PaidConfirmationProps) {
   const formattedSubtotal = formatAmount(subtotal, decimals)
   const hasMagicDust = magicDust !== '0'
@@ -63,6 +65,7 @@ export function PaidConfirmation({
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          style={{ opacity: checkmarkOpacity }}
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)] text-emerald-500"
         >
           {finalized ? (
