@@ -21,11 +21,12 @@
  * webpack from statically analyzing and bundling them.
  */
 
-import { useState, useEffect, type ComponentType } from 'react'
+import { useState, useEffect, type ComponentType, type ReactNode } from 'react'
 import { useCreatorStore } from '@/entities/creator'
 import { HeroSection } from '../hero-section/HeroSection'
 import { SocialProofStrip } from '../social-proof'
 import { BelowFoldLoader } from './BelowFoldLoader'
+import { ComparisonTable } from '../comparison/ComparisonTable'
 
 /**
  * SEO-friendly placeholder for below-fold content.
@@ -52,7 +53,7 @@ function BelowFoldPlaceholder() {
  * LazyBelowFold - Loads below-fold sections ONLY when triggered
  */
 function LazyBelowFold() {
-  const [Component, setComponent] = useState<ComponentType<object> | null>(null)
+  const [Component, setComponent] = useState<ComponentType<{ comparisonTable: ReactNode }> | null>(null)
   const [loadError, setLoadError] = useState<Error | null>(null)
 
   useEffect(() => {
@@ -81,7 +82,7 @@ function LazyBelowFold() {
   }
 
   if (!Component) return <BelowFoldPlaceholder />
-  return <Component />
+  return <Component comparisonTable={<ComparisonTable />} />
 }
 
 export function LandingContent() {
