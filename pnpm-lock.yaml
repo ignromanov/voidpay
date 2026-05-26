@@ -121,8 +121,8 @@ importers:
         specifier: ^4.0.466
         version: 4.0.466(@swc/helpers@0.5.21)(bufferutil@4.1.0)(lightningcss@1.32.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(utf-8-validate@5.0.10)
       '@remotion/fonts':
-        specifier: ^4.0.0
-        version: 4.0.462(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        specifier: ^4.0.466
+        version: 4.0.466(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@remotion/tailwind-v4':
         specifier: ^4.0.0
         version: 4.0.462(@remotion/bundler@4.0.466(@swc/helpers@0.5.21)(bufferutil@4.1.0)(lightningcss@1.32.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(utf-8-validate@5.0.10))(webpack@5.105.0(lightningcss@1.32.0)(postcss@8.5.15))
@@ -1599,8 +1599,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@remotion/fonts@4.0.462':
-    resolution: {integrity: sha512-wVlXcLIr1JRVdWISuu5RPb1wKzqiSvQCZ8cU+iLEHsm/3k628ES8vy/dC/g8QF3u1ZHH/gHCQqCWU4ttAFMerw==}
+  '@remotion/fonts@4.0.466':
+    resolution: {integrity: sha512-vmpHwJCeg6cW6c9OpJevEfL1kffFAz9k9JDUIOo316bvlVrzSNlKUxYjHtz0QpZgjJy/TPdu93br87UqcyTt2g==}
 
   '@remotion/licensing@4.0.466':
     resolution: {integrity: sha512-77v5U6Qj5OgXon+auVm61zdotrtsYqpqW6Zqgc6mS8W43FeOXzgrPoxyJzq+dU4Qm9X0b3QSrncqmjgoxLKwQA==}
@@ -5279,12 +5279,6 @@ packages:
     resolution: {integrity: sha512-dYqgNSZbDwkaJ2ceRd9ojCGjBq+mOm9LmtXnAnEGyHhN/5R7iDW2TRw3h+o/jCFxus3P2LfWIIiwowAjANm7IA==}
     engines: {node: '>= 0.4'}
 
-  remotion@4.0.462:
-    resolution: {integrity: sha512-0bcwIiN7H0IcHtcDlfWHE2ho46RF0VmnVN1fAc26uMkonmAMMhqB+1aogfTE8eiYESEzFokh0lRc0t6pI8wzNA==}
-    peerDependencies:
-      react: '>=16.8.0'
-      react-dom: '>=16.8.0'
-
   remotion@4.0.466:
     resolution: {integrity: sha512-8b4xQssIN8QWazi3udvpuhesgj2O8tXj596BSEzpDwCZE4lofIO57NmwUOovfcMaVdARITcI9tw8CxNOvBpORw==}
     peerDependencies:
@@ -7759,9 +7753,9 @@ snapshots:
   '@remotion/compositor-win32-x64-msvc@4.0.466':
     optional: true
 
-  '@remotion/fonts@4.0.462(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
+  '@remotion/fonts@4.0.466(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:
-      remotion: 4.0.462(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      remotion: 4.0.466(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
     transitivePeerDependencies:
       - react
       - react-dom
@@ -12514,11 +12508,6 @@ snapshots:
       get-proto: 1.0.1
       gopd: 1.2.0
       set-function-name: 2.0.2
-
-  remotion@4.0.462(react-dom@19.2.5(react@19.2.5))(react@19.2.5):
-    dependencies:
-      react: 19.2.5
-      react-dom: 19.2.5(react@19.2.5)
 
   remotion@4.0.466(react-dom@19.2.5(react@19.2.5))(react@19.2.5):
     dependencies:
