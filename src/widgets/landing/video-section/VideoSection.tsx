@@ -56,8 +56,27 @@ export function VideoSection() {
 
         {/* Video */}
         <figure className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl shadow-violet-900/10">
+          {/* Mobile: 9:16 vertical — hidden at md+ breakpoint */}
+          {/* aspect-[9/16] reserves space before load (CLS prevention); max-h-[80vh] prevents dominating the viewport */}
+          <div className="mx-auto block max-h-[80vh] max-w-sm aspect-[9/16] md:hidden">
+            <video
+              className="h-full w-full object-cover"
+              src="/video/voidpay-9x16-v2.mp4"
+              poster="/video/poster-scene5.png"
+              muted
+              autoPlay={!prefersReducedMotion}
+              loop
+              playsInline
+              preload="none"
+              controls={prefersReducedMotion}
+              aria-label="VoidPay product walkthrough: creating and paying a $42 USDC invoice"
+              onPlay={handlePlay}
+            />
+          </div>
+
+          {/* Desktop: 16:9 landscape — hidden below md breakpoint */}
           {/* aspect-video = 16/9 — reserves space before video loads (CLS prevention) */}
-          <div className="aspect-video w-full">
+          <div className="hidden aspect-video w-full md:block">
             <video
               className="h-full w-full object-cover"
               src="/video/voidpay-16x9-v2.mp4"
@@ -72,6 +91,7 @@ export function VideoSection() {
               onPlay={handlePlay}
             />
           </div>
+
           <figcaption className="px-4 py-3 text-sm text-zinc-500">
             Silent by design. Captions tell the story.
           </figcaption>

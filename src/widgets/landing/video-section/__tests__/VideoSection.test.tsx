@@ -76,35 +76,85 @@ describe('VideoSection', () => {
   })
 
   describe('Video element', () => {
-    it('should render a video element with correct src and poster', () => {
+    it('should render two video elements (mobile 9:16 and desktop 16:9)', () => {
       render(<VideoSection />)
-      const video = document.querySelector('video')
-      expect(video).toBeInTheDocument()
-      expect(video).toHaveAttribute('src', '/video/voidpay-16x9-v2.mp4')
-      expect(video).toHaveAttribute('poster', '/video/poster-scene5.png')
+      const videos = document.querySelectorAll('video')
+      expect(videos).toHaveLength(2)
     })
 
-    it('should have muted, loop, playsInline, and preload="none"', () => {
+    it('should render the mobile 9:16 video with correct src and poster', () => {
       render(<VideoSection />)
-      const video = document.querySelector('video')
-      expect(video).toHaveAttribute('muted')
-      expect(video).toHaveAttribute('loop')
-      expect(video).toHaveAttribute('playsinline')
-      expect(video).toHaveAttribute('preload', 'none')
+      const videos = document.querySelectorAll('video')
+      const mobileVideo = videos[0]
+      expect(mobileVideo).toHaveAttribute('src', '/video/voidpay-9x16-v2.mp4')
+      expect(mobileVideo).toHaveAttribute('poster', '/video/poster-scene5.png')
     })
 
-    it('should show controls in reduced-motion mode (global mock returns true)', () => {
+    it('should render the desktop 16:9 video with correct src and poster', () => {
       render(<VideoSection />)
-      const video = document.querySelector('video')
-      // Global useReducedMotion mock returns true → controls should be present
-      expect(video).toHaveAttribute('controls')
+      const videos = document.querySelectorAll('video')
+      const desktopVideo = videos[1]
+      expect(desktopVideo).toHaveAttribute('src', '/video/voidpay-16x9-v2.mp4')
+      expect(desktopVideo).toHaveAttribute('poster', '/video/poster-scene5.png')
     })
 
-    it('should have an accessible aria-label', () => {
+    it('mobile video wrapper should have responsive classes block and md:hidden', () => {
       render(<VideoSection />)
-      const video = document.querySelector('video')
-      expect(video).toHaveAttribute('aria-label')
-      expect(video?.getAttribute('aria-label')).toMatch(/VoidPay/)
+      const videos = document.querySelectorAll('video')
+      const mobileWrapper = videos[0].parentElement
+      expect(mobileWrapper?.className).toContain('block')
+      expect(mobileWrapper?.className).toContain('md:hidden')
+    })
+
+    it('desktop video wrapper should have responsive classes hidden and md:block', () => {
+      render(<VideoSection />)
+      const videos = document.querySelectorAll('video')
+      const desktopWrapper = videos[1].parentElement
+      expect(desktopWrapper?.className).toContain('hidden')
+      expect(desktopWrapper?.className).toContain('md:block')
+    })
+
+    it('mobile video wrapper should have aspect-[9/16] for CLS prevention', () => {
+      render(<VideoSection />)
+      const videos = document.querySelectorAll('video')
+      const mobileWrapper = videos[0].parentElement
+      expect(mobileWrapper?.className).toContain('aspect-[9/16]')
+    })
+
+    it('desktop video wrapper should have aspect-video for CLS prevention', () => {
+      render(<VideoSection />)
+      const videos = document.querySelectorAll('video')
+      const desktopWrapper = videos[1].parentElement
+      expect(desktopWrapper?.className).toContain('aspect-video')
+    })
+
+    it('should have muted, loop, playsInline, and preload="none" on both videos', () => {
+      render(<VideoSection />)
+      const videos = document.querySelectorAll('video')
+      videos.forEach((video) => {
+        expect(video).toHaveAttribute('muted')
+        expect(video).toHaveAttribute('loop')
+        expect(video).toHaveAttribute('playsinline')
+        expect(video).toHaveAttribute('preload', 'none')
+      })
+    })
+
+    it('should show controls in reduced-motion mode on both videos (global mock returns true)', () => {
+      render(<VideoSection />)
+      const videos = document.querySelectorAll('video')
+      // Global useReducedMotion mock returns true → controls should be present on both
+      videos.forEach((video) => {
+        expect(video).toHaveAttribute('controls')
+      })
+    })
+
+    it('should have an accessible aria-label on both videos', () => {
+      render(<VideoSection />)
+      const videos = document.querySelectorAll('video')
+      videos.forEach((video) => {
+        expect(video).toHaveAttribute('aria-label')
+        expect(video.getAttribute('aria-label')).toMatch(/VoidPay/)
+      })
     })
   })
 
