@@ -185,7 +185,7 @@ export function LinkTab({
       <div className="flex items-start gap-2 px-1">
         <LockIcon size={12} className="mt-0.5 shrink-0 text-zinc-600" />
         <p className="text-xs leading-relaxed text-zinc-500">
-          <strong className="text-zinc-400">Privacy by design.</strong> Invoice data is encoded in the link. No servers. No tracking.
+          <strong className="text-zinc-400">Privacy by design.</strong> Invoice data is encoded in the link. No servers. We can&apos;t see it.
         </p>
       </div>
     </div>

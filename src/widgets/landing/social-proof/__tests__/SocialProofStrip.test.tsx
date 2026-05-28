@@ -24,7 +24,7 @@ describe('SocialProofStrip', () => {
       expect(screen.getByText('No servers, no databases')).toBeInTheDocument()
       expect(screen.getByText('Verify the code yourself')).toBeInTheDocument()
       expect(screen.getByText('Deploy locally if we disappear')).toBeInTheDocument()
-      expect(screen.getByText('ETH • Arbitrum • Optimism • Polygon')).toBeInTheDocument()
+      expect(screen.getByText('ETH • Base • Arbitrum • Optimism • Polygon')).toBeInTheDocument()
     })
   })
 
