@@ -19,6 +19,8 @@
  */
 
 import type { ReactNode } from 'react'
+
+import { VideoSection } from '../video-section/VideoSection'
 import { HowItWorks } from '../how-it-works/HowItWorks'
 import { DemoSection } from '../demo-section/DemoSection'
 import { WhyVoidPay } from '../why-voidpay/WhyVoidPay'
@@ -34,6 +36,7 @@ export function BelowFoldSections({ comparisonTable }: BelowFoldSectionsProps) {
   return (
     <>
       <HowItWorks />
+      <VideoSection />
       <DemoSection />
       <WhyVoidPay />
       {comparisonTable}
