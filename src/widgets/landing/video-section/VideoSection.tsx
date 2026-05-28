@@ -1,0 +1,100 @@
+/**
+ * VideoSection - Landing page product video walkthrough
+ * Feature: 012-landing-page
+ * User Story: US1 (First Impression), US2 (Convert to Action)
+ *
+ * Performance: preload="none" defers video fetch until user interaction.
+ * Aspect-ratio box reserved via aspect-video to prevent CLS.
+ * Reduced motion: autoplay suppressed; poster shown with native controls.
+ */
+
+'use client'
+
+import { useCallback, useRef } from 'react'
+import Link from 'next/link'
+
+import { track, AnalyticsEvent } from '@/features/analytics'
+import { ArrowRightIcon } from '@/shared/ui/icons'
+import { useReducedMotion } from '@/shared/ui'
+import { Button } from '@/shared/ui/button'
+import { Heading, Text } from '@/shared/ui/typography'
+
+export function VideoSection() {
+  const prefersReducedMotion = useReducedMotion()
+  const hasTrackedRef = useRef(false)
+
+  const handlePlay = useCallback(() => {
+    if (hasTrackedRef.current) return
+    hasTrackedRef.current = true
+    track(AnalyticsEvent.LANDING_VIDEO_PLAY)
+  }, [])
+
+  return (
+    <section
+      className="relative px-6 py-16 md:py-32"
+      aria-labelledby="video-section-heading"
+    >
+      <div className="mx-auto max-w-4xl space-y-10 text-center">
+        {/* Eyebrow */}
+        <Text
+          variant="label"
+          className="text-violet-400"
+        >
+          One invoice. Start to finish.
+        </Text>
+
+        {/* Headline */}
+        <Heading variant="h1" as="h2" id="video-section-heading">
+          Watch a $42 invoice get paid.
+        </Heading>
+
+        {/* Subheadline */}
+        <Text variant="large" className="mx-auto max-w-2xl text-zinc-400">
+          No account. No server. No app to install. The link is the invoice —
+          and it works even if we shut down.
+        </Text>
+
+        {/* Video */}
+        <figure className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl shadow-violet-900/10">
+          {/* aspect-video = 16/9 — reserves space before video loads (CLS prevention) */}
+          <div className="aspect-video w-full">
+            <video
+              className="h-full w-full object-cover"
+              src="/video/voidpay-16x9-v2.mp4"
+              poster="/video/poster-scene5.png"
+              muted
+              autoPlay={!prefersReducedMotion}
+              loop
+              playsInline
+              preload="none"
+              controls={prefersReducedMotion}
+              aria-label="VoidPay product walkthrough: creating and paying a $42 USDC invoice"
+              onPlay={handlePlay}
+            />
+          </div>
+          <figcaption className="px-4 py-3 text-sm text-zinc-500">
+            Silent by design. Captions tell the story.
+          </figcaption>
+        </figure>
+
+        {/* CTA */}
+        <div className="flex flex-col items-center pt-2">
+          <Button
+            variant="glow"
+            size="lg"
+            className="h-14 rounded-2xl px-8 text-base shadow-[0_0_40px_-10px_rgba(124,58,237,0.5)]"
+            asChild
+          >
+            <Link href="/create">
+              Create your own
+              <ArrowRightIcon size={16} />
+            </Link>
+          </Button>
+          <span className="mt-3 text-sm text-zinc-400">
+            No signup. Takes 30 seconds.
+          </span>
+        </div>
+      </div>
+    </section>
+  )
+}

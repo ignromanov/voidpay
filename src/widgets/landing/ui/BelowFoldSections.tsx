@@ -14,6 +14,7 @@
  * Framer Motion is bundled only in this chunk, not the initial load.
  */
 
+import { VideoSection } from '../video-section/VideoSection'
 import { HowItWorks } from '../how-it-works/HowItWorks'
 import { DemoSection } from '../demo-section/DemoSection'
 import { WhyVoidPay } from '../why-voidpay/WhyVoidPay'
@@ -25,6 +26,7 @@ import { FooterCta } from '../footer-cta/FooterCta'
 export function BelowFoldSections() {
   return (
     <>
+      <VideoSection />
       <HowItWorks />
       <DemoSection />
       <WhyVoidPay />
