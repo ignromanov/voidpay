@@ -76,7 +76,7 @@ export function FaqSection() {
   return (
     <section
       id="faq"
-      className="relative border-t border-zinc-900 bg-zinc-950/10 px-4 py-16 md:px-6 md:py-32"
+      className="relative border-t border-zinc-900 bg-zinc-950/50 px-4 py-16 md:px-6 md:py-32"
       aria-labelledby="faq-heading"
     >
       <div className="mx-auto max-w-3xl">
@@ -91,7 +91,7 @@ export function FaqSection() {
         </div>
 
         {/* FAQ Accordion */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/20 px-4 backdrop-blur-sm md:px-8">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 md:px-8">
           {FAQ_ITEMS.map((item, index) => (
             <FaqItem
               key={index}

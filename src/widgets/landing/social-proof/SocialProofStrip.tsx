@@ -77,7 +77,7 @@ function TrustBadge({ icon: Icon, label, description, href }: TrustBadgeData) {
 
 export function SocialProofStrip() {
   return (
-    <section className="relative border-y border-zinc-800/50 bg-zinc-900/30 px-6 py-8 backdrop-blur-sm">
+    <section className="relative border-y border-zinc-800/50 bg-zinc-900/50 px-6 py-8">
       <div className="hero-animate-social-proof mx-auto max-w-5xl">
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
           {TRUST_BADGES.map((badge) => (
