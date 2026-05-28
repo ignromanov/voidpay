@@ -41,7 +41,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     id: 'immutable',
     title: 'Immutable',
     description:
-      'Once an invoice link is generated, it cannot be changed. The data is cryptographically secure within the link itself.',
+      "Once you share an invoice link, the details can't be altered. The data is baked into the URL — tamper with it and it simply won't open.",
     icon: ShieldIcon,
     iconColor: 'text-emerald-500',
   },

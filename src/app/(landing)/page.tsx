@@ -90,7 +90,7 @@ const howToSchema = {
 export const metadata: Metadata = {
   title: 'Free Crypto Invoice Generator | No KYC | VoidPay',
   description:
-    'Create crypto invoices in 30 seconds. No accounts, no KYC, no servers. Your data lives in the URL, not our database. Works on ETH, ARB, OP.',
+    'Create crypto invoices in 30 seconds. No accounts, no KYC, no servers. Your data lives in the URL, not our database. Works on Ethereum, Base, Arbitrum, Optimism, Polygon.',
   keywords: [
     'crypto invoice',
     'crypto invoicing',
@@ -113,7 +113,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'VoidPay - Create Crypto Invoices Without Signup',
     description:
-      'Privacy-first invoicing for Web3. No accounts, no servers. Your invoice = your URL. Works on Ethereum, Arbitrum, Optimism.',
+      'Privacy-first invoicing for Web3. No accounts, no servers. Your invoice = your URL. Works on Ethereum, Base, Arbitrum, Optimism.',
     url: APP_URLS.base,
     siteName: 'VoidPay',
     type: 'website',

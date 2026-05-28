@@ -40,7 +40,7 @@ const TRUST_BADGES: TrustBadgeData[] = [
   {
     icon: GlobeIcon,
     label: 'Multi-Chain',
-    description: 'ETH • Arbitrum • Optimism • Polygon',
+    description: 'ETH • Base • Arbitrum • Optimism • Polygon',
   },
 ]
 

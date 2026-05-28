@@ -17,7 +17,7 @@ import { WaitlistForm } from './_components/waitlist-form'
 export const metadata: Metadata = {
   title: 'Coming Soon | VoidPay',
   description:
-    'Privacy-first crypto invoicing is coming. No signup, no tracking, no backend. Join the waitlist for early access.',
+    'Privacy-first crypto invoicing is coming. No signup, no KYC, no backend. Join the waitlist for early access.',
   robots: { index: true, follow: true },
   openGraph: {
     title: 'VoidPay — Coming Soon',
@@ -73,7 +73,7 @@ export default function ComingSoonPage() {
             className="mx-auto max-w-2xl px-4 leading-relaxed font-light text-zinc-400/90"
           >
             Privacy-first crypto invoicing —{' '}
-            <span className="font-medium text-zinc-100">no signup, no tracking, no backend.</span>
+            <span className="font-medium text-zinc-100">no signup, no KYC, no backend.</span>
           </Text>
         </div>
 
