@@ -4,7 +4,6 @@
  */
 
 import type { Metadata } from 'next'
-import Script from 'next/script'
 
 import { APP_URLS, SOCIAL_URLS } from '@/shared/config'
 import { defaultOgImages } from '@/features/og-image'
@@ -140,25 +139,21 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <>
-      {/* JSON-LD Structured Data */}
-      <Script
-        id="faq-schema"
+      {/* JSON-LD Structured Data - rendered in initial SSR HTML for crawlers */}
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <Script
-        id="organization-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
-      <Script
-        id="software-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
       />
       {/* HowTo schema for rich snippets - safe: static data with JSON.stringify */}
-      <Script
-        id="howto-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
       />

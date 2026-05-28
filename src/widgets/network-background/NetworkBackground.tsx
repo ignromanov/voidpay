@@ -51,13 +51,13 @@ export function NetworkBackground({ className }: NetworkBackgroundProps) {
       {/* Animated gradient blobs */}
       <div
         className={cn(
-          'absolute top-1/4 left-1/4 h-96 w-96 rounded-full blur-3xl transition-colors duration-700',
+          'absolute top-1/4 left-1/4 h-96 w-96 rounded-full blur-2xl will-change-transform transition-colors duration-700 motion-reduce:transition-none',
           colors.primary
         )}
       />
       <div
         className={cn(
-          'absolute right-1/4 bottom-1/4 h-96 w-96 rounded-full blur-3xl transition-colors duration-700',
+          'absolute right-1/4 bottom-1/4 h-96 w-96 rounded-full blur-2xl will-change-transform transition-colors duration-700 motion-reduce:transition-none',
           colors.secondary
         )}
       />

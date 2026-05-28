@@ -4,7 +4,7 @@
  * User Story: US3 (Feature Discovery & Trust Building)
  */
 
-import type { SVGProps } from 'react'
+import { memo, type SVGProps } from 'react'
 
 import { ArrowRightIcon } from '@/shared/ui/icons'
 
@@ -12,7 +12,7 @@ import { Heading, Text } from '@/shared/ui/typography'
 
 import { WORKFLOW_STEPS } from '../constants/features'
 
-function TimelineStep({
+const TimelineStep = memo(function TimelineStep({
   step,
   icon: Icon,
   title,
@@ -56,13 +56,15 @@ function TimelineStep({
       )}
     </div>
   )
-}
+})
+
+TimelineStep.displayName = 'TimelineStep'
 
 export function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="relative bg-zinc-950/10 px-6 py-16 backdrop-blur-sm md:py-32"
+      className="relative bg-zinc-950/50 px-6 py-16 md:py-32"
       aria-labelledby="how-it-works-heading"
     >
       <div className="mx-auto max-w-5xl space-y-16">

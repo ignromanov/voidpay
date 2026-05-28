@@ -44,11 +44,11 @@ describe('WhyVoidPay', () => {
       expect(screen.getByText('Why Choose VoidPay for Crypto Invoicing')).toBeInTheDocument()
     })
 
-    it('should render 3 cards with backdrop blur', () => {
+    it('should render 3 feature cards', () => {
       const { container } = render(<WhyVoidPay />)
 
-      // Should have 3 Card components (with backdrop-blur)
-      const cards = container.querySelectorAll('[class*="backdrop-blur"]')
+      // Should have 3 HeroFeatureCard components (rounded-3xl is structural)
+      const cards = container.querySelectorAll('.rounded-3xl')
       expect(cards.length).toBe(3)
     })
   })
