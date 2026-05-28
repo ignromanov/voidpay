@@ -26,8 +26,8 @@ import { FooterCta } from '../footer-cta/FooterCta'
 export function BelowFoldSections() {
   return (
     <>
-      <VideoSection />
       <HowItWorks />
+      <VideoSection />
       <DemoSection />
       <WhyVoidPay />
       <ComparisonTable />

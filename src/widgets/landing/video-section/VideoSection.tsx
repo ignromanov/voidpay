@@ -6,11 +6,13 @@
  * Performance: preload="none" defers video fetch until user interaction.
  * Aspect-ratio box reserved via aspect-video to prevent CLS.
  * Reduced motion: autoplay suppressed; poster shown with native controls.
+ * Off-screen: IntersectionObserver pauses video when scrolled out of view
+ * and resumes when scrolled back in (skipped under reduced-motion).
  */
 
 'use client'
 
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
 import { track, AnalyticsEvent } from '@/features/analytics'
@@ -22,6 +24,9 @@ import { Heading, Text } from '@/shared/ui/typography'
 export function VideoSection() {
   const prefersReducedMotion = useReducedMotion()
   const hasTrackedRef = useRef(false)
+  const sectionRef = useRef<HTMLElement>(null)
+  const mobileVideoRef = useRef<HTMLVideoElement>(null)
+  const desktopVideoRef = useRef<HTMLVideoElement>(null)
 
   const handlePlay = useCallback(() => {
     if (hasTrackedRef.current) return
@@ -29,8 +34,40 @@ export function VideoSection() {
     track(AnalyticsEvent.LANDING_VIDEO_PLAY)
   }, [])
 
+  // Pause the off-screen video to avoid wasting data/battery.
+  // Skip entirely under reduced-motion — videos aren't autoplaying anyway.
+  useEffect(() => {
+    if (prefersReducedMotion) return
+    if (typeof window === 'undefined') return
+
+    const section = sectionRef.current
+    if (!section) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (!entry) return
+        const mobile = mobileVideoRef.current
+        const desktop = desktopVideoRef.current
+
+        if (entry.isIntersecting) {
+          mobile?.play().catch(() => {})
+          desktop?.play().catch(() => {})
+        } else {
+          mobile?.pause()
+          desktop?.pause()
+        }
+      },
+      { threshold: 0 },
+    )
+
+    observer.observe(section)
+    return () => observer.disconnect()
+  }, [prefersReducedMotion])
+
   return (
     <section
+      ref={sectionRef}
       className="relative px-6 py-16 md:py-32"
       aria-labelledby="video-section-heading"
     >
@@ -40,19 +77,13 @@ export function VideoSection() {
           variant="label"
           className="text-violet-400"
         >
-          One invoice. Start to finish.
+          See it in action
         </Text>
 
         {/* Headline */}
         <Heading variant="h1" as="h2" id="video-section-heading">
-          Watch a $42 invoice get paid.
+          Watch those three steps play out.
         </Heading>
-
-        {/* Subheadline */}
-        <Text variant="large" className="mx-auto max-w-2xl text-zinc-400">
-          No account. No server. No app to install. The link is the invoice —
-          and it works even if we shut down.
-        </Text>
 
         {/* Video */}
         <figure className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl shadow-violet-900/10">
@@ -60,6 +91,7 @@ export function VideoSection() {
           {/* aspect-[9/16] reserves space before load (CLS prevention); max-h-[80vh] prevents dominating the viewport */}
           <div className="mx-auto block max-h-[80vh] max-w-sm aspect-[9/16] md:hidden">
             <video
+              ref={mobileVideoRef}
               className="h-full w-full object-cover"
               src="/video/voidpay-9x16-v2.mp4"
               poster="/video/poster-scene5.png"
@@ -69,7 +101,7 @@ export function VideoSection() {
               playsInline
               preload="none"
               controls={prefersReducedMotion}
-              aria-label="VoidPay product walkthrough: creating and paying a $42 USDC invoice"
+              aria-label="VoidPay product walkthrough: creating and paying a crypto invoice"
               onPlay={handlePlay}
             />
           </div>
@@ -78,6 +110,7 @@ export function VideoSection() {
           {/* aspect-video = 16/9 — reserves space before video loads (CLS prevention) */}
           <div className="hidden aspect-video w-full md:block">
             <video
+              ref={desktopVideoRef}
               className="h-full w-full object-cover"
               src="/video/voidpay-16x9-v2.mp4"
               poster="/video/poster-scene5.png"
@@ -87,7 +120,7 @@ export function VideoSection() {
               playsInline
               preload="none"
               controls={prefersReducedMotion}
-              aria-label="VoidPay product walkthrough: creating and paying a $42 USDC invoice"
+              aria-label="VoidPay product walkthrough: creating and paying a crypto invoice"
               onPlay={handlePlay}
             />
           </div>

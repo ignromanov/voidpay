@@ -12,7 +12,7 @@ Privacy-first crypto invoicing. All data lives in the URL. [Try it →](https://
 
 ## Demo
 
-A $42 USDC invoice, created and paid — start to finish.
+A crypto invoice, created and paid — start to finish.
 
 https://github.com/ignromanov/voidpay/raw/develop/public/video/voidpay-16x9-v2.mp4
 
