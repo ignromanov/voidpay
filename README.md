@@ -6,6 +6,8 @@
 
 Privacy-first crypto invoicing. All data lives in the URL. [Try it →](https://voidpay.xyz)
 
+> Built on [@void-layer](https://github.com/void-layer) — the open invoice codec standard.
+
 ---
 
 ## How It Works
