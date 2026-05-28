@@ -4,7 +4,8 @@
  * User Story: US1 (First Impression), US2 (Convert to Action)
  *
  * Performance: preload="none" defers video fetch until user interaction.
- * Aspect-ratio box reserved via aspect-video to prevent CLS.
+ * Only the video for the active viewport is mounted — no double-fetch.
+ * Aspect-ratio box reserved to prevent CLS during SSR → client transition.
  * Reduced motion: autoplay suppressed; poster shown with native controls.
  * Off-screen: IntersectionObserver pauses video when scrolled out of view
  * and resumes when scrolled back in (skipped under reduced-motion).
@@ -20,13 +21,14 @@ import { ArrowRightIcon } from '@/shared/ui/icons'
 import { useReducedMotion } from '@/shared/ui'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
+import { useIsMobile } from '@/shared/lib'
 
 export function VideoSection() {
   const prefersReducedMotion = useReducedMotion()
+  const isMobile = useIsMobile()
   const hasTrackedRef = useRef(false)
   const sectionRef = useRef<HTMLElement>(null)
-  const mobileVideoRef = useRef<HTMLVideoElement>(null)
-  const desktopVideoRef = useRef<HTMLVideoElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   const handlePlay = useCallback(() => {
     if (hasTrackedRef.current) return
@@ -47,15 +49,12 @@ export function VideoSection() {
       (entries) => {
         const entry = entries[0]
         if (!entry) return
-        const mobile = mobileVideoRef.current
-        const desktop = desktopVideoRef.current
+        const video = videoRef.current
 
         if (entry.isIntersecting) {
-          mobile?.play().catch(() => {})
-          desktop?.play().catch(() => {})
+          video?.play().catch(() => {})
         } else {
-          mobile?.pause()
-          desktop?.pause()
+          video?.pause()
         }
       },
       { threshold: 0 },
@@ -64,6 +63,11 @@ export function VideoSection() {
     observer.observe(section)
     return () => observer.disconnect()
   }, [prefersReducedMotion])
+
+  const videoSrc = isMobile ? '/video/voidpay-9x16-v2.mp4' : '/video/voidpay-16x9-v2.mp4'
+  const wrapperClassName = isMobile
+    ? 'mx-auto max-h-[80vh] max-w-sm aspect-[9/16]'
+    : 'aspect-video w-full'
 
   return (
     <section
@@ -85,35 +89,14 @@ export function VideoSection() {
           Watch those three steps play out.
         </Heading>
 
-        {/* Video */}
+        {/* Video — only the active-viewport variant is mounted to prevent double-fetch */}
         <figure className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl shadow-violet-900/10">
-          {/* Mobile: 9:16 vertical — hidden at md+ breakpoint */}
-          {/* aspect-[9/16] reserves space before load (CLS prevention); max-h-[80vh] prevents dominating the viewport */}
-          <div className="mx-auto block max-h-[80vh] max-w-sm aspect-[9/16] md:hidden">
+          <div className={wrapperClassName}>
             <video
-              ref={mobileVideoRef}
+              ref={videoRef}
               className="h-full w-full object-cover"
-              src="/video/voidpay-9x16-v2.mp4"
-              poster="/video/poster-scene5.png"
-              muted
-              autoPlay={!prefersReducedMotion}
-              loop
-              playsInline
-              preload="none"
-              controls={prefersReducedMotion}
-              aria-label="VoidPay product walkthrough: creating and paying a crypto invoice"
-              onPlay={handlePlay}
-            />
-          </div>
-
-          {/* Desktop: 16:9 landscape — hidden below md breakpoint */}
-          {/* aspect-video = 16/9 — reserves space before video loads (CLS prevention) */}
-          <div className="hidden aspect-video w-full md:block">
-            <video
-              ref={desktopVideoRef}
-              className="h-full w-full object-cover"
-              src="/video/voidpay-16x9-v2.mp4"
-              poster="/video/poster-scene5.png"
+              src={videoSrc}
+              poster="/video/poster-scene5.webp"
               muted
               autoPlay={!prefersReducedMotion}
               loop
