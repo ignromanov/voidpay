@@ -28,6 +28,8 @@ const nextConfig = {
       'wagmi',
       'viem',
       '@rainbow-me/rainbowkit',
+      'framer-motion',
+      '@web3icons/react',
     ],
   },
 
