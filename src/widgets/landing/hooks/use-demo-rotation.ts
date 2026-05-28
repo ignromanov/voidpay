@@ -5,7 +5,7 @@
  * Feature: 012-landing-page
  */
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useInterval } from './use-interval'
 
@@ -37,6 +37,7 @@ export function useDemoRotation({
 }: UseDemoRotationOptions): UseDemoRotationReturn {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(!autoStart)
+  const [isHidden, setIsHidden] = useState(false)
 
   const next = useCallback(() => {
     setActiveIndex((current) => (current + 1) % itemCount)
@@ -58,8 +59,18 @@ export function useDemoRotation({
   const pause = useCallback(() => setIsPaused(true), [])
   const resume = useCallback(() => setIsPaused(false), [])
 
-  // Auto-rotate when not paused
-  useInterval(next, isPaused ? null : interval)
+  // Pause rotation while the tab is backgrounded - composes with manual/hover pause
+  useEffect(() => {
+    const handleVisibilityChange = (): void => {
+      setIsHidden(document.hidden)
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
+  // Auto-rotate only when neither manually paused nor backgrounded
+  useInterval(next, isPaused || isHidden ? null : interval)
 
   return {
     activeIndex,
