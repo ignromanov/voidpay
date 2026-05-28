@@ -4,7 +4,7 @@
  * User Story: US3 (Feature Discovery & Trust Building)
  */
 
-import type { SVGProps } from 'react'
+import { memo, type SVGProps } from 'react'
 
 import { cn } from '@/shared/lib/utils'
 import { Heading, Text } from '@/shared/ui/typography'
@@ -14,7 +14,12 @@ import { FEATURE_CARDS } from '../constants/features'
 // TOP 3 features to highlight (by id) - order matters for display
 const TOP_FEATURES = ['no-database', 'instant', 'multichain']
 
-function HeroFeatureCard({
+// Sorted top cards - inputs are static constants, hoisted to module scope
+const topCards = TOP_FEATURES.map((id) => FEATURE_CARDS.find((card) => card.id === id)).filter(
+  (card): card is NonNullable<typeof card> => card !== undefined
+)
+
+const HeroFeatureCard = memo(function HeroFeatureCard({
   icon: Icon,
   title,
   description,
@@ -26,7 +31,7 @@ function HeroFeatureCard({
   iconColor?: string
 }) {
   return (
-    <div className="group rounded-3xl border border-violet-500/20 bg-gradient-to-b from-zinc-900/80 to-zinc-950/80 p-6 backdrop-blur-sm transition-all hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-900/10 md:p-10">
+    <div className="group rounded-3xl border border-violet-500/20 bg-gradient-to-b from-zinc-900/80 to-zinc-950/80 p-6 transition-all hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-900/10 md:p-10">
       {/* Icon container - larger */}
       <div className="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-900 shadow-lg transition-transform group-hover:scale-110">
         <Icon className={cn('h-8 w-8', iconColor)} aria-hidden="true" />
@@ -39,14 +44,11 @@ function HeroFeatureCard({
       </Text>
     </div>
   )
-}
+})
+
+HeroFeatureCard.displayName = 'HeroFeatureCard'
 
 export function WhyVoidPay() {
-  // Sort topCards to match TOP_FEATURES order
-  const topCards = TOP_FEATURES.map((id) => FEATURE_CARDS.find((card) => card.id === id)).filter(
-    (card): card is NonNullable<typeof card> => card !== undefined
-  )
-
   return (
     <section className="relative bg-transparent px-6 py-16 md:py-32" aria-labelledby="why-voidpay-heading">
       <div className="mx-auto max-w-6xl">

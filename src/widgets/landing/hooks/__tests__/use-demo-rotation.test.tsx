@@ -225,17 +225,74 @@ describe('useDemoRotation', () => {
       const { result } = renderHook(() =>
         useDemoRotation({ itemCount: 3 })
       )
-      
+
       act(() => {
         vi.advanceTimersByTime(9999)
       })
-      
+
       expect(result.current.activeIndex).toBe(0)
-      
+
       act(() => {
         vi.advanceTimersByTime(1)
       })
-      
+
+      expect(result.current.activeIndex).toBe(1)
+    })
+  })
+
+  describe('Visibility pause', () => {
+    function setHidden(hidden: boolean) {
+      Object.defineProperty(document, 'hidden', {
+        value: hidden,
+        writable: true,
+        configurable: true,
+      })
+      document.dispatchEvent(new Event('visibilitychange'))
+    }
+
+    afterEach(() => {
+      setHidden(false)
+    })
+
+    it('should pause rotation when the tab becomes hidden', () => {
+      const { result } = renderHook(() =>
+        useDemoRotation({ itemCount: 3, interval: 1000 })
+      )
+
+      act(() => {
+        setHidden(true)
+      })
+
+      act(() => {
+        vi.advanceTimersByTime(5000)
+      })
+
+      expect(result.current.activeIndex).toBe(0)
+    })
+
+    it('should resume rotation when the tab becomes visible again', () => {
+      const { result } = renderHook(() =>
+        useDemoRotation({ itemCount: 3, interval: 1000 })
+      )
+
+      act(() => {
+        setHidden(true)
+      })
+
+      act(() => {
+        vi.advanceTimersByTime(2000)
+      })
+
+      expect(result.current.activeIndex).toBe(0)
+
+      act(() => {
+        setHidden(false)
+      })
+
+      act(() => {
+        vi.advanceTimersByTime(1000)
+      })
+
       expect(result.current.activeIndex).toBe(1)
     })
   })

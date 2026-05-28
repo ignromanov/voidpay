@@ -6,7 +6,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, memo } from 'react'
 import { ChevronDownIcon } from '@/shared/ui/icons'
 import { useReducedMotion } from '@/shared/ui'
 
@@ -17,14 +17,20 @@ import { AnimatePresence, motion } from '@/shared/ui/motion'
 
 import { FAQ_ITEMS, type FaqItem } from '../constants/faq'
 
-function FaqItem({ question, answer, isOpen, onToggle, index }: FaqItem & { isOpen: boolean; onToggle: () => void; index: number }) {
-  const shouldReduceMotion = useReducedMotion()
+const FaqItem = memo(function FaqItem({
+  question,
+  answer,
+  isOpen,
+  onToggle,
+  index,
+  reducedMotion,
+}: FaqItem & { isOpen: boolean; onToggle: (index: number) => void; index: number; reducedMotion: boolean }) {
   return (
     <div className="border-b border-zinc-800 last:border-b-0">
       <button
         onClick={() => {
           track(AnalyticsEvent.FAQ_EXPAND, { question_id: question })
-          onToggle()
+          onToggle(index)
         }}
         className="flex w-full cursor-pointer items-center justify-between gap-4 py-6 text-left transition-colors hover:text-zinc-100"
         aria-expanded={isOpen}
@@ -46,7 +52,7 @@ function FaqItem({ question, answer, isOpen, onToggle, index }: FaqItem & { isOp
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: shouldReduceMotion ? 0 : 0.2, ease: 'easeInOut' }}
+            transition={{ duration: reducedMotion ? 0 : 0.2, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
             <Text variant="body" className="pb-6 text-zinc-400">
@@ -57,19 +63,20 @@ function FaqItem({ question, answer, isOpen, onToggle, index }: FaqItem & { isOp
       </AnimatePresence>
     </div>
   )
-}
+})
 
 export function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0)
+  const reducedMotion = useReducedMotion()
 
-  const handleToggle = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index)
-  }
+  const handleToggle = useCallback((index: number) => {
+    setOpenIndex((prev) => (prev === index ? null : index))
+  }, [])
 
   return (
     <section
       id="faq"
-      className="relative border-t border-zinc-900 bg-zinc-950/10 px-4 py-16 backdrop-blur-sm md:px-6 md:py-32"
+      className="relative border-t border-zinc-900 bg-zinc-950/50 px-4 py-16 md:px-6 md:py-32"
       aria-labelledby="faq-heading"
     >
       <div className="mx-auto max-w-3xl">
@@ -84,7 +91,7 @@ export function FaqSection() {
         </div>
 
         {/* FAQ Accordion */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/20 px-4 backdrop-blur-sm md:px-8">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 md:px-8">
           {FAQ_ITEMS.map((item, index) => (
             <FaqItem
               key={index}
@@ -92,7 +99,8 @@ export function FaqSection() {
               question={item.question}
               answer={item.answer}
               isOpen={openIndex === index}
-              onToggle={() => handleToggle(index)}
+              onToggle={handleToggle}
+              reducedMotion={reducedMotion ?? false}
             />
           ))}
         </div>
