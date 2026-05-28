@@ -5,7 +5,7 @@
  * Feature: 012-landing-page
  *
  * Background: Uses NetworkBackground from layout.tsx (unified across all pages).
- * Sets 'ethereum' theme on mount via useCreatorStore.
+ * Relies on the store's default 'ethereum' theme (no mount-time mutation).
  *
  * Performance Strategy (optimized for LCP < 2.5s):
  * 1. Above-fold (immediate): HeroSection + SocialProofStrip
@@ -22,7 +22,6 @@
  */
 
 import { useState, useEffect, type ComponentType, type ReactNode } from 'react'
-import { useCreatorStore } from '@/entities/creator'
 import { HeroSection } from '../hero-section/HeroSection'
 import { SocialProofStrip } from '../social-proof'
 import { BelowFoldLoader } from './BelowFoldLoader'
@@ -30,10 +29,14 @@ import { ComparisonTable } from '../comparison/ComparisonTable'
 
 /**
  * SEO-friendly placeholder for below-fold content.
+ *
+ * Reserves a min-height close to the real (7-section) content so the
+ * skeleton -> content swap does not push the footer/CTA upward (CLS).
+ * Keeps sr-only headings for SEO/crawlers.
  */
 function BelowFoldPlaceholder() {
   return (
-    <div className="space-y-32 py-20">
+    <div className="min-h-[300vh] space-y-32 py-20">
       <section className="container mx-auto px-4">
         <h2 className="sr-only">How VoidPay Works</h2>
         <div className="h-[600px] animate-pulse rounded-2xl bg-zinc-900/30" />
@@ -86,12 +89,7 @@ function LazyBelowFold() {
 }
 
 export function LandingContent() {
-  const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
-
-  // Set ethereum theme on mount (landing page uses default ethereum branding)
-  useEffect(() => {
-    setNetworkTheme('ethereum')
-  }, [setNetworkTheme])
+  // Landing uses the store's default 'ethereum' theme - no mount-time mutation needed.
 
   // Preload bundles after initial paint for smoother scrolling
   useEffect(() => {
@@ -135,8 +133,9 @@ export function LandingContent() {
         <HeroSection />
         <SocialProofStrip />
 
-        {/* Below-fold: Intersection Observer triggers lazy load */}
-        <BelowFoldLoader placeholderHeight="300vh" rootMargin="400px">
+        {/* Below-fold: Intersection Observer triggers lazy load.
+            Same placeholder pre-trigger and while the chunk loads -> no CLS on swap. */}
+        <BelowFoldLoader skeleton={<BelowFoldPlaceholder />} rootMargin="400px">
           <LazyBelowFold />
         </BelowFoldLoader>
       </div>
