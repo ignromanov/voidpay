@@ -3,7 +3,7 @@ module.exports = {
   siteUrl: process.env.SITE_URL || 'https://voidpay.xyz',
   generateRobotsTxt: true,
   generateIndexSitemap: false,
-  exclude: ['/api/*', '/og-image', '/coming-soon', '/pay', '/invoice'],
+  exclude: ['/api/*', '/og-image', '/coming-soon', '/pay', '/invoice', '/history'],
   robotsTxtOptions: {
     policies: [
       {

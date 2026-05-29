@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   title: 'Create Invoice | VoidPay',
   description: 'Create and share crypto invoices instantly. No signup required.',
   robots: {
-    index: false,
-    follow: false,
+    index: true,
+    follow: true,
   },
 }
 
