@@ -226,18 +226,17 @@ export function CreateWorkspace() {
       <div
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="mx-auto flex h-[calc(100dvh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 lg:pb-6 lg:py-6 print:!h-auto print:!max-w-none print:!overflow-visible print:!p-0"
-        style={{ paddingBottom: 'max(8rem, calc(env(safe-area-inset-bottom, 0px) + 8rem))' }}
+        className="mx-auto flex w-full max-w-6xl flex-col lg:flex-row lg:items-start lg:justify-center gap-4 lg:gap-6 px-3 sm:px-4 lg:px-6 py-6 print:!max-w-none print:!p-0"
       >
         {/* Editor Pane */}
         <Card
           variant="glass"
           className={cn(
-            'w-full lg:w-[400px] xl:w-[440px] 2xl:w-[480px] lg:shrink-0 flex flex-col overflow-hidden lg:max-h-full print:hidden',
+            'w-full lg:w-[400px] xl:w-[440px] 2xl:w-[480px] lg:shrink-0 flex flex-col print:hidden',
             mobileTab === 'preview' ? 'hidden lg:flex' : 'flex'
           )}
         >
-          <div className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6 space-y-5">
+          <div className="p-4 sm:p-5 lg:p-6 space-y-5">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
                 <Heading variant="h3" className="flex items-center gap-2">
@@ -267,7 +266,8 @@ export function CreateWorkspace() {
         <div
           className={cn(
             'relative flex items-start justify-center',
-            'h-full w-full sm:min-w-[400px] lg:min-w-[580px]',
+            'w-full sm:min-w-[400px] lg:min-w-[580px]',
+            'lg:sticky lg:top-[5rem] lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto',
             'p-4 sm:p-5 lg:p-6',
             mobileTab === 'editor' ? 'hidden lg:flex print:!block' : 'flex'
           )}
