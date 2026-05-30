@@ -7,7 +7,7 @@ import { Heading, Text } from '@/shared/ui'
 
 export function CreatePageHero() {
   return (
-    <div className="px-4 pt-8 pb-2 text-center">
+    <div className="mx-auto w-full max-w-6xl px-4 pt-6 pb-3 text-center lg:pt-8">
       <Heading variant="h2" as="h1" className="mb-3 text-2xl font-bold tracking-tight md:text-3xl">
         Crypto Invoice Generator — No Signup, No Backend
       </Heading>
