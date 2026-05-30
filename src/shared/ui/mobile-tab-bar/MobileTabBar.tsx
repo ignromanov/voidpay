@@ -29,8 +29,10 @@ export function MobileTabBar({ tabs, activeTab, onTabChange, className }: Mobile
       {tabs.map((tab) => (
         <button
           key={tab.id}
+          id={`tab-${tab.id}`}
           role="tab"
           aria-selected={activeTab === tab.id}
+          aria-controls={`panel-${tab.id}`}
           onClick={() => onTabChange(tab.id)}
           className={cn(
             'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg py-2.5 min-h-[44px] text-sm font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500',

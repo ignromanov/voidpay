@@ -229,6 +229,9 @@ export function CreateWorkspace() {
       >
         {/* Editor Pane */}
         <Card
+          id="panel-editor"
+          role="tabpanel"
+          aria-labelledby="tab-editor"
           variant="glass"
           className={cn(
             'w-full lg:w-[400px] xl:w-[440px] 2xl:w-[480px] lg:shrink-0 flex flex-col print:hidden',
@@ -238,7 +241,7 @@ export function CreateWorkspace() {
           <div className="p-4 sm:p-5 lg:p-6 space-y-5">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
-                <Heading variant="h3" className="flex items-center gap-2">
+                <Heading variant="h3" as="h2" className="flex items-center gap-2">
                   <span className="text-violet-500">Invoice</span> Details
                 </Heading>
                 <Text variant="tiny" className="text-zinc-400">
@@ -263,6 +266,9 @@ export function CreateWorkspace() {
 
         {/* Preview Pane */}
         <div
+          id="panel-preview"
+          role="tabpanel"
+          aria-labelledby="tab-preview"
           className={cn(
             'relative flex items-start justify-center',
             'w-full sm:min-w-[400px] lg:min-w-[580px]',
