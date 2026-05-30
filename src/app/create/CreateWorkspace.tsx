@@ -218,11 +218,10 @@ export function CreateWorkspace() {
         />
       )}
 
-      <div className="lg:hidden fixed bottom-[calc(3.25rem+env(safe-area-inset-bottom,0px))] left-0 right-0 z-30 px-4 print:hidden">
+      <div className="lg:hidden sticky top-[4rem] z-30 mx-auto w-full max-w-6xl px-4 pt-3 pb-2 print:hidden">
         <MobileTabBar tabs={tabs} activeTab={mobileTab} onTabChange={(id) => setMobileTab(id as 'editor' | 'preview')} />
       </div>
 
-      {/* Safe area padding for mobile tab bar */}
       <div
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
