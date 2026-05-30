@@ -130,6 +130,7 @@ export function CreateWorkspace() {
   }, [])
 
   const handleResetInvoice = useCallback(() => {
+    if (!window.confirm('Clear all fields and reset the invoice to defaults?')) return
     createNewDraft()
     toast.success('Form cleared', {
       description: 'All fields reset to defaults',
