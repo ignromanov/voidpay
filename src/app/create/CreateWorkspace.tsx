@@ -114,6 +114,22 @@ export function CreateWorkspace() {
     }
   }, [])
 
+  const workspaceRef = useRef<HTMLDivElement>(null)
+  const tabBarRef = useRef<HTMLDivElement>(null)
+  const didMountRef = useRef(false)
+
+  // Scroll to workspace top on mobile tab switch (skips initial mount).
+  // 64 = header height; tabBarH = sticky tab bar height below the header.
+  useEffect(() => {
+    if (!didMountRef.current) { didMountRef.current = true; return }
+    if (window.matchMedia('(min-width: 1024px)').matches) return // desktop: no-op
+    const el = workspaceRef.current
+    if (!el) return
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const tabBarH = tabBarRef.current?.offsetHeight ?? 0
+    window.scrollTo({ top: el.offsetTop - 64 - tabBarH, behavior: reduce ? 'instant' : 'smooth' })
+  }, [mobileTab])
+
   // Touch swipe to switch between Editor/Preview on mobile
   const touchStartRef = useRef(0)
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -219,11 +235,12 @@ export function CreateWorkspace() {
         />
       )}
 
-      <div className="lg:hidden sticky top-[4rem] z-30 mx-auto w-full max-w-6xl px-4 pt-3 pb-2 print:hidden">
+      <div ref={tabBarRef} className="lg:hidden sticky top-[4rem] z-30 mx-auto w-full max-w-6xl px-4 pt-3 pb-2 print:hidden">
         <MobileTabBar tabs={tabs} activeTab={mobileTab} onTabChange={(id) => setMobileTab(id as 'editor' | 'preview')} />
       </div>
 
       <div
+        ref={workspaceRef}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         className="mx-auto flex w-full max-w-6xl flex-col lg:flex-row lg:items-start lg:justify-center gap-4 lg:gap-6 px-3 sm:px-4 lg:px-6 py-6 print:!max-w-none print:!p-0"
@@ -273,7 +290,7 @@ export function CreateWorkspace() {
           className={cn(
             'relative flex items-start justify-center',
             'w-full sm:min-w-[400px] lg:min-w-[580px]',
-            'lg:sticky lg:top-[5rem] lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto',
+            'lg:sticky lg:top-[5rem] lg:h-[calc(100dvh-6rem)]',
             'p-4 sm:p-5 lg:p-6',
             mobileTab === 'editor' ? 'hidden lg:flex print:!block' : 'flex'
           )}
@@ -284,28 +301,26 @@ export function CreateWorkspace() {
             networkId={invoiceData?.networkId ?? 1}
             onClick={handlePreviewClick}
             showExpandOverlay
+            overlay={(() => {
+              const sync = SYNC_STATUS_CONFIG[draftSyncStatus]
+              return (
+                <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none print:hidden">
+                  <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
+                    {sync.icon === 'loader' ? (
+                      <Loader2Icon className="h-3 w-3 animate-spin text-amber-500" />
+                    ) : sync.icon === 'check' ? (
+                      <CheckIcon className="h-3 w-3 text-green-500" />
+                    ) : (
+                      <div className={cn('h-1.5 w-1.5 rounded-full', sync.dotColor, sync.animate && 'animate-pulse')} />
+                    )}
+                    {sync.label}
+                  </div>
+                </div>
+              )
+            })()}
           >
             <InvoicePaper data={invoiceData} status="draft" />
           </ScaledInvoicePreview>
-
-          {/* Floating sync status badge */}
-          {(() => {
-            const sync = SYNC_STATUS_CONFIG[draftSyncStatus]
-            return (
-              <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none print:hidden">
-                <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
-                  {sync.icon === 'loader' ? (
-                    <Loader2Icon className="h-3 w-3 animate-spin text-amber-500" />
-                  ) : sync.icon === 'check' ? (
-                    <CheckIcon className="h-3 w-3 text-green-500" />
-                  ) : (
-                    <div className={cn('h-1.5 w-1.5 rounded-full', sync.dotColor, sync.animate && 'animate-pulse')} />
-                  )}
-                  {sync.label}
-                </div>
-              </div>
-            )
-          })()}
         </div>
 
       </div>
