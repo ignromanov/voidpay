@@ -115,8 +115,8 @@ importers:
         specifier: ^9.39.4
         version: 9.39.4
       '@next/eslint-plugin-next':
-        specifier: ^16.2.6
-        version: 16.2.6
+        specifier: ^16.2.7
+        version: 16.2.7
       '@remotion/cli':
         specifier: ^4.0.466
         version: 4.0.466(@swc/helpers@0.5.23)(bufferutil@4.1.0)(lightningcss@1.32.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(utf-8-validate@5.0.10)
@@ -1099,6 +1099,9 @@ packages:
 
   '@next/eslint-plugin-next@16.2.6':
     resolution: {integrity: sha512-Z8l6o4JWKUl755x4R+wogD86KPeU+Ckw4K+SYG4kHeOJtRenDeK+OSbGcqZpDtbwn9DsJVdir2UxmwXuinUbUw==}
+
+  '@next/eslint-plugin-next@16.2.7':
+    resolution: {integrity: sha512-VbS+QgMHqvIDMTIqD2xMBKK1otIpdAUKA8VLHFwR9h6OfU/mOm7w/69nQcvdmI8hCk99Wr2AsGLn/PJ/tMHw1w==}
 
   '@next/swc-darwin-arm64@16.2.7':
     resolution: {integrity: sha512-vm1EDI/pVaBNNiychmxk3fft+OhQPVD9cIM/tReLZIQ3TfQ4kqI9DwKk00dzuS1ulC7icbrzCFrmRRlk9PfNdw==}
@@ -7248,6 +7251,10 @@ snapshots:
   '@next/env@16.2.7': {}
 
   '@next/eslint-plugin-next@16.2.6':
+    dependencies:
+      fast-glob: 3.3.1
+
+  '@next/eslint-plugin-next@16.2.7':
     dependencies:
       fast-glob: 3.3.1
 
