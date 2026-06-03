@@ -121,8 +121,8 @@ importers:
         specifier: ^4.0.466
         version: 4.0.466(@swc/helpers@0.5.21)(bufferutil@4.1.0)(lightningcss@1.32.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(utf-8-validate@5.0.10)
       '@remotion/fonts':
-        specifier: ^4.0.466
-        version: 4.0.466(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        specifier: ^4.0.471
+        version: 4.0.471(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@remotion/tailwind-v4':
         specifier: ^4.0.0
         version: 4.0.462(@remotion/bundler@4.0.466(@swc/helpers@0.5.21)(bufferutil@4.1.0)(lightningcss@1.32.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(utf-8-validate@5.0.10))(webpack@5.105.0(lightningcss@1.32.0)(postcss@8.5.15))
@@ -1213,7 +1213,7 @@ packages:
 
   '@paulmillr/qr@0.2.1':
     resolution: {integrity: sha512-IHnV6A+zxU7XwmKFinmYjUcwlyK9+xkG3/s9KcQhI9BjQKycrJ1JRO+FbNYPwZiPKW3je/DR0k7w8/gLa5eaxQ==}
-    deprecated: 'The package is now available as "qr": npm install qr'
+    deprecated: 'Switch to "qr" (new package name) for security updates: npm install qr'
 
   '@radix-ui/number@1.1.1':
     resolution: {integrity: sha512-MkKCwxlXTgz6CFoJx3pCwn07GKp36+aZyu/u2Ln2VrA5DcdyCZkASEDBTd8x5whTQQL5CiYf4prXKLcgQdv29g==}
@@ -1599,8 +1599,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@remotion/fonts@4.0.466':
-    resolution: {integrity: sha512-vmpHwJCeg6cW6c9OpJevEfL1kffFAz9k9JDUIOo316bvlVrzSNlKUxYjHtz0QpZgjJy/TPdu93br87UqcyTt2g==}
+  '@remotion/fonts@4.0.471':
+    resolution: {integrity: sha512-0hzVo1i3Ld/gEorjBNG+ykMEULn9KpkJwULKdgEXkcSeIcCBzhzND1ZRNERaImvwbw9mSJXyahUX16mlAB/lfA==}
 
   '@remotion/licensing@4.0.466':
     resolution: {integrity: sha512-77v5U6Qj5OgXon+auVm61zdotrtsYqpqW6Zqgc6mS8W43FeOXzgrPoxyJzq+dU4Qm9X0b3QSrncqmjgoxLKwQA==}
@@ -5285,6 +5285,12 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
+  remotion@4.0.471:
+    resolution: {integrity: sha512-2ei7jYzAHx/UNyQyPvCiXA/fhxYSvUD9mXBIOOmjMjBApfeeHUzAhQCT2ytcExVmTmY2QMpLdjj20YROQjYvMA==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -7753,9 +7759,9 @@ snapshots:
   '@remotion/compositor-win32-x64-msvc@4.0.466':
     optional: true
 
-  '@remotion/fonts@4.0.466(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
+  '@remotion/fonts@4.0.471(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:
-      remotion: 4.0.466(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      remotion: 4.0.471(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
     transitivePeerDependencies:
       - react
       - react-dom
@@ -12510,6 +12516,11 @@ snapshots:
       set-function-name: 2.0.2
 
   remotion@4.0.466(react-dom@19.2.5(react@19.2.5))(react@19.2.5):
+    dependencies:
+      react: 19.2.5
+      react-dom: 19.2.5(react@19.2.5)
+
+  remotion@4.0.471(react-dom@19.2.5(react@19.2.5))(react@19.2.5):
     dependencies:
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
