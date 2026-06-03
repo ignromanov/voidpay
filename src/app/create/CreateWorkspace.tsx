@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Edit3Icon,
@@ -11,7 +11,7 @@ import {
 } from '@/shared/ui/icons'
 
 import { track, AnalyticsEvent } from '@/features/analytics'
-import { getNetworkName } from '@/entities/network'
+import { getNetworkName, getNetworkThemeName } from '@/entities/network'
 import { parseInvoiceHash } from '@/features/invoice-codec'
 import {
   validateInvoiceForGeneration,
@@ -19,7 +19,7 @@ import {
   UrlSizeError,
 } from '@/features/generate-link'
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkThemeName } from '@/entities/network'
+import type { DraftSyncStatus } from '@/entities/creator'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
 import { urlToRoute } from '@/shared/lib/navigation'
@@ -32,6 +32,29 @@ import { MobileTabBar, type TabItem } from '@/shared/ui/mobile-tab-bar'
 import { InvoiceForm } from '@/widgets/invoice-form'
 import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widgets/invoice-paper'
 import { SYNC_STATUS_CONFIG } from './constants'
+
+const TABS: TabItem[] = [
+  { id: 'editor', label: 'Editor', icon: <Edit3Icon className="w-4 h-4" /> },
+  { id: 'preview', label: 'Preview', icon: <EyeIcon className="w-4 h-4" /> },
+]
+
+function SyncChip({ status }: { status: DraftSyncStatus }) {
+  const sync = SYNC_STATUS_CONFIG[status]
+  return (
+    <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none print:hidden">
+      <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
+        {sync.icon === 'loader' ? (
+          <Loader2Icon className="h-3 w-3 animate-spin text-amber-500" />
+        ) : sync.icon === 'check' ? (
+          <CheckIcon className="h-3 w-3 text-green-500" />
+        ) : (
+          <div className={cn('h-1.5 w-1.5 rounded-full', sync.dotColor, sync.animate && 'animate-pulse')} />
+        )}
+        {sync.label}
+      </div>
+    </div>
+  )
+}
 
 export function CreateWorkspace() {
   const hash = useHashFragment()
@@ -52,22 +75,6 @@ export function CreateWorkspace() {
   useEffect(() => {
     if (!activeDraft) createNewDraft()
   }, [activeDraft, createNewDraft])
-
-  const tabs = useMemo<TabItem[]>(
-    () => [
-      {
-        id: 'editor',
-        label: 'Editor',
-        icon: <Edit3Icon className="w-4 h-4" />,
-      },
-      {
-        id: 'preview',
-        label: 'Preview',
-        icon: <EyeIcon className="w-4 h-4" />,
-      },
-    ],
-    []
-  )
 
   useEffect(() => {
     if (!hash) return
@@ -236,7 +243,7 @@ export function CreateWorkspace() {
       )}
 
       <div ref={tabBarRef} className="lg:hidden sticky top-[4rem] z-30 mx-auto w-full max-w-6xl px-4 pt-3 pb-2 print:hidden">
-        <MobileTabBar tabs={tabs} activeTab={mobileTab} onTabChange={(id) => setMobileTab(id as 'editor' | 'preview')} />
+        <MobileTabBar tabs={TABS} activeTab={mobileTab} onTabChange={(id) => setMobileTab(id as 'editor' | 'preview')} />
       </div>
 
       <div
@@ -301,23 +308,7 @@ export function CreateWorkspace() {
             networkId={invoiceData?.networkId ?? 1}
             onClick={handlePreviewClick}
             showExpandOverlay
-            overlay={(() => {
-              const sync = SYNC_STATUS_CONFIG[draftSyncStatus]
-              return (
-                <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none print:hidden">
-                  <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
-                    {sync.icon === 'loader' ? (
-                      <Loader2Icon className="h-3 w-3 animate-spin text-amber-500" />
-                    ) : sync.icon === 'check' ? (
-                      <CheckIcon className="h-3 w-3 text-green-500" />
-                    ) : (
-                      <div className={cn('h-1.5 w-1.5 rounded-full', sync.dotColor, sync.animate && 'animate-pulse')} />
-                    )}
-                    {sync.label}
-                  </div>
-                </div>
-              )
-            })()}
+            overlay={<SyncChip status={draftSyncStatus} />}
           >
             <InvoicePaper data={invoiceData} status="draft" />
           </ScaledInvoicePreview>
