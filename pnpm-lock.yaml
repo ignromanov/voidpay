@@ -205,8 +205,8 @@ importers:
         specifier: ^0.8.0
         version: 0.8.0(prettier@3.8.3)
       remotion:
-        specifier: ^4.0.466
-        version: 4.0.466(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        specifier: ^4.0.471
+        version: 4.0.471(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       tailwindcss:
         specifier: ^4.3.0
         version: 4.3.0
@@ -1213,7 +1213,7 @@ packages:
 
   '@paulmillr/qr@0.2.1':
     resolution: {integrity: sha512-IHnV6A+zxU7XwmKFinmYjUcwlyK9+xkG3/s9KcQhI9BjQKycrJ1JRO+FbNYPwZiPKW3je/DR0k7w8/gLa5eaxQ==}
-    deprecated: 'The package is now available as "qr": npm install qr'
+    deprecated: 'Switch to "qr" (new package name) for security updates: npm install qr'
 
   '@radix-ui/number@1.1.1':
     resolution: {integrity: sha512-MkKCwxlXTgz6CFoJx3pCwn07GKp36+aZyu/u2Ln2VrA5DcdyCZkASEDBTd8x5whTQQL5CiYf4prXKLcgQdv29g==}
@@ -5281,6 +5281,12 @@ packages:
 
   remotion@4.0.466:
     resolution: {integrity: sha512-8b4xQssIN8QWazi3udvpuhesgj2O8tXj596BSEzpDwCZE4lofIO57NmwUOovfcMaVdARITcI9tw8CxNOvBpORw==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
+  remotion@4.0.471:
+    resolution: {integrity: sha512-2ei7jYzAHx/UNyQyPvCiXA/fhxYSvUD9mXBIOOmjMjBApfeeHUzAhQCT2ytcExVmTmY2QMpLdjj20YROQjYvMA==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -12510,6 +12516,11 @@ snapshots:
       set-function-name: 2.0.2
 
   remotion@4.0.466(react-dom@19.2.5(react@19.2.5))(react@19.2.5):
+    dependencies:
+      react: 19.2.5
+      react-dom: 19.2.5(react@19.2.5)
+
+  remotion@4.0.471(react-dom@19.2.5(react@19.2.5))(react@19.2.5):
     dependencies:
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
