@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { LazyWeb3Provider } from '@/app/lazy-web3-provider'
 import { APP_URLS } from '@/shared/config'
@@ -85,9 +86,11 @@ export default function CreatePage() {
       />
 
       <CreatePageHero />
-      <LazyWeb3Provider>
-        <CreateWorkspace />
-      </LazyWeb3Provider>
+      <Suspense>
+        <LazyWeb3Provider>
+          <CreateWorkspace />
+        </LazyWeb3Provider>
+      </Suspense>
       <CreatePageHowItWorks />
       <CreatePageFaq />
     </>

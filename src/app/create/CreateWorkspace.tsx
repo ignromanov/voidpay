@@ -12,10 +12,8 @@ import {
 
 import { track, AnalyticsEvent } from '@/features/analytics'
 import { getNetworkName, getNetworkThemeName } from '@/entities/network'
-import { parseInvoiceHash } from '@/features/invoice-codec'
 import {
   validateInvoiceForGeneration,
-  generateAndTrackInvoice,
   UrlSizeError,
 } from '@/features/generate-link'
 import { useCreatorStore } from '@/entities/creator'
@@ -29,9 +27,15 @@ import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { Heading, Text } from '@/shared/ui/typography'
 import { MobileTabBar, type TabItem } from '@/shared/ui/mobile-tab-bar'
+import dynamic from 'next/dynamic'
 import { InvoiceForm } from '@/widgets/invoice-form'
-import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widgets/invoice-paper'
+import { InvoicePaper, ScaledInvoicePreview } from '@/widgets/invoice-paper'
 import { SYNC_STATUS_CONFIG } from './constants'
+
+const InvoicePreviewModal = dynamic(
+  () => import('@/widgets/invoice-paper').then((m) => m.InvoicePreviewModal),
+  { ssr: false }
+)
 
 const TABS: TabItem[] = [
   { id: 'editor', label: 'Editor', icon: <Edit3Icon className="w-4 h-4" /> },
@@ -81,6 +85,7 @@ export function CreateWorkspace() {
 
     let cancelled = false
     void (async () => {
+      const { parseInvoiceHash } = await import('@/features/invoice-codec')
       const result = await parseInvoiceHash(hash)
       if (cancelled) return
       if (result.success) {
@@ -186,6 +191,7 @@ export function CreateWorkspace() {
         })
       }
 
+      const { generateAndTrackInvoice } = await import('@/features/generate-link')
       const { url } = await generateAndTrackInvoice(activeDraft, lineItems)
 
       track(AnalyticsEvent.INVOICE_CREATE, {
