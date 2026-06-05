@@ -16,6 +16,9 @@
  * comparisonTable is accepted as a ReactNode prop so ComparisonTable
  * (which has no client-side needs) can be rendered by a server-side
  * ancestor when the RSC boundary allows it.
+ *
+ * demoInvoices is resolved on the server (RSC / page.tsx) so encodeInvoice
+ * (brotli-wasm) never runs in the browser on the landing page.
  */
 
 import type { ReactNode } from 'react'
@@ -27,17 +30,19 @@ import { WhyVoidPay } from '../why-voidpay/WhyVoidPay'
 import { AudienceSection } from '../audience-section/AudienceSection'
 import { FaqSection } from '../faq-section'
 import { FooterCta } from '../footer-cta/FooterCta'
+import type { DemoInvoice } from '../constants/demo-invoices'
 
 interface BelowFoldSectionsProps {
   comparisonTable: ReactNode
+  demoInvoices: DemoInvoice[]
 }
 
-export function BelowFoldSections({ comparisonTable }: BelowFoldSectionsProps) {
+export function BelowFoldSections({ comparisonTable, demoInvoices }: BelowFoldSectionsProps) {
   return (
     <>
       <HowItWorks />
       <VideoSection />
-      <DemoSection />
+      <DemoSection demoInvoices={demoInvoices} />
       <WhyVoidPay />
       {comparisonTable}
       <AudienceSection />

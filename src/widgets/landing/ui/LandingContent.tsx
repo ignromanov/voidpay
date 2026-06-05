@@ -26,6 +26,7 @@ import { HeroSection } from '../hero-section/HeroSection'
 import { SocialProofStrip } from '../social-proof'
 import { BelowFoldLoader } from './BelowFoldLoader'
 import { ComparisonTable } from '../comparison/ComparisonTable'
+import type { DemoInvoice } from '../constants/demo-invoices'
 
 /**
  * SEO-friendly placeholder for below-fold content.
@@ -52,11 +53,16 @@ function BelowFoldPlaceholder() {
   )
 }
 
+interface BelowFoldSectionsProps {
+  comparisonTable: ReactNode
+  demoInvoices: DemoInvoice[]
+}
+
 /**
  * LazyBelowFold - Loads below-fold sections ONLY when triggered
  */
-function LazyBelowFold() {
-  const [Component, setComponent] = useState<ComponentType<{ comparisonTable: ReactNode }> | null>(null)
+function LazyBelowFold({ demoInvoices }: { demoInvoices: DemoInvoice[] }) {
+  const [Component, setComponent] = useState<ComponentType<BelowFoldSectionsProps> | null>(null)
   const [loadError, setLoadError] = useState<Error | null>(null)
 
   useEffect(() => {
@@ -85,10 +91,14 @@ function LazyBelowFold() {
   }
 
   if (!Component) return <BelowFoldPlaceholder />
-  return <Component comparisonTable={<ComparisonTable />} />
+  return <Component comparisonTable={<ComparisonTable />} demoInvoices={demoInvoices} />
 }
 
-export function LandingContent() {
+interface LandingContentProps {
+  demoInvoices: DemoInvoice[]
+}
+
+export function LandingContent({ demoInvoices }: LandingContentProps) {
   // Landing uses the store's default 'ethereum' theme - no mount-time mutation needed.
 
   // Preload bundles after initial paint for smoother scrolling
@@ -136,7 +146,7 @@ export function LandingContent() {
         {/* Below-fold: Intersection Observer triggers lazy load.
             Same placeholder pre-trigger and while the chunk loads -> no CLS on swap. */}
         <BelowFoldLoader skeleton={<BelowFoldPlaceholder />} rootMargin="400px">
-          <LazyBelowFold />
+          <LazyBelowFold demoInvoices={demoInvoices} />
         </BelowFoldLoader>
       </div>
     </>

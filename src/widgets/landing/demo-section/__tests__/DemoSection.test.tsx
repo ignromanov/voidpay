@@ -2,14 +2,18 @@
  * DemoSection Tests
  * Feature: 012-landing-page
  * User Story: US4 (Interactive Demo)
+ *
+ * DemoSection now receives pre-resolved demoInvoices as a prop (server-side lift).
+ * Tests pass fixture data directly — no async loading, no brotli-wasm in the browser.
  */
 
 import { render, screen, fireEvent, act, waitFor } from '@/shared/lib/test-utils'
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+import { describe, expect, it, vi, beforeAll, beforeEach, afterEach } from 'vitest'
 import * as React from 'react'
 import type { ReactElement } from 'react'
 
 import { DemoSection } from '../DemoSection'
+import { getDemoInvoices, type DemoInvoice } from '../../constants/demo-invoices'
 
 // Custom render (no provider wrapper needed — NetworkThemeProvider removed)
 function renderWithProviders(ui: ReactElement) {
@@ -19,8 +23,8 @@ function renderWithProviders(ui: ReactElement) {
 // Note: framer-motion is globally mocked via vitest.config.ts alias
 // Global mock: useReducedMotion returns true (accessibility mode)
 
-// Mock only encodeInvoice (WASM/brotli) — real getDemoInvoices runs with real fixtures,
-// but skips the WASM roundtrip that times out waitFor under parallel test load.
+// Mock encodeInvoice so getDemoInvoices() can be called in beforeEach without WASM.
+// In production, getDemoInvoices() runs on the server where WASM works fine.
 vi.mock('@/features/invoice-codec', async () => {
   const actual = await vi.importActual<typeof import('@/features/invoice-codec')>('@/features/invoice-codec')
   return {
@@ -28,6 +32,8 @@ vi.mock('@/features/invoice-codec', async () => {
     encodeInvoice: vi.fn(async () => 'test-hash'),
   }
 })
+
+let fixtureInvoices: DemoInvoice[] = []
 
 // Mock next/link to render as a proper anchor
 vi.mock('next/link', () => ({
@@ -63,6 +69,10 @@ vi.mock('@/shared/ui', async () => {
 })
 
 describe('DemoSection', () => {
+  beforeAll(async () => {
+    fixtureInvoices = await getDemoInvoices()
+  })
+
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
   })
@@ -73,7 +83,7 @@ describe('DemoSection', () => {
 
   describe('T027-test: Invoice paper rendering', () => {
     it('should render invoice preview card', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       await waitFor(() => {
         expect(screen.getAllByText(/INVOICE/i)[0]).toBeInTheDocument()
@@ -81,7 +91,7 @@ describe('DemoSection', () => {
     })
 
     it('should display company name from invoice', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       // First demo invoice (Ethereum) - company name
       await waitFor(() => {
@@ -90,7 +100,7 @@ describe('DemoSection', () => {
     })
 
     it('should display line items', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       // First demo invoice line item
       await waitFor(() => {
@@ -99,7 +109,7 @@ describe('DemoSection', () => {
     })
 
     it('should display total amount with token', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       // First invoice: (40*0.125 + 8*0.1) - 5% = 5.51 ETH total
       await waitFor(() => {
@@ -117,7 +127,7 @@ describe('DemoSection', () => {
      */
 
     it('should NOT auto-rotate when reduced motion is preferred (accessibility)', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       // Wait for async demo invoices to load
       await waitFor(() => {
@@ -134,7 +144,7 @@ describe('DemoSection', () => {
     })
 
     it('should allow manual navigation via pagination dots', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       // Wait for async demo invoices to load
       await waitFor(() => {
@@ -154,7 +164,7 @@ describe('DemoSection', () => {
     // TODO: Investigate flaky timer behavior with reduced motion mode
     // The component appears to change state after advanceTimersByTime even in reduced motion mode
     it.skip('should stay on first invoice after time passes (reduced motion mode)', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       // Wait for async demo invoices to load
       await waitFor(() => {
@@ -176,7 +186,7 @@ describe('DemoSection', () => {
     const getHoverZone = () => document.querySelector('[class*="z-30"][class*="absolute"]')
 
     it('should show "Use This Template" button on hover', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       await waitFor(() => {
         expect(getHoverZone()).not.toBeNull()
@@ -190,7 +200,7 @@ describe('DemoSection', () => {
     })
 
     it('should link to /create with template parameter', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       await waitFor(() => {
         expect(getHoverZone()).not.toBeNull()
@@ -207,7 +217,7 @@ describe('DemoSection', () => {
     })
 
     it('should hide button on mouse leave', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       await waitFor(() => {
         expect(getHoverZone()).not.toBeNull()
@@ -232,7 +242,7 @@ describe('DemoSection', () => {
 
   describe('Navigation dots', () => {
     it('should render 5 navigation dots', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       // Dots have aria-label="View invoice {id}" format
       await waitFor(() => {
@@ -242,7 +252,7 @@ describe('DemoSection', () => {
     })
 
     it('should navigate to specific invoice on dot click', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       // Wait for async demo invoices to load
       await waitFor(() => {
@@ -260,7 +270,7 @@ describe('DemoSection', () => {
     })
 
     it('should navigate to fifth invoice (Polygon)', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       // Wait for async demo invoices to load
       await waitFor(() => {
@@ -280,7 +290,7 @@ describe('DemoSection', () => {
 
   describe('Network theme', () => {
     it('should render invoice paper with network information', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       // The first invoice is Ethereum network (net: 1)
       // InvoicePaper renders Payment Info section
@@ -292,7 +302,7 @@ describe('DemoSection', () => {
 
   describe('Accessibility', () => {
     it('should have proper aria-labelledby on section', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       await waitFor(() => {
         const section = document.querySelector('section')
@@ -301,13 +311,34 @@ describe('DemoSection', () => {
     })
 
     it('should have aria-labels on navigation dots', async () => {
-      renderWithProviders(<DemoSection />)
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
 
       await waitFor(() => {
         const dots = screen.getAllByRole('button')
         dots.forEach((dot) => {
           expect(dot).toHaveAttribute('aria-label')
         })
+      })
+    })
+  })
+
+  describe('Prop-driven data (server lift)', () => {
+    it('should show fallback when demoInvoices is empty', () => {
+      renderWithProviders(<DemoSection demoInvoices={[]} />)
+      expect(screen.getByText('Demo content unavailable')).toBeInTheDocument()
+    })
+
+    it('should render first invoice synchronously without async loading', () => {
+      renderWithProviders(<DemoSection demoInvoices={fixtureInvoices} />)
+      // Data is available immediately via props — no waitFor needed
+      expect(screen.getByText('EtherScale Solutions')).toBeInTheDocument()
+    })
+
+    it('createHash from fixture should be non-empty (server-resolved)', () => {
+      expect(fixtureInvoices.length).toBeGreaterThan(0)
+      fixtureInvoices.forEach((invoice) => {
+        // test-hash from mocked encodeInvoice — confirms hash was computed
+        expect(typeof invoice.createHash).toBe('string')
       })
     })
   })

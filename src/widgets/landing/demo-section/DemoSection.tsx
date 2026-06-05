@@ -16,23 +16,19 @@ import { useReducedMotion } from '@/shared/ui'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
 import { InvoicePaper, ScaledInvoicePreview, InvoicePaperProps } from '@/widgets/invoice-paper'
-import { getDemoInvoices, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
+import { type DemoInvoice, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
 import { useDemoRotation } from '../hooks/use-demo-rotation'
 
 import { DemoPagination } from './ui/DemoPagination'
 
-// Resolved type of getDemoInvoices element
-type DemoInvoice = Awaited<ReturnType<typeof getDemoInvoices>>[number]
+interface DemoSectionProps {
+  demoInvoices: DemoInvoice[]
+}
 
-export function DemoSection() {
+export function DemoSection({ demoInvoices }: DemoSectionProps) {
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const [isHovered, setIsHovered] = useState(false)
-  const [demoInvoices, setDemoInvoices] = useState<DemoInvoice[]>([])
   const prefersReducedMotion = useReducedMotion()
-
-  useEffect(() => {
-    void getDemoInvoices().then(setDemoInvoices)
-  }, [])
 
   const { activeIndex, pause, resume, goTo } = useDemoRotation({
     itemCount: demoInvoices.length,

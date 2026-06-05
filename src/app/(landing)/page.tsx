@@ -8,6 +8,7 @@ import type { Metadata } from 'next'
 import { APP_URLS, SOCIAL_URLS } from '@/shared/config'
 import { defaultOgImages } from '@/features/og-image'
 import { LandingContent, FAQ_ITEMS } from '@/widgets/landing'
+import { getDemoInvoices } from '@/widgets/landing/constants/demo-invoices'
 
 // JSON-LD: FAQPage schema for rich snippets
 const faqSchema = {
@@ -136,7 +137,9 @@ export const metadata: Metadata = {
   },
 }
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const demoInvoices = await getDemoInvoices()
+
   return (
     <>
       {/* JSON-LD Structured Data - rendered in initial SSR HTML for crawlers */}
@@ -159,7 +162,7 @@ export default function LandingPage() {
       />
 
       <main className="relative min-h-screen">
-        <LandingContent />
+        <LandingContent demoInvoices={demoInvoices} />
       </main>
     </>
   )

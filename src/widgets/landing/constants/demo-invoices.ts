@@ -5,9 +5,9 @@
  * All fields of Invoice are populated to demonstrate full functionality.
  * Each demo showcases a different invoice status and payment state.
  *
- * IMPORTANT: createHash is computed at build time (SSG).
- * encodeInvoice runs during `next build`, not on client.
- * Dates are computed relative to build time so demos stay fresh.
+ * getDemoInvoices() is called on the server (RSC / build time) and the
+ * resolved DemoInvoice[] is passed to DemoSection as a prop. The codec
+ * (brotli-wasm) never runs in the browser on the landing page.
  */
 
 import { encodeInvoice, generateSalt, deriveMagicDust } from '@/features/invoice-codec'
@@ -16,7 +16,7 @@ import type { Invoice } from '@/shared/lib/invoice-types'
 import type { InvoiceStatus } from '@/widgets/invoice-paper/types'
 
 /** Demo-only type for landing page invoice rotation */
-interface DemoInvoice {
+export interface DemoInvoice {
   invoiceId: string
   invoiceUrl: string
   createdAt: string
