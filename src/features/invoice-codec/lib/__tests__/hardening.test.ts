@@ -8,16 +8,9 @@ import type { Invoice } from '@/entities/invoice'
 import {
   decodeBase64url,
   encodeBase64url,
-  writeTlv,
-  sortCanonical,
-  groupedDeflate,
-  writeVarInt,
-  writeQuantity,
-  writeMantissa,
 } from '@/shared/lib/tlv-codec'
-import { TlvType, TOKEN_DICT } from '../tlv-map'
-import { generateSalt, computeDomainSeparator } from '../security'
-import { brotliCompressSync } from 'node:zlib'
+import { TOKEN_DICT } from '../tlv-map'
+import { encodeInvoiceCanonical, decodeInvoiceCanonical } from '@void-layer/codec'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -92,99 +85,49 @@ describe('hardening: empty input', () => {
 })
 
 // ---------------------------------------------------------------------------
-// 4. Type 253 whitelist: reject spoofed type_id
+// 4. Domain-separator integrity gate (WASM ChecksumMismatch)
 // ---------------------------------------------------------------------------
+//
+// Forward-compat (unknown odd tags): unknown-odd TLV types (e.g. Type 253) are
+// silently ignored by the WASM decoder — they do NOT cause rejection. This
+// forward-compat behaviour is covered at the package/Rust level in
+// packages/codec/tests/derive_odd_tag_full_invoice_vector.rs and does not
+// require a separate TS-level test.
 
-describe('hardening: type 253 whitelist — reject spoofed type_id', () => {
-  it('throws when compressed block contains non-whitelisted type_id (CHAIN_ID=2)', async () => {
-    // Build a valid full invoice binary, then replace (or inject) the
-    // COMPRESSED_TEXT (Type 253) TLV with a crafted block containing type_id=2.
-    //
-    // Strategy:
-    // 1. Encode a valid invoice to get the correct binary skeleton.
-    // 2. Parse the TLV records.
-    // 3. Build a crafted compressed block: [field_count=1][type_id=2][len][value]
-    //    with enough padding so Brotli actually compresses it (>= 100 bytes raw).
-    // 4. Replace/inject Type 253 TLV into the records, re-serialize, re-encode.
-
-    // Step 1: Build minimal but valid records manually (same as encodeInvoice does)
-    function utf8(s: string): Uint8Array {
-      return new TextEncoder().encode(s)
-    }
-    function addressToBytes(address: string): Uint8Array {
-      const hex = address.startsWith('0x') ? address.slice(2) : address
-      const bytes = new Uint8Array(20)
-      for (let i = 0; i < 20; i++) {
-        bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
-      }
-      return bytes
-    }
-    function uint32BE(value: number): Uint8Array {
-      const b = new Uint8Array(4)
-      b[0] = (value >>> 24) & 0xff
-      b[1] = (value >>> 16) & 0xff
-      b[2] = (value >>> 8) & 0xff
-      b[3] = value & 0xff
-      return b
-    }
-
+describe('hardening: domain-separator integrity gate', () => {
+  it('rejects tampered canonical bytes with "checksum mismatch"', () => {
+    // Build canonical TLV bytes via the WASM encoder (synchronous in Node/vitest).
     const inv = createTestInvoice()
-    const salt = generateSalt()
+    const pkgInvoice = {
+      invoice_id: inv.invoiceId,
+      issued_at: inv.issuedAt,
+      due_at: inv.dueAt,
+      network_id: inv.networkId as 1,
+      currency: inv.currency,
+      decimals: inv.decimals,
+      total: inv.total ?? '0',
+      salt: '00000000000000000000000000000000',
+      from: {
+        name: inv.from.name,
+        wallet_address: inv.from.walletAddress,
+      },
+      client: { name: inv.client.name },
+      items: inv.items.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        rate: item.rate,
+      })),
+    }
+    const canonical = encodeInvoiceCanonical(pkgInvoice)
 
-    // Craft a compressed block that contains type_id=2 (CHAIN_ID, not whitelisted).
-    // Format: [field_count: uint8] [type_id: uint8] [value_len: varint] [value: bytes]
-    // We need raw >= 100 bytes to pass Brotli's compression threshold in groupedDeflate,
-    // so we pad the value with zeroes.
-    const paddedValue = new Uint8Array(120).fill(0x41) // 120 'A' bytes
-    const rawParts: number[] = [1] // field_count = 1
-    rawParts.push(TlvType.CHAIN_ID) // type_id = 2 (non-whitelisted, even type)
-    writeVarInt(rawParts, paddedValue.length)
-    for (const b of paddedValue) rawParts.push(b)
+    // Flip one byte in the middle of the payload (well inside the body,
+    // past the 3-byte header, targeting a non-Type-31 data byte).
+    const tampered = new Uint8Array(canonical)
+    tampered[Math.floor(canonical.length / 2)] ^= 0xff
 
-    const raw = new Uint8Array(rawParts)
-    const spoofedCompressed = new Uint8Array(brotliCompressSync(Buffer.from(raw)))
-
-    // Build valid TLV records without COMPRESSED_TEXT
-    // chainId=1 uses dict encoding: [0x00, 0x01]
-    const chainIdBuf: number[] = []
-    chainIdBuf.push(0x00, 0x01) // dict prefix + code for Ethereum (chainId=1)
-
-    // items: [count=1][descLen][desc][scale: uint8][scaled_value: varint][mantissa: bigint varint][zeros: uint8]
-    const itemsBuf: number[] = [1] // count
-    const desc = utf8(inv.items[0]!.description)
-    writeVarInt(itemsBuf, desc.length)
-    for (const b of desc) itemsBuf.push(b)
-    writeQuantity(itemsBuf, 1) // quantity = 1
-    writeMantissa(itemsBuf, BigInt(inv.items[0]!.rate)) // rate = 100000000n
-
-    const records = [
-      { type: TlvType.CHAIN_ID, value: new Uint8Array(chainIdBuf) },
-      { type: TlvType.ISSUED_AT, value: uint32BE(inv.issuedAt) },
-      { type: TlvType.DUE_AT, value: uint32BE(inv.dueAt) },
-      { type: TlvType.DECIMALS, value: new Uint8Array([inv.decimals]) },
-      { type: TlvType.FROM_WALLET, value: addressToBytes(inv.from.walletAddress) },
-      { type: TlvType.CURRENCY, value: new Uint8Array([0x00, 1]) },        // USDC dict code=1
-      { type: TlvType.ITEMS, value: new Uint8Array(itemsBuf) },
-      { type: TlvType.FROM_NAME, value: utf8(inv.from.name) },
-      { type: TlvType.CLIENT_NAME, value: utf8(inv.client.name) },
-      { type: TlvType.SALT, value: salt },
-      { type: TlvType.INVOICE_ID, value: utf8(inv.invoiceId) },
-      // Inject the spoofed compressed block
-      { type: TlvType.COMPRESSED_TEXT, value: spoofedCompressed },
-    ]
-
-    // Sort canonical and add domain separator
-    const sorted = sortCanonical(records)
-    const domainSep = computeDomainSeparator(sorted)
-    sorted.push({ type: TlvType.DOMAIN_SEPARATOR, value: domainSep })
-    const finalRecords = sortCanonical(sorted)
-
-    const bytes = writeTlv(finalRecords)
-    const encoded = encodeBase64url(bytes)
-
-    // WASM decoder rejects the malformed payload (security invariant holds).
-    // Error message changed from JS "Type spoofing" to WASM-internal message after codec cutover.
-    await expect(decodeInvoice(encoded)).rejects.toThrow()
+    // The WASM decoder must reject with the specific domain-separator error.
+    // `checksum mismatch` is the semver-locked display string from CodecError::ChecksumMismatch.
+    expect(() => decodeInvoiceCanonical(tampered)).toThrow('checksum mismatch')
   })
 })
 
