@@ -108,9 +108,39 @@ export function VideoSection() {
               controls={prefersReducedMotion || isMobile}
               aria-label="VoidPay product walkthrough: creating and paying a crypto invoice"
               onPlay={handlePlay}
-            />
+            >
+              <track
+                kind="captions"
+                srcLang="en"
+                label="English"
+                src="/video/voidpay-9x16-v2.en.vtt"
+                default
+              />
+            </video>
           </div>
 
+          {/* Transcript — server-rendered crawlable text matching VTT cues. */}
+          <details className="px-4 py-3 text-left text-sm text-zinc-400">
+            <summary className="cursor-pointer select-none">Transcript</summary>
+            <ol className="mt-2 list-inside list-decimal space-y-1">
+              <li>Sending wallet addresses in Telegram?</li>
+              <li>Create an invoice.</li>
+              <li>No signup.</li>
+              <li>No account. No KYC.</li>
+              <li>Get a link.</li>
+              <li>Invoice ready.</li>
+              <li>The link is the invoice.</li>
+              <li>Hash never leaves the browser.</li>
+              <li>Share it anywhere.</li>
+              <li>Payer opens the link.</li>
+              <li>No intermediary.</li>
+              <li>Unique amount. Unique payment.</li>
+              <li>Exact on-chain match.</li>
+              <li>Payment confirmed.</li>
+              <li>Not our servers.</li>
+              <li>Works even if we shut down.</li>
+            </ol>
+          </details>
         </figure>
 
         {/* CTA */}
