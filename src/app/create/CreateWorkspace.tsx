@@ -303,7 +303,7 @@ export function CreateWorkspace() {
           className={cn(
             'relative flex items-start justify-center',
             'w-full sm:min-w-[400px] lg:min-w-[580px]',
-            'lg:sticky lg:top-[5rem] lg:h-[calc(100dvh-6rem)]',
+            'h-[calc(100dvh-10rem)] lg:sticky lg:top-[5rem] lg:h-[calc(100dvh-6rem)]',
             'p-4 sm:p-5 lg:p-6',
             mobileTab === 'editor' ? 'hidden lg:flex print:!block' : 'flex'
           )}
