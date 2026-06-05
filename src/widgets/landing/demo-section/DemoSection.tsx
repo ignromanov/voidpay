@@ -2,12 +2,16 @@
  * DemoSection - Rotating invoice demo with network themes
  * Feature: 012-landing-page
  * User Story: US4 (Interactive Demo Experience)
+ *
+ * Demo invoices are built from static data + precomputed hashes — no codec on client.
+ * Hashes are written to demo-invoices.generated.ts by scripts/generate-demo-hashes.ts
+ * during the prebuild step. Empty hashes fall back gracefully in dev / vitest.
  */
 
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { track, AnalyticsEvent } from '@/features/analytics'
 import { useCreatorStore } from '@/entities/creator'
@@ -16,23 +20,21 @@ import { useReducedMotion } from '@/shared/ui'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
 import { InvoicePaper, ScaledInvoicePreview, InvoicePaperProps } from '@/widgets/invoice-paper'
-import { getDemoInvoices, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
+import { buildDemoInvoices, ROTATION_INTERVAL_MS } from '../constants/demo-invoices'
+import { DEMO_CREATE_HASHES } from '../constants/demo-invoices.generated'
 import { useDemoRotation } from '../hooks/use-demo-rotation'
 
 import { DemoPagination } from './ui/DemoPagination'
 
-// Resolved type of getDemoInvoices element
-type DemoInvoice = Awaited<ReturnType<typeof getDemoInvoices>>[number]
+type DemoInvoice = ReturnType<typeof buildDemoInvoices>[number]
 
 export function DemoSection() {
   const setNetworkTheme = useCreatorStore((s) => s.setNetworkTheme)
   const [isHovered, setIsHovered] = useState(false)
-  const [demoInvoices, setDemoInvoices] = useState<DemoInvoice[]>([])
   const prefersReducedMotion = useReducedMotion()
 
-  useEffect(() => {
-    void getDemoInvoices().then(setDemoInvoices)
-  }, [])
+  // Build demo invoices synchronously from static data + precomputed hashes — no async, no codec
+  const demoInvoices = useMemo<DemoInvoice[]>(() => buildDemoInvoices(DEMO_CREATE_HASHES), [])
 
   const { activeIndex, pause, resume, goTo } = useDemoRotation({
     itemCount: demoInvoices.length,
@@ -42,9 +44,9 @@ export function DemoSection() {
 
   // Sync network theme with active invoice
   useEffect(() => {
-    const currentInvoice = demoInvoices[activeIndex]
-    if (currentInvoice) {
-      setNetworkTheme(getNetworkThemeName(currentInvoice.data.networkId))
+    const invoice = demoInvoices[activeIndex]
+    if (invoice) {
+      setNetworkTheme(getNetworkThemeName(invoice.data.networkId))
     }
   }, [activeIndex, demoInvoices, setNetworkTheme])
 
@@ -60,31 +62,37 @@ export function DemoSection() {
     resume()
   }, [resume])
 
-  // Touch swipe to navigate between demo invoices
   const touchStartRef = useRef(0)
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0]
-    if (touch) touchStartRef.current = touch.clientX
-    pause()
-  }, [pause])
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    const touch = e.changedTouches[0]
-    if (!touch || demoInvoices.length === 0) return
-    const diff = touch.clientX - touchStartRef.current
-    if (Math.abs(diff) > 50) {
-      const next = diff > 0
-        ? (activeIndex - 1 + demoInvoices.length) % demoInvoices.length
-        : (activeIndex + 1) % demoInvoices.length
-      goTo(next)
-    }
-  }, [activeIndex, demoInvoices.length, goTo])
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      const touch = e.touches[0]
+      if (touch) touchStartRef.current = touch.clientX
+      pause()
+    },
+    [pause],
+  )
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const touch = e.changedTouches[0]
+      if (!touch || demoInvoices.length === 0) return
+      const diff = touch.clientX - touchStartRef.current
+      if (Math.abs(diff) > 50) {
+        const next =
+          diff > 0
+            ? (activeIndex - 1 + demoInvoices.length) % demoInvoices.length
+            : (activeIndex + 1) % demoInvoices.length
+        goTo(next)
+      }
+    },
+    [activeIndex, demoInvoices.length, goTo],
+  )
 
   const handleDotSelect = useCallback(
     (index: number) => {
       goTo(index)
       pause()
     },
-    [goTo, pause]
+    [goTo, pause],
   )
 
   if (!currentInvoice) {

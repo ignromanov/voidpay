@@ -19,15 +19,16 @@ function renderWithProviders(ui: ReactElement) {
 // Note: framer-motion is globally mocked via vitest.config.ts alias
 // Global mock: useReducedMotion returns true (accessibility mode)
 
-// Mock only encodeInvoice (WASM/brotli) — real getDemoInvoices runs with real fixtures,
-// but skips the WASM roundtrip that times out waitFor under parallel test load.
-vi.mock('@/features/invoice-codec', async () => {
-  const actual = await vi.importActual<typeof import('@/features/invoice-codec')>('@/features/invoice-codec')
-  return {
-    ...actual,
-    encodeInvoice: vi.fn(async () => 'test-hash'),
-  }
-})
+// Mock generated hashes — static module, no codec needed in tests
+vi.mock('../constants/demo-invoices.generated', () => ({
+  DEMO_CREATE_HASHES: {
+    'INV-2026-042': 'test-hash-eth',
+    'INV-2026-087': 'test-hash-arb',
+    'INV-2026-135': 'test-hash-op',
+    'INV-2026-217': 'test-hash-base',
+    'INV-2026-198': 'test-hash-poly',
+  },
+}))
 
 // Mock next/link to render as a proper anchor
 vi.mock('next/link', () => ({
@@ -45,8 +46,6 @@ vi.mock('@/shared/ui', async () => {
     ...actual,
     Button: vi.fn(({ children, asChild, ...props }) => {
       if (asChild) {
-        // For asChild with Link, children is the Link element
-        // We need to extract the Link's children and href
         const linkElement = children as React.ReactElement<{
           href: string
           children: React.ReactNode
@@ -72,40 +71,28 @@ describe('DemoSection', () => {
   })
 
   describe('T027-test: Invoice paper rendering', () => {
-    it('should render invoice preview card', async () => {
+    it('should render invoice preview card', () => {
       renderWithProviders(<DemoSection />)
-
-      await waitFor(() => {
-        expect(screen.getAllByText(/INVOICE/i)[0]).toBeInTheDocument()
-      })
+      expect(screen.getAllByText(/INVOICE/i)[0]).toBeInTheDocument()
     })
 
-    it('should display company name from invoice', async () => {
+    it('should display company name from invoice', () => {
       renderWithProviders(<DemoSection />)
-
       // First demo invoice (Ethereum) - company name
-      await waitFor(() => {
-        expect(screen.getByText('EtherScale Solutions')).toBeInTheDocument()
-      })
+      expect(screen.getByText('EtherScale Solutions')).toBeInTheDocument()
     })
 
-    it('should display line items', async () => {
+    it('should display line items', () => {
       renderWithProviders(<DemoSection />)
-
       // First demo invoice line item
-      await waitFor(() => {
-        expect(screen.getByText(/Smart Contract.*Audit/i)).toBeInTheDocument()
-      })
+      expect(screen.getByText(/Smart Contract.*Audit/i)).toBeInTheDocument()
     })
 
-    it('should display total amount with token', async () => {
+    it('should display total amount with token', () => {
       renderWithProviders(<DemoSection />)
-
       // First invoice: (40*0.125 + 8*0.1) - 5% = 5.51 ETH total
-      await waitFor(() => {
-        expect(screen.getAllByText(/5\.51/)[0]).toBeInTheDocument()
-        expect(screen.getAllByText(/ETH/)[0]).toBeInTheDocument()
-      })
+      expect(screen.getAllByText(/5\.51/)[0]).toBeInTheDocument()
+      expect(screen.getAllByText(/ETH/)[0]).toBeInTheDocument()
     })
   })
 
@@ -119,10 +106,7 @@ describe('DemoSection', () => {
     it('should NOT auto-rotate when reduced motion is preferred (accessibility)', async () => {
       renderWithProviders(<DemoSection />)
 
-      // Wait for async demo invoices to load
-      await waitFor(() => {
-        expect(screen.getByText('EtherScale Solutions')).toBeInTheDocument()
-      })
+      expect(screen.getByText('EtherScale Solutions')).toBeInTheDocument()
 
       // Fast-forward 15 seconds - should NOT rotate because reduced motion is preferred
       await act(async () => {
@@ -136,10 +120,7 @@ describe('DemoSection', () => {
     it('should allow manual navigation via pagination dots', async () => {
       renderWithProviders(<DemoSection />)
 
-      // Wait for async demo invoices to load
-      await waitFor(() => {
-        expect(screen.getByText('EtherScale Solutions')).toBeInTheDocument()
-      })
+      expect(screen.getByText('EtherScale Solutions')).toBeInTheDocument()
 
       // Click on Arbitrum pagination dot to manually navigate (second invoice)
       const dots = screen.getAllByRole('button', { name: /view invoice/i })
@@ -152,35 +133,26 @@ describe('DemoSection', () => {
     })
 
     // TODO: Investigate flaky timer behavior with reduced motion mode
-    // The component appears to change state after advanceTimersByTime even in reduced motion mode
     it.skip('should stay on first invoice after time passes (reduced motion mode)', async () => {
       renderWithProviders(<DemoSection />)
 
-      // Wait for async demo invoices to load
-      await waitFor(() => {
-        expect(screen.getAllByText(/EtherScale/i).length).toBeGreaterThan(0)
-      })
+      expect(screen.getAllByText(/EtherScale/i).length).toBeGreaterThan(0)
 
-      // Fast-forward 60 seconds - no rotation should happen (reduced motion mode)
       await act(async () => {
         vi.advanceTimersByTime(60000)
       })
 
-      // Should still be on first invoice after timer advance
       expect(screen.getAllByText(/EtherScale/i).length).toBeGreaterThan(0)
     })
   })
 
   describe('T029-test: Use This Template button on hover', () => {
-    // Helper to find the hover zone container (z-30 overlay inside ScaledInvoicePreview)
     const getHoverZone = () => document.querySelector('[class*="z-30"][class*="absolute"]')
 
     it('should show "Use This Template" button on hover', async () => {
       renderWithProviders(<DemoSection />)
 
-      await waitFor(() => {
-        expect(getHoverZone()).not.toBeNull()
-      })
+      expect(getHoverZone()).not.toBeNull()
 
       await act(async () => {
         fireEvent.mouseEnter(getHoverZone()!)
@@ -192,35 +164,29 @@ describe('DemoSection', () => {
     it('should link to /create with template parameter', async () => {
       renderWithProviders(<DemoSection />)
 
-      await waitFor(() => {
-        expect(getHoverZone()).not.toBeNull()
-      })
+      expect(getHoverZone()).not.toBeNull()
 
       await act(async () => {
         fireEvent.mouseEnter(getHoverZone()!)
       })
 
       const link = screen.getByRole('link', { name: /use this template/i })
-      // Link should point to /create with encoded invoice hash
       const href = link.getAttribute('href')
+      // In tests, DEMO_CREATE_HASHES provides 'test-hash-eth' for the first invoice
       expect(href).toMatch(/^\/create#/)
     })
 
     it('should hide button on mouse leave', async () => {
       renderWithProviders(<DemoSection />)
 
-      await waitFor(() => {
-        expect(getHoverZone()).not.toBeNull()
-      })
+      expect(getHoverZone()).not.toBeNull()
 
-      // Mouse enter - show button (opacity-100)
       await act(async () => {
         fireEvent.mouseEnter(getHoverZone()!)
       })
       const link = screen.getByRole('link', { name: /use this template/i })
       expect(link).toBeInTheDocument()
 
-      // Mouse leave - on mobile overlay stays visible (opacity-100 md:opacity-0)
       await act(async () => {
         fireEvent.mouseLeave(getHoverZone()!)
       })
@@ -231,25 +197,15 @@ describe('DemoSection', () => {
   })
 
   describe('Navigation dots', () => {
-    it('should render 5 navigation dots', async () => {
+    it('should render 5 navigation dots', () => {
       renderWithProviders(<DemoSection />)
-
-      // Dots have aria-label="View invoice {id}" format
-      await waitFor(() => {
-        const dots = screen.getAllByRole('button', { name: /view invoice/i })
-        expect(dots).toHaveLength(5)
-      })
+      const dots = screen.getAllByRole('button', { name: /view invoice/i })
+      expect(dots).toHaveLength(5)
     })
 
     it('should navigate to specific invoice on dot click', async () => {
       renderWithProviders(<DemoSection />)
 
-      // Wait for async demo invoices to load
-      await waitFor(() => {
-        expect(screen.getAllByRole('button', { name: /view invoice/i }).length).toBe(5)
-      })
-
-      // Click on third dot (Optimism - index 2)
       const dots = screen.getAllByRole('button', { name: /view invoice/i })
       await act(async () => {
         fireEvent.click(dots[2]!)
@@ -262,12 +218,6 @@ describe('DemoSection', () => {
     it('should navigate to fifth invoice (Polygon)', async () => {
       renderWithProviders(<DemoSection />)
 
-      // Wait for async demo invoices to load
-      await waitFor(() => {
-        expect(screen.getAllByRole('button', { name: /view invoice/i }).length).toBe(5)
-      })
-
-      // Click on fifth dot (Polygon - index 4, after Base)
       const dots = screen.getAllByRole('button', { name: /view invoice/i })
       await act(async () => {
         fireEvent.click(dots[4]!)
@@ -279,25 +229,17 @@ describe('DemoSection', () => {
   })
 
   describe('Network theme', () => {
-    it('should render invoice paper with network information', async () => {
+    it('should render invoice paper with network information', () => {
       renderWithProviders(<DemoSection />)
-
-      // The first invoice is Ethereum network (net: 1)
-      // InvoicePaper renders Payment Info section
-      await waitFor(() => {
-        expect(screen.getByText(/Payment Info/i)).toBeInTheDocument()
-      })
+      expect(screen.getByText(/Payment Info/i)).toBeInTheDocument()
     })
   })
 
   describe('Accessibility', () => {
-    it('should have proper aria-labelledby on section', async () => {
+    it('should have proper aria-labelledby on section', () => {
       renderWithProviders(<DemoSection />)
-
-      await waitFor(() => {
-        const section = document.querySelector('section')
-        expect(section).toHaveAttribute('aria-labelledby', 'demo-heading')
-      })
+      const section = document.querySelector('section')
+      expect(section).toHaveAttribute('aria-labelledby', 'demo-heading')
     })
 
     it('should have aria-labels on navigation dots', async () => {
