@@ -123,6 +123,7 @@
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },
+  "browserslist": ["chrome 111", "safari 16.4", "firefox 128", "edge 111"],
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --fix",
