@@ -52,6 +52,7 @@ export function Navigation() {
             <div className="flex items-center gap-1.5 sm:gap-2">
               <Link
                 href="/history"
+                aria-label="History"
                 className={`inline-flex min-h-[44px] items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                   isHistory
                     ? 'bg-zinc-800 text-zinc-50'
@@ -62,12 +63,12 @@ export function Navigation() {
                 <span className="hidden sm:inline">History</span>
               </Link>
 
-              <Link href="/create">
-                <Button variant="outline" size="sm" className="gap-1.5">
+              <Button asChild variant="outline" size="sm" className="gap-1.5" aria-label="Create">
+                <Link href="/create">
                   <PlusIcon className="h-4 w-4" />
                   <span className="hidden sm:inline">Create</span>
-                </Button>
-              </Link>
+                </Link>
+              </Button>
 
               {/* Separator */}
               <div className="mx-2 h-6 w-px bg-zinc-800" />
