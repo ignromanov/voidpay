@@ -172,6 +172,25 @@ describe('VideoSection', () => {
       expect(video).toHaveAttribute('controls')
     })
 
+    it('mobile path: should NOT have autoplay attribute', () => {
+      stubMobileViewport()
+      render(<VideoSection />)
+      const video = document.querySelector('video')
+      // On mobile, autoPlay is disabled so preload="none" actually defers the fetch
+      expect(video).not.toHaveAttribute('autoplay')
+    })
+
+    it('mobile path: should show controls for tap-to-play affordance', () => {
+      stubMobileViewport()
+      render(<VideoSection />)
+      const video = document.querySelector('video')
+      expect(video).toHaveAttribute('controls')
+    })
+
+    // Desktop autoplay when reduced-motion is off cannot be tested in this suite:
+    // useReducedMotion is globally mocked to return true (vitest.setup.ts).
+    // The mobile-specific cases above cover the new branching logic.
+
     it('should have an accessible aria-label on the video', () => {
       render(<VideoSection />)
       const video = document.querySelector('video')
@@ -236,7 +255,8 @@ describe('VideoSection', () => {
 
     it('should register an IntersectionObserver when reduced-motion is off', () => {
       // Note: global mock returns prefersReducedMotion=true, so observer is NOT registered.
-      // This test documents that the observer is skipped in reduced-motion mode.
+      // Observer is also skipped on mobile. This test documents that the observer is
+      // skipped in reduced-motion mode (global mock).
       render(<VideoSection />)
       // Under global reduced-motion mock (true), IntersectionObserver should NOT be called
       expect(IntersectionObserver).not.toHaveBeenCalled()

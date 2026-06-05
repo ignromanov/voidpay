@@ -7,8 +7,10 @@
  * Only the video for the active viewport is mounted — no double-fetch.
  * Aspect-ratio box reserved to prevent CLS during SSR → client transition.
  * Reduced motion: autoplay suppressed; poster shown with native controls.
+ * Mobile: autoplay disabled entirely so preload="none" actually defers the
+ * 2.7MB fetch. Poster shown with native controls for tap-to-play affordance.
  * Off-screen: IntersectionObserver pauses video when scrolled out of view
- * and resumes when scrolled back in (skipped under reduced-motion).
+ * and resumes when scrolled back in (skipped under reduced-motion or mobile).
  */
 
 'use client'
@@ -37,9 +39,10 @@ export function VideoSection() {
   }, [])
 
   // Pause the off-screen video to avoid wasting data/battery.
-  // Skip entirely under reduced-motion — videos aren't autoplaying anyway.
+  // Skip under reduced-motion or mobile — videos aren't autoplaying in those cases.
   useEffect(() => {
     if (prefersReducedMotion) return
+    if (isMobile) return
     if (typeof window === 'undefined') return
 
     const section = sectionRef.current
@@ -62,7 +65,7 @@ export function VideoSection() {
 
     observer.observe(section)
     return () => observer.disconnect()
-  }, [prefersReducedMotion])
+  }, [prefersReducedMotion, isMobile])
 
   const videoSrc = isMobile ? '/video/voidpay-9x16-v2.mp4' : '/video/voidpay-16x9-v2.mp4'
   const wrapperClassName = isMobile
@@ -98,11 +101,11 @@ export function VideoSection() {
               src={videoSrc}
               poster="/video/poster-scene5.webp"
               muted
-              autoPlay={!prefersReducedMotion}
+              autoPlay={!prefersReducedMotion && !isMobile}
               loop
               playsInline
               preload="none"
-              controls={prefersReducedMotion}
+              controls={prefersReducedMotion || isMobile}
               aria-label="VoidPay product walkthrough: creating and paying a crypto invoice"
               onPlay={handlePlay}
             />
