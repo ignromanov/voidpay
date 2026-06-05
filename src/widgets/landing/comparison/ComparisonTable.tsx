@@ -194,7 +194,7 @@ export function ComparisonTable() {
         </div>
 
         {/* Disclaimer */}
-        <Text variant="small" className="mt-6 text-center text-zinc-500">
+        <Text variant="small" className="mt-6 text-center text-zinc-400">
           Comparison based on public documentation as of April 2026. Features may vary.
         </Text>
         <div className="mt-4 text-center">

@@ -111,9 +111,6 @@ export function VideoSection() {
             />
           </div>
 
-          <figcaption className="px-4 py-3 text-sm text-zinc-500">
-            Silent by design. Captions tell the story.
-          </figcaption>
         </figure>
 
         {/* CTA */}
