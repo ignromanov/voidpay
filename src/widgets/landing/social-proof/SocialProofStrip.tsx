@@ -9,6 +9,7 @@
 
 import type { ComponentType, SVGProps } from 'react'
 
+import { SOCIAL_URLS } from '@/shared/config'
 import { GithubIcon, GlobeIcon, LockIcon, ServerOffIcon } from '@/shared/ui/icons'
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement> & { size?: number | string }>
@@ -30,7 +31,7 @@ const TRUST_BADGES: TrustBadgeData[] = [
     icon: GithubIcon,
     label: 'Open Source',
     description: 'Verify the code yourself',
-    href: 'https://github.com/ignromanov/voidpay',
+    href: SOCIAL_URLS.github,
   },
   {
     icon: ServerOffIcon,

@@ -19,7 +19,7 @@
  */
 
 import dynamic from 'next/dynamic'
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAccount } from 'wagmi'
 import { track, AnalyticsEvent } from '@/features/analytics'
@@ -98,8 +98,10 @@ export function LazyWeb3Provider({ children }: LazyWeb3ProviderProps) {
   // Always render Web3Provider - it handles its own loading state internally
   // This prevents the unmount/remount cycle that caused flashing
   // OpenInBrowserGateProvider must sit inside Web3Provider so useConnectModal resolves
+  const contextValue = useMemo(() => isLoaded, [isLoaded])
+
   return (
-    <Web3LoadedContext.Provider value={isLoaded}>
+    <Web3LoadedContext.Provider value={contextValue}>
       <Web3Provider>
         <OpenInBrowserGateProvider>
           <WalletConnectTracker />

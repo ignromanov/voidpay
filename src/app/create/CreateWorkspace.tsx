@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Edit3Icon,
@@ -11,15 +11,13 @@ import {
 } from '@/shared/ui/icons'
 
 import { track, AnalyticsEvent } from '@/features/analytics'
-import { getNetworkName } from '@/entities/network'
-import { parseInvoiceHash } from '@/features/invoice-codec'
+import { getNetworkName, getNetworkThemeName } from '@/entities/network'
 import {
   validateInvoiceForGeneration,
-  generateAndTrackInvoice,
   UrlSizeError,
 } from '@/features/generate-link'
 import { useCreatorStore } from '@/entities/creator'
-import { getNetworkThemeName } from '@/entities/network'
+import type { DraftSyncStatus } from '@/entities/creator'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
 import { urlToRoute } from '@/shared/lib/navigation'
@@ -29,9 +27,38 @@ import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { Heading, Text } from '@/shared/ui/typography'
 import { MobileTabBar, type TabItem } from '@/shared/ui/mobile-tab-bar'
+import dynamic from 'next/dynamic'
 import { InvoiceForm } from '@/widgets/invoice-form'
-import { InvoicePaper, InvoicePreviewModal, ScaledInvoicePreview } from '@/widgets/invoice-paper'
+import { InvoicePaper, ScaledInvoicePreview } from '@/widgets/invoice-paper'
 import { SYNC_STATUS_CONFIG } from './constants'
+
+const InvoicePreviewModal = dynamic(
+  () => import('@/widgets/invoice-paper').then((m) => m.InvoicePreviewModal),
+  { ssr: false }
+)
+
+const TABS: TabItem[] = [
+  { id: 'editor', label: 'Editor', icon: <Edit3Icon className="w-4 h-4" /> },
+  { id: 'preview', label: 'Preview', icon: <EyeIcon className="w-4 h-4" /> },
+]
+
+function SyncChip({ status }: { status: DraftSyncStatus }) {
+  const sync = SYNC_STATUS_CONFIG[status]
+  return (
+    <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none print:hidden">
+      <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
+        {sync.icon === 'loader' ? (
+          <Loader2Icon className="h-3 w-3 animate-spin text-amber-500" />
+        ) : sync.icon === 'check' ? (
+          <CheckIcon className="h-3 w-3 text-green-500" />
+        ) : (
+          <div className={cn('h-1.5 w-1.5 rounded-full', sync.dotColor, sync.animate && 'animate-pulse')} />
+        )}
+        {sync.label}
+      </div>
+    </div>
+  )
+}
 
 export function CreateWorkspace() {
   const hash = useHashFragment()
@@ -53,27 +80,12 @@ export function CreateWorkspace() {
     if (!activeDraft) createNewDraft()
   }, [activeDraft, createNewDraft])
 
-  const tabs = useMemo<TabItem[]>(
-    () => [
-      {
-        id: 'editor',
-        label: 'Editor',
-        icon: <Edit3Icon className="w-4 h-4" />,
-      },
-      {
-        id: 'preview',
-        label: 'Preview',
-        icon: <EyeIcon className="w-4 h-4" />,
-      },
-    ],
-    []
-  )
-
   useEffect(() => {
     if (!hash) return
 
     let cancelled = false
     void (async () => {
+      const { parseInvoiceHash } = await import('@/features/invoice-codec')
       const result = await parseInvoiceHash(hash)
       if (cancelled) return
       if (result.success) {
@@ -114,6 +126,22 @@ export function CreateWorkspace() {
     }
   }, [])
 
+  const workspaceRef = useRef<HTMLDivElement>(null)
+  const tabBarRef = useRef<HTMLDivElement>(null)
+  const didMountRef = useRef(false)
+
+  // Scroll to workspace top on mobile tab switch (skips initial mount).
+  // 64 = header height; tabBarH = sticky tab bar height below the header.
+  useEffect(() => {
+    if (!didMountRef.current) { didMountRef.current = true; return }
+    if (window.matchMedia('(min-width: 1024px)').matches) return // desktop: no-op
+    const el = workspaceRef.current
+    if (!el) return
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const tabBarH = tabBarRef.current?.offsetHeight ?? 0
+    window.scrollTo({ top: el.offsetTop - 64 - tabBarH, behavior: reduce ? 'instant' : 'smooth' })
+  }, [mobileTab])
+
   // Touch swipe to switch between Editor/Preview on mobile
   const touchStartRef = useRef(0)
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -130,6 +158,7 @@ export function CreateWorkspace() {
   }, [])
 
   const handleResetInvoice = useCallback(() => {
+    if (!window.confirm('Clear all fields and reset the invoice to defaults?')) return
     createNewDraft()
     toast.success('Form cleared', {
       description: 'All fields reset to defaults',
@@ -162,6 +191,7 @@ export function CreateWorkspace() {
         })
       }
 
+      const { generateAndTrackInvoice } = await import('@/features/generate-link')
       const { url } = await generateAndTrackInvoice(activeDraft, lineItems)
 
       track(AnalyticsEvent.INVOICE_CREATE, {
@@ -218,29 +248,31 @@ export function CreateWorkspace() {
         />
       )}
 
-      <div className="lg:hidden fixed bottom-[calc(3.25rem+env(safe-area-inset-bottom,0px))] left-0 right-0 z-30 px-4 print:hidden">
-        <MobileTabBar tabs={tabs} activeTab={mobileTab} onTabChange={(id) => setMobileTab(id as 'editor' | 'preview')} />
+      <div ref={tabBarRef} className="lg:hidden sticky top-[4rem] z-30 mx-auto w-full max-w-6xl px-4 pt-3 pb-2 print:hidden">
+        <MobileTabBar tabs={TABS} activeTab={mobileTab} onTabChange={(id) => setMobileTab(id as 'editor' | 'preview')} />
       </div>
 
-      {/* Safe area padding for mobile tab bar */}
       <div
+        ref={workspaceRef}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="mx-auto flex h-[calc(100dvh-104px)] w-full flex-col lg:flex-row lg:items-stretch lg:justify-center gap-2 lg:gap-4 overflow-clip px-3 sm:px-4 lg:px-6 py-4 lg:pb-6 lg:py-6 print:!h-auto print:!max-w-none print:!overflow-visible print:!p-0"
-        style={{ paddingBottom: 'max(8rem, calc(env(safe-area-inset-bottom, 0px) + 8rem))' }}
+        className="mx-auto flex w-full max-w-6xl flex-col lg:flex-row lg:items-start lg:justify-center gap-4 lg:gap-6 px-3 sm:px-4 lg:px-6 py-6 print:!max-w-none print:!p-0"
       >
         {/* Editor Pane */}
         <Card
+          id="panel-editor"
+          role="tabpanel"
+          aria-labelledby="tab-editor"
           variant="glass"
           className={cn(
-            'w-full lg:w-[400px] xl:w-[440px] 2xl:w-[480px] lg:shrink-0 flex flex-col overflow-hidden lg:max-h-full print:hidden',
+            'w-full lg:w-[400px] xl:w-[440px] 2xl:w-[480px] lg:shrink-0 flex flex-col print:hidden',
             mobileTab === 'preview' ? 'hidden lg:flex' : 'flex'
           )}
         >
-          <div className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6 space-y-5">
+          <div className="p-4 sm:p-5 lg:p-6 space-y-5">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
-                <Heading variant="h3" className="flex items-center gap-2">
+                <Heading variant="h3" as="h2" className="flex items-center gap-2">
                   <span className="text-violet-500">Invoice</span> Details
                 </Heading>
                 <Text variant="tiny" className="text-zinc-400">
@@ -265,9 +297,13 @@ export function CreateWorkspace() {
 
         {/* Preview Pane */}
         <div
+          id="panel-preview"
+          role="tabpanel"
+          aria-labelledby="tab-preview"
           className={cn(
             'relative flex items-start justify-center',
-            'h-full w-full sm:min-w-[400px] lg:min-w-[580px]',
+            'w-full sm:min-w-[400px] lg:min-w-[580px]',
+            'h-[calc(100dvh-10rem)] lg:sticky lg:top-[5rem] lg:h-[calc(100dvh-6rem)]',
             'p-4 sm:p-5 lg:p-6',
             mobileTab === 'editor' ? 'hidden lg:flex print:!block' : 'flex'
           )}
@@ -278,28 +314,10 @@ export function CreateWorkspace() {
             networkId={invoiceData?.networkId ?? 1}
             onClick={handlePreviewClick}
             showExpandOverlay
+            overlay={<SyncChip status={draftSyncStatus} />}
           >
             <InvoicePaper data={invoiceData} status="draft" />
           </ScaledInvoicePreview>
-
-          {/* Floating sync status badge */}
-          {(() => {
-            const sync = SYNC_STATUS_CONFIG[draftSyncStatus]
-            return (
-              <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none print:hidden">
-                <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 font-mono text-[10px] whitespace-nowrap text-zinc-400 shadow-lg backdrop-blur">
-                  {sync.icon === 'loader' ? (
-                    <Loader2Icon className="h-3 w-3 animate-spin text-amber-500" />
-                  ) : sync.icon === 'check' ? (
-                    <CheckIcon className="h-3 w-3 text-green-500" />
-                  ) : (
-                    <div className={cn('h-1.5 w-1.5 rounded-full', sync.dotColor, sync.animate && 'animate-pulse')} />
-                  )}
-                  {sync.label}
-                </div>
-              </div>
-            )
-          })()}
         </div>
 
       </div>

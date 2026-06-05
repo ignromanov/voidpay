@@ -30,6 +30,8 @@ const nextConfig = {
       '@rainbow-me/rainbowkit',
       'framer-motion',
       '@web3icons/react',
+      'lucide-react',
+      'react-hook-form',
     ],
   },
 

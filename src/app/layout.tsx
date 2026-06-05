@@ -79,7 +79,7 @@ export default function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable} overflow-x-hidden`}
       style={{ backgroundColor: '#09090b' }}
     >
-      <body className="flex min-h-screen flex-col overflow-x-hidden bg-zinc-950 font-sans text-zinc-50 antialiased pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+      <body className="flex min-h-screen flex-col overflow-x-clip bg-zinc-950 font-sans text-zinc-50 antialiased pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
         {/* Layer 0: Static background (Server-rendered, no JS) */}
         <div className="fixed inset-0 z-0 bg-zinc-950 print:hidden" aria-hidden="true" />
 

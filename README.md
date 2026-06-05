@@ -33,7 +33,7 @@ https://voidpay.xyz/pay?og=INV-001_1250_USDC_arb_Acme#N4Ig...
 
 **Three steps:**
 
-1. **Create** — fill the invoice form, generate a self-contained URL
+1. **[Create](https://voidpay.xyz/create)** — fill the invoice form, generate a self-contained URL
 2. **Share** — send the link via any channel (Telegram, email, Discord)
 3. **Pay** — payer connects wallet, pays P2P directly on-chain
 
