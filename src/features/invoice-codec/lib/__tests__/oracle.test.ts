@@ -6,9 +6,17 @@
  *
  * oracle = canonical authority captured from vl/app TS at pinned master SHA
  * (see decision 2026-05-29-codec-d1-frozen-vectors-oracle).
+ *
+ * Provenance: fixtures/v4-codec.json is a vendored copy of the frozen artifact
+ * from void-layer/codec packages/codec/vectors/v4-codec.json at pinned master
+ * SHA (decision 2026-05-29-codec-d1-frozen-vectors-oracle). The oracle is
+ * declared frozen: true and immutable — this checked-in copy cannot drift.
+ * Source-of-truth: void-layer/codec repo, packages/codec/vectors/v4-codec.json.
  */
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { join, dirname } from 'node:path'
 import { encodeInvoiceWire, decodeInvoiceWire } from '@void-layer/codec'
 import type { Invoice as PkgInvoice } from '@void-layer/types'
 
@@ -31,8 +39,11 @@ interface OracleFile {
   vectors: OracleVector[]
 }
 
-const ORACLE_PATH =
-  '/Users/ignat/code/vl/codec/packages/codec/vectors/v4-codec.json'
+const ORACLE_PATH = join(
+  dirname(fileURLToPath(import.meta.url)),
+  'fixtures',
+  'v4-codec.json',
+)
 
 const oracle: OracleFile = JSON.parse(readFileSync(ORACLE_PATH, 'utf8'))
 
