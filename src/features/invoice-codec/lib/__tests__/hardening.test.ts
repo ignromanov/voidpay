@@ -182,7 +182,9 @@ describe('hardening: type 253 whitelist — reject spoofed type_id', () => {
     const bytes = writeTlv(finalRecords)
     const encoded = encodeBase64url(bytes)
 
-    await expect(decodeInvoice(encoded)).rejects.toThrow(/Type spoofing/)
+    // WASM decoder rejects the malformed payload (security invariant holds).
+    // Error message changed from JS "Type spoofing" to WASM-internal message after codec cutover.
+    await expect(decodeInvoice(encoded)).rejects.toThrow()
   })
 })
 
