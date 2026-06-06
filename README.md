@@ -51,7 +51,7 @@ Zero server involvement. We can't lose your data if we don't have it.
 - **Payment verification**: waits for `finalized` status — reorg-resistant
 - **Client-side PDF export**: generated in-browser, never uploaded
 - **LocalStorage history**: created and received invoices, export/import as JSON
-- **No signup, no KYC, no tracking**: no Clarity, no Sentry, no session replay
+- **No signup, no KYC, no cookies**: cookie-free analytics only — never amounts, wallets, or personal data; no Clarity, no Sentry, no session replay
 - **Perpetual links**: schema v1 is locked — links created today work forever
 
 ---
@@ -60,13 +60,13 @@ Zero server involvement. We can't lose your data if we don't have it.
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Next.js 15 (App Router) |
+| Framework | Next.js 16 (App Router) |
 | Language | TypeScript |
 | Styling | Tailwind CSS v4, Radix UI, CVA, Framer Motion |
 | Web3 | Wagmi v2, Viem, RainbowKit |
 | State | Zustand, TanStack Query |
 | Architecture | Feature-Sliced Design (FSD) |
-| Tests | Vitest — 2,550+ tests, 80%+ coverage |
+| Tests | Vitest — 2,800+ tests, 81%+ coverage |
 
 ---
 
