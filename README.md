@@ -14,7 +14,9 @@ Privacy-first crypto invoicing. All data lives in the URL. [Try it →](https://
 
 A crypto invoice, created and paid — start to finish.
 
-https://github.com/ignromanov/voidpay/raw/develop/public/video/voidpay-16x9-v2.mp4
+<video src="https://github.com/ignromanov/voidpay/raw/develop/public/video/voidpay-16x9-v2.mp4" poster="https://github.com/ignromanov/voidpay/raw/develop/public/video/poster-scene5.webp" controls muted playsinline width="100%">
+  <a href="https://voidpay.xyz">Watch the demo →</a>
+</video>
 
 ---
 
