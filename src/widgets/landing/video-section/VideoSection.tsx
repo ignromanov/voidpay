@@ -114,7 +114,6 @@ export function VideoSection() {
                 srcLang="en"
                 label="English"
                 src="/video/voidpay-9x16-v2.en.vtt"
-                default
               />
             </video>
           </div>
