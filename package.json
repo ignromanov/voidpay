@@ -1,6 +1,6 @@
 {
   "name": "voidpay",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "VoidPay - Privacy-first stateless crypto invoicing platform with URL-based state",
   "main": "index.js",
   "scripts": {
