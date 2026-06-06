@@ -19,6 +19,9 @@ import { fileURLToPath } from 'node:url'
 import { join, dirname } from 'node:path'
 import { encodeInvoiceWire, decodeInvoiceWire } from '@void-layer/codec'
 import type { Invoice as PkgInvoice } from '@void-layer/types'
+import type { Invoice } from '@/entities/invoice'
+import { encodeInvoice } from '../encode'
+import { decodeBase64url } from '@/shared/lib/tlv-codec'
 
 // ---------------------------------------------------------------------------
 // Load frozen oracle
@@ -71,19 +74,117 @@ function bytesToHex(bytes: Uint8Array): string {
 
 const roundtripVectors = oracle.vectors.filter((v) => v.roundtrip)
 
-describe('frozen oracle — encodeInvoiceWire byte-identity', () => {
+// Proves package canonical encode is byte-identical to the oracle.
+// NOTE: vector.decoded is already a snake_case PkgInvoice — the app adapter
+// (toPackageInvoice) is NOT exercised here. See "app-via-package" block below.
+describe('frozen oracle — encodeInvoiceWire byte-identity (package direct, no app adapter)', () => {
   for (const vector of roundtripVectors) {
     it(`vector: ${vector.name}`, async () => {
       // The decoded field IS the @void-layer/types Invoice (snake_case + salt).
       const pkgInvoice = vector.decoded
 
-      // Encode via package: App Invoice adapter → WASM → Brotli wire bytes.
+      // Encode directly via package WASM, bypassing the app camelCase→snake_case adapter.
       const wireBytes = await encodeInvoiceWire(pkgInvoice)
       const wireHex = bytesToHex(wireBytes)
 
       expect(wireHex).toBe(vector.wire_hex)
     })
   }
+})
+
+// ---------------------------------------------------------------------------
+// Test-side mapper: PkgInvoice (snake_case) → app Invoice (camelCase)
+// This is test scaffolding — the code under test is toPackageInvoice inside encodeInvoice.
+// ---------------------------------------------------------------------------
+
+function toAppInvoice(decoded: PkgInvoice): Invoice {
+  return {
+    invoiceId: decoded.invoice_id,
+    issuedAt: decoded.issued_at,
+    dueAt: decoded.due_at,
+    networkId: decoded.network_id,
+    currency: decoded.currency,
+    decimals: decoded.decimals,
+    total: decoded.total,
+    from: {
+      name: decoded.from.name,
+      walletAddress: decoded.from.wallet_address as `0x${string}`,
+      ...(decoded.from.email && { email: decoded.from.email }),
+      ...(decoded.from.phone && { phone: decoded.from.phone }),
+      ...(decoded.from.physical_address && { physicalAddress: decoded.from.physical_address }),
+      ...(decoded.from.tax_id && { taxId: decoded.from.tax_id }),
+    },
+    client: {
+      name: decoded.client.name,
+      ...(decoded.client.wallet_address && {
+        walletAddress: decoded.client.wallet_address as `0x${string}`,
+      }),
+      ...(decoded.client.email && { email: decoded.client.email }),
+      ...(decoded.client.phone && { phone: decoded.client.phone }),
+      ...(decoded.client.physical_address && {
+        physicalAddress: decoded.client.physical_address,
+      }),
+      ...(decoded.client.tax_id && { taxId: decoded.client.tax_id }),
+    },
+    items: decoded.items.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      rate: item.rate,
+    })),
+    ...(decoded.token_address && { tokenAddress: decoded.token_address as `0x${string}` }),
+    ...(decoded.notes && { notes: decoded.notes }),
+    ...(decoded.tax && { tax: decoded.tax }),
+    ...(decoded.discount && { discount: decoded.discount }),
+  }
+}
+
+// ---------------------------------------------------------------------------
+// App-via-package byte-identity: drives encoding THROUGH toPackageInvoice.
+// A bug in the app adapter (dropped/renamed field) will surface here as hex mismatch.
+// ---------------------------------------------------------------------------
+
+describe('frozen oracle — app-via-package byte-identity (exercises toPackageInvoice adapter)', () => {
+  for (const vector of roundtripVectors) {
+    it(`vector: ${vector.name}`, async () => {
+      const appInvoice = toAppInvoice(vector.decoded)
+      // Pass the oracle salt for determinism (same salt → same magic bytes → same wire).
+      const url = await encodeInvoice(appInvoice, hexToBytes(vector.decoded.salt))
+      const wireHex = bytesToHex(decodeBase64url(url))
+
+      expect(wireHex).toBe(vector.wire_hex)
+    })
+  }
+})
+
+// ---------------------------------------------------------------------------
+// Total guard: encodeInvoice must throw on missing/empty total.
+// ---------------------------------------------------------------------------
+
+describe('encodeInvoice — required total guard', () => {
+  const baseInvoice: Invoice = {
+    invoiceId: 'INV-001',
+    issuedAt: 1700000000,
+    dueAt: 1700086400,
+    networkId: 1,
+    currency: 'USDC',
+    decimals: 6,
+    total: '1000000',
+    from: { name: 'Alice', walletAddress: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045' },
+    client: { name: 'Bob' },
+    items: [{ description: 'Consulting', quantity: 1, rate: '1000000' }],
+  }
+
+  it('throws when total is empty string', async () => {
+    await expect(encodeInvoice({ ...baseInvoice, total: '' })).rejects.toThrow(
+      'Invoice total is required for encoding',
+    )
+  })
+
+  it('throws when total is undefined', async () => {
+    await expect(encodeInvoice({ ...baseInvoice, total: undefined as any })).rejects.toThrow(
+      'Invoice total is required for encoding',
+    )
+  })
 })
 
 describe('frozen oracle — decodeInvoiceWire round-trip', () => {

@@ -58,6 +58,7 @@ function toPackageInvoice(invoice: Invoice, salt: Uint8Array): PkgInvoice {
  * @returns The Base64url-encoded binary string (no prefix — magic byte is inside)
  */
 export async function encodeInvoice(invoice: Invoice, salt?: Uint8Array): Promise<string> {
+  if (!invoice.total) throw new Error('Invoice total is required for encoding')
   const actualSalt = salt ?? generateSalt()
   const pkgInvoice = toPackageInvoice(invoice, actualSalt)
   const wireBytes = await encodeInvoiceWire(pkgInvoice)

@@ -111,10 +111,12 @@ function validateInvoice(data: unknown): Invoice {
 /**
  * Decodes a TLV v1 compressed string into an invoice object via @void-layer/codec WASM.
  *
- * Note (spike finding): The app-layer domain separator check (validateSecurity)
- * is not performed here — it requires raw TLV records not exposed by the package API.
- * The WASM canonical decoder validates TLV structure and canonical ordering.
- * Domain separator validation moves to Phase 3 package scope if this spike proceeds.
+ * Security: domain-separator verification, canonical TLV field ordering, and TLV
+ * structure validation are performed inside the WASM decoder (decodeInvoiceWire /
+ * decodeInvoiceCanonical), which has access to the full canonical TLV. This is the
+ * relocated form of what the TS codec previously enforced at the app layer; the
+ * byte-level guarantee is identical. The former app-layer validateSecurity is an
+ * encode-side helper and is intentionally not on this decode path.
  *
  * @param compressed The Base64url-encoded string from the URL hash fragment (no prefix)
  * @returns The decoded invoice object
