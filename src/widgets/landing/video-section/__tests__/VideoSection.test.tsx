@@ -57,9 +57,9 @@ describe('VideoSection', () => {
       expect(screen.queryByText(/No account\. No server\./)).not.toBeInTheDocument()
     })
 
-    it('should render the figcaption', () => {
+    it('should render the transcript summary', () => {
       render(<VideoSection />)
-      expect(screen.getByText('Silent by design. Captions tell the story.')).toBeInTheDocument()
+      expect(screen.getByText('Transcript')).toBeInTheDocument()
     })
 
     it('should render the CTA button linking to /create', () => {
@@ -218,12 +218,28 @@ describe('VideoSection', () => {
       expect(heading).toBeInTheDocument()
     })
 
-    it('should wrap video in figure with figcaption', () => {
+    it('should wrap video in figure with a transcript', () => {
       render(<VideoSection />)
       const figure = document.querySelector('figure')
       expect(figure).toBeInTheDocument()
-      const figcaption = figure?.querySelector('figcaption')
-      expect(figcaption).toBeInTheDocument()
+      const details = figure?.querySelector('details')
+      expect(details).toBeInTheDocument()
+      expect(details?.querySelector('summary')).toBeInTheDocument()
+    })
+
+    it('should have a captions track on the video', () => {
+      render(<VideoSection />)
+      const track = document.querySelector('track')
+      expect(track).toBeInTheDocument()
+      expect(track).toHaveAttribute('kind', 'captions')
+      expect(track).toHaveAttribute('srclang', 'en')  // DOM attr is lowercase
+      expect(track).toHaveAttribute('src', '/video/voidpay-9x16-v2.en.vtt')
+    })
+
+    it('transcript should contain key caption text', () => {
+      render(<VideoSection />)
+      expect(screen.getByText('Works even if we shut down.')).toBeInTheDocument()
+      expect(screen.getByText('Payment confirmed.')).toBeInTheDocument()
     })
   })
 

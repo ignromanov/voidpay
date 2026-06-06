@@ -97,6 +97,7 @@ export const NetworkIcon = forwardRef<HTMLSpanElement, NetworkIconProps>(
       return (
         <span
           ref={ref}
+          role="img"
           className={cn(
             'inline-flex items-center justify-center',
             variant === 'mono' && 'grayscale',
@@ -117,6 +118,7 @@ export const NetworkIcon = forwardRef<HTMLSpanElement, NetworkIconProps>(
     return (
       <span
         ref={ref}
+        role="img"
         className={cn(
           'inline-flex items-center justify-center rounded-full text-white font-bold',
           variant === 'mono' ? 'bg-zinc-500' : bgColor,
