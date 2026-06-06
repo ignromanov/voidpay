@@ -90,7 +90,7 @@ describe('LinkTab', () => {
     renderWithUser()
     expect(screen.getByText(/privacy by design/i)).toBeInTheDocument()
     expect(screen.getByText(/no servers/i)).toBeInTheDocument()
-    expect(screen.getByText(/no tracking/i)).toBeInTheDocument()
+    expect(screen.getByText(/can't see it/i)).toBeInTheDocument()
   })
 
   it('shows Copied state with emerald styling when copied=true', () => {

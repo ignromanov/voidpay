@@ -20,6 +20,8 @@ const nextConfig = {
 
   // Experimental features for better performance
   experimental: {
+    // Inline critical CSS into <head> to eliminate render-blocking stylesheet requests
+    inlineCss: true,
     // Optimize memory usage and tree-shaking for large dependencies
     optimizePackageImports: [
       '@radix-ui/react-dialog',
@@ -28,6 +30,10 @@ const nextConfig = {
       'wagmi',
       'viem',
       '@rainbow-me/rainbowkit',
+      'framer-motion',
+      '@web3icons/react',
+      'lucide-react',
+      'react-hook-form',
     ],
   },
 

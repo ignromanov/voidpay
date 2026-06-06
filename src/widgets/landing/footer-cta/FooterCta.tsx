@@ -51,7 +51,7 @@ export function FooterCta() {
         {/* Social links */}
         <div className="flex items-center justify-center gap-6 pt-8">
           <a
-            href={SOCIAL_URLS.githubOrg}
+            href={SOCIAL_URLS.github}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub"

@@ -96,14 +96,14 @@ describe('NetworkBackground', () => {
     it('renders two gradient blobs', () => {
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       expect(blobs.length).toBe(2)
     })
 
     it('positions first blob at top-left quadrant', () => {
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       expect(blobs[0]).toHaveClass('top-1/4')
       expect(blobs[0]).toHaveClass('left-1/4')
     })
@@ -111,7 +111,7 @@ describe('NetworkBackground', () => {
     it('positions second blob at bottom-right quadrant', () => {
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       expect(blobs[1]).toHaveClass('right-1/4')
       expect(blobs[1]).toHaveClass('bottom-1/4')
     })
@@ -119,26 +119,26 @@ describe('NetworkBackground', () => {
     it('applies consistent size to blobs', () => {
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       blobs.forEach((blob) => {
         expect(blob).toHaveClass('h-96')
         expect(blob).toHaveClass('w-96')
       })
     })
 
-    it('applies blur-3xl effect to blobs', () => {
+    it('applies blur-2xl effect to blobs', () => {
       const { container } = render(<NetworkBackground />)
 
       const blobs = container.querySelectorAll('.rounded-full')
       blobs.forEach((blob) => {
-        expect(blob).toHaveClass('blur-3xl')
+        expect(blob).toHaveClass('blur-2xl')
       })
     })
 
     it('uses smooth color transitions', () => {
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       blobs.forEach((blob) => {
         expect(blob).toHaveClass('transition-colors')
         expect(blob).toHaveClass('duration-700')
@@ -152,7 +152,7 @@ describe('NetworkBackground', () => {
 
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       expect(blobs[0]).toHaveClass('bg-violet-600/10')
       expect(blobs[1]).toHaveClass('bg-indigo-600/10')
     })
@@ -164,7 +164,7 @@ describe('NetworkBackground', () => {
 
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       expect(blobs[0]).toHaveClass('bg-blue-600/10')
       expect(blobs[1]).toHaveClass('bg-cyan-600/10')
     })
@@ -176,7 +176,7 @@ describe('NetworkBackground', () => {
 
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       expect(blobs[0]).toHaveClass('bg-red-600/10')
       expect(blobs[1]).toHaveClass('bg-orange-600/10')
     })
@@ -188,7 +188,7 @@ describe('NetworkBackground', () => {
 
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       expect(blobs[0]).toHaveClass('bg-purple-600/10')
       expect(blobs[1]).toHaveClass('bg-violet-600/10')
     })
@@ -200,14 +200,14 @@ describe('NetworkBackground', () => {
 
       const { container, rerender } = render(<NetworkBackground />)
 
-      let blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      let blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       expect(blobs[0]).toHaveClass('bg-violet-600/10')
 
       // Change theme
       useCreatorStore.setState({ networkTheme: 'arbitrum' })
       rerender(<NetworkBackground />)
 
-      blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       expect(blobs[0]).toHaveClass('bg-blue-600/10')
     })
 
@@ -216,14 +216,14 @@ describe('NetworkBackground', () => {
 
       const { container, rerender } = render(<NetworkBackground />)
 
-      let blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      let blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       expect(blobs[0]).toHaveClass('bg-red-600/10')
 
       // Change theme
       useCreatorStore.setState({ networkTheme: 'polygon' })
       rerender(<NetworkBackground />)
 
-      blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       expect(blobs[0]).toHaveClass('bg-purple-600/10')
     })
 
@@ -243,7 +243,7 @@ describe('NetworkBackground', () => {
       useCreatorStore.setState({ networkTheme: 'polygon' })
       rerender(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       expect(blobs[0]).toHaveClass('bg-purple-600/10')
     })
   })
@@ -254,7 +254,7 @@ describe('NetworkBackground', () => {
 
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       // Should fallback to ethereum
       expect(blobs[0]).toHaveClass('bg-violet-600/10')
       expect(blobs[1]).toHaveClass('bg-indigo-600/10')
@@ -265,7 +265,7 @@ describe('NetworkBackground', () => {
 
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       // Should fallback to ethereum
       expect(blobs[0]).toHaveClass('bg-violet-600/10')
     })
@@ -300,7 +300,7 @@ describe('NetworkBackground', () => {
     it('uses smooth CSS transitions instead of JavaScript', () => {
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       blobs.forEach((blob) => {
         expect(blob).toHaveClass('transition-colors')
       })
@@ -309,7 +309,7 @@ describe('NetworkBackground', () => {
     it('applies long transition duration for subtle effect', () => {
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       blobs.forEach((blob) => {
         expect(blob).toHaveClass('duration-700')
       })
@@ -336,7 +336,7 @@ describe('NetworkBackground', () => {
     it('positions blobs relative to viewport on mobile', () => {
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       // Fractional positioning (1/4) scales with viewport
       expect(blobs[0]).toHaveClass('top-1/4')
       expect(blobs[0]).toHaveClass('left-1/4')
@@ -345,9 +345,9 @@ describe('NetworkBackground', () => {
     it('maintains consistent blur radius across screen sizes', () => {
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       blobs.forEach((blob) => {
-        expect(blob).toHaveClass('blur-3xl')
+        expect(blob).toHaveClass('blur-2xl')
       })
     })
   })
@@ -412,7 +412,7 @@ describe('NetworkBackground', () => {
     it('maintains consistent opacity', () => {
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       blobs.forEach((blob) => {
         // Opacity baked into color classes (e.g., bg-violet-600/10)
         expect(blob.className).toContain('/10')
@@ -448,15 +448,15 @@ describe('NetworkBackground', () => {
     it('applies consistent blur intensity', () => {
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.blur-3xl')
+      const blobs = container.querySelectorAll('.blur-2xl')
       expect(blobs.length).toBe(2)
-      // blur-3xl matches design system blur scale
+      // blur-2xl matches design system blur scale
     })
 
     it('uses low opacity for subtle effect', () => {
       const { container } = render(<NetworkBackground />)
 
-      const blobs = container.querySelectorAll('.rounded-full.blur-3xl')
+      const blobs = container.querySelectorAll('.rounded-full.blur-2xl')
       blobs.forEach((blob) => {
         // /10 opacity (10%) for subtle ambient glow
         expect(blob.className).toContain('/10')

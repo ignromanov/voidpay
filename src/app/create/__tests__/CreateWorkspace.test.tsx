@@ -483,6 +483,24 @@ describe('CreateWorkspace', () => {
     })
   })
 
+  describe('mobile tab switch scroll reset', () => {
+    it('scrolls to workspace top when switching tabs on mobile', async () => {
+      const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+
+      const { user } = renderWithUser(<CreateWorkspace />)
+
+      // Switch from editor → preview tab via the MobileTabBar button
+      const previewTab = screen.getByRole('tab', { name: /preview/i })
+      await user.click(previewTab)
+
+      expect(scrollToSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ behavior: 'instant' }) // reduced-motion=true in test env
+      )
+
+      scrollToSpy.mockRestore()
+    })
+  })
+
   describe('responsive scaling', () => {
     it('applies correct glow className from network', () => {
       const testInvoice = TEST_INVOICES.full()

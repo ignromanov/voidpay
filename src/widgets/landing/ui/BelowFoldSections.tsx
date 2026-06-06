@@ -12,23 +12,34 @@
  *
  * All motion-dependent components are imported here to ensure
  * Framer Motion is bundled only in this chunk, not the initial load.
+ *
+ * comparisonTable is accepted as a ReactNode prop so ComparisonTable
+ * (which has no client-side needs) can be rendered by a server-side
+ * ancestor when the RSC boundary allows it.
  */
 
+import type { ReactNode } from 'react'
+
+import { VideoSection } from '../video-section/VideoSection'
 import { HowItWorks } from '../how-it-works/HowItWorks'
 import { DemoSection } from '../demo-section/DemoSection'
 import { WhyVoidPay } from '../why-voidpay/WhyVoidPay'
-import { ComparisonTable } from '../comparison/ComparisonTable'
 import { AudienceSection } from '../audience-section/AudienceSection'
 import { FaqSection } from '../faq-section'
 import { FooterCta } from '../footer-cta/FooterCta'
 
-export function BelowFoldSections() {
+interface BelowFoldSectionsProps {
+  comparisonTable: ReactNode
+}
+
+export function BelowFoldSections({ comparisonTable }: BelowFoldSectionsProps) {
   return (
     <>
       <HowItWorks />
+      <VideoSection />
       <DemoSection />
       <WhyVoidPay />
-      <ComparisonTable />
+      {comparisonTable}
       <AudienceSection />
       <FaqSection />
       <FooterCta />

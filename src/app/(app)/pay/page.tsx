@@ -47,7 +47,7 @@ export async function generateMetadata({
       preview.to ? `to ${preview.to}` : '',
     ].filter(Boolean).join(' ')
     const title = `Pay ${preview.amount} ${preview.currency} — Invoice ${preview.id} | VoidPay`
-    const description = `Crypto invoice for ${preview.amount} ${preview.currency} on ${networkDisplayName}${fromTo ? ` ${fromTo}` : ''}. Pay instantly with your wallet — no signup, no tracking. Powered by VoidPay.`
+    const description = `Crypto invoice for ${preview.amount} ${preview.currency} on ${networkDisplayName}${fromTo ? ` ${fromTo}` : ''}. Pay instantly with your wallet — no signup, no KYC. Powered by VoidPay.`
 
     const images = dynamicOgImages(og)
 

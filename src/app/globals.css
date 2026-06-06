@@ -233,6 +233,14 @@ textarea:-webkit-autofill {
   caret-color: #f4f4f5;
 }
 
+/* Keep any sticky element pinned site-wide while Radix scroll-lock (Select/Dialog) is active.
+   overflow:clip is paint-only (not a scroll container), so sticky does not collapse;
+   `html body` outspecifies the runtime-injected `body[data-scroll-locked]{overflow:hidden!important}`.
+   Background scroll stays locked via Radix's JS event blocking. */
+html body[data-scroll-locked] {
+  overflow: clip !important;
+}
+
 /* ============================================
    Print Styles
    Invoice-specific print styles moved to:

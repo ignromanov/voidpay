@@ -20,6 +20,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with default state 1`
       <span
         aria-label="Ethereum"
         class="inline-flex items-center justify-center"
+        role="img"
       >
         <svg
           class="web3icons flex-shrink-0"
@@ -114,6 +115,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with different networ
       <span
         aria-label="Polygon"
         class="inline-flex items-center justify-center"
+        role="img"
       >
         <svg
           class="web3icons flex-shrink-0"
@@ -200,6 +202,7 @@ exports[`NetworkSelect - Snapshots > should match snapshot with disabled state 1
       <span
         aria-label="Arbitrum"
         class="inline-flex items-center justify-center"
+        role="img"
       >
         <svg
           class="web3icons flex-shrink-0"

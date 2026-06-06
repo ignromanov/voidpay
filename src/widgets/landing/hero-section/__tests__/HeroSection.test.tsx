@@ -66,7 +66,7 @@ describe('HeroSection', () => {
     it('should display the Open Source badge', () => {
       render(<HeroSection />)
 
-      expect(screen.getByText(/Open Source.*Zero Tracking/)).toBeInTheDocument()
+      expect(screen.getByText(/Open Source.*Zero Backend/)).toBeInTheDocument()
     })
   })
 
@@ -91,7 +91,7 @@ describe('HeroSection', () => {
 
       // Main value proposition - SEO: stateless web3 invoicing
       expect(screen.getByText(/Stateless web3 invoicing/i)).toBeInTheDocument()
-      expect(screen.getByText(/no servers, no accounts, no tracking/i)).toBeInTheDocument()
+      expect(screen.getByText(/no servers, no accounts, no KYC/i)).toBeInTheDocument()
     })
   })
 

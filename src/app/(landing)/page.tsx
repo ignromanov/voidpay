@@ -4,7 +4,6 @@
  */
 
 import type { Metadata } from 'next'
-import Script from 'next/script'
 
 import { APP_URLS, SOCIAL_URLS } from '@/shared/config'
 import { defaultOgImages } from '@/features/og-image'
@@ -91,7 +90,7 @@ const howToSchema = {
 export const metadata: Metadata = {
   title: 'Free Crypto Invoice Generator | No KYC | VoidPay',
   description:
-    'Create crypto invoices in 30 seconds. No accounts, no KYC, no servers. Your data lives in the URL, not our database. Works on ETH, ARB, OP.',
+    'Create crypto invoices in 30 seconds. No accounts, no KYC, no servers. Your data lives in the URL, not our database. Works on Ethereum, Base, Arbitrum, Optimism, Polygon.',
   keywords: [
     'crypto invoice',
     'crypto invoicing',
@@ -114,7 +113,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'VoidPay - Create Crypto Invoices Without Signup',
     description:
-      'Privacy-first invoicing for Web3. No accounts, no servers. Your invoice = your URL. Works on Ethereum, Arbitrum, Optimism.',
+      'Privacy-first invoicing for Web3. No accounts, no servers. Your invoice = your URL. Works on Ethereum, Base, Arbitrum, Optimism.',
     url: APP_URLS.base,
     siteName: 'VoidPay',
     type: 'website',
@@ -140,25 +139,21 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <>
-      {/* JSON-LD Structured Data */}
-      <Script
-        id="faq-schema"
+      {/* JSON-LD Structured Data - rendered in initial SSR HTML for crawlers */}
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <Script
-        id="organization-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
-      <Script
-        id="software-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
       />
       {/* HowTo schema for rich snippets - safe: static data with JSON.stringify */}
-      <Script
-        id="howto-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
       />

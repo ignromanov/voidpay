@@ -32,6 +32,8 @@ export const AnalyticsEvent = {
   // Product intel
   INVOICE_FIELD_USAGE: 'invoice-field-usage',
   PAY_VERIFY: 'pay-verify',
+  // Video
+  LANDING_VIDEO_PLAY: 'landing-video-play',
 } as const
 
 type AnalyticsEventName = (typeof AnalyticsEvent)[keyof typeof AnalyticsEvent]
@@ -58,6 +60,7 @@ interface EventProperties {
   'demo-select': { invoice_id: string }
   'invoice-field-usage': { fields_used: string }
   'pay-verify': { method: 'ive-paid' | 'check' | 'tx-hash' | 'history-batch' }
+  'landing-video-play': Record<string, never>
 }
 
 export function track<E extends AnalyticsEventName>(

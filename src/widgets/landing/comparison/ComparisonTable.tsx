@@ -139,7 +139,7 @@ function ValueCell({ value }: { value: ComparisonValue }) {
 
 export function ComparisonTable() {
   return (
-    <section className="relative border-t border-zinc-900 bg-zinc-950/10 px-6 py-16 backdrop-blur-sm md:py-32">
+    <section className="relative border-t border-zinc-900 bg-zinc-950/10 px-6 py-16 md:py-32">
       <div className="mx-auto max-w-4xl">
         {/* Section header - SEO: competitor comparison keywords */}
         <div className="mb-16 text-center">
@@ -194,7 +194,7 @@ export function ComparisonTable() {
         </div>
 
         {/* Disclaimer */}
-        <Text variant="small" className="mt-6 text-center text-zinc-500">
+        <Text variant="small" className="mt-6 text-center text-zinc-400">
           Comparison based on public documentation as of April 2026. Features may vary.
         </Text>
         <div className="mt-4 text-center">

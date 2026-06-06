@@ -118,7 +118,7 @@ export const InvoicePaper = React.memo(
           className={cn(
             // Fixed A4 dimensions (794×1123px) — scaling handled by ScaledInvoicePreview
             // cursor-default on paper background, content container overrides for variant="full"
-            'group/paper relative flex h-[1123px] min-h-[1123px] w-[794px] min-w-[794px] cursor-default flex-col overflow-hidden bg-white text-black transition-shadow duration-500',
+            'group/paper relative flex h-[1123px] min-h-[1123px] w-[794px] min-w-[794px] cursor-default flex-col overflow-hidden bg-white text-black',
             // Print overrides — full size to enable flex layout (mt-auto needs height constraint)
             'shadow-2xl print:!h-full print:!min-h-0 print:!w-full print:!max-w-none print:!min-w-0 print:shadow-none print:transition-none',
             // Standard shadow for depth (glow handled by ScaledInvoicePreview via networkId)

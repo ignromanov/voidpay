@@ -61,7 +61,14 @@ function hasPersistedWalletConnection(): boolean {
  */
 function PlaceholderButton({ onClick, isLoading }: { onClick: () => void; isLoading: boolean }) {
   return (
-    <Button variant="outline" size="sm" className="gap-1.5" onClick={onClick} disabled={isLoading}>
+    <Button
+      variant="outline"
+      size="sm"
+      className="gap-1.5"
+      onClick={onClick}
+      disabled={isLoading}
+      aria-label={isLoading ? 'Loading wallet' : 'Connect wallet'}
+    >
       {isLoading ? (
         <>
           <Loader2Icon className="h-4 w-4 animate-spin" />

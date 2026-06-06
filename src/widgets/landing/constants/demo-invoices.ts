@@ -5,18 +5,15 @@
  * All fields of Invoice are populated to demonstrate full functionality.
  * Each demo showcases a different invoice status and payment state.
  *
- * IMPORTANT: createHash is computed at build time (SSG).
- * encodeInvoice runs during `next build`, not on client.
- * Dates are computed relative to build time so demos stay fresh.
+ * createHash strings are precomputed at build time by scripts/generate-demo-hashes.ts.
+ * DemoSection imports RAW_DEMO_INVOICES + DEMO_CREATE_HASHES directly — no codec on client.
  */
 
-import { encodeInvoice, generateSalt, deriveMagicDust } from '@/features/invoice-codec'
-import { addMagicDust } from '@/shared/lib/amount-utils'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import type { InvoiceStatus } from '@/widgets/invoice-paper/types'
 
 /** Demo-only type for landing page invoice rotation */
-interface DemoInvoice {
+export interface DemoInvoice {
   invoiceId: string
   invoiceUrl: string
   createdAt: string
@@ -37,9 +34,10 @@ function isoDate(ts: number): string {
 
 /**
  * Raw demo data without computed hashes.
- * Dates are relative to build time to stay fresh across deployments.
+ * Dates are relative to module load time so demos stay fresh.
+ * createHash is filled in by DemoSection using DEMO_CREATE_HASHES.
  */
-const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
+export const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
   // --- Ethereum (1) - Smart Contract Audit [PAID + VALIDATED] ---
   {
     invoiceId: 'INV-2026-042',
@@ -128,7 +126,7 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
     createdAt: isoDate(NOW - 5 * DAY),
     status: 'paid',
     txHash: '0xb2e4f6a8d0c1e3f5a7b9d1f3e5a7c9d1f3e5a7b9d1f3e5a7c9d1f3e5a7b9d1f3',
-    txHashValidated: false, // Shows warning indicator
+    txHashValidated: false,
     data: {
       invoiceId: 'INV-2026-135',
       issuedAt: NOW - 5 * DAY,
@@ -249,38 +247,14 @@ const RAW_DEMO_INVOICES: Omit<DemoInvoice, 'createHash'>[] = [
 ]
 
 /**
- * Demo invoices with pre-computed createHash for /create page navigation.
- * Each demo gets a deterministic salt → magicDust linkage so the dust badge
- * shows correctly when decoded on /pay.
+ * Merge static demo invoice data with precomputed createHash values.
+ * Called by DemoSection — no async, no codec import.
  */
-export async function getDemoInvoices(): Promise<DemoInvoice[]> {
-  return Promise.all(
-    RAW_DEMO_INVOICES.map(async (invoice) => {
-      try {
-        // Generate salt and derive dust deterministically
-        const salt = generateSalt()
-        const dust = deriveMagicDust(salt)
-        const totalWithDust = addMagicDust(invoice.data.total!, dust)
-        const dataWithDust: Invoice = {
-          ...invoice.data,
-          total: totalWithDust,
-          magicDust: dust.toString(),
-        }
-        return {
-          ...invoice,
-          data: dataWithDust,
-          createHash: await encodeInvoice(dataWithDust, salt),
-        }
-      } catch (error) {
-        // Graceful degradation: button won't work but page loads
-        console.error('[DEMO_INVOICES] Failed to encode:', invoice.invoiceId, error)
-        return {
-          ...invoice,
-          createHash: '',
-        }
-      }
-    }),
-  )
+export function buildDemoInvoices(createHashes: Record<string, string>): DemoInvoice[] {
+  return RAW_DEMO_INVOICES.map((invoice) => ({
+    ...invoice,
+    createHash: createHashes[invoice.invoiceId] ?? '',
+  }))
 }
 
 export const ROTATION_INTERVAL_MS = 60_000 // 60 seconds for viewing animations
