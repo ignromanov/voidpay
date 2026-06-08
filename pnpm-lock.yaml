@@ -121,8 +121,8 @@ importers:
         specifier: ^4.0.471
         version: 4.0.471(@swc/helpers@0.5.23)(bufferutil@4.1.0)(postcss@8.5.15)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(utf-8-validate@5.0.10)
       '@remotion/fonts':
-        specifier: ^4.0.471
-        version: 4.0.471(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        specifier: ^4.0.474
+        version: 4.0.474(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@remotion/tailwind-v4':
         specifier: ^4.0.471
         version: 4.0.471(@remotion/bundler@4.0.471(@swc/helpers@0.5.23)(bufferutil@4.1.0)(postcss@8.5.15)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(utf-8-validate@5.0.10))(@rspack/core@1.7.6(@swc/helpers@0.5.23))(webpack@5.105.0(esbuild@0.28.0)(postcss@8.5.15))
@@ -1449,8 +1449,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@remotion/fonts@4.0.471':
-    resolution: {integrity: sha512-0hzVo1i3Ld/gEorjBNG+ykMEULn9KpkJwULKdgEXkcSeIcCBzhzND1ZRNERaImvwbw9mSJXyahUX16mlAB/lfA==}
+  '@remotion/fonts@4.0.474':
+    resolution: {integrity: sha512-AfdIHAMC33JA41sQrxrL2Iz5mESkWlr7Rt3JWluBwZvPd8jwSmjWvM/lxPrp7CqUz9xn5+qsjfGvIG7ozvXY/Q==}
 
   '@remotion/licensing@4.0.471':
     resolution: {integrity: sha512-+y8qOaS6KbinqF/ar37UYzSv+203r/Ciru+hCh4tf+B1w48fGVl/tyg6iEOK1sPK/nFsRXygtc6FDW1TUfT7Xg==}
@@ -5140,6 +5140,12 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
+  remotion@4.0.474:
+    resolution: {integrity: sha512-0dlDJLXlhB8fp/22Qz4Kn7YkFzhs04ymOLolp4TUQeJ+ltuYzt9w+MSuA6HI6NO8Eoc35y6QecXmofEETlMUBg==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -6990,7 +6996,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
       '@types/debug': 4.1.13
-      debug: 4.3.4
+      debug: 4.4.3
       pony-cause: 2.1.11
       semver: 7.8.3
       uuid: 9.0.1
@@ -7540,9 +7546,9 @@ snapshots:
   '@remotion/compositor-win32-x64-msvc@4.0.471':
     optional: true
 
-  '@remotion/fonts@4.0.471(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+  '@remotion/fonts@4.0.474(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
-      remotion: 4.0.471(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      remotion: 4.0.474(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
     transitivePeerDependencies:
       - react
       - react-dom
@@ -12288,6 +12294,11 @@ snapshots:
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
 
+  remotion@4.0.474(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+    dependencies:
+      react: 19.2.7
+      react-dom: 19.2.7(react@19.2.7)
+
   require-directory@2.1.1: {}
 
   require-from-string@2.0.2: {}
@@ -12357,7 +12368,7 @@ snapshots:
       '@types/uuid': 8.3.4
       '@types/ws': 8.18.1
       buffer: 6.0.3
-      eventemitter3: 5.0.1
+      eventemitter3: 5.0.4
       uuid: 8.3.2
       ws: 8.21.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     optionalDependencies:
