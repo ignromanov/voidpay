@@ -15,7 +15,8 @@ import { cn } from '@/shared/lib/utils'
 import { Heading, Text } from '@/shared/ui/typography'
 import { AnimatePresence, motion } from '@/shared/ui/motion'
 
-import { FAQ_ITEMS, type FaqItem } from '../constants/faq'
+import { FAQ_ITEMS } from '../constants/faq'
+import type { FaqItem } from '@/shared/lib/faq-types'
 
 const FaqItem = memo(function FaqItem({
   question,
