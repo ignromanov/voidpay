@@ -5,6 +5,8 @@
  * Google's structured-data/visible-content mismatch penalty.
  */
 
+import type { FaqItem } from '@/shared/lib/faq-types'
+
 export const FAQ_ITEMS = [
   {
     question: 'Do I need to create an account?',
@@ -30,4 +32,4 @@ export const FAQ_ITEMS = [
     answer:
       'No fee from VoidPay. You pay only the blockchain gas fee when the payment is sent by your payer.',
   },
-] as const
+] as const satisfies readonly FaqItem[]
