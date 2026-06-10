@@ -144,25 +144,27 @@ export const privacyContent = {
     },
     {
       id: 'abuse-prevention',
-      title: 'Abuse Prevention (Privacy-Preserving)',
+      title: 'Abuse Prevention (Privacy-Preserving Design)',
       content:
-        "To prevent phishing and scam invoices, we maintain a public blocklist of known malicious URLs. Here's how we protect privacy while doing this:",
+        'Should we ever deploy an abuse-prevention blocklist to protect users from phishing and scam invoices, it would be implemented in a privacy-preserving way. No such blocklist is currently live. The design guarantees for any future mechanism would be:',
       items: [
         {
-          label: 'SHA-256 hashes',
-          description: 'The blocklist contains only hashes of malicious URL fragments',
+          label: 'SHA-256 hashes only',
+          description:
+            'Any blocklist would contain only hashes of malicious URL fragments — never raw invoice data',
         },
         {
-          label: 'Irreversible',
-          description: 'Hashes are irreversible — you cannot recover invoice data from them',
+          label: 'Irreversible by design',
+          description: 'Hashes would be irreversible — invoice data could not be recovered from them',
         },
         {
           label: 'Client-side checking',
-          description: 'Your invoice URL is never sent to our servers for validation',
+          description: 'Your invoice URL would never be sent to our servers for validation',
         },
         {
           label: 'Public on GitHub',
-          description: 'The blocklist is public for transparency and community review',
+          description:
+            'Any such blocklist would be published publicly for transparency and community review',
         },
       ],
     },
