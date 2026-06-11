@@ -58,6 +58,12 @@ vi.mock('@/shared/lib/toast', () => ({
   },
 }))
 
+// Mock shared lib — useIsMobile (QW2: reorg toast gating)
+let mockIsMobile = false
+vi.mock('@/shared/lib', () => ({
+  useIsMobile: vi.fn(() => mockIsMobile),
+}))
+
 import { useFinalizationTracker } from '../use-finalization-tracker'
 
 const MOCK_TX_HASH = '0xdeadbeef00000000000000000000000000000000000000000000000000000001' as `0x${string}`
@@ -66,6 +72,7 @@ describe('useFinalizationTracker', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useFakeTimers()
+    mockIsMobile = false
     mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
       status: 'success',
       blockNumber: 100n,
