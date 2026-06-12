@@ -905,7 +905,7 @@ describe('PaymentPanel', () => {
     it('renders WalletDeepLinkButtons in pending state on mobile', () => {
       render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
       expect(screen.getByRole('link', { name: /metamask/i })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /open in wallet/i })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /use a different wallet/i })).toBeInTheDocument()
     })
 
     it('MetaMask deep-link appears before ActionSlot content in DOM (tier-1 above WalletConnect)', () => {
