@@ -15,10 +15,13 @@ export interface ErrorMessage {
   severity: ErrorSeverity
 }
 
-/** Canonical canceled message — reused by USER_REJECTED to keep title/description in sync. */
+/**
+ * Canonical canceled copy — Shade S7 (spec 095): only UserRejectedRequestError / EIP-1193 4001
+ * maps here. All other errors must NOT imply a user action.
+ */
 export const CANCELED_COPY = {
-  title: 'Payment canceled',
-  description: 'You declined the transaction in your wallet.',
+  title: 'You canceled',
+  description: 'Tap Send when ready.',
 } as const
 
 const ERROR_MESSAGES: Record<PaymentErrorType, ErrorMessage> = {
@@ -34,8 +37,8 @@ const ERROR_MESSAGES: Record<PaymentErrorType, ErrorMessage> = {
     severity: 'warning',
   },
   NETWORK_SWITCH_FAILED: {
-    title: 'Network switch failed',
-    description: 'Could not switch networks. Try switching manually in your wallet.',
+    title: 'Switch network',
+    description: 'Switch to the correct network in your wallet.',
     severity: 'error',
   },
   TX_REVERTED: {
@@ -54,8 +57,8 @@ const ERROR_MESSAGES: Record<PaymentErrorType, ErrorMessage> = {
     severity: 'error',
   },
   UNKNOWN: {
-    title: 'Unexpected error',
-    description: 'Something went wrong. Please try again.',
+    title: 'Something went wrong',
+    description: 'Try again.',
     severity: 'error',
   },
 }

@@ -2,16 +2,13 @@ import type { BrotliWasmType } from 'brotli-wasm'
 import { writeVarInt, readVarInt } from './varint'
 import { COMPRESSED_FLAG, MAX_INFLATE_SIZE, MAX_PAYLOAD_SIZE } from './types'
 
-let brotli: BrotliWasmType | null = null
+// Eager WASM init — starts as soon as this module is imported so decode is not
+// on the synchronous critical path. Uses a module-level Promise (no top-level
+// await) which is SSR-safe: Node.js evaluates the expression without blocking.
+const brotliReady: Promise<BrotliWasmType> = import('brotli-wasm').then((m) => m.default)
 
 async function getBrotli(): Promise<BrotliWasmType> {
-  if (!brotli) {
-    const mod = await import('brotli-wasm')
-    const instance = await mod.default
-    // Only cache after both import and init succeed — failed init retries on next call
-    brotli = instance
-  }
-  return brotli
+  return brotliReady
 }
 
 export interface CompressedField {
