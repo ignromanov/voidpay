@@ -41,7 +41,7 @@ export function WalletDeepLinkButtons({
               amount,
               ...(tokenAddress ? { tokenAddress } : {}),
             })}
-            className="flex items-center justify-center rounded-lg bg-zinc-100 px-4 py-3 font-medium text-zinc-900 active:scale-[0.98]"
+            className="flex items-center justify-center rounded-lg bg-zinc-100 px-4 py-3 text-sm font-medium text-zinc-900 active:scale-[0.98]"
           >
             Open in {label}
           </a>
