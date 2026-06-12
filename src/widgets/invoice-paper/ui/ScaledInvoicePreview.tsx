@@ -270,7 +270,7 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           >
             {loading ? (
               <div
-                className="animate-pulse rounded-lg bg-zinc-800/50"
+                className="animate-pulse rounded-lg bg-white"
                 style={{ width: INVOICE_BASE_WIDTH, height: INVOICE_BASE_HEIGHT }}
               />
             ) : (

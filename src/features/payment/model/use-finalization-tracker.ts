@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { usePublicClient } from 'wagmi'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { toast } from '@/shared/lib/toast'
+import { useIsMobile } from '@/shared/lib'
 import { getFinalizationTimeout } from '@/entities/network'
 
 export interface UseFinalizationTrackerParams {
@@ -25,6 +26,7 @@ export function useFinalizationTracker({
   const setFinalized = useTrackedInvoiceStore((s) => s.setFinalized)
   const setValidated = useTrackedInvoiceStore((s) => s.setValidated)
   const resetPaymentState = useTrackedInvoiceStore((s) => s.resetPaymentState)
+  const isMobile = useIsMobile()
   // Internal state triggers re-render so waitFor can detect mock calls via MutationObserver
   const [, setTrackingState] = useState<TrackingState>('idle')
 
@@ -73,8 +75,8 @@ export function useFinalizationTracker({
       .catch((_err) => {
         if (cancelled) return
         clearTimeout(timeoutId)
-        // Reorg: transaction disappeared from chain
-        toast.error('Chain reorg detected — transaction not found on chain')
+        // Reorg: transaction disappeared from chain (desktop-only toast; mobile uses inline status)
+        if (!isMobile) toast.error('Chain reorg detected — transaction not found on chain')
         resetPaymentState(contentHash)
         onReorgDetected?.()
         setTrackingState('reorg')
@@ -84,5 +86,5 @@ export function useFinalizationTracker({
       cancelled = true
       clearTimeout(timeoutId)
     }
-  }, [enabled, contentHash, txHash, networkId, publicClient, setFinalized, setValidated, resetPaymentState, onReorgDetected])
+  }, [enabled, contentHash, txHash, networkId, publicClient, setFinalized, setValidated, resetPaymentState, onReorgDetected, isMobile])
 }

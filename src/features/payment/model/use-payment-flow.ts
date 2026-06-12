@@ -6,6 +6,7 @@
  */
 
 import { useReducer, useCallback, useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import {
   useAccount,
   useSendTransaction,
@@ -16,6 +17,7 @@ import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useNetworkSwitch, useNetworkMismatch, getNetworkName } from '@/entities/network'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { toast } from '@/shared/lib/toast'
+import { useIsMobile } from '@/shared/lib'
 import { track, AnalyticsEvent } from '@/features/analytics'
 import { classifyPaymentError } from '../lib/classify-error'
 import { formatErrorMessage } from '../lib/error-messages'
@@ -129,11 +131,20 @@ export function usePaymentFlow({
   const [state, dispatch] = useReducer(paymentReducer, INITIAL_PAYMENT_STATE)
 
   const { isConnected } = useAccount()
+  const isMobile = useIsMobile()
+  const pathname = usePathname()
   const { openConnectModal, connectModalOpen } = useConnectModal()
   const { hasMismatch, expectedChainId } = useNetworkMismatch(invoice.networkId)
   const { switchToChain, isSwitching, error: switchError } = useNetworkSwitch()
   const setTxHash = useTrackedInvoiceStore((s) => s.setTxHash)
   const setError = useTrackedInvoiceStore((s) => s.setError)
+
+  // Refs mirror current step/error so clearing callbacks can read them without
+  // being listed as effect deps (avoids spurious re-subscriptions).
+  const stepRef = useRef(state.step)
+  stepRef.current = state.step
+  const errorRef = useRef(state.error)
+  errorRef.current = state.error
 
   const isNativeToken = !invoice.tokenAddress
   // Stable refs for effect deps (avoid re-triggering when invoice object changes)
@@ -161,7 +172,7 @@ export function usePaymentFlow({
     (replacement: { reason: 'replaced' | 'repriced' | 'cancelled'; transaction: { hash: `0x${string}` } }) => {
       // 'cancelled' → user sent a self-transfer with same nonce (cancel the payment)
       if (replacement.reason === 'cancelled') {
-        toast.info('Transaction cancelled in wallet', { duration: 4000 })
+        if (!isMobile) toast.info('Transaction cancelled in wallet', { duration: 4000 })
         dispatch({ type: 'RESET' })
         return
       }
@@ -169,9 +180,9 @@ export function usePaymentFlow({
       const newHash = replacement.transaction.hash
       setTxHash(contentHash, newHash, false)
       dispatch({ type: 'REPLACED', hash: newHash })
-      toast.info('Transaction sped up', { duration: 3000 })
+      if (!isMobile) toast.info('Transaction sped up', { duration: 3000 })
     },
-    [contentHash, setTxHash],
+    [contentHash, setTxHash, isMobile],
   )
 
   const {
@@ -201,8 +212,8 @@ export function usePaymentFlow({
     stepFired.current = null
     modalWasOpen.current = false
     dispatch({ type: 'RESET' })
-    toast.info('Payment canceled', { duration: 3000 })
-  }, [resetSend, resetWrite])
+    if (!isMobile) toast.info('Payment canceled', { duration: 3000 })
+  }, [resetSend, resetWrite, isMobile])
 
   // handlePay — dispatches START based on wallet state
   const handlePay = useCallback(() => {
@@ -345,6 +356,40 @@ export function usePaymentFlow({
     setError(contentHash, error.message)
     dispatch({ type: 'ERROR', error })
   }, [sendError, writeError, receiptError, switchError, state.step, contentHash, setError])
+
+  // Clears stale error on reconnect / route-change / visibilitychange return (QW3).
+  // Reads step and error via refs to avoid listing them as effect deps, which would
+  // cause spurious subscriptions every render while the error is shown.
+  const tryClearError = useCallback(() => {
+    if (stepRef.current !== 'idle' || !errorRef.current) return
+    resetSend()
+    resetWrite()
+    dispatch({ type: 'RESET' })
+    setError(contentHash, null)
+  }, [resetSend, resetWrite, contentHash, setError])
+
+  // Effect: Clear stale error on reconnect
+  useEffect(() => {
+    if (!isConnected) return
+    tryClearError()
+  }, [isConnected, tryClearError])
+
+  // Effect: Clear stale error on route change
+  const prevPathnameRef = useRef(pathname)
+  useEffect(() => {
+    if (pathname === prevPathnameRef.current) return
+    prevPathnameRef.current = pathname
+    tryClearError()
+  }, [pathname, tryClearError])
+
+  // Effect: Clear stale error when user returns from wallet app (visibilitychange)
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') tryClearError()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [tryClearError])
 
   return { step: state.step, error: state.error, txHash: state.txHash, handlePay, handleCancel, idleSubState }
 }

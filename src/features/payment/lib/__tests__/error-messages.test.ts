@@ -41,16 +41,17 @@ describe('getErrorMessage', () => {
 })
 
 describe('CANCELED_COPY', () => {
-  it('has the canonical canceled copy', () => {
-    expect(CANCELED_COPY.title).toBe('Payment canceled')
-    expect(CANCELED_COPY.description).toBe('You declined the transaction in your wallet.')
+  // Shade S7 (spec 095): only UserRejectedRequestError / EIP-1193 4001 maps here.
+  it('has the S7-compliant canceled copy', () => {
+    expect(CANCELED_COPY.title).toBe('You canceled')
+    expect(CANCELED_COPY.description).toBe('Tap Send when ready.')
   })
 })
 
 describe('formatErrorMessage', () => {
   it('composes title and description into single string', () => {
     const msg = formatErrorMessage('USER_REJECTED')
-    expect(msg).toBe('Payment canceled: You declined the transaction in your wallet.')
+    expect(msg).toBe('You canceled: Tap Send when ready.')
   })
 
   it.each(ALL_TYPES)('produces non-empty string for %s', (type) => {

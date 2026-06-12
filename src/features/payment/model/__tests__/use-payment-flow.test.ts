@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook, act, waitFor } from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 
 // Mock wagmi hooks
 const mockSendTransaction = vi.fn()
@@ -84,6 +84,18 @@ vi.mock('@/shared/lib/toast', () => ({
   toast: { info: (...args: unknown[]) => mockToastInfo(...args) },
 }))
 
+// Mock shared lib — useIsMobile (QW2: toast gating)
+let mockIsMobile = false
+vi.mock('@/shared/lib', () => ({
+  useIsMobile: vi.fn(() => mockIsMobile),
+}))
+
+// Mock next/navigation — usePathname (QW3: error clearing on route change)
+let mockPathname = '/pay'
+vi.mock('next/navigation', () => ({
+  usePathname: vi.fn(() => mockPathname),
+}))
+
 // Mock invoice store
 const mockSetTxHash = vi.fn()
 const mockSetError = vi.fn()
@@ -125,6 +137,8 @@ describe('usePaymentFlow', () => {
     mockIsConnected = true
     mockChainId = 1
     mockConnectModalOpen = false
+    mockIsMobile = false
+    mockPathname = '/pay'
   })
 
   it('returns initial idle state', () => {
@@ -329,7 +343,7 @@ describe('usePaymentFlow', () => {
 
     expect(mockSetError).toHaveBeenCalledWith(
       'inv001hash',
-      'Unexpected error: Something went wrong. Please try again.',
+      'Something went wrong: Try again.',
     )
   })
 
@@ -439,5 +453,54 @@ describe('usePaymentFlow', () => {
     expect(result.current.step).toBe('idle')
     expect(result.current.error).not.toBeNull()
     expect(result.current.error?.message).toContain('rejected by the blockchain')
+  })
+
+  // QW2 — mobile toast gating
+  it('handleCancel fires toast only on desktop (isMobile=false)', () => {
+    mockIsMobile = false
+    const { result } = renderHook(() =>
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'qw2hash', exactTotal: '1000000000000000000' })
+    )
+    act(() => { result.current.handleCancel() })
+    expect(mockToastInfo).toHaveBeenCalledWith('Payment canceled', { duration: 3000 })
+  })
+
+  it('handleCancel suppresses toast on mobile (isMobile=true)', () => {
+    mockIsMobile = true
+    const { result } = renderHook(() =>
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'qw2hash-mobile', exactTotal: '1000000000000000000' })
+    )
+    act(() => { result.current.handleCancel() })
+    expect(mockToastInfo).not.toHaveBeenCalledWith('Payment canceled', { duration: 3000 })
+  })
+
+  // QW3 — error clears on reconnect
+  it('clears error on reconnect when idle with error', async () => {
+    mockIsConnected = true
+    mockChainId = 1
+    const { useNetworkMismatch } = await import('@/entities/network')
+    vi.mocked(useNetworkMismatch).mockReturnValue({
+      hasMismatch: false, expectedChainId: 1, actualChainId: 1,
+      expectedChainName: 'Ethereum', actualChainName: 'Ethereum',
+    })
+
+    const { result, rerender } = renderHook(() =>
+      usePaymentFlow({ invoice: mockInvoice, contentHash: 'qw3hash', exactTotal: '1000000000000000000' })
+    )
+
+    // Cause an error
+    act(() => { result.current.handlePay() })
+    mockSendError = new Error('Insufficient funds')
+    rerender()
+    expect(result.current.error).not.toBeNull()
+
+    // Disconnect then reconnect — error must clear
+    mockSendError = null
+    mockIsConnected = false
+    rerender()
+    mockIsConnected = true
+    rerender()
+
+    expect(result.current.error).toBeNull()
   })
 })
