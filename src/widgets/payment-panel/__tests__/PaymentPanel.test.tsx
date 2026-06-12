@@ -10,8 +10,6 @@ vi.mock('@/shared/lib', async (importOriginal) => {
   return { ...actual, useIsMobile: mockUseIsMobile }
 })
 
-import { useIsMobile } from '@/shared/lib'
-
 const mockInvoice: Invoice = {
   invoiceId: 'INV-TEST-001',
   issuedAt: 1704067200,
