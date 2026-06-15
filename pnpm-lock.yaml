@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@hookform/resolvers':
         specifier: ^5.4.0
-        version: 5.4.0(react-hook-form@7.78.0(react@19.2.7))
+        version: 5.4.0(react-hook-form@7.79.0(react@19.2.7))
       '@noble/hashes':
         specifier: ^2.2.0
         version: 2.2.0
@@ -81,8 +81,8 @@ importers:
         specifier: ^19.2.7
         version: 19.2.7(react@19.2.7)
       react-hook-form:
-        specifier: ^7.78.0
-        version: 7.78.0(react@19.2.7)
+        specifier: ^7.79.0
+        version: 7.79.0(react@19.2.7)
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -5451,8 +5451,8 @@ packages:
     peerDependencies:
       react: ^19.2.7
 
-  react-hook-form@7.78.0:
-    resolution: {integrity: sha512-EEZqc+N23moyzTlz61Pj+JvcXo76ICkpfOZo8JZw+sM4+wLQGh6nI2Ms+PdMOYNluFu0ghlM7B8mCzhRYtJCnA==}
+  react-hook-form@7.79.0:
+    resolution: {integrity: sha512-mhYp/MTmXvzYX6AJcJVko0rktoIhhmRnEouObj4wF5i/tCttgJvnp1+9wRkpITZjDTqpo4IOSJqu0dBlPlV/Lw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -7177,10 +7177,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@hookform/resolvers@5.4.0(react-hook-form@7.78.0(react@19.2.7))':
+  '@hookform/resolvers@5.4.0(react-hook-form@7.79.0(react@19.2.7))':
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.78.0(react@19.2.7)
+      react-hook-form: 7.79.0(react@19.2.7)
 
   '@humanfs/core@0.19.1': {}
 
@@ -12913,7 +12913,7 @@ snapshots:
       react: 19.2.7
       scheduler: 0.27.0
 
-  react-hook-form@7.78.0(react@19.2.7):
+  react-hook-form@7.79.0(react@19.2.7):
     dependencies:
       react: 19.2.7
 
