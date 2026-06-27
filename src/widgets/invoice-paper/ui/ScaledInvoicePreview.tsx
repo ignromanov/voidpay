@@ -14,12 +14,11 @@ import { Maximize2Icon } from '@/shared/ui/icons'
 import { NETWORK_GLOW_SHADOWS, NETWORK_GLOW_BORDERS } from '@/entities/network'
 import {
   useInvoiceScale,
-  INVOICE_BASE_WIDTH,
-  INVOICE_BASE_HEIGHT,
   PRESET_CONFIGS,
   type ScalePreset,
   type UseInvoiceScaleOptions,
 } from '../lib/use-invoice-scale'
+import { InvoiceLoadingSkeleton } from './InvoiceLoadingSkeleton'
 
 /**
  * Union type for click handlers that support both mouse and keyboard activation.
@@ -269,10 +268,7 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
             style={{ transform: `translate(-50%, -50%) scale(${scale})` }}
           >
             {loading ? (
-              <div
-                className="animate-pulse rounded-lg bg-white"
-                style={{ width: INVOICE_BASE_WIDTH, height: INVOICE_BASE_HEIGHT }}
-              />
+              <InvoiceLoadingSkeleton />
             ) : (
               children
             )}

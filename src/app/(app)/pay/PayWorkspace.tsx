@@ -22,6 +22,11 @@ import { StatusBadge, MinimizedPill } from '@/widgets/payment-panel'
 import { CreatorHintBanner } from './CreatorHintBanner'
 import { InAppBrowserGuard, useIsHostileInAppBrowser } from '@/widgets/in-app-browser-guard'
 
+// Eagerly start the codec WASM chunk fetch in parallel with render.
+// The JS module system deduplicates: decode's lazy await resolves the same in-flight chunk,
+// so this adds no TBT overhead while reducing the serial import chain on first decode.
+void import('@void-layer/codec')
+
 /**
  * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.
  * Only this button needs wagmi — the rest of the page renders immediately.
