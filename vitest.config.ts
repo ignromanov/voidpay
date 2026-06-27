@@ -31,6 +31,45 @@ export default defineConfig({
       'brotli-wasm': path.resolve(__dirname, 'node_modules/brotli-wasm/index.node.js'),
     },
 
+    // Split projects to prevent WASM CPU starvation.
+    //
+    // Root cause: oracle.test.ts + hardening.test.ts import @void-layer/codec at
+    // the top level, which triggers eager WASM initialisation in every parallel
+    // fork worker. Under full-suite coverage runs (16 logical cores) this saturates
+    // the CPU and starves the module-transform pipeline, causing BelowFoldSections
+    // dynamic-import to time out.
+    //
+    // Fix: isolate WASM-heavy files in a separate project with fileParallelism:false
+    // (= maxWorkers:1). One WASM worker runs at a time, leaving CPU headroom for
+    // the main project's transform workers. Coverage aggregates across both projects.
+    projects: [
+      {
+        // All tests except WASM-heavy oracle/hardening — full parallelism.
+        extends: true,
+        test: {
+          name: 'main',
+          exclude: [
+            '**/node_modules/**',
+            '**/dist/**',
+            '**/worktrees/**',
+            '**/assets/**',
+            '**/oracle.test.ts',
+            '**/hardening.test.ts',
+          ],
+        },
+      },
+      {
+        // oracle.test.ts + hardening.test.ts — real @void-layer/codec, no mocks.
+        // fileParallelism:false serialises into 1 worker to cap WASM-init CPU spike.
+        extends: true,
+        test: {
+          name: 'wasm-oracle',
+          include: ['**/oracle.test.ts', '**/hardening.test.ts'],
+          fileParallelism: false,
+        },
+      },
+    ],
+
     // MINIMAL coverage config
     coverage: {
       provider: 'istanbul',
