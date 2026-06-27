@@ -27,6 +27,9 @@ const mockUseInvoiceScale = vi.fn((_options?: Record<string, unknown>) => ({
 
 vi.mock('../../lib/use-invoice-scale', () => ({
   useInvoiceScale: (options?: Record<string, unknown>) => mockUseInvoiceScale(options),
+  // InvoiceLoadingSkeleton (imported by ScaledInvoicePreview) needs these constants
+  INVOICE_BASE_WIDTH: 794,
+  INVOICE_BASE_HEIGHT: 1123,
   PRESET_CONFIGS: {
     demo: { containerHeightClass: 'min-h-[75vh]' },
     editor: { containerHeightClass: 'h-full' },
