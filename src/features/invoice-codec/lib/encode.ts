@@ -1,7 +1,8 @@
 import type { Invoice } from '@/entities/invoice'
 import type { Invoice as PkgInvoice } from '@void-layer/types'
 import type { ChainId } from '@void-layer/types'
-import { encodeInvoiceWire } from '@void-layer/codec'
+// Lazy dynamic import — keeps @void-layer/codec WASM out of the critical path.
+// encodeInvoice is already async; callers await it, so no API change.
 import { encodeBase64url } from '@/shared/lib/tlv-codec'
 import { getAppBaseUrl } from '@/shared/config'
 import { encodeOGPreview } from './og-preview'
@@ -61,6 +62,7 @@ export async function encodeInvoice(invoice: Invoice, salt?: Uint8Array): Promis
   if (!invoice.total) throw new Error('Invoice total is required for encoding')
   const actualSalt = salt ?? generateSalt()
   const pkgInvoice = toPackageInvoice(invoice, actualSalt)
+  const { encodeInvoiceWire } = await import('@void-layer/codec')
   const wireBytes = await encodeInvoiceWire(pkgInvoice)
   return encodeBase64url(wireBytes)
 }

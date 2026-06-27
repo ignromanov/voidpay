@@ -1,7 +1,8 @@
 import type { Invoice } from '@/entities/invoice'
 import { invoiceSchema } from '@/entities/invoice'
 import type { Invoice as PkgInvoice } from '@void-layer/types'
-import { decodeInvoiceWire } from '@void-layer/codec'
+// Lazy dynamic import — keeps @void-layer/codec WASM out of the critical path.
+// decodeInvoice is already async; callers await it, so no API change.
 import { decodeBase64url } from '@/shared/lib/tlv-codec'
 import type { Address } from 'viem'
 import { deriveMagicDust } from './security'
@@ -128,6 +129,7 @@ export async function decodeInvoice(compressed: string): Promise<Invoice> {
   }
 
   const wireBytes = decodeBase64url(compressed)
+  const { decodeInvoiceWire } = await import('@void-layer/codec')
   const pkgInvoice = await decodeInvoiceWire(wireBytes)
   const appInvoice = fromPackageInvoice(pkgInvoice)
   return validateInvoice(appInvoice)
