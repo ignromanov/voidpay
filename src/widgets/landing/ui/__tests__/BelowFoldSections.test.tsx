@@ -7,6 +7,13 @@
  */
 import { describe, it, expect, vi } from 'vitest'
 
+// Prevent WASM spin-up in this worker: the real codec is exercised only in
+// oracle.test.ts / hardening.test.ts which run with the real @void-layer/codec.
+vi.mock('@void-layer/codec', () => ({
+  encodeInvoiceWire: vi.fn(),
+  decodeInvoiceWire: vi.fn(),
+}))
+
 // Mock complex child components at module path level
 vi.mock('@/widgets/landing/how-it-works/HowItWorks', () => ({
   HowItWorks: () => null,
@@ -37,9 +44,11 @@ vi.mock('@/widgets/landing/footer-cta/FooterCta', () => ({
 }))
 
 describe('BelowFoldSections', () => {
+  // Timeout raised to 10s: full-suite CPU pressure from 71 parallel WASM oracle
+  // tests can push this dynamic-import past the 5s default.
   it('exports BelowFoldSections component', async () => {
     const mod = await import('../BelowFoldSections')
     expect(mod.BelowFoldSections).toBeDefined()
     expect(typeof mod.BelowFoldSections).toBe('function')
-  })
+  }, 10000)
 })

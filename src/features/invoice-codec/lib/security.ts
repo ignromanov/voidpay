@@ -49,6 +49,12 @@ export function computeDomainSeparator(records: TlvRecord[]): Uint8Array {
  * Validate security constraints on decoded TLV records.
  * - Salt (Type 20) must be present and >= 16 bytes
  * - If Domain Separator (Type 31) present, must match recomputed value
+ *
+ * NOTE: encode-side only after @void-layer/codec cutover (C1). WASM
+ * `decodeInvoiceCanonical` performs domain-separator verification at
+ * decode time; this function is no longer called on the decode path
+ * and must NOT be re-wired there — it would duplicate a check that
+ * already runs inside the WASM with access to the full canonical TLV.
  */
 export function validateSecurity(records: TlvRecord[]): void {
   const saltRecord = records.find((r) => r.type === TlvType.SALT)

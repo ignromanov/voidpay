@@ -3,6 +3,7 @@ import './invoice-paper.css'
 
 export * from './types'
 export { InvoicePaper } from './ui/InvoicePaper'
+export { InvoiceLoadingSkeleton } from './ui/InvoiceLoadingSkeleton'
 export { InvoicePreviewModal, type InvoicePreviewModalProps } from './ui/InvoicePreviewModal'
 export { ScaledInvoicePreview, type ScaledInvoicePreviewProps } from './ui/ScaledInvoicePreview'
 export {

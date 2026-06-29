@@ -10,28 +10,52 @@
  *   pnpm build  →  prebuild hook runs this script first
  */
 
+import { createHash } from 'node:crypto'
 import { writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { encodeInvoice, generateSalt, deriveMagicDust } from '../src/features/invoice-codec'
+import { encodeInvoice, deriveMagicDust } from '../src/features/invoice-codec'
 import { addMagicDust } from '../src/shared/lib/amount-utils'
-import { RAW_DEMO_INVOICES } from '../src/widgets/landing/constants/demo-invoices'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUTPUT_PATH = join(__dirname, '../src/widgets/landing/constants/demo-invoices.generated.ts')
 
+/**
+ * Deterministic salt for demo invoices — derived from the invoice id via SHA-256.
+ * Returns the first 16 bytes, matching the shape of generateSalt() (Uint8Array(16)).
+ *
+ * DEMO-ONLY: production invoices must keep random salts (generateSalt()) for
+ * Magic Dust payment-matching uniqueness. This helper must NOT be used outside
+ * this build script.
+ */
+function deterministicSalt(id: string): Uint8Array {
+  const buf = createHash('sha256').update(id).digest()
+  return new Uint8Array(buf.buffer, buf.byteOffset, 16)
+}
+
 async function main(): Promise<void> {
   console.log('[prebuild] Generating demo invoice hashes...')
 
+  // Pin Date.now() to a fixed epoch so demo invoice relative-dates (issuedAt,
+  // dueAt) evaluate identically on every build run. RAW_DEMO_INVOICES uses
+  //   const NOW = Math.floor(Date.now() / 1000)
+  // at module evaluation time, so we must patch Date.now BEFORE the dynamic
+  // import below. Static import would run too early (before this function body).
+  const DEMO_EPOCH_MS = 1_750_000_000_000
+  Date.now = () => DEMO_EPOCH_MS
+
+  // Dynamic import — evaluated AFTER Date.now() is patched above.
+  const { RAW_DEMO_INVOICES } = await import('../src/widgets/landing/constants/demo-invoices')
+
   const entries = await Promise.all(
     RAW_DEMO_INVOICES.map(async (invoice) => {
-      const salt = generateSalt()
+      const salt = deterministicSalt(invoice.invoiceId)
       const dust = deriveMagicDust(salt)
       const totalWithDust = addMagicDust(invoice.data.total!, dust)
       const dataWithDust = { ...invoice.data, total: totalWithDust, magicDust: dust.toString() }
-      const createHash = await encodeInvoice(dataWithDust, salt)
-      return { invoiceId: invoice.invoiceId, createHash }
+      const hash = await encodeInvoice(dataWithDust, salt)
+      return { invoiceId: invoice.invoiceId, createHash: hash }
     }),
   )
 

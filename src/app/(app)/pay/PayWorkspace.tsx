@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import {
@@ -21,6 +21,11 @@ import type { PayInvoiceState } from './use-pay-invoice'
 import { StatusBadge, MinimizedPill } from '@/widgets/payment-panel'
 import { CreatorHintBanner } from './CreatorHintBanner'
 import { InAppBrowserGuard, useIsHostileInAppBrowser } from '@/widgets/in-app-browser-guard'
+
+// Eagerly start the codec WASM chunk fetch in parallel with render.
+// The JS module system deduplicates: decode's lazy await resolves the same in-flight chunk,
+// so this adds no TBT overhead while reducing the serial import chain on first decode.
+void import('@void-layer/codec')
 
 /**
  * Lazy-loaded SmartPayButton wrapped in its own scoped Web3Provider.
@@ -77,6 +82,15 @@ export function PayWorkspace() {
   const { invoice, errorType, isLoading } = payInvoice
 
   const networkId = invoice?.networkId ?? 1
+
+  // Pre-instantiate void_layer_codec WASM during idle time so the first
+  // decode call has zero cold-init latency (~37 ms one-time cost).
+  useEffect(() => {
+    import('@/features/invoice-codec/lib/wasm-warmup').then(({ scheduleWasmWarmup }) => {
+      scheduleWasmWarmup()
+    }).catch(() => { /* best-effort */ })
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
+  }, [])
 
   // Loading state
   if (isLoading) {

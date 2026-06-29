@@ -80,6 +80,15 @@ export function CreateWorkspace() {
     if (!activeDraft) createNewDraft()
   }, [activeDraft, createNewDraft])
 
+  // Pre-instantiate void_layer_codec WASM during idle time so the first
+  // "Generate Link" click has zero cold-init latency (~37 ms one-time cost).
+  useEffect(() => {
+    import('@/features/invoice-codec/lib/wasm-warmup').then(({ scheduleWasmWarmup }) => {
+      scheduleWasmWarmup()
+    }).catch(() => { /* best-effort */ })
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
+  }, [])
+
   useEffect(() => {
     if (!hash) return
 
