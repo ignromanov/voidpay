@@ -51,7 +51,7 @@
     "@eslint/js": "^9.39.4",
     "@next/eslint-plugin-next": "^16.2.7",
     "@remotion/cli": "^4.0.477",
-    "@remotion/fonts": "^4.0.474",
+    "@remotion/fonts": "^4.0.486",
     "@remotion/tailwind-v4": "^4.0.471",
     "@remotion/transitions": "^4.0.474",
     "@tailwindcss/postcss": "^4.3.0",
