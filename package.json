@@ -53,7 +53,7 @@
     "@remotion/cli": "^4.0.489",
     "@remotion/fonts": "^4.0.486",
     "@remotion/tailwind-v4": "^4.0.471",
-    "@remotion/transitions": "^4.0.486",
+    "@remotion/transitions": "^4.0.489",
     "@tailwindcss/postcss": "^4.3.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
