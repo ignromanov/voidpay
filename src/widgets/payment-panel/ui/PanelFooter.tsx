@@ -58,7 +58,8 @@ export function PanelFooter({ isPending, isPaid, txHash, networkId, onQrOpen, on
               size="sm"
               onClick={onQrOpen}
               className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-white min-h-[44px]"
-              aria-label="Show QR code for mobile payment"
+              aria-label="Show QR code — paying from another device? Scan this."
+              title="Paying from another device? Scan the QR."
             >
               <QrCodeIcon size={12} />
               QR
