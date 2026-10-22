@@ -14,17 +14,14 @@ export interface TransfersRequest {
 // Helpers
 // ---------------------------------------------------------------------------
 
-export function extractIp(headers: Headers): string {
-  const forwarded = headers.get('x-forwarded-for')
-  if (forwarded) {
-    const last = forwarded.split(',').at(-1)?.trim()
-    if (last) return last
-  }
-  return headers.get('x-real-ip') ?? 'unknown'
+/** Max 12 hex digits (2^48) — far above any real block number, exact as a JS number */
+export function isValidHexBlock(value: string): boolean {
+  return /^0x[0-9a-fA-F]{1,12}$/.test(value)
 }
 
-export function isValidHexBlock(value: string): boolean {
-  return /^0x[0-9a-fA-F]+$/.test(value)
+/** media type must be application/json (parameters such as charset allowed) */
+export function isJsonContentType(value: string | null): boolean {
+  return value?.split(';')[0]?.trim().toLowerCase() === 'application/json'
 }
 
 export function json(data: unknown, status: number, extraHeaders: Record<string, string> = {}): Response {

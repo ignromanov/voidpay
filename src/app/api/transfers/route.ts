@@ -6,6 +6,8 @@
  *   W3-009  response strips lossy value/from/to/asset/blockNum fields
  *   W3-015  maxCount hardcoded server-side ("0x14"), never from client
  *   W3-016  toAddress normalised via getAddress() before forwarding
+ *
+ * Order (#368): Origin gate → Content-Type → rate limit → body parse.
  */
 
 import { isAddress, getAddress } from 'viem'
@@ -16,9 +18,9 @@ import {
   ALL_CHAIN_IDS_SET,
   ALCHEMY_NETWORK_SLUG,
 } from '@/entities/network'
-import { checkRateLimit } from './rate-limit'
+import { checkRateLimit, limitResponse, passesOriginGate } from '@/shared/lib/edge-guard'
 import { stripTransfer } from './strip-transfer'
-import { extractIp, isValidHexBlock, json } from './validate'
+import { isJsonContentType, isValidHexBlock, json } from './validate'
 import type { TransfersRequest } from './validate'
 
 export const runtime = 'edge'
@@ -30,17 +32,26 @@ const MAX_COUNT = '0x14'
  *  is ahead of the real chain head — caps the recovery to recent blocks. */
 const DRIFT_CORRECTION_LOOKBACK_MS = 3 * 86_400 * 1000
 
-export async function POST(request: Request): Promise<Response> {
-  // Rate limiting
-  const ip = extractIp(request.headers)
-  const rateLimitResult = await checkRateLimit(ip)
+/** fromBlock may run ahead of the estimated head by at most ~1 day of blocks.
+ *  Beyond that it is rejected before any upstream call (no forced drift-retry). */
+const FROM_BLOCK_FUTURE_TOLERANCE_MS = 86_400 * 1000
 
-  if (!rateLimitResult.allowed) {
-    return json(
-      { error: 'Rate limit exceeded. Please try again later.' },
-      429,
-      { 'Retry-After': '60' }
-    )
+export async function POST(request: Request): Promise<Response> {
+  // Same-origin only (production) — blocks cross-site simple POSTs; no ACAO
+  if (!passesOriginGate(request.headers)) {
+    return json({ error: 'Forbidden' }, 403)
+  }
+
+  if (!isJsonContentType(request.headers.get('content-type'))) {
+    return json({ error: 'Content-Type must be application/json' }, 415)
+  }
+
+  // Rate limiting (fail-closed) before reading the body
+  const blocked = limitResponse(await checkRateLimit('transfers', request.headers))
+  if (blocked) {
+    const error =
+      blocked.status === 503 ? 'Service temporarily unavailable' : 'Rate limit exceeded. Please try again later.'
+    return json({ error }, blocked.status, blocked.headers)
   }
 
   // Parse body
@@ -92,14 +103,18 @@ export async function POST(request: Request): Promise<Response> {
     return json({ error: 'Invalid fromBlock: must be greater than zero (DoS cap)' }, 400)
   }
 
-  // DoS cap: rough estimate of minimum allowed block
-  const maxBlockAge = getMaxBlockAge(chainId)
+  // DoS cap: fromBlock must sit inside [estimate - maxBlockAge, estimate + ~1 day]
   const estimatedCurrent = estimateCurrentBlock(chainId)
-  if (estimatedCurrent !== null) {
-    const minAllowedBlock = estimatedCurrent - maxBlockAge
-    if (fromBlockNum < minAllowedBlock) {
-      return json({ error: `Invalid fromBlock: too old (DoS cap: max ${maxBlockAge} blocks)` }, 400)
-    }
+  if (estimatedCurrent === null) {
+    return json({ error: `Unsupported chainId: ${chainId}` }, 400)
+  }
+  const maxBlockAge = getMaxBlockAge(chainId)
+  if (fromBlockNum < estimatedCurrent - maxBlockAge) {
+    return json({ error: `Invalid fromBlock: too old (DoS cap: max ${maxBlockAge} blocks)` }, 400)
+  }
+  const futureToleranceBlocks = Math.floor(FROM_BLOCK_FUTURE_TOLERANCE_MS / getAvgBlockTimeMs(chainId))
+  if (fromBlockNum > estimatedCurrent + futureToleranceBlocks) {
+    return json({ error: 'Invalid fromBlock: ahead of the chain head' }, 400)
   }
 
   // Validate category

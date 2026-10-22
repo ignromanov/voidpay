@@ -10,19 +10,20 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { NextRequest } from 'next/server'
 
 // ---------------------------------------------------------------------------
 // Module mocks — must be declared before dynamic imports of route.ts
 // ---------------------------------------------------------------------------
 
-vi.mock('@upstash/ratelimit', () => ({
-  Ratelimit: vi.fn().mockImplementation(() => ({
-    limit: vi.fn().mockResolvedValue({ success: true, remaining: 9, limit: 10 }),
-  })),
+// Real header/origin helpers; only the Redis-backed decision is mocked.
+// End-to-end fail-closed coverage lives in fail-closed.test.ts.
+const { ALLOW } = vi.hoisted(() => ({
+  ALLOW: { kind: 'allow', limit: 10, remaining: 9, reset: 0 } as const,
 }))
-
-vi.mock('@upstash/redis', () => ({
-  Redis: vi.fn().mockImplementation(() => ({})),
+vi.mock('@/shared/lib/edge-guard', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/shared/lib/edge-guard')>()),
+  checkRateLimit: vi.fn(async () => ALLOW),
 }))
 
 // Spy on global fetch so we can intercept Alchemy calls
@@ -99,7 +100,8 @@ function makeRequest(
 }
 
 // Use the same estimateCurrentBlock as the route — single source of truth.
-import { estimateCurrentBlock } from '@/entities/network'
+import { estimateCurrentBlock, getAvgBlockTimeMs } from '@/entities/network'
+import { checkRateLimit } from '@/shared/lib/edge-guard'
 const estimatedEthCurrent = estimateCurrentBlock(1)!
 
 /** Valid request body using current block well within the DoS cap. */
@@ -118,6 +120,7 @@ let POST: (req: Request) => Promise<Response>
 
 beforeEach(async () => {
   vi.clearAllMocks()
+  vi.mocked(checkRateLimit).mockResolvedValue(ALLOW)
   // Ensure ALCHEMY_API_KEY is set for happy-path tests
   process.env.ALCHEMY_API_KEY = 'test-key'
   // Dynamic import so the module is re-evaluated after mocks are set up
@@ -126,6 +129,7 @@ beforeEach(async () => {
 })
 
 afterEach(() => {
+  vi.restoreAllMocks()
   vi.resetModules()
 })
 
@@ -305,6 +309,55 @@ describe('POST /api/transfers', () => {
   // -------------------------------------------------------------------------
   // TC-5  Validation: invalid category → 400
   // -------------------------------------------------------------------------
+  // fromBlock upper bound (#368) — rejected with zero upstream fetches
+  // -------------------------------------------------------------------------
+  describe('fromBlock upper bound', () => {
+    const toleranceBlocks = Math.floor(86_400_000 / getAvgBlockTimeMs(1))
+
+    it.each(['0x1234567890abc', '0x00000000000001'])('rejects fromBlock longer than 12 hex digits (%s)', async (fromBlock) => {
+      const response = await POST(makeRequest({ ...VALID_BODY, fromBlock }))
+      expect(response.status).toBe(400)
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('rejects 0xffffffff (forced drift-retry) with no upstream fetch', async () => {
+      const response = await POST(makeRequest({ ...VALID_BODY, fromBlock: '0xffffffff' }))
+      expect(response.status).toBe(400)
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('rejects fromBlock beyond estimate + ~1 day of blocks with no upstream fetch', async () => {
+      const beyond = estimatedEthCurrent + toleranceBlocks + 1_000
+      const response = await POST(makeRequest({ ...VALID_BODY, fromBlock: `0x${beyond.toString(16)}` }))
+      expect(response.status).toBe(400)
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('accepts fromBlock slightly ahead of the estimate (inside the tolerance)', async () => {
+      mockAlchemySuccess()
+      const ahead = estimatedEthCurrent + Math.floor(toleranceBlocks / 2)
+      const response = await POST(makeRequest({ ...VALID_BODY, fromBlock: `0x${ahead.toString(16)}` }))
+      expect(response.status).toBe(200)
+    })
+
+    it('rejects when the chain has no estimate anchor', async () => {
+      vi.resetModules()
+      vi.doMock('@/entities/network', async (importOriginal) => ({
+        ...(await importOriginal<typeof import('@/entities/network')>()),
+        estimateCurrentBlock: () => null,
+      }))
+      try {
+        const { POST: localPost } = await import('../route')
+        const response = await localPost(makeRequest(VALID_BODY))
+        expect(response.status).toBe(400)
+        expect(mockFetch).not.toHaveBeenCalled()
+      } finally {
+        vi.doUnmock('@/entities/network')
+      }
+    })
+  })
+
+  // -------------------------------------------------------------------------
   describe('TC-5: invalid category → 400', () => {
     it('rejects unknown category "internal"', async () => {
       const response = await POST(makeRequest({ ...VALID_BODY, category: 'internal' }))
@@ -457,64 +510,129 @@ describe('POST /api/transfers', () => {
   // -------------------------------------------------------------------------
   // TC-9  Rate limiting → 429 with Retry-After header
   // -------------------------------------------------------------------------
-  describe('TC-9: rate limit → 429 with Retry-After header', () => {
-    it('returns 429 when rate limit exceeded', async () => {
-      // Exhaust the in-memory rate limiter (limit = 10 per window)
-      // No KV env vars → falls back to in-memory path
-      delete process.env.KV_REST_API_URL
-      delete process.env.KV_REST_API_TOKEN
-
-      vi.resetModules()
-      const mod = await import('../route')
-      const localPost = mod.POST
-
-      // Mock Alchemy response for the first 10 allowed requests
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({ jsonrpc: '2.0', id: 1, result: { transfers: [] } }),
+  describe('TC-9: rate limit (edge-guard, fail-closed)', () => {
+    it('returns 429 with Retry-After computed from reset and an error body', async () => {
+      vi.spyOn(Date, 'now').mockReturnValue(1_800_000_000_000)
+      vi.mocked(checkRateLimit).mockResolvedValue({
+        kind: 'deny',
+        limit: 10,
+        remaining: 0,
+        reset: 1_800_000_000_000 + 59_200,
       })
 
-      // Send 10 requests to exhaust the in-memory rate limit
-      for (let i = 0; i < 10; i++) {
-        const r = await localPost(makeRequest(VALID_BODY))
-        expect(r.status).toBe(200)
-      }
+      const response = await POST(makeRequest(VALID_BODY))
 
-      // 11th request should be rate limited
-      const response = await localPost(makeRequest(VALID_BODY))
       expect(response.status).toBe(429)
       expect(response.headers.get('Retry-After')).toBe('60')
+      expect(response.headers.get('X-RateLimit-Limit')).toBe('10')
+      const data = (await response.json()) as { error: string }
+      expect(data.error).toBeDefined()
+      expect(mockFetch).not.toHaveBeenCalled()
     })
 
-    it('returns error body with 429', async () => {
-      // Use in-memory rate limit by hammering many requests
-      // Delete KV env to force in-memory path, then exhaust with 11 requests
-      delete process.env.KV_REST_API_URL
-      delete process.env.KV_REST_API_TOKEN
-      vi.resetModules()
+    it.each(['unconfigured', 'error', 'timeout'] as const)(
+      'returns 503 with Retry-After: 30 when the limiter is unavailable (%s)',
+      async (cause) => {
+        vi.mocked(checkRateLimit).mockResolvedValue({ kind: 'unavailable', cause })
 
-      // Mock rate limit module to return denied immediately
-      vi.mock('@/features/rpc-proxy', async (importOriginal) => {
-        const orig = await importOriginal<typeof import('@/features/rpc-proxy')>()
-        return {
-          ...orig,
-          checkRateLimit: vi.fn().mockResolvedValue({ allowed: false, remaining: 0, limit: 10 }),
-        }
-      })
+        const response = await POST(makeRequest(VALID_BODY))
 
-      const mod = await import('../route')
-      const localPost = mod.POST
-      // First request — rate limiter should be mocked to deny
-      mockFetch.mockResolvedValue({ ok: true, json: async () => ({ jsonrpc: '2.0', id: 1, result: { transfers: [] } }) })
-      const response = await localPost(makeRequest(VALID_BODY))
-
-      // The route may use its own internal rate limiter rather than rpc-proxy's.
-      // Acceptable outcomes: 429 (rate limited) or 200 (separate limiter, not yet exhausted).
-      expect([200, 429]).toContain(response.status)
-      if (response.status === 429) {
-        const data = await response.json() as { error: string }
-        expect(data.error).toBeDefined()
+        expect(response.status).toBe(503)
+        expect(response.headers.get('Retry-After')).toBe('30')
+        expect(await response.json()).toEqual({ error: 'Service temporarily unavailable' })
+        expect(mockFetch).not.toHaveBeenCalled()
       }
+    )
+
+    it('checks the transfers policy with the request headers', async () => {
+      mockAlchemySuccess()
+      await POST(makeRequest(VALID_BODY))
+      expect(vi.mocked(checkRateLimit)).toHaveBeenCalledWith('transfers', expect.any(Headers))
+    })
+
+    it('rate-limits before parsing the body', async () => {
+      vi.mocked(checkRateLimit).mockResolvedValue({ kind: 'deny', limit: 10, remaining: 0, reset: 0 })
+      const response = await POST(
+        new Request('http://localhost/api/transfers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: 'not-json{{{',
+        })
+      )
+      expect(response.status).toBe(429)
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  // Origin gate + Content-Type (#368)
+  // -------------------------------------------------------------------------
+  describe('origin gate (production)', () => {
+    /** NextRequest keeps origin/host; a plain Request strips them as forbidden headers */
+    function makeBrowserRequest(headers: Record<string, string>): Request {
+      const req = new NextRequest('https://voidpay.xyz/api/transfers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(VALID_BODY),
+      })
+      for (const [k, v] of Object.entries(headers)) req.headers.set(k, v)
+      return req
+    }
+
+    afterEach(() => {
+      vi.unstubAllEnvs()
+    })
+
+    it('rejects a request without Origin/Referer with 403, before the limiter', async () => {
+      vi.stubEnv('NODE_ENV', 'production')
+      const response = await POST(makeBrowserRequest({ host: 'voidpay.xyz' }))
+      expect(response.status).toBe(403)
+      expect(response.headers.get('Access-Control-Allow-Origin')).toBeNull()
+      expect(vi.mocked(checkRateLimit)).not.toHaveBeenCalled()
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('rejects a cross-site Origin with 403', async () => {
+      vi.stubEnv('NODE_ENV', 'production')
+      const req = makeBrowserRequest({ origin: 'https://evil.com', host: 'voidpay.xyz' })
+      expect(req.headers.get('origin')).toBe('https://evil.com')
+      const response = await POST(req)
+      expect(response.status).toBe(403)
+      expect(response.headers.get('Access-Control-Allow-Origin')).toBeNull()
+    })
+
+    it('accepts a same-site Origin', async () => {
+      vi.stubEnv('NODE_ENV', 'production')
+      mockAlchemySuccess()
+      const response = await POST(makeBrowserRequest({ origin: 'https://voidpay.xyz', host: 'voidpay.xyz' }))
+      expect(response.status).toBe(200)
+    })
+  })
+
+  describe('Content-Type', () => {
+    it.each([['text/plain'], ['application/x-www-form-urlencoded'], ['multipart/form-data'], ['application/jsonp']])(
+      'rejects %s with 415 before the limiter',
+      async (contentType) => {
+        const response = await POST(makeRequest(VALID_BODY, { 'Content-Type': contentType }))
+        expect(response.status).toBe(415)
+        expect(vi.mocked(checkRateLimit)).not.toHaveBeenCalled()
+        expect(mockFetch).not.toHaveBeenCalled()
+      }
+    )
+
+    it('rejects a missing Content-Type with 415', async () => {
+      const response = await POST(
+        new Request('http://localhost/api/transfers', {
+          method: 'POST',
+          body: new Blob([JSON.stringify(VALID_BODY)]),
+        })
+      )
+      expect(response.status).toBe(415)
+    })
+
+    it('accepts application/json with parameters, case-insensitively', async () => {
+      mockAlchemySuccess()
+      const response = await POST(makeRequest(VALID_BODY, { 'Content-Type': 'Application/JSON; charset=utf-8' }))
+      expect(response.status).toBe(200)
     })
   })
 
