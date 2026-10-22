@@ -1,9 +1,15 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 
 // Mock next/navigation
+const mockRouterPush = vi.fn()
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: mockRouterPush }),
+}))
+
+const mockNavigateToHashUrl = vi.fn()
+vi.mock('@/shared/lib/navigation', () => ({
+  navigateToHashUrl: (...args: unknown[]) => mockNavigateToHashUrl(...args),
 }))
 
 // Mock entities/invoice store
@@ -100,5 +106,33 @@ describe('InvoiceList', () => {
   it('shows empty state when no entries', () => {
     render(<InvoiceList variant="created" entries={[]} debug={false} />)
     expect(screen.getByText(/created invoices will appear here/i)).toBeInTheDocument()
+  })
+  describe('hash navigation (full document, never the Next router)', () => {
+    it('created: View navigates to /invoice with the single-hash URL', () => {
+      mockNavigateToHashUrl.mockClear()
+      mockRouterPush.mockClear()
+      render(<InvoiceList variant="created" entries={[makeEntry()]} debug={false} />)
+      fireEvent.click(screen.getByRole('button', { name: /view/i }))
+      expect(mockNavigateToHashUrl).toHaveBeenCalledWith('/invoice#test')
+      expect(mockRouterPush).not.toHaveBeenCalled()
+    })
+
+    it('received: View navigates to /pay with the single-hash URL', () => {
+      mockNavigateToHashUrl.mockClear()
+      mockRouterPush.mockClear()
+      render(<InvoiceList variant="received" entries={[makeEntry()]} debug={false} />)
+      fireEvent.click(screen.getByRole('button', { name: /view/i }))
+      expect(mockNavigateToHashUrl).toHaveBeenCalledWith('/pay#test')
+      expect(mockRouterPush).not.toHaveBeenCalled()
+    })
+
+    it('Template navigates to /create?template=1 with the single-hash URL', () => {
+      mockNavigateToHashUrl.mockClear()
+      mockRouterPush.mockClear()
+      render(<InvoiceList variant="created" entries={[makeEntry()]} debug={false} />)
+      fireEvent.click(screen.getByRole('button', { name: /template/i }))
+      expect(mockNavigateToHashUrl).toHaveBeenCalledWith('/create?template=1#test')
+      expect(mockRouterPush).not.toHaveBeenCalled()
+    })
   })
 })
