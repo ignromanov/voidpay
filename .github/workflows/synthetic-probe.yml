@@ -29,7 +29,6 @@ jobs:
     timeout-minutes: 5
     env:
       BASE_URL: https://voidpay.xyz
-      GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
       ISSUE_TITLE: '[probe] Payment path unhealthy'
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -73,7 +72,8 @@ jobs:
               '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}')
             class=$(classify "$code")
             block=$(jq -r '.result // empty' "$RUNNER_TEMP/resp" 2>/dev/null || true)
-            if [ "$class" = ok ] && ! printf '%s' "$block" | grep -Eq '^0x[0-9a-fA-F]+$'; then
+            # response-derived: full-string match (no per-line semantics) before any arithmetic
+            if [ "$class" = ok ] && ! [[ "$block" =~ ^0x[0-9a-fA-F]{1,16}$ ]]; then
               class=provider_error
             fi
             if [ "$chain" = 8453 ] && [ "$class" = ok ]; then base_block="$block"; fi
@@ -81,9 +81,11 @@ jobs:
           done
 
           if [ -n "$base_block" ]; then
-            from=$(printf '0x%x' $(( base_block - 100 )))
-            code=$(post "$BASE_URL/api/transfers" \
-              "{\"chainId\":8453,\"toAddress\":\"0x000000000000000000000000000000000000dEaD\",\"fromBlock\":\"$from\",\"category\":\"external\"}")
+            base_dec=$(( 16#${base_block#0x} ))
+            from=$(printf '0x%x' $(( base_dec > 100 ? base_dec - 100 : 1 )))
+            body=$(jq -cn --arg from "$from" \
+              '{chainId:8453,toAddress:"0x000000000000000000000000000000000000dEaD",fromBlock:$from,category:"external"}')
+            code=$(post "$BASE_URL/api/transfers" "$body")
             record /api/transfers 8453 "$code" "$(classify "$code")"
           else
             record /api/transfers 8453 skipped no_base_block
@@ -92,6 +94,7 @@ jobs:
           code=$(curl -sS --max-time 20 -o "$RUNNER_TEMP/resp" -w '%{http_code}' "$BASE_URL/api/health" 2>/dev/null || true)
           class=$(classify "$code")
           reach=$(jq -r '.checks.rateLimiter.reachable // "unknown"' "$RUNNER_TEMP/resp" 2>/dev/null || echo unknown)
+          case "$reach" in true|false) ;; *) reach=unknown ;; esac
           if [ "$class" = ok ] && [ "$reach" != true ]; then class=limiter_unavailable; fi
           record /api/health "limiter_reachable=$reach" "$code" "$class"
 
@@ -101,6 +104,7 @@ jobs:
 
       - name: Update tracking issue
         env:
+          GH_TOKEN: ${{ github.token }}
           PROBE_FAILED: ${{ steps.probe.outputs.failed }}
         run: |
           set -eu
