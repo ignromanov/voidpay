@@ -302,4 +302,35 @@ describe('InvoiceWorkspace', () => {
       expect(screen.queryByText(/^Pay \d/)).not.toBeInTheDocument()
     })
   })
+  describe('Share modal URL toggle', () => {
+    it('keeps exactly one hash fragment and toggles ?share=1 across 3 open/close cycles', async () => {
+      const user = userEvent.setup()
+      window.history.replaceState(null, '', '/invoice#H_valid_hash')
+      vi.mocked(useHashFragment).mockReturnValue('H_valid_hash')
+      vi.mocked(parseInvoiceHash).mockResolvedValue({
+        success: true,
+        data: VALID_INVOICE,
+        contentHash: 'mock-content-hash',
+      })
+
+      render(<InvoiceWorkspace />)
+      const shareButton = await screen.findByRole('button', { name: 'Share invoice' })
+
+      const hashCount = () => window.location.hash.split('#').length - 1
+
+      for (let cycle = 0; cycle < 3; cycle++) {
+        await user.click(shareButton)
+        await screen.findByRole('dialog')
+        expect(new URLSearchParams(window.location.search).get('share')).toBe('1')
+        expect(hashCount()).toBe(1)
+        expect(window.location.hash).toBe('#H_valid_hash')
+
+        await user.keyboard('{Escape}')
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+        expect(new URLSearchParams(window.location.search).get('share')).toBeNull()
+        expect(hashCount()).toBe(1)
+        expect(window.location.hash).toBe('#H_valid_hash')
+      }
+    })
+  })
 })
