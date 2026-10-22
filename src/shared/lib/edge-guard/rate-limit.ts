@@ -26,6 +26,7 @@ const LIMIT_TIMEOUT_MS = 2000
 const REDIS_RETRIES = 2
 const UNAVAILABLE_RETRY_AFTER_S = 30
 const HEALTH_TTL_MS = 30_000
+const HEALTH_PING_TIMEOUT_MS = 2000
 
 const POLICIES: Record<RateLimitPolicy, { max: number; prefix: string }> = {
   rpc: { max: 100, prefix: 'rpc_ratelimit' },
@@ -167,10 +168,13 @@ export async function isRedisHealthy(): Promise<boolean> {
     return false
   }
 
-  const result = redis.ping().then(
-    () => true,
-    () => false
-  )
+  const result = Promise.race([
+    redis.ping().then(
+      () => true,
+      () => false
+    ),
+    new Promise<boolean>((resolve) => setTimeout(() => resolve(false), HEALTH_PING_TIMEOUT_MS)),
+  ])
   healthMemo = { at: now, result }
   return result
 }

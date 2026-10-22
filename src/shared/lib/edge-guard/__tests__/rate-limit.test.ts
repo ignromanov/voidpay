@@ -409,6 +409,19 @@ describe('isRedisHealthy — memoized ping', () => {
     expect(mockPing).toHaveBeenCalledTimes(1)
   })
 
+  it('reports false when the ping never settles (2 s timeout)', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      mockPing.mockReturnValue(new Promise(() => {}))
+      const { isRedisHealthy } = await load()
+      const pending = isRedisHealthy()
+      await vi.advanceTimersByTimeAsync(2000)
+      expect(await pending).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('reports false on ping failure and memoizes it', async () => {
     vi.spyOn(Date, 'now').mockReturnValue(NOW)
     mockPing.mockRejectedValue(new Error('down'))
