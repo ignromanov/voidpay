@@ -1,0 +1,127 @@
+name: Synthetic Probe
+
+# Black-box probe of the payment path (/api/rpc, /api/transfers, /api/health).
+# Acts as an ordinary anonymous client: no secrets, no bypass headers, no allowlist.
+# Issue: #363. See docs/ops/synthetic-probe.md.
+#
+# Dead-man's switch: GitHub auto-disables scheduled workflows in a public repo after
+# 60 days without repo activity, and cron runs can be delayed or dropped. A silently
+# dead probe is the same failure class as the archived Upstash DB. The optional
+# heartbeat step pings an external service (e.g. healthchecks.io) only after a fully
+# healthy run, so the external service alerts when pings stop for any reason.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: synthetic-probe
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      BASE_URL: https://voidpay.xyz
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      ISSUE_TITLE: '[probe] Payment path unhealthy'
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - name: Probe payment path
+        id: probe
+        run: |
+          set -u
+          table="$RUNNER_TEMP/table.md"
+          failed=false
+          printf '| Endpoint | Chain | HTTP | Class |\n|---|---|---|---|\n' > "$table"
+
+          classify() { # $1 = http status
+            case "$1" in
+              200) echo ok ;;
+              503) echo limiter_unavailable ;;
+              502) echo provider_error ;;
+              429) echo rate_limited ;;
+              403|415) echo blocked ;;
+              5??) echo provider_error ;;
+              000) echo unreachable ;;
+              *) echo unexpected ;;
+            esac
+          }
+
+          record() { # $1 endpoint, $2 chain, $3 http, $4 class
+            printf '| %s | %s | %s | %s |\n' "$1" "$2" "$3" "$4" >> "$table"
+            echo "$1 chain=$2 http=$3 class=$4"
+            [ "$4" = ok ] || failed=true
+          }
+
+          post() { # $1 url, $2 json body; prints http status, body goes to $RUNNER_TEMP/resp
+            curl -sS --max-time 20 -o "$RUNNER_TEMP/resp" -w '%{http_code}' \
+              -X POST -H 'Origin: https://voidpay.xyz' -H 'Content-Type: application/json' \
+              -d "$2" "$1" 2>/dev/null || true
+          }
+
+          base_block=""
+          for chain in 1 8453 42161 10 137; do
+            code=$(post "$BASE_URL/api/rpc?chainId=$chain" \
+              '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}')
+            class=$(classify "$code")
+            block=$(jq -r '.result // empty' "$RUNNER_TEMP/resp" 2>/dev/null || true)
+            if [ "$class" = ok ] && ! printf '%s' "$block" | grep -Eq '^0x[0-9a-fA-F]+$'; then
+              class=provider_error
+            fi
+            if [ "$chain" = 8453 ] && [ "$class" = ok ]; then base_block="$block"; fi
+            record /api/rpc "$chain" "$code" "$class"
+          done
+
+          if [ -n "$base_block" ]; then
+            from=$(printf '0x%x' $(( base_block - 100 )))
+            code=$(post "$BASE_URL/api/transfers" \
+              "{\"chainId\":8453,\"toAddress\":\"0x000000000000000000000000000000000000dEaD\",\"fromBlock\":\"$from\",\"category\":\"external\"}")
+            record /api/transfers 8453 "$code" "$(classify "$code")"
+          else
+            record /api/transfers 8453 skipped no_base_block
+          fi
+
+          code=$(curl -sS --max-time 20 -o "$RUNNER_TEMP/resp" -w '%{http_code}' "$BASE_URL/api/health" 2>/dev/null || true)
+          class=$(classify "$code")
+          reach=$(jq -r '.checks.rateLimiter.reachable // "unknown"' "$RUNNER_TEMP/resp" 2>/dev/null || echo unknown)
+          if [ "$class" = ok ] && [ "$reach" != true ]; then class=limiter_unavailable; fi
+          record /api/health "limiter_reachable=$reach" "$code" "$class"
+
+          rm -f "$RUNNER_TEMP/resp"
+          cat "$table" >> "$GITHUB_STEP_SUMMARY"
+          echo "failed=$failed" >> "$GITHUB_OUTPUT"
+
+      - name: Update tracking issue
+        run: |
+          set -eu
+          open=$(gh issue list -R "$GH_REPO" --state open --label p0 --limit 100 --json number,title \
+            --jq "map(select(.title == env.ISSUE_TITLE)) | .[0].number // empty")
+          if [ "${{ steps.probe.outputs.failed }}" = true ]; then
+            body="$(date -u +%FT%TZ) probe failed. Run: $RUN_URL"$'\n\n'"$(cat "$RUNNER_TEMP/table.md")"
+            if [ -n "$open" ]; then
+              gh issue comment "$open" -R "$GH_REPO" --body "$body"
+            else
+              gh issue create -R "$GH_REPO" --title "$ISSUE_TITLE" --label bug --label area:rpc --label p0 --body "$body"
+            fi
+          elif [ -n "$open" ]; then
+            gh issue comment "$open" -R "$GH_REPO" --body "Recovered: all checks ok. Run: $RUN_URL"
+            gh issue close "$open" -R "$GH_REPO"
+          fi
+
+      - name: Fail on unhealthy payment path
+        if: steps.probe.outputs.failed == 'true'
+        run: exit 1
+
+      - name: Heartbeat (dead-man's switch)
+        if: success() && env.HEARTBEAT_URL != ''
+        env:
+          HEARTBEAT_URL: ${{ secrets.PROBE_HEARTBEAT_URL }}
+        run: curl -fsS --max-time 10 "$HEARTBEAT_URL"
