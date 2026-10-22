@@ -154,7 +154,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     })
   } catch (error) {
-    console.error('RPC proxy error:', error)
+    console.error('RPC proxy error:', error instanceof Error ? error.name : 'UnknownError')
     return NextResponse.json(
       {
         jsonrpc: '2.0',
