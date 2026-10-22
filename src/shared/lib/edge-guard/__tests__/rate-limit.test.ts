@@ -308,6 +308,22 @@ describe('checkRateLimit — identifier privacy', () => {
     expect(logged).not.toContain(RAW_IP)
     expect(logged).not.toContain(id)
   })
+
+  it('never logs upstream error text (UpstashError embeds the command and Redis keys)', async () => {
+    const hex = 'deadbeefcafebabe0123456789abcdef'
+    mockLimit.mockRejectedValue(
+      new Error(`ERR quota exceeded, command was: ["EVALSHA","abc","rpc_ratelimit:${hex}:1"]`)
+    )
+    const { checkRateLimit } = await load()
+    await checkRateLimit('rpc', req(RAW_IP))
+
+    const logged = JSON.stringify(vi.mocked(console.error).mock.calls)
+    expect(vi.mocked(console.error)).toHaveBeenCalled()
+    expect(logged).not.toContain('command was')
+    expect(logged).not.toContain('quota exceeded')
+    expect(logged).not.toContain(hex)
+    expect(logged).toContain('Error')
+  })
 })
 
 describe('limitResponse', () => {

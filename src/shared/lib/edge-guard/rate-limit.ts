@@ -90,11 +90,11 @@ async function consume(limiter: Ratelimit, identifier: string): Promise<RateLimi
 }
 
 function unavailable(policy: RateLimitPolicy, cause: UnavailableCause, error?: unknown): RateLimitDecision {
-  // Never log the identifier or client IP
+  // Never log the identifier, client IP, or upstream error text (UpstashError.message embeds Redis keys)
   console.error('[CRITICAL] edge-guard rate limiter unavailable', {
     policy,
     cause,
-    ...(error !== undefined && { error: error instanceof Error ? error.message : String(error) }),
+    ...(error !== undefined && { errorName: error instanceof Error ? error.name : typeof error }),
   })
   return { kind: 'unavailable', cause }
 }

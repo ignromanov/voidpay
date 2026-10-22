@@ -186,13 +186,6 @@ export async function POST(request: Request): Promise<Response> {
           const lookbackBlocks = Math.floor(DRIFT_CORRECTION_LOOKBACK_MS / avgBlockTime)
           const correctedFromBlock = Math.max(1, realCurrentBlock - lookbackBlocks)
           const correctedFromBlockHex = `0x${correctedFromBlock.toString(16)}`
-          console.warn('[transfers] stale anchor drift corrected', {
-            chainId,
-            clientFromBlock: fromBlockNum,
-            realCurrentBlock,
-            drift: fromBlockNum - realCurrentBlock,
-            correctedFromBlock,
-          })
           alchemyResponse = await postAlchemy(buildAlchemyBody(correctedFromBlockHex))
         }
       }
