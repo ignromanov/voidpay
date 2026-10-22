@@ -1,13 +1,15 @@
-import type { Route } from 'next'
-
 /**
- * Convert a URL object to a typed Next.js Route.
+ * Navigate to a URL carrying an invoice hash fragment via a full document load.
  *
- * Next.js typed routes (`typedRoutes: true`) require `RouteImpl<T>` for
- * `router.push/replace`, but TypeScript cannot verify runtime string
- * concatenation against the generated route union. This utility centralises
- * the single unavoidable type assertion so call-sites stay clean.
+ * Do NOT use `router.push/replace` for these URLs: the Next.js App Router
+ * appends the hash to a previously visited (client-cached) route instead of
+ * replacing it (`/pay#A` -> `/pay#A#A`), corrupting the invoice fragment.
  */
-export function urlToRoute(url: URL): Route {
-  return `${url.pathname}${url.search}${url.hash}` as Route
+export function navigateToHashUrl(url: string | URL, { replace = false }: { replace?: boolean } = {}): void {
+  const target = typeof url === 'string' ? url : `${url.pathname}${url.search}${url.hash}`
+  if (replace) {
+    window.location.replace(target)
+  } else {
+    window.location.assign(target)
+  }
 }

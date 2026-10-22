@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import type { Route } from 'next'
-import { useRouter } from 'next/navigation'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
+import { navigateToHashUrl } from '@/shared/lib/navigation'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
 import type { DecodedHistoryEntry } from '../lib/types'
@@ -36,7 +35,6 @@ interface InvoiceListProps {
 }
 
 export function InvoiceList({ entries, variant, debug = false, className }: InvoiceListProps) {
-  const router = useRouter()
   const removeInvoice = useTrackedInvoiceStore((s) => s.removeInvoice)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const config = VARIANT_CONFIG[variant]
@@ -53,21 +51,20 @@ export function InvoiceList({ entries, variant, debug = false, className }: Invo
         toast.error('Could not extract invoice data')
         return
       }
-      router.push(`/create?template=1${hash}` as Route)
+      navigateToHashUrl(`/create?template=1${hash}`)
     } catch {
       toast.error('Invalid invoice URL')
     }
-  }, [router])
+  }, [])
 
   const handleView = useCallback((invoiceUrl: string) => {
     try {
-      const hash = new URL(invoiceUrl).hash as `#${string}`
-      // Dynamic route from variant config — cast needed for Next.js typesafe routes
-      router.push(`${config.viewRoute}${hash}` as never)
+      const hash = new URL(invoiceUrl).hash
+      navigateToHashUrl(`${config.viewRoute}${hash}`)
     } catch {
-      router.push(config.viewRoute as never)
+      navigateToHashUrl(config.viewRoute)
     }
-  }, [router, config.viewRoute])
+  }, [config.viewRoute])
 
   if (entries.length === 0) {
     return (
