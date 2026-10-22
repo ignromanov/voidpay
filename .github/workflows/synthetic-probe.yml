@@ -100,11 +100,13 @@ jobs:
           echo "failed=$failed" >> "$GITHUB_OUTPUT"
 
       - name: Update tracking issue
+        env:
+          PROBE_FAILED: ${{ steps.probe.outputs.failed }}
         run: |
           set -eu
           open=$(gh issue list -R "$GH_REPO" --state open --label p0 --limit 100 --json number,title \
             --jq "map(select(.title == env.ISSUE_TITLE)) | .[0].number // empty")
-          if [ "${{ steps.probe.outputs.failed }}" = true ]; then
+          if [ "$PROBE_FAILED" = true ]; then
             body="$(date -u +%FT%TZ) probe failed. Run: $RUN_URL"$'\n\n'"$(cat "$RUNNER_TEMP/table.md")"
             if [ -n "$open" ]; then
               gh issue comment "$open" -R "$GH_REPO" --body "$body"
@@ -121,7 +123,9 @@ jobs:
         run: exit 1
 
       - name: Heartbeat (dead-man's switch)
-        if: success() && env.HEARTBEAT_URL != ''
+        if: success()
         env:
           HEARTBEAT_URL: ${{ secrets.PROBE_HEARTBEAT_URL }}
-        run: curl -fsS --max-time 10 "$HEARTBEAT_URL"
+        run: |
+          if [ -z "$HEARTBEAT_URL" ]; then echo "heartbeat not configured, skipping"; exit 0; fi
+          curl -fsS --max-time 10 -o /dev/null "$HEARTBEAT_URL"
