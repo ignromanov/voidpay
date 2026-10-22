@@ -4,10 +4,7 @@
  * SEO: Used for JSON-LD FAQPage schema
  */
 
-export type FaqItem = {
-  question: string
-  answer: string
-}
+import type { FaqItem } from '@/shared/lib/faq-types'
 
 export const FAQ_ITEMS: FaqItem[] = [
   {

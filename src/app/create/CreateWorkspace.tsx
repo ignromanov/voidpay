@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import {
   Edit3Icon,
   EyeIcon,
@@ -20,7 +20,7 @@ import { useCreatorStore } from '@/entities/creator'
 import type { DraftSyncStatus } from '@/entities/creator'
 import { useHashFragment } from '@/shared/lib/hooks'
 import { nowUnix, daysFromNowUnix } from '@/shared/lib/date-time'
-import { urlToRoute } from '@/shared/lib/navigation'
+import { navigateToHashUrl } from '@/shared/lib/navigation'
 import { toast } from '@/shared/lib/toast'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
@@ -67,7 +67,6 @@ export function CreateWorkspace() {
   const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor')
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
-  const router = useRouter()
   const [isGenerating, setIsGenerating] = useState(false)
 
   const activeDraft = useCreatorStore((s) => s.activeDraft)
@@ -220,7 +219,7 @@ export function CreateWorkspace() {
       const invoiceUrl = new URL(url, window.location.origin)
       invoiceUrl.pathname = invoiceUrl.pathname.replace('/pay', '/invoice')
       invoiceUrl.searchParams.set('share', '1')
-      router.replace(urlToRoute(invoiceUrl))
+      navigateToHashUrl(invoiceUrl, { replace: true })
       return
     } catch (error) {
       if (error instanceof UrlSizeError) {
@@ -235,7 +234,7 @@ export function CreateWorkspace() {
       }
       setIsGenerating(false)
     }
-  }, [isGenerating, router])
+  }, [isGenerating])
 
   return (
     <>

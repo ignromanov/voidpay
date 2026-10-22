@@ -33,7 +33,7 @@ vi.mock('../constants/demo-invoices.generated', () => ({
 // Mock next/link to render as a proper anchor
 vi.mock('next/link', () => ({
   default: vi.fn(({ children, href, ...props }) => (
-    <a href={href} {...props}>
+    <a href={href} data-next-link="true" {...props}>
       {children}
     </a>
   )),
@@ -174,6 +174,8 @@ describe('DemoSection', () => {
       const href = link.getAttribute('href')
       // In tests, DEMO_CREATE_HASHES provides 'test-hash-eth' for the first invoice
       expect(href).toMatch(/^\/create#/)
+      // Hash-carrying link must be a plain <a> (full navigation), not next/link
+      expect(link).not.toHaveAttribute('data-next-link')
     })
 
     it('should hide button on mouse leave', async () => {

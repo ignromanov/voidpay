@@ -118,6 +118,9 @@ const sharedStorageConfig = createStorage({
  */
 export const wagmiConfig = getDefaultConfig({
   appName: 'VoidPay',
+  appUrl: 'https://voidpay.xyz',
+  appDescription: 'Privacy-first crypto invoicing. No backend, no signup, no tracking.',
+  appIcon: 'https://voidpay.xyz/favicon.ico',
   projectId: projectIdForConfig,
   chains,
   transports,

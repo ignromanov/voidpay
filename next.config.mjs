@@ -10,6 +10,22 @@ const projectRoot = isWorktree ? resolve(__dirname, '../..') : __dirname
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            // Shade S3 (spec 095): allow WalletConnect verify iframe — pinned host, no wildcard.
+            // frame-ancestors intentionally omitted (leaving it unchanged prevents /pay clickjacking).
+            key: 'Content-Security-Policy',
+            value: "frame-src 'self' https://verify.walletconnect.com",
+          },
+        ],
+      },
+    ]
+  },
+
   reactStrictMode: true,
   typedRoutes: true,
 

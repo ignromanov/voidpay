@@ -10,6 +10,20 @@ updates:
     labels:
       - "task"
       - "area:deploy"
+    groups:
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      wallet-stack:
+        patterns:
+          - "wagmi"
+          - "viem"
+          - "@wagmi/*"
+          - "@rainbow-me/*"
+          - "porto"
 
   - package-ecosystem: "github-actions"
     directory: "/"

@@ -2,7 +2,7 @@ name: Sync issue to VP Roadmap
 
 on:
   issues:
-    types: [opened]
+    types: [opened, labeled, unlabeled, edited, reopened, transferred]
 
 jobs:
   sync:
@@ -36,11 +36,16 @@ jobs:
               }' -f project="$PROJECT_ID" -f item="$ITEM_ID" -f field="$1" -f value="$2" > /dev/null
           }
 
-          # Status: Backlog
-          edit "PVTSSF_lAHOADCDMs4BSDpYzg_s92Q" "db1229ae"
+          # Status: Backlog — only on initial open (later edits must not reset the board column)
+          if [ "${{ github.event.action }}" = "opened" ]; then
+            edit "PVTSSF_lAHOADCDMs4BSDpYzg_s92Q" "db1229ae"
+          fi
 
-          # Source Repo: voidpay
-          edit "PVTSSF_lAHOADCDMs4BSDpYzhAtERQ" "1cd0910f"
+          # Source Repo — derived from the firing repo so both repo copies stay byte-identical
+          case "${{ github.repository }}" in
+            */voidpay-ai) edit "PVTSSF_lAHOADCDMs4BSDpYzhAtERQ" "32efcbde" ;;
+            */voidpay)    edit "PVTSSF_lAHOADCDMs4BSDpYzhAtERQ" "1cd0910f" ;;
+          esac
 
           # Parse labels
           LABELS='${{ join(github.event.issue.labels.*.name, ',') }}'
@@ -57,7 +62,6 @@ jobs:
             *,advisor:kai,*)    edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPg" "991535fa" ;;
             *,advisor:nexus,*)  edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPg" "0a0f9602" ;;
             *,advisor:spark,*)  edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPg" "146d62f8" ;;
-            *,advisor:vox,*)    edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPg" "37e39c75" ;;
             *,advisor:shade,*)  edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPg" "c58cdf97" ;;
             *,advisor:quorum,*) edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEPg" "fb9f1e5d" ;;
           esac
@@ -71,7 +75,7 @@ jobs:
             *,ops,*)            edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEQ4" "b67a6efe" ;;
             *,agent-infra,*)    edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEQ4" "d4bdd311" ;;
             *,meeting-action,*) edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEQ4" "943dccc1" ;;
-            *,bug,*|*,feature,*|*,task,*|*,tech-debt,*)
+            *,bug,*|*,feature,*|*,task,*|*,tech-debt,*|*,refactor,*|*,security:hardening,*|*,security:audit,*)
                                 edit "PVTSSF_lAHOADCDMs4BSDpYzhAtEQ4" "ef1a0c60" ;;
           esac
 

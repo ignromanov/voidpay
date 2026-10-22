@@ -14,6 +14,7 @@ import { UMAMI_CONFIG } from '../config/umami'
  * - Not rendered in development (no network request)
  * - data-domains restricts tracking to production domain only (blocks preview deploys)
  * - data-exclude-hash strips URL hash fragment (PRIVACY-CRITICAL: hash contains full invoice data)
+ * - data-exclude-search strips URL query string (PRIVACY-CRITICAL: og params carry invoice amount + names)
  *
  * @see https://umami.is/docs/tracker-configuration
  */
@@ -26,6 +27,7 @@ export function UmamiScript() {
       data-website-id={UMAMI_CONFIG.websiteId}
       data-domains={VOIDPAY_DOMAIN}
       data-exclude-hash="true"
+      data-exclude-search="true"
       strategy="lazyOnload"
     />
   )
