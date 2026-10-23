@@ -15,7 +15,6 @@ const mockStoreState = vi.hoisted(() => ({
 // Mock dependencies before importing component
 vi.mock('@/shared/lib/hooks', () => ({
   useHashFragment: vi.fn(() => ''),
-  useIsMounted: vi.fn(() => true),
   useHydrated: vi.fn(() => true),
 }))
 
