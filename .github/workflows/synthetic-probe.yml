@@ -12,7 +12,8 @@ name: Synthetic Probe
 
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    # Every 3 h at :17 — low traffic and a shared Vercel Hobby quota; offset from :00 because GitHub cron at the top of the hour is the most delayed/dropped.
+    - cron: '17 */3 * * *'
   workflow_dispatch:
 
 concurrency:

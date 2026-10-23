@@ -1,6 +1,6 @@
 # Synthetic probe
 
-`.github/workflows/synthetic-probe.yml` runs every 10 minutes (and on `workflow_dispatch`) against https://voidpay.xyz (#363).
+`.github/workflows/synthetic-probe.yml` runs every 3 hours (at :17 past 00, 03, …, 21 UTC) and on `workflow_dispatch`, against https://voidpay.xyz (#363).
 
 ## Checks
 - `/api/rpc`: `eth_blockNumber` on chains 1, 8453, 42161, 10, 137. Expects 200 and a hex `result`.
@@ -20,7 +20,7 @@ Response bodies are never logged (public repo).
 
 ## Dead-man's switch
 GitHub disables scheduled workflows in public repos after 60 days of inactivity, so the probe can die silently.
-Create a healthchecks.io check (period 30 min, grace as needed), then set the repo secret
+Create a healthchecks.io check (period 3 h, grace 3 h; GitHub cron runs are sometimes delayed or dropped, so this grace tolerates one missed run and alerts after two consecutive misses), then set the repo secret
 `PROBE_HEARTBEAT_URL` to its ping URL. The step is a no-op until the secret exists and only pings after a fully healthy run.
 
 ## Privileges
