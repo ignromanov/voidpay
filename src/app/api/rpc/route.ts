@@ -5,58 +5,53 @@
  * This route handles all blockchain RPC requests with:
  * - Automatic failover between Alchemy (primary) and Infura (fallback)
  * - Privacy-preserving proxy (no logging, secure API keys)
- * - Rate limiting (100 req/min per IP)
- * - Mock mode for development
+ * - Rate limiting (100 req/min per IP, fail-closed via shared/lib/edge-guard)
+ * - Mock mode for development (never in production)
+ *
+ * Order: Origin gate → rate limit → body parse.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import type { JsonRpcRequest, JsonRpcResponse } from '@/features/rpc-proxy'
+import { checkRateLimit, limitResponse, passesOriginGate, rateLimitHeaders } from '@/shared/lib/edge-guard'
 
 export const runtime = 'edge'
-
-function isAllowedOrigin(value: string | null, host: string | null): boolean {
-  if (!value) return false
-  try {
-    const hostname = new URL(value).hostname
-    if (host && hostname === host) return true
-    return hostname === 'voidpay.xyz' || hostname.endsWith('.voidpay.xyz')
-  } catch {
-    return false
-  }
-}
 
 /**
  * POST /api/rpc
  * Proxy JSON-RPC requests to blockchain providers
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  // Security: Validate Origin and Referer headers
-  const origin = request.headers.get('origin')
-  const referer = request.headers.get('referer')
-  const host = request.headers.get('host')
+  // Same-origin policy (production only) — no ACAO, the API is not cross-origin
+  if (!passesOriginGate(request.headers)) {
+    return NextResponse.json(
+      {
+        jsonrpc: '2.0',
+        error: {
+          code: -32600,
+          message: 'Invalid origin',
+        },
+        id: null,
+      } as JsonRpcResponse,
+      { status: 403 }
+    )
+  }
 
-  // In production, enforce same-origin policy
-  if (process.env.NODE_ENV === 'production') {
-    if (!isAllowedOrigin(origin, host) && !isAllowedOrigin(referer, host)) {
-      return NextResponse.json(
-        {
-          jsonrpc: '2.0',
-          error: {
-            code: -32600,
-            message: 'Invalid origin',
-          },
-          id: null,
-        } as JsonRpcResponse,
-        {
-          status: 403,
-          headers: {
-            'Access-Control-Allow-Origin': origin || '*',
-            'Access-Control-Allow-Methods': 'POST',
-            'Access-Control-Allow-Headers': 'Content-Type',
-          },
-        }
-      )
-    }
+  // Rate limit before reading the body; applies to mock mode too
+  const rateLimit = await checkRateLimit('rpc', request.headers)
+  const blocked = limitResponse(rateLimit)
+  if (blocked) {
+    return NextResponse.json(
+      {
+        jsonrpc: '2.0',
+        error:
+          blocked.status === 503
+            ? { code: -32603, message: 'Service temporarily unavailable. Please try again later.' }
+            : { code: 429, message: 'Rate limit exceeded. Please try again later.' },
+        id: null,
+      } as JsonRpcResponse,
+      { status: blocked.status, headers: blocked.headers }
+    )
   }
 
   try {
@@ -111,60 +106,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
-    // Rate limiting (skip for mock mode to avoid blocking development)
-    const { shouldUseMock } = await import('@/features/rpc-proxy')
-
-    let storedRateLimitResult: Awaited<ReturnType<typeof import('@/features/rpc-proxy').checkRateLimit>> | null = null
-
-    if (!shouldUseMock(url)) {
-      const { extractIpAddress, checkRateLimit } = await import('@/features/rpc-proxy')
-      const ipAddress = extractIpAddress(request.headers)
-      storedRateLimitResult = await checkRateLimit(ipAddress)
-
-      // Fail-closed: rate limiter unavailable (no Redis) → 503
-      if (storedRateLimitResult.unavailable) {
-        return NextResponse.json(
-          {
-            jsonrpc: '2.0',
-            error: {
-              code: -32603,
-              message: 'Service temporarily unavailable. Please try again later.',
-            },
-            id: body.id || null,
-          } as JsonRpcResponse,
-          {
-            status: 503,
-            headers: {
-              'Retry-After': '30',
-            },
-          }
-        )
-      }
-
-      if (!storedRateLimitResult.allowed) {
-        return NextResponse.json(
-          {
-            jsonrpc: '2.0',
-            error: {
-              code: 429,
-              message: 'Rate limit exceeded. Please try again later.',
-            },
-            id: body.id || null,
-          } as JsonRpcResponse,
-          {
-            status: 429,
-            headers: {
-              'Retry-After': '60',
-              'X-RateLimit-Limit': storedRateLimitResult.limit.toString(),
-              'X-RateLimit-Remaining': '0',
-            },
-          }
-        )
-      }
-    }
-
     // Check if mock mode should be enabled
-    const { getMockMode, handleMockRequest } = await import('@/features/rpc-proxy')
+    const { shouldUseMock, getMockMode, handleMockRequest } = await import('@/features/rpc-proxy')
 
     if (shouldUseMock(url)) {
       const mockMode = getMockMode(url)
@@ -186,14 +129,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Proxy the request with automatic failover
     const result = await proxyRequest(body, chainId)
 
-    // Build rate limit headers from the already-fetched result (avoid second call)
-    let rateLimitHeaders: Record<string, string> = {}
-    if (storedRateLimitResult) {
-      rateLimitHeaders = {
-        'X-RateLimit-Limit': storedRateLimitResult.limit.toString(),
-        'X-RateLimit-Remaining': storedRateLimitResult.remaining.toString(),
-      }
-    }
+    const budgetHeaders = rateLimitHeaders(rateLimit)
 
     // Check if both providers failed (HTTP 503)
     if (result.response.error && result.response.error.message.includes('unavailable')) {
@@ -203,7 +139,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           Pragma: 'no-cache',
           'Retry-After': '60', // Suggest retry after 60 seconds
-          ...rateLimitHeaders,
+          ...budgetHeaders,
         },
       })
     }
@@ -214,11 +150,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         Pragma: 'no-cache',
-        ...rateLimitHeaders,
+        ...budgetHeaders,
       },
     })
   } catch (error) {
-    console.error('RPC proxy error:', error)
+    console.error('RPC proxy error:', error instanceof Error ? error.name : 'UnknownError')
     return NextResponse.json(
       {
         jsonrpc: '2.0',
@@ -234,23 +170,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * CORS Preflight Handler
+ * CORS Preflight Handler — same-origin only, so no Access-Control-Allow-Origin
  */
-export async function OPTIONS(request: NextRequest): Promise<NextResponse> {
-  const origin = request.headers.get('origin')
-
-  return NextResponse.json(
-    {},
-    {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': origin || '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Max-Age': '86400', // 24 hours
-      },
-    }
-  )
+export async function OPTIONS(): Promise<NextResponse> {
+  return new NextResponse(null, { status: 204, headers: { Allow: 'POST, OPTIONS' } })
 }
 
 /**

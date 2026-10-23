@@ -71,7 +71,7 @@ export async function proxyRequest(
       requestId,
     }
   } catch (primaryError) {
-    console.error('RPC provider primary failed:', primaryError)
+    console.error('RPC provider primary failed:', describeProviderError(primaryError))
     // Primary failed - try fallback (Infura)
     try {
       const response = await fetchProvider(
@@ -86,7 +86,7 @@ export async function proxyRequest(
         requestId,
       }
     } catch (fallbackError) {
-      console.error('RPC provider fallback failed:', fallbackError)
+      console.error('RPC provider fallback failed:', describeProviderError(fallbackError))
       // Both providers failed
       return {
         response: {
@@ -102,6 +102,15 @@ export async function proxyRequest(
       }
     }
   }
+}
+
+// Provider errors can carry the provider URL (API key) or echoed request params: log a static code only
+function describeProviderError(error: unknown): string {
+  if (error instanceof Error) {
+    const status = /^HTTP \d{3}$/.exec(error.message)
+    return status ? status[0] : error.name
+  }
+  return 'UnknownError'
 }
 
 /**

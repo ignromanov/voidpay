@@ -14,13 +14,21 @@ vi.mock('@/features/rpc-proxy', () => ({
     result: 'mock-result',
     id: (body as { id: unknown }).id ?? 1,
   })),
-  extractIpAddress: vi.fn(() => '127.0.0.1'),
-  checkRateLimit: vi.fn(async () => ({ allowed: true, remaining: 95, limit: 100 })),
   proxyRequest: vi.fn(async (body: unknown) => ({
     response: { jsonrpc: '2.0', result: '0x1', id: (body as { id: unknown }).id ?? 1 },
     provider: 'primary',
     requestId: 'req_test_123',
   })),
+}))
+
+// Real header/origin helpers; only the Redis-backed decision is mocked
+vi.mock('@/shared/lib/edge-guard', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/shared/lib/edge-guard')>()),
+  checkRateLimit: vi.fn(async () => ALLOW),
+}))
+
+const { ALLOW } = vi.hoisted(() => ({
+  ALLOW: { kind: 'allow', limit: 100, remaining: 95, reset: 0 } as const,
 }))
 
 function makeNextRequest(
@@ -57,7 +65,7 @@ describe('POST /api/rpc — origin validation (production)', () => {
     // Reset the mock to default
     const mod = await import('@/features/rpc-proxy')
     vi.mocked(mod.shouldUseMock).mockReturnValue(false)
-    vi.mocked(mod.checkRateLimit).mockResolvedValue({ allowed: true, remaining: 95, limit: 100 })
+    vi.mocked((await import('@/shared/lib/edge-guard')).checkRateLimit).mockResolvedValue(ALLOW)
     vi.mocked(mod.proxyRequest).mockResolvedValue({
       response: { jsonrpc: '2.0', result: '0x1', id: 1 },
       provider: 'primary',
@@ -79,6 +87,23 @@ describe('POST /api/rpc — origin validation (production)', () => {
     const json = await res.json()
     expect(json.error.code).toBe(-32600)
     expect(json.error.message).toBe('Invalid origin')
+    expect(res.headers.get('access-control-allow-origin')).toBeNull()
+  })
+
+  it('rejects a cross-site origin before the rate limiter and body parse', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    const { checkRateLimit } = await import('@/shared/lib/edge-guard')
+    const { POST } = await import('../route')
+    const req = new NextRequest('https://voidpay.xyz/api/rpc', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: 'https://evil.com', host: 'voidpay.xyz' },
+      body: 'not-json{{{',
+    })
+    req.headers.set('origin', 'https://evil.com')
+    const res = await POST(req)
+    expect(res.status).toBe(403)
+    expect(res.headers.get('access-control-allow-origin')).toBeNull()
+    expect(vi.mocked(checkRateLimit)).not.toHaveBeenCalled()
   })
 
   it('allows request from same host (voidpay.xyz) in production', async () => {
@@ -132,7 +157,7 @@ describe('POST /api/rpc — request validation', () => {
     vi.resetModules()
     const mod = await import('@/features/rpc-proxy')
     vi.mocked(mod.shouldUseMock).mockReturnValue(false)
-    vi.mocked(mod.checkRateLimit).mockResolvedValue({ allowed: true, remaining: 95, limit: 100 })
+    vi.mocked((await import('@/shared/lib/edge-guard')).checkRateLimit).mockResolvedValue(ALLOW)
     vi.mocked(mod.proxyRequest).mockResolvedValue({
       response: { jsonrpc: '2.0', result: '0x1', id: 1 },
       provider: 'primary',
@@ -213,6 +238,7 @@ describe('POST /api/rpc — request validation', () => {
 describe('POST /api/rpc — mock mode', () => {
   beforeEach(async () => {
     vi.resetModules()
+    vi.mocked((await import('@/shared/lib/edge-guard')).checkRateLimit).mockResolvedValue(ALLOW)
   })
 
   afterEach(() => {
@@ -259,62 +285,133 @@ describe('POST /api/rpc — mock mode', () => {
 describe('POST /api/rpc — rate limiting', () => {
   beforeEach(async () => {
     vi.resetModules()
+    vi.mocked((await import('@/shared/lib/edge-guard')).checkRateLimit).mockReset().mockResolvedValue(ALLOW)
     const mod = await import('@/features/rpc-proxy')
     vi.mocked(mod.shouldUseMock).mockReturnValue(false)
+    vi.mocked(mod.proxyRequest).mockResolvedValue({
+      response: { jsonrpc: '2.0', result: '0x1', id: 1 },
+      provider: 'primary',
+      requestId: 'req_test',
+    })
   })
 
   afterEach(() => {
+    vi.unstubAllEnvs()
     vi.restoreAllMocks()
   })
 
-  it('returns 503 when rate limiter is unavailable', async () => {
-    const mod = await import('@/features/rpc-proxy')
-    vi.mocked(mod.checkRateLimit).mockResolvedValue({
-      allowed: false,
-      unavailable: true,
-      remaining: 0,
-      limit: 0,
-    })
+  it.each(['unconfigured', 'error', 'timeout'] as const)(
+    'returns 503 with Retry-After: 30 when the limiter is unavailable (%s)',
+    async (cause) => {
+      const { checkRateLimit } = await import('@/shared/lib/edge-guard')
+      vi.mocked(checkRateLimit).mockResolvedValue({ kind: 'unavailable', cause })
+      const mod = await import('@/features/rpc-proxy')
 
-    const { POST } = await import('../route')
-    const res = await POST(makeNextRequest(validBody))
-    expect(res.status).toBe(503)
-    const json = await res.json()
-    expect(json.error.code).toBe(-32603)
-    expect(res.headers.get('retry-after')).toBe('30')
-  })
+      const { POST } = await import('../route')
+      const res = await POST(makeNextRequest(validBody))
+      expect(res.status).toBe(503)
+      expect(res.headers.get('retry-after')).toBe('30')
+      // Generic body: the cause is never disclosed
+      expect(await res.json()).toEqual({
+        jsonrpc: '2.0',
+        error: { code: -32603, message: 'Service temporarily unavailable. Please try again later.' },
+        id: null,
+      })
+      expect(vi.mocked(mod.proxyRequest)).not.toHaveBeenCalled()
+    }
+  )
 
-  it('returns 429 when rate limit is exceeded', async () => {
-    const mod = await import('@/features/rpc-proxy')
-    vi.mocked(mod.checkRateLimit).mockResolvedValue({
-      allowed: false,
-      remaining: 0,
+  it('returns 429 with Retry-After computed from reset', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(1_800_000_000_000)
+    const { checkRateLimit } = await import('@/shared/lib/edge-guard')
+    vi.mocked(checkRateLimit).mockResolvedValue({
+      kind: 'deny',
       limit: 100,
+      remaining: 0,
+      reset: 1_800_000_000_000 + 41_500,
     })
+    const mod = await import('@/features/rpc-proxy')
 
     const { POST } = await import('../route')
     const res = await POST(makeNextRequest(validBody))
     expect(res.status).toBe(429)
     const json = await res.json()
     expect(json.error.code).toBe(429)
-    expect(res.headers.get('retry-after')).toBe('60')
+    expect(res.headers.get('retry-after')).toBe('42')
     expect(res.headers.get('x-ratelimit-limit')).toBe('100')
+    expect(res.headers.get('x-ratelimit-remaining')).toBe('0')
+    expect(vi.mocked(mod.proxyRequest)).not.toHaveBeenCalled()
+  })
+
+  it('rate-limits before parsing the body', async () => {
+    const { checkRateLimit } = await import('@/shared/lib/edge-guard')
+    vi.mocked(checkRateLimit).mockResolvedValue({ kind: 'deny', limit: 100, remaining: 0, reset: 0 })
+
+    const { POST } = await import('../route')
+    const res = await POST(
+      new NextRequest('http://localhost:3000/api/rpc', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: 'not-json{{{',
+      })
+    )
+    expect(res.status).toBe(429)
+  })
+
+  it('checks the rpc policy with the request headers', async () => {
+    const { checkRateLimit } = await import('@/shared/lib/edge-guard')
+    const { POST } = await import('../route')
+    await POST(makeNextRequest(validBody))
+    expect(vi.mocked(checkRateLimit)).toHaveBeenCalledWith('rpc', expect.any(Headers))
   })
 
   it('includes rate limit headers on success', async () => {
-    const mod = await import('@/features/rpc-proxy')
-    vi.mocked(mod.checkRateLimit).mockResolvedValue({ allowed: true, remaining: 42, limit: 100 })
-    vi.mocked(mod.proxyRequest).mockResolvedValue({
-      response: { jsonrpc: '2.0', result: '0x1', id: 1 },
-      provider: 'primary',
-      requestId: 'req_test',
-    })
+    const { checkRateLimit } = await import('@/shared/lib/edge-guard')
+    vi.mocked(checkRateLimit).mockResolvedValue({ kind: 'allow', limit: 100, remaining: 42, reset: 0 })
 
     const { POST } = await import('../route')
     const res = await POST(makeNextRequest(validBody))
     expect(res.status).toBe(200)
     expect(res.headers.get('x-ratelimit-limit')).toBe('100')
     expect(res.headers.get('x-ratelimit-remaining')).toBe('42')
+  })
+
+  it('rate-limits mock-mode requests too', async () => {
+    const { checkRateLimit } = await import('@/shared/lib/edge-guard')
+    vi.mocked(checkRateLimit).mockResolvedValue({ kind: 'deny', limit: 100, remaining: 0, reset: 0 })
+    const mod = await import('@/features/rpc-proxy')
+    vi.mocked(mod.shouldUseMock).mockReturnValue(true)
+
+    const { POST } = await import('../route')
+    const res = await POST(makeNextRequest(validBody, { url: 'http://localhost:3000/api/rpc?mock=slow' }))
+    expect(res.status).toBe(429)
+    expect(vi.mocked(mod.handleMockRequest)).not.toHaveBeenCalled()
+  })
+
+  it('?mock= in production goes through the limiter and the real provider', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('ALCHEMY_API_KEY', '')
+    vi.stubEnv('INFURA_API_KEY', '')
+    const { checkRateLimit } = await import('@/shared/lib/edge-guard')
+    const mod = await import('@/features/rpc-proxy')
+    const realMock = await vi.importActual<typeof import('@/features/rpc-proxy/lib/mock')>(
+      '@/features/rpc-proxy/lib/mock'
+    )
+    vi.mocked(mod.shouldUseMock).mockImplementation(realMock.shouldUseMock)
+
+    const { POST } = await import('../route')
+    const res = await POST(
+      makeNextRequest(validBody, {
+        origin: 'https://voidpay.xyz',
+        host: 'voidpay.xyz',
+        url: 'https://voidpay.xyz/api/rpc?mock=slow',
+      })
+    )
+    expect(res.status).toBe(200)
+    expect(res.headers.get('x-mock-mode')).toBeNull()
+    expect(vi.mocked(checkRateLimit)).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(mod.proxyRequest)).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(mod.handleMockRequest)).not.toHaveBeenCalled()
   })
 })
 
@@ -323,7 +420,7 @@ describe('POST /api/rpc — proxy results', () => {
     vi.resetModules()
     const mod = await import('@/features/rpc-proxy')
     vi.mocked(mod.shouldUseMock).mockReturnValue(false)
-    vi.mocked(mod.checkRateLimit).mockResolvedValue({ allowed: true, remaining: 95, limit: 100 })
+    vi.mocked((await import('@/shared/lib/edge-guard')).checkRateLimit).mockResolvedValue(ALLOW)
   })
 
   afterEach(() => {
@@ -423,25 +520,11 @@ describe('Non-POST handlers', () => {
 })
 
 describe('OPTIONS /api/rpc — CORS preflight', () => {
-  it('returns 204 with CORS headers', async () => {
+  it('returns 204 without Access-Control-Allow-Origin (same-origin only)', async () => {
     const { OPTIONS } = await import('../route')
-    const req = new NextRequest('http://localhost:3000/api/rpc', {
-      method: 'OPTIONS',
-      headers: { origin: 'https://voidpay.xyz' },
-    })
-    const res = await OPTIONS(req)
+    const res = await OPTIONS()
     expect(res.status).toBe(204)
-    expect(res.headers.get('access-control-allow-methods')).toContain('POST')
-    // origin header may be echoed or fall back to '*' depending on runtime
-    const allowOrigin = res.headers.get('access-control-allow-origin')
-    expect(allowOrigin === 'https://voidpay.xyz' || allowOrigin === '*').toBe(true)
-    expect(res.headers.get('access-control-max-age')).toBe('86400')
-  })
-
-  it('returns * for access-control-allow-origin when no origin header', async () => {
-    const { OPTIONS } = await import('../route')
-    const req = new NextRequest('http://localhost:3000/api/rpc', { method: 'OPTIONS' })
-    const res = await OPTIONS(req)
-    expect(res.headers.get('access-control-allow-origin')).toBe('*')
+    expect(res.headers.get('access-control-allow-origin')).toBeNull()
+    expect(res.headers.get('access-control-allow-credentials')).toBeNull()
   })
 })
