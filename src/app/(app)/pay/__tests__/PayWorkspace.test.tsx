@@ -17,6 +17,7 @@ vi.mock('@/shared/lib/hooks', () => ({
   useHashFragment: vi.fn(() => ''),
   useIsMounted: vi.fn(() => true),
   useHydrated: vi.fn(() => true),
+  useIsMobile: vi.fn(() => false),
 }))
 
 // Mock useReducedMotion used by VoidLogo
