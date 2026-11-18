@@ -1,7 +1,7 @@
 'use client'
 
 import { buildWalletDeepLink } from '../lib/build-wallet-deeplink'
-import { assertAmountParity } from '../lib/assert-amount-parity'
+import { assertAmountParity, isAmountParityOk } from '../lib/assert-amount-parity'
 
 interface WalletDeepLinkButtonsProps {
   recipientAddress: string
@@ -20,8 +20,6 @@ export function WalletDeepLinkButtons({
   displayedExactTotal,
   tokenAddress,
 }: WalletDeepLinkButtonsProps) {
-  assertAmountParity(amount, displayedExactTotal)
-
   const deepLinkParams = {
     recipientAddress,
     chainId,
@@ -29,10 +27,20 @@ export function WalletDeepLinkButtons({
     ...(tokenAddress ? { tokenAddress } : {}),
   }
 
+  const metamaskHref = buildWalletDeepLink('metamask', deepLinkParams)
+
+  if (!isAmountParityOk(metamaskHref, displayedExactTotal)) {
+    // Fail closed: never offer a deep link whose amount Magic-Dust can't match.
+    if (process.env.NODE_ENV !== 'production') {
+      assertAmountParity(metamaskHref, displayedExactTotal)
+    }
+    return null
+  }
+
   return (
     <div className="flex flex-col gap-2">
       <a
-        href={buildWalletDeepLink('metamask', deepLinkParams)}
+        href={metamaskHref}
         className="flex items-center justify-center rounded-lg bg-zinc-100 px-4 py-3 text-sm font-medium text-zinc-900 active:scale-[0.98]"
       >
         Open in MetaMask
@@ -40,12 +48,12 @@ export function WalletDeepLinkButtons({
       {!tokenAddress && (
         <a
           href={buildWalletDeepLink('generic', deepLinkParams)}
-          className="text-center text-xs text-zinc-500 underline"
+          className="inline-flex min-h-11 items-center justify-center text-xs text-zinc-400 underline"
         >
           Use a different wallet
         </a>
       )}
-      <p className="text-center text-xs text-zinc-500">
+      <p className="text-center text-xs text-zinc-400">
         Do not change the amount — we use it to find your payment.
       </p>
     </div>

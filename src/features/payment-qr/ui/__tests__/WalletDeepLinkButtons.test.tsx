@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@/shared/lib/test-utils'
 import { WalletDeepLinkButtons } from '../WalletDeepLinkButtons'
 
@@ -53,5 +53,30 @@ describe('WalletDeepLinkButtons', () => {
   it('shows the do-not-change-amount caveat', () => {
     render(<WalletDeepLinkButtons {...nativeProps} />)
     expect(screen.getByText(/do not change the amount/i)).toBeInTheDocument()
+  })
+
+  it('uses AA-contrast text-zinc-400 and a 44px tap target for the secondary link and caveat', () => {
+    render(<WalletDeepLinkButtons {...nativeProps} />)
+    const generic = screen.getByRole('link', { name: /use a different wallet/i })
+    expect(generic).toHaveClass('text-zinc-400', 'min-h-11')
+    expect(screen.getByText(/do not change the amount/i)).toHaveClass('text-zinc-400')
+  })
+
+  describe('amount parity (fail-closed)', () => {
+    it('renders no deep links when displayedExactTotal diverges from the encoded amount (prod)', () => {
+      vi.stubEnv('NODE_ENV', 'production')
+      const { container } = render(
+        <WalletDeepLinkButtons {...nativeProps} displayedExactTotal="1000000000000043" />
+      )
+      vi.unstubAllEnvs()
+      expect(container).toBeEmptyDOMElement()
+    })
+
+    it('throws in non-production for visibility', () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      expect(() =>
+        render(<WalletDeepLinkButtons {...nativeProps} displayedExactTotal="1000000000000043" />)
+      ).toThrow(/amount parity/)
+    })
   })
 })
