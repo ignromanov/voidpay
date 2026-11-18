@@ -20,6 +20,8 @@ interface PaymentInfoProps {
   currency: string
   /** Token contract address (optional for native tokens) */
   tokenAddress?: string | undefined
+  /** Token decimals baked into the invoice (used for verified-token check) */
+  decimals?: number | undefined
   /** Transaction hash when payment is made */
   txHash?: string | undefined
   /** Whether the transaction has been validated on-chain */
@@ -38,6 +40,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
     senderAddress,
     currency,
     tokenAddress,
+    decimals,
     txHash,
     txHashValidated = true,
     amount,
@@ -123,7 +126,7 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                       ({formatShortAddress(tokenAddress)})
                     </span>
                   )}
-                  {tokenAddress && !isVerifiedToken(networkId, currency, tokenAddress) && (
+                  {tokenAddress && !isVerifiedToken(networkId, currency, tokenAddress, decimals) && (
                     <span
                       data-testid="paper-unverified-token"
                       className="ml-1 rounded bg-amber-100 px-1 py-0.5 font-sans text-[8px] font-semibold text-amber-800 uppercase"
