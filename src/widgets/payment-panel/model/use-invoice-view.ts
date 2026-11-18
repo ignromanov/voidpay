@@ -71,7 +71,9 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
   const setError = useTrackedInvoiceStore((s) => s.setError)
   const setTxHash = useTrackedInvoiceStore((s) => s.setTxHash)
 
-  const [isHydrated, setIsHydrated] = useState(false)
+  const [isHydrated, setIsHydrated] = useState(
+    () => useTrackedInvoiceStore.persist?.hasHydrated?.() ?? false,
+  )
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [contentHash, setContentHash] = useState<string>('')
   const [errorType, setErrorType] = useState<DecodeErrorType | null>(null)
@@ -134,6 +136,10 @@ export function useInvoiceView({ source }: UseInvoiceViewOptions): InvoiceViewSt
 
   // 1. Hydration detection
   useEffect(() => {
+    if (useTrackedInvoiceStore.persist?.hasHydrated?.()) {
+      setIsHydrated(true)
+      return
+    }
     const timer = setTimeout(() => setIsHydrated(true), HYDRATION_TIMEOUT)
     return () => clearTimeout(timer)
   }, [])

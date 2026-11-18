@@ -158,9 +158,9 @@ export default function LandingPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
       />
 
-      <main className="relative min-h-screen">
+      <div className="relative min-h-screen">
         <LandingContent />
-      </main>
+      </div>
     </>
   )
 }

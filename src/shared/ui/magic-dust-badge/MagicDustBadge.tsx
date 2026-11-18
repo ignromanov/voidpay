@@ -18,13 +18,13 @@ interface MagicDustBadgeProps {
 const VARIANT_STYLES = {
   dark: {
     icon: 'text-violet-400/60',
-    label: 'text-zinc-500',
+    label: 'text-zinc-400',
     amount: 'text-zinc-400',
   },
   light: {
-    icon: 'text-violet-400',
-    label: 'text-zinc-400',
-    amount: 'text-zinc-500',
+    icon: 'text-violet-600',
+    label: 'text-zinc-600',
+    amount: 'text-zinc-700',
   },
 } as const
 
@@ -55,7 +55,8 @@ export function MagicDustBadge({
           data-testid="magic-dust-info-icon"
           title={tooltipText}
           aria-label="Full precision amount"
-          className="flex-shrink-0 cursor-help"
+          tabIndex={0}
+          className="flex-shrink-0 cursor-help rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-violet-500"
         >
           <InfoIcon size={10} className={styles.icon} aria-hidden="true" />
         </span>

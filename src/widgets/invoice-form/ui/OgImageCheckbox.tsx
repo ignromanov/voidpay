@@ -51,7 +51,11 @@ export function OgImageCheckbox({ className }: OgImageCheckboxProps) {
             Social Media Preview
           </Text>
         </div>
-        <Switch checked={includeOgImage} onCheckedChange={handleChange} />
+        <Switch
+          checked={includeOgImage}
+          onCheckedChange={handleChange}
+          aria-label="Social Media Preview"
+        />
       </div>
 
       <div className="mt-2 border-t border-zinc-800/50 pt-2">
@@ -63,8 +67,8 @@ export function OgImageCheckbox({ className }: OgImageCheckboxProps) {
           </Text>
         ) : (
           <div className="flex items-start gap-2">
-            <EyeOffIcon size={12} className="mt-0.5 shrink-0 text-zinc-500" />
-            <Text variant="tiny" className="leading-tight text-zinc-500">
+            <EyeOffIcon size={12} className="mt-0.5 shrink-0 text-zinc-400" />
+            <Text variant="tiny" className="leading-tight text-zinc-400">
               No preview card when sharing. More private, but less visual appeal in social feeds.
             </Text>
           </div>

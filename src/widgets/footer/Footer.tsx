@@ -10,6 +10,7 @@
  * No backdrop-filter — avoids repaint on scroll (perf win retained from refactor).
  */
 
+import Link from 'next/link'
 import { GithubIcon, MailIcon, TwitterIcon, FileTextIcon, ShieldIcon } from '@/shared/ui/icons'
 import { AnalyticsToggle } from '@/features/analytics'
 import { SOCIAL_URLS } from '@/shared/config'
@@ -23,7 +24,7 @@ export interface FooterProps {
   floating?: boolean
 }
 
-const ICON_BTN = 'flex h-11 w-11 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800/50 hover:text-zinc-300'
+const ICON_BTN = 'flex h-11 w-11 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800/50 hover:text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50'
 const ICON_SIZE = 'h-4 w-4'
 
 export function Footer({ floating = false }: FooterProps) {
@@ -43,24 +44,24 @@ export function Footer({ floating = false }: FooterProps) {
           <span className="whitespace-nowrap sm:hidden">© VoidPay</span>
 
           {/* Terms — text on sm+, icon below sm */}
-          <a
+          <Link
             href="/terms"
             aria-label="Terms"
             className={cn(ICON_BTN, 'sm:h-11 sm:w-auto sm:rounded sm:px-2 sm:hover:bg-transparent')}
           >
             <FileTextIcon className={cn(ICON_SIZE, 'sm:hidden')} aria-hidden="true" />
             <span className="hidden sm:inline">Terms</span>
-          </a>
+          </Link>
 
           {/* Privacy — text on sm+, icon below sm */}
-          <a
+          <Link
             href="/privacy"
             aria-label="Privacy"
             className={cn(ICON_BTN, 'sm:h-11 sm:w-auto sm:rounded sm:px-2 sm:hover:bg-transparent')}
           >
             <ShieldIcon className={cn(ICON_SIZE, 'sm:hidden')} aria-hidden="true" />
             <span className="hidden sm:inline">Privacy</span>
-          </a>
+          </Link>
 
           <AnalyticsToggle />
         </div>

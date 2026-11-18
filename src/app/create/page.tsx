@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
-import { LazyWeb3Provider } from '@/app/lazy-web3-provider'
+import { Web3ReadProvider } from '@/features/wallet-connect/providers'
 import { APP_URLS } from '@/shared/config'
 import { CreatePageHero, CreatePageHowItWorks, CreatePageFaq, FAQ_ITEMS } from '@/widgets/create'
 import { CreateWorkspace } from './CreateWorkspace'
@@ -25,12 +25,29 @@ export const metadata: Metadata = {
     url: CREATE_URL,
     siteName: 'VoidPay',
     type: 'website',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'VoidPay — Crypto Invoice Generator',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'Crypto Invoice Generator — No Signup | VoidPay',
     description:
       'Create a shareable crypto invoice in 30 seconds. No account, no backend — the invoice lives in the URL.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'VoidPay — Crypto Invoice Generator',
+      },
+    ],
   },
 }
 
@@ -87,9 +104,9 @@ export default function CreatePage() {
 
       <CreatePageHero />
       <Suspense>
-        <LazyWeb3Provider>
+        <Web3ReadProvider>
           <CreateWorkspace />
-        </LazyWeb3Provider>
+        </Web3ReadProvider>
       </Suspense>
       <CreatePageHowItWorks />
       <CreatePageFaq />

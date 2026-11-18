@@ -205,4 +205,32 @@ describe('useReceivedInvoices', () => {
 
     expect(mockParseInvoiceHash).toHaveBeenCalledTimes(2)
   })
+
+  it('caches decoded invoice by invoiceUrl while recomputing status when tracked updates', async () => {
+    useTrackedInvoiceStore.setState({
+      invoices: [makeTracked({ invoiceUrl: 'https://voidpay.xyz/pay#cachedhash' })],
+    })
+
+    const { result } = renderHook(() => useReceivedInvoices())
+
+    await waitFor(() => {
+      expect(result.current).toHaveLength(1)
+    })
+    expect(mockParseInvoiceHash).toHaveBeenCalledTimes(1)
+
+    mockComputeInvoiceStatus.mockReturnValue('confirming')
+    useTrackedInvoiceStore.setState({
+      invoices: [
+        makeTracked({
+          invoiceUrl: 'https://voidpay.xyz/pay#cachedhash',
+          txHash: ('0x' + 'a'.repeat(64)) as `0x${string}`,
+        }),
+      ],
+    })
+
+    await waitFor(() => {
+      expect(result.current[0].status).toBe('confirming')
+    })
+    expect(mockParseInvoiceHash).toHaveBeenCalledTimes(1)
+  })
 })

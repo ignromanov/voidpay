@@ -80,7 +80,7 @@ export function PaidConfirmation({
           </h3>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
             <NetworkChip networkId={networkId} />
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-zinc-400">
               {paidAt ? `Funds sent · ${formatRelativeTime(paidAt)}` : 'Funds have been sent on-chain'}
             </p>
           </div>
@@ -122,7 +122,14 @@ export function PaidConfirmation({
                 {confirmations.current} / {confirmations.required}
               </span>
             </div>
-            <div className="w-full h-1 bg-blue-900/30 rounded-full overflow-hidden">
+            <div
+              role="progressbar"
+              aria-valuenow={confirmations.current}
+              aria-valuemin={0}
+              aria-valuemax={confirmations.required}
+              aria-label="Block confirmations"
+              className="w-full h-1 bg-blue-900/30 rounded-full overflow-hidden"
+            >
               <motion.div
                 className="h-full bg-blue-500"
                 initial={{ width: 0 }}

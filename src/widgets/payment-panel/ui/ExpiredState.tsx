@@ -34,7 +34,7 @@ export function ExpiredState({ subtotal, magicDust, exactTotal, decimals, curren
           </p>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
             <NetworkChip networkId={networkId} />
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-zinc-400">
               Was due {formatDateCompact(dueAt)} · Payment disabled
             </p>
           </div>
@@ -47,7 +47,7 @@ export function ExpiredState({ subtotal, magicDust, exactTotal, decimals, curren
           <span className="text-3xl font-mono font-bold text-violet-400">
             {formattedSubtotal}
           </span>
-          <span className="text-lg text-zinc-500">{currency}</span>
+          <span className="text-lg text-zinc-400">{currency}</span>
         </div>
         {hasMagicDust && formattedExact && (
           <div className="mt-1">

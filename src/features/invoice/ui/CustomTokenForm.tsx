@@ -59,11 +59,15 @@ export function CustomTokenForm({
       className={cn('space-y-3 rounded-lg border border-zinc-800 bg-zinc-950/50 p-4', className)}
     >
       <div className="space-y-1.5">
-        <label className="block text-xs font-medium uppercase tracking-wide text-zinc-400">
+        <label
+          htmlFor="custom-token-address"
+          className="block text-xs font-medium uppercase tracking-wide text-zinc-400"
+        >
           Contract Address
         </label>
         <div className="relative">
           <Input
+            id="custom-token-address"
             value={customAddress}
             onChange={(e) => setCustomAddress(e.target.value)}
             placeholder="0x..."
@@ -101,20 +105,28 @@ export function CustomTokenForm({
       {!isLoadingMetadata && customTokenMetadata && !hasMetadataError && (
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1.5">
-            <label className="block text-xs font-medium uppercase tracking-wide text-zinc-400">
+            <label
+              htmlFor="custom-token-symbol"
+              className="block text-xs font-medium uppercase tracking-wide text-zinc-400"
+            >
               Symbol
             </label>
             <input
+              id="custom-token-symbol"
               className="flex w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/50"
               value={customTokenMetadata.symbol ?? ''}
               readOnly
             />
           </div>
           <div className="space-y-1.5">
-            <label className="block text-xs font-medium uppercase tracking-wide text-zinc-400">
+            <label
+              htmlFor="custom-token-decimals"
+              className="block text-xs font-medium uppercase tracking-wide text-zinc-400"
+            >
               Decimals
             </label>
             <input
+              id="custom-token-decimals"
               className="flex w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/50"
               value={customTokenMetadata.decimals ?? ''}
               readOnly
