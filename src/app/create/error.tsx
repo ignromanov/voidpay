@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { AppErrorScreen } from '@/shared/ui/app-error-screen'
-import { track, AnalyticsEvent } from '@/features/analytics'
+import { track, AnalyticsEvent, safeErrorName } from '@/features/analytics'
 
 /**
  * Error Boundary for /create route.
@@ -21,7 +21,7 @@ export default function CreateError({
     console.error('[CreateError]', error)
     track(AnalyticsEvent.ERROR_BOUNDARY, {
       page: window.location.pathname,
-      error_name: error.name,
+      error_name: safeErrorName(error.name),
       ...(error.digest ? { error_digest: error.digest } : {}),
     })
 
@@ -29,7 +29,7 @@ export default function CreateError({
       console.error(
         JSON.stringify({
           type: 'create_page_error',
-          error_name: error.name,
+          error_name: safeErrorName(error.name),
           digest: error.digest,
           timestamp: new Date().toISOString(),
         })

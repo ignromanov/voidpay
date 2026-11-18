@@ -66,6 +66,15 @@ describe('error boundaries — privacy allowlist', () => {
     expect(payload).not.toHaveProperty('error_message')
   })
 
+  it.each(BOUNDARIES)('%s: non-identifier error name is normalized to Error', (_n, Boundary) => {
+    const err = makeError()
+    err.name = `Bad Name! ${ADDRESS}`
+    render(<Boundary error={err} reset={vi.fn()} />)
+
+    const [, payload] = vi.mocked(window.umami!.track).mock.calls[0]!
+    expect(payload).toMatchObject({ error_name: 'Error' })
+  })
+
   it.each(BOUNDARIES.filter(([n]) => n !== 'root'))(
     '%s: production JSON log has no message',
     (_n, Boundary) => {

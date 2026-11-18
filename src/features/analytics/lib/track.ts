@@ -74,6 +74,13 @@ export function track<E extends AnalyticsEventName>(
   window.umami.track(event, args[0] as Record<string, unknown> | undefined)
 }
 
+const SAFE_ERROR_NAME = /^[A-Za-z][A-Za-z0-9_]{0,63}$/
+
+/** Error names can be attacker-influenced; only identifier-shaped names reach analytics. */
+export function safeErrorName(name: unknown): string {
+  return typeof name === 'string' && SAFE_ERROR_NAME.test(name) ? name : 'Error'
+}
+
 export function getReferrerDomain(): string {
   try {
     const ref = document.referrer

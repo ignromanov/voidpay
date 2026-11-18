@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { track, AnalyticsEvent } from '../track'
+import { track, AnalyticsEvent, safeErrorName } from '../track'
 
 describe('track', () => {
   beforeEach(() => {
@@ -79,5 +79,24 @@ describe('track', () => {
     for (const v of values) {
       expect(v).toMatch(/^[a-z]+(-[a-z]+)*$/)
     }
+  })
+
+  describe('safeErrorName', () => {
+    it('keeps identifier-shaped names', () => {
+      expect(safeErrorName('TypeError')).toBe('TypeError')
+      expect(safeErrorName('Custom_Err9')).toBe('Custom_Err9')
+    })
+
+    it.each(['Bad Name!', '', '9Lives', '0x1234567890abcdef1234567890abcdef12345678 paid', 'A'.repeat(65)])(
+      'falls back to Error for %j',
+      (name) => {
+        expect(safeErrorName(name)).toBe('Error')
+      },
+    )
+
+    it('falls back to Error for non-strings', () => {
+      expect(safeErrorName(undefined)).toBe('Error')
+      expect(safeErrorName(42)).toBe('Error')
+    })
   })
 })
