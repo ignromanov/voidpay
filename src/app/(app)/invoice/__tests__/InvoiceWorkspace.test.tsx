@@ -16,6 +16,7 @@ const mockStoreState = vi.hoisted(() => ({
 vi.mock('@/shared/lib/hooks', () => ({
   useHashFragment: vi.fn(() => ''),
   useHydrated: vi.fn(() => true),
+  useIsMobile: vi.fn(() => false),
 }))
 
 // Mock useReducedMotion used by VoidLogo

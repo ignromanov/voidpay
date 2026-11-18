@@ -83,3 +83,20 @@ export function getReferrerDomain(): string {
     return 'unknown'
   }
 }
+
+/**
+ * Redact potentially sensitive values (hex addresses/hashes, emails, URLs, numeric amounts)
+ * from error messages before sending to analytics or structured logs (Privacy Invariant).
+ */
+export function sanitizeErrorMessage(error: unknown): string {
+  const raw =
+    error instanceof Error
+      ? `${error.name || 'Error'}: ${error.message || 'Unknown error'}`
+      : 'Unknown error'
+  return raw
+    .replace(/0x[a-fA-F0-9]{4,}/g, '[HEX]')
+    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL]')
+    .replace(/https?:\/\/\S+/g, '[URL]')
+    .replace(/\b\d+(?:\.\d+)?\b/g, '[NUM]')
+    .slice(0, 120)
+}

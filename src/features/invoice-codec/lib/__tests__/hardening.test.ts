@@ -266,3 +266,86 @@ describe('hardening: roundtrip with non-dictionary currency', () => {
     expect(decoded.decimals).toBe(8)
   })
 })
+
+// ---------------------------------------------------------------------------
+// 9. Dictionary validation: reject unknown codes and decimals mismatches
+// ---------------------------------------------------------------------------
+
+describe('hardening: dictionary codes and decimals cross-check', () => {
+  function buildRawInvoiceRecords(overrides: {
+    decimals?: number
+    currency?: Uint8Array
+    tokenAddress?: Uint8Array
+  }) {
+    const utf8 = (s: string) => new TextEncoder().encode(s)
+    const addressToBytes = (address: string) => {
+      const hex = address.startsWith('0x') ? address.slice(2) : address
+      const bytes = new Uint8Array(20)
+      for (let i = 0; i < 20; i++) {
+        bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
+      }
+      return bytes
+    }
+    const uint32BE = (value: number) => {
+      const b = new Uint8Array(4)
+      b[0] = (value >>> 24) & 0xff
+      b[1] = (value >>> 16) & 0xff
+      b[2] = (value >>> 8) & 0xff
+      b[3] = value & 0xff
+      return b
+    }
+
+    const inv = createTestInvoice()
+    const itemsBuf: number[] = [1]
+    const desc = utf8(inv.items[0]!.description)
+    writeVarInt(itemsBuf, desc.length)
+    for (const b of desc) itemsBuf.push(b)
+    writeQuantity(itemsBuf, 1)
+    writeMantissa(itemsBuf, BigInt(inv.items[0]!.rate))
+
+    const totalBuf: number[] = []
+    writeMantissa(totalBuf, BigInt(inv.total))
+
+    const records = [
+      { type: TlvType.CHAIN_ID, value: new Uint8Array([0x00, 0x01]) },
+      { type: TlvType.ISSUED_AT, value: uint32BE(inv.issuedAt) },
+      { type: TlvType.DUE_AT, value: new Uint8Array([0x00]) },
+      { type: TlvType.DECIMALS, value: new Uint8Array([overrides.decimals ?? inv.decimals]) },
+      { type: TlvType.FROM_WALLET, value: addressToBytes(inv.from.walletAddress) },
+      { type: TlvType.CURRENCY, value: overrides.currency ?? new Uint8Array([0x00, 1]) },
+      { type: TlvType.ITEMS, value: new Uint8Array(itemsBuf) },
+      { type: TlvType.FROM_NAME, value: utf8(inv.from.name) },
+      { type: TlvType.CLIENT_NAME, value: utf8(inv.client.name) },
+      { type: TlvType.SALT, value: generateSalt() },
+      { type: TlvType.INVOICE_ID, value: utf8(inv.invoiceId) },
+      { type: TlvType.TOTAL, value: new Uint8Array(totalBuf) },
+      ...(overrides.tokenAddress
+        ? [{ type: TlvType.TOKEN_ADDRESS, value: overrides.tokenAddress }]
+        : []),
+    ]
+
+    const sorted = sortCanonical(records)
+    const domainSep = computeDomainSeparator(sorted)
+    sorted.push({ type: TlvType.DOMAIN_SEPARATOR, value: domainSep })
+    return encodeBase64url(writeTlv(sortCanonical(sorted)))
+  }
+
+  it('throws on unknown token dictionary code (0x00, 0xfe)', async () => {
+    const encoded = buildRawInvoiceRecords({ tokenAddress: new Uint8Array([0x00, 0xfe]) })
+    await expect(decodeInvoice(encoded)).rejects.toThrow(/Unknown token dictionary code: 254/)
+  })
+
+  it('throws when token dictionary decimals mismatch Type 8 DECIMALS', async () => {
+    // Code 1 = Ethereum USDC (6 decimals), but DECIMALS is tampered to 18
+    const encoded = buildRawInvoiceRecords({
+      decimals: 18,
+      tokenAddress: new Uint8Array([0x00, 1]),
+    })
+    await expect(decodeInvoice(encoded)).rejects.toThrow(/Token decimals mismatch/)
+  })
+
+  it('throws on unknown currency dictionary code (0x00, 0xfe)', async () => {
+    const encoded = buildRawInvoiceRecords({ currency: new Uint8Array([0x00, 0xfe]) })
+    await expect(decodeInvoice(encoded)).rejects.toThrow(/Unknown currency dictionary code: 254/)
+  })
+})

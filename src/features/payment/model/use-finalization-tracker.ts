@@ -3,7 +3,7 @@ import { usePublicClient } from 'wagmi'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { toast } from '@/shared/lib/toast'
 import { useIsMobile } from '@/shared/lib'
-import { getFinalizationTimeout } from '@/entities/network'
+import { getFinalizationTimeout, getSoftConfirmations } from '@/entities/network'
 
 export interface UseFinalizationTrackerParams {
   contentHash: string
@@ -53,9 +53,17 @@ export function useFinalizationTracker({
     }, timeoutMs)
 
     publicClient
-      .waitForTransactionReceipt({ hash: txHash })
+      .waitForTransactionReceipt({ hash: txHash, confirmations: getSoftConfirmations(networkId) })
       .then(async (receipt) => {
         if (cancelled) return
+        if (receipt.status === 'reverted') {
+          clearTimeout(timeoutId)
+          if (!isMobile) toast.error('Transaction reverted on-chain')
+          resetPaymentState(contentHash)
+          onReorgDetected?.()
+          setTrackingState('reorg')
+          return
+        }
         // Best-effort fetch of the block's wall-clock timestamp so paidAt
         // records the on-chain time, not the verifier's wall clock. Store
         // falls back to Date.now() if this throws or returns undefined.

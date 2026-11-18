@@ -290,4 +290,28 @@ describe('useFinalizationTracker', () => {
     )
     expect(mockSetFinalized).not.toHaveBeenCalled()
   })
+
+  it('reverted: calls resetPaymentState and does NOT mark validated or finalized', async () => {
+    mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
+      status: 'reverted',
+      blockNumber: 100n,
+      transactionHash: MOCK_TX_HASH,
+    })
+
+    renderHook(() =>
+      useFinalizationTracker({
+        contentHash: 'inv-reverted-hash',
+        txHash: MOCK_TX_HASH,
+        networkId: 1,
+      })
+    )
+
+    await waitFor(() => {
+      expect(mockResetPaymentState).toHaveBeenCalledWith('inv-reverted-hash')
+    })
+
+    expect(mockSetValidated).not.toHaveBeenCalled()
+    expect(mockSetFinalized).not.toHaveBeenCalled()
+    expect(mockToastError).toHaveBeenCalledWith('Transaction reverted on-chain')
+  })
 })
