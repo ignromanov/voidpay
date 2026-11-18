@@ -21,31 +21,60 @@ export const FINALITY_POLL_INTERVAL_MS = 30_000
 type TrackerClient = NonNullable<ReturnType<typeof usePublicClient>>
 type Receipt = Awaited<ReturnType<TrackerClient['getTransactionReceipt']>>
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+/** Receipt must be absent on at least this many consecutive polls before it counts as a reorg. */
+export const REORG_ABSENT_MIN_POLLS = 3
+/** ...and the absence must span at least this long, so a lagging node cannot trigger a reset. */
+export const REORG_ABSENT_MIN_SPAN_MS = 90_000
+
+type FinalityOutcome = 'finalized' | 'reverted' | 'reorg' | 'cancelled'
+
+function isReceiptNotFound(err: unknown): boolean {
+  return err instanceof Error && err.name === 'TransactionReceiptNotFoundError'
 }
 
 /**
- * Resolves true once the `finalized` head >= receipt block AND the receipt is re-confirmed
- * (same blockHash, success). Resolves false if the receipt vanished/changed (reorg).
- * Transient RPC errors keep polling; cancellation resolves (caller re-checks its flag).
+ * Polls until the `finalized` head covers the tx block and the receipt is re-confirmed.
+ * Only a `reverted` receipt, or a receipt that stays absent (not-found, never a generic RPC
+ * error) for REORG_ABSENT_MIN_POLLS polls over REORG_ABSENT_MIN_SPAN_MS after the finalized
+ * head passed the original block, is negative. Re-inclusion in another block is adopted.
+ * Every other failure keeps polling; the caller's overall timeout bounds the loop.
  */
 async function waitForFinality(
   client: TrackerClient,
   receipt: Receipt,
   isCancelled: () => boolean,
-): Promise<boolean> {
+  sleep: (ms: number) => Promise<void>,
+): Promise<FinalityOutcome> {
+  let current = receipt
+  let absentPolls = 0
+  let absentSince = 0
   for (;;) {
-    if (isCancelled()) return false
+    if (isCancelled()) return 'cancelled'
     try {
       const finalized = await client.getBlock({ blockTag: 'finalized' })
-      if (isCancelled()) return false
-      if (finalized.number >= receipt.blockNumber) {
+      if (isCancelled()) return 'cancelled'
+      if (finalized.number >= current.blockNumber) {
         try {
           const fresh = await client.getTransactionReceipt({ hash: receipt.transactionHash })
-          return fresh.blockHash === receipt.blockHash && fresh.status === 'success'
-        } catch {
-          return false
+          if (isCancelled()) return 'cancelled'
+          absentPolls = 0
+          if (fresh.status === 'reverted') return 'reverted'
+          if (fresh.blockHash === current.blockHash) return 'finalized'
+          // Re-included in another block: same tx, adopt it and wait for finality of the new block.
+          current = fresh
+        } catch (err) {
+          if (isReceiptNotFound(err)) {
+            if (absentPolls === 0) absentSince = Date.now()
+            absentPolls++
+            if (
+              absentPolls >= REORG_ABSENT_MIN_POLLS &&
+              Date.now() - absentSince >= REORG_ABSENT_MIN_SPAN_MS
+            ) {
+              return 'reorg'
+            }
+          } else {
+            absentPolls = 0
+          }
         }
       }
     } catch {
@@ -80,6 +109,17 @@ export function useFinalizationTracker({
 
     const timeoutMs = getFinalizationTimeout(networkId)
     let cancelled = false
+    let sleepTimer: ReturnType<typeof setTimeout> | undefined
+    let wake: (() => void) | undefined
+    const sleep = (ms: number): Promise<void> =>
+      new Promise((resolve) => {
+        wake = resolve
+        sleepTimer = setTimeout(resolve, ms)
+      })
+    const stopSleeping = (): void => {
+      clearTimeout(sleepTimer)
+      wake?.()
+    }
 
     // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: fires once at effect entry to mark tracking start, guard above ensures single call
     setTrackingState('tracking')
@@ -88,6 +128,7 @@ export function useFinalizationTracker({
       // W3-012: timeout — stay as paid, do NOT revert, no toast
       if (!cancelled) {
         cancelled = true
+        stopSleeping()
         setTrackingState('timeout')
       }
     }, timeoutMs)
@@ -119,11 +160,17 @@ export function useFinalizationTracker({
 
         // Constitution VII: only the `finalized` block tag is final. Poll until the finalized
         // head reaches the receipt's block, then re-verify the receipt (reorg guard).
-        const isFinal = await waitForFinality(publicClient, receipt, () => cancelled)
-        if (cancelled) return
+        const outcome = await waitForFinality(publicClient, receipt, () => cancelled, sleep)
+        if (cancelled || outcome === 'cancelled') return
         clearTimeout(timeoutId)
-        if (!isFinal) {
-          if (!isMobile) toast.error('Chain reorg detected — transaction not found on chain')
+        if (outcome !== 'finalized') {
+          if (!isMobile) {
+            toast.error(
+              outcome === 'reverted'
+                ? 'Transaction reverted on-chain'
+                : 'Chain reorg detected — transaction not found on chain',
+            )
+          }
           resetPaymentState(contentHash)
           onReorgDetected?.()
           setTrackingState('reorg')
@@ -132,19 +179,19 @@ export function useFinalizationTracker({
         setFinalized(contentHash)
         setTrackingState('finalized')
       })
-      .catch((_err) => {
+      .catch((err: unknown) => {
         if (cancelled) return
         clearTimeout(timeoutId)
-        // Reorg: transaction disappeared from chain (desktop-only toast; mobile uses inline status)
-        if (!isMobile) toast.error('Chain reorg detected — transaction not found on chain')
-        resetPaymentState(contentHash)
-        onReorgDetected?.()
-        setTrackingState('reorg')
+        // Timeout / 503 / rate-limiter fail-closed are not evidence of a reorg: keep "paid, not
+        // finalized". The tracker re-mounts on reload; only a reverted receipt resets state.
+        console.warn('[useFinalizationTracker] receipt wait failed, keeping paid state:', err)
+        setTrackingState('timeout')
       })
 
     return () => {
       cancelled = true
       clearTimeout(timeoutId)
+      stopSleeping()
     }
   }, [enabled, contentHash, txHash, networkId, publicClient, setFinalized, setValidated, resetPaymentState, onReorgDetected, isMobile])
 }

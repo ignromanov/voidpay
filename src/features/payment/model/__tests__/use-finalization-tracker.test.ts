@@ -68,7 +68,12 @@ vi.mock('@/shared/lib', () => ({
   useIsMobile: vi.fn(() => mockIsMobile),
 }))
 
-import { useFinalizationTracker, FINALITY_POLL_INTERVAL_MS } from '../use-finalization-tracker'
+import {
+  useFinalizationTracker,
+  FINALITY_POLL_INTERVAL_MS,
+  REORG_ABSENT_MIN_POLLS,
+  REORG_ABSENT_MIN_SPAN_MS,
+} from '../use-finalization-tracker'
 
 const MOCK_TX_HASH = '0xdeadbeef00000000000000000000000000000000000000000000000000000001' as `0x${string}`
 
@@ -283,30 +288,23 @@ describe('useFinalizationTracker', () => {
     })
   })
 
-  // Test case 3: Reorg detection (tx disappears) → toast + resetPaymentState (FR-011)
-  it('reorg: shows toast and calls resetPaymentState when transaction disappears', async () => {
-    // Simulate reorg: waitForTransactionReceipt rejects because tx is no longer on chain
-    mockPublicClient.waitForTransactionReceipt.mockRejectedValue(
-      new Error('Transaction not found — possible chain reorganization')
-    )
+  // Receipt wait errors (viem 180s timeout, 503 from the fail-closed limiter) are not reorg evidence.
+  it.each([
+    ['viem timeout', Object.assign(new Error('Timed out while waiting for transaction'), { name: 'WaitForTransactionReceiptTimeoutError' })],
+    ['503 from rate limiter', new Error('HTTP request failed. Status: 503')],
+  ])('waitForTransactionReceipt %s: keeps paid state, no reset, no toast', async (_n, err) => {
+    mockPublicClient.waitForTransactionReceipt.mockRejectedValue(err)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     renderHook(() =>
-      useFinalizationTracker({
-        contentHash: 'inv-reorg-001-hash',
-        txHash: MOCK_TX_HASH,
-        networkId: 1,
-      })
+      useFinalizationTracker({ contentHash: 'inv-wait-err-hash', txHash: MOCK_TX_HASH, networkId: 1 }),
     )
+    await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS * 3)
 
-    await waitFor(() => {
-      expect(mockResetPaymentState).toHaveBeenCalledWith('inv-reorg-001-hash')
-    })
-
-    // Must alert user about reorg via toast
-    expect(mockToastError).toHaveBeenCalledWith(
-      expect.stringContaining('reorg'),
-    )
+    expect(mockResetPaymentState).not.toHaveBeenCalled()
     expect(mockSetFinalized).not.toHaveBeenCalled()
+    expect(mockToastError).not.toHaveBeenCalled()
+    warn.mockRestore()
   })
 
   it('reverted: calls resetPaymentState and does NOT mark validated or finalized', async () => {
@@ -372,27 +370,113 @@ describe('useFinalizationTracker', () => {
       expect(finalizedCalls()).toBe(2)
     })
 
-    it('reorg: blockHash changed at finality does not finalize and resets state', async () => {
-      mockPublicClient.getTransactionReceipt.mockResolvedValue({
-        status: 'success',
-        blockNumber: 101n,
-        blockHash: '0xbbbb000000000000000000000000000000000000000000000000000000000002',
-        transactionHash: MOCK_TX_HASH,
+    const notFound = (): Error =>
+      Object.assign(new Error('Transaction receipt not found'), {
+        name: 'TransactionReceiptNotFoundError',
       })
-      renderTracker('inv-reorg-hash')
-      await vi.advanceTimersByTimeAsync(0)
+    const OTHER_HASH = '0xbbbb000000000000000000000000000000000000000000000000000000000002'
 
+    it('receipt not-found on first post-finality fetch, found on second: finalizes, no reset', async () => {
+      mockPublicClient.getTransactionReceipt
+        .mockRejectedValueOnce(notFound())
+        .mockResolvedValue({
+          status: 'success',
+          blockNumber: 100n,
+          blockHash: BLOCK_HASH,
+          transactionHash: MOCK_TX_HASH,
+        })
+      renderTracker('inv-lag-hash')
+      await vi.advanceTimersByTimeAsync(0)
+      expect(mockResetPaymentState).not.toHaveBeenCalled()
       expect(mockSetFinalized).not.toHaveBeenCalled()
-      expect(mockResetPaymentState).toHaveBeenCalledWith('inv-reorg-hash')
+
+      await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS)
+      expect(mockSetFinalized).toHaveBeenCalledWith('inv-lag-hash')
+      expect(mockResetPaymentState).not.toHaveBeenCalled()
+      expect(mockToastError).not.toHaveBeenCalled()
     })
 
-    it('reorg: receipt gone at finality does not finalize', async () => {
-      mockPublicClient.getTransactionReceipt.mockRejectedValue(new Error('not found'))
-      renderTracker('inv-gone-hash')
+    it('RPC error at finality fetch keeps polling, no reset', async () => {
+      mockPublicClient.getTransactionReceipt
+        .mockRejectedValueOnce(new Error('HTTP request failed. Status: 503'))
+        .mockResolvedValue({
+          status: 'success',
+          blockNumber: 100n,
+          blockHash: BLOCK_HASH,
+          transactionHash: MOCK_TX_HASH,
+        })
+      renderTracker('inv-rpc-err-hash')
       await vi.advanceTimersByTimeAsync(0)
+      expect(mockResetPaymentState).not.toHaveBeenCalled()
 
+      await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS)
+      expect(mockSetFinalized).toHaveBeenCalledWith('inv-rpc-err-hash')
+      expect(mockResetPaymentState).not.toHaveBeenCalled()
+    })
+
+    it('persistent RPC errors never reset', async () => {
+      mockPublicClient.getTransactionReceipt.mockRejectedValue(new Error('rpc 503'))
+      renderTracker('inv-rpc-down-hash')
+      await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS * 10)
+      expect(mockResetPaymentState).not.toHaveBeenCalled()
       expect(mockSetFinalized).not.toHaveBeenCalled()
-      expect(mockResetPaymentState).toHaveBeenCalledWith('inv-gone-hash')
+    })
+
+    it('re-included in a different block: adopts it, waits for its finality, then finalizes', async () => {
+      mockFinalizedNumber = 100n
+      mockPublicClient.getTransactionReceipt.mockResolvedValue({
+        status: 'success',
+        blockNumber: 105n,
+        blockHash: OTHER_HASH,
+        transactionHash: MOCK_TX_HASH,
+      })
+      renderTracker('inv-reinclude-hash')
+      await vi.advanceTimersByTimeAsync(0)
+      expect(mockResetPaymentState).not.toHaveBeenCalled()
+      expect(mockSetFinalized).not.toHaveBeenCalled()
+
+      // finalized head still below the new block: keep polling
+      await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS * 2)
+      expect(mockSetFinalized).not.toHaveBeenCalled()
+      expect(mockResetPaymentState).not.toHaveBeenCalled()
+
+      mockFinalizedNumber = 105n
+      await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS)
+      expect(mockSetFinalized).toHaveBeenCalledWith('inv-reinclude-hash')
+      expect(mockResetPaymentState).not.toHaveBeenCalled()
+    })
+
+    it('receipt absent for N polls over the minimum span with finalized head past the block: resets', async () => {
+      mockPublicClient.getTransactionReceipt.mockRejectedValue(notFound())
+      renderTracker('inv-vanished-hash')
+      await vi.advanceTimersByTimeAsync(0)
+      // polls at t=0, 30s, 60s: N reached but span (60s) < minimum
+      await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS * (REORG_ABSENT_MIN_POLLS - 1))
+      expect(mockResetPaymentState).not.toHaveBeenCalled()
+
+      await vi.advanceTimersByTimeAsync(REORG_ABSENT_MIN_SPAN_MS - FINALITY_POLL_INTERVAL_MS * (REORG_ABSENT_MIN_POLLS - 1))
+      expect(mockResetPaymentState).toHaveBeenCalledWith('inv-vanished-hash')
+      expect(mockSetFinalized).not.toHaveBeenCalled()
+    })
+
+    it('a not-found streak broken by a RPC error does not reset', async () => {
+      mockPublicClient.getTransactionReceipt
+        .mockRejectedValueOnce(notFound())
+        .mockRejectedValueOnce(notFound())
+        .mockRejectedValueOnce(new Error('rpc 503'))
+        .mockRejectedValue(notFound())
+      renderTracker('inv-broken-streak-hash')
+      await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS * 4)
+      expect(mockResetPaymentState).not.toHaveBeenCalled()
+    })
+
+    it('absence before the finalized head reaches the block is never counted', async () => {
+      mockFinalizedNumber = 90n
+      mockPublicClient.getTransactionReceipt.mockRejectedValue(notFound())
+      renderTracker('inv-prefinal-hash')
+      await vi.advanceTimersByTimeAsync(REORG_ABSENT_MIN_SPAN_MS * 3)
+      expect(mockResetPaymentState).not.toHaveBeenCalled()
+      expect(mockPublicClient.getTransactionReceipt).not.toHaveBeenCalled()
     })
 
     it('reverted receipt at finality does not finalize', async () => {
@@ -407,6 +491,16 @@ describe('useFinalizationTracker', () => {
 
       expect(mockSetFinalized).not.toHaveBeenCalled()
       expect(mockResetPaymentState).toHaveBeenCalledWith('inv-rev-final-hash')
+    })
+
+    it('unmount clears the pending poll timer', async () => {
+      mockFinalizedNumber = 1n
+      const { unmount } = renderTracker('inv-timer-hash')
+      await vi.advanceTimersByTimeAsync(0)
+      // 30s sleep timer + 60min overall timeout
+      expect(vi.getTimerCount()).toBe(2)
+      unmount()
+      expect(vi.getTimerCount()).toBe(0)
     })
 
     it('transient finalized-tag RPC error keeps polling', async () => {
