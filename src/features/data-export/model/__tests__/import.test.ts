@@ -134,4 +134,32 @@ describe('importUserData', () => {
     expect(storedForged?.finalized).toBeUndefined()
     expect(stored.find((inv) => inv.invoiceId === 'INV-XSS')).toBeUndefined()
   })
+
+  it('does not downgrade payment state of an existing invoice on re-import', async () => {
+    useTrackedInvoiceStore.setState({
+      invoices: [
+        {
+          contentHash: 'abc-computed-hash',
+          invoiceId: 'INV-001',
+          invoiceUrl: 'https://voidpay.xyz/pay#abc',
+          source: 'created',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          txHash: ('0x' + 'a'.repeat(64)) as `0x${string}`,
+          txHashValidated: true,
+          paidAt: '2026-01-02T00:00:00.000Z',
+          finalized: true,
+        },
+      ],
+    })
+
+    const result = await importUserData(validImport)
+
+    expect(result.success).toBe(true)
+    const stored = useTrackedInvoiceStore.getState().invoices
+    expect(stored).toHaveLength(1)
+    expect(stored[0]?.txHashValidated).toBe(true)
+    expect(stored[0]?.finalized).toBe(true)
+    expect(stored[0]?.txHash).toBe('0x' + 'a'.repeat(64))
+    expect(stored[0]?.paidAt).toBe('2026-01-02T00:00:00.000Z')
+  })
 })

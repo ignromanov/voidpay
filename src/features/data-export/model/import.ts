@@ -100,7 +100,7 @@ export const importUserData = async (data: unknown): Promise<ImportResult> => {
 
     // Import tracked invoices
     if (validData.trackedInvoices?.invoices) {
-      const { addInvoice } = useTrackedInvoiceStore.getState()
+      const { addInvoice, getInvoice } = useTrackedInvoiceStore.getState()
       // Always derive contentHash from URL — never trust pre-supplied values
       const enriched = validData.trackedInvoices.invoices.map((invoice) => {
         if (!invoice.invoiceUrl || !isSafeInvoiceUrl(invoice.invoiceUrl)) return null
@@ -117,10 +117,12 @@ export const importUserData = async (data: unknown): Promise<ImportResult> => {
         }
       })
       for (const invoice of enriched) {
-        if (invoice) {
-          addInvoice(invoice)
-          trackedInvoicesAdded++
-        }
+        if (!invoice) continue
+        // Existing records keep their local payment state: addInvoice resets
+        // txHash/finalized/paidAt, which would wipe a paid invoice on same-device restore.
+        if (getInvoice(invoice.contentHash)) continue
+        addInvoice(invoice)
+        trackedInvoicesAdded++
       }
     }
 
