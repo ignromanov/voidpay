@@ -7,7 +7,7 @@ vi.mock('@/shared/lib/hooks', () => ({
 }))
 
 const mockParseInvoiceHash = vi.fn()
-const mockMapParseError = vi.fn(() => 'CORRUPTED_DATA' as const)
+const mockMapParseError = vi.fn((..._args: unknown[]) => 'CORRUPTED_DATA' as const)
 vi.mock('@/features/invoice-codec', () => ({
   parseInvoiceHash: (...args: unknown[]) => mockParseInvoiceHash(...args),
   mapParseErrorToDecodeType: (...args: unknown[]) => mockMapParseError(...args),
@@ -20,6 +20,7 @@ vi.mock('@/features/analytics', () => ({
     ERROR_DECODE: 'error_decode',
     INVOICE_VIEW: 'invoice_view',
     PAY_VERIFY: 'pay_verify',
+    PAY_PAGE_LOAD: 'pay_page_load',
   },
   getReferrerDomain: () => 'direct',
 }))
@@ -98,5 +99,10 @@ describe('useInvoiceView', () => {
       expect(result.current.errorType).toBe('CORRUPTED_DATA')
     })
     expect(result.current.invoice).toBeNull()
+    expect(mockMapParseError).toHaveBeenCalledWith('bad payload')
+    expect(mockTrack).toHaveBeenCalledWith('error_decode', {
+      error_type: 'CORRUPTED_DATA',
+      page: 'invoice',
+    })
   })
 })
