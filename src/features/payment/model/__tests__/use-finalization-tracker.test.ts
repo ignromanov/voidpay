@@ -363,7 +363,7 @@ describe('useFinalizationTracker', () => {
       await vi.advanceTimersByTimeAsync(0)
       const finalizedCalls = () =>
         mockPublicClient.getBlock.mock.calls.filter(
-          ([a]: [{ blockTag?: string }]) => a.blockTag === 'finalized',
+          (call) => (call[0] as { blockTag?: string }).blockTag === 'finalized',
         ).length
       expect(finalizedCalls()).toBe(1)
       await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS - 1)

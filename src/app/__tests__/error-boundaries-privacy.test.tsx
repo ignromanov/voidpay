@@ -1,3 +1,4 @@
+import type { MockInstance } from 'vitest'
 import { render } from '@/shared/lib/test-utils'
 
 vi.mock('next/navigation', () => ({
@@ -34,7 +35,7 @@ function makeError(): Error & { digest?: string } {
 }
 
 describe('error boundaries — privacy allowlist', () => {
-  let consoleError: ReturnType<typeof vi.spyOn>
+  let consoleError: MockInstance<typeof console.error>
 
   beforeEach(() => {
     window.umami = { track: vi.fn() }
@@ -72,8 +73,8 @@ describe('error boundaries — privacy allowlist', () => {
       render(<Boundary error={makeError()} reset={vi.fn()} />)
 
       const jsonLogs = consoleError.mock.calls
-        .map((args) => args[0])
-        .filter((a): a is string => typeof a === 'string' && a.startsWith('{'))
+        .map((args: unknown[]) => args[0])
+        .filter((a: unknown): a is string => typeof a === 'string' && a.startsWith('{'))
       expect(jsonLogs).toHaveLength(1)
       const parsed = JSON.parse(jsonLogs[0]!) as Record<string, unknown>
       expect(parsed.error_name).toBe('TypeError')
