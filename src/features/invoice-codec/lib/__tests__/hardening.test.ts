@@ -304,7 +304,7 @@ describe('hardening: dictionary codes and decimals cross-check', () => {
     writeMantissa(itemsBuf, BigInt(inv.items[0]!.rate))
 
     const totalBuf: number[] = []
-    writeMantissa(totalBuf, BigInt(inv.total))
+    writeMantissa(totalBuf, BigInt(inv.total!))
 
     const records = [
       { type: TlvType.CHAIN_ID, value: new Uint8Array([0x00, 0x01]) },
