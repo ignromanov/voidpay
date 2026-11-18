@@ -23,7 +23,8 @@ export function matchTransfer(
 ): TransferResult | null {
   for (const t of transfers) {
     // Defense-in-depth: verify contract address matches (for ERC-20)
-    if (expectedContract && t.rawContract.address) {
+    if (expectedContract) {
+      if (!t.rawContract.address || t.category !== 'erc20') continue
       try {
         if (!isAddressEqual(t.rawContract.address as Address, expectedContract as Address)) {
           continue

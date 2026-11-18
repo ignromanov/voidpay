@@ -63,6 +63,10 @@ export interface InvoiceTypedData {
 export function buildInvoiceTypedData(params: InvoiceTypedDataParams): InvoiceTypedData {
   const { invoiceId, chainId, subtotal, fromAddress, salt } = params
 
+  if (salt.length !== 16) {
+    throw new Error(`Invalid salt length: expected 16 bytes, got ${salt.length}`)
+  }
+
   const saltHex = bytesToHex(salt)
 
   return {

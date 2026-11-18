@@ -20,6 +20,9 @@ export function encodeBase64url(bytes: Uint8Array): string {
  */
 export function decodeBase64url(str: string): Uint8Array {
   if (str.length === 0) return new Uint8Array(0)
+  if (!/^[A-Za-z0-9_-]+$/.test(str)) {
+    throw new Error('Invalid Base64url: illegal characters')
+  }
   let base64 = str.replace(/-/g, '+').replace(/_/g, '/')
   const pad = base64.length % 4
   if (pad === 1) throw new Error('Invalid Base64url: illegal length')

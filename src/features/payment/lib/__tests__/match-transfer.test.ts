@@ -69,4 +69,24 @@ describe('matchTransfer', () => {
     const result = matchTransfer([], BigInt('1000000042'))
     expect(result).toBeNull()
   })
+
+  it('rejects null rawContract.address or non-erc20 category when expectedContract is provided', () => {
+    const expectedContract = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+    const nativeTransfer = createTransfer(
+      '0x3b9aca2a',
+      ('0x' + '1'.repeat(64)) as `0x${string}`,
+      null,
+      'external',
+    )
+    const nonErc20WithAddress = createTransfer(
+      '0x3b9aca2a',
+      ('0x' + '2'.repeat(64)) as `0x${string}`,
+      expectedContract,
+      'internal',
+    )
+
+    expect(
+      matchTransfer([nativeTransfer, nonErc20WithAddress], BigInt('1000000042'), expectedContract)
+    ).toBeNull()
+  })
 })

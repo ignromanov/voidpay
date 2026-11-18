@@ -93,4 +93,45 @@ describe('importUserData', () => {
 
     expect(result.success).toBe(false)
   })
+
+  it('strips forged validation flags and skips unsafe URLs on import', async () => {
+    const { useTrackedInvoiceStore } = await import('@/entities/invoice')
+    useTrackedInvoiceStore.getState().clearAll()
+
+    const forgedInvoice = {
+      contentHash: 'forged-hash-1',
+      invoiceId: 'INV-FORGED',
+      invoiceUrl: '/pay#validpayload',
+      source: 'received' as const,
+      txHash: ('0x' + 'a'.repeat(64)) as `0x${string}`,
+      txHashValidated: true,
+      finalized: true,
+      createdAt: '2026-01-01T00:00:00.000Z',
+    }
+    const unsafeUrlInvoice = {
+      contentHash: 'unsafe-hash-1',
+      invoiceId: 'INV-XSS',
+      invoiceUrl: 'javascript:alert(1)',
+      source: 'received' as const,
+      createdAt: '2026-01-01T00:00:00.000Z',
+    }
+
+    const result = await importUserData({
+      ...validImport,
+      trackedInvoices: {
+        ...validImport.trackedInvoices,
+        invoices: [forgedInvoice, unsafeUrlInvoice],
+      },
+    })
+
+    expect(result.success).toBe(true)
+    const stored = useTrackedInvoiceStore.getState().invoices
+    const storedForged = stored.find((inv) => inv.invoiceId === 'INV-FORGED')
+    expect(storedForged).toBeDefined()
+    expect(storedForged?.contentHash).toBe('validpayload-computed-hash')
+    expect(storedForged?.txHash).toBeUndefined()
+    expect(storedForged?.txHashValidated).toBeUndefined()
+    expect(storedForged?.finalized).toBeUndefined()
+    expect(stored.find((inv) => inv.invoiceId === 'INV-XSS')).toBeUndefined()
+  })
 })

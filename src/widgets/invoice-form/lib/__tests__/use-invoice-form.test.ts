@@ -95,4 +95,35 @@ describe('useInvoiceForm', () => {
 
     expect(mockReset).toHaveBeenCalled()
   })
+
+  it('does not call form.reset when invoiceId updates from own debounced syncToStore', () => {
+    vi.useFakeTimers()
+    try {
+      let watchCb: ((values: Record<string, unknown>) => void) | undefined
+      mockWatch.mockImplementation((cb?: unknown) => {
+        if (typeof cb === 'function') {
+          watchCb = cb as (values: Record<string, unknown>) => void
+          return { unsubscribe: vi.fn() }
+        }
+        return { invoiceId: 'INV-001', from: {}, client: {} }
+      })
+      mockActiveDraft = { data: { invoiceId: 'INV-001' } } as typeof mockActiveDraft
+      mockGetValues.mockReturnValue({ invoiceId: 'INV-001', from: {}, client: {} })
+
+      const { rerender } = renderHook(() => useInvoiceForm({ enabled: true }))
+      mockReset.mockClear()
+
+      mockGetValues.mockReturnValue({ invoiceId: 'INV-002', from: {}, client: {} })
+      watchCb?.({ invoiceId: 'INV-002', from: {}, client: {} })
+      vi.advanceTimersByTime(300)
+
+      mockActiveDraft = { data: { invoiceId: 'INV-002' } } as typeof mockActiveDraft
+      mockGetValues.mockReturnValue({ invoiceId: 'INV-001' })
+      rerender()
+
+      expect(mockReset).not.toHaveBeenCalled()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })

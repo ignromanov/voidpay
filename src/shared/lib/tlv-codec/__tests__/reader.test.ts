@@ -233,5 +233,14 @@ describe('readTlv', () => {
       const { records } = await readTlv(encoded)
       expect(records[0]!.value).toEqual(value)
     })
+
+    it('rejects trailing unconsumed bytes after records', async () => {
+      const encoded = writeTlv([{ type: 0x02, value: new Uint8Array([0xaa]) }])
+      const withTrailing = new Uint8Array(encoded.length + 2)
+      withTrailing.set(encoded)
+      withTrailing[encoded.length] = 0x00
+      withTrailing[encoded.length + 1] = 0xff
+      await expect(Promise.resolve().then(() => readTlv(withTrailing))).rejects.toThrow()
+    })
   })
 })

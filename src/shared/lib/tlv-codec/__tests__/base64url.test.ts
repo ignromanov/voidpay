@@ -37,6 +37,12 @@ describe('base64url', () => {
       expect(() => decodeBase64url('AAAAA')).toThrow(/Invalid Base64url/)
       expect(() => decodeBase64url('AAAAAAAAA')).toThrow(/Invalid Base64url/)
     })
+
+    it('rejects non-base64url characters (+, /, =)', () => {
+      expect(() => decodeBase64url('AB+D')).toThrow()
+      expect(() => decodeBase64url('AB/D')).toThrow()
+      expect(() => decodeBase64url('ABC=')).toThrow()
+    })
   })
 
   describe('roundtrip', () => {

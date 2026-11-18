@@ -76,8 +76,8 @@ export function CreateWorkspace() {
   const draftSyncStatus = useCreatorStore((s) => s.draftSyncStatus)
 
   useEffect(() => {
-    if (!activeDraft) createNewDraft()
-  }, [activeDraft, createNewDraft])
+    if (!activeDraft && !hash) createNewDraft()
+  }, [activeDraft, hash, createNewDraft])
 
   useEffect(() => {
     if (!hash) return
@@ -107,10 +107,13 @@ export function CreateWorkspace() {
       } else {
         // Do NOT clear store on error (per spec edge case)
         toast.error(result.error.message)
+        if (!useCreatorStore.getState().activeDraft) {
+          createNewDraft()
+        }
       }
     })()
     return () => { cancelled = true }
-  }, [hash, replaceDraft, isTemplateLoad])
+  }, [hash, replaceDraft, createNewDraft, isTemplateLoad])
 
   const invoiceData = activeDraft?.data
 
@@ -181,6 +184,7 @@ export function CreateWorkspace() {
         toast.error('Cannot generate link', {
           description: firstError?.message ?? 'Please fill in all required fields',
         })
+        setIsGenerating(false)
         return
       }
 

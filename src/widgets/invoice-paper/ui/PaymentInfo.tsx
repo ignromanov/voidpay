@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react'
 import { HashIcon, ExternalLinkIcon, AlertTriangleIcon, CheckIcon, CopyIcon } from '@/shared/ui/icons'
 import { PaymentQR } from '@/features/payment-qr'
 import { formatShortAddress } from '../lib/format'
-import { getExplorerUrl, getNetworkName } from '@/entities/network'
+import { getExplorerUrl, getNetworkName, isVerifiedToken } from '@/entities/network'
 import { cn } from '@/shared/lib/utils'
 import { NetworkIcon } from '@/shared/ui/network-icon'
 import { TokenIcon } from '@/shared/ui/token-icon'
@@ -121,6 +121,14 @@ export const PaymentInfo = React.memo<PaymentInfoProps>(
                     <span className="font-normal text-zinc-400">
                       {' '}
                       ({formatShortAddress(tokenAddress)})
+                    </span>
+                  )}
+                  {tokenAddress && !isVerifiedToken(networkId, currency, tokenAddress) && (
+                    <span
+                      data-testid="paper-unverified-token"
+                      className="ml-1 rounded bg-amber-100 px-1 py-0.5 font-sans text-[8px] font-semibold text-amber-800 uppercase"
+                    >
+                      Unverified
                     </span>
                   )}
                 </span>

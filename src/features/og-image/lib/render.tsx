@@ -93,8 +93,13 @@ export interface InvoiceOGData {
 export async function renderInvoiceOG(data: InvoiceOGData, size: { width: number; height: number }) {
   const fonts = await loadFonts()
   const displayAmount = formatDisplayAmount(data.amount)
-  const networkName = NETWORK_CODE_NAMES[data.networkCode.toLowerCase()] ?? data.networkCode.toUpperCase()
-  const networkColor = NETWORK_CODE_COLORS[data.networkCode.toLowerCase()] ?? '#A1A1AA'
+  const codeKey = data.networkCode.toLowerCase()
+  const networkName = Object.hasOwn(NETWORK_CODE_NAMES, codeKey)
+    ? NETWORK_CODE_NAMES[codeKey]!
+    : data.networkCode.toUpperCase()
+  const networkColor = Object.hasOwn(NETWORK_CODE_COLORS, codeKey)
+    ? NETWORK_CODE_COLORS[codeKey]!
+    : '#A1A1AA'
 
   return new ImageResponse(
     (

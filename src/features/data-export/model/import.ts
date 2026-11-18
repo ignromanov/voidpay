@@ -9,18 +9,45 @@ const importSchema = z.object({
   exportedAt: z.string(),
   creator: z.object({
     version: z.number(),
-    activeDraft: z.any().nullable(),
-    templates: z.array(z.any()),
-    history: z.array(z.any()).optional(),
-    preferences: z.any(),
-    idCounter: z.any(),
+    activeDraft: z.unknown().nullable().optional(),
+    templates: z.array(z.unknown()).default([]),
+    history: z.array(z.unknown()).optional(),
+    preferences: z.record(z.string(), z.unknown()).optional().default({}),
+    idCounter: z
+      .object({
+        currentValue: z.number().int().min(1),
+        prefix: z.string(),
+      })
+      .optional(),
   }),
   trackedInvoices: z
     .object({
-      invoices: z.array(z.any()),
+      invoices: z.array(
+        z.object({
+          contentHash: z.string().optional(),
+          invoiceId: z.string(),
+          invoiceUrl: z.string(),
+          source: z.enum(['created', 'received']),
+          createdAt: z.string(),
+          viewedAt: z.string().optional(),
+        }),
+      ),
     })
     .optional(),
 })
+
+function isSafeInvoiceUrl(rawUrl: string): boolean {
+  if (rawUrl.startsWith('/pay#') || rawUrl.startsWith('/invoice#')) {
+    return rawUrl.indexOf('#') < rawUrl.length - 1
+  }
+  try {
+    const parsed = new URL(rawUrl)
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false
+    return parsed.hash.length > 1
+  } catch {
+    return false
+  }
+}
 
 export interface ImportResult {
   success: boolean
@@ -61,7 +88,10 @@ export const importUserData = async (data: unknown): Promise<ImportResult> => {
     creatorStore.updatePreferences(validData.creator.preferences)
 
     // Update ID Counter if imported value is higher
-    if (validData.creator.idCounter.currentValue > creatorStore.idCounter.currentValue) {
+    if (
+      validData.creator.idCounter &&
+      validData.creator.idCounter.currentValue > creatorStore.idCounter.currentValue
+    ) {
       // We can't directly set the counter value via actions, so we might need to loop increment
       // or just accept that the counter might be out of sync until we add a 'setCounter' action.
       // For now, let's assume the user will manually set the prefix if needed.
@@ -73,12 +103,18 @@ export const importUserData = async (data: unknown): Promise<ImportResult> => {
       const { addInvoice } = useTrackedInvoiceStore.getState()
       // Always derive contentHash from URL — never trust pre-supplied values
       const enriched = validData.trackedInvoices.invoices.map((invoice) => {
-        if (!invoice.invoiceUrl) return null
+        if (!invoice.invoiceUrl || !isSafeInvoiceUrl(invoice.invoiceUrl)) return null
         const hashIndex = invoice.invoiceUrl.indexOf('#')
         const fragment = hashIndex === -1 ? '' : invoice.invoiceUrl.slice(hashIndex + 1)
         if (!fragment) return null
         const contentHash = computeContentHash(fragment)
-        return { ...invoice, contentHash }
+        return {
+          contentHash,
+          invoiceId: invoice.invoiceId,
+          invoiceUrl: invoice.invoiceUrl,
+          source: invoice.source,
+          ...(invoice.viewedAt !== undefined ? { viewedAt: invoice.viewedAt } : {}),
+        }
       })
       for (const invoice of enriched) {
         if (invoice) {
