@@ -100,11 +100,7 @@ export function useInvoiceForm({ enabled = true }: { enabled?: boolean } = {}): 
       const data = latestValuesRef.current
       if (!data) return
 
-      const currentStore =
-        typeof useCreatorStore.getState === 'function' ? useCreatorStore.getState() : undefined
-      if (currentStore) {
-        lastSyncedDraftIdRef.current = currentStore.activeDraft?.meta?.draftId
-      }
+      lastSyncedDraftIdRef.current = useCreatorStore.getState().activeDraft?.meta?.draftId
       lastSyncedInvoiceIdRef.current = data.invoiceId
 
       updateDraft({
