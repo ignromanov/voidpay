@@ -348,4 +348,34 @@ describe('hardening: dictionary codes and decimals cross-check', () => {
     const encoded = buildRawInvoiceRecords({ currency: new Uint8Array([0x00, 0xfe]) })
     await expect(decodeInvoice(encoded)).rejects.toThrow(/Unknown currency dictionary code: 254/)
   })
+
+  it('throws when currency dictionary record is not exactly 2 bytes', async () => {
+    const encoded = buildRawInvoiceRecords({ currency: new Uint8Array([0x00, 1, 2]) })
+    await expect(decodeInvoice(encoded)).rejects.toThrow(/Invalid currency dictionary record length/)
+  })
+
+  it('throws on empty raw currency symbol (0x01 prefix only)', async () => {
+    const encoded = buildRawInvoiceRecords({ currency: new Uint8Array([0x01]) })
+    await expect(decodeInvoice(encoded)).rejects.toThrow(/Empty raw currency symbol/)
+  })
+
+  it('throws on unknown currency prefix byte', async () => {
+    const encoded = buildRawInvoiceRecords({ currency: new Uint8Array([0x02, 1]) })
+    await expect(decodeInvoice(encoded)).rejects.toThrow(/Invalid currency prefix byte: 0x2/)
+  })
+
+  it('throws when token dictionary record is not exactly 2 bytes', async () => {
+    const encoded = buildRawInvoiceRecords({ tokenAddress: new Uint8Array([0x00, 1, 2]) })
+    await expect(decodeInvoice(encoded)).rejects.toThrow(/Invalid token dictionary record length/)
+  })
+
+  it('throws when raw token address record is not 21 bytes', async () => {
+    const encoded = buildRawInvoiceRecords({ tokenAddress: new Uint8Array([0x01, 1, 2, 3, 4]) })
+    await expect(decodeInvoice(encoded)).rejects.toThrow(/Invalid raw token address length: 5/)
+  })
+
+  it('throws on unknown token address prefix byte', async () => {
+    const encoded = buildRawInvoiceRecords({ tokenAddress: new Uint8Array([0x02, 1]) })
+    await expect(decodeInvoice(encoded)).rejects.toThrow(/Invalid token address prefix byte: 0x2/)
+  })
 })
