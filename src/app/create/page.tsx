@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
-import { Web3ReadProvider } from '@/features/wallet-connect/providers'
+import { LazyWeb3Provider } from '@/app/lazy-web3-provider'
 import { APP_URLS } from '@/shared/config'
 import { CreatePageHero, CreatePageHowItWorks, CreatePageFaq, FAQ_ITEMS } from '@/widgets/create'
 import { CreateWorkspace } from './CreateWorkspace'
@@ -104,9 +104,9 @@ export default function CreatePage() {
 
       <CreatePageHero />
       <Suspense>
-        <Web3ReadProvider>
+        <LazyWeb3Provider>
           <CreateWorkspace />
-        </Web3ReadProvider>
+        </LazyWeb3Provider>
       </Suspense>
       <CreatePageHowItWorks />
       <CreatePageFaq />
