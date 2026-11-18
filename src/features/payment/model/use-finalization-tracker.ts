@@ -15,6 +15,46 @@ export interface UseFinalizationTrackerParams {
 
 type TrackingState = 'idle' | 'tracking' | 'finalized' | 'reorg' | 'timeout'
 
+/** Poll cadence for the `finalized` block tag; RPC goes through the rate-limited /api/rpc proxy. */
+export const FINALITY_POLL_INTERVAL_MS = 30_000
+
+type TrackerClient = NonNullable<ReturnType<typeof usePublicClient>>
+type Receipt = Awaited<ReturnType<TrackerClient['getTransactionReceipt']>>
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/**
+ * Resolves true once the `finalized` head >= receipt block AND the receipt is re-confirmed
+ * (same blockHash, success). Resolves false if the receipt vanished/changed (reorg).
+ * Transient RPC errors keep polling; cancellation resolves (caller re-checks its flag).
+ */
+async function waitForFinality(
+  client: TrackerClient,
+  receipt: Receipt,
+  isCancelled: () => boolean,
+): Promise<boolean> {
+  for (;;) {
+    if (isCancelled()) return false
+    try {
+      const finalized = await client.getBlock({ blockTag: 'finalized' })
+      if (isCancelled()) return false
+      if (finalized.number >= receipt.blockNumber) {
+        try {
+          const fresh = await client.getTransactionReceipt({ hash: receipt.transactionHash })
+          return fresh.blockHash === receipt.blockHash && fresh.status === 'success'
+        } catch {
+          return false
+        }
+      }
+    } catch {
+      // transient RPC failure or tag unsupported: retry until the outer timeout
+    }
+    await sleep(FINALITY_POLL_INTERVAL_MS)
+  }
+}
+
 export function useFinalizationTracker({
   contentHash,
   txHash,
@@ -75,8 +115,20 @@ export function useFinalizationTracker({
           console.warn('[useFinalizationTracker] getBlock for paidAt failed:', err)
         }
         if (cancelled) return
-        clearTimeout(timeoutId)
         setValidated(contentHash, true, paidAtMs)
+
+        // Constitution VII: only the `finalized` block tag is final. Poll until the finalized
+        // head reaches the receipt's block, then re-verify the receipt (reorg guard).
+        const isFinal = await waitForFinality(publicClient, receipt, () => cancelled)
+        if (cancelled) return
+        clearTimeout(timeoutId)
+        if (!isFinal) {
+          if (!isMobile) toast.error('Chain reorg detected — transaction not found on chain')
+          resetPaymentState(contentHash)
+          onReorgDetected?.()
+          setTrackingState('reorg')
+          return
+        }
         setFinalized(contentHash)
         setTrackingState('finalized')
       })

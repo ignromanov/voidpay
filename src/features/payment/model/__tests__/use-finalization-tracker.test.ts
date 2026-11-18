@@ -8,11 +8,15 @@ vi.mock('viem', () => ({
   waitForTransactionReceipt: (...args: unknown[]) => mockWaitForTransactionReceipt(...args),
 }))
 
+const BLOCK_HASH = '0xaaaa000000000000000000000000000000000000000000000000000000000001'
+
 // Fixed block timestamp returned by getBlock mock.
 const MOCK_BLOCK_TIMESTAMP_S = 1_700_000_000n
 const MOCK_BLOCK_TIMESTAMP_MS = 1_700_000_000_000
 
 // Mock wagmi usePublicClient
+let mockFinalizedNumber = 100n
+
 const mockPublicClient = {
   waitForTransactionReceipt: vi.fn(),
   getTransactionReceipt: vi.fn(),
@@ -64,7 +68,7 @@ vi.mock('@/shared/lib', () => ({
   useIsMobile: vi.fn(() => mockIsMobile),
 }))
 
-import { useFinalizationTracker } from '../use-finalization-tracker'
+import { useFinalizationTracker, FINALITY_POLL_INTERVAL_MS } from '../use-finalization-tracker'
 
 const MOCK_TX_HASH = '0xdeadbeef00000000000000000000000000000000000000000000000000000001' as `0x${string}`
 
@@ -76,14 +80,21 @@ describe('useFinalizationTracker', () => {
     mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
       status: 'success',
       blockNumber: 100n,
+      blockHash: BLOCK_HASH,
       transactionHash: MOCK_TX_HASH,
     })
     mockPublicClient.getTransactionReceipt.mockResolvedValue({
       status: 'success',
       blockNumber: 100n,
+      blockHash: BLOCK_HASH,
       transactionHash: MOCK_TX_HASH,
     })
-    mockPublicClient.getBlock.mockResolvedValue({ timestamp: MOCK_BLOCK_TIMESTAMP_S })
+    mockFinalizedNumber = 100n
+    mockPublicClient.getBlock.mockImplementation(async (args: { blockTag?: string }) =>
+      args.blockTag === 'finalized'
+        ? { number: mockFinalizedNumber }
+        : { timestamp: MOCK_BLOCK_TIMESTAMP_S },
+    )
   })
 
   afterEach(() => {
@@ -95,6 +106,7 @@ describe('useFinalizationTracker', () => {
     mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
       status: 'success',
       blockNumber: 100n,
+      blockHash: BLOCK_HASH,
       transactionHash: MOCK_TX_HASH,
     })
 
@@ -121,10 +133,10 @@ describe('useFinalizationTracker', () => {
     mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
       status: 'success',
       blockNumber: 100n,
+      blockHash: BLOCK_HASH,
       transactionHash: MOCK_TX_HASH,
     })
-    mockPublicClient.getBlock.mockResolvedValue({ timestamp: MOCK_BLOCK_TIMESTAMP_S })
-
+    
     renderHook(() =>
       useFinalizationTracker({
         contentHash: 'inv-paidat-hash',
@@ -145,9 +157,13 @@ describe('useFinalizationTracker', () => {
     mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
       status: 'success',
       blockNumber: 100n,
+      blockHash: BLOCK_HASH,
       transactionHash: MOCK_TX_HASH,
     })
-    mockPublicClient.getBlock.mockRejectedValue(new Error('rpc error'))
+    mockPublicClient.getBlock.mockImplementation(async (args: { blockTag?: string }) => {
+      if (args.blockTag === 'finalized') return { number: mockFinalizedNumber }
+      throw new Error('rpc error')
+    })
 
     renderHook(() =>
       useFinalizationTracker({
@@ -215,6 +231,7 @@ describe('useFinalizationTracker', () => {
     mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
       status: 'success',
       blockNumber: 100n,
+      blockHash: BLOCK_HASH,
       transactionHash: MOCK_TX_HASH,
     })
 
@@ -240,6 +257,7 @@ describe('useFinalizationTracker', () => {
     mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
       status: 'success',
       blockNumber: 100n,
+      blockHash: BLOCK_HASH,
       transactionHash: MOCK_TX_HASH,
     })
 
@@ -295,6 +313,7 @@ describe('useFinalizationTracker', () => {
     mockPublicClient.waitForTransactionReceipt.mockResolvedValue({
       status: 'reverted',
       blockNumber: 100n,
+      blockHash: BLOCK_HASH,
       transactionHash: MOCK_TX_HASH,
     })
 
@@ -313,5 +332,112 @@ describe('useFinalizationTracker', () => {
     expect(mockSetValidated).not.toHaveBeenCalled()
     expect(mockSetFinalized).not.toHaveBeenCalled()
     expect(mockToastError).toHaveBeenCalledWith('Transaction reverted on-chain')
+  })
+  describe('finality gating (Constitution VII)', () => {
+    const renderTracker = (hash = 'inv-final-hash') =>
+      renderHook(() =>
+        useFinalizationTracker({ contentHash: hash, txHash: MOCK_TX_HASH, networkId: 1 }),
+      )
+
+    it('does not finalize until finalized.number >= receipt.blockNumber', async () => {
+      mockFinalizedNumber = 98n
+      renderTracker()
+
+      await vi.advanceTimersByTimeAsync(0)
+      expect(mockSetValidated).toHaveBeenCalled()
+      expect(mockSetFinalized).not.toHaveBeenCalled()
+
+      await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS * 3)
+      expect(mockSetFinalized).not.toHaveBeenCalled()
+      expect(mockPublicClient.getTransactionReceipt).not.toHaveBeenCalled()
+
+      mockFinalizedNumber = 100n
+      await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS)
+      expect(mockPublicClient.getTransactionReceipt).toHaveBeenCalledWith({ hash: MOCK_TX_HASH })
+      expect(mockSetFinalized).toHaveBeenCalledWith('inv-final-hash')
+    })
+
+    it('polls no faster than the configured interval', async () => {
+      mockFinalizedNumber = 1n
+      renderTracker()
+      await vi.advanceTimersByTimeAsync(0)
+      const finalizedCalls = () =>
+        mockPublicClient.getBlock.mock.calls.filter(
+          ([a]: [{ blockTag?: string }]) => a.blockTag === 'finalized',
+        ).length
+      expect(finalizedCalls()).toBe(1)
+      await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS - 1)
+      expect(finalizedCalls()).toBe(1)
+      await vi.advanceTimersByTimeAsync(1)
+      expect(finalizedCalls()).toBe(2)
+    })
+
+    it('reorg: blockHash changed at finality does not finalize and resets state', async () => {
+      mockPublicClient.getTransactionReceipt.mockResolvedValue({
+        status: 'success',
+        blockNumber: 101n,
+        blockHash: '0xbbbb000000000000000000000000000000000000000000000000000000000002',
+        transactionHash: MOCK_TX_HASH,
+      })
+      renderTracker('inv-reorg-hash')
+      await vi.advanceTimersByTimeAsync(0)
+
+      expect(mockSetFinalized).not.toHaveBeenCalled()
+      expect(mockResetPaymentState).toHaveBeenCalledWith('inv-reorg-hash')
+    })
+
+    it('reorg: receipt gone at finality does not finalize', async () => {
+      mockPublicClient.getTransactionReceipt.mockRejectedValue(new Error('not found'))
+      renderTracker('inv-gone-hash')
+      await vi.advanceTimersByTimeAsync(0)
+
+      expect(mockSetFinalized).not.toHaveBeenCalled()
+      expect(mockResetPaymentState).toHaveBeenCalledWith('inv-gone-hash')
+    })
+
+    it('reverted receipt at finality does not finalize', async () => {
+      mockPublicClient.getTransactionReceipt.mockResolvedValue({
+        status: 'reverted',
+        blockNumber: 100n,
+        blockHash: BLOCK_HASH,
+        transactionHash: MOCK_TX_HASH,
+      })
+      renderTracker('inv-rev-final-hash')
+      await vi.advanceTimersByTimeAsync(0)
+
+      expect(mockSetFinalized).not.toHaveBeenCalled()
+      expect(mockResetPaymentState).toHaveBeenCalledWith('inv-rev-final-hash')
+    })
+
+    it('transient finalized-tag RPC error keeps polling', async () => {
+      let calls = 0
+      mockPublicClient.getBlock.mockImplementation(async (args: { blockTag?: string }) => {
+        if (args.blockTag !== 'finalized') return { timestamp: MOCK_BLOCK_TIMESTAMP_S }
+        calls++
+        if (calls === 1) throw new Error('rpc 503')
+        return { number: 100n }
+      })
+      renderTracker('inv-transient-hash')
+      await vi.advanceTimersByTimeAsync(0)
+      expect(mockSetFinalized).not.toHaveBeenCalled()
+      expect(mockResetPaymentState).not.toHaveBeenCalled()
+
+      await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS)
+      expect(mockSetFinalized).toHaveBeenCalledWith('inv-transient-hash')
+    })
+
+    it('unmount stops polling', async () => {
+      mockFinalizedNumber = 1n
+      const { unmount } = renderTracker('inv-unmount-hash')
+      await vi.advanceTimersByTimeAsync(0)
+      const before = mockPublicClient.getBlock.mock.calls.length
+
+      unmount()
+      mockFinalizedNumber = 100n
+      await vi.advanceTimersByTimeAsync(FINALITY_POLL_INTERVAL_MS * 5)
+
+      expect(mockPublicClient.getBlock.mock.calls.length).toBe(before)
+      expect(mockSetFinalized).not.toHaveBeenCalled()
+    })
   })
 })
