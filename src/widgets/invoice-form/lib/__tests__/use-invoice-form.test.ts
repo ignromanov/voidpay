@@ -25,16 +25,21 @@ const mockUpdateDraft = vi.fn()
 const mockSetDraftSyncStatus = vi.fn()
 let mockActiveDraft: { data: { invoiceId: string } } | null = null
 
-vi.mock('@/entities/creator', () => ({
-  useCreatorStore: vi.fn((selector?: (s: Record<string, unknown>) => unknown) => {
-    const store = {
-      activeDraft: mockActiveDraft,
-      updateDraft: mockUpdateDraft,
-      setDraftSyncStatus: mockSetDraftSyncStatus,
-    }
-    return selector ? selector(store) : store
-  }),
-}))
+vi.mock('@/entities/creator', () => {
+  const getStore = () => ({
+    activeDraft: mockActiveDraft,
+    updateDraft: mockUpdateDraft,
+    setDraftSyncStatus: mockSetDraftSyncStatus,
+  })
+  const useCreatorStore = Object.assign(
+    vi.fn((selector?: (s: Record<string, unknown>) => unknown) => {
+      const store = getStore()
+      return selector ? selector(store) : store
+    }),
+    { getState: getStore },
+  )
+  return { useCreatorStore }
+})
 
 vi.mock('@/shared/lib/invoice-types', () => ({
   invoiceFormSchema: {},
@@ -108,12 +113,12 @@ describe('useInvoiceForm', () => {
         return { invoiceId: 'INV-001', from: {}, client: {} }
       })
       mockActiveDraft = { data: { invoiceId: 'INV-001' } } as typeof mockActiveDraft
-      mockGetValues.mockReturnValue({ invoiceId: 'INV-001', from: {}, client: {} })
+      mockGetValues.mockReturnValue({ invoiceId: 'INV-001' })
 
       const { rerender } = renderHook(() => useInvoiceForm({ enabled: true }))
       mockReset.mockClear()
 
-      mockGetValues.mockReturnValue({ invoiceId: 'INV-002', from: {}, client: {} })
+      mockGetValues.mockReturnValue({ invoiceId: 'INV-002' })
       watchCb?.({ invoiceId: 'INV-002', from: {}, client: {} })
       vi.advanceTimersByTime(300)
 

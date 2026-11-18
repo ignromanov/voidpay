@@ -82,7 +82,7 @@ describe('matchTransfer', () => {
       '0x3b9aca2a',
       ('0x' + '2'.repeat(64)) as `0x${string}`,
       expectedContract,
-      'internal',
+      'external',
     )
 
     expect(
