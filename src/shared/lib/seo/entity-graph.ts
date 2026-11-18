@@ -28,6 +28,9 @@ export const ref = (id: string) => ({ '@id': id })
 export const VOIDPAY_DESCRIPTION =
   'Crypto invoicing where the invoice lives in the URL, with no backend storage.'
 
+/** Affirmative only: no other brand is named until a confusion is measured (Vega, 2026-11-18). */
+const VOIDPAY_DISAMBIGUATION = 'VoidPay is the crypto invoicing web app at voidpay.xyz.'
+
 type Node = Record<string, unknown>
 
 const organization: Node = {
@@ -38,6 +41,7 @@ const organization: Node = {
   url: `${SITE}/`,
   logo: `${SITE}/icon-512.png`,
   description: VOIDPAY_DESCRIPTION,
+  disambiguatingDescription: VOIDPAY_DISAMBIGUATION,
   founder: ref(ENTITY_IDS.person),
   sameAs: [SOCIAL_URLS.twitter, SOCIAL_URLS.github],
 }
@@ -97,6 +101,7 @@ const software: Node = {
   name: 'VoidPay',
   url: `${SITE}/`,
   description: VOIDPAY_DESCRIPTION,
+  disambiguatingDescription: VOIDPAY_DISAMBIGUATION,
   applicationCategory: 'FinanceApplication',
   applicationSubCategory: 'Crypto Invoicing',
   operatingSystem: 'Web Browser',
