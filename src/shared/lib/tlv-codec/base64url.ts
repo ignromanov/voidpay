@@ -16,7 +16,7 @@ export function encodeBase64url(bytes: Uint8Array): string {
 }
 
 /**
- * Decodes a Base64url string (with or without padding) to Uint8Array.
+ * Decodes an unpadded Base64url string (RFC 4648 §5, no `=` padding — see docs/codec-v1-format.md) to Uint8Array.
  */
 export function decodeBase64url(str: string): Uint8Array {
   if (str.length === 0) return new Uint8Array(0)

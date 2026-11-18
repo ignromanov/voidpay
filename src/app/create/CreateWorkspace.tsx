@@ -75,6 +75,10 @@ export function CreateWorkspace() {
   const replaceDraft = useCreatorStore((s) => s.replaceDraft)
   const draftSyncStatus = useCreatorStore((s) => s.draftSyncStatus)
 
+  // Relies on CreateWorkspace being client-only (ssr:false via lazy-web3-provider):
+  // useHashFragment is then already the real hash on first render. If /create ever
+  // renders on the server, the hydration snapshot '' would make `!hash` true and
+  // re-trigger createNewDraft() before the real hash is read.
   useEffect(() => {
     if (!activeDraft && !hash) createNewDraft()
   }, [activeDraft, hash, createNewDraft])
