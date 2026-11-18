@@ -179,7 +179,7 @@ export function LinkTab({
             Link preview card
           </span>
           <p className="text-xs text-zinc-400">
-            Shares invoice ID, amount, network &amp; names in social preview URL (?og=)
+            Shares invoice ID, amount, currency, network, names &amp; due date in the link (?og=)
           </p>
         </div>
       </label>

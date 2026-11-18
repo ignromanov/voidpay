@@ -56,7 +56,10 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
     // Uses Zod safeParse — no errors thrown, no toasts, silent fail
     const [invoiceUrl, setInvoiceUrl] = useState<string | undefined>(undefined)
     useEffect(() => {
-      if (!open) return
+      if (!open) {
+        setInvoiceUrl(undefined)
+        return
+      }
       const result = invoiceSchema.safeParse(data)
       if (!result.success || !result.data.total) {
         setInvoiceUrl(undefined)
@@ -105,7 +108,10 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
 
     // Keyboard shortcuts
     useEffect(() => {
-      if (!open) return
+      if (!open) {
+        setInvoiceUrl(undefined)
+        return
+      }
 
       const handleKeyDown = (e: KeyboardEvent) => {
         // P for Print (when not in input)
@@ -124,7 +130,10 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
 
     // Track Cmd+P / browser print (deduped against button click)
     useEffect(() => {
-      if (!open) return
+      if (!open) {
+        setInvoiceUrl(undefined)
+        return
+      }
       const handleAfterPrint = () => {
         if (!printedViaButton.current) {
           track(AnalyticsEvent.PDF_EXPORT, { source: 'browser_print' })
