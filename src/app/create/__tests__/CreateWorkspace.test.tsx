@@ -3,12 +3,11 @@
  * Feature: 015-create-page-preview
  */
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@/shared/lib/test-utils/render'
+import { render, screen, waitFor, TEST_INVOICES } from '@/shared/lib/test-utils'
 import userEvent from '@testing-library/user-event'
 import type React from 'react'
 import { CreateWorkspace } from '../CreateWorkspace'
 import { useCreatorStore } from '@/entities/creator'
-import { TEST_INVOICES } from '@/shared/lib/test-utils'
 import { encodeInvoice } from '@/features/invoice-codec'
 import * as toastModule from '@/shared/lib/toast'
 // Helper to render with userEvent

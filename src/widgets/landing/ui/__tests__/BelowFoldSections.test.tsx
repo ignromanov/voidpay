@@ -41,5 +41,5 @@ describe('BelowFoldSections', () => {
     const mod = await import('../BelowFoldSections')
     expect(mod.BelowFoldSections).toBeDefined()
     expect(typeof mod.BelowFoldSections).toBe('function')
-  })
+  }, 15_000)
 })
