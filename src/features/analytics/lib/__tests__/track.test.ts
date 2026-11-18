@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { track, AnalyticsEvent, sanitizeErrorMessage } from '../track'
+import { track, AnalyticsEvent } from '../track'
 
 describe('track', () => {
   beforeEach(() => {
@@ -65,16 +65,12 @@ describe('track', () => {
     })
   })
 
-  it('sends error-boundary with truncated message', () => {
-    const longMessage = 'x'.repeat(300)
-    track(AnalyticsEvent.ERROR_BOUNDARY, {
-      page: '/pay',
-      error_message: longMessage.slice(0, 200),
-    })
+  it('sends error-boundary with error_name only', () => {
+    track(AnalyticsEvent.ERROR_BOUNDARY, { page: '/pay', error_name: 'TypeError' })
 
     expect(window.umami!.track).toHaveBeenCalledWith('error-boundary', {
       page: '/pay',
-      error_message: 'x'.repeat(200),
+      error_name: 'TypeError',
     })
   })
 
@@ -83,22 +79,5 @@ describe('track', () => {
     for (const v of values) {
       expect(v).toMatch(/^[a-z]+(-[a-z]+)*$/)
     }
-  })
-
-  it('sanitizeErrorMessage redacts addresses, amounts, emails, and URLs', () => {
-    const err = new TypeError(
-      'Payment failed for 0x1234567890abcdef1234567890abcdef12345678 amount 1250.50 from alice@example.com at https://voidpay.xyz/pay#abc',
-    )
-    const sanitized = sanitizeErrorMessage(err)
-
-    expect(sanitized).not.toContain('0x1234567890abcdef1234567890abcdef12345678')
-    expect(sanitized).not.toContain('1250.50')
-    expect(sanitized).not.toContain('alice@example.com')
-    expect(sanitized).not.toContain('https://voidpay.xyz')
-    expect(sanitized).toContain('[HEX]')
-    expect(sanitized).toContain('[NUM]')
-    expect(sanitized).toContain('[EMAIL]')
-    expect(sanitized).toContain('[URL]')
-    expect(sanitizeErrorMessage('non-error')).toBe('Unknown error')
   })
 })

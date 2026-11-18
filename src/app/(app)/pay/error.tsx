@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { DecodeErrorScreen } from '@/shared/ui/decode-error-screen'
 import { AppErrorScreen } from '@/shared/ui/app-error-screen'
 import type { DecodeErrorType } from '@/shared/ui/decode-error-screen'
-import { track, AnalyticsEvent, sanitizeErrorMessage } from '@/features/analytics'
+import { track, AnalyticsEvent } from '@/features/analytics'
 
 /** Keywords that indicate a codec/decode-related error */
 const CODEC_KEYWORDS = [
@@ -62,17 +62,17 @@ export default function PayError({
 
   useEffect(() => {
     console.error('[PayPage Error]', error)
-    const sanitized = sanitizeErrorMessage(error)
     track(AnalyticsEvent.ERROR_BOUNDARY, {
       page: window.location.pathname,
-      error_message: sanitized,
+      error_name: error.name,
+      ...(error.digest ? { error_digest: error.digest } : {}),
     })
 
     if (process.env.NODE_ENV === 'production') {
       console.error(
         JSON.stringify({
           type: 'pay_page_error',
-          message: sanitized,
+          error_name: error.name,
           digest: error.digest,
           timestamp: new Date().toISOString(),
         })

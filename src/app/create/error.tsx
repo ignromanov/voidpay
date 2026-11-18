@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { AppErrorScreen } from '@/shared/ui/app-error-screen'
-import { track, AnalyticsEvent, sanitizeErrorMessage } from '@/features/analytics'
+import { track, AnalyticsEvent } from '@/features/analytics'
 
 /**
  * Error Boundary for /create route.
@@ -19,17 +19,17 @@ export default function CreateError({
 }) {
   useEffect(() => {
     console.error('[CreateError]', error)
-    const sanitized = sanitizeErrorMessage(error)
     track(AnalyticsEvent.ERROR_BOUNDARY, {
       page: window.location.pathname,
-      error_message: sanitized,
+      error_name: error.name,
+      ...(error.digest ? { error_digest: error.digest } : {}),
     })
 
     if (process.env.NODE_ENV === 'production') {
       console.error(
         JSON.stringify({
           type: 'create_page_error',
-          message: sanitized,
+          error_name: error.name,
           digest: error.digest,
           timestamp: new Date().toISOString(),
         })

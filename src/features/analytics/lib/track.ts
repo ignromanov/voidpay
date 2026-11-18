@@ -50,7 +50,7 @@ interface EventProperties {
   'error-decode': { error_type: string; page: 'pay' | 'invoice' }
   'error-payment': { error_type: string }
   'error-generate': { error_type: 'VALIDATION' | 'URL_TOO_LARGE' }
-  'error-boundary': { page: string; error_message: string }
+  'error-boundary': { page: string; error_name: string; error_digest?: string }
   'landing-cta-click': { cta_location: 'hero' | 'footer' | 'demo' }
   'share-social': { channel: 'telegram' | 'twitter' | 'email' }
   'pdf-export': { source: 'button' | 'browser_print' }
@@ -82,21 +82,4 @@ export function getReferrerDomain(): string {
   } catch {
     return 'unknown'
   }
-}
-
-/**
- * Redact potentially sensitive values (hex addresses/hashes, emails, URLs, numeric amounts)
- * from error messages before sending to analytics or structured logs (Privacy Invariant).
- */
-export function sanitizeErrorMessage(error: unknown): string {
-  const raw =
-    error instanceof Error
-      ? `${error.name || 'Error'}: ${error.message || 'Unknown error'}`
-      : 'Unknown error'
-  return raw
-    .replace(/0x[a-fA-F0-9]{4,}/g, '[HEX]')
-    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL]')
-    .replace(/https?:\/\/\S+/g, '[URL]')
-    .replace(/\b\d+(?:\.\d+)?\b/g, '[NUM]')
-    .slice(0, 120)
 }
