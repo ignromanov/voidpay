@@ -55,10 +55,17 @@ function toBucket(raw: string): string | null {
 
 /**
  * Rate-limit bucket for the requesting client.
- * Source: `x-real-ip` (set by Vercel) → last `x-forwarded-for` entry → 'unknown'.
+ * Source: `cf-connecting-ip` (set by Cloudflare) → `x-real-ip` (set by Vercel)
+ * → last `x-forwarded-for` entry → 'unknown'.
+ *
+ * `cf-connecting-ip` is only trustworthy when the origin is reachable solely through
+ * Cloudflare; a deployment that is also directly exposed (e.g. Vercel) must not rely on it.
  */
 export function clientIp(headers: Headers): string {
-  const raw = headers.get('x-real-ip') ?? headers.get('x-forwarded-for')?.split(',').at(-1)
+  const raw =
+    headers.get('cf-connecting-ip') ??
+    headers.get('x-real-ip') ??
+    headers.get('x-forwarded-for')?.split(',').at(-1)
   const trimmed = raw?.trim()
   if (!trimmed) return 'unknown'
   return toBucket(trimmed) ?? 'unknown'

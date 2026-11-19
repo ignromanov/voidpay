@@ -7,6 +7,28 @@ function headers(init: Record<string, string>): Headers {
 
 describe('clientIp', () => {
   describe('source precedence', () => {
+    it('prefers cf-connecting-ip over a spoofed x-real-ip and x-forwarded-for (Cloudflare)', () => {
+      expect(
+        clientIp(
+          headers({
+            'cf-connecting-ip': '203.0.113.7',
+            'x-real-ip': '198.51.100.99',
+            'x-forwarded-for': '198.51.100.98',
+          })
+        )
+      ).toBe('203.0.113.7')
+    })
+
+    it('buckets an IPv6 cf-connecting-ip to its /64', () => {
+      expect(clientIp(headers({ 'cf-connecting-ip': '2001:db8:abcd:12:aaaa:bbbb:cccc:dddd' }))).toBe(
+        '2001:db8:abcd:12::/64'
+      )
+    })
+
+    it("does not fall through to x-real-ip when cf-connecting-ip is malformed", () => {
+      expect(clientIp(headers({ 'cf-connecting-ip': 'not-an-ip', 'x-real-ip': '203.0.113.7' }))).toBe('unknown')
+    })
+
     it('prefers x-real-ip over x-forwarded-for', () => {
       expect(clientIp(headers({ 'x-real-ip': '203.0.113.7', 'x-forwarded-for': '198.51.100.1' }))).toBe(
         '203.0.113.7'
