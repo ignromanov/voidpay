@@ -345,4 +345,27 @@ describe('useManualVerify', () => {
     expect(result.current.result?.verified).toBe(true)
     expect(mockSetTxHash).toHaveBeenCalledWith('manual-001-hash', VALID_TX_HASH, false)
   })
+
+  // -------------------------------------------------------------------------
+  // Test 9: Reverted receipt → rejected without calling setTxHash
+  // -------------------------------------------------------------------------
+  it('rejects reverted receipt with error and does NOT call setTxHash', async () => {
+    mockGetTransactionReceipt.mockResolvedValue({
+      status: 'reverted',
+      blockNumber: 100n,
+      transactionHash: VALID_TX_HASH,
+      logs: [],
+    })
+
+    const { result } = renderHook(() => useManualVerify(BASE_PARAMS))
+
+    await act(async () => {
+      await result.current.verify(VALID_TX_HASH)
+    })
+
+    expect(result.current.error).toBe('Transaction reverted on-chain')
+    expect(result.current.result?.verified).toBe(false)
+    expect(mockSetTxHash).not.toHaveBeenCalled()
+    expect(mockGetTransaction).not.toHaveBeenCalled()
+  })
 })

@@ -1,6 +1,7 @@
 'use client'
 
 import { Web3ReadProvider } from '@/features/wallet-connect/providers'
+import { useTrackedInvoiceStore } from '@/entities/invoice'
 import { usePaymentVerification, useFinalizationTracker } from '@/features/payment'
 import type { Invoice } from '@/shared/lib/invoice-types'
 
@@ -13,12 +14,16 @@ interface InvoiceVerifierProps {
 }
 
 function VerificationEffect(props: InvoiceVerifierProps) {
+  const isValidated = useTrackedInvoiceStore(
+    (s) => s.invoices.find((inv) => inv.contentHash === props.contentHash)?.txHashValidated ?? false,
+  )
   usePaymentVerification(props)
   useFinalizationTracker({
     contentHash: props.contentHash,
     txHash: props.txHash,
     networkId: props.invoice.networkId,
     onReorgDetected: props.onReorgDetected,
+    enabled: isValidated,
   })
   return null
 }

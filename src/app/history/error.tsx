@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { AppErrorScreen } from '@/shared/ui/app-error-screen'
-import { track, AnalyticsEvent } from '@/features/analytics'
+import { track, AnalyticsEvent, safeErrorName } from '@/features/analytics'
 
 export default function HistoryError({
   error,
@@ -15,14 +15,15 @@ export default function HistoryError({
     console.error('[HistoryError]', error)
     track(AnalyticsEvent.ERROR_BOUNDARY, {
       page: window.location.pathname,
-      error_message: (error.message || 'Unknown error').slice(0, 200),
+      error_name: safeErrorName(error.name),
+      ...(error.digest ? { error_digest: error.digest } : {}),
     })
 
     if (process.env.NODE_ENV === 'production') {
       console.error(
         JSON.stringify({
           type: 'history_page_error',
-          message: error.message,
+          error_name: safeErrorName(error.name),
           digest: error.digest,
           timestamp: new Date().toISOString(),
         })

@@ -185,10 +185,22 @@ export async function decodeInvoice(compressed: string): Promise<Invoice> {
     // Currency: prefix 0x00=dict, 0x01=raw
     let currency: string
     if (currencyRecord.value[0] === 0x00) {
+      if (currencyRecord.value.length !== 2) {
+        throw new Error('Invalid currency dictionary record length')
+      }
       const code = currencyRecord.value[1]!
-      currency = decodeCurrency(code) ?? `UNKNOWN_${code}`
-    } else {
+      const decodedCurrency = decodeCurrency(code)
+      if (!decodedCurrency) {
+        throw new Error(`Unknown currency dictionary code: ${code}`)
+      }
+      currency = decodedCurrency
+    } else if (currencyRecord.value[0] === 0x01) {
+      if (currencyRecord.value.length < 2) {
+        throw new Error('Empty raw currency symbol')
+      }
       currency = decodeUtf8(currencyRecord.value.slice(1))
+    } else {
+      throw new Error(`Invalid currency prefix byte: 0x${currencyRecord.value[0]?.toString(16)}`)
     }
 
     const items = unpackItems(itemsRecord.value)
@@ -247,11 +259,29 @@ export async function decodeInvoice(compressed: string): Promise<Invoice> {
     let tokenAddress: string | undefined
     if (tokenAddressRecord) {
       if (tokenAddressRecord.value[0] === 0x00) {
+        if (tokenAddressRecord.value.length !== 2) {
+          throw new Error('Invalid token dictionary record length')
+        }
         const code = tokenAddressRecord.value[1]!
         const entry = decodeTokenAddress(code)
-        tokenAddress = entry?.address
-      } else {
+        if (!entry) {
+          throw new Error(`Unknown token dictionary code: ${code}`)
+        }
+        if (entry.decimals !== decimals) {
+          throw new Error(
+            `Token decimals mismatch: dictionary expects ${entry.decimals}, record has ${decimals}`,
+          )
+        }
+        tokenAddress = entry.address
+      } else if (tokenAddressRecord.value[0] === 0x01) {
+        if (tokenAddressRecord.value.length !== 21) {
+          throw new Error(`Invalid raw token address length: ${tokenAddressRecord.value.length}`)
+        }
         tokenAddress = bytesToAddress(tokenAddressRecord.value.slice(1))
+      } else {
+        throw new Error(
+          `Invalid token address prefix byte: 0x${tokenAddressRecord.value[0]?.toString(16)}`,
+        )
       }
     }
 

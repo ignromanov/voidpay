@@ -83,11 +83,18 @@ export function useManualVerify({
         return
       }
 
+      if (receipt.status === 'reverted') {
+        setError('Transaction reverted on-chain')
+        setResult({ verified: false, actualAmount: 0n, expectedAmount: exactTotal })
+        return
+      }
+
       let verifyResult: { verified: boolean; actualAmount: bigint; expectedAmount: bigint; error?: string }
 
       if (tokenAddress) {
         // ERC-20: verify via logs, skip tx.to recipient check (tx.to is the token contract)
         const erc20Receipt = {
+          status: receipt.status,
           logs: receipt.logs as Array<{
             address: `0x${string}`
             topics: [`0x${string}`, ...`0x${string}`[]]
@@ -104,7 +111,7 @@ export function useManualVerify({
           return
         }
 
-        verifyResult = verifyNativeReceipt({ value: tx.value, to: tx.to ?? undefined }, recipient, exactTotal, decimals, tokenSymbol ?? 'ETH')
+        verifyResult = verifyNativeReceipt({ value: tx.value, to: tx.to ?? undefined, status: receipt.status }, recipient, exactTotal, decimals, tokenSymbol ?? 'ETH')
       }
 
       const finalResult: ManualVerifyResult = {
