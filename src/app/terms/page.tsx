@@ -6,6 +6,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { entityGraph, serializeJsonLd } from '@/shared/lib/seo'
 import { ArrowLeftIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
@@ -22,14 +23,19 @@ export default function TermsPage() {
   const { meta, sections } = termsContent
 
   return (
-    <main className="min-h-screen px-4 pt-4 pb-20 sm:py-20">
+    <div className="min-h-screen px-4 pt-4 pb-20 sm:py-20">
+      {/* JSON-LD entity graph: Organization + Person on every indexable page */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(entityGraph()) }}
+      />
       <div className="mx-auto max-w-3xl">
-        <Link href="/" className="mb-8 inline-block">
-          <Button variant="ghost" size="sm">
+        <Button asChild variant="ghost" size="sm" className="mb-8">
+          <Link href="/">
             <ArrowLeftIcon size={16} />
             Back to Home
-          </Button>
-        </Link>
+          </Link>
+        </Button>
 
         <article className="prose prose-invert prose-zinc max-w-none">
           <Heading variant="h1" as="h1" className="mb-4">
@@ -138,6 +144,6 @@ export default function TermsPage() {
           </Link>
         </div>
       </div>
-    </main>
+    </div>
   )
 }

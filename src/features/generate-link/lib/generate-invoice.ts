@@ -106,8 +106,8 @@ export function buildInvoice(draft: DraftState, lineItems: LineItem[]): { invoic
     { tax: data.tax, discount: data.discount, decimals }
   )
 
-  // Add Magic Dust if enabled in preferences
-  const { magicDustEnabled } = useCreatorStore.getState().preferences
+  // Add Magic Dust if enabled in preferences (default true when preferences is empty)
+  const { magicDustEnabled = true } = useCreatorStore.getState().preferences
   let total = result.total
   let magicDust: string | undefined
   let salt: Uint8Array | undefined

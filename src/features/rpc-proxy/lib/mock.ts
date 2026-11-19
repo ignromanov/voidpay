@@ -385,7 +385,10 @@ function generateFakeTxHash(): string {
  * Check if mock mode should be enabled
  */
 export function shouldUseMock(url: URL): boolean {
-  // Explicit mock mode via ?mock= query param always wins
+  // Never in production: ?mock= would bypass the real provider (and ?mock=slow pins an invocation)
+  if (process.env.NODE_ENV === 'production') return false
+
+  // Explicit mock mode via ?mock= query param wins outside production
   if (url.searchParams.has('mock')) return true
 
   // If real API keys are configured, use real providers (even in dev)

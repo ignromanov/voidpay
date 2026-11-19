@@ -17,10 +17,13 @@ import { CheckCircleIcon, ChevronDownIcon } from '@/shared/ui/icons'
 import { NetworkChip } from './NetworkChip'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { cn } from '@/shared/lib/utils'
+import { useIsMobile } from '@/shared/lib'
 import type { PaymentPanelProps } from '../types'
 import { exportInvoicePdf } from '@/features/pdf-export'
 import { track, AnalyticsEvent } from '@/features/analytics'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
+import { WalletDeepLinkButtons } from '@/features/payment-qr'
+import { isVerifiedToken } from '@/entities/network'
 
 const QRModal = dynamic(
   () => import('@/features/payment-qr').then(mod => ({ default: mod.QRModal })),
@@ -75,6 +78,7 @@ export function PaymentPanel({
     })
   }, [contentHash, invoice, status, txHash])
 
+  const isMobile = useIsMobile()
   const cooldownSeconds = useCooldown(cooldownUntil)
 
   const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending
@@ -89,6 +93,10 @@ export function PaymentPanel({
   const isChecking = pollingMode === 'manual'
 
   const hasMoreOptions = !!(onStartWatching || onStopWatching || onVerifyTxHash)
+  const isUnverifiedToken = Boolean(
+    invoice.tokenAddress &&
+      !isVerifiedToken(invoice.networkId, invoice.currency, invoice.tokenAddress, invoice.decimals),
+  )
 
   return (
     <div
@@ -152,7 +160,35 @@ export function PaymentPanel({
                 networkId={invoice.networkId}
                 dueAt={invoice.dueAt}
               />
+
+              {isUnverifiedToken && (
+                <div
+                  role="alert"
+                  data-testid="unverified-token-warning"
+                  className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300"
+                >
+                  Unverified token contract ({invoice.tokenAddress?.slice(0, 6)}...
+                  {invoice.tokenAddress?.slice(-4)}). Verify the token address before paying.
+                </div>
+              )}
+
+              {isMobile && (
+                <WalletDeepLinkButtons
+                  recipientAddress={invoice.from.walletAddress}
+                  chainId={invoice.networkId}
+                  amount={amounts.exactTotal}
+                  displayedExactTotal={amounts.exactTotal}
+                  {...(invoice.tokenAddress ? { tokenAddress: invoice.tokenAddress } : {})}
+                />
+              )}
+
               <ActionSlot>{children}</ActionSlot>
+
+              {isMobile && (
+                <p className="text-xs text-zinc-500 text-center">
+                  WalletConnect requires manually returning to this browser after approving.
+                </p>
+              )}
 
               <SecondaryActions
                 onIvePaid={onIvePaid}

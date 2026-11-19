@@ -85,6 +85,18 @@ describe('shouldUseMock', () => {
     const url = new URL('http://voidpay.xyz/api/rpc')
     expect(shouldUseMock(url)).toBe(true)
   })
+
+  describe('in production (#368)', () => {
+    it.each(['?mock', '?mock=success', '?mock=slow', '?mock=error'])('ignores %s', (query) => {
+      process.env = { ...process.env, NODE_ENV: 'production' }
+      expect(shouldUseMock(new URL(`https://voidpay.xyz/api/rpc${query}`))).toBe(false)
+    })
+
+    it('never mocks localhost without API keys', () => {
+      process.env = { ...process.env, NODE_ENV: 'production' }
+      expect(shouldUseMock(new URL('http://localhost:3000/api/rpc?mock'))).toBe(false)
+    })
+  })
 })
 
 describe('handleMockRequest — success mode', () => {

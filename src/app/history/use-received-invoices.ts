@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { useTrackedInvoiceStore, computeInvoiceStatus } from '@/entities/invoice'
+import { useTrackedInvoiceStore, computeInvoiceStatus, type Invoice } from '@/entities/invoice'
 import { parseInvoiceHash } from '@/features/invoice-codec'
 import type { DecodedHistoryEntry } from '@/features/invoice-history'
 
@@ -18,6 +18,7 @@ export function useReceivedInvoices(): DecodedHistoryEntry[] {
   )
 
   const [decoded, setDecoded] = useState<DecodedHistoryEntry[]>([])
+  const invoiceCacheRef = useRef<Map<string, Invoice | null>>(new Map())
 
   useEffect(() => {
     let cancelled = false
@@ -25,14 +26,21 @@ export function useReceivedInvoices(): DecodedHistoryEntry[] {
     void (async () => {
       const results = await Promise.all(
         receivedTracked.map(async (tracked) => {
-          const hash = tracked.invoiceUrl.split('#')[1] ?? ''
-          const result = await parseInvoiceHash(hash)
+          let invoice: Invoice | null
+          if (invoiceCacheRef.current.has(tracked.invoiceUrl)) {
+            invoice = invoiceCacheRef.current.get(tracked.invoiceUrl) ?? null
+          } else {
+            const hash = tracked.invoiceUrl.split('#')[1] ?? ''
+            const result = await parseInvoiceHash(hash)
+            invoice = result.success ? result.data : null
+            invoiceCacheRef.current.set(tracked.invoiceUrl, invoice)
+          }
           return {
             tracked,
-            invoice: result.success ? result.data : null,
+            invoice,
             status: computeInvoiceStatus({
               tracked,
-              dueAt: result.success ? result.data.dueAt : undefined,
+              dueAt: invoice ? invoice.dueAt : undefined,
             }),
           }
         }),

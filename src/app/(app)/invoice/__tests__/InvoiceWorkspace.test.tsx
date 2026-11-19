@@ -15,8 +15,8 @@ const mockStoreState = vi.hoisted(() => ({
 // Mock dependencies before importing component
 vi.mock('@/shared/lib/hooks', () => ({
   useHashFragment: vi.fn(() => ''),
-  useIsMounted: vi.fn(() => true),
   useHydrated: vi.fn(() => true),
+  useIsMobile: vi.fn(() => false),
 }))
 
 // Mock useReducedMotion used by VoidLogo

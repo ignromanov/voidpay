@@ -3,11 +3,10 @@
  * (Next router appends the hash onto a cached /invoice route -> `#A#A`).
  */
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@/shared/lib/test-utils/render'
+import { render, screen, waitFor, TEST_INVOICES } from '@/shared/lib/test-utils'
 import userEvent from '@testing-library/user-event'
 import { CreateWorkspace } from '../CreateWorkspace'
 import { useCreatorStore } from '@/entities/creator'
-import { TEST_INVOICES } from '@/shared/lib/test-utils'
 
 const mockRouterReplace = vi.hoisted(() => vi.fn())
 const mockRouterPush = vi.hoisted(() => vi.fn())

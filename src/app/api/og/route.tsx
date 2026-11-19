@@ -14,6 +14,8 @@ import { decodeOGPreview } from '@/features/invoice-codec'
 import { renderInvoiceOG, renderBrandingOG, OG_SIZES } from '@/features/og-image'
 import type { InvoiceOGData } from '@/features/og-image'
 
+// Workers isolate limit is 128 MB (Satori + resvg WASM): measure on preview before DNS cutover.
+// Fallbacks: dedicated OG worker (workers-og) or keep OG on a Vercel subdomain. See docs/deploy-cloudflare.md.
 export const runtime = 'nodejs'
 
 // OG images are deterministic (?og= is content-derived) — cache aggressively.

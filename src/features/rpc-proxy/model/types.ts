@@ -74,10 +74,3 @@ export interface ProxyResult {
   provider: 'primary' | 'fallback' | 'mock'
   requestId: string
 }
-
-/** @deprecated Use RateLimitResponse from rate-limit.ts instead */
-export interface RateLimitResult {
-  allowed: boolean
-  remaining: number
-  limit: number
-}

@@ -384,4 +384,64 @@ describe('usePaymentVerification', () => {
       expect(mockSetValidated).toHaveBeenCalledWith('native-001-hash', true, MOCK_BLOCK_TIMESTAMP_MS)
     })
   })
+
+  it('native tx: rejects reverted receipt and does NOT call setValidated', async () => {
+    mockReceiptData = {
+      blockNumber: 97n,
+      status: 'reverted',
+      logs: [],
+      transactionHash: MOCK_TX_HASH,
+    }
+    mockReceiptSuccess = true
+    mockCurrentBlockNumber = 100n
+
+    renderHook(() =>
+      usePaymentVerification({
+        invoice: mockNativeInvoice,
+        contentHash: 'native-reverted-hash',
+        txHash: MOCK_TX_HASH,
+        exactTotal: '1000000000000000000',
+      })
+    )
+
+    await waitFor(() => {
+      expect(mockSetError).toHaveBeenCalledWith(
+        'native-reverted-hash',
+        'Transaction reverted on-chain',
+      )
+    })
+
+    expect(mockSetValidated).not.toHaveBeenCalled()
+    expect(mockVerifyNativeReceipt).not.toHaveBeenCalled()
+  })
+
+  it('ERC-20 tx: rejects reverted receipt and does NOT call setValidated', async () => {
+    mockReceiptData = {
+      blockNumber: 97n,
+      status: 'reverted',
+      logs: [],
+      transactionHash: MOCK_TX_HASH,
+    }
+    mockReceiptSuccess = true
+    mockCurrentBlockNumber = 100n
+
+    renderHook(() =>
+      usePaymentVerification({
+        invoice: mockErc20Invoice,
+        contentHash: 'erc20-reverted-hash',
+        txHash: MOCK_TX_HASH,
+        exactTotal: '1000000',
+      })
+    )
+
+    await waitFor(() => {
+      expect(mockSetError).toHaveBeenCalledWith(
+        'erc20-reverted-hash',
+        'Transaction reverted on-chain',
+      )
+    })
+
+    expect(mockSetValidated).not.toHaveBeenCalled()
+    expect(mockVerifyErc20Receipt).not.toHaveBeenCalled()
+  })
 })

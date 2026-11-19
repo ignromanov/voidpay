@@ -6,8 +6,9 @@
 specs
 CLAUDE.md
 
-# Claude Code plugins (auto-generated)
-.agents/
+# Claude Code plugins (auto-generated) + Antigravity/Codex rules & skills
+# (no trailing slash: app/.agents is a symlink -> .ai/.agents, and `.agents/` only matches directories)
+.agents
 .superpowers/
 skills/
 skills-lock.json
@@ -110,3 +111,10 @@ next-env.d.ts
 worktrees/
 coverage/
 CLAUDE.md
+
+# Cloudflare / OpenNext
+.open-next/
+.wrangler/
+.wrangler-dry/
+.dev.vars
+.dev.vars*

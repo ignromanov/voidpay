@@ -1,7 +1,14 @@
 import { render, screen, userEvent } from '@/shared/lib/test-utils'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { PaymentPanel } from '../ui/PaymentPanel'
 import type { Invoice } from '@/shared/lib/invoice-types'
+
+const mockUseIsMobile = vi.hoisted(() => vi.fn(() => false))
+
+vi.mock('@/shared/lib', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/shared/lib')>()
+  return { ...actual, useIsMobile: mockUseIsMobile }
+})
 
 const mockInvoice: Invoice = {
   invoiceId: 'INV-TEST-001',
@@ -891,6 +898,45 @@ describe('PaymentPanel', () => {
     })
   })
 
+  describe('mobile layout (AC-10)', () => {
+    beforeEach(() => { mockUseIsMobile.mockReturnValue(true) })
+    afterEach(() => { mockUseIsMobile.mockReturnValue(false) })
+
+    it('renders WalletDeepLinkButtons in pending state on mobile', () => {
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
+      expect(screen.getByRole('link', { name: /metamask/i })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /use a different wallet/i })).toBeInTheDocument()
+    })
+
+    it('MetaMask deep-link appears before ActionSlot content in DOM (tier-1 above WalletConnect)', () => {
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
+      const mmLink = screen.getByRole('link', { name: /metamask/i })
+      const actionSlot = screen.getByText('Connect Wallet to Pay')
+      // actionSlot must follow mmLink in DOM order
+      expect(
+        mmLink.compareDocumentPosition(actionSlot) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy()
+    })
+
+    it('shows WC iOS note on mobile pending', () => {
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
+      expect(screen.getByText(/WalletConnect requires manually returning/i)).toBeInTheDocument()
+    })
+
+    it('does not render WalletDeepLinkButtons on desktop (isMobile=false)', () => {
+      mockUseIsMobile.mockReturnValue(false)
+      render(<PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="pending" />)
+      expect(screen.queryByRole('link', { name: /metamask/i })).toBeNull()
+    })
+
+    it('does not render WalletDeepLinkButtons when paid', () => {
+      render(
+        <PaymentPanel invoice={mockInvoice} contentHash="test-content-hash" status="paid" txHash="0xabc123" />
+      )
+      expect(screen.queryByRole('link', { name: /metamask/i })).toBeNull()
+    })
+  })
+
   describe('accessibility', () => {
     it('error banner has role="alert"', () => {
       render(
@@ -963,6 +1009,35 @@ describe('PaymentPanel', () => {
       expect(gradientBar.className).toContain('motion-safe:animate-pulse')
       // Must NOT have bare `animate-pulse` without `motion-safe:` prefix
       expect(gradientBar.className).not.toMatch(/(?<!motion-safe:)animate-pulse/)
+    })
+
+    it('renders unverified-token-warning for unknown tokenAddress', () => {
+      render(
+        <PaymentPanel
+          invoice={{
+            ...mockInvoice,
+            tokenAddress: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+          }}
+          contentHash="test-content-hash"
+          status="pending"
+        />
+      )
+      const warning = screen.getByTestId('unverified-token-warning')
+      expect(warning).toHaveAttribute('role', 'alert')
+    })
+
+    it('does not render unverified-token-warning for verified tokenAddress', () => {
+      render(
+        <PaymentPanel
+          invoice={{
+            ...mockInvoice,
+            tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+          }}
+          contentHash="test-content-hash"
+          status="pending"
+        />
+      )
+      expect(screen.queryByTestId('unverified-token-warning')).not.toBeInTheDocument()
     })
   })
 })

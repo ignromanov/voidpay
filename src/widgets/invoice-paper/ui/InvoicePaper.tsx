@@ -176,6 +176,7 @@ export const InvoicePaper = React.memo(
                     networkId={data.networkId ?? 1}
                     senderAddress={from.walletAddress}
                     tokenAddress={data.tokenAddress}
+                    decimals={data.decimals}
                     txHash={txHash}
                     txHashValidated={txHashValidated}
                     variant={variant}

@@ -22,6 +22,9 @@ const config = [
       '**/.claude/',
       '**/next-env.d.ts',
       '**/.tsbuild/',
+      '**/.open-next/',
+      '**/.wrangler/',
+      '**/.wrangler-dry/',
       'worktrees/**',
       'assets/**',
       'specs/**',
@@ -141,6 +144,72 @@ const config = [
       '@typescript-eslint/no-require-imports': 'off',
       // Allow console in tests (debugging)
       'no-console': 'off',
+    },
+  },
+
+  // FSD downward-only layer boundaries
+  {
+    files: ['src/shared/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/entities', '@/entities/*', '@/features', '@/features/*', '@/widgets', '@/widgets/*', '@/app', '@/app/*'],
+              message: 'FSD violation: shared layer cannot import from upper layers (entities, features, widgets, app).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/entities/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/features', '@/features/*', '@/widgets', '@/widgets/*', '@/app', '@/app/*'],
+              message: 'FSD violation: entities layer cannot import from upper layers (features, widgets, app).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/features/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/widgets', '@/widgets/*', '@/app', '@/app/*'],
+              message: 'FSD violation: features layer cannot import from upper layers (widgets, app).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/widgets/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/app', '@/app/*'],
+              message: 'FSD violation: widgets layer cannot import from app layer.',
+            },
+          ],
+        },
+      ],
     },
   },
 ]

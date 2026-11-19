@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { LazyWeb3Provider } from '@/app/lazy-web3-provider'
 import { APP_URLS } from '@/shared/config'
+import { ENTITY_IDS, entityGraph, ref, serializeJsonLd } from '@/shared/lib/seo'
 import { CreatePageHero, CreatePageHowItWorks, CreatePageFaq, FAQ_ITEMS } from '@/widgets/create'
 import { CreateWorkspace } from './CreateWorkspace'
 
@@ -25,43 +26,51 @@ export const metadata: Metadata = {
     url: CREATE_URL,
     siteName: 'VoidPay',
     type: 'website',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'VoidPay — Crypto Invoice Generator',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'Crypto Invoice Generator — No Signup | VoidPay',
     description:
       'Create a shareable crypto invoice in 30 seconds. No account, no backend — the invoice lives in the URL.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'VoidPay — Crypto Invoice Generator',
+      },
+    ],
   },
 }
 
-// JSON-LD: WebApplication schema — static literal, no user input
-const webApplicationSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebApplication',
-  name: 'VoidPay Crypto Invoice Generator',
+// JSON-LD: the page is about the one VoidPay SoftwareApplication (home page), not a second app.
+const webPageSchema = {
+  '@type': 'WebPage',
+  '@id': `${CREATE_URL}#webpage`,
   url: CREATE_URL,
+  name: 'Crypto Invoice Generator — No Signup | VoidPay',
   description:
     'Generate shareable crypto invoice links with no account or backend. Invoice data encodes into the URL hash.',
-  applicationCategory: 'FinanceApplication',
-  operatingSystem: 'Any',
-  offers: {
-    '@type': 'Offer',
-    price: '0',
-    priceCurrency: 'USD',
-  },
-  featureList: [
-    'No signup required',
-    'No server storage',
-    'Ethereum, Base, Arbitrum, Optimism, Polygon',
-    'ERC-20 and native token support',
-    'Shareable invoice link',
-  ],
+  isPartOf: ref(ENTITY_IDS.website),
+  about: ref(ENTITY_IDS.software),
+  publisher: ref(ENTITY_IDS.organization),
 }
 
-// JSON-LD: FAQPage schema — derived from FAQ_ITEMS (single source of truth)
+// JSON-LD: FAQPage — derived from FAQ_ITEMS (single source of truth)
 const faqSchema = {
-  '@context': 'https://schema.org',
   '@type': 'FAQPage',
+  '@id': `${CREATE_URL}#faq`,
+  isPartOf: ref(ENTITY_IDS.website),
+  about: ref(ENTITY_IDS.software),
   mainEntity: FAQ_ITEMS.map(({ question, answer }) => ({
     '@type': 'Question',
     name: question,
@@ -75,14 +84,12 @@ const faqSchema = {
 export default function CreatePage() {
   return (
     <>
-      {/* JSON-LD Structured Data — static literals, JSON.stringify only, no XSS surface */}
+      {/* JSON-LD entity graph — static data, serialized with "<" escaped */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webApplicationSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(entityGraph([webPageSchema, faqSchema])),
+        }}
       />
 
       <CreatePageHero />

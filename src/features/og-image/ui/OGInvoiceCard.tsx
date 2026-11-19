@@ -33,7 +33,9 @@ export function OGInvoiceCard({
   tilt,
   width = 400,
 }: OGInvoiceCardProps) {
-  const net = OG_NETWORKS[networkCode] ?? { name: networkCode.toUpperCase(), color: '#A1A1AA' }
+  const net = Object.hasOwn(OG_NETWORKS, networkCode)
+    ? OG_NETWORKS[networkCode]!
+    : { name: networkCode.toUpperCase(), color: '#A1A1AA' }
 
   return (
     <div

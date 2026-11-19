@@ -2,12 +2,24 @@ import type { BrotliWasmType } from 'brotli-wasm'
 import { writeVarInt, readVarInt } from './varint'
 import { COMPRESSED_FLAG, MAX_INFLATE_SIZE, MAX_PAYLOAD_SIZE } from './types'
 
-// Eager WASM init — starts as soon as this module is imported so decode is not
-// on the synchronous critical path. Uses a module-level Promise (no top-level
-// await) which is SSR-safe: Node.js evaluates the expression without blocking.
-const brotliReady: Promise<BrotliWasmType> = import('brotli-wasm').then((m) => m.default)
+let brotliReady: Promise<BrotliWasmType> | null = null
 
+function loadBrotli(): Promise<BrotliWasmType> {
+  return import('brotli-wasm').then((m) => m.default)
+}
+
+// Lazy init: nothing runs at import time (Workers/SSR bundles must not fetch the
+// WASM or hold a promise across requests). The promise is cached only in the
+// browser; a failed init is dropped so the next call retries. Server-side callers
+// (build scripts) get a fresh load per call and never share a promise.
 async function getBrotli(): Promise<BrotliWasmType> {
+  if (typeof window === 'undefined') return loadBrotli()
+  if (!brotliReady) {
+    brotliReady = loadBrotli().catch((err: unknown) => {
+      brotliReady = null
+      throw err
+    })
+  }
   return brotliReady
 }
 
@@ -83,6 +95,10 @@ export async function groupedInflate(
     fields.push({ typeId, value })
   }
 
+  if (offset !== inflated.length) {
+    throw new Error(`Trailing bytes in compressed block: ${inflated.length - offset} unconsumed`)
+  }
+
   return fields
 }
 
@@ -120,7 +136,12 @@ export async function decompressPayload(bytes: Uint8Array): Promise<Uint8Array> 
   if (bytes.length < 3) return bytes
 
   const versionByte = bytes[1]!
-  if (!(versionByte & COMPRESSED_FLAG)) return bytes // not compressed
+  if (!(versionByte & COMPRESSED_FLAG)) {
+    if (bytes.length > MAX_INFLATE_SIZE) {
+      throw new Error(`Uncompressed payload ${bytes.length} exceeds max ${MAX_INFLATE_SIZE}`)
+    }
+    return bytes
+  }
 
   const compressedBody = bytes.slice(2)
 

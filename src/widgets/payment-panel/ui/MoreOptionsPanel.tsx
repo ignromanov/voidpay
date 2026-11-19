@@ -51,7 +51,7 @@ export function MoreOptionsPanel({
       )}
       {onVerifyTxHash && (
         <div className="space-y-2">
-          <label htmlFor="txhash-input" className="block text-xs text-zinc-500">
+          <label htmlFor="txhash-input" className="block text-xs text-zinc-400">
             Verify by transaction hash
           </label>
           <div className="flex gap-2">
@@ -80,7 +80,7 @@ export function MoreOptionsPanel({
               <SearchIcon size={16} />
             </Button>
           </div>
-          <p id="txhash-hint" className="text-[10px] text-zinc-600">
+          <p id="txhash-hint" className="text-[10px] text-zinc-400">
             {txHashInput.length > 0 && !txHashValid
               ? 'Enter a valid 66-character transaction hash (0x...)'
               : 'Paste a transaction hash to verify payment manually'}

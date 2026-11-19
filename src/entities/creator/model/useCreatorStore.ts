@@ -28,20 +28,12 @@ import { CREATOR_INITIAL_STATE } from './initial-state'
 /**
  * Migration function for future schema versions
  * Wrapped in try-catch for robustness against corrupted localStorage
- *
- * Re-throws code bugs (TypeError, RangeError) to surface development issues.
- * Only catches data-related errors (corrupted localStorage, invalid schema).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const migrate = (persistedState: any, version: number): Partial<CreatorStore> => {
   try {
     return migrateInternal(persistedState, version)
   } catch (error) {
-    // Re-throw code bugs to surface them during development
-    if (error instanceof TypeError || error instanceof RangeError) {
-      throw error
-    }
-
     // Log with context for debugging data-related issues
     console.error('[CreatorStore] Migration failed:', {
       error,
@@ -92,6 +84,10 @@ const generateMigrationId = (): string =>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const migrateInternal = (persistedState: any, version: number): Partial<CreatorStore> => {
+  if (!persistedState || typeof persistedState !== 'object') {
+    throw new Error('Invalid persisted state')
+  }
+
   // Version 0 (no version) -> Version 1
   if (version === 0 || !persistedState.version) {
     // Migrate from old InvoiceDraft format to new DraftState format
@@ -100,9 +96,10 @@ const migrateInternal = (persistedState: any, version: number): Partial<CreatorS
     let newDraft = null
     let lineItems: Array<{ id: string; description: string; quantity: number; rate: string }> = []
 
-    if (oldDraft) {
+    if (oldDraft && typeof oldDraft === 'object') {
+      const rawItems = Array.isArray(oldDraft.lineItems) ? oldDraft.lineItems : []
       // Extract line items with ids
-      lineItems = (oldDraft.lineItems ?? []).map(
+      lineItems = rawItems.map(
         (item: { id?: string; description: string; quantity: number; rate: string }) => ({
           id: item.id ?? generateMigrationId(),
           description: item.description,

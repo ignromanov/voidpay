@@ -1,0 +1,59 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "voidpay",
+  "compatibility_date": "2026-11-18",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "voidpay"
+    }
+  ],
+  "routes": [{ "pattern": "voidpay.xyz", "custom_domain": true }],
+  // TODO(cutover): set false after custom_domain is live
+  "workers_dev": true,
+  "preview_urls": false,
+  // Enables trusting cf-connecting-ip in clientIp(); must NOT be set on Vercel.
+  // OG_FONTS_BASE_URL: /api/og fetches fonts from this origin on Workers (no VERCEL_URL).
+  "vars": {
+    "DEPLOY_PLATFORM": "cloudflare",
+    "DEPLOY_ENV": "production",
+    "OG_FONTS_BASE_URL": "https://voidpay.xyz",
+    // Runtime copies for server-side reads; client bundle gets NEXT_PUBLIC_* at BUILD time (Workers Builds build variables).
+    "NEXT_PUBLIC_APP_URL": "https://voidpay.xyz",
+    "NEXT_PUBLIC_COMING_SOON_MODE": "false",
+    "NEXT_PUBLIC_ENABLE_TESTNETS": "false"
+  },
+  "previews": {},
+  "observability": { "enabled": false },
+  // wrangler does not inherit vars/routes/services/workers_dev/preview_urls into env.*: all restated.
+  "env": {
+    "dev": {
+      "name": "voidpay-dev",
+      "routes": [{ "pattern": "dev.voidpay.xyz", "custom_domain": true }],
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "voidpay-dev"
+        }
+      ],
+      "workers_dev": false,
+      "preview_urls": false,
+      "observability": { "enabled": false },
+      "vars": {
+        "DEPLOY_PLATFORM": "cloudflare",
+        "DEPLOY_ENV": "dev",
+        "OG_FONTS_BASE_URL": "https://dev.voidpay.xyz",
+        "NEXT_PUBLIC_APP_URL": "https://dev.voidpay.xyz",
+        "NEXT_PUBLIC_COMING_SOON_MODE": "false",
+        "NEXT_PUBLIC_ENABLE_TESTNETS": "false"
+      }
+    }
+  }
+  // Secrets are NOT stored here — use `wrangler secret put` (see docs/deploy-cloudflare.md).
+}

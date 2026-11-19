@@ -1,0 +1,8 @@
+# Cloudflare Workers Static Assets headers (applies to static files served by the ASSETS binding only;
+# Worker/Next responses get their headers from next.config.mjs headers()).
+/*
+  X-Content-Type-Options: nosniff
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
