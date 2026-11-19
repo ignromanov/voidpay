@@ -7,6 +7,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { APP_URLS } from '@/shared/config'
+import { ENTITY_IDS, entityGraph, ref, serializeJsonLd } from '@/shared/lib/seo'
 import { ArrowLeftIcon, CheckIcon, XIcon, MinusIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
@@ -63,8 +64,10 @@ export const metadata: Metadata = {
 }
 
 const faqSchema = {
-  '@context': 'https://schema.org',
   '@type': 'FAQPage',
+  '@id': `${APP_URLS.base}/compare/request-finance#faq`,
+  isPartOf: ref(ENTITY_IDS.website),
+  about: ref(ENTITY_IDS.software),
   mainEntity: [
     {
       '@type': 'Question',
@@ -98,9 +101,10 @@ export default function CompareRequestFinancePage() {
 
   return (
     <div className="min-h-screen px-4 pt-4 pb-20 sm:py-20">
+      {/* Plain <script>, not next/script: JSON-LD must be in the server HTML, not injected after hydration */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(entityGraph([faqSchema])) }}
       />
 
       <div className="mx-auto max-w-3xl">
