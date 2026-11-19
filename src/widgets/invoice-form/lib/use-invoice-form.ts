@@ -70,6 +70,9 @@ export function useInvoiceForm({ enabled = true }: { enabled?: boolean } = {}): 
     defaultValues: activeDraft?.data ? draftDataToFormValues(activeDraft.data) : {},
   })
 
+  const lastSyncedDraftIdRef = useRef<string | undefined>(activeDraft?.meta?.draftId)
+  const lastSyncedInvoiceIdRef = useRef<string | undefined>(form.getValues().invoiceId)
+
   const values = form.watch()
 
   // Validate required fields
@@ -96,6 +99,9 @@ export function useInvoiceForm({ enabled = true }: { enabled?: boolean } = {}): 
     syncTimeoutRef.current = setTimeout(() => {
       const data = latestValuesRef.current
       if (!data) return
+
+      lastSyncedDraftIdRef.current = useCreatorStore.getState().activeDraft?.meta?.draftId
+      lastSyncedInvoiceIdRef.current = data.invoiceId
 
       updateDraft({
         ...(data.invoiceId !== undefined && { invoiceId: data.invoiceId }),
@@ -165,7 +171,15 @@ export function useInvoiceForm({ enabled = true }: { enabled?: boolean } = {}): 
   useEffect(() => {
     if (!enabled) return
     if (!activeDraft?.data) return
+    if (
+      activeDraft.meta?.draftId === lastSyncedDraftIdRef.current &&
+      activeDraft.data.invoiceId === lastSyncedInvoiceIdRef.current
+    ) {
+      return
+    }
 
+    lastSyncedDraftIdRef.current = activeDraft.meta?.draftId
+    lastSyncedInvoiceIdRef.current = activeDraft.data.invoiceId
     isExternalUpdate.current = true
     form.reset(draftDataToFormValues(activeDraft.data))
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: only sync on draft identity change, not every data change

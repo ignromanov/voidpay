@@ -88,6 +88,7 @@ export function usePaymentVerification({
     if (!enabled) return
     if (tokenAddress) return
     if (!isReceiptSuccess || !receipt) return
+    if (receipt.status === 'reverted') return
     if (nativeFetchAttempted.current) return
 
     if (!publicClient) return
@@ -150,7 +151,8 @@ export function usePaymentVerification({
     verifyError === undefined &&
     nativeFetchError === undefined
 
-  const nativeReady = readyToVerify && !tokenAddress && nativeTxValue !== undefined
+  const nativeReady =
+    readyToVerify && !tokenAddress && (receipt?.status === 'reverted' || nativeTxValue !== undefined)
   const erc20Ready = readyToVerify && !!tokenAddress
 
   // Shared post-verify logic for both ERC-20 and native
@@ -179,7 +181,18 @@ export function usePaymentVerification({
     if (!enabled) return
     if (!erc20Ready || !receipt) return
 
+    if (receipt.status === 'reverted') {
+      handleVerifyError({
+        verified: false,
+        actualAmount: 0n,
+        expectedAmount: BigInt(exactTotal),
+        error: 'Transaction reverted on-chain',
+      })
+      return
+    }
+
     const erc20Receipt = {
+      status: receipt.status,
       logs: receipt.logs as Array<{
         address: `0x${string}`
         topics: [`0x${string}`, ...`0x${string}`[]]
@@ -207,8 +220,18 @@ export function usePaymentVerification({
     if (!enabled) return
     if (!nativeReady || !receipt) return
 
+    if (receipt.status === 'reverted') {
+      handleVerifyError({
+        verified: false,
+        actualAmount: 0n,
+        expectedAmount: BigInt(exactTotal),
+        error: 'Transaction reverted on-chain',
+      })
+      return
+    }
+
     const result: VerificationResult = verifyNativeReceipt(
-      { value: nativeTxValue!, to: nativeTxTo },
+      { value: nativeTxValue!, to: nativeTxTo, status: receipt.status },
       recipientAddress ?? '',
       BigInt(exactTotal),
       invoice.decimals,

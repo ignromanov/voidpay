@@ -67,5 +67,9 @@ export async function readTlv(bytes: Uint8Array): Promise<{ header: TlvHeader; r
     records.push({ type, value })
   }
 
+  if (offset !== data.length) {
+    throw new Error(`Trailing bytes after TLV records: ${data.length - offset} unconsumed`)
+  }
+
   return { header, records }
 }

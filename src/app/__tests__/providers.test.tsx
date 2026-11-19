@@ -70,8 +70,8 @@ vi.mock('@/shared/config/wagmi', () => ({
   chains: [],
 }))
 
-// Mock the theme from shared config
-vi.mock('@/shared/config/rainbowkit-theme', () => ({
+// Mock the theme from features/wallet-connect
+vi.mock('@/features/wallet-connect/config/rainbowkit-theme', () => ({
   voidPayTheme: {
     colors: {
       modalBackground: '#000',

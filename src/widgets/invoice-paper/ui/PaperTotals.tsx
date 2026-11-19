@@ -16,6 +16,7 @@ interface PaperTotalsProps {
   networkId: number
   senderAddress?: string | undefined
   tokenAddress?: string | undefined
+  decimals?: number | undefined
   txHash?: string | undefined
   txHashValidated?: boolean | undefined
   variant?: InvoicePaperVariant
@@ -34,6 +35,7 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
     networkId,
     senderAddress,
     tokenAddress,
+    decimals,
     txHash,
     txHashValidated = true,
     variant = 'default',
@@ -47,6 +49,7 @@ export const PaperTotals = React.memo<PaperTotalsProps>(
             senderAddress={senderAddress}
             currency={currency}
             tokenAddress={tokenAddress}
+            decimals={decimals}
             txHash={txHash}
             txHashValidated={txHashValidated}
             amount={amount}

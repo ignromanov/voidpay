@@ -1010,5 +1010,34 @@ describe('PaymentPanel', () => {
       // Must NOT have bare `animate-pulse` without `motion-safe:` prefix
       expect(gradientBar.className).not.toMatch(/(?<!motion-safe:)animate-pulse/)
     })
+
+    it('renders unverified-token-warning for unknown tokenAddress', () => {
+      render(
+        <PaymentPanel
+          invoice={{
+            ...mockInvoice,
+            tokenAddress: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+          }}
+          contentHash="test-content-hash"
+          status="pending"
+        />
+      )
+      const warning = screen.getByTestId('unverified-token-warning')
+      expect(warning).toHaveAttribute('role', 'alert')
+    })
+
+    it('does not render unverified-token-warning for verified tokenAddress', () => {
+      render(
+        <PaymentPanel
+          invoice={{
+            ...mockInvoice,
+            tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+          }}
+          contentHash="test-content-hash"
+          status="pending"
+        />
+      )
+      expect(screen.queryByTestId('unverified-token-warning')).not.toBeInTheDocument()
+    })
   })
 })
