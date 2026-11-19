@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { MailIcon, SearchIcon } from '@/shared/ui/icons'
-import { renderWithUser, screen } from './test-utils'
+import { renderWithUser, screen } from '@/shared/lib/test-utils'
 import { Input } from '../input'
 
 describe('Input', () => {

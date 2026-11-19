@@ -3,7 +3,7 @@
  * Feature: 028-share-modal-redesign
  */
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@/shared/lib/test-utils/render'
+import { render, screen } from '@/shared/lib/test-utils'
 import userEvent from '@testing-library/user-event'
 import { LinkTab } from '../LinkTab'
 

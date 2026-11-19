@@ -3,7 +3,7 @@
  * Feature: 015-create-page-preview
  */
 import { describe, expect, it, beforeEach } from 'vitest'
-import { render } from '@/shared/ui/__tests__/test-utils'
+import { render } from '@/shared/lib/test-utils'
 import { NetworkBackground } from '../NetworkBackground'
 import { useCreatorStore } from '@/entities/creator'
 

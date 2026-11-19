@@ -42,35 +42,35 @@ export interface ThemeConfig {
  */
 export const NETWORK_THEMES: Record<NetworkTheme, ThemeConfig> = {
   arbitrum: {
-    primary: '#12AAFF',
+    primary: NETWORK_PALETTE.arbitrum.primary,
     secondary: '#28A0F0',
     shape: 'triangle',
     animation: 'float',
     shapeCount: 8,
   },
   optimism: {
-    primary: '#FF0420',
+    primary: NETWORK_PALETTE.optimism.primary,
     secondary: '#FF5C5C',
     shape: 'circle',
     animation: 'pulse',
     shapeCount: 8,
   },
   polygon: {
-    primary: '#8247E5',
+    primary: NETWORK_PALETTE.polygon.primary,
     secondary: '#A77CF2',
     shape: 'hexagon',
     animation: 'rotate',
     shapeCount: 6,
   },
   ethereum: {
-    primary: '#627EEA',
+    primary: NETWORK_PALETTE.ethereum.primary,
     secondary: '#8B9EF5',
     shape: 'rhombus',
     animation: 'sway',
     shapeCount: 8,
   },
   base: {
-    primary: '#0052FF',
+    primary: NETWORK_PALETTE.base.primary,
     secondary: '#3B82F6',
     shape: 'circle',
     animation: 'drift',
