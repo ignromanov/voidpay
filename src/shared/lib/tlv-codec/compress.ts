@@ -83,6 +83,10 @@ export async function groupedInflate(
     fields.push({ typeId, value })
   }
 
+  if (offset !== inflated.length) {
+    throw new Error(`Trailing bytes in compressed block: ${inflated.length - offset} unconsumed`)
+  }
+
   return fields
 }
 
@@ -120,7 +124,12 @@ export async function decompressPayload(bytes: Uint8Array): Promise<Uint8Array> 
   if (bytes.length < 3) return bytes
 
   const versionByte = bytes[1]!
-  if (!(versionByte & COMPRESSED_FLAG)) return bytes // not compressed
+  if (!(versionByte & COMPRESSED_FLAG)) {
+    if (bytes.length > MAX_INFLATE_SIZE) {
+      throw new Error(`Uncompressed payload ${bytes.length} exceeds max ${MAX_INFLATE_SIZE}`)
+    }
+    return bytes
+  }
 
   const compressedBody = bytes.slice(2)
 

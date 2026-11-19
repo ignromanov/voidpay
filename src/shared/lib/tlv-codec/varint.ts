@@ -20,20 +20,31 @@ export function writeVarInt(buffer: number[], value: number): void {
  * Reads a varint from a Uint8Array at the given offset.
  */
 export function readVarInt(bytes: Uint8Array, offset: number): { value: number; bytesRead: number } {
+  if (offset >= bytes.length) {
+    throw new Error('Unexpected end of buffer reading varint')
+  }
   const MAX_BYTES = 5 // max for uint32 (35 bits encoded)
   let value = 0
   let shift = 0
   let bytesRead = 0
+  let terminated = false
 
   while (offset + bytesRead < bytes.length) {
     if (bytesRead >= MAX_BYTES) {
       throw new Error('Varint overflow: too many continuation bytes')
     }
-    const byte = bytes[offset + bytesRead] ?? 0
+    const byte = bytes[offset + bytesRead]!
     bytesRead++
     value |= (byte & 0x7F) << shift
-    if ((byte & 0x80) === 0) break
+    if ((byte & 0x80) === 0) {
+      terminated = true
+      break
+    }
     shift += 7
+  }
+
+  if (!terminated) {
+    throw new Error('Truncated varint: continuation bit set at end of buffer')
   }
 
   return { value: value >>> 0, bytesRead }
@@ -80,6 +91,9 @@ export function writeBigIntVarInt(buffer: number[], value: bigint): void {
  * // result: { value: 150000000n, bytesRead: 4 }
  */
 export function readBigIntVarInt(bytes: Uint8Array, offset: number): { value: bigint; bytesRead: number } {
+  if (offset >= bytes.length) {
+    throw new Error('Unexpected end of buffer reading BigInt varint')
+  }
   const MAX_BYTES = 16 // 112 bits — far exceeds uint256 needs for atomic amounts
   const ZERO = BigInt(0)
   const SEVEN = BigInt(7)
@@ -87,16 +101,24 @@ export function readBigIntVarInt(bytes: Uint8Array, offset: number): { value: bi
   let value = ZERO
   let shift = ZERO
   let bytesRead = 0
+  let terminated = false
 
   while (offset + bytesRead < bytes.length) {
     if (bytesRead >= MAX_BYTES) {
       throw new Error('BigInt varint overflow: too many continuation bytes')
     }
-    const byte = bytes[offset + bytesRead] ?? 0
+    const byte = bytes[offset + bytesRead]!
     bytesRead++
     value = value | (BigInt(byte & 0x7F) << shift)
-    if ((byte & 0x80) === 0) break
+    if ((byte & 0x80) === 0) {
+      terminated = true
+      break
+    }
     shift = shift + SEVEN
+  }
+
+  if (!terminated) {
+    throw new Error('Truncated BigInt varint: continuation bit set at end of buffer')
   }
 
   return { value, bytesRead }
@@ -138,6 +160,9 @@ export function readMantissa(
   offset: number,
 ): { mantissa: bigint; zeros: number; value: bigint; bytesRead: number } {
   const { value: mantissa, bytesRead: mBytes } = readBigIntVarInt(bytes, offset)
+  if (offset + mBytes >= bytes.length) {
+    throw new Error('Truncated mantissa: missing trailing zero count byte')
+  }
   const zeros = bytes[offset + mBytes]!
   if (zeros > 30) throw new Error(`Mantissa trailing zeros ${zeros} exceeds maximum 30`)
   const value = mantissa * 10n ** BigInt(zeros)
@@ -173,7 +198,13 @@ export function readQuantity(
   bytes: Uint8Array,
   offset: number,
 ): { value: number; bytesRead: number } {
+  if (offset >= bytes.length) {
+    throw new Error('Truncated quantity: missing scale byte')
+  }
   const scale = bytes[offset]!
+  if (scale > 9) {
+    throw new Error(`Quantity scale ${scale} exceeds maximum 9`)
+  }
   const { value: scaled, bytesRead } = readVarInt(bytes, offset + 1)
   return { value: scaled / Math.pow(10, scale), bytesRead: 1 + bytesRead }
 }
