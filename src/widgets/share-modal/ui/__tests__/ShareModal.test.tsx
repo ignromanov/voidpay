@@ -3,10 +3,9 @@
  * Feature: 028-share-modal-redesign
  */
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { render, screen } from '@/shared/lib/test-utils/render'
+import { render, screen, TEST_INVOICES } from '@/shared/lib/test-utils'
 import userEvent from '@testing-library/user-event'
 import { ShareModal } from '../ShareModal'
-import { TEST_INVOICES } from '@/shared/lib/test-utils'
 
 // Mock next/dynamic to render QRTab synchronously as a stub
 vi.mock('next/dynamic', () => ({

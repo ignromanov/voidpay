@@ -3,7 +3,7 @@
  * Feature: 015-create-page-preview
  */
 import { describe, expect, it } from 'vitest'
-import { render, screen } from '@/shared/ui/__tests__/test-utils'
+import { render, screen } from '@/shared/lib/test-utils'
 import { Toaster } from '../Toaster'
 import { CheckCircleIcon, XCircleIcon, Loader2Icon, InfoIcon } from '@/shared/ui/icons'
 

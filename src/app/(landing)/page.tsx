@@ -5,14 +5,18 @@
 
 import type { Metadata } from 'next'
 
-import { APP_URLS, SOCIAL_URLS } from '@/shared/config'
+import { APP_URLS } from '@/shared/config'
+import { ENTITY_IDS, entityGraph, ref, serializeJsonLd } from '@/shared/lib/seo'
 import { defaultOgImages } from '@/features/og-image'
 import { LandingContent, FAQ_ITEMS } from '@/widgets/landing'
 
-// JSON-LD: FAQPage schema for rich snippets
+// JSON-LD: page nodes; Organization, Person, WebSite and SoftwareApplication come from entityGraph.
+// FAQPage and HowTo no longer earn Google rich results; they stay for answer engines.
 const faqSchema = {
-  '@context': 'https://schema.org',
   '@type': 'FAQPage',
+  '@id': `${APP_URLS.base}/#faq`,
+  about: ref(ENTITY_IDS.software),
+  isPartOf: ref(ENTITY_IDS.website),
   mainEntity: FAQ_ITEMS.map((item) => ({
     '@type': 'Question',
     name: item.question,
@@ -23,45 +27,11 @@ const faqSchema = {
   })),
 }
 
-// JSON-LD: Organization schema
-const organizationSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'VoidPay',
-  url: APP_URLS.base,
-  logo: APP_URLS.logo,
-  description: 'Privacy-first, stateless crypto invoicing platform',
-  sameAs: [SOCIAL_URLS.github, SOCIAL_URLS.twitter],
-}
-
-// JSON-LD: SoftwareApplication schema
-const softwareSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  name: 'VoidPay',
-  applicationCategory: 'FinanceApplication',
-  applicationSubCategory: 'Crypto Invoicing',
-  operatingSystem: 'Web',
-  browserRequirements: 'Requires JavaScript. Requires Web3 wallet.',
-  offers: {
-    '@type': 'Offer',
-    price: '0',
-    priceCurrency: 'USD',
-  },
-  featureList: [
-    'Zero-backend invoicing',
-    'Multi-chain support (Ethereum, Base, Arbitrum, Optimism, Polygon)',
-    'PDF export',
-    'QR code generation',
-    'Privacy-first design',
-    'No KYC required',
-  ],
-}
-
 // JSON-LD: HowTo schema for rich snippets
 const howToSchema = {
-  '@context': 'https://schema.org',
   '@type': 'HowTo',
+  '@id': `${APP_URLS.base}/#howto`,
+  about: ref(ENTITY_IDS.software),
   name: 'How to Create a Crypto Invoice with VoidPay',
   description: 'Create and share crypto invoices in 3 simple steps without signup or servers.',
   totalTime: 'PT30S',
@@ -139,23 +109,12 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <>
-      {/* JSON-LD Structured Data - rendered in initial SSR HTML for crawlers */}
+      {/* JSON-LD entity graph — static data, serialized with "<" escaped */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
-      />
-      {/* HowTo schema for rich snippets - safe: static data with JSON.stringify */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(entityGraph([faqSchema, howToSchema], { home: true })),
+        }}
       />
 
       <main className="relative min-h-screen">
