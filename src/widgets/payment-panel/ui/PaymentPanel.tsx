@@ -17,10 +17,12 @@ import { CheckCircleIcon, ChevronDownIcon } from '@/shared/ui/icons'
 import { NetworkChip } from './NetworkChip'
 import { formatAmount } from '@/shared/lib/amount-utils'
 import { cn } from '@/shared/lib/utils'
+import { useIsMobile } from '@/shared/lib'
 import type { PaymentPanelProps } from '../types'
 import { exportInvoicePdf } from '@/features/pdf-export'
 import { track, AnalyticsEvent } from '@/features/analytics'
 import { useTrackedInvoiceStore } from '@/entities/invoice'
+import { WalletDeepLinkButtons } from '@/features/payment-qr'
 import { isVerifiedToken } from '@/entities/network'
 
 const QRModal = dynamic(
@@ -76,6 +78,7 @@ export function PaymentPanel({
     })
   }, [contentHash, invoice, status, txHash])
 
+  const isMobile = useIsMobile()
   const cooldownSeconds = useCooldown(cooldownUntil)
 
   const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending
@@ -157,6 +160,7 @@ export function PaymentPanel({
                 networkId={invoice.networkId}
                 dueAt={invoice.dueAt}
               />
+
               {isUnverifiedToken && (
                 <div
                   role="alert"
@@ -167,7 +171,24 @@ export function PaymentPanel({
                   {invoice.tokenAddress?.slice(-4)}). Verify the token address before paying.
                 </div>
               )}
+
+              {isMobile && (
+                <WalletDeepLinkButtons
+                  recipientAddress={invoice.from.walletAddress}
+                  chainId={invoice.networkId}
+                  amount={amounts.exactTotal}
+                  displayedExactTotal={amounts.exactTotal}
+                  {...(invoice.tokenAddress ? { tokenAddress: invoice.tokenAddress } : {})}
+                />
+              )}
+
               <ActionSlot>{children}</ActionSlot>
+
+              {isMobile && (
+                <p className="text-xs text-zinc-500 text-center">
+                  WalletConnect requires manually returning to this browser after approving.
+                </p>
+              )}
 
               <SecondaryActions
                 onIvePaid={onIvePaid}
