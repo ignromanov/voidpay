@@ -15,7 +15,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import type { JsonRpcRequest, JsonRpcResponse } from '@/features/rpc-proxy'
 import { checkRateLimit, limitResponse, passesOriginGate, rateLimitHeaders } from '@/shared/lib/edge-guard'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 /**
  * POST /api/rpc

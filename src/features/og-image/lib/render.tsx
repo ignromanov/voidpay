@@ -42,6 +42,8 @@ function loadFonts(): Promise<OGFont[]> {
 }
 
 function getFontsBaseUrl(): string {
+  // Cloudflare Workers: no VERCEL_URL — set OG_FONTS_BASE_URL (public origin serving /fonts/*).
+  if (process.env.OG_FONTS_BASE_URL) return process.env.OG_FONTS_BASE_URL
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
   return `http://localhost:${process.env.PORT || 3000}`
 }

@@ -10,7 +10,7 @@
 import { NextResponse } from 'next/server'
 import { isRedisHealthy } from '@/shared/lib/edge-guard'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 interface HealthStatus {
   status: 'ok' | 'degraded' | 'unavailable'

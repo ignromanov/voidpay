@@ -107,3 +107,41 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  cloudflare:
+    name: Cloudflare Workers build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Assert no .env files at build time
+        run: |
+          found="$(find . -maxdepth 1 -name '.env*' ! -name '.env.example' ! -name '.env.local.example')"
+          if [ -n "$found" ]; then
+            echo "::error::Unexpected env files present at build time (secrets must never be baked into the bundle): $found"
+            exit 1
+          fi
+
+      - name: Build (OpenNext)
+        run: pnpm cf:build
+
+      - name: Dry-run deploy and check upload size
+        run: |
+          pnpm wrangler deploy --dry-run --outdir .wrangler-dry 2>&1 | tee wrangler-dry.log
+          gzip_kib="$(grep -E 'Total Upload:' wrangler-dry.log | sed -E 's/.*gzip: ([0-9.]+) KiB.*/\1/' | tail -n1)"
+          if [ -z "$gzip_kib" ]; then
+            echo "::error::Could not parse 'Total Upload ... gzip:' from wrangler output"
+            exit 1
+          fi
+          echo "gzip upload: ${gzip_kib} KiB (limit 10240 KiB)"
+          awk -v s="$gzip_kib" 'BEGIN { exit !(s > 10240) }' && { echo "::error::Worker gzip size ${gzip_kib} KiB exceeds 10 MB"; exit 1; } || true

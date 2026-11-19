@@ -11,6 +11,9 @@
     "build": "next build --webpack",
     "postbuild": "next-sitemap",
     "start": "next start",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -50,6 +53,7 @@
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^9.39.4",
     "@next/eslint-plugin-next": "^16.2.7",
+    "@opennextjs/cloudflare": "^1.20.17",
     "@remotion/cli": "^4.0.489",
     "@remotion/fonts": "^4.0.486",
     "@remotion/tailwind-v4": "^4.0.471",
@@ -86,7 +90,8 @@
     "typescript-eslint": "^8.63.0",
     "vite": "^8.0.16",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.2",
+    "wrangler": "^4.165.0"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
