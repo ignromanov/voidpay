@@ -11,6 +11,9 @@
     "build": "next build --webpack",
     "postbuild": "next-sitemap",
     "start": "next start",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -125,12 +128,7 @@
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },
-  "browserslist": [
-    "chrome 111",
-    "safari 16.4",
-    "firefox 128",
-    "edge 111"
-  ],
+  "browserslist": ["chrome 111", "safari 16.4", "firefox 128", "edge 111"],
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --fix",

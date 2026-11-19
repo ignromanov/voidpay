@@ -15,8 +15,10 @@
     }
   ],
   "routes": [{ "pattern": "voidpay.xyz", "custom_domain": true }],
+  // TODO(cutover): set false after custom_domain is live
   "workers_dev": true,
-  "preview_urls": true,
+  "preview_urls": false,
   "previews": {},
   "observability": { "enabled": false }
+  // Secrets are NOT stored here — use `wrangler secret put` (see docs/deploy-cloudflare.md).
 }

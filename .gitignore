@@ -115,3 +115,6 @@ CLAUDE.md
 # Cloudflare / OpenNext
 .open-next/
 .wrangler/
+.wrangler-dry/
+.dev.vars
+.dev.vars*
