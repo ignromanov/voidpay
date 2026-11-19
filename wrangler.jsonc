@@ -20,7 +20,14 @@
   "preview_urls": false,
   // Enables trusting cf-connecting-ip in clientIp(); must NOT be set on Vercel.
   // OG_FONTS_BASE_URL: /api/og fetches fonts from this origin on Workers (no VERCEL_URL).
-  "vars": { "DEPLOY_PLATFORM": "cloudflare", "OG_FONTS_BASE_URL": "https://voidpay.xyz" },
+  "vars": {
+    "DEPLOY_PLATFORM": "cloudflare",
+    "OG_FONTS_BASE_URL": "https://voidpay.xyz",
+    // Runtime copies for server-side reads; client bundle gets NEXT_PUBLIC_* at BUILD time (Workers Builds build variables).
+    "NEXT_PUBLIC_APP_URL": "https://voidpay.xyz",
+    "NEXT_PUBLIC_COMING_SOON_MODE": "false",
+    "NEXT_PUBLIC_ENABLE_TESTNETS": "false"
+  },
   "previews": {},
   "observability": { "enabled": false }
   // Secrets are NOT stored here — use `wrangler secret put` (see docs/deploy-cloudflare.md).

@@ -54,6 +54,7 @@ closed (503) by design; do not add a fail-open fallback.
 - Deploy command: `npx wrangler deploy`
 - Build variables: `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`, `NEXT_PUBLIC_FORMSPREE_ID`,
   `NEXT_PUBLIC_APP_URL=https://voidpay.xyz`, `NEXT_PUBLIC_ENABLE_TESTNETS=false`, `NEXT_PUBLIC_COMING_SOON_MODE=false`.
+These three are also set as runtime `vars` in wrangler.jsonc; NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID and NEXT_PUBLIC_FORMSPREE_ID must still be set as build variables.
 - Runtime secrets (already set): `ALCHEMY_API_KEY`, `INFURA_API_KEY`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`.
 - Preview URLs were disabled via API on 2026-11-18.
 
