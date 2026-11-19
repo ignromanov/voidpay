@@ -110,14 +110,15 @@ export default function PrivacyPage() {
 
                 {'infrastructureNote' in section && (
                   <Text className="mb-4 text-zinc-400">
-                    Vercel hosts the application and captures full request URLs (including any{' '}
+                    Cloudflare hosts the application and may process full request URLs (including any{' '}
                     <code className="rounded bg-zinc-800 px-1.5 py-0.5 text-amber-400">?og=...</code>{' '}
-                    query string) in standard access logs per their retention policy. The invoice
+                    query string) at the edge per their infrastructure retention policy
+                    (application-level Worker observability logging is disabled). The invoice
                     hash fragment is never transmitted (RFC 3986) and stays out of all server-side
                     logs. The{' '}
                     <code className="rounded bg-zinc-800 px-1.5 py-0.5 text-amber-400">?og=</code>{' '}
                     token, however, exposes invoice ID, amount, currency, network, and sender name
-                    to infrastructure log retention if included.{' '}
+                    to edge request processing if included.{' '}
                     <strong className="text-zinc-200">
                       To avoid this exposure entirely, share the bare invoice link — the social
                       preview will be omitted.
