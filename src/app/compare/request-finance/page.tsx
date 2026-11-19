@@ -34,11 +34,28 @@ export const metadata: Metadata = {
     siteName: 'VoidPay',
     type: 'article',
     locale: 'en_US',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'VoidPay vs Request Finance',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: compareContent.meta.title,
     description: compareContent.meta.description,
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'VoidPay vs Request Finance',
+      },
+    ],
   },
   robots: { index: true, follow: true },
   alternates: {
@@ -83,7 +100,7 @@ export default function CompareRequestFinancePage() {
   const { tldr, quickComparison, sections, reviews, disclaimer } = compareContent
 
   return (
-    <main className="min-h-screen px-4 pt-4 pb-20 sm:py-20">
+    <div className="min-h-screen px-4 pt-4 pb-20 sm:py-20">
       {/* Plain <script>, not next/script: JSON-LD must be in the server HTML, not injected after hydration */}
       <script
         type="application/ld+json"
@@ -91,12 +108,12 @@ export default function CompareRequestFinancePage() {
       />
 
       <div className="mx-auto max-w-3xl">
-        <Link href="/" className="mb-8 inline-block">
-          <Button variant="ghost" size="sm">
+        <Button asChild variant="ghost" size="sm" className="mb-8">
+          <Link href="/">
             <ArrowLeftIcon size={16} />
             Back to Home
-          </Button>
-        </Link>
+          </Link>
+        </Button>
 
         {/* TL;DR Header */}
         <section className="mb-12">
@@ -110,7 +127,7 @@ export default function CompareRequestFinancePage() {
             <Text variant="label" className="mb-3 text-violet-400">TL;DR</Text>
             <Text className="leading-relaxed text-zinc-300">{tldr.summary}</Text>
           </div>
-          <Text variant="small" className="mt-3 text-zinc-600">
+          <Text variant="small" className="mt-3 text-zinc-400">
             Last verified: {compareContent.meta.lastVerified}
           </Text>
         </section>
@@ -124,7 +141,7 @@ export default function CompareRequestFinancePage() {
             <table className="w-full text-sm tabular-nums">
               <thead>
                 <tr className="border-b border-zinc-800 bg-zinc-900/50">
-                  <th className="px-4 py-3 text-left font-medium text-zinc-500">Feature</th>
+                  <th className="px-4 py-3 text-left font-medium text-zinc-400">Feature</th>
                   <th className="px-4 py-3 text-left font-bold text-violet-400">VoidPay</th>
                   <th className="px-4 py-3 text-left font-medium text-zinc-400">
                     Request Finance
@@ -168,7 +185,7 @@ export default function CompareRequestFinancePage() {
                         VoidPay
                       </Text>
                       <Text className="mb-2 text-zinc-300">{section.voidpay.summary}</Text>
-                      <Text variant="small" className="text-zinc-500">
+                      <Text variant="small" className="text-zinc-400">
                         {section.voidpay.details}
                       </Text>
                     </div>
@@ -179,7 +196,7 @@ export default function CompareRequestFinancePage() {
                         Request Finance
                       </Text>
                       <Text className="mb-2 text-zinc-300">{section.requestFinance.summary}</Text>
-                      <Text variant="small" className="text-zinc-500">
+                      <Text variant="small" className="text-zinc-400">
                         {section.requestFinance.details}
                       </Text>
                     </div>
@@ -300,19 +317,19 @@ export default function CompareRequestFinancePage() {
           <Text className="mb-6 text-zinc-400">
             Create your first crypto invoice in 30 seconds. Free forever.
           </Text>
-          <Link href="/create">
-            <Button variant="glow" size="lg">Create Invoice</Button>
-          </Link>
+          <Button asChild variant="glow" size="lg">
+            <Link href="/create">Create Invoice</Link>
+          </Button>
         </section>
 
         {/* Disclaimer */}
         <div className="mb-10 rounded-lg border border-zinc-800 bg-zinc-900/30 px-5 py-4">
-          <Text variant="small" className="text-zinc-500">
+          <Text variant="small" className="text-zinc-400">
             {disclaimer}
           </Text>
         </div>
 
       </div>
-    </main>
+    </div>
   )
 }

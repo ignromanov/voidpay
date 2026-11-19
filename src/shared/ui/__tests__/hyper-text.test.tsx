@@ -5,6 +5,19 @@ import { HyperText } from '../hyper-text'
 describe('HyperText', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    })
   })
 
   describe('T050-test: Default rendering', () => {
@@ -218,6 +231,28 @@ describe('HyperText', () => {
 
       const element = container.firstChild as HTMLElement
       expect(element.className).toBeTruthy()
+    })
+
+    it('skips scramble animation and shows final text immediately when prefers-reduced-motion is enabled', () => {
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        value: vi.fn().mockImplementation((query: string) => ({
+          matches: query === '(prefers-reduced-motion: reduce)',
+          media: query,
+          onchange: null,
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+          dispatchEvent: vi.fn(),
+        })),
+      })
+      const callback = vi.fn()
+      const { container } = render(
+        <HyperText text="Reduced Motion" duration={1000} onAnimationComplete={callback} />
+      )
+      expect(container.textContent).toBe('Reduced Motion')
+      expect(callback).toHaveBeenCalledOnce()
     })
   })
 })

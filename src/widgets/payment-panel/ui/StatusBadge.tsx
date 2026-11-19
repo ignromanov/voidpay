@@ -36,6 +36,8 @@ export function StatusBadge({ status, isSyncing = false }: StatusBadgeProps) {
   return (
     <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center print:hidden">
       <span
+        role="status"
+        aria-live="polite"
         data-testid="status-badge"
         className={cn(
           'inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium backdrop-blur-md transition-all duration-300',

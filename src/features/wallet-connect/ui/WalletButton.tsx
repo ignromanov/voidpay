@@ -107,7 +107,13 @@ export function WalletButton({ autoConnect = false, onBeforeConnect }: WalletBut
         </Button>
       ) : (
         <div className="flex items-center gap-1 sm:gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={openChainModal}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-h-11 gap-1.5"
+            onClick={openChainModal}
+            aria-label="Switch network"
+          >
             <NetworkIcon chainId={chainId} size={16} className="rounded-full" />
             <ChevronDownIcon className="hidden h-3 w-3 sm:block" />
           </Button>
@@ -115,8 +121,9 @@ export function WalletButton({ autoConnect = false, onBeforeConnect }: WalletBut
           <Button
             variant="outline"
             size="sm"
-            className="gap-1.5"
+            className="min-h-11 gap-1.5"
             onClick={openAccountModal}
+            aria-label={address ? `Account ${truncateAddress(address)}` : 'Account'}
           >
             <WalletIcon className="h-4 w-4 text-emerald-400 sm:hidden" />
             <span className="hidden sm:inline">{address ? truncateAddress(address) : 'Account'}</span>

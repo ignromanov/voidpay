@@ -117,9 +117,9 @@ export default function LandingPage() {
         }}
       />
 
-      <main className="relative min-h-screen">
+      <div className="relative min-h-screen">
         <LandingContent />
-      </main>
+      </div>
     </>
   )
 }

@@ -28,10 +28,20 @@ export function useHyperText(
   animateOnLoad: boolean = true,
   onComplete?: () => void
 ) {
-  const [displayText, setDisplayText] = useState(animateOnLoad ? '' : text)
+  const [displayText, setDisplayText] = useState(text)
   const [isAnimating, setIsAnimating] = useState(animateOnLoad)
 
   const animate = useCallback(() => {
+    if (
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      setDisplayText(text)
+      setIsAnimating(false)
+      onComplete?.()
+      return
+    }
     if (!text) {
       setDisplayText('')
       setIsAnimating(false)

@@ -223,6 +223,14 @@ describe('InvoicePreviewModal', () => {
       const { generateInvoiceUrl } = await import('@/features/invoice-codec')
       expect(generateInvoiceUrl).not.toHaveBeenCalled()
     })
+
+    it('does not generate URL when modal is closed (open=false)', async () => {
+      const { generateInvoiceUrl } = await import('@/features/invoice-codec')
+      renderWithUser(
+        <InvoicePreviewModal data={mockInvoiceData} open={false} onOpenChange={() => {}} />
+      )
+      expect(generateInvoiceUrl).not.toHaveBeenCalled()
+    })
   })
 
   describe('action buttons', () => {

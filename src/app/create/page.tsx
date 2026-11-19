@@ -26,12 +26,29 @@ export const metadata: Metadata = {
     url: CREATE_URL,
     siteName: 'VoidPay',
     type: 'website',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'VoidPay — Crypto Invoice Generator',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'Crypto Invoice Generator — No Signup | VoidPay',
     description:
       'Create a shareable crypto invoice in 30 seconds. No account, no backend — the invoice lives in the URL.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'VoidPay — Crypto Invoice Generator',
+      },
+    ],
   },
 }
 

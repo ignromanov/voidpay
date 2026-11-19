@@ -65,9 +65,10 @@ export function CollapsibleSection({
       </button>
       {/* CSS grid-template-rows animation: 0fr → 1fr enables height: auto animation */}
       <div
+        inert={!isOpen || undefined}
         className={cn(
           'grid transition-[grid-template-rows,opacity] duration-200 ease-out',
-          isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+          isOpen ? 'grid-rows-[1fr] opacity-100' : 'invisible grid-rows-[0fr] opacity-0'
         )}
       >
         <div className="overflow-hidden">

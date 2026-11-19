@@ -25,7 +25,7 @@ export function HeroSection() {
       {/* Background glow element */}
       <div className="pointer-events-none absolute top-1/2 left-1/2 -z-10 h-[min(800px,150vw)] w-[min(800px,150vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-600/10 blur-[120px]" />
 
-      <div className="hero-animate-container relative z-20 mx-auto max-w-5xl space-y-10">
+      <div className="relative z-20 mx-auto max-w-5xl space-y-10">
         {/* Free • Open Source • Zero Backend badge */}
         <div className="hero-animate-badge mx-auto inline-flex cursor-default items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/50 px-3 py-1 shadow-lg backdrop-blur transition-colors hover:border-violet-500/50">
           <span className="relative flex h-2 w-2">
