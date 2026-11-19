@@ -3,7 +3,7 @@
  * TDD: These tests are written FIRST and must FAIL until implementation
  */
 import { describe, expect, it } from 'vitest'
-import { renderWithUser, screen } from './test-utils'
+import { renderWithUser, screen } from '@/shared/lib/test-utils'
 import { Badge } from '../badge'
 
 describe('Badge', () => {

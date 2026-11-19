@@ -1,2 +1,4 @@
 ignoredBuiltDependencies:
   - esbuild
+overrides:
+  cuer: 0.0.4

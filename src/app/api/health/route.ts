@@ -4,9 +4,11 @@
  *
  * Reports service health for monitoring and alerting.
  * Checks: RPC provider config, Redis rate limiter availability.
+ * Cached at the CDN for 30 s; the Redis ping is memoized per isolate.
  */
 
 import { NextResponse } from 'next/server'
+import { isRedisHealthy } from '@/shared/lib/edge-guard'
 
 export const runtime = 'edge'
 
@@ -26,15 +28,8 @@ export async function GET(): Promise<NextResponse<HealthStatus>> {
     process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN
   )
 
-  let rateLimiterReachable = false
-  if (rateLimiterConfigured) {
-    try {
-      const { isRateLimitHealthy } = await import('@/features/rpc-proxy')
-      rateLimiterReachable = await isRateLimitHealthy()
-    } catch {
-      rateLimiterReachable = false
-    }
-  }
+  // Memoized per isolate (30 s) — unauthenticated GETs must not burn Upstash quota
+  const rateLimiterReachable = rateLimiterConfigured && (await isRedisHealthy())
 
   const allHealthy = rpcConfigured && rateLimiterConfigured && rateLimiterReachable
   const partiallyHealthy = rpcConfigured && (!rateLimiterConfigured || !rateLimiterReachable)
@@ -53,7 +48,7 @@ export async function GET(): Promise<NextResponse<HealthStatus>> {
   return NextResponse.json(status, {
     status: httpStatus,
     headers: {
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Cache-Control': 'public, s-maxage=30',
     },
   })
 }

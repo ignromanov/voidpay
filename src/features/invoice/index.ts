@@ -11,4 +11,3 @@ export type { NetworkConfig } from '@/entities/network'
 
 // UI components
 export { TokenSelect, type TokenSelectProps } from './ui/TokenSelect'
-export { InvoiceItemRow, type InvoiceItemRowProps } from './ui/InvoiceItemRow'

@@ -10,7 +10,6 @@
 
 'use client'
 
-import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { track, AnalyticsEvent } from '@/features/analytics'
@@ -136,7 +135,7 @@ export function DemoSection() {
                 onClick={() => track(AnalyticsEvent.LANDING_CTA_CLICK, { cta_location: 'demo' })}
                 asChild
               >
-                <Link href={`/create#${currentInvoice.createHash}`}>Use This Template</Link>
+                <a href={`/create#${currentInvoice.createHash}`}>Use This Template</a>
               </Button>
             </div>
           }

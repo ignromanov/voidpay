@@ -11,7 +11,6 @@ import { PaymentPanel, StatusBadge, MinimizedPill, useInvoiceView } from '@/widg
 import { ShareModal } from '@/widgets/share-modal'
 import { useCreatorStore } from '@/entities/creator'
 import { getNetworkThemeName } from '@/entities/network'
-import { urlToRoute } from '@/shared/lib/navigation'
 import type { Invoice } from '@/shared/lib/invoice-types'
 import { nowUnix } from '@/shared/lib/date-time'
 import type { InvoiceViewState } from '@/widgets/payment-panel'
@@ -94,7 +93,6 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
   const shareParam = searchParams.get('share')
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
-  const router = useRouter()
   const [isShareOpen, setIsShareOpen] = useState(false)
   const includeOg = useCreatorStore((s) => s.preferences.includeOgImage ?? true)
   const updatePreferences = useCreatorStore((s) => s.updatePreferences)
@@ -112,7 +110,9 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
     }
   }, [shareParam])
 
-  // Sync ?share= param with modal state
+  // Sync ?share= param with modal state.
+  // Native replaceState, not router.replace: Next's router appends the same-page
+  // hash again on every call, which corrupts the invoice fragment (#A#A).
   const handleShareOpenChange = useCallback((open: boolean) => {
     setIsShareOpen(open)
     const url = new URL(window.location.href)
@@ -121,8 +121,8 @@ function InvoiceWorkspaceReady({ invoice, view }: InvoiceWorkspaceReadyProps) {
     } else {
       url.searchParams.delete('share')
     }
-    router.replace(urlToRoute(url))
-  }, [router])
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
+  }, [])
 
   const handleOgToggle = useCallback((include: boolean) => {
     updatePreferences({ includeOgImage: include })

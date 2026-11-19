@@ -7,7 +7,7 @@ interface StatusChipConfig {
 
 /**
  * Shared status chip colors for dark UI.
- * Consumed by InvoiceStatusBadge (features) and StatusChip (widgets).
+ * Consumed by InvoiceStatusBadge (features) and status-config (widgets/payment-panel).
  */
 export const INVOICE_STATUS_CHIPS: Record<InvoiceStatus, StatusChipConfig> = {
   pending: {
