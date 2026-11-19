@@ -76,13 +76,14 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.walletconnect.com https://api.web3modal.org; font-src 'self' data:; connect-src 'self' https://*.walletconnect.com https://*.walletconnect.org wss://relay.walletconnect.com wss://relay.walletconnect.org https://api.web3modal.org https://formspree.io; frame-src https://verify.walletconnect.com https://verify.walletconnect.org https://vercel.live; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://formspree.io; frame-ancestors 'none'",
+              "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.walletconnect.com https://api.web3modal.org; font-src 'self' data:; connect-src 'self' https://*.walletconnect.com https://*.walletconnect.org wss://relay.walletconnect.com wss://relay.walletconnect.org https://api.web3modal.org https://formspree.io; frame-src 'self' https://verify.walletconnect.com https://verify.walletconnect.org; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://formspree.io; frame-ancestors 'none'",
           },
         ],
       },
     ]
   },
 
+  poweredByHeader: false,
   reactStrictMode: true,
   typedRoutes: true,
 

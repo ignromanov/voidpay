@@ -15,8 +15,7 @@
     }
   ],
   "routes": [{ "pattern": "voidpay.xyz", "custom_domain": true }],
-  // TODO(cutover): set false after custom_domain is live
-  "workers_dev": true,
+  "workers_dev": false,
   "preview_urls": false,
   // Enables trusting cf-connecting-ip in clientIp(); must NOT be set on Vercel.
   // OG_FONTS_BASE_URL: /api/og fetches fonts from this origin on Workers (no VERCEL_URL).

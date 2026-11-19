@@ -71,7 +71,7 @@ export const privacyContent = {
       additionalContent:
         'The ?og= parameter contains only: invoice ID, amount, currency, network, and sender name. This is the only invoice data the application reads, and only if you choose to include it. The full invoice details remain private in the hash fragment.',
       infrastructureNote:
-        'Vercel hosts the application and captures full request URLs (including any ?og=... query string) in standard access logs per their retention policy. The invoice hash fragment is never transmitted (RFC 3986) and stays out of all server-side logs. The ?og= token, however, exposes invoice ID, amount, currency, network, and sender name to infrastructure log retention if included. To avoid this exposure entirely, share the bare invoice link — the social preview will be omitted.',
+        'Cloudflare hosts the application and may process full request URLs (including any ?og=... query string) at the edge per their infrastructure retention policy (application-level Worker observability logging is disabled). The invoice hash fragment is never transmitted (RFC 3986) and stays out of all server-side logs. The ?og= token, however, exposes invoice ID, amount, currency, network, and sender name to edge request processing if included. To avoid this exposure entirely, share the bare invoice link — the social preview will be omitted.',
       note: 'This feature is opt-in. Links without the ?og= parameter will show a generic VoidPay preview instead of invoice-specific details.',
     },
     {
