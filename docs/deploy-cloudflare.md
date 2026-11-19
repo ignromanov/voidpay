@@ -40,12 +40,22 @@ pnpm wrangler secret put KV_REST_API_TOKEN
 
 Non-secret `vars` in `wrangler.jsonc`: `DEPLOY_PLATFORM=cloudflare` (already set; makes `clientIp()` trust `cf-connecting-ip` — never set it on Vercel).
 
-Non-secret runtime variable (plain `vars` or dashboard): `OG_FONTS_BASE_URL` — public origin that serves
-`/fonts/Geist-*.ttf` for `/api/og` (Workers has no `VERCEL_URL`). Pre-cutover this can be the Vercel
-production origin; after cutover re-check that the Worker can fetch it (see OG section).
+`OG_FONTS_BASE_URL=https://voidpay.xyz` is also set in `vars` (already set): the public origin that serves
+`/fonts/Geist-*.ttf` for `/api/og` (Workers has no `VERCEL_URL`). After cutover re-check that the Worker can fetch it (see OG section).
 
 Local preview secrets go in `.dev.vars` (gitignored). `KV_REST_API_*` missing = rate limiter fails
 closed (503) by design; do not add a fail-open fallback.
+
+## Workers Builds settings
+
+- Production branch: `master` (deploys only on release merge, Git Flow).
+- Non-production branch builds: disabled (GitHub CI job `Cloudflare Workers build` already builds every PR).
+- Build command: `pnpm cf:build`
+- Deploy command: `npx wrangler deploy`
+- Build variables: `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`, `NEXT_PUBLIC_FORMSPREE_ID`,
+  `NEXT_PUBLIC_APP_URL=https://voidpay.xyz`, `NEXT_PUBLIC_ENABLE_TESTNETS=false`, `NEXT_PUBLIC_COMING_SOON_MODE=false`.
+- Runtime secrets (already set): `ALCHEMY_API_KEY`, `INFURA_API_KEY`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`.
+- Preview URLs were disabled via API on 2026-11-18.
 
 ## Dynamic OG images (`/api/og`) - memory risk
 
