@@ -34,39 +34,27 @@ export type OGFont = { name: string; data: ArrayBuffer; weight: 100 | 200 | 300 
 // Caches the Promise to prevent duplicate fetches on concurrent cold-start requests
 let fontsPromise: Promise<OGFont[]> | undefined
 
-function loadFonts(baseUrl?: string): Promise<OGFont[]> {
+function loadFonts(): Promise<OGFont[]> {
   if (!fontsPromise) {
-    fontsPromise = loadFontsImpl(baseUrl).catch((err) => {
-      fontsPromise = undefined
-      throw err
-    })
+    fontsPromise = loadFontsImpl()
   }
   return fontsPromise
 }
 
-function getFontsBaseUrl(baseUrl?: string): string {
-  if (baseUrl) return baseUrl
+function getFontsBaseUrl(): string {
+  // Cloudflare Workers: no VERCEL_URL — set OG_FONTS_BASE_URL (public origin serving /fonts/*).
+  if (process.env.OG_FONTS_BASE_URL) return process.env.OG_FONTS_BASE_URL
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  if (process.env.NODE_ENV === 'production') return 'https://voidpay.xyz'
   return `http://localhost:${process.env.PORT || 3000}`
 }
 
-async function loadFontsImpl(baseUrl?: string): Promise<OGFont[]> {
-  const base = getFontsBaseUrl(baseUrl)
+async function loadFontsImpl(): Promise<OGFont[]> {
+  const base = getFontsBaseUrl()
 
   const [bold, semiBold, medium] = await Promise.all([
-    fetch(`${base}/fonts/Geist-Bold.ttf`).then((r) => {
-      if (!r.ok) throw new Error(`Font fetch failed: ${r.status}`)
-      return r.arrayBuffer()
-    }),
-    fetch(`${base}/fonts/Geist-SemiBold.ttf`).then((r) => {
-      if (!r.ok) throw new Error(`Font fetch failed: ${r.status}`)
-      return r.arrayBuffer()
-    }),
-    fetch(`${base}/fonts/Geist-Medium.ttf`).then((r) => {
-      if (!r.ok) throw new Error(`Font fetch failed: ${r.status}`)
-      return r.arrayBuffer()
-    }),
+    fetch(`${base}/fonts/Geist-Bold.ttf`).then((r) => r.arrayBuffer()),
+    fetch(`${base}/fonts/Geist-SemiBold.ttf`).then((r) => r.arrayBuffer()),
+    fetch(`${base}/fonts/Geist-Medium.ttf`).then((r) => r.arrayBuffer()),
   ])
 
   return [
@@ -104,12 +92,8 @@ export interface InvoiceOGData {
 
 /** Render dynamic invoice OG image — card-based design.
  *  KEEP IN SYNC with OGInvoiceCard.tsx (Tailwind version for browser screenshots) */
-export async function renderInvoiceOG(
-  data: InvoiceOGData,
-  size: { width: number; height: number },
-  baseUrl?: string
-) {
-  const fonts = await loadFonts(baseUrl)
+export async function renderInvoiceOG(data: InvoiceOGData, size: { width: number; height: number }) {
+  const fonts = await loadFonts()
   const displayAmount = formatDisplayAmount(data.amount)
   const codeKey = data.networkCode.toLowerCase()
   const networkName = Object.hasOwn(NETWORK_CODE_NAMES, codeKey)
@@ -328,8 +312,8 @@ export async function renderInvoiceOG(
 }
 
 /** Render static VoidPay branding OG image (fallback — main branding uses /public/og-image.png) */
-export async function renderBrandingOG(size: { width: number; height: number }, baseUrl?: string) {
-  const fonts = await loadFonts(baseUrl)
+export async function renderBrandingOG(size: { width: number; height: number }) {
+  const fonts = await loadFonts()
   const coreSize = size.height > 610 ? 200 : 160
 
   return new ImageResponse(

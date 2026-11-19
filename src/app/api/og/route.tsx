@@ -1,23 +1,54 @@
 /**
- * OG Image Route Handler (Cloudflare Workers)
+ * Dynamic OG Image Route Handler
  *
- * Serves the static VoidPay branding OG card (/og-image.png).
- * Dynamic Satori/resvg WASM rendering exceeds the 128 MB Cloudflare Workers
- * isolate ceiling when co-located with the full Next.js bundle (error 1102),
- * so this route redirects to the static asset until/unless dynamic OG is
- * split into its own dedicated Worker.
+ * Thin proxy — parsing + delegation to features/og-image.
+ * Fonts are loaded internally by the render functions.
+ *
+ * Routes:
+ *   /api/og?og=a1b2c3d4_1250.00_USDC_arb_Acme_Client  → 1200x630 (OpenGraph)
+ *   /api/og?og=...&t=twitter                            → 1200x600 (Twitter)
+ *   /api/og (no params)                                  → generic VoidPay branding
  */
 
-import { NextResponse } from 'next/server'
+import { decodeOGPreview } from '@/features/invoice-codec'
+import { renderInvoiceOG, renderBrandingOG, OG_SIZES } from '@/features/og-image'
+import type { InvoiceOGData } from '@/features/og-image'
 
+// Workers isolate limit is 128 MB (Satori + resvg WASM): measure on preview before DNS cutover.
+// Fallbacks: dedicated OG worker (workers-og) or keep OG on a Vercel subdomain. See docs/deploy-cloudflare.md.
 export const runtime = 'nodejs'
 
+// OG images are deterministic (?og= is content-derived) — cache aggressively.
+// Crawlers (Telegram, Discord, Facebook) re-fetch on every share without this.
+const CACHE_HEADER = 'public, immutable, max-age=31536000'
+
 export async function GET(request: Request) {
-  const target = new URL('/og-image.png', request.url)
-  return NextResponse.redirect(target, {
-    status: 302,
-    headers: {
-      'Cache-Control': 'public, max-age=3600',
-    },
-  })
+  const { searchParams } = new URL(request.url)
+  const og = searchParams.get('og')
+  const type = searchParams.has('t') ? 'twitter' : 'opengraph'
+  const size = OG_SIZES[type]
+
+  let response: Response
+
+  if (!og) {
+    response = await renderBrandingOG(size)
+  } else {
+    try {
+      const preview = decodeOGPreview(og)
+      const data: InvoiceOGData = {
+        id: preview.id,
+        amount: preview.amount,
+        currency: preview.currency,
+        networkCode: preview.network,
+        from: preview.from,
+        to: preview.to,
+      }
+      response = await renderInvoiceOG(data, size)
+    } catch {
+      response = await renderBrandingOG(size)
+    }
+  }
+
+  response.headers.set('Cache-Control', CACHE_HEADER)
+  return response
 }
