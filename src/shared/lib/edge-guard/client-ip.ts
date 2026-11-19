@@ -55,15 +55,18 @@ function toBucket(raw: string): string | null {
 
 /**
  * Rate-limit bucket for the requesting client.
- * Source: `cf-connecting-ip` (set by Cloudflare) → `x-real-ip` (set by Vercel)
- * → last `x-forwarded-for` entry → 'unknown'.
+ * On Cloudflare Workers: `cf-connecting-ip` (set by Cloudflare, not client-forgeable).
+ * Elsewhere (Vercel): `x-real-ip` → last `x-forwarded-for` entry → 'unknown'.
  *
- * `cf-connecting-ip` is only trustworthy when the origin is reachable solely through
- * Cloudflare; a deployment that is also directly exposed (e.g. Vercel) must not rely on it.
+ * `cf-connecting-ip` is read ONLY when `DEPLOY_PLATFORM === 'cloudflare'`: on any other host a
+ * client can forge it and choose its own bucket. The flag is a wrangler.jsonc `vars` entry;
+ * under OpenNext/nodejs_compat the Worker `vars` are populated into `process.env`, so it is
+ * read at call time (not module scope).
  */
 export function clientIp(headers: Headers): string {
+  const onCloudflare = process.env.DEPLOY_PLATFORM === 'cloudflare'
   const raw =
-    headers.get('cf-connecting-ip') ??
+    (onCloudflare ? headers.get('cf-connecting-ip') : null) ??
     headers.get('x-real-ip') ??
     headers.get('x-forwarded-for')?.split(',').at(-1)
   const trimmed = raw?.trim()

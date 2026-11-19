@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { clientIp } from '../client-ip'
 
 function headers(init: Record<string, string>): Headers {
@@ -6,6 +6,27 @@ function headers(init: Record<string, string>): Headers {
 }
 
 describe('clientIp', () => {
+  beforeEach(() => {
+    vi.stubEnv('DEPLOY_PLATFORM', 'cloudflare')
+  })
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  describe('platform gating', () => {
+    it('ignores a forged cf-connecting-ip when DEPLOY_PLATFORM is unset (Vercel)', () => {
+      vi.stubEnv('DEPLOY_PLATFORM', '')
+      expect(
+        clientIp(headers({ 'cf-connecting-ip': '198.51.100.99', 'x-real-ip': '203.0.113.7' }))
+      ).toBe('203.0.113.7')
+    })
+
+    it('ignores cf-connecting-ip for any other DEPLOY_PLATFORM value', () => {
+      vi.stubEnv('DEPLOY_PLATFORM', 'vercel')
+      expect(clientIp(headers({ 'cf-connecting-ip': '198.51.100.99' }))).toBe('unknown')
+    })
+  })
+
   describe('source precedence', () => {
     it('prefers cf-connecting-ip over a spoofed x-real-ip and x-forwarded-for (Cloudflare)', () => {
       expect(

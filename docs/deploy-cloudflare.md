@@ -38,6 +38,8 @@ pnpm wrangler secret put KV_REST_API_URL
 pnpm wrangler secret put KV_REST_API_TOKEN
 ```
 
+Non-secret `vars` in `wrangler.jsonc`: `DEPLOY_PLATFORM=cloudflare` (already set; makes `clientIp()` trust `cf-connecting-ip` — never set it on Vercel).
+
 Non-secret runtime variable (plain `vars` or dashboard): `OG_FONTS_BASE_URL` — public origin that serves
 `/fonts/Geist-*.ttf` for `/api/og` (Workers has no `VERCEL_URL`). Pre-cutover this can be the Vercel
 production origin; after cutover re-check that the Worker can fetch it (see OG section).
@@ -98,9 +100,7 @@ Target: `https://voidpay.<account>.workers.dev` (`preview_urls` is disabled).
 
 ## Known caveats
 
-- `cf-connecting-ip` is trusted first by `clientIp()`. That is only safe when the origin is reachable
-  solely through Cloudflare. While the same code also runs on a directly exposed Vercel deployment,
-  a client can send a forged `cf-connecting-ip` there and pick its own rate-limit bucket. Retire
-  the Vercel deployment (or gate on it) promptly after cutover.
+- `cf-connecting-ip` is trusted only when `DEPLOY_PLATFORM=cloudflare` (set in `wrangler.jsonc`);
+  on Vercel it is ignored and the `x-real-ip` / last `x-forwarded-for` order applies.
 - The CSP (copied verbatim from the former `vercel.json`) still allows `https://vercel.live`; drop it
   in a follow-up once Vercel is retired.
