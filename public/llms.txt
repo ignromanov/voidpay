@@ -1,0 +1,28 @@
+# VoidPay (voidpay.xyz)
+
+> VoidPay is crypto invoicing at voidpay.xyz where the invoice lives in the URL, with no backend storage.
+> You fill in the invoice, share the link, and the payer connects a wallet and pays you directly on-chain.
+> There is no account, no signup and no KYC. Invoice data is encoded in the URL hash fragment, which browsers never send to a server.
+
+## Facts
+
+- Free to use: no subscription and no transaction fees.
+- Networks: Ethereum, Base, Arbitrum, Optimism and Polygon; native tokens and ERC-20 tokens.
+- Payment is peer-to-peer, from the payer's wallet to the address on the invoice. VoidPay never holds funds.
+- Token decimals are fixed in the link when the invoice is created, and a payment is matched by its exact amount.
+- Invoices export to PDF and carry a QR code.
+- Open source under the MIT license: https://github.com/ignromanov/voidpay
+- Built by Ignat Romanov: https://lasipan.cc/
+
+## Pages
+
+- [Home](https://voidpay.xyz/): what VoidPay is, how it works, FAQ.
+- [Create an invoice](https://voidpay.xyz/create): the invoice generator.
+- [VoidPay vs Request Finance](https://voidpay.xyz/compare/request-finance): price, signup and privacy compared.
+- [Privacy policy](https://voidpay.xyz/privacy)
+- [Terms of service](https://voidpay.xyz/terms)
+
+## Contact
+
+- X: https://x.com/voidpay_xyz
+- Issues: https://github.com/ignromanov/voidpay/issues

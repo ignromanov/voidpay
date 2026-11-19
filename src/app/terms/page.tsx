@@ -6,6 +6,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { entityGraph, serializeJsonLd } from '@/shared/lib/seo'
 import { ArrowLeftIcon } from '@/shared/ui/icons'
 import { Button } from '@/shared/ui/button'
 import { Heading, Text } from '@/shared/ui/typography'
@@ -23,6 +24,11 @@ export default function TermsPage() {
 
   return (
     <main className="min-h-screen px-4 pt-4 pb-20 sm:py-20">
+      {/* JSON-LD entity graph: Organization + Person on every indexable page */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(entityGraph()) }}
+      />
       <div className="mx-auto max-w-3xl">
         <Link href="/" className="mb-8 inline-block">
           <Button variant="ghost" size="sm">
