@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import nextConfig from '../../../../next.config.mjs'
 
 interface HeaderRule {
@@ -51,6 +51,21 @@ describe('next.config headers() — single source of response headers', () => {
       '/pay/:path*',
     ])
     for (const value of noindex.values()) expect(value).toBe('noindex, nofollow')
+  })
+
+  it('does not noindex the whole site in production (no DEPLOY_ENV)', async () => {
+    const noindex = valuesFor(await loadRules(), 'X-Robots-Tag')
+    expect(noindex.has('/(.*)')).toBe(false)
+  })
+
+  describe('DEPLOY_ENV=dev', () => {
+    afterEach(() => vi.unstubAllEnvs())
+
+    it('adds site-wide noindex, nofollow so the dev deploy is never indexed', async () => {
+      vi.stubEnv('DEPLOY_ENV', 'dev')
+      const noindex = valuesFor(await loadRules(), 'X-Robots-Tag')
+      expect(noindex.get('/(.*)')).toBe('noindex, nofollow')
+    })
   })
 
   it('sends no-store only on /api/rpc and /api/transfers (never site-wide)', async () => {
