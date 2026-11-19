@@ -17,5 +17,6 @@
   "routes": [{ "pattern": "voidpay.xyz", "custom_domain": true }],
   "workers_dev": true,
   "preview_urls": true,
+  "previews": {},
   "observability": { "enabled": false }
 }
