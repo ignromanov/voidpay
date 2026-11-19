@@ -23,7 +23,7 @@ import { stripTransfer } from './strip-transfer'
 import { isJsonContentType, isValidHexBlock, json } from './validate'
 import type { TransfersRequest } from './validate'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 /** W3-015: hardcoded server-side, never from client */
 const MAX_COUNT = '0x14'

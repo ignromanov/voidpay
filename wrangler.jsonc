@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "voidpay",
+  "compatibility_date": "2026-11-18",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "voidpay"
+    }
+  ],
+  "routes": [{ "pattern": "voidpay.xyz", "custom_domain": true }],
+  "workers_dev": true,
+  "preview_urls": true,
+  "observability": { "enabled": false }
+}

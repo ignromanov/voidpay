@@ -111,3 +111,7 @@ next-env.d.ts
 worktrees/
 coverage/
 CLAUDE.md
+
+# Cloudflare / OpenNext
+.open-next/
+.wrangler/

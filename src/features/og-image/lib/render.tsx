@@ -34,25 +34,39 @@ export type OGFont = { name: string; data: ArrayBuffer; weight: 100 | 200 | 300 
 // Caches the Promise to prevent duplicate fetches on concurrent cold-start requests
 let fontsPromise: Promise<OGFont[]> | undefined
 
-function loadFonts(): Promise<OGFont[]> {
+function loadFonts(baseUrl?: string): Promise<OGFont[]> {
   if (!fontsPromise) {
-    fontsPromise = loadFontsImpl()
+    fontsPromise = loadFontsImpl(baseUrl).catch((err) => {
+      fontsPromise = undefined
+      throw err
+    })
   }
   return fontsPromise
 }
 
-function getFontsBaseUrl(): string {
+function getFontsBaseUrl(baseUrl?: string): string {
+  if (baseUrl) return baseUrl
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  if (process.env.NODE_ENV === 'production') return 'https://voidpay.xyz'
   return `http://localhost:${process.env.PORT || 3000}`
 }
 
-async function loadFontsImpl(): Promise<OGFont[]> {
-  const base = getFontsBaseUrl()
+async function loadFontsImpl(baseUrl?: string): Promise<OGFont[]> {
+  const base = getFontsBaseUrl(baseUrl)
 
   const [bold, semiBold, medium] = await Promise.all([
-    fetch(`${base}/fonts/Geist-Bold.ttf`).then((r) => r.arrayBuffer()),
-    fetch(`${base}/fonts/Geist-SemiBold.ttf`).then((r) => r.arrayBuffer()),
-    fetch(`${base}/fonts/Geist-Medium.ttf`).then((r) => r.arrayBuffer()),
+    fetch(`${base}/fonts/Geist-Bold.ttf`).then((r) => {
+      if (!r.ok) throw new Error(`Font fetch failed: ${r.status}`)
+      return r.arrayBuffer()
+    }),
+    fetch(`${base}/fonts/Geist-SemiBold.ttf`).then((r) => {
+      if (!r.ok) throw new Error(`Font fetch failed: ${r.status}`)
+      return r.arrayBuffer()
+    }),
+    fetch(`${base}/fonts/Geist-Medium.ttf`).then((r) => {
+      if (!r.ok) throw new Error(`Font fetch failed: ${r.status}`)
+      return r.arrayBuffer()
+    }),
   ])
 
   return [
@@ -90,8 +104,12 @@ export interface InvoiceOGData {
 
 /** Render dynamic invoice OG image — card-based design.
  *  KEEP IN SYNC with OGInvoiceCard.tsx (Tailwind version for browser screenshots) */
-export async function renderInvoiceOG(data: InvoiceOGData, size: { width: number; height: number }) {
-  const fonts = await loadFonts()
+export async function renderInvoiceOG(
+  data: InvoiceOGData,
+  size: { width: number; height: number },
+  baseUrl?: string
+) {
+  const fonts = await loadFonts(baseUrl)
   const displayAmount = formatDisplayAmount(data.amount)
   const codeKey = data.networkCode.toLowerCase()
   const networkName = Object.hasOwn(NETWORK_CODE_NAMES, codeKey)
@@ -310,8 +328,8 @@ export async function renderInvoiceOG(data: InvoiceOGData, size: { width: number
 }
 
 /** Render static VoidPay branding OG image (fallback — main branding uses /public/og-image.png) */
-export async function renderBrandingOG(size: { width: number; height: number }) {
-  const fonts = await loadFonts()
+export async function renderBrandingOG(size: { width: number; height: number }, baseUrl?: string) {
+  const fonts = await loadFonts(baseUrl)
   const coreSize = size.height > 610 ? 200 : 160
 
   return new ImageResponse(
