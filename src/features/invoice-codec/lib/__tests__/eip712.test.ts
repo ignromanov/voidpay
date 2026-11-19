@@ -82,6 +82,15 @@ describe('buildInvoiceTypedData', () => {
     const b = buildInvoiceTypedData({ ...TEST_PARAMS, invoiceId: 'INV-002' })
     expect(a.message.invoiceId).not.toBe(b.message.invoiceId)
   })
+
+  it('throws when salt length is not 16 bytes', () => {
+    expect(() =>
+      buildInvoiceTypedData({ ...TEST_PARAMS, salt: new Uint8Array(15) })
+    ).toThrow()
+    expect(() =>
+      buildInvoiceTypedData({ ...TEST_PARAMS, salt: new Uint8Array(17) })
+    ).toThrow()
+  })
 })
 
 // ---------------------------------------------------------------------------

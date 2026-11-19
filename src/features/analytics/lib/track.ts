@@ -50,7 +50,7 @@ interface EventProperties {
   'error-decode': { error_type: string; page: 'pay' | 'invoice' }
   'error-payment': { error_type: string }
   'error-generate': { error_type: 'VALIDATION' | 'URL_TOO_LARGE' }
-  'error-boundary': { page: string; error_message: string }
+  'error-boundary': { page: string; error_name: string; error_digest?: string }
   'landing-cta-click': { cta_location: 'hero' | 'footer' | 'demo' }
   'share-social': { channel: 'telegram' | 'twitter' | 'email' }
   'pdf-export': { source: 'button' | 'browser_print' }
@@ -72,6 +72,13 @@ export function track<E extends AnalyticsEventName>(
   if (typeof window === 'undefined') return
   if (typeof window.umami?.track !== 'function') return
   window.umami.track(event, args[0] as Record<string, unknown> | undefined)
+}
+
+const SAFE_ERROR_NAME = /^[A-Za-z][A-Za-z0-9_]{0,63}$/
+
+/** Error names can be attacker-influenced; only identifier-shaped names reach analytics. */
+export function safeErrorName(name: unknown): string {
+  return typeof name === 'string' && SAFE_ERROR_NAME.test(name) ? name : 'Error'
 }
 
 export function getReferrerDomain(): string {

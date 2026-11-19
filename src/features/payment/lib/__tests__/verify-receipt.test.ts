@@ -79,6 +79,18 @@ describe('verifyNativeReceipt', () => {
     expect(result.verified).toBe(false)
     expect(result.error).toBe('Transaction has no recipient')
   })
+
+  it('returns verified:false when status is reverted', () => {
+    const amount = 1_000_000_000_000_000_000n
+    const result = verifyNativeReceipt(
+      { value: amount, to: RECIPIENT, status: 'reverted' },
+      RECIPIENT,
+      amount,
+    )
+    expect(result.verified).toBe(false)
+    expect(result.actualAmount).toBe(0n)
+    expect(result.error).toBe('Transaction reverted on-chain')
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -208,5 +220,24 @@ describe('verifyErc20Receipt', () => {
     )
     expect(result.verified).toBe(false)
     expect(result.error).toBeDefined()
+  })
+
+  it('returns verified:false when receipt status is reverted even with matching Transfer log', () => {
+    const amount = 1_000_000n
+    const log = makeTransferLog({
+      address: TOKEN_ADDRESS,
+      from: SENDER,
+      to: RECIPIENT,
+      amount,
+    })
+    const result = verifyErc20Receipt(
+      { status: 'reverted', logs: [log] },
+      TOKEN_ADDRESS,
+      RECIPIENT,
+      amount,
+    )
+    expect(result.verified).toBe(false)
+    expect(result.actualAmount).toBe(0n)
+    expect(result.error).toBe('Transaction reverted on-chain')
   })
 })

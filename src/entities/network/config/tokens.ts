@@ -273,3 +273,34 @@ export const NETWORK_TOKENS: Record<number, TokenInfo[]> = {
 export function findTokenForNetwork(chainId: number, symbol: string): TokenInfo | undefined {
   return NETWORK_TOKENS[chainId]?.find((t) => t.symbol === symbol)
 }
+
+/**
+ * Check whether an invoice's token contract matches a curated token entry on the given chain.
+ */
+export function isVerifiedToken(
+  chainId: number,
+  symbol: string,
+  tokenAddress?: string,
+  decimals?: number,
+): boolean {
+  const tokens = NETWORK_TOKENS[chainId]
+  if (!tokens) return false
+
+  if (!tokenAddress) {
+    return tokens.some(
+      (t) =>
+        t.address === null &&
+        t.symbol.toUpperCase() === symbol.toUpperCase() &&
+        (decimals === undefined || t.decimals === decimals),
+    )
+  }
+
+  const normalized = tokenAddress.toLowerCase()
+  return tokens.some(
+    (t) =>
+      t.address !== null &&
+      t.address.toLowerCase() === normalized &&
+      t.symbol.toUpperCase() === symbol.toUpperCase() &&
+      (decimals === undefined || t.decimals === decimals),
+  )
+}

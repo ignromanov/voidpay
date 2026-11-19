@@ -25,16 +25,21 @@ const mockUpdateDraft = vi.fn()
 const mockSetDraftSyncStatus = vi.fn()
 let mockActiveDraft: { data: { invoiceId: string } } | null = null
 
-vi.mock('@/entities/creator', () => ({
-  useCreatorStore: vi.fn((selector?: (s: Record<string, unknown>) => unknown) => {
-    const store = {
-      activeDraft: mockActiveDraft,
-      updateDraft: mockUpdateDraft,
-      setDraftSyncStatus: mockSetDraftSyncStatus,
-    }
-    return selector ? selector(store) : store
-  }),
-}))
+vi.mock('@/entities/creator', () => {
+  const getStore = () => ({
+    activeDraft: mockActiveDraft,
+    updateDraft: mockUpdateDraft,
+    setDraftSyncStatus: mockSetDraftSyncStatus,
+  })
+  const useCreatorStore = Object.assign(
+    vi.fn((selector?: (s: Record<string, unknown>) => unknown) => {
+      const store = getStore()
+      return selector ? selector(store) : store
+    }),
+    { getState: getStore },
+  )
+  return { useCreatorStore }
+})
 
 vi.mock('@/shared/lib/invoice-types', () => ({
   invoiceFormSchema: {},
@@ -94,5 +99,36 @@ describe('useInvoiceForm', () => {
     renderHook(() => useInvoiceForm({ enabled: true }))
 
     expect(mockReset).toHaveBeenCalled()
+  })
+
+  it('does not call form.reset when invoiceId updates from own debounced syncToStore', () => {
+    vi.useFakeTimers()
+    try {
+      let watchCb: ((values: Record<string, unknown>) => void) | undefined
+      mockWatch.mockImplementation((cb?: unknown) => {
+        if (typeof cb === 'function') {
+          watchCb = cb as (values: Record<string, unknown>) => void
+          return { unsubscribe: vi.fn() }
+        }
+        return { invoiceId: 'INV-001', from: {}, client: {} }
+      })
+      mockActiveDraft = { data: { invoiceId: 'INV-001' } } as typeof mockActiveDraft
+      mockGetValues.mockReturnValue({ invoiceId: 'INV-001' })
+
+      const { rerender } = renderHook(() => useInvoiceForm({ enabled: true }))
+      mockReset.mockClear()
+
+      mockGetValues.mockReturnValue({ invoiceId: 'INV-002' })
+      watchCb?.({ invoiceId: 'INV-002', from: {}, client: {} })
+      vi.advanceTimersByTime(300)
+
+      mockActiveDraft = { data: { invoiceId: 'INV-002' } } as typeof mockActiveDraft
+      mockGetValues.mockReturnValue({ invoiceId: 'INV-001' })
+      rerender()
+
+      expect(mockReset).not.toHaveBeenCalled()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

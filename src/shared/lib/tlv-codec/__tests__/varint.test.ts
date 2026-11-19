@@ -144,3 +144,25 @@ describe('writeQuantity / readQuantity', () => {
     expect(scaled).toBeCloseTo(99.99, 4)
   })
 })
+
+describe('TLV varint/mantissa/quantity EOF and bounds guards', () => {
+  it('readVarInt throws on EOF or trailing continuation bit', () => {
+    expect(() => readVarInt(new Uint8Array([]), 0)).toThrow()
+    expect(() => readVarInt(new Uint8Array([0x80]), 0)).toThrow()
+  })
+
+  it('readBigIntVarInt throws on EOF or trailing continuation bit', () => {
+    expect(() => readBigIntVarInt(new Uint8Array([]), 0)).toThrow()
+    expect(() => readBigIntVarInt(new Uint8Array([0x81, 0x80]), 0)).toThrow()
+  })
+
+  it('readMantissa throws on missing trailing zero-count byte', () => {
+    expect(() => readMantissa(new Uint8Array([]), 0)).toThrow()
+    expect(() => readMantissa(new Uint8Array([0x05]), 0)).toThrow()
+  })
+
+  it('readQuantity throws on EOF or scale > 9', () => {
+    expect(() => readQuantity(new Uint8Array([]), 0)).toThrow()
+    expect(() => readQuantity(new Uint8Array([10, 1]), 0)).toThrow()
+  })
+})

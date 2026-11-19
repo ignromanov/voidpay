@@ -22,9 +22,11 @@ const transferEvent = {
 interface NativeTx {
   value: bigint
   to?: string | undefined
+  status?: 'success' | 'reverted' | undefined
 }
 
 interface Erc20Receipt {
+  status?: 'success' | 'reverted' | undefined
   logs: Array<{
     address: `0x${string}`
     topics: [`0x${string}`, ...`0x${string}`[]]
@@ -41,6 +43,15 @@ export function verifyNativeReceipt(
 ): VerificationResult {
   const actualAmount = tx.value
   const expectedAmount = expectedTotal
+
+  if (tx.status === 'reverted') {
+    return {
+      verified: false,
+      actualAmount: 0n,
+      expectedAmount,
+      error: 'Transaction reverted on-chain',
+    }
+  }
 
   // W3-016: Verify recipient address
   if (!tx.to) {
@@ -75,6 +86,15 @@ export function verifyErc20Receipt(
   tokenSymbol = 'TOKEN',
 ): VerificationResult {
   const expectedAmount = expectedTotal
+
+  if (receipt.status === 'reverted') {
+    return {
+      verified: false,
+      actualAmount: 0n,
+      expectedAmount,
+      error: 'Transaction reverted on-chain',
+    }
+  }
 
   // W3-005: filter logs strictly by token contract address first
   const tokenLogs = receipt.logs.filter((log) => {

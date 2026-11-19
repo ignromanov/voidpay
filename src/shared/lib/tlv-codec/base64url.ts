@@ -16,10 +16,13 @@ export function encodeBase64url(bytes: Uint8Array): string {
 }
 
 /**
- * Decodes a Base64url string (with or without padding) to Uint8Array.
+ * Decodes an unpadded Base64url string (RFC 4648 §5, no `=` padding — see docs/codec-v1-format.md) to Uint8Array.
  */
 export function decodeBase64url(str: string): Uint8Array {
   if (str.length === 0) return new Uint8Array(0)
+  if (!/^[A-Za-z0-9_-]+$/.test(str)) {
+    throw new Error('Invalid Base64url: illegal characters')
+  }
   let base64 = str.replace(/-/g, '+').replace(/_/g, '/')
   const pad = base64.length % 4
   if (pad === 1) throw new Error('Invalid Base64url: illegal length')
