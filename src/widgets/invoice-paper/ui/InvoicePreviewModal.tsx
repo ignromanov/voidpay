@@ -56,6 +56,10 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
     // Uses Zod safeParse — no errors thrown, no toasts, silent fail
     const [invoiceUrl, setInvoiceUrl] = useState<string | undefined>(undefined)
     useEffect(() => {
+      if (!open) {
+        setInvoiceUrl(undefined)
+        return
+      }
       const result = invoiceSchema.safeParse(data)
       if (!result.success || !result.data.total) {
         setInvoiceUrl(undefined)
@@ -75,7 +79,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
         }
       })()
       return () => { cancelled = true }
-    }, [data])
+    }, [open, data])
 
     const printedViaButton = useRef(false)
 
@@ -104,7 +108,10 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
 
     // Keyboard shortcuts
     useEffect(() => {
-      if (!open) return
+      if (!open) {
+        setInvoiceUrl(undefined)
+        return
+      }
 
       const handleKeyDown = (e: KeyboardEvent) => {
         // P for Print (when not in input)
@@ -123,7 +130,10 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
 
     // Track Cmd+P / browser print (deduped against button click)
     useEffect(() => {
-      if (!open) return
+      if (!open) {
+        setInvoiceUrl(undefined)
+        return
+      }
       const handleAfterPrint = () => {
         if (!printedViaButton.current) {
           track(AnalyticsEvent.PDF_EXPORT, { source: 'browser_print' })
@@ -136,7 +146,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="flex h-[100dvh] w-screen max-w-none flex-col gap-0 overflow-hidden border-none bg-zinc-900/90 p-0 shadow-2xl backdrop-blur-xl sm:h-[95vh] sm:w-fit sm:max-w-[95vw] print:hidden [&>button]:hidden"
+          className="flex h-[100dvh] w-screen max-w-none flex-col gap-0 overflow-hidden border-none bg-zinc-900/90 p-0 shadow-2xl backdrop-blur-xl sm:h-[95dvh] sm:w-fit sm:max-w-[95vw] print:hidden [&>button]:hidden"
         >
           <DialogDescription className="sr-only">
             Full-screen invoice preview. Press ESC to close, P to print.
@@ -173,7 +183,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               </div>
             </div>
             <DialogClose
-              className="cursor-pointer rounded-full bg-zinc-800 p-1.5 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none sm:p-2"
+              className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full bg-zinc-800 p-1.5 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none sm:p-2"
               aria-label="Close preview"
             >
               <XIcon className="h-5 w-5" />
@@ -189,11 +199,11 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               className="flex min-h-full min-w-full shrink-0 items-start justify-center p-4 sm:p-6"
               onClick={() => onOpenChange(false)}
             >
+            <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
             <ScaledInvoicePreview
               preset="modal"
               networkId={data.networkId ?? 1}
               className="shrink-0"
-              onClick={(e) => e.stopPropagation()}
             >
               {/* Conditional rendering preserves discriminated union type safety */}
               {status === 'paid' && txHash ? (
@@ -219,6 +229,7 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
               )}
             </ScaledInvoicePreview>
             </div>
+            </div>
           </div>
 
           {/* Action bar — sticky bottom */}
@@ -228,8 +239,9 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             <Button
               variant="ghost"
               size="sm"
-              className="gap-2 text-zinc-300 hover:text-white"
+              className="min-h-11 gap-2 text-zinc-300 hover:text-white"
               onClick={handleDownloadPdf}
+              aria-label="Download PDF"
             >
               <DownloadIcon className="h-5 w-5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Download PDF</span>
@@ -238,8 +250,9 @@ export const InvoicePreviewModal = React.memo<InvoicePreviewModalProps>(
             <Button
               variant="ghost"
               size="sm"
-              className="gap-2 text-zinc-300 hover:text-white"
+              className="min-h-11 gap-2 text-zinc-300 hover:text-white"
               onClick={handlePrint}
+              aria-label="Print invoice"
             >
               <PrinterIcon className="h-5 w-5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Print</span>

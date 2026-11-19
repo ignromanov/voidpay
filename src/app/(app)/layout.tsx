@@ -15,7 +15,7 @@ export default function AppLayout({
 }>) {
   return (
     <>
-      <div className="flex h-[calc(100dvh-104px)] flex-col overflow-hidden print:h-auto print:overflow-visible">
+      <div className="flex h-[calc(100dvh-104px-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] flex-col overflow-hidden print:h-auto print:overflow-visible">
         {children}
       </div>
       <Footer floating />

@@ -126,7 +126,7 @@ export function DemoSection() {
           onMouseLeave={handleMouseLeave}
           overlay={
             <div
-              className={`absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-200 ${isHovered ? 'opacity-100 md:opacity-100 md:pointer-events-auto' : 'opacity-100 md:pointer-events-none md:opacity-0'}`}
+              className={`absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-200 md:focus-within:pointer-events-auto md:focus-within:opacity-100 ${isHovered ? 'opacity-100 md:opacity-100 md:pointer-events-auto' : 'opacity-100 md:pointer-events-none md:opacity-0'}`}
             >
               <Button
                 variant="glow"

@@ -174,17 +174,19 @@ export function LinkTab({
         <div>
           <span className={cn(
             'text-xs font-medium transition-colors',
-            includeOg ? 'text-amber-400' : 'text-zinc-500'
+            includeOg ? 'text-amber-400' : 'text-zinc-400'
           )}>
             Link preview card
           </span>
-          <p className="text-xs text-zinc-600">Shows amount &amp; network in social previews</p>
+          <p className="text-xs text-zinc-400">
+            Shares invoice ID, amount, currency, network, names &amp; due date in the link (?og=)
+          </p>
         </div>
       </label>
 
       <div className="flex items-start gap-2 px-1">
-        <LockIcon size={12} className="mt-0.5 shrink-0 text-zinc-600" />
-        <p className="text-xs leading-relaxed text-zinc-500">
+        <LockIcon size={12} className="mt-0.5 shrink-0 text-zinc-400" />
+        <p className="text-xs leading-relaxed text-zinc-400">
           <strong className="text-zinc-400">Privacy by design.</strong> Invoice data is encoded in the link. No servers. We can&apos;t see it.
         </p>
       </div>

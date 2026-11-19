@@ -200,13 +200,13 @@ export const ScaledInvoicePreview = forwardRef<HTMLDivElement, ScaledInvoicePrev
           isHovered ? 'opacity-100' : 'opacity-100 md:opacity-0'
         )}
       >
-        <button
+        <span
+          aria-hidden="true"
           className="flex cursor-pointer items-center gap-2 rounded-full border border-zinc-600/50 bg-zinc-800/80 px-3 py-1.5 font-mono text-[10px] whitespace-nowrap text-zinc-300 shadow-xl backdrop-blur-md transition-colors hover:border-zinc-500 hover:bg-zinc-700 hover:text-zinc-100"
-          type="button"
         >
           <Maximize2Icon className="h-3 w-3" />
           Expand
-        </button>
+        </span>
       </div>
     ) : null
 

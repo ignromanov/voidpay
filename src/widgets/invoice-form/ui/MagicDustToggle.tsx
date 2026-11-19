@@ -67,7 +67,11 @@ export function MagicDustToggle({ className }: MagicDustToggleProps) {
             Magic Dust Verification
           </Text>
         </div>
-        <Switch checked={magicDustEnabled} onCheckedChange={setMagicDustEnabled} />
+        <Switch
+          checked={magicDustEnabled}
+          onCheckedChange={setMagicDustEnabled}
+          aria-label="Magic Dust Verification"
+        />
       </div>
 
       <div className="mt-2 border-t border-zinc-800/50 pt-2">
