@@ -22,7 +22,13 @@ const nextConfig = {
   // Single source of truth for response headers (Cloudflare Workers has no vercel.json).
   // Values are ported verbatim from the former vercel.json; changes need a security review.
   async headers() {
+    // Build-time switch: the dev deploy (dev.voidpay.xyz) must never be indexed.
+    const devNoindex =
+      process.env.DEPLOY_ENV === 'dev'
+        ? [{ source: '/(.*)', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] }]
+        : []
     return [
+      ...devNoindex,
       {
         source: '/pay/:path*',
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],

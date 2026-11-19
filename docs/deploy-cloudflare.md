@@ -58,6 +58,27 @@ These three are also set as runtime `vars` in wrangler.jsonc; NEXT_PUBLIC_WALLET
 - Runtime secrets (already set): `ALCHEMY_API_KEY`, `INFURA_API_KEY`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`.
 - Preview URLs were disabled via API on 2026-11-18.
 
+## Dev environment (develop → dev.voidpay.xyz)
+
+Wrangler `env.dev` in `wrangler.jsonc` defines Worker `voidpay-dev` on custom domain `dev.voidpay.xyz`
+(`workers_dev` and preview URLs off). `vars`, `routes`, `services`, `workers_dev`, `preview_urls` are not
+inherited from the top level, so each is restated under `env.dev`.
+
+Workers Builds for Worker `voidpay-dev`:
+
+- Production branch: `develop`
+- Build command: `pnpm cf:build`
+- Deploy command: `npx wrangler deploy --env dev` (manual equivalent: `pnpm cf:deploy:dev`, which runs
+  `opennextjs-cloudflare deploy --env dev`; verified against CLI 1.20.17 `deploy --help`)
+- Build variables: `DEPLOY_ENV=dev`, `NEXT_PUBLIC_APP_URL=https://dev.voidpay.xyz`,
+  `NEXT_PUBLIC_ENABLE_TESTNETS=false`, `NEXT_PUBLIC_COMING_SOON_MODE=false`,
+  `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`, `NEXT_PUBLIC_FORMSPREE_ID`
+- Secrets: `wrangler secret put <NAME> --env dev` for `ALCHEMY_API_KEY`, `INFURA_API_KEY`,
+  `KV_REST_API_URL`, `KV_REST_API_TOKEN`. Without KV the fail-closed limiter returns 503 on `/api/rpc` by design.
+- `DEPLOY_ENV=dev` at build time makes `next.config.mjs` send `X-Robots-Tag: noindex, nofollow` on every route.
+- The WalletConnect project must allow-list `dev.voidpay.xyz` (Reown dashboard → domains), otherwise the
+  "Invalid domain" warning returns (spec 095 AC-2).
+
 ## Dynamic OG images (`/api/og`) - memory risk
 
 `/api/og?og=...` renders with Satori + resvg WASM. Workers isolates are capped at **128 MB**, so
