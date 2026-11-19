@@ -19,6 +19,8 @@ const nextConfig = {
     ]
   },
 
+  // Single source of truth for response headers (Cloudflare Workers has no vercel.json).
+  // Values are ported verbatim from the former vercel.json; changes need a security review.
   async headers() {
     return [
       {
@@ -26,12 +28,28 @@ const nextConfig = {
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
       },
       {
-        source: '/create/:path*',
+        source: '/invoice/:path*',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+      {
+        source: '/history/:path*',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+      {
+        source: '/og-image/:path*',
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
       },
       {
         source: '/_next/static/:path*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+      {
+        source: '/api/rpc',
+        headers: [{ key: 'Cache-Control', value: 'no-store, must-revalidate' }],
+      },
+      {
+        source: '/api/transfers',
+        headers: [{ key: 'Cache-Control', value: 'no-store, must-revalidate' }],
       },
       {
         source: '/(.*)',
@@ -50,12 +68,10 @@ const nextConfig = {
             value: 'max-age=63072000; includeSubDomains; preload',
           },
           {
-            // Shade S3 (spec 095): allow WalletConnect verify iframe — pinned host, no wildcard.
             key: 'Content-Security-Policy',
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.walletconnect.com https://api.web3modal.org; font-src 'self' data:; connect-src 'self' https://*.walletconnect.com https://*.walletconnect.org wss://relay.walletconnect.com wss://relay.walletconnect.org https://api.web3modal.org https://formspree.io; frame-src 'self' https://verify.walletconnect.com https://verify.walletconnect.org; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://formspree.io; frame-ancestors 'none'",
+              "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.walletconnect.com https://api.web3modal.org; font-src 'self' data:; connect-src 'self' https://*.walletconnect.com https://*.walletconnect.org wss://relay.walletconnect.com wss://relay.walletconnect.org https://api.web3modal.org https://formspree.io; frame-src https://verify.walletconnect.com https://verify.walletconnect.org https://vercel.live; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' https://formspree.io; frame-ancestors 'none'",
           },
-          { key: 'Cache-Control', value: 'no-store, must-revalidate' },
         ],
       },
     ]
