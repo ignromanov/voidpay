@@ -5,10 +5,8 @@
  * cross-reference is a bare `{ '@id' }`, so a consumer joins the nodes into one entity
  * instead of reading islands.
  *
- * The Person node is shared across Ignat Romanov's sites: its home is lasipan.cc and its
- * `@id` is `https://lasipan.cc/#person`. Its fields are copied verbatim from the approved
- * entity-pack (2026-11-18) and must stay equal to the node published on lasipan.cc.
- * The node is repeated here in full because not every consumer dereferences an external `@id`.
+ * The Person node is owned by lasipan.cc (`@id` `https://lasipan.cc/#person`). It is embedded
+ * here only as a minimal stub; the full node is published on lasipan.cc.
  */
 import { version } from '../../../../package.json'
 import { APP_URLS, SOCIAL_URLS } from '@/shared/config'
@@ -46,42 +44,12 @@ const organization: Node = {
   sameAs: [SOCIAL_URLS.twitter, SOCIAL_URLS.github],
 }
 
+// Minimal stub: lasipan.cc owns the full Person node; everything else here refers to it by @id.
 const person: Node = {
   '@type': 'Person',
   '@id': ENTITY_IDS.person,
   name: 'Ignat Romanov',
-  alternateName: ['Игнат Романов', 'ignromanov'],
   url: 'https://lasipan.cc/',
-  jobTitle: 'Senior Frontend Engineer — Web3 and AI-agent tooling',
-  description:
-    'Ignat Romanov is a senior frontend engineer in Paraguay who works on Web3 interfaces and AI-agent tooling. ' +
-    "He merged 19 pull requests into Curve's DeFi frontend in 2024 and builds VoidPay, Conclave and the @void-layer/codec library.",
-  disambiguatingDescription:
-    'Ignat Romanov, the frontend engineer at lasipan.cc and github.com/ignromanov.',
-  homeLocation: { '@type': 'Country', name: 'Paraguay' },
-  knowsAbout: [
-    'Frontend engineering',
-    'React',
-    'TypeScript',
-    'Next.js',
-    'DeFi frontends',
-    'Web3 wallet integration',
-    'viem',
-    'Rust and WebAssembly',
-    'Binary encoding formats',
-    'AI coding agents',
-    'Claude Code plugins',
-    'Privacy-first web applications',
-    'Frontend supply-chain security',
-  ],
-  sameAs: [
-    'https://github.com/ignromanov',
-    'https://lasipan.cc/',
-    'https://www.linkedin.com/in/ignat-romanov',
-    'https://x.com/ignromanov',
-    'https://x.com/romignov',
-    'https://orcid.org/0009-0000-0414-1263',
-  ],
 }
 
 // Google still reads WebSite for the site name. No SearchAction: the sitelinks search box
